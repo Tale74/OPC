@@ -1,6 +1,6 @@
 # OPC TASK GH-001 — Public GitHub Foundation Report
 
-Status: **WAITING FOR LOGOS ACCESS CONFIRMATION**
+Status: **PASS — OPC PUBLIC GITHUB FOUNDATION ESTABLISHED AND LOGOS VISIBILITY CONFIRMED**
 
 ## Scope
 
@@ -105,14 +105,13 @@ Verified public links:
 - Logos access test: `https://github.com/Tale74/OPC/blob/main/docs/LOGOS_ACCESS_TEST.md`
 - GH-001 report: `https://github.com/Tale74/OPC/blob/main/docs/tasks/OPC_TASK_GH_001_PUBLIC_GITHUB_FOUNDATION_REPORT.md`
 
-Repository root, commit `07c61c1`, and `docs/LOGOS_ACCESS_TEST.md` were opened successfully on GitHub. Logos access confirmation remains pending.
+Logos direct GitHub access is confirmed. Logos successfully opened the repository root, README, `docs/LOGOS_ACCESS_TEST.md`, final commit `f74638d`, and this GH-001 report.
 
 ## Risks and unresolved decisions
 
 - The catalog-photo files remain local because public redistribution rights were not established.
 - Legacy continuity documents remain local because they contain machine-specific paths and historical local-environment details. The sanitized public continuity documents are under `docs/`.
-- Full task completion cannot be claimed until Logos confirms direct access.
-- This task must not be marked `PASS` in the current state.
+- Logos visibility confirmation is complete.
 
 ## GitHub push verification
 
@@ -120,4 +119,4 @@ GitHub push completed.
 Public repository: https://github.com/Tale74/OPC
 Remote origin verified.
 Working tree clean after push.
-Status: WAITING FOR LOGOS ACCESS CONFIRMATION.
+Status: PASS — OPC PUBLIC GITHUB FOUNDATION ESTABLISHED AND LOGOS VISIBILITY CONFIRMED.
