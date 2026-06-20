@@ -1,6 +1,6 @@
 # OPC TASK GH-001 — Public GitHub Foundation Report
 
-Status: **IN PROGRESS — LOCAL SAFETY BASELINE PREPARED**
+Status: **BLOCKED — GITHUB AUTHENTICATION REQUIRED**
 
 ## Scope
 
@@ -57,29 +57,74 @@ Created or updated:
 
 ## Git and GitHub
 
-- Repository URL: pending
-- Visibility: intended public; pending creation
-- First baseline commit: pending
-- Current branch: pending
-- Remote: pending
-- Git status: pending
+- Preferred repository URL: `https://github.com/Tale74/OPC`
+- Preferred name availability check: no public repository was found at the preferred URL on June 20, 2026
+- Visibility: intended public; repository creation is pending authenticated owner action
+- First baseline commit: `520b189`
+- First commit message: `chore: establish OPC public repository baseline`
+- Current branch: `main`
+- Remote: not configured
+- Git status after baseline and validation: clean
+- GitHub CLI: not installed
+- In-app GitHub session: not authenticated
+
+The repository was not created or pushed because the owner account could not be authenticated. No visibility setting was changed.
 
 ## Validation
 
-- Candidate public-file review: pending
-- Staged-file review: pending
-- `flutter analyze`: pending
-- `flutter test`: pending
-- Harmless rollback verification: pending
+- Candidate public-file review: 184 files accepted for the baseline
+- Staged-file review: passed; no database, runtime-data, import-backup, log, local-properties, build, executable, installer, archive, secret-key, or excluded catalog-photo path was staged
+- Staged secret-pattern scan: no match
+- Staged user-profile/project absolute-path scan: no match
+- `flutter analyze --no-pub`: passed, no issues found
+- `flutter test --no-pub`: passed, 85 tests
+- Build/package/signing checks: not run; outside this continuity task and may require release credentials or generated output
+- Harmless rollback verification: passed
+  - temporary branch: `verify/rollback-gh-001`
+  - temporary commit: `1c0f59c`
+  - switched back to `main`
+  - confirmed clean `main`
+  - deleted temporary branch
+
+Tracked baseline summary:
+
+- 184 files
+- 66,446 inserted lines in the root baseline commit
+- application source, Windows and Android runners, tests, safe assets, tools, and sanitized public documentation
 
 ## Logos links and access
 
-Direct GitHub links: pending repository push.
+Prepared links, not yet live:
 
-Logos access confirmation: pending.
+- Repository: `https://github.com/Tale74/OPC`
+- First commit: `https://github.com/Tale74/OPC/commit/520b189`
+- First commit diff: `https://github.com/Tale74/OPC/commit/520b189`
+- README: `https://github.com/Tale74/OPC/blob/main/README.md`
+- Product direction: `https://github.com/Tale74/OPC/blob/main/docs/PRODUCT_DIRECTION.md`
+- Architecture overview: `https://github.com/Tale74/OPC/blob/main/docs/ARCHITECTURE_OVERVIEW.md`
+- Git/ARC workflow: `https://github.com/Tale74/OPC/blob/main/docs/GIT_WORKFLOW_ARC.md`
+- Logos access test: `https://github.com/Tale74/OPC/blob/main/docs/LOGOS_ACCESS_TEST.md`
+
+Logos access confirmation: cannot begin until repository creation and push are complete.
+
+## Required owner action
+
+1. Sign in to GitHub as `Tale74`.
+2. Create a new repository named `OPC`.
+3. Set visibility to **Public**.
+4. Do not initialize it with a README, `.gitignore`, or license.
+5. From this repository root run:
+
+```powershell
+git remote add origin https://github.com/Tale74/OPC.git
+git push -u origin main
+```
+
+After the push, open the prepared links above and send the repository and `docs/LOGOS_ACCESS_TEST.md` links to Logos.
 
 ## Risks and unresolved decisions
 
 - The catalog-photo files remain local because public redistribution rights were not established.
 - Legacy continuity documents remain local because they contain machine-specific paths and historical local-environment details. The sanitized public continuity documents are under `docs/`.
-- Public visibility cannot be considered complete until the repository is pushed and Logos confirms direct access.
+- Public visibility cannot be considered complete until the repository is created, pushed, and Logos confirms direct access.
+- This task must not be marked `PASS` in the current state.
