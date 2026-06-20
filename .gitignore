@@ -1,0 +1,130 @@
+# OPC public repository safety boundary
+#
+# Source may be public. Real data, local state, generated output, credentials,
+# machine-specific files, and material with uncertain redistribution rights may not.
+
+# Flutter / Dart / package-manager state
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+**/doc/api/
+
+# Generated platform/build state
+windows/flutter/ephemeral/
+android/.gradle/
+android/captures/
+android/app/debug/
+android/app/profile/
+android/app/release/
+.gradle/
+.cxx/
+.build/
+.buildlog/
+
+# Local Android/Flutter configuration
+android/local.properties
+local.properties
+key.properties
+
+# IDE and OS local state
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.history/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs, crashes, caches, and temporary files
+*.log
+hs_err_pid*
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.cache
+*.dmp
+*.class
+*.pyc
+*.pid
+*.stackdump
+tmp/
+temp/
+cache/
+
+# Secrets, signing material, and private local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.mobileprovision
+*.cer
+*.crt
+secrets/
+private/
+
+# Runtime databases and real/local data
+runtime_data/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+
+# Imports, exports, backups, restore data, and generated business documents
+_IMPORT_TEST_INPUTS/
+exports/
+export/
+output/
+outputs/
+generated/
+backups/
+backup/
+restore_points/
+*.csv
+*.xlsx
+*.xls
+
+# Installers and distributable packages
+installer_output/
+dist/
+release/
+releases/
+*.exe
+*.msi
+*.msix
+*.apk
+*.aab
+*.appx
+*.zip
+*.7z
+*.rar
+app.*.symbols
+app.*.map.json
+
+# Local continuity records contain machine-specific paths and are not part of
+# the sanitized public documentation baseline.
+/PROJECT_DOCS/
+/OPC_*.md
+/RESTORE_POINT_*.txt
+
+# Catalog photos are not required by the production pubspec and their public
+# redistribution status has not been established.
+/assets/katalog_foto/

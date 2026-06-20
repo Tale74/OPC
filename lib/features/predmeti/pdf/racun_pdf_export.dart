@@ -1,0 +1,798 @@
+import 'dart:typed_data';
+
+import 'package:drift/drift.dart' show OrderingTerm;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+
+import '../../../core/database/database.dart';
+import '../../../core/format/app_format.dart';
+import '../../../core/utils/document_text_codec.dart';
+import '../../../core/utils/export_utils.dart';
+import 'lista_pdf_data_builder.dart';
+import 'memorandum_logo.dart';
+
+const _kRacunPdfTitle = 'RAČUN';
+const _kRacunPdfFilenameToken = 'RACUN';
+const _kPageHorizontalMargin = 24.0;
+const _kPageTopMargin = 20.0;
+const _kPageBottomMargin = 16.0;
+const _kSectionGap = 5.0;
+const _kSectionPadding = 6.0;
+const _kHeaderFontSize = 9.4;
+const _kBodyFontSize = 7.9;
+const _kCompactBodyFontSize = 7.2;
+const _kPdvFontSize = 6.0;
+
+Future<void> izvoziRacunPdf({
+  required BuildContext ctx,
+  required AppDatabase db,
+  required int predmetId,
+}) async {
+  try {
+    final predmet = await (db.select(db.predmeti)
+          ..where((t) => t.id.equals(predmetId)))
+        .getSingle();
+    final iriuStavke = await (db.select(db.iriu)
+          ..where((t) => t.predmetId.equals(predmetId))
+          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
+        .get();
+    final firma = await (db.select(db.firmaPodaci)
+          ..where((t) => t.id.equals(1)))
+        .getSingle();
+    final app = await (db.select(db.appPodesavanja)
+          ..where((t) => t.id.equals(1)))
+        .getSingle();
+    final savetnik = predmet.savetnikId == null
+        ? null
+        : await (db.select(db.korisnici)
+              ..where((t) => t.id.equals(predmet.savetnikId!)))
+            .getSingleOrNull();
+
+    final bytes = await _buildRacunPdf(
+      predmet: predmet,
+      iriuStavke: iriuStavke,
+      firma: firma,
+      app: app,
+      savetnik: savetnik,
+    );
+
+    final naziv = koricePdfDerivatFajlNaziv(
+      predmet,
+      _kRacunPdfFilenameToken,
+      includePredmetVersion: true,
+    );
+    final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
+    final lokacija = koriceFajlLokacija(fajl);
+
+
+    if (!ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text('RAČUN sačuvan: $lokacija'),
+        duration: const Duration(seconds: 5),
+        backgroundColor: Colors.green,
+      ),
+    );
+    prikaziPdfExportSuccessSnackBar(
+      ctx,
+      poruka: 'RA\u010cUN sa\u010duvan: $lokacija',
+      fajl: fajl,
+    );
+  } catch (e) {
+    if (!ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text('Greška pri izvozu RAČUNA: $e'),
+        duration: const Duration(seconds: 5),
+        backgroundColor: Theme.of(ctx).colorScheme.error,
+      ),
+    );
+  }
+}
+
+Future<Uint8List> _buildRacunPdf({
+  required PredmetiData predmet,
+  required List<IriuData> iriuStavke,
+  required FirmaPodaciData firma,
+  required AppPodesavanjaData app,
+  required KorisniciData? savetnik,
+}) async {
+  final regularFont = pw.Font.ttf(
+    await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
+  );
+  final boldFont = pw.Font.ttf(
+    await rootBundle.load('assets/fonts/NotoSans-Bold.ttf'),
+  );
+  final italicFont = pw.Font.ttf(
+    await rootBundle.load('assets/fonts/NotoSans-Italic.ttf'),
+  );
+  final boldItalicFont = pw.Font.ttf(
+    await rootBundle.load('assets/fonts/NotoSans-BoldItalic.ttf'),
+  );
+
+  final theme = pw.ThemeData.withFont(
+    base: regularFont,
+    bold: boldFont,
+    italic: italicFont,
+    boldItalic: boldItalicFont,
+  );
+
+  final preparedData = const ListaPdfDataBuilder().build(
+    predmet: predmet,
+    iriuStavke: iriuStavke,
+    firma: firma,
+    app: app,
+    savetnik: savetnik,
+  );
+  final snapshot = _RacunPdfSnapshot.fromPreparedData(preparedData);
+
+  final doc = pw.Document(
+    title: _kRacunPdfTitle,
+    author: snapshot.savetnikIme,
+    theme: theme,
+  );
+
+  final pageTheme = pw.PageTheme(
+    pageFormat: PdfPageFormat.a4,
+    margin: const pw.EdgeInsets.fromLTRB(
+      _kPageHorizontalMargin,
+      _kPageTopMargin,
+      _kPageHorizontalMargin,
+      _kPageBottomMargin,
+    ),
+    theme: theme,
+  );
+
+  doc.addPage(
+    pw.Page(
+      pageTheme: pageTheme,
+      build: (context) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        children: [
+          _buildHeader(snapshot),
+          pw.SizedBox(height: _kSectionGap),
+          _buildSimpleSection(
+            title:
+                'PREMINULO LICE: ${snapshot.preminuloImePrezime.toUpperCase()}',
+          ),
+          if (snapshot.platilacNaslov.trim().isNotEmpty) ...[
+            pw.SizedBox(height: _kSectionGap),
+            _buildPayerSection(snapshot),
+          ],
+          pw.SizedBox(height: _kSectionGap),
+          _buildIriuFinancialSection(
+            items: snapshot.iriuItems,
+            rows: snapshot.finansijskiRedovi,
+          ),
+          pw.SizedBox(height: _kSectionGap),
+          _buildStampAndSignatureBlock(),
+          pw.Spacer(),
+          _buildFooter(
+            context: context,
+            savetnikIme: snapshot.savetnikIme,
+            status: snapshot.status,
+            dokumentVerzija: snapshot.dokumentVerzija,
+          ),
+        ],
+      ),
+    ),
+  );
+
+  return doc.save();
+}
+
+class _RacunPdfSnapshot {
+  const _RacunPdfSnapshot({
+    required this.firma,
+    required this.app,
+    required this.brojPredmeta,
+    required this.datumIzdavanja,
+    required this.savetnikIme,
+    required this.status,
+    required this.dokumentVerzija,
+    required this.preminuloImePrezime,
+    required this.platilacNaslov,
+    required this.platilacDetalji,
+    required this.iriuItems,
+    required this.finansijskiRedovi,
+  });
+
+  factory _RacunPdfSnapshot.fromPreparedData(ListaPdfPreparedData preparedData) {
+    final preminuloImePrezime = _displayName(
+      preparedData.predmet.ime,
+      preparedData.predmet.prezime,
+    );
+
+    return _RacunPdfSnapshot(
+      firma: preparedData.firma,
+      app: preparedData.app,
+      brojPredmeta: preparedData.predmet.brojPredmeta.trim(),
+      datumIzdavanja: preparedData.datumIzvoza,
+      savetnikIme: preparedData.savetnikIme,
+      status: preparedData.predmet.status,
+      dokumentVerzija: preparedData.dokumentVerzija,
+      preminuloImePrezime: preminuloImePrezime,
+      platilacNaslov: _resolvePlatilacNaslov(preparedData.predmet),
+      platilacDetalji: _buildPlatilacDetalji(preparedData.predmet),
+      iriuItems: preparedData.iriuItems,
+      finansijskiRedovi: _buildRacunFinancialRows(preparedData.finansijskiRedovi),
+    );
+  }
+
+  final FirmaPodaciData firma;
+  final AppPodesavanjaData app;
+  final String brojPredmeta;
+  final DateTime datumIzdavanja;
+  final String savetnikIme;
+  final String status;
+  final String dokumentVerzija;
+  final String preminuloImePrezime;
+  final String platilacNaslov;
+  final List<ListaPdfLabelValue> platilacDetalji;
+  final List<ListaPdfIriuRenderItem> iriuItems;
+  final List<ListaPdfLabelValue> finansijskiRedovi;
+}
+
+pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
+  final contact = <String>[
+    if (snapshot.firma.telefon.trim().isNotEmpty) snapshot.firma.telefon.trim(),
+    if (snapshot.firma.email.trim().isNotEmpty) snapshot.firma.email.trim(),
+    if (snapshot.firma.sajt.trim().isNotEmpty) snapshot.firma.sajt.trim(),
+  ].join(' | ');
+
+  final identitet = <String>[
+    if (snapshot.firma.pib.trim().isNotEmpty) 'PIB ${snapshot.firma.pib.trim()}',
+    if (snapshot.firma.mb.trim().isNotEmpty) 'MB ${snapshot.firma.mb.trim()}',
+    if (snapshot.app.ziroRacun.trim().isNotEmpty)
+      'Račun ${snapshot.app.ziroRacun.trim()}',
+  ].join(' | ');
+
+  final naslov = snapshot.brojPredmeta.isNotEmpty
+      ? 'RAČUN BR: ${snapshot.brojPredmeta}'
+      : _kRacunPdfTitle;
+
+  return pw.Container(
+    padding: const pw.EdgeInsets.only(bottom: 8),
+    decoration: const pw.BoxDecoration(
+      border: pw.Border(
+        bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.8),
+      ),
+    ),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    documentTextCodec.normalize(snapshot.firma.naziv),
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (snapshot.firma.adresa.trim().isNotEmpty)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 2),
+                      child: pw.Text(
+                        documentTextCodec.normalize(snapshot.firma.adresa.trim()),
+                        style: const pw.TextStyle(fontSize: 8.2),
+                      ),
+                    ),
+                  if (contact.isNotEmpty)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 2),
+                      child: pw.Text(
+                        documentTextCodec.normalize(contact),
+                        style: const pw.TextStyle(fontSize: 8.2),
+                      ),
+                    ),
+                  if (identitet.isNotEmpty)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 2),
+                      child: pw.Text(
+                        documentTextCodec.normalize(identitet),
+                        style: const pw.TextStyle(fontSize: 8.2),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (snapshot.firma.logo?.isNotEmpty ?? false)
+              buildMemorandumLogo(
+                snapshot.firma.logo!,
+                reservedWidth: 72,
+                reservedHeight: 52,
+              ),
+          ],
+        ),
+        pw.SizedBox(height: 7),
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Expanded(
+              child: pw.Text(
+                documentTextCodec.normalize(naslov),
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+            pw.Text(
+              documentTextCodec.normalize(
+                'Datum izdavanja: ${formatDateForDocument(snapshot.datumIzdavanja)}',
+              ),
+              textAlign: pw.TextAlign.right,
+              style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: _kBodyFontSize,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+pw.Widget _buildFooter({
+  required pw.Context context,
+  required String savetnikIme,
+  required String status,
+  required String dokumentVerzija,
+}) {
+  return pw.Container(
+    padding: const pw.EdgeInsets.only(top: 7),
+    decoration: const pw.BoxDecoration(
+      border: pw.Border(
+        top: pw.BorderSide(color: PdfColors.grey400, width: 0.8),
+      ),
+    ),
+    child: pw.Row(
+      children: [
+        pw.Expanded(
+          child: pw.Text(
+            documentTextCodec.normalize('Savetnik: ${savetnikIme.trim()}'),
+            style: const pw.TextStyle(fontSize: 8.5),
+          ),
+        ),
+        pw.Expanded(
+          child: pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              '${context.pageNumber}/${context.pagesCount}',
+              style: const pw.TextStyle(fontSize: 8.5),
+            ),
+          ),
+        ),
+        pw.Expanded(
+          child: pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Text(
+              documentTextCodec.normalize(
+                'Status: $status · Verzija predmeta: $dokumentVerzija',
+              ),
+              style: const pw.TextStyle(fontSize: 8.5),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+pw.Widget _buildSimpleSection({
+  required String title,
+}) {
+  return _buildSectionShell(
+    title: title,
+    child: pw.SizedBox.shrink(),
+  );
+}
+
+pw.Widget _buildPayerSection(_RacunPdfSnapshot snapshot) {
+  final columns = _splitIntoColumns(snapshot.platilacDetalji, 3);
+  return _buildSectionShell(
+    title: 'PLATILAC: ${snapshot.platilacNaslov.toUpperCase()}',
+    child: columns.isEmpty
+        ? pw.Text(
+            documentTextCodec.normalize('Nema evidentiranih podataka.'),
+            style: pw.TextStyle(
+              fontStyle: pw.FontStyle.italic,
+              fontSize: _kCompactBodyFontSize,
+              color: PdfColors.grey700,
+            ),
+          )
+        : pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < columns.length; i++) ...[
+                pw.Expanded(child: _buildFieldList(columns[i])),
+                if (i < columns.length - 1) pw.SizedBox(width: 8),
+              ],
+            ],
+          ),
+  );
+}
+
+pw.Widget _buildFieldList(List<ListaPdfLabelValue> rows) {
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+    children: rows
+        .map(
+          (row) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.RichText(
+              text: pw.TextSpan(
+                children: [
+                  pw.TextSpan(
+                    text: documentTextCodec.normalize('${row.label}: '),
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: _kCompactBodyFontSize,
+                    ),
+                  ),
+                  pw.TextSpan(
+                    text: documentTextCodec.normalize(row.value),
+                    style: const pw.TextStyle(fontSize: _kCompactBodyFontSize),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
+        .toList(growable: false),
+  );
+}
+
+pw.Widget _buildIriuFinancialSection({
+  required List<ListaPdfIriuRenderItem> items,
+  required List<ListaPdfLabelValue> rows,
+}) {
+  return _buildSectionShell(
+    title: 'IRIU: IZABRANA ROBA I USLUGE',
+    child: pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Expanded(
+          flex: 3,
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              items.isEmpty
+                  ? pw.Text(
+                      documentTextCodec.normalize(
+                        'Nema poslovno relevantnih IRIU stavki za prikaz.',
+                      ),
+                      style: pw.TextStyle(
+                        fontStyle: pw.FontStyle.italic,
+                        fontSize: _kCompactBodyFontSize,
+                        color: PdfColors.grey700,
+                      ),
+                    )
+                  : pw.Table(
+                      border: pw.TableBorder.all(
+                        color: PdfColors.grey300,
+                        width: 0.6,
+                      ),
+                      columnWidths: const <int, pw.TableColumnWidth>{
+                        0: pw.FlexColumnWidth(5.8),
+                        1: pw.FlexColumnWidth(1.4),
+                        2: pw.FlexColumnWidth(2.8),
+                      },
+                      defaultVerticalAlignment:
+                          pw.TableCellVerticalAlignment.middle,
+                      children: [
+                        pw.TableRow(
+                          decoration: const pw.BoxDecoration(
+                            color: PdfColors.blueGrey50,
+                          ),
+                          children: [
+                            _buildTableHeaderCell('NAZIV'),
+                            _buildTableHeaderCell('KOM', horizontalPadding: 3),
+                            _buildTableHeaderCell(
+                              'IZNOS',
+                              alignRight: true,
+                              horizontalPadding: 2,
+                            ),
+                          ],
+                        ),
+                        ...items.map(
+                          (item) => pw.TableRow(
+                            children: [
+                              _buildTableBodyCell(item.naziv),
+                              _buildTableBodyCell(
+                                item.kom,
+                                horizontalPadding: 3,
+                              ),
+                              _buildTableBodyCell(
+                                formatMoneyRsd(item.iznos),
+                                alignRight: true,
+                                horizontalPadding: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+              pw.SizedBox(height: 4),
+              pw.Text(
+                documentTextCodec.normalize(
+                  'Poreski obveznik nije u sistemu PDV-a na osnovu člana 33. Zakona o porezu na dodatu vrednost.',
+                ),
+                style: const pw.TextStyle(fontSize: _kPdvFontSize),
+              ),
+            ],
+          ),
+        ),
+        pw.SizedBox(width: 6),
+        pw.Expanded(
+          flex: 2,
+          child: _buildFinancialSection(rows),
+        ),
+      ],
+    ),
+  );
+}
+
+pw.Widget _buildFinancialSection(List<ListaPdfLabelValue> rows) {
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+    children: rows
+        .map((row) {
+          if (row.kind == ListaPdfRowKind.divider) {
+            return pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(vertical: 3),
+              child: pw.Divider(
+                height: 1,
+                thickness: 0.8,
+                color: PdfColors.grey500,
+              ),
+            );
+          }
+
+          final isEmphasis = row.kind == ListaPdfRowKind.emphasis;
+          final fontSize = isEmphasis ? _kHeaderFontSize : _kBodyFontSize;
+
+          return pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Expanded(
+                  child: pw.Text(
+                    documentTextCodec.normalize(row.label),
+                    style: pw.TextStyle(
+                      fontSize: fontSize,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ),
+                pw.SizedBox(width: 8),
+                pw.Text(
+                  documentTextCodec.normalize(row.value),
+                  style: pw.TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          );
+        })
+        .toList(growable: false),
+  );
+}
+
+pw.Widget _buildStampAndSignatureBlock() {
+  return pw.Align(
+    alignment: pw.Alignment.center,
+    child: pw.Container(
+      width: 280,
+      child: pw.Align(
+        alignment: pw.Alignment.centerRight,
+        child: pw.Container(
+          width: 180,
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              pw.Container(
+                height: 24,
+                decoration: const pw.BoxDecoration(
+                  border: pw.Border(
+                    bottom: pw.BorderSide(
+                      color: PdfColors.grey700,
+                      width: 0.8,
+                    ),
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      documentTextCodec.normalize('Potpis'),
+                      textAlign: pw.TextAlign.center,
+                      style: const pw.TextStyle(
+                        fontSize: _kCompactBodyFontSize,
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(width: 8),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.only(top: 4),
+                    child: pw.Text(
+                      documentTextCodec.normalize('MP'),
+                      style: const pw.TextStyle(
+                        fontSize: _kCompactBodyFontSize,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+pw.Widget _buildTableHeaderCell(
+  String text, {
+  bool alignRight = false,
+  double horizontalPadding = 4,
+}) {
+  return pw.Padding(
+    padding: pw.EdgeInsets.symmetric(
+      horizontal: horizontalPadding,
+      vertical: 4,
+    ),
+    child: pw.Text(
+      documentTextCodec.normalize(text),
+      textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
+      style: pw.TextStyle(
+        fontSize: 8.0,
+        fontWeight: pw.FontWeight.bold,
+      ),
+    ),
+  );
+}
+
+pw.Widget _buildTableBodyCell(
+  String text, {
+  bool alignRight = false,
+  double horizontalPadding = 4,
+}) {
+  return pw.Padding(
+    padding: pw.EdgeInsets.symmetric(
+      horizontal: horizontalPadding,
+      vertical: 3,
+    ),
+    child: pw.Text(
+      documentTextCodec.normalize(text.trim()),
+      textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
+      style: const pw.TextStyle(fontSize: _kCompactBodyFontSize),
+    ),
+  );
+}
+
+pw.Widget _buildSectionShell({
+  required String title,
+  required pw.Widget child,
+}) {
+  return pw.Container(
+    padding: const pw.EdgeInsets.all(_kSectionPadding),
+    decoration: pw.BoxDecoration(
+      border: pw.Border.all(color: PdfColors.grey300, width: 0.8),
+    ),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Container(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          color: PdfColors.blueGrey50,
+          child: pw.Text(
+            documentTextCodec.normalize(title),
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: _kHeaderFontSize,
+            ),
+          ),
+        ),
+        pw.SizedBox(height: 6),
+        child,
+      ],
+    ),
+  );
+}
+
+String _displayName(String ime, String prezime) {
+  final fullName = [ime.trim(), prezime.trim()]
+      .where((value) => value.isNotEmpty)
+      .join(' ');
+  return fullName.isEmpty ? '-' : fullName;
+}
+
+List<ListaPdfLabelValue> _buildRacunFinancialRows(
+  List<ListaPdfLabelValue> rows,
+) {
+  return rows
+      .map(
+        (row) => row.label.trim() == 'ZA NAPLATU'
+            ? ListaPdfLabelValue(
+                'UKUPNO',
+                row.value,
+                kind: row.kind,
+              )
+            : row,
+      )
+      .toList(growable: false);
+}
+
+String _resolvePlatilacNaslov(PredmetiData predmet) {
+  if (predmet.naruTip == 'PRAVNO_LICE') {
+    return predmet.naruPlNaziv.trim();
+  }
+  final fullName = predmet.naruImePrezime.trim();
+  if (fullName.isNotEmpty) return fullName;
+  return _displayName(predmet.naruIme, predmet.naruPrezime);
+}
+
+List<ListaPdfLabelValue> _buildPlatilacDetalji(PredmetiData predmet) {
+  if (predmet.naruTip == 'PRAVNO_LICE') {
+    return _compactValues([
+      ListaPdfLabelValue('Adresa', predmet.naruPlAdresa),
+      ListaPdfLabelValue('PIB', predmet.naruPlPib),
+      ListaPdfLabelValue('Matični broj', predmet.naruPlMb),
+      ListaPdfLabelValue('Odgovorno lice', predmet.naruPlOdgovornoLice),
+      ListaPdfLabelValue('Telefon 1', predmet.naruPlTelefon1),
+      ListaPdfLabelValue('Telefon 2', predmet.naruPlTelefon2),
+      ListaPdfLabelValue('Email', predmet.naruPlEmail),
+    ]);
+  }
+
+  return _compactValues([
+    ListaPdfLabelValue('JMBG', predmet.naruJmbg),
+    ListaPdfLabelValue('LK / pasoš', predmet.naruBrojLk),
+    ListaPdfLabelValue('Adresa', predmet.naruAdresa),
+    ListaPdfLabelValue('Telefon 1', predmet.naruTelefon1),
+    ListaPdfLabelValue('Telefon 2', predmet.naruTelefon2),
+    ListaPdfLabelValue('Email', predmet.naruEmail),
+  ]);
+}
+
+List<ListaPdfLabelValue> _compactValues(List<ListaPdfLabelValue> values) {
+  return values
+      .where((value) => value.value.trim().isNotEmpty)
+      .toList(growable: false);
+}
+
+List<List<ListaPdfLabelValue>> _splitIntoColumns(
+  List<ListaPdfLabelValue> values,
+  int columnCount,
+) {
+  if (values.isEmpty) return const <List<ListaPdfLabelValue>>[];
+  final normalizedCount =
+      values.length < columnCount ? values.length : columnCount;
+  final perColumn = (values.length / normalizedCount).ceil();
+  final columns = <List<ListaPdfLabelValue>>[];
+  for (var i = 0; i < values.length; i += perColumn) {
+    final end = (i + perColumn) > values.length ? values.length : i + perColumn;
+    columns.add(List<ListaPdfLabelValue>.unmodifiable(values.sublist(i, end)));
+  }
+  return List<List<ListaPdfLabelValue>>.unmodifiable(columns);
+}
+
+
+
+
