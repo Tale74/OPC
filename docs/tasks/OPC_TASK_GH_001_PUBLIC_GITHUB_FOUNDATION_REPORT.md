@@ -1,6 +1,6 @@
 # OPC TASK GH-001 — Public GitHub Foundation Report
 
-Status: **BLOCKED — GITHUB AUTHENTICATION REQUIRED**
+Status: **WAITING FOR LOGOS ACCESS CONFIRMATION**
 
 ## Scope
 
@@ -57,18 +57,15 @@ Created or updated:
 
 ## Git and GitHub
 
-- Preferred repository URL: `https://github.com/Tale74/OPC`
-- Preferred name availability check: no public repository was found at the preferred URL on June 20, 2026
-- Visibility: intended public; repository creation is pending authenticated owner action
+- Public repository URL: `https://github.com/Tale74/OPC`
+- Visibility: public, verified on GitHub on June 20, 2026
 - First baseline commit: `520b189`
 - First commit message: `chore: establish OPC public repository baseline`
 - Current branch: `main`
-- Remote: not configured
-- Git status after baseline and validation: clean
+- Remote: `origin` -> `https://github.com/Tale74/OPC.git`
+- Git status after initial push: clean
 - GitHub CLI: not installed
-- In-app GitHub session: not authenticated
-
-The repository was not created or pushed because the owner account could not be authenticated. No visibility setting was changed.
+- Initial pushed report commit: `07c61c1`
 
 ## Validation
 
@@ -94,9 +91,11 @@ Tracked baseline summary:
 
 ## Logos links and access
 
-Prepared links, not yet live:
+Verified public links:
 
 - Repository: `https://github.com/Tale74/OPC`
+- Commit history: `https://github.com/Tale74/OPC/commits/main`
+- Initial pushed report commit: `https://github.com/Tale74/OPC/commit/07c61c1`
 - First commit: `https://github.com/Tale74/OPC/commit/520b189`
 - First commit diff: `https://github.com/Tale74/OPC/commit/520b189`
 - README: `https://github.com/Tale74/OPC/blob/main/README.md`
@@ -104,27 +103,21 @@ Prepared links, not yet live:
 - Architecture overview: `https://github.com/Tale74/OPC/blob/main/docs/ARCHITECTURE_OVERVIEW.md`
 - Git/ARC workflow: `https://github.com/Tale74/OPC/blob/main/docs/GIT_WORKFLOW_ARC.md`
 - Logos access test: `https://github.com/Tale74/OPC/blob/main/docs/LOGOS_ACCESS_TEST.md`
+- GH-001 report: `https://github.com/Tale74/OPC/blob/main/docs/tasks/OPC_TASK_GH_001_PUBLIC_GITHUB_FOUNDATION_REPORT.md`
 
-Logos access confirmation: cannot begin until repository creation and push are complete.
-
-## Required owner action
-
-1. Sign in to GitHub as `Tale74`.
-2. Create a new repository named `OPC`.
-3. Set visibility to **Public**.
-4. Do not initialize it with a README, `.gitignore`, or license.
-5. From this repository root run:
-
-```powershell
-git remote add origin https://github.com/Tale74/OPC.git
-git push -u origin main
-```
-
-After the push, open the prepared links above and send the repository and `docs/LOGOS_ACCESS_TEST.md` links to Logos.
+Repository root, commit `07c61c1`, and `docs/LOGOS_ACCESS_TEST.md` were opened successfully on GitHub. Logos access confirmation remains pending.
 
 ## Risks and unresolved decisions
 
 - The catalog-photo files remain local because public redistribution rights were not established.
 - Legacy continuity documents remain local because they contain machine-specific paths and historical local-environment details. The sanitized public continuity documents are under `docs/`.
-- Public visibility cannot be considered complete until the repository is created, pushed, and Logos confirms direct access.
+- Full task completion cannot be claimed until Logos confirms direct access.
 - This task must not be marked `PASS` in the current state.
+
+## GitHub push verification
+
+GitHub push completed.
+Public repository: https://github.com/Tale74/OPC
+Remote origin verified.
+Working tree clean after push.
+Status: WAITING FOR LOGOS ACCESS CONFIRMATION.
