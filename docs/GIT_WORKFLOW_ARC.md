@@ -12,6 +12,8 @@ git status
 
 Every OPC task must also read [OPC Purpose and Anti-Drift Manifest](OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md) before work starts and must emit the manifest task-start check block defined there. If the manifest is not read, the task must not proceed.
 
+Manifest checking is also tooling-enforced for changed task reports by `scripts/validate_opc_manifest_gate.py` and the `OPC Manifest Gate` GitHub Actions workflow. A task report missing the manifest start-check or end-compliance block must be treated as NOT PASS.
+
 ## Task branches
 
 Use one branch per future task:
@@ -51,6 +53,8 @@ PASS / NOT PASS:
 ```
 
 The handoff must also include the manifest end-compliance block defined in [OPC Purpose and Anti-Drift Manifest](OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md). PASS is not allowed unless manifest compliance is checked and reported.
+
+No OPC task may be marked PASS if the task report fails the manifest gate validation.
 
 Before handoff run:
 

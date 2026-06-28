@@ -2,6 +2,8 @@
 
 This manifest is a mandatory project rule. Every OPC task must read it at task start and check compliance at task end.
 
+Changed task reports are automatically checked by `scripts/validate_opc_manifest_gate.py` and the `OPC Manifest Gate` GitHub Actions workflow.
+
 ## 1. OPC Core Purpose
 
 OPC is a simple, stable, reliable tool for organizing funeral ceremony cases through `PREDMET` as the central business truth, for a firm/user that owns its own OPC database.
@@ -251,3 +253,5 @@ If the manifest conflicts with a task instruction, the conflict must be reported
 Future OPC handoffs must include public GitHub branch, commit, and report/document links unless explicitly exempted.
 
 A local-only handoff is provisional and not Logos-verified PASS.
+
+The GitHub handoff must also expose the manifest gate result when the task changes reports under `docs/tasks/`.
