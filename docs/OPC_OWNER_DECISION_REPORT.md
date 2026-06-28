@@ -36,6 +36,17 @@ This document records confirmed owner decisions that future OPC tasks must treat
 | OPC Web local data architecture | TECHNICAL ARCHITECTURE AUDIT REQUIRED | Research browser storage vs external DB/local agent/hybrid/offline replica options. |
 | Replica conflict rules | EXISTING BUSINESS LOGIC EXTRACTION REQUIRED | Extract current `PREDMET` lifecycle and related-data rules before Web/sync design. |
 
+## Addendum - Question 5/36 Terminology Evidence
+
+Current evidence partially resolves the `naručilac` / `narucilac` / `klijent` / `Platilac` lineage:
+
+- `Platilac` is the current visible PREDMET UI/PDF/business display term in the inspected payer surfaces.
+- `narucilac` remains a current internal code/database/JSON term and appears in one PDF snapshot/export evidence path.
+- The evidence supports a mixed state: older/internal `narucilac` naming was not fully removed after visible terminology moved toward `Platilac`.
+- `klijent` is not a current PREDMET party term and must not replace either `narucilac` or `Platilac`.
+
+Owner still needs to decide whether future cleanup should preserve internal `narucilac` names for compatibility or migrate source/database/PDF/JSON terminology under a separate explicit implementation plan.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

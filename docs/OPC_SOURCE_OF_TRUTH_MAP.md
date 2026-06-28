@@ -15,6 +15,8 @@ Status: public continuity baseline.
 | Public task reports | `docs/tasks/*.md` | Git history | AUDIT EVIDENCE; latest report wins only inside its scope. |
 | Local project docs in `SOURCE/PROJECT_DOCS` | Not public master yet | See main task report inventory | SUPPORTING / NEEDS OWNER REVIEW before promotion. |
 | Control copy `../PROJECT_DOCS` | Not public master | Local filesystem only | BACKUP / CONTROL COPY; do not promote directly without owner review. |
+| Promoted local-doc summaries | `docs/OPC_PROJECT_DOCS_PUBLIC_PROMOTION_MAP.md` | `SOURCE/PROJECT_DOCS`, `../PROJECT_DOCS` | PUBLIC-SAFE SUMMARY; raw local docs remain local/control evidence. |
+| Terminology lineage | `docs/OPC_TERMINOLOGY_LINEAGE_REPORT.md` | Source/UI/PDF evidence and public/local docs | CURRENT EVIDENCE REPORT; implementation cleanup remains blocked. |
 | Source code under `lib/`, `test/`, platform folders | Runtime implementation evidence | Generated DB files, tests, build configs | Technical source of implementation truth, but not changed by this docs baseline. |
 | Private databases, exports, backups, credentials | Private runtime data | None in public repo | PRIVATE / DO NOT PROMOTE. |
 

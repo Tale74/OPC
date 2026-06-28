@@ -19,12 +19,16 @@ Status: public baseline with explicit owner-review queue.
 | Osnovni | CANONICAL PACKAGE TERM | Package level. | Preserve casing/meaning. |
 | Srednji | CANONICAL PACKAGE TERM | Package level. | Preserve casing/meaning. |
 | Potpuni | CANONICAL PACKAGE TERM | Full package level; OPC is built as full product. | Package gating must not change `PREDMET` truth. |
-| naručilac / narucilac | CURRENT APP TERM / FACT CHECK REQUIRED | Evidence exists in app source, UI, PDF, and local docs. | Owner must confirm final lineage and spelling rules before broad cleanup. |
-| Platilac / platilac | CURRENT APP TERM / FACT CHECK REQUIRED | Evidence exists in UI sections, finance controls, PDFs, and local docs. | Confirm exact business relation to `narucilac` before label/schema changes. |
-| klijent | OWNER-QUESTIONED / NOT REPLACEMENT | Not established as a replacement app business field in current evidence. | Do not introduce as replacement for `narucilac`. |
+| naručilac / narucilac | MIXED INTERNAL/LEGACY TERM / OWNER REVIEW REQUIRED | Current database/code/JSON keys and one PDF snapshot section still use `narucilac`/`NARUČILAC`, while the current visible PREDMET tab and payer PDFs use `Platilac`. | Do not rename in this task; future cleanup needs owner-approved source/database/PDF/JSON plan. |
+| Platilac / platilac | CURRENT UI/PDF/BUSINESS DISPLAY TERM | Current PREDMET navigation, payer segment headings, finance refund wording, and main payer PDF sections use `Platilac`/`PLATILAC`. | Treat as current display term; confirm final relationship to internal `narucilac` fields before implementation cleanup. |
+| klijent | NON-CANONICAL FOR PREDMET PARTY / LICENSING-CUSTOMER ONLY | Not found as current PREDMET UI/PDF/business party term. English `customer` appears in licensing/test/docs contexts. | Do not introduce `klijent` as replacement for `narucilac` or `Platilac`. |
 | Windows master/admin | FORBIDDEN DRIFT | Incorrect platform-role split. | Do not use. |
 | Android field/slave | FORBIDDEN DRIFT | Incorrect platform-role split. | Do not use. |
 
 ## Required Terminology Rule
 
 New business, role, package, Web, sync, payment, or data-ownership terms must be marked `PROPOSED TERM - NOT IMPLEMENTED - OWNER DECISION REQUIRED` unless already confirmed in this glossary or the purpose manifest.
+
+## Lineage Evidence
+
+Detailed evidence is recorded in `docs/OPC_TERMINOLOGY_LINEAGE_REPORT.md`.
