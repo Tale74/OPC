@@ -19,6 +19,8 @@ This document records confirmed owner decisions that future OPC tasks must treat
 | Firma data | `FirmaPodaci` is important but editable/hybrid. | Stable identity must not rely only on editable display fields; change history is required before stronger identity flows. |
 | Import/restore guard | PIB/Matični broj mismatch must block import/restore. | No exception inside the import/restore guard without a later explicit owner decision. |
 | Transfer model | Single `PREDMET` JSON and full database/backup JSON remain basic local transfer/backup forms. | Stronger identity and guard audits are required before Web/sync work. |
+| PREDMET identity scope | `brojPredmeta` is unique only within the same firm, not globally across all OPC firms/users. | Future safe conflict identity scope is `PIB + Matični broj + brojPredmeta`; do not use `brojPredmeta` alone as global identity. |
+| Single PREDMET JSON filename | `PREZIME_IME_brojPredmeta_vN.json` is a user-facing, human-readable filename pattern. | Filename helps users recognize a case but must not become canonical system identity. |
 | Roles | Future Administrator/Savetnik roles are tied to firm/license. | Do not implement role architecture until baseline audits are complete. |
 | Packages | Canonical package terms are `Osnovni`, `Srednji`, `Potpuni`. | OPC is built as Potpuni; functions/services can be disabled by paid package without changing `PREDMET` truth. |
 | Current milestone | Next milestone is documentation/continuity baseline only. | No implementation until source-of-truth and technical audit queue are clear. |
@@ -58,6 +60,20 @@ Public-safe summaries now exist for locked rules and backup/restore policy:
 No local raw `PROJECT_DOCS` document was copied. Old local SaaS wording, central-master interpretations, and implementation-before-audit implications are superseded by the public manifest and owner decisions.
 
 Technical follow-ups remain open: PIB/Matični broj import/restore guard design, `FirmaPodaci` history, single `PREDMET` JSON vs full database backup distinction, Web/sync identity model, and `narucilac` internal compatibility cleanup.
+
+## Addendum - Firm-Scoped BrojPredmeta And Single-PREDMET Filename Semantics
+
+Owner decision: `brojPredmeta` is unique within the same firm only. It is not globally unique across all OPC users/firms.
+
+Future-safe identity scope for PREDMET conflict/import/restore/sync/Web logic is:
+
+```text
+PIB + Matični broj + brojPredmeta
+```
+
+Owner clarification: a single-PREDMET JSON export filename such as `PREZIME_IME_brojPredmeta_vN.json` is a human-readable filename pattern. The user recognizes the file by person first, then by `brojPredmeta`/date-time/version. `PREZIME_IME` and the filename are not canonical conflict keys. The actual case number is `predmet.brojPredmeta` inside the JSON, but even that must be scoped by firm identity for future safe conflict handling.
+
+Owner-reported behavior: OPC currently protects against an older single-PREDMET JSON overwriting a newer local PREDMET. This report records that as `OWNER-REPORTED BEHAVIOR`; it is not promoted to source/test/runtime-confirmed status here. Future audit required: `OPC BUSINESS LOGIC EXTRACTION - SINGLE-PREDMET JSON IMPORT FRESHNESS AND OVERWRITE GUARD`.
 
 ## Stop Boundary
 

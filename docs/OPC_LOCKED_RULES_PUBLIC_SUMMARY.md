@@ -15,6 +15,8 @@ This document summarizes rules that are safe to expose publicly. It does not cop
 | Database ownership | The firm/user owns and controls its OPC database. No database is automatically central/master. | MASTER / CURRENT |
 | Local-first transfer | Current local app principles include local Drift/SQLite, single `PREDMET` JSON transfer, full database/backup JSON transfer, manual/user-controlled transfer, and no mandatory network sync. | MASTER / CURRENT |
 | JSON transfer | Single `PREDMET` JSON is not the same as full database/backup JSON. Future work must preserve that distinction. | MASTER / CURRENT / TECHNICAL AUDIT REQUIRED |
+| Firm-scoped case number | `brojPredmeta` is unique within the same firm only. Future-safe conflict scope is firm identity plus `brojPredmeta`, not global `brojPredmeta`. | OWNER DECISION |
+| Single-PREDMET JSON filename | `PREZIME_IME_brojPredmeta_vN.json` is a human-readable filename pattern, not canonical identity. | OWNER CLARIFICATION |
 | Terminology | Do not describe OPC primarily as SaaS. Old local SaaS-ready wording is historical/superseded unless explicitly re-approved by owner. | MASTER / CURRENT |
 | Scope discipline | No implementation beyond approved task scope. Source changes require an explicit implementation task and relevant manifest gate. | MASTER / CURRENT |
 | Public repo hygiene | Do not include private/customer/export/runtime data, secrets, signing material, local databases, build artifacts, or raw chat transcripts in the public repo. | MASTER / CURRENT |
@@ -26,6 +28,7 @@ This document summarizes rules that are safe to expose publicly. It does not cop
 | --- | --- | --- |
 | PREDMET lifecycle | Current lifecycle concepts include open/closed/edit flows, confirmed-close semantics, and guarded navigation/exit behavior. Full extraction remains required before Web/sync architecture. | PARTIALLY EXTRACTED |
 | PREDMET conflict replacement | Current single-`PREDMET` conflict flow is keyed by `brojPredmeta`; replacement behavior must not silently duplicate or corrupt local related data. | PARTIALLY EXTRACTED |
+| PREDMET future conflict scope | Future conflict/identity checks must use `PIB + Matični broj + brojPredmeta` unless a later owner-approved architecture supersedes it. | DOCUMENTED POLICY / TECHNICAL AUDIT REQUIRED |
 | STANJE ROBE relationship | Inventory state must not become parallel `PREDMET` truth. Operational consequences may be business-visible only through explicit rules. | PARTIALLY EXTRACTED |
 | STANJE ROBE single-`PREDMET` JSON | Local rules say single-`PREDMET` JSON must not transfer warehouse quantities or inventory ledger as business truth. | PARTIALLY EXTRACTED |
 | KATALOG relationship | KATALOG owns catalog article truth; selected PREDMET/IRiU snapshot fields remain business-visible at the time of selection. | PARTIALLY EXTRACTED |

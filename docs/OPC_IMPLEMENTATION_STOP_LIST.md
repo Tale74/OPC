@@ -12,6 +12,9 @@ The following work is blocked by default. It requires a separate explicit task, 
 | Browser storage adapter | OPFS/IndexedDB/SQLite WASM/local agent/hybrid choice is unresolved. | Technical architecture audit with current research. |
 | Database migrations | Current task is docs-only. | Technical task with migration review and tests. |
 | Import/restore guard implementation | Identity model details are unresolved. | JSON safety and repository identity audit. |
+| Firm-scoped `brojPredmeta` identity guard | Owner clarified `brojPredmeta` is unique only within a firm; safe scope is `PIB + Matični broj + brojPredmeta`, but no guard/constraint is authorized here. | JSON safety, repository identity, data ownership, and migration review. |
+| Single-PREDMET JSON filename identity use | Filename is human-readable only and must not become canonical system identity. | Product terminology/source-of-truth audit before any import/export wording or behavior change. |
+| Older/newer single-PREDMET JSON overwrite guard changes | Existing protection is owner-reported behavior requiring separate audit before implementation changes. | Single-PREDMET JSON freshness/overwrite guard audit. |
 | Backup/restore behavior changes | Current public policy is a summary, not an implementation authorization; PIB/Matični broj guard design is unresolved. | JSON safety, repository identity, and data ownership gate. |
 | `FirmaPodaci` history implementation | `FirmaPodaci` is editable/hybrid and history design is not implemented. | Technical identity audit and migration review. |
 | `narucilac`/`Platilac` compatibility cleanup | Current state is mixed across UI/PDF/source/database/JSON/template ids. | Product terminology gate plus source/database/PDF/JSON compatibility plan. |

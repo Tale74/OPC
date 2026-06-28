@@ -6,10 +6,12 @@ This document lists business rules that must be extracted or technically audited
 
 | Area | Existing rule / question | Status | Required next action |
 | --- | --- | --- | --- |
-| Same `PREDMET` conflict rules | Single-`PREDMET` import conflict flow uses trimmed non-empty `brojPredmeta`; one local match opens keep/replace/cancel UI; multiple local matches block replacement; replacement keeps local technical `id` and replaces connected IRIU/contact rows. | PARTIALLY EXTRACTED | Still extract runtime-confirmed Windows/Android UI behavior and non-import duplicate creation behavior. |
+| Same `PREDMET` conflict rules | Single-`PREDMET` import conflict flow uses trimmed non-empty `brojPredmeta`; one local match opens keep/replace/cancel UI; multiple local matches block replacement; replacement keeps local technical `id` and replaces connected IRIU/contact rows. Owner decision: future safe conflict scope is firm identity plus `brojPredmeta`, not globally unique `brojPredmeta`. | PARTIALLY EXTRACTED | Still extract runtime-confirmed Windows/Android UI behavior, non-import duplicate creation behavior, and firm-scoped conflict guard design. |
 | PREDMET lifecycle | Creation, open/edit, save snapshot, confirmed close, reopen-for-edit, auto-finish, anonymize, delete, exit/back guard, and STANJE ROBE close-block behavior are source-confirmed. | PARTIALLY EXTRACTED | Produce owner-reviewed lifecycle state diagram and broaden test coverage. |
 | PREDMET opener/signature | Future identity must distinguish current display name, stable internal user/license id, role, and historical PREDMET signature. | TECHNICAL AUDIT REQUIRED | Audit current user/session/PREDMET fields. |
 | JSON single `PREDMET` transfer | Single `PREDMET` JSON is separate from full backup and may carry only approved case/business/consequence data. | PARTIALLY EXTRACTED | Define compatibility matrix and allowed blocks. |
+| Single-PREDMET JSON filename semantics | Filename pattern `PREZIME_IME_brojPredmeta_vN.json` is human-readable and user-facing. Filename is not canonical identity; `PREZIME_IME` is not a conflict key. | EXTRACTED PUBLIC SUMMARY | Preserve this distinction in future import/export docs and audits. |
+| Single-PREDMET JSON import freshness/overwrite guard | Owner reports existing protection against older JSON overwriting newer local PREDMET. This is not yet source/test/runtime-confirmed by current public audit. | TECHNICAL AUDIT REQUIRED | Run `OPC BUSINESS LOGIC EXTRACTION - SINGLE-PREDMET JSON IMPORT FRESHNESS AND OVERWRITE GUARD`. |
 | Full database/backup JSON | Full backup/import is broader recovery behavior and can be destructive; identity guard is missing. | TECHNICAL AUDIT REQUIRED | Design PIB/Matični broj and repository/firma guard. |
 | FirmaPodaci history | `FirmaPodaci` is editable/hybrid and must not be the only stable identity. | TECHNICAL AUDIT REQUIRED | Design history and continuity model. |
 | Platilac/narucilac compatibility | `Platilac` is current display term; `narucilac` remains internal code/database/JSON/template terminology. | OWNER REVIEW REQUIRED | Decide whether future cleanup preserves compatibility names or migrates them. |
@@ -29,6 +31,8 @@ TECHNICAL AUDIT REQUIRED:
 - Administrator/Savetnik stable internal ID;
 - PREDMET opener signature model;
 - JSON single `PREDMET` vs full database backup distinction;
+- single-PREDMET JSON import freshness and overwrite guard;
+- firm-scoped `PIB + Matični broj + brojPredmeta` conflict identity;
 - identity/import/restore guard design;
 - `FirmaPodaci` history implementation;
 - `narucilac` internal compatibility cleanup.
