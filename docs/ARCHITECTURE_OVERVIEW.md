@@ -2,6 +2,8 @@
 
 This document describes the source as observed at the public baseline. It does not prescribe architecture that is not present.
 
+Architecture work must comply with [OPC Purpose and Anti-Drift Manifest](OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md).
+
 ## Runtime and platforms
 
 OPC is one Flutter/Dart project with checked-in platform runners for:

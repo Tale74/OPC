@@ -10,7 +10,7 @@ Platform differences may exist where required by the operating system, screen si
 
 Current OPC case databases are local to the user. Real databases, customer data, case data, exports, and private configuration are outside this public repository.
 
-A web/SaaS model is a possible future third access model for the same product logic. It should not replace or subordinate the current Windows and Android versions.
+OPC Web Pristup is a possible future third runtime form for the same product logic. It should not replace or subordinate the current Windows and Android versions.
 
 Current architecture and implementation decisions should preserve the option to later extract or reuse:
 

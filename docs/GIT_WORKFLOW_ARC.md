@@ -10,6 +10,8 @@ Every task starts with:
 git status
 ```
 
+Every OPC task must also read [OPC Purpose and Anti-Drift Manifest](OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md) before work starts and must emit the manifest task-start check block defined there. If the manifest is not read, the task must not proceed.
+
 ## Task branches
 
 Use one branch per future task:
@@ -47,6 +49,8 @@ Not touched:
 Known risks:
 PASS / NOT PASS:
 ```
+
+The handoff must also include the manifest end-compliance block defined in [OPC Purpose and Anti-Drift Manifest](OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md). PASS is not allowed unless manifest compliance is checked and reported.
 
 Before handoff run:
 
