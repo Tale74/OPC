@@ -75,6 +75,16 @@ Owner clarification: a single-PREDMET JSON export filename such as `PREZIME_IME_
 
 Owner-reported behavior: OPC currently protects against an older single-PREDMET JSON overwriting a newer local PREDMET. This report records that as `OWNER-REPORTED BEHAVIOR`; it is not promoted to source/test/runtime-confirmed status here. Future audit required: `OPC BUSINESS LOGIC EXTRACTION - SINGLE-PREDMET JSON IMPORT FRESHNESS AND OVERWRITE GUARD`.
 
+## Addendum - Import Choice, Filename UX, Export Metadata, And Version Signal
+
+Owner clarification: keep / replace / cancel during same-`brojPredmeta` single-PREDMET JSON import is intentional business behavior, not a defect. There may be real business situations where `Platilac` changes their mind or later human/business choice determines which version remains correct. Future guards or warnings must not remove explicit user choice unless a later owner decision changes this rule.
+
+Owner clarification: `Ime_Prezime` / `PREZIME_IME` in a single-PREDMET JSON filename is a user-facing recognition aid for the deceased person/case. It is not system identity, conflict key, freshness key, or canonical PREDMET identity.
+
+Owner decision: `exportDatum` records when the JSON file was exported. It is not business freshness authority and must not be treated as proof that the exported PREDMET is newer or more correct.
+
+Owner decision: `verzija` is the relevant field for future version comparison / version reasoning. This does not mean current implementation already uses `verzija` correctly or that it is sufficient by itself. Actual `verzija` behavior remains a technical audit/design item before implementation changes.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

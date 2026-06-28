@@ -12,6 +12,7 @@ Status: public continuity baseline.
 | Locked rules | `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md` | Manifest, owner report, local locked rules docs | PUBLIC-SAFE SUMMARY; local raw docs remain supporting evidence only. |
 | Backup/restore policy | `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md` | Owner report, local backup/restore policy, JSON transfer evidence | PUBLIC-SAFE SUMMARY; identity guard remains technical-audit item. |
 | Business logic extraction queue | `docs/OPC_BUSINESS_LOGIC_EXTRACTION_QUEUE.md` | Local locked rules, terminology lineage, current development state | ACTIVE QUEUE; not an implementation spec. |
+| Business logic rule inventory | `docs/OPC_BUSINESS_LOGIC_RULE_INVENTORY.md` | Full product baseline audit, prior task reports, source/test evidence | CURRENT AUDIT BASELINE; not an implementation spec. |
 | Current development state | `docs/OPC_CURRENT_DEVELOPMENT_STATE.md` | Local `PROJECT_MAP_OPC_v1.json`, prior reports | PUBLIC BASELINE; not a replacement for a full technical audit. |
 | Git workflow | `docs/GIT_WORKFLOW_ARC.md` | GitHub branch/commit/report handoffs | MASTER / CURRENT. |
 | Task report format | `docs/templates/OPC_TASK_TEMPLATE.md` | Manifest gate script | MASTER / CURRENT. |

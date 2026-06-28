@@ -23,6 +23,7 @@ This document lists business rules that must be extracted or technically audited
 | OPC Web local data behavior | Future Web must preserve local ownership, PREDMET truth, manual transfer, and no implicit server-master database. | TECHNICAL ARCHITECTURE AUDIT REQUIRED | Research architecture options before implementation. |
 | Licensing/package behavior | Entitlement/package logic must not change `PREDMET` truth and must fail closed. | PARTIALLY EXTRACTED | Payment/access gate before any implementation. |
 | Private/public data boundary | Public repo must exclude private/customer/runtime/export data. | EXTRACTED PUBLIC SUMMARY | Keep as mandatory review item. |
+| Full product business rule inventory | Public baseline inventory now records documented/source/test-confirmed rules, owner decisions, implementation gaps, test gaps, and future Web/sync risk areas. | EXTRACTED PUBLIC BASELINE | Use `docs/OPC_BUSINESS_LOGIC_RULE_INVENTORY.md` as audit baseline before future implementation tasks; keep gaps open until dedicated audits/implementation tasks close them. |
 
 ## Open Queue Summary
 
