@@ -21,6 +21,7 @@ This document is a continuity summary, not a new technical audit and not a build
 | Terminology | OPC Web is canonical; SaaS is not primary product terminology. | Existing `saas` labels are cleanup candidates, not current task changes. |
 | Local docs | `SOURCE/PROJECT_DOCS` and control copy contain continuity memory. | Owner review and sanitization required before promotion. |
 | Tests/build | Prior task reports are evidence; this docs-only task runs manifest gate only. | No source build is required by this baseline task. |
+| Business policy snapshot | Full business-policy and domain/flow atlas now exists for public learning and future audit continuity. | Use `docs/OPC_FULL_BUSINESS_POLICY_AND_LOGIC_SNAPSHOT.md` and `docs/OPC_BUSINESS_DOMAIN_AND_FLOW_MAP.md` before future Web/sync/identity/JSON/version implementation tasks. |
 
 ## Current Prohibitions
 
