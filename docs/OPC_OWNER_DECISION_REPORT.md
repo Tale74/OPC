@@ -47,6 +47,18 @@ Current evidence partially resolves the `naručilac` / `narucilac` / `klijent` /
 
 Owner still needs to decide whether future cleanup should preserve internal `narucilac` names for compatibility or migrate source/database/PDF/JSON terminology under a separate explicit implementation plan.
 
+## Addendum - Locked Rules And Backup/Restore Public Summaries
+
+Public-safe summaries now exist for locked rules and backup/restore policy:
+
+- `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md`
+- `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md`
+- `docs/OPC_BUSINESS_LOGIC_EXTRACTION_QUEUE.md`
+
+No local raw `PROJECT_DOCS` document was copied. Old local SaaS wording, central-master interpretations, and implementation-before-audit implications are superseded by the public manifest and owner decisions.
+
+Technical follow-ups remain open: PIB/Matični broj import/restore guard design, `FirmaPodaci` history, single `PREDMET` JSON vs full database backup distinction, Web/sync identity model, and `narucilac` internal compatibility cleanup.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

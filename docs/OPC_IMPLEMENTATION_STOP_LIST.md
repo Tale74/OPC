@@ -12,6 +12,9 @@ The following work is blocked by default. It requires a separate explicit task, 
 | Browser storage adapter | OPFS/IndexedDB/SQLite WASM/local agent/hybrid choice is unresolved. | Technical architecture audit with current research. |
 | Database migrations | Current task is docs-only. | Technical task with migration review and tests. |
 | Import/restore guard implementation | Identity model details are unresolved. | JSON safety and repository identity audit. |
+| Backup/restore behavior changes | Current public policy is a summary, not an implementation authorization; PIB/Matični broj guard design is unresolved. | JSON safety, repository identity, and data ownership gate. |
+| `FirmaPodaci` history implementation | `FirmaPodaci` is editable/hybrid and history design is not implemented. | Technical identity audit and migration review. |
+| `narucilac`/`Platilac` compatibility cleanup | Current state is mixed across UI/PDF/source/database/JSON/template ids. | Product terminology gate plus source/database/PDF/JSON compatibility plan. |
 | Payment/subscription implementation | Business/legal/payment model is not baseline-approved. | Payment/access gate. |
 | Package restructuring | Package terms are canonical, but implementation changes are not authorized. | Payment/access gate and owner decision. |
 | Administrator/Savetnik role implementation | Stable IDs and firm/license model need audit. | Technical identity audit. |
@@ -20,4 +23,4 @@ The following work is blocked by default. It requires a separate explicit task, 
 
 ## Allowed Next Work
 
-Allowed next work is documentation/audit only: owner review of local docs, terminology lineage fact-check, current technical identity/import/restore audit, and OPC Web local-data architecture research.
+Allowed next work is documentation/audit only: owner review of local docs, public-safe local-doc summaries, terminology lineage fact-check, current technical identity/import/restore audit, and OPC Web local-data architecture research.
