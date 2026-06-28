@@ -6,8 +6,8 @@ This document lists business rules that must be extracted or technically audited
 
 | Area | Existing rule / question | Status | Required next action |
 | --- | --- | --- | --- |
-| Same `PREDMET` conflict rules | Current single-`PREDMET` import conflict flow uses `brojPredmeta`; replacement must not silently duplicate or corrupt related data. | PARTIALLY EXTRACTED | Extract exact conflict UI, replace/keep/cancel behavior, and related-data handling. |
-| PREDMET lifecycle | Open/closed/edit, save/autosave, confirmed-close, exit/back, and reopen semantics exist and must be preserved. | EXISTING BUSINESS LOGIC EXTRACTION REQUIRED | Produce lifecycle state machine with allowed actions and effects. |
+| Same `PREDMET` conflict rules | Single-`PREDMET` import conflict flow uses trimmed non-empty `brojPredmeta`; one local match opens keep/replace/cancel UI; multiple local matches block replacement; replacement keeps local technical `id` and replaces connected IRIU/contact rows. | PARTIALLY EXTRACTED | Still extract runtime-confirmed Windows/Android UI behavior and non-import duplicate creation behavior. |
+| PREDMET lifecycle | Creation, open/edit, save snapshot, confirmed close, reopen-for-edit, auto-finish, anonymize, delete, exit/back guard, and STANJE ROBE close-block behavior are source-confirmed. | PARTIALLY EXTRACTED | Produce owner-reviewed lifecycle state diagram and broaden test coverage. |
 | PREDMET opener/signature | Future identity must distinguish current display name, stable internal user/license id, role, and historical PREDMET signature. | TECHNICAL AUDIT REQUIRED | Audit current user/session/PREDMET fields. |
 | JSON single `PREDMET` transfer | Single `PREDMET` JSON is separate from full backup and may carry only approved case/business/consequence data. | PARTIALLY EXTRACTED | Define compatibility matrix and allowed blocks. |
 | Full database/backup JSON | Full backup/import is broader recovery behavior and can be destructive; identity guard is missing. | TECHNICAL AUDIT REQUIRED | Design PIB/Matični broj and repository/firma guard. |
@@ -43,7 +43,7 @@ TECHNICAL ARCHITECTURE AUDIT REQUIRED:
 EXISTING BUSINESS LOGIC EXTRACTION REQUIRED:
 
 - same `PREDMET` conflict rules;
-- complete PREDMET lifecycle state machine;
+- complete PREDMET lifecycle state machine and runtime smoke evidence;
 - local app rules OPC Web must preserve.
 
 OWNER REVIEW REQUIRED:
