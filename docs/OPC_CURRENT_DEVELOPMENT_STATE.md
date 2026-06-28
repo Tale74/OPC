@@ -1,0 +1,25 @@
+# OPC Current Development State
+
+Status: public baseline snapshot from prior audits and local project documentation.
+
+This document is a continuity summary, not a new technical audit and not a build certification.
+
+| Area | Current public state | Risk / next action |
+| --- | --- | --- |
+| Product runtime | Flutter/Dart app with Windows and Android lanes. | Preserve platform parity. |
+| Web runtime | No Web runner is authorized by this baseline. | OPC Web architecture audit required before implementation. |
+| Backend/API | No backend/API is authorized by this baseline. | Server role must be owner-approved and not presumed master `PREDMET` DB. |
+| Database | Local Drift/SQLite model; schema version evidence exists in prior audits. | Identity/history guard audit required before changing database behavior. |
+| PREDMET | Central master business truth. | Do not redefine through Web, sync, package, PDF, JSON, or UI work. |
+| Firma identity | `FirmaPodaci` exists and is important but editable/hybrid. | Stable identity cannot rely only on editable fields. |
+| JSON transfer | Single `PREDMET` JSON and full backup/database JSON remain baseline transfer/backup forms. | Distinction and guards require technical audit. |
+| Import/restore | PIB/Matični broj mismatch must block in future guard design. | Implementation details unresolved. |
+| Roles | Administrator/Savetnik terms exist. | Stable role identity and firm/license relationship require audit. |
+| Packages | Osnovni/Srednji/Potpuni are canonical terms. | Payment/access implementation is blocked. |
+| Terminology | OPC Web is canonical; SaaS is not primary product terminology. | Existing `saas` labels are cleanup candidates, not current task changes. |
+| Local docs | `SOURCE/PROJECT_DOCS` and control copy contain continuity memory. | Owner review and sanitization required before promotion. |
+| Tests/build | Prior task reports are evidence; this docs-only task runs manifest gate only. | No source build is required by this baseline task. |
+
+## Current Prohibitions
+
+This baseline does not authorize source changes, Web runner, backend/API, sync, browser storage adapter, migrations, payment/subscription work, role implementation, or package restructuring.

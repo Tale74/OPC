@@ -10,7 +10,7 @@ OPC is a simple, stable, reliable tool for organizing funeral ceremony cases thr
 
 ## 2. Product Identity
 
-OPC Windows, OPC Android, and future OPC Web Pristup are runtime forms of the same OPC product logic.
+OPC Windows, OPC Android, and future OPC Web are runtime forms of the same OPC product logic.
 
 Forbidden drift:
 
@@ -57,17 +57,19 @@ The current Windows/Android local model must be preserved:
 
 Future tasks must not weaken this model unless the owner explicitly approves a new release architecture.
 
-## 6. Future OPC Web Pristup Model
+## 6. Future OPC Web Model
 
-OPC Web Pristup means the same local-replica OPC model through browser access, without locally installed OPC apps.
+OPC Web means the same OPC product logic through browser access, without locally installed OPC apps.
 
 The browser loads the hosted OPC Web app.
 
 The local OS is not decisive for functional operability.
 
-The Web server hosts the app/access layer and may support licence/package/access/backup/transfer functions, but must not be assumed to be the master `PREDMET` database unless a future explicit owner-approved architecture changes that.
+The Web server hosts the app/access layer and may support licence/package/access/backup/transfer/signaling/mediation functions, but must not be assumed to be the master `PREDMET` database unless a future explicit owner-approved architecture changes that.
 
 Do not describe the current or future product primarily as SaaS.
+
+`OPC Web Pristup` is historical/supporting wording. The current canonical future runtime term is `OPC Web`.
 
 ## 7. Terminology Protection
 
@@ -122,7 +124,7 @@ JSON transfer affected:
 Windows/Android parity affected:
 - no / yes, explain
 
-Future Web Pristup affected:
+Future OPC Web affected:
 - no / yes, explain
 
 Terminology drift risk:

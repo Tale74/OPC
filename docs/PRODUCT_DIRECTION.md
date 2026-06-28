@@ -10,7 +10,9 @@ Platform differences may exist where required by the operating system, screen si
 
 Current OPC case databases are local to the user. Real databases, customer data, case data, exports, and private configuration are outside this public repository.
 
-OPC Web Pristup is a possible future third runtime form for the same product logic. It should not replace or subordinate the current Windows and Android versions.
+OPC Web is a possible future third runtime form for the same product logic. It should not replace or subordinate the current Windows and Android versions.
+
+OPC Web is a complementary OS-proof commercial access/runtime direction, not the primary product name, not a replacement for the local Windows/Android product, and not a presumption that a server becomes the master `PREDMET` database. Server-side components may host access, licensing, package, backup, transfer, signaling, or mediation functions only under a future owner-approved architecture.
 
 Current architecture and implementation decisions should preserve the option to later extract or reuse:
 
@@ -19,6 +21,8 @@ Current architecture and implementation decisions should preserve the option to 
 - licensing and entitlement logic;
 - import/export contracts;
 - web-facing services or shared application logic.
+
+The current canonical product terminology is `OPC Web`. Older public references to `OPC Web Pristup` are historical/supporting wording and must not be used as the new primary term.
 
 ## Priorities
 
