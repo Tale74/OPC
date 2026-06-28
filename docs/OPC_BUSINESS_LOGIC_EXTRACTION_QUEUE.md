@@ -11,7 +11,7 @@ This document lists business rules that must be extracted or technically audited
 | PREDMET opener/signature | Future identity must distinguish current display name, stable internal user/license id, role, and historical PREDMET signature. | TECHNICAL AUDIT REQUIRED | Audit current user/session/PREDMET fields. |
 | JSON single `PREDMET` transfer | Single `PREDMET` JSON is separate from full backup and may carry only approved case/business/consequence data. | PARTIALLY EXTRACTED | Define compatibility matrix and allowed blocks. |
 | Single-PREDMET JSON filename semantics | Filename pattern `PREZIME_IME_brojPredmeta_vN.json` is human-readable and user-facing. Filename is not canonical identity; `PREZIME_IME` is not a conflict key. | EXTRACTED PUBLIC SUMMARY | Preserve this distinction in future import/export docs and audits. |
-| Single-PREDMET JSON import freshness/overwrite guard | Owner reports existing protection against older JSON overwriting newer local PREDMET. This is not yet source/test/runtime-confirmed by current public audit. | TECHNICAL AUDIT REQUIRED | Run `OPC BUSINESS LOGIC EXTRACTION - SINGLE-PREDMET JSON IMPORT FRESHNESS AND OVERWRITE GUARD`. |
+| Single-PREDMET JSON import freshness/overwrite guard | Source audit found same-`brojPredmeta` conflict UI with cancel/keep/replace and displayed freshness metadata, but no automatic older/newer block in the inspected import path. Owner-reported protection remains unresolved until owner review or implementation audit decides the intended guard. | PARTIALLY EXTRACTED / OWNER REVIEW REQUIRED | Decide authoritative freshness field and guard behavior; implement only under a separate JSON safety / repository identity task. |
 | Full database/backup JSON | Full backup/import is broader recovery behavior and can be destructive; identity guard is missing. | TECHNICAL AUDIT REQUIRED | Design PIB/Matični broj and repository/firma guard. |
 | FirmaPodaci history | `FirmaPodaci` is editable/hybrid and must not be the only stable identity. | TECHNICAL AUDIT REQUIRED | Design history and continuity model. |
 | Platilac/narucilac compatibility | `Platilac` is current display term; `narucilac` remains internal code/database/JSON/template terminology. | OWNER REVIEW REQUIRED | Decide whether future cleanup preserves compatibility names or migrates them. |
@@ -31,7 +31,7 @@ TECHNICAL AUDIT REQUIRED:
 - Administrator/Savetnik stable internal ID;
 - PREDMET opener signature model;
 - JSON single `PREDMET` vs full database backup distinction;
-- single-PREDMET JSON import freshness and overwrite guard;
+- single-PREDMET JSON import freshness and overwrite guard implementation design;
 - firm-scoped `PIB + Matični broj + brojPredmeta` conflict identity;
 - identity/import/restore guard design;
 - `FirmaPodaci` history implementation;
@@ -46,7 +46,7 @@ TECHNICAL ARCHITECTURE AUDIT REQUIRED:
 
 EXISTING BUSINESS LOGIC EXTRACTION REQUIRED:
 
-- same `PREDMET` conflict rules;
+- same `PREDMET` conflict rules and runtime import dialog behavior;
 - complete PREDMET lifecycle state machine and runtime smoke evidence;
 - local app rules OPC Web must preserve.
 
