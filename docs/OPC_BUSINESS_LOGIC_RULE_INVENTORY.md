@@ -70,10 +70,10 @@ Recommended next action: Preserve distinction in future import/export docs.
 
 ## RULE-ID: OPC-RULE-VERSION-001
 
-Name: `verzija` is intended version reasoning signal
+Name: `verzija` is PREDMET business-version signal
 Status: OWNER DECISION / TECHNICAL AUDIT REQUIRED
 Domain: Versioning
-Rule statement: `verzija` is the relevant field for future version comparison and version reasoning. This does not prove current implementation uses it as a conflict authority or that it is sufficient by itself.
+Rule statement: `verzija` is the relevant future version/revision signal for PREDMET business-state reasoning. It is not export time, filename identity, firm identity, global identity, or proof by itself that automatic overwrite is safe.
 Evidence classification: OWNER DECISION / SOURCE-CONFIRMED / TEST GAP
 Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/utils/json_export_import.dart`; `lib/features/predmeti/pdf/predmet_pdf_snapshot_export.dart`
 Current implementation state: Defined on PREDMET with default 1; incremented on confirmed close with business change; exported/imported with PREDMET; displayed in conflict dialog and PDFs; not compared in current import conflict logic.
@@ -81,8 +81,8 @@ Windows/Android parity: Shared source.
 JSON/PDF/UI relevance: JSON, conflict UI, and PDF snapshot include it.
 Future Web/sync relevance: Critical candidate for conflict reasoning.
 Risk if changed: Wrong freshness/overwrite behavior.
-Open questions: Missing/malformed handling, tie-break rules, firm scope, and whether business snapshots should be part of version authority.
-Recommended next action: Separate version semantics design before implementation.
+Open questions: Missing/malformed version policy, same-version behavior, higher/lower-version warnings, and whether business snapshots should be part of version authority.
+Recommended next action: Separate version semantics design before implementation; preserve explicit user choice meanwhile.
 
 ## RULE-ID: OPC-RULE-VERSION-002
 
@@ -99,6 +99,54 @@ Future Web/sync relevance: Must not become conflict authority.
 Risk if changed: Exporting an old business state later could falsely appear newer.
 Open questions: Whether future UI should display it only as export time.
 Recommended next action: Keep as metadata; use `verzija`/business model design for future freshness reasoning.
+
+## RULE-ID: OPC-RULE-VERSION-003
+
+Name: Import conflict user choice must be preserved
+Status: OWNER DECISION / SOURCE-CONFIRMED
+Domain: Versioning / single-PREDMET JSON import
+Rule statement: Future use of `verzija` may warn, compare, highlight, or classify local/imported PREDMET versions, but `verzija` alone must not remove keep / replace / cancel user choice unless a later owner decision explicitly authorizes a hard block.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `lib/core/utils/json_export_import.dart`; freshness audit report
+Current implementation state: Current same-`brojPredmeta` import UI shows local/imported metadata and offers `Odustani`, `Zadrži lokalni`, and `Zameni uvoznim`; no version comparator or hard block was found.
+Windows/Android parity: Shared import source; runtime parity not freshly confirmed.
+JSON/PDF/UI relevance: Import conflict UI and JSON transfer.
+Future Web/sync relevance: Critical for conflict-resolution design.
+Risk if changed: The app could incorrectly remove human business arbitration when `Platilac` or other facts change.
+Open questions: Exact warning text and comparison thresholds.
+Recommended next action: Design warning/comparison UI under a future JSON safety task without changing current behavior here.
+
+## RULE-ID: OPC-RULE-VERSION-004
+
+Name: `verzija` is not identity
+Status: OWNER DECISION
+Domain: Versioning / identity
+Rule statement: `verzija` is not an identity key. Future-safe PREDMET identity/conflict scope remains `PIB + Matični broj + brojPredmeta`; `verzija` is only a version signal after the same firm-scoped case has been identified.
+Evidence classification: OWNER DECISION / DOCUMENTED POLICY
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_SEMANTICS_FOR_PREDMET_AND_SINGLE_PREDMET_JSON_IMPORT_REPORT.md`
+Current implementation state: Current import matching still uses `brojPredmeta` only; firm-scoped identity guard is not implemented.
+Windows/Android parity: Shared source; policy applies to all runtimes.
+JSON/PDF/UI relevance: JSON import/export and future conflict UI.
+Future Web/sync relevance: Critical for replica identity and merge safety.
+Risk if changed: Version values could be used to match wrong firm/case.
+Open questions: How firm identity should be encoded and verified in single-PREDMET JSON.
+Recommended next action: Keep identity and versioning separate in future design.
+
+## RULE-ID: OPC-RULE-VERSION-005
+
+Name: Filename `_vN` is not authoritative PREDMET version
+Status: OWNER DECISION / POLICY EXISTS / IMPLEMENTATION NOT FOUND
+Domain: Filename / versioning
+Rule statement: Filename `_vN` in names such as `PREZIME_IME_brojPredmeta_vN.json` is not authoritative `predmet.verzija` unless source/test evidence proves exact mapping and a later owner decision approves that interpretation.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `lib/core/format/app_filename_format.dart`; `lib/core/utils/json_export_import.dart`; freshness audit report
+Current implementation state: Filename is generated for UX recognition; import reads JSON content and no filename `_vN` import authority was found.
+Windows/Android parity: Shared source; platform file adapters differ.
+JSON/PDF/UI relevance: Export filenames and user recognition only.
+Future Web/sync relevance: Prevents filename-based version/identity drift.
+Risk if changed: Wrong version inference from editable or user-renamed files.
+Open questions: Whether filename suffix should ever mirror business `verzija`; no approval exists now.
+Recommended next action: Use JSON content and owner-approved version design, not filename suffix, for future reasoning.
 
 ## RULE-ID: OPC-RULE-FIRMA-001
 

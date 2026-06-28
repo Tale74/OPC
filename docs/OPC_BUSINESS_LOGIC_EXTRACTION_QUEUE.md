@@ -24,6 +24,7 @@ This document lists business rules that must be extracted or technically audited
 | Licensing/package behavior | Entitlement/package logic must not change `PREDMET` truth and must fail closed. | PARTIALLY EXTRACTED | Payment/access gate before any implementation. |
 | Private/public data boundary | Public repo must exclude private/customer/runtime/export data. | EXTRACTED PUBLIC SUMMARY | Keep as mandatory review item. |
 | Full product business rule inventory | Public baseline inventory now records documented/source/test-confirmed rules, owner decisions, implementation gaps, test gaps, and future Web/sync risk areas. | EXTRACTED PUBLIC BASELINE | Use `docs/OPC_BUSINESS_LOGIC_RULE_INVENTORY.md` as audit baseline before future implementation tasks; keep gaps open until dedicated audits/implementation tasks close them. |
+| PREDMET `verzija` import conflict semantics | Owner decision recorded: `verzija` is PREDMET business-version signal, not export time, filename identity, or firm identity; it may inform future conflict UI but must not remove keep/replace/cancel choice without later owner decision. Missing/malformed, same-version, and higher/lower-version policies remain unresolved. | OWNER DECISION RECORDED / OWNER DECISION REQUIRED | Decide missing/malformed, same-version, and higher/lower-version warning/block behavior in a separate version/import design task before implementation. |
 
 ## Open Queue Summary
 
@@ -33,6 +34,7 @@ TECHNICAL AUDIT REQUIRED:
 - PREDMET opener signature model;
 - JSON single `PREDMET` vs full database backup distinction;
 - single-PREDMET JSON import freshness and overwrite guard implementation design;
+- PREDMET `verzija` missing/same/higher/lower conflict policy;
 - firm-scoped `PIB + Matični broj + brojPredmeta` conflict identity;
 - identity/import/restore guard design;
 - `FirmaPodaci` history implementation;

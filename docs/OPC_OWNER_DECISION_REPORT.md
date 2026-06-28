@@ -85,6 +85,14 @@ Owner decision: `exportDatum` records when the JSON file was exported. It is not
 
 Owner decision: `verzija` is the relevant field for future version comparison / version reasoning. This does not mean current implementation already uses `verzija` correctly or that it is sufficient by itself. Actual `verzija` behavior remains a technical audit/design item before implementation changes.
 
+Owner decision: `verzija` is a PREDMET business-version/revision signal, not export time, filename identity, firm identity, or global identity. `verzija` may inform future import conflict UI through warnings, comparison, highlighting, or classification, but it must not silently overwrite local data or remove keep / replace / cancel user choice unless a later owner decision explicitly authorizes a hard block.
+
+Owner decision: firm-scoped identity remains separate from versioning. Canonical future-safe identity/conflict scope remains `PIB + Matični broj + brojPredmeta`; `verzija` applies only after the same firm-scoped PREDMET has been identified.
+
+Owner decision: filename `_vN` must not be treated as authoritative PREDMET `verzija` unless source/test evidence proves exact mapping and a later owner decision approves that interpretation.
+
+Open owner-decision queue: missing or malformed imported `verzija`, same-version conflict behavior, higher/lower version conflict behavior, and missing local/imported version behavior remain `OWNER DECISION REQUIRED`. Until resolved by a later task, current explicit keep / replace / cancel behavior is preserved and no automatic comparator or hard block is authorized.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

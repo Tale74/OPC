@@ -11,6 +11,7 @@ This document is a continuity summary, not a new technical audit and not a build
 | Backend/API | No backend/API is authorized by this baseline. | Server role must be owner-approved and not presumed master `PREDMET` DB. |
 | Database | Local Drift/SQLite model; schema version evidence exists in prior audits. | Identity/history guard audit required before changing database behavior. |
 | PREDMET | Central master business truth. | Do not redefine through Web, sync, package, PDF, JSON, or UI work. |
+| PREDMET versioning | `verzija` is the owner-approved future business-version signal; current implementation displays/exports/imports it but does not compare it for import conflicts. | Missing/malformed, same-version, and higher/lower-version conflict behavior require owner decision and design before implementation. |
 | Firma identity | `FirmaPodaci` exists and is important but editable/hybrid. | Stable identity cannot rely only on editable fields. |
 | JSON transfer | Single `PREDMET` JSON and full backup/database JSON remain baseline transfer/backup forms. | Distinction and guards require technical audit. |
 | Import/restore | PIB/Matični broj mismatch must block in future guard design. | Implementation details unresolved. |
