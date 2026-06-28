@@ -15,6 +15,8 @@ Status: public continuity baseline.
 | Business logic rule inventory | `docs/OPC_BUSINESS_LOGIC_RULE_INVENTORY.md` | Full product baseline audit, prior task reports, source/test evidence | CURRENT AUDIT BASELINE; not an implementation spec. |
 | Full business policy and logic snapshot | `docs/OPC_FULL_BUSINESS_POLICY_AND_LOGIC_SNAPSHOT.md` | Rule inventory, public reports, source/test inspection | CURRENT PUBLIC BUSINESS ATLAS; not an implementation spec. |
 | Business domain and flow map | `docs/OPC_BUSINESS_DOMAIN_AND_FLOW_MAP.md` | Full snapshot, source/test inspection | CURRENT PUBLIC DOMAIN/FLOW MAP; text diagrams only, not implementation design. |
+| PREDMET workflow atlas | `docs/OPC_PREDMET_WORKFLOW_ATLAS.md` | PREDMET UI source, repository source, domain snapshot, tests | CURRENT PUBLIC PREDMET WORKFLOW ATLAS; user/business workflow evidence, not implementation spec. |
+| PREDMET dependency and completion maps | `docs/OPC_PREDMET_DEPENDENCY_MAP.md`, `docs/OPC_PREDMET_COMPLETION_STATE_MATRIX.md` | PREDMET workflow atlas, source/test inspection | CURRENT PUBLIC DEPENDENCY / COMPLETION BASELINE; not implementation authorization. |
 | Current development state | `docs/OPC_CURRENT_DEVELOPMENT_STATE.md` | Local `PROJECT_MAP_OPC_v1.json`, prior reports | PUBLIC BASELINE; not a replacement for a full technical audit. |
 | Git workflow | `docs/GIT_WORKFLOW_ARC.md` | GitHub branch/commit/report handoffs | MASTER / CURRENT. |
 | Task report format | `docs/templates/OPC_TASK_TEMPLATE.md` | Manifest gate script | MASTER / CURRENT. |
