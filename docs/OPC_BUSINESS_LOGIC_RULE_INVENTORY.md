@@ -148,6 +148,70 @@ Risk if changed: Wrong version inference from editable or user-renamed files.
 Open questions: Whether filename suffix should ever mirror business `verzija`; no approval exists now.
 Recommended next action: Use JSON content and owner-approved version design, not filename suffix, for future reasoning.
 
+## RULE-ID: OPC-RULE-VERSION-006
+
+Name: Version conflict policy matrix
+Status: OWNER DECISION / IMPLEMENTATION REQUIRED
+Domain: Versioning / single-PREDMET JSON import
+Rule statement: Future same-PREDMET import conflict handling must classify imported higher, imported lower, same version, imported missing, imported malformed, and local missing/malformed `verzija` cases. The UI must show or warn about the relevant state, preserve explicit keep / replace / cancel choice unless a later owner decision authorizes a hard block, prevent silent overwrite, and must not use `exportDatum` as freshness authority.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Policy recorded only. Current inspected import behavior displays version metadata but has no approved comparator, warning matrix, automatic replacement, or hard block.
+Windows/Android parity: Policy applies to all runtimes; runtime parity must be audited during implementation.
+JSON/PDF/UI relevance: Single-PREDMET JSON import conflict UI.
+Future Web/sync relevance: Critical for future conflict resolution and replica behavior.
+Risk if changed: Silent overwrite, false freshness decisions, or removal of owner-approved business choice.
+Open questions: Exact warning copy, UI placement, and whether any later hard block is required.
+Recommended next action: Design and implement only under a separate JSON/version conflict task with tests and platform parity checks.
+
+## RULE-ID: OPC-RULE-VERSION-007
+
+Name: Missing/malformed version handling
+Status: OWNER DECISION / IMPLEMENTATION REQUIRED
+Domain: Versioning / JSON compatibility
+Rule statement: Missing or malformed imported `verzija`, and missing or malformed local `verzija`, must be treated as unknown or invalid version state. Future UI must warn or classify this state, preserve keep / replace / cancel unless a later owner decision authorizes a hard block, must not silently treat either side as newer, and must not fall back to `exportDatum` as authority.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Policy recorded only. No source, schema, or import behavior changes were made by this rule entry.
+Windows/Android parity: Policy applies equally to Windows and Android.
+JSON/PDF/UI relevance: JSON import conflict and compatibility handling.
+Future Web/sync relevance: Critical for defensive conflict handling with older, damaged, or externally edited transfer files.
+Risk if changed: Unknown or invalid version data could be mistaken for authoritative business freshness.
+Open questions: Exact validation boundary and user-facing Serbian wording.
+Recommended next action: Add comparator/validation design and tests in a future implementation task.
+
+## RULE-ID: OPC-RULE-PREDMET-CHANGELOG-001
+
+Name: PREDMET version/change-log overview requirement
+Status: OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED
+Domain: PREDMET review / version history
+Rule statement: PREDMET should have a document/versioning overview that shows version history or change-log information relevant to business review and confirmation.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Requirement recorded only. No change-log database model, UI, JSON schema, import behavior, or source behavior is implemented by this task.
+Windows/Android parity: Future overview must preserve equivalent business meaning on both platforms.
+JSON/PDF/UI relevance: Intended as PREDMET UI review behavior; JSON/PDF implications require later design.
+Future Web/sync relevance: Important for explaining version history and conflict choices.
+Risk if changed: Users may lack business context for confirming or replacing a PREDMET version.
+Open questions: Source of change-log data, exact business events to include, retention, and migration requirements.
+Recommended next action: Audit current lifecycle/version/log data before adding any model or UI.
+
+## RULE-ID: OPC-RULE-PREDMET-REVIEW-001
+
+Name: `Pregled i potvrda` is intended location for version/change-log overview
+Status: OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED
+Domain: PREDMET review UI
+Rule statement: The intended future location for the PREDMET version/change-log overview is `Pregled i potvrda` inside PREDMET, because that is where business state is reviewed and confirmed. The overview must not be hidden in a technical/debug-only screen.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Location decision recorded only. Current `Pregled i potvrda` suitability still requires technical/UI audit.
+Windows/Android parity: Future UI must remain business-equivalent across Windows and Android.
+JSON/PDF/UI relevance: PREDMET review UI.
+Future Web/sync relevance: Future Web must preserve the same review meaning if implemented.
+Risk if changed: Version/change-log context could be separated from the confirmation workflow where it matters.
+Open questions: Layout, information density, and exact change-log source.
+Recommended next action: Audit current `Pregled i potvrda` structure before UI implementation.
+
 ## RULE-ID: OPC-RULE-FIRMA-001
 
 Name: Firm-owned local database

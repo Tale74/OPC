@@ -93,6 +93,31 @@ Owner decision: filename `_vN` must not be treated as authoritative PREDMET `ver
 
 Open owner-decision queue: missing or malformed imported `verzija`, same-version conflict behavior, higher/lower version conflict behavior, and missing local/imported version behavior remain `OWNER DECISION REQUIRED`. Until resolved by a later task, current explicit keep / replace / cancel behavior is preserved and no automatic comparator or hard block is authorized.
 
+## Addendum - Version Conflict Policy And PREDMET Change-Log Requirement
+
+Owner decision: `verzija` remains a PREDMET business-version signal only. It is not an export timestamp, filename identity, firm identity, global identity, or substitute for user/business judgment.
+
+Owner decision: `exportDatum` is not freshness authority. Future import conflict UI may display export metadata as secondary information, but must not use it to decide which PREDMET is newer or more correct.
+
+Owner decision: keep / replace / cancel remains intentional same-PREDMET import behavior. Future `verzija` comparison may warn, highlight, or classify a conflict, but must not silently overwrite local data and must not remove explicit user choice unless a later owner decision authorizes a hard block.
+
+Owner-approved version conflict policy matrix:
+
+| Case | Policy |
+| --- | --- |
+| Imported `verzija` higher than local | Show both versions, warn that imported version is higher, preserve keep / replace / cancel, no silent overwrite, no automatic replacement. |
+| Imported `verzija` lower than local | Show both versions, warn that imported version is lower, preserve keep / replace / cancel unless later owner decision creates a hard block, no silent overwrite. |
+| Imported `verzija` same as local | Show equal-version state, preserve keep / replace / cancel, do not use `exportDatum` as authority; secondary metadata may be displayed only as metadata. |
+| Imported `verzija` missing | Classify as unknown, warn, preserve keep / replace / cancel unless later owner decision creates a hard block, do not silently treat as newer, do not use `exportDatum`. |
+| Imported `verzija` malformed | Classify as invalid/unknown, warn, preserve keep / replace / cancel unless later owner decision creates a hard block, do not treat as newer, do not use `exportDatum`. |
+| Local `verzija` missing or malformed | Classify local version as unknown, warn, preserve keep / replace / cancel, do not silently treat imported version as authoritative, do not use `exportDatum`. |
+
+Owner decision: OPC is missing a PREDMET document/versioning overview that can show version history or change-log information relevant to business review and confirmation. This is an `OWNER DECISION / IMPLEMENTATION REQUIRED` item, not implemented by this report.
+
+Owner decision: the intended future location for the PREDMET version/change-log overview is `Pregled i potvrda` inside PREDMET, because that is where the user reviews and confirms business state. Future work must audit whether the current structure can safely host this overview before implementation.
+
+Technical audit still required before implementation: verify whether current `verzija` increments for all business-relevant changes; whether it survives import/export/replace flows; which business changes create a new version; whether current logs/lifecycle records can support a future change-log overview; whether `Pregled i potvrda` has suitable structure; and whether Windows/Android parity can be preserved.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.
