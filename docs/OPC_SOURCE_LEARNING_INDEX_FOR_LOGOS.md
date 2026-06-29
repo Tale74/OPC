@@ -290,3 +290,17 @@ Related modules: all.
 Questions to answer after reading: Which business rules are protected by tests before upgrade work?
 Evidence strength: `TEST-CONFIRMED / TEST GAP`.
 
+## LEARNING-STEP-017
+
+Read:
+- `docs/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md`
+- `docs/OPC_PSEUDOCODE_INDEX_FOR_LOGOS.md`
+- `docs/OPC_SAFE_UPGRADE_FROM_PSEUDOCODE_NOTES.md`
+
+Purpose: learn business-critical source behavior through short pseudocode before reading implementation details.
+What Logos must learn: trigger, inputs, decisions, outputs, side effects, boundaries, tests, gaps, and safe grouped upgrade findings for core OPC behavior.
+Key concepts: source-faithful pseudocode, source remains implementation truth, grouped characterization before implementation.
+Do not confuse with: source-code replacement or implementation authorization.
+Related modules: all business-critical modules.
+Questions to answer after reading: Which behavior needs characterization tests before any safe upgrade?
+Evidence strength: `SOURCE-CONFIRMED / DOCUMENTED POLICY / TEST GAP`.

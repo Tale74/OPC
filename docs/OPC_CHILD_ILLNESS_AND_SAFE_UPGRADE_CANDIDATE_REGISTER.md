@@ -242,3 +242,9 @@ The safe pattern is grouped stabilization:
 
 The unsafe pattern is nano-tasking symptoms or using one symptom to redefine PREDMET truth.
 
+Supporting pseudocode layer:
+
+- `docs/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md`
+- `docs/OPC_SAFE_UPGRADE_FROM_PSEUDOCODE_NOTES.md`
+
+These files translate the source behavior behind the groups above into learning-oriented pseudocode and safe characterization groupings. They do not authorize implementation.
