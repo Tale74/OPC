@@ -17,6 +17,7 @@ This document lists business rules that must be extracted or technically audited
 | Platilac/narucilac compatibility | `Platilac` is current display term; `narucilac` remains internal code/database/JSON/template terminology. | OWNER REVIEW REQUIRED | Decide whether future cleanup preserves compatibility names or migrates them. |
 | PDF snapshot labels | Main PDFs use `PLATILAC`; snapshot/export labels still include `NARUČILAC`. | OWNER REVIEW REQUIRED | Decide PDF cleanup separately. |
 | STANJE ROBE consequence rules | Inventory must not become parallel PREDMET truth; unresolved consequences and close-block behavior must be explicit. | PARTIALLY EXTRACTED | Extract user-visible warning/confirmation/close-block and transfer rules. |
+| Business policy evaluator ceremony guidance | Current evaluator derives condition flags and drives IRiU/finance consequences, but complete ceremony guidance, review checklist, PIO/refund guidance, JKP/payer guidance, document requirement graph, and stock consequence contract are not evaluator-complete. | PARTIALLY EXTRACTED / TECHNICAL AUDIT REQUIRED | Use the evaluator deep audit, scenario matrix, consequence graph, and completion matrix before any evaluator, IRiU, finance, document, STANJE ROBE, or Web/sync behavior changes. |
 | STANJE ROBE import/restore | Current local rules separate single-PREDMET JSON from warehouse quantities and full backup/import behavior. | TECHNICAL AUDIT REQUIRED | Define full backup/import stock handling and reconciliation. |
 | KATALOG selected item truth | KATALOG owns catalog truth; PREDMET/IRiU selected snapshot fields remain business-visible. | PARTIALLY EXTRACTED | Document snapshot vs catalog identity and update behavior. |
 | Windows/Android parity | Platform UX may differ, business rules must remain equivalent. | EXTRACTED PUBLIC SUMMARY | Keep parity checks in future task acceptance criteria. |
@@ -38,6 +39,7 @@ TECHNICAL AUDIT REQUIRED:
 - PREDMET `verzija` comparator/warning implementation design for higher/lower/same/missing/malformed cases;
 - PREDMET version/change-log overview data source and `Pregled i potvrda` suitability;
 - current `verzija` increment coverage and import/export/replace survival;
+- business policy evaluator ceremony guidance, PIO/refund, JKP/payer, document requirement, and STANJE ROBE consequence ownership;
 - firm-scoped `PIB + Matični broj + brojPredmeta` conflict identity;
 - identity/import/restore guard design;
 - `FirmaPodaci` history implementation;
