@@ -243,3 +243,51 @@ Why Logos must know it: future Web must preserve PREDMET truth, local/firma owne
 Risk if misunderstood: server-master or premature sync assumptions can override current OPC truth.
 Read before: owner decision report and manifest.
 Read after: technical architecture audit material if owner authorizes it.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-021
+
+Source file: `docs/OPC_CHARACTERIZATION_EVIDENCE_FOUNDATION.md`
+Related pseudocode sections: `OPC-PSEUDO-022`, `OPC-PSEUDO-025`
+Business meaning: classifies current behavior evidence without inflating source, test, runtime, or policy proof.
+Module: characterization evidence
+Truth boundary: evidence classification is documentation only.
+Why Logos must know it: future behavior changes require proof of current behavior first.
+Risk if misunderstood: source-confirmed behavior may be treated as test-confirmed.
+Read before: coverage matrix.
+Read after: gap register.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-022
+
+Source file: `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`
+Related pseudocode sections: `OPC-PSEUDO-023`, `OPC-PSEUDO-025`
+Business meaning: maps behaviors to pseudocode, source files, existing tests, runtime evidence, docs, and gaps.
+Module: characterization coverage
+Truth boundary: matrix records evidence; it does not authorize implementation.
+Why Logos must know it: gaps and protected behavior need module-level evidence.
+Risk if misunderstood: a coverage gap can be mistaken for a task recommendation.
+Read before: module contracts.
+Read after: before-change rules.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-023
+
+Source file: `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md`
+Related pseudocode sections: `OPC-PSEUDO-024`
+Business meaning: blocks behavior changes until current behavior, owner intent, pseudocode, and test/audit status are clear.
+Module: before-change governance
+Truth boundary: blocking rule only; no behavior change.
+Why Logos must know it: implementation must not begin from uncharacterized symptoms.
+Risk if misunderstood: gaps become nano-tasks or unapproved implementation.
+Read before: implementation stop-list.
+Read after: affected behavior coverage entry.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-024
+
+Source file: `docs/OPC_CHARACTERIZATION_GAP_REGISTER.md`
+Related pseudocode sections: `OPC-PSEUDO-024`, `OPC-PSEUDO-026`
+Business meaning: groups characterization gaps by module and safe-upgrade family.
+Module: characterization gaps
+Truth boundary: gaps are blockers/evidence buckets, not recommendations.
+Why Logos must know it: future owner review can see what is unprotected.
+Risk if misunderstood: gap register becomes roadmap or priority order.
+Read before: grouped safe upgrade plan.
+Read after: owner/technical audit material when authorized.

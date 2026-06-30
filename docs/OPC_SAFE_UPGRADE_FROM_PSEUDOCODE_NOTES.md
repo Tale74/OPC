@@ -242,3 +242,18 @@ This cross-reference records the grouped families created by the modular foundat
 | Future OPC Web/sync readiness | `OPC-PSEUDO-018`, `OPC-PSEUDO-019`, `OPC-PSEUDO-020`, `OPC-PSEUDO-021` | Guardrail/audit only; no Web architecture implementation. |
 
 Safe upgrade note: these families require characterization evidence, owner decisions, or technical audits where listed in `docs/OPC_GROUPED_SAFE_UPGRADE_PLAN.md`. They do not authorize implementation.
+
+## Characterization Evidence Foundation Cross-Reference
+
+Source documents:
+
+- `docs/OPC_CHARACTERIZATION_EVIDENCE_FOUNDATION.md`
+- `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`
+- `docs/OPC_CHARACTERIZATION_GAP_REGISTER.md`
+- `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md`
+
+Related pseudocode sections: `OPC-PSEUDO-022`, `OPC-PSEUDO-023`, `OPC-PSEUDO-024`, `OPC-PSEUDO-025`, `OPC-PSEUDO-026`
+
+Safe upgrade note: before any future behavior change, current behavior evidence must be classified without promoting source-confirmed behavior into test-confirmed behavior, documented policy into implementation proof, or runtime history into current parity proof.
+
+Gap handling rule: if a characterization gap is found, classify the gap, link it to module contract and pseudocode, and do not create a task recommendation, sequence, roadmap, or priority order.

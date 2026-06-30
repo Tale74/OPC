@@ -884,3 +884,184 @@ Known gaps: final Web architecture, conflict model, firm identity, role identity
 Bug/nedoslednost candidates: future Web assumptions may conflict with local-first ownership if not audited.
 Safe upgrade notes: Web-readiness is a guardrail layer, not an implementation layer.
 Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.
+
+## PSEUDO-ID: OPC-PSEUDO-022
+
+Business area: Characterization evidence classification rule
+Source/docs files: `docs/OPC_CHARACTERIZATION_EVIDENCE_FOUNDATION.md`; `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`; `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md`
+Related modules: all business/logical modules
+Business purpose: classify evidence before a behavior is changed.
+Inputs: behavior, module, source files, existing tests, runtime evidence, documentation evidence, owner decisions, gaps.
+Decision points: whether evidence is test-confirmed, source-confirmed, runtime-confirmed, documented policy, owner clarification, source-inferred, a test gap, a runtime gap, or blocked.
+Pseudocode:
+
+```text
+FOR each business behavior:
+    collect source evidence
+    collect existing test evidence
+    collect runtime evidence
+    collect documentation and owner-decision evidence
+
+    IF existing tests protect the behavior:
+        classify TEST-CONFIRMED
+    ELSE IF source paths confirm behavior:
+        classify SOURCE-CONFIRMED plus TEST GAP
+    ELSE IF docs define policy without implementation proof:
+        classify DOCUMENTED POLICY or POLICY EXISTS / IMPLEMENTATION NOT FOUND
+    ELSE:
+        classify CHARACTERIZATION REQUIRED
+
+    do not promote weaker evidence into stronger evidence
+```
+
+Outputs: evidence level, gap status, blocker status.
+Side effects: documentation-only.
+What this must not change: no behavior, tests, source, runtime, or policy implementation.
+Evidence: characterization foundation, coverage matrix, source-of-truth map.
+Tests: existing tests are named only as evidence; no tests are added or run by this rule.
+Known gaps: many modules are source-confirmed but not fully test-confirmed.
+Bug/nedoslednost candidates: symptoms remain candidates until evidence confirms a defect.
+Safe upgrade notes: future behavior changes require evidence classification first.
+Classification: `DOCUMENTED POLICY / CHARACTERIZATION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-023
+
+Business area: Pseudocode-to-test coverage rule
+Source/docs files: `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`; `docs/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md`; existing `test/*.dart`
+Related modules: evaluator, IRiU, STANJE ROBE, JSON, entitlement, auth, PREDMET lifecycle
+Business purpose: map pseudocode sections to existing test protection without inventing coverage.
+Inputs: pseudocode ID, related module, existing test names, source files, documented behavior.
+Decision points: whether the pseudocode behavior has direct tests, partial tests, source-only evidence, runtime-only evidence, or policy-only status.
+Pseudocode:
+
+```text
+FOR each pseudocode section:
+    list related source files
+    list existing tests that directly or partially cover behavior
+
+    IF no matching existing test is found:
+        mark TEST GAP
+
+    IF test covers only part of behavior:
+        mark partial TEST-CONFIRMED and remaining CHARACTERIZATION REQUIRED
+
+    IF source confirms behavior but tests do not:
+        keep SOURCE-CONFIRMED separate from TEST-CONFIRMED
+```
+
+Outputs: pseudocode-to-evidence mapping and test gap status.
+Side effects: documentation-only.
+What this must not change: no test files are edited and no test behavior is changed.
+Evidence: existing test inventory and current docs.
+Tests: current test names only.
+Known gaps: full lifecycle, finance, PDF, PARTA/CITULJE, backup/restore, parity, and Web readiness gaps.
+Bug/nedoslednost candidates: untested behavior may be risk, not proven defect.
+Safe upgrade notes: pseudocode coverage gaps block behavior change until characterized.
+Classification: `TEST GAP / CHARACTERIZATION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-024
+
+Business area: Behavior-change blocking rule
+Source/docs files: `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md`; `docs/OPC_IMPLEMENTATION_STOP_LIST.md`; `docs/OPC_CHARACTERIZATION_GAP_REGISTER.md`
+Related modules: all business/logical modules
+Business purpose: block implementation when behavior is not characterized.
+Inputs: proposed behavior change, evidence level, owner decision, technical audit status, pseudocode status.
+Decision points: whether evidence and owner-approved intended behavior exist.
+Pseudocode:
+
+```text
+IF a future task changes business/logical behavior:
+    require current behavior characterization
+    require owner-approved intended behavior if policy changes
+    require pseudocode update in same task
+    require tests or explicit technical audit status
+
+    IF any requirement is missing:
+        mark IMPLEMENTATION BLOCKED
+ELSE IF task is docs-only:
+    classify evidence and gaps
+ELSE:
+    mark IMPLEMENTATION BLOCKED
+```
+
+Outputs: implementation allowed only by later explicit task, or implementation blocked.
+Side effects: documentation-only.
+What this must not change: this rule does not authorize implementation.
+Evidence: before-change rules, stop-list, gap register.
+Tests: not applicable for this docs-only rule.
+Known gaps: multiple required behaviors are not fully characterized.
+Bug/nedoslednost candidates: gaps are blockers, not confirmed bugs.
+Safe upgrade notes: no behavior change without characterization.
+Classification: `IMPLEMENTATION BLOCKED / CHARACTERIZATION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-025
+
+Business area: Existing-test vs source-confirmed vs runtime-confirmed distinction
+Source/docs files: `docs/OPC_CHARACTERIZATION_EVIDENCE_FOUNDATION.md`; `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`; `PROJECT_DOCS/OPC_v1_AUDIT_SUMMARY.md`
+Related modules: all modules with source/test/runtime evidence
+Business purpose: prevent evidence inflation.
+Inputs: test result, source citation, runtime record, documentation policy, owner report.
+Decision points: what evidence type is actually available.
+Pseudocode:
+
+```text
+IF an existing test names and protects behavior:
+    classify TEST-CONFIRMED for that tested slice only
+
+IF source files show behavior but tests are absent:
+    classify SOURCE-CONFIRMED plus TEST GAP
+
+IF runtime evidence is recorded:
+    classify RUNTIME-CONFIRMED for that recorded slice only
+
+IF docs define policy but source/test/runtime proof is missing:
+    classify DOCUMENTED POLICY or POLICY EXISTS / IMPLEMENTATION NOT FOUND
+
+never upgrade one evidence type into another
+```
+
+Outputs: precise evidence classification.
+Side effects: documentation-only.
+What this must not change: no source/test/runtime behavior.
+Evidence: coverage matrix and existing test inventory.
+Tests: current tests are evidence only.
+Known gaps: runtime evidence is uneven and often historical.
+Bug/nedoslednost candidates: evidence mismatch can become a characterization gap.
+Safe upgrade notes: future reports must keep evidence categories separate.
+Classification: `DOCUMENTED POLICY / TEST GAP / RUNTIME GAP`.
+
+## PSEUDO-ID: OPC-PSEUDO-026
+
+Business area: Web-readiness characterization guardrail
+Source/docs files: `docs/OPC_WEB_READINESS_GUARDRAILS.md`; `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`; `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md`
+Related modules: PREDMET identity/version, JSON, backup/restore, FirmaPodaci, users/roles, entitlement, IRiU, STANJE ROBE, finance, PDF/documents, future OPC Web/sync
+Business purpose: require characterization when current behavior can affect future Web/sync readiness.
+Inputs: identity, conflict, local DB id, version, module output, firm scope, role, access, storage, sync effect.
+Decision points: whether a decision affects future Web/sync readiness.
+Pseudocode:
+
+```text
+IF future Web/sync might be affected:
+    check identity
+    check conflict behavior
+    check local DB id boundary
+    check version and change-log behavior
+    check module output truth boundary
+    check firm scope
+
+    IF uncertain:
+        mark TECHNICAL AUDIT REQUIRED or OWNER DECISION REQUIRED
+
+    do not choose Web architecture
+    do not implement Web/sync/storage/access behavior
+```
+
+Outputs: Web-readiness characterization status and blocker status.
+Side effects: documentation-only.
+What this must not change: no Web/backend/API/sync/storage/payment/licensing/role implementation.
+Evidence: Web guardrails, owner decisions, coverage matrix.
+Tests: none for Web/sync; policy-only and blocked.
+Known gaps: architecture, sync conflict, storage, role identity, firm identity history, access/payment model.
+Bug/nedoslednost candidates: server-master assumptions and identity shortcuts.
+Safe upgrade notes: future Web readiness is an audit guardrail only.
+Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.
