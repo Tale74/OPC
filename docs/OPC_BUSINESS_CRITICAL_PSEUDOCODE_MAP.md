@@ -752,3 +752,135 @@ Bug/nedoslednost candidates: stale local wording can mislead future tasks.
 Safe upgrade notes: use sanitized summaries only.
 Classification: `DOCUMENTED POLICY / SOURCE-CONFIRMED`.
 
+## PSEUDO-ID: OPC-PSEUDO-018
+
+Business area: Modular truth-boundary rule
+Source/docs files: `docs/OPC_MODULAR_FOUNDATION_CONTROL_PLAN.md`; `docs/OPC_MODULE_CONTRACTS_AND_TRUTH_BOUNDARIES.md`; `docs/OPC_MODULE_RELATIONSHIP_MAP.md`; `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`
+Related modules: all modules around PREDMET
+Business purpose: classify every module by how it relates to PREDMET truth before any grouped upgrade or implementation work.
+Inputs: module name, module class, read sources, write targets, outputs, side effects, evidence classification.
+Decision points: whether module is PREDMET core, core support, PREDMET-consuming, derivative/render, operational, finance, stock, transfer, advisor/guidance, support/access, add-on/package, or future/Web seam.
+Pseudocode:
+
+```text
+FOR each module:
+    classify module by relationship to PREDMET
+    identify what the module reads
+    identify what the module may write
+    identify outputs and allowed side effects
+    identify forbidden side effects
+
+    IF module attempts to own PREDMET meaning:
+        mark implementation blocked
+        require owner decision or technical audit
+
+    IF module changes or clarifies business/logical behavior:
+        require pseudocode update in the same task
+
+    forbid parallel PREDMET truth
+```
+
+Outputs: module contract and truth-boundary classification.
+Side effects: documentation-only; no source, schema, runtime, test, UI, PDF, JSON, import/export, backup/restore, Web, sync, storage, payment, entitlement, role, evaluator, IRiU, STANJE ROBE, or finance behavior changes.
+What this must not change: real source remains implementation truth; pseudocode must not become a second source of truth.
+Evidence: current manifest, module relationship map, new module contracts document.
+Tests: not applicable for this docs-only control rule.
+Known gaps: module behavior gaps remain technical-audit or characterization items.
+Bug/nedoslednost candidates: module outputs can be mistaken for master truth.
+Safe upgrade notes: module classification is required before grouped behavior changes.
+Classification: `DOCUMENTED POLICY / CHARACTERIZATION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-019
+
+Business area: Characterization-before-change rule
+Source/docs files: `docs/OPC_MODULAR_FOUNDATION_CONTROL_PLAN.md`; `docs/OPC_GROUPED_SAFE_UPGRADE_PLAN.md`; `docs/OPC_SOURCE_OF_TRUTH_MAP.md`; `docs/OPC_IMPLEMENTATION_STOP_LIST.md`
+Related modules: all business/logical modules
+Business purpose: prevent uncharacterized behavior changes and keep owner policy separate from Codex implementation.
+Inputs: task scope, affected behavior, existing source/test/runtime evidence, owner-approved rule text, pseudocode sections.
+Decision points: whether current task changes existing business/logical behavior or only documents boundaries.
+Pseudocode:
+
+```text
+IF a task changes existing business/logical behavior:
+    require characterization evidence first
+    require owner-approved rule change
+    update pseudocode in the same task
+    document module truth boundary
+ELSE:
+    document no-behavior-change boundary
+    record evidence, gaps, risks, decisions required, and blockers
+```
+
+Outputs: characterization requirement, owner-decision requirement, no-behavior-change boundary, or implementation blocker.
+Side effects: documentation-only unless a later approved implementation task exists.
+What this must not change: this rule does not authorize behavior changes.
+Evidence: manifest special gates, stop-list, source-of-truth map, control plan.
+Tests: not applicable for this docs-only rule; later implementation tasks must define tests according to risk.
+Known gaps: current business areas have uneven test coverage.
+Bug/nedoslednost candidates: a symptom may look like a bug before characterization proves it.
+Safe upgrade notes: source/test/runtime characterization must precede rule-changing implementation.
+Classification: `DOCUMENTED POLICY / CHARACTERIZATION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-020
+
+Business area: Safe upgrade family grouping rule
+Source/docs files: `docs/OPC_GROUPED_SAFE_UPGRADE_PLAN.md`; `docs/OPC_CHILD_ILLNESS_AND_SAFE_UPGRADE_CANDIDATE_REGISTER.md`; `docs/OPC_SAFE_UPGRADE_FROM_PSEUDOCODE_NOTES.md`
+Related modules: all modules with child-illness symptoms
+Business purpose: group symptoms into owner-reviewable upgrade families without creating nano-tasks or Codex strategy.
+Inputs: symptom, affected modules, affected pseudocode sections, evidence, business risk, current protection, blockers.
+Decision points: whether symptom has source/test/runtime proof, whether owner decision or technical audit is required, whether implementation is blocked.
+Pseudocode:
+
+```text
+IF a symptom is found:
+    group it into an upgrade family
+    record affected modules and pseudocode sections
+    record evidence/gap/blocker
+    do not create nano-task
+    do not recommend next task
+    do not assign priority order or sequence
+```
+
+Outputs: upgrade-family classification, characterization evidence needed, owner decisions, technical audits, implementation blockers.
+Side effects: documentation-only grouping.
+What this must not change: no implementation task, roadmap, priority order, or recommended next step is produced by this rule.
+Evidence: grouped safe upgrade plan and existing child-illness register.
+Tests: not applicable for grouping; future tasks define characterization tests if authorized.
+Known gaps: families remain evidence buckets until owner/Logos select strategy.
+Bug/nedoslednost candidates: symptoms remain candidates unless source/test/runtime proof confirms a bug.
+Safe upgrade notes: grouped families must stay goal-level and non-sequential.
+Classification: `DOCUMENTED POLICY / OWNER DECISION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-021
+
+Business area: Web-readiness guardrail rule
+Source/docs files: `docs/OPC_WEB_READINESS_GUARDRAILS.md`; `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_MODULAR_FOUNDATION_CONTROL_PLAN.md`
+Related modules: PREDMET, JSON, backup/restore, FirmaPodaci, users/roles, entitlement, evaluator, advisor, IRiU, STANJE ROBE, finance, PDF/documents, future OPC Web/sync
+Business purpose: keep current local-first OPC changes from blocking future OPC Web/access readiness while avoiding premature Web implementation.
+Inputs: current decision, affected identity/sync/module/evaluator/JSON/finance/stock/entitlement area, evidence, uncertainty.
+Decision points: whether a current decision affects identity, sync, module boundary, evaluator, JSON, finance, stock, entitlement, role, storage, or access.
+Pseudocode:
+
+```text
+IF a current decision affects identity, sync, module boundary,
+   evaluator, JSON, finance, stock, entitlement, role, storage, or access:
+    check future OPC Web/access guardrails
+
+    IF the effect is uncertain:
+        mark owner decision required or technical audit required
+
+    IF implementation would choose Web architecture:
+        mark implementation blocked
+
+    do not implement Web solution in current task
+```
+
+Outputs: Web-readiness classification, guardrail finding, owner decision, technical audit, or implementation blocker.
+Side effects: documentation-only guardrail.
+What this must not change: no Web runner, backend, API, sync, storage, payment, licensing, role, or architecture selection.
+Evidence: Web guardrails document, manifest, owner decisions.
+Tests: not applicable for docs-only guardrail.
+Known gaps: final Web architecture, conflict model, firm identity, role identity, storage, payment/access, and sync remain unresolved.
+Bug/nedoslednost candidates: future Web assumptions may conflict with local-first ownership if not audited.
+Safe upgrade notes: Web-readiness is a guardrail layer, not an implementation layer.
+Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.

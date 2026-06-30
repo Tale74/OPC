@@ -196,3 +196,50 @@ Risk if misunderstood: old SaaS/server-master wording overrides manifest.
 Read before: public promotion map.
 Read after: current public source-of-truth docs.
 
+## INDEX-ID: OPC-PSEUDO-INDEX-017
+
+Source file: `docs/OPC_MODULE_CONTRACTS_AND_TRUTH_BOUNDARIES.md`
+Related pseudocode sections: `OPC-PSEUDO-018`
+Business meaning: classifies each module by read/write/output/side-effect boundary around PREDMET.
+Module: modular contracts
+Truth boundary: modules may consume, render, transfer, analyze, warn, or operationally react to PREDMET truth, but must not become parallel truth.
+Why Logos must know it: future grouped work needs module boundaries before implementation.
+Risk if misunderstood: derivative or operational outputs become master PREDMET truth.
+Read before: manifest and module relationship map.
+Read after: grouped safe upgrade plan.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-018
+
+Source file: `docs/OPC_MODULAR_FOUNDATION_CONTROL_PLAN.md`
+Related pseudocode sections: `OPC-PSEUDO-019`
+Business meaning: requires characterization evidence and owner-approved rule changes before behavior changes.
+Module: all business/logical modules
+Truth boundary: documentation can record evidence and blockers; it does not authorize behavior changes.
+Why Logos must know it: source/test/runtime characterization prevents accidental rule drift.
+Risk if misunderstood: symptom fixes can change business meaning without proof.
+Read before: implementation stop-list.
+Read after: affected module pseudocode.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-019
+
+Source file: `docs/OPC_GROUPED_SAFE_UPGRADE_PLAN.md`
+Related pseudocode sections: `OPC-PSEUDO-020`
+Business meaning: groups symptoms into upgrade families without nano-tasks, roadmap, priority order, or recommended next task.
+Module: safe upgrade planning
+Truth boundary: groups are evidence buckets only.
+Why Logos must know it: Logos/owner decide strategy after reviewing evidence.
+Risk if misunderstood: Codex output becomes unintended strategy.
+Read before: child-illness register.
+Read after: source/test characterization material when selected by owner.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-020
+
+Source file: `docs/OPC_WEB_READINESS_GUARDRAILS.md`
+Related pseudocode sections: `OPC-PSEUDO-021`
+Business meaning: checks whether current decisions preserve future OPC Web/access readiness without choosing architecture.
+Module: future OPC Web/sync
+Truth boundary: no Web/backend/API/sync/storage/payment/licensing/role implementation is authorized.
+Why Logos must know it: future Web must preserve PREDMET truth, local/firma ownership, and explicit transfer/conflict rules.
+Risk if misunderstood: server-master or premature sync assumptions can override current OPC truth.
+Read before: owner decision report and manifest.
+Read after: technical architecture audit material if owner authorizes it.
