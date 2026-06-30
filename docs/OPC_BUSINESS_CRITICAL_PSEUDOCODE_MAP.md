@@ -1065,3 +1065,46 @@ Known gaps: architecture, sync conflict, storage, role identity, firm identity h
 Bug/nedoslednost candidates: server-master assumptions and identity shortcuts.
 Safe upgrade notes: future Web readiness is an audit guardrail only.
 Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.
+
+## PSEUDO-ID: OPC-PSEUDO-027
+
+Business area: PREDMET lifecycle identity version change-log characterization
+Source/docs files: `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_CHARACTERIZATION.md`; `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_COVERAGE_MATRIX.md`; `docs/OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md`; `docs/OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md`
+Related modules: PREDMET core, lifecycle, JSON transfer, change-log, future Web/sync identity
+Business purpose: lock current PREDMET lifecycle and identity/version behavior as characterized evidence before behavior changes.
+Inputs: local PREDMET id, `brojPredmeta`, status, `verzija`, `exportVerzija`, `exportDatum`, save/close snapshots, import conflict choice, replacement behavior, review visibility.
+Decision points: whether behavior is source-confirmed, test-confirmed, policy-only, a gap, or implementation-blocked.
+Pseudocode:
+
+```text
+WHEN characterizing PREDMET lifecycle and identity/version behavior:
+    treat local database id as technical/local only
+    treat brojPredmeta as current local conflict key, not global identity
+    treat business verzija as PREDMET business-version signal
+    treat exportVerzija and exportDatum as export metadata
+    treat generated filename as human-readable metadata only
+
+    IF create/save/close/reopen/finish/anonymize/delete behavior is sourced:
+        classify SOURCE-CONFIRMED
+        keep missing direct regression coverage as TEST GAP
+
+    IF JSON import replacement preserves local id and tests cover that slice:
+        classify TEST-CONFIRMED for that slice only
+
+    IF review shows status/version/saved state but not a full change log:
+        classify SOURCE-CONFIRMED plus IMPLEMENTATION GAP
+
+    IF future Web/sync identity is discussed:
+        keep it as guardrail/audit status only
+        do not choose Web architecture or implement sync
+```
+
+Outputs: PREDMET lifecycle/identity/version characterization docs, coverage matrix, gap register, and Web/sync identity risk register.
+Side effects: documentation-only.
+What this must not change: no source, tests, database/schema, UI, PDF, JSON behavior, import/export behavior, backup/restore behavior, evaluator behavior, IRiU behavior, STANJE ROBE behavior, finance behavior, Web/backend/API/sync/storage/payment/licensing/entitlement/role behavior, or runtime behavior.
+Evidence: PREDMET table/repository/UI source, JSON transfer source, JSON regression tests, owner decisions, Web guardrails.
+Tests: existing `test/json_transfer_regression_test.dart` protects selected JSON identity/replacement slices only.
+Known gaps: full lifecycle tests, version increment matrix, full change-log overview, runtime parity, firm-scoped identity implementation proof, Web/sync identity audit.
+Bug/nedoslednost candidates: unprotected lifecycle/version/log behavior remains a characterization gap until confirmed.
+Safe upgrade notes: behavior changes remain blocked until current behavior and owner intent are classified.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARTIAL / CHARACTERIZATION REQUIRED`.

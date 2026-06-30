@@ -257,3 +257,18 @@ Related pseudocode sections: `OPC-PSEUDO-022`, `OPC-PSEUDO-023`, `OPC-PSEUDO-024
 Safe upgrade note: before any future behavior change, current behavior evidence must be classified without promoting source-confirmed behavior into test-confirmed behavior, documented policy into implementation proof, or runtime history into current parity proof.
 
 Gap handling rule: if a characterization gap is found, classify the gap, link it to module contract and pseudocode, and do not create a task recommendation, sequence, roadmap, or priority order.
+
+## PREDMET Lifecycle Identity Version Characterization Cross-Reference
+
+Source documents:
+
+- `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_CHARACTERIZATION.md`
+- `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_COVERAGE_MATRIX.md`
+- `docs/OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md`
+- `docs/OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md`
+
+Related pseudocode sections: `OPC-PSEUDO-027`
+
+Safe upgrade note: current PREDMET lifecycle, identity, version, export metadata, same-PREDMET conflict, replacement, and change-log visibility behavior are characterized as evidence only. Local database id, filename, `exportDatum`, and `brojPredmeta` alone must not be promoted into future Web/sync identity authority by documentation wording.
+
+Gap handling rule: lifecycle/version/change-log/Web identity gaps remain characterization or audit status only and do not authorize implementation.

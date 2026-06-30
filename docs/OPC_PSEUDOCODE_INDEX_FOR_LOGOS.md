@@ -291,3 +291,15 @@ Why Logos must know it: future owner review can see what is unprotected.
 Risk if misunderstood: gap register becomes roadmap or priority order.
 Read before: grouped safe upgrade plan.
 Read after: owner/technical audit material when authorized.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-025
+
+Source file: `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_CHARACTERIZATION.md`
+Related pseudocode sections: `OPC-PSEUDO-027`
+Business meaning: characterizes current PREDMET lifecycle, identity, business version, export metadata, same-PREDMET JSON conflict, replacement, and change-log visibility behavior.
+Module: PREDMET lifecycle/identity/version
+Truth boundary: local PREDMET `id` is technical; `brojPredmeta` is not global identity; `verzija` is business-version signal; filename/export date are not authority.
+Why Logos must know it: future behavior changes need current PREDMET identity/version evidence without treating gaps as implementation instructions.
+Risk if misunderstood: local ids, filenames, export dates, or incomplete logs become unintended Web/sync authority.
+Read before: Web readiness guardrails and owner decisions.
+Read after: JSON regression evidence and source audit material.
