@@ -20,7 +20,7 @@ Working tree at task start: clean.
 
 Task branch created from the verified baseline commit.
 
-## 3. Manifest Start Confirmation
+## OPC MANIFEST CHECK — TASK START
 
 Manifest read: REQUIRED and completed.
 
@@ -33,6 +33,8 @@ Required manifest/template files present:
 - `docs/templates/OPC_TASK_TEMPLATE.md`
 
 Legacy `PROJECT_DOCS` context: present in repo and read as supporting/historical context. `LEGACY PROJECT_DOCS NOT PRESENT IN REPO` does not apply.
+
+Continuation correction note: the previous local task report was committed before the required manifest gate script was run. The first continuation manifest gate run failed because this report did not contain the exact required manifest marker strings. This continuation fixes only the final report manifest marker formatting; no implementation or content behavior changes were made.
 
 ## 4. Scope Confirmation
 
@@ -273,7 +275,7 @@ Final status: `PASS WITH OWNER REVIEW QUEUE`
 
 Reason: required documents were created, pseudocode learning layer was updated, module contracts cover all required modules, Web guardrails avoid architecture selection, upgrade families are grouped without sequence/priority, and no implementation/source/test behavior changes were made.
 
-## 22. Manifest End Confirmation
+## OPC MANIFEST COMPLIANCE — TASK END
 
 Manifest read: REQUIRED and completed.
 
