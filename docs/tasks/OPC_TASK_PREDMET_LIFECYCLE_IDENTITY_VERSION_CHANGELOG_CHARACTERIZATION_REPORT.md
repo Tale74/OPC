@@ -16,7 +16,9 @@ Base commit: `7c24d6399077499f78f963a737cd95560493e49d`
 
 Original characterization commit: `1374d9dbeda761cabf28f277e449980e5dd4b1df`
 
-Report completion correction commit: pending closing commit.
+Report completion correction commit: `05ee8cd4a44ab85e4895edc9d34fb81dfd4114bd`
+
+Report closing commit: the branch-head commit containing this report line records the correction chain and keeps the report self-contained.
 
 Final corrected status: `PASS WITH OWNER REVIEW QUEUE — PUBLIC REPORT COMPLETION CORRECTED`
 
