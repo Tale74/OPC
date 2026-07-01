@@ -315,3 +315,15 @@ Why Logos must know it: future evaluator, advisor, finance, IRiU, Pregled, entit
 Risk if misunderstood: partial evaluator flags or IRiU recommendations can be promoted into complete advisor truth or Web/sync authority.
 Read before: `docs/OPC_MODULE_RELATIONSHIP_MAP.md`
 Read after: evaluator, IRiU truth, Pregled, finance, and entitlement source files.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-027
+
+Source file: `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`
+Related pseudocode sections: `OPC-PSEUDO-029`
+Business meaning: IRiU table row catalog picker resolves source categories for row-level article selection; CITULJE rows must expose both Politika and Novosti catalog sources.
+Module: IRiU table / KATALOG picker
+Truth boundary: row-level picker source selection updates only the selected IRiU row catalog-backed fields; it is not a catalog seed, manual KATALOSKA, document output, finance formula, JSON, evaluator, or entitlement rule.
+Why Logos must know it: one display label (`CITULJE`) maps to two source catalog categories, so UI grouping must not erase source identity.
+Risk if misunderstood: Novosti CITULJE can become unreachable or a Novosti article can be stored under the Politika internal category.
+Read before: `docs/OPC_SOURCE_OF_TRUTH_MAP.md`
+Read after: `lib/features/podesavanja/data/podesavanja_repository.dart`, `lib/features/predmeti/data/iriu_repository.dart`, and `test/iriu_citulje_catalog_picker_test.dart`.

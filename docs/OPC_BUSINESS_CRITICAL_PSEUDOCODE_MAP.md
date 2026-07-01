@@ -1180,3 +1180,46 @@ Known gaps: direct evaluator tests, complete advisor engine, Pregled advisor/cha
 Bug/nedoslednost candidates: partial evaluator output can be misunderstood as complete advisor guidance.
 Safe upgrade notes: behavior changes remain blocked until evaluator/advisor/Pregled behavior and owner intent are classified.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARTIAL / POLICY EXISTS / IMPLEMENTATION NOT FOUND`.
+
+## PSEUDO-ID: OPC-PSEUDO-029
+
+Business area: IRiU table catalog picker for CITULJE Politika and Novosti
+Source files: `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`; `lib/features/predmeti/data/iriu_repository.dart`; `lib/core/constants/iriu_constants.dart`; `lib/features/podesavanja/data/podesavanja_repository.dart`
+Related modules: IRiU table, Podesavanja KATALOG, CITULJE add-on output basis, finance-derived IRiU rows
+Business purpose: preserve source-catalog choice for CITULJE rows so the table picker can choose either `CITULJA_POLITIKA` or `CITULJA_NOVOSTI` from the same visible CITULJE business row context.
+Inputs: current IRiU row internal category, visible catalog articles, selected article stable id, selected article category, selected article name and price.
+Decision points: whether the current row is a CITULJE row, whether article selection changes the row category from Politika to Novosti or back, and whether a non-CITULJE row must remain scoped to its own catalog category.
+Pseudocode:
+
+```text
+WHEN opening the IRiU table catalog picker for a row:
+    IF row.interniNaziv is CITULJA_POLITIKA or CITULJA_NOVOSTI:
+        load catalog articles for CITULJA_POLITIKA
+        load catalog articles for CITULJA_NOVOSTI
+        show both sets in the row article picker
+    ELSE:
+        load catalog articles for row.interniNaziv only
+
+WHEN selecting an article from the row article picker:
+    pass article.naziv
+    pass article.cena
+    pass article.stableArticleId
+    pass article.interniNazivKategorije
+
+WHEN applying selected article to the IRiU row:
+    update row displayed name, quantity, price, and stable article id
+    IF selected article category differs from current row category:
+        update row.interniNaziv to selected article category
+    ELSE:
+        keep row.interniNaziv unchanged
+```
+
+Outputs: IRiU row remains one table row while its catalog-backed source can be `CITULJA_POLITIKA` or `CITULJA_NOVOSTI`.
+Side effects: updates only the selected IRiU row fields already used by catalog selection; no catalog seed data, manual KATALOSKA creation, stock lifecycle, finance formula, PDF, JSON, import/export, or entitlement behavior change.
+What this must not change: manual KATALOSKA row creation, generic `IZ KATALOGA` add flow, catalog settings, article seed values, finance inclusion/exclusion rules, document generation, JSON transfer, STANJE ROBE behavior, evaluator behavior, Web/backend/API/sync/storage/payment/licensing/entitlement/role behavior.
+Evidence: `IriuK.cituljaP` and `IriuK.cituljaNo` both exist; seeded catalog articles exist for both categories; table row picker previously queried only the current row category; `KatalogPickerArticleSummary` already carries `interniNazivKategorije`.
+Tests: `test/iriu_citulje_catalog_picker_test.dart` verifies CITULJE row category resolution includes Politika and Novosti and non-CITULJE rows remain single-category.
+Known gaps: no manual runtime UI click-through was executed in this continuation.
+Bug/nedoslednost candidates: a business row labelled CITULJE can silently hide Novosti if picker source is limited to the current `CITULJA_POLITIKA` row key.
+Safe upgrade notes: future picker grouping must preserve source category identity when multiple catalog categories share one business display label.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED TARGETED / UI FLOW FIX`.

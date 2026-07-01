@@ -287,3 +287,36 @@ Related pseudocode sections: `OPC-PSEUDO-028`
 Safe upgrade note: current business policy evaluator behavior is characterized as a partial deterministic policy kernel. It derives PREDMET-based flags and feeds IRiU truth, lifecycle planning, finance basis, and selected UI labels/warnings. Current `Pregled i potvrda` is a lifecycle/review surface, not a complete advisor, warning taxonomy, or full change-log overview.
 
 Gap handling rule: evaluator/advisor/Pregled gaps remain owner-review, characterization, test, runtime, or implementation-blocked status only and do not authorize implementation.
+
+## IRiU CITULJE Catalog Picker Cross-Reference
+
+Source files:
+
+- `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`
+- `lib/features/predmeti/data/iriu_repository.dart`
+- `test/iriu_citulje_catalog_picker_test.dart`
+
+Related pseudocode sections: `OPC-PSEUDO-029`
+
+Safe upgrade note: the IRiU table row catalog picker has a multi-source CITULJE boundary. `CITULJA_POLITIKA` and `CITULJA_NOVOSTI` share the visible business label, but article selection must preserve the selected source category in the IRiU row.
+
+Gap handling rule: future grouped picker changes must verify that shared display labels do not hide one source category or store a selected article under the wrong internal category.
+
+## Dart Flutter Validation Runner Note
+
+Observed environment:
+
+- PowerShell `dart` and `flutter` commands are profile functions pointing to missing `C:\Projekti\flutter_sdk`.
+- `C:\flutter\bin\dart.bat` and `C:\flutter\bin\flutter.bat` can hang and leave `cmd.exe` wrapper processes.
+- Direct Dart executable exists at `C:\flutter\bin\cache\dart-sdk\bin\dart.exe`.
+- `dart test` is not the correct runner for Flutter tests that import `flutter_test`, because `dart:ui` is unavailable in plain Dart test mode.
+- In sandbox, Flutter cannot write `C:\flutter\bin\cache\lockfile`; direct Flutter validation must run outside sandbox when that cache write is required.
+- Full Flutter analyze through the direct tool snapshot can leave `analysis_server.dart.snapshot` child processes running in this environment and was not used as the final validation for the CITULJE picker fix.
+
+Validated command shape for focused Flutter tests outside sandbox:
+
+```powershell
+& 'C:\flutter\bin\cache\dart-sdk\bin\dart.exe' --packages='C:\flutter\packages\flutter_tools\.dart_tool\package_config.json' 'C:\flutter\bin\cache\flutter_tools.snapshot' test test\iriu_citulje_catalog_picker_test.dart
+```
+
+Recorded result for this task: the focused IRiU CITULJE picker test passed with `+2: All tests passed!`.

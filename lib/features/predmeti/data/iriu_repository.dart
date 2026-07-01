@@ -107,9 +107,15 @@ class IriuRepository {
     required String kom,
     required double iznos,
     required String? katalogStableArticleId,
+    String? interniNaziv,
   }) async {
     final nextStableArticleId =
         _normalizeNullableStableArticleId(katalogStableArticleId);
+    final nextInterniNaziv = interniNaziv?.trim();
+    final normalizedInterniNaziv =
+        nextInterniNaziv == null || nextInterniNaziv.isEmpty
+        ? row.interniNaziv
+        : nextInterniNaziv;
 
     await _db.transaction(() async {
       if (nextStableArticleId != null &&
@@ -147,6 +153,9 @@ class IriuRepository {
 
       await (_db.update(_db.iriu)..where((i) => i.id.equals(row.id))).write(
         IriuCompanion(
+          interniNaziv: normalizedInterniNaziv == row.interniNaziv
+              ? const Value.absent()
+              : Value(normalizedInterniNaziv),
           katalogStableArticleId: Value(katalogStableArticleId),
           nazivPrikaz: Value(nazivPrikaz),
           kom: Value(kom),

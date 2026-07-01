@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
@@ -12,6 +13,13 @@ import '../../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../core_v2/models/iriu_truth_models.dart';
 import '../../data/iriu_repository.dart';
+
+List<String> resolveIriuCatalogPickerCategoryKeys(String interniNaziv) {
+  if (interniNaziv == IriuK.cituljaP || interniNaziv == IriuK.cituljaNo) {
+    return const [IriuK.cituljaP, IriuK.cituljaNo];
+  }
+  return [interniNaziv];
+}
 
 /// Presentation-only row tile for one IRIU item.
 ///
@@ -177,8 +185,15 @@ class _IriuRowTileState extends State<IriuRowTile> {
   Future<void> _otvoriKatalogZaStavku() async {
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
-    final artikli = await widget.podesavanjaRepo
-        .getArtikliZaKategorijuLightweight(widget.stavka.interniNaziv);
+    final kategorije = resolveIriuCatalogPickerCategoryKeys(
+      widget.stavka.interniNaziv,
+    );
+    final artikliPoKategoriji = await Future.wait(
+      kategorije.map(widget.podesavanjaRepo.getArtikliZaKategorijuLightweight),
+    );
+    final artikli = [
+      for (final artikliKategorije in artikliPoKategoriji) ...artikliKategorije,
+    ];
     if (!mounted) return;
 
     if (artikli.isEmpty) {
@@ -220,6 +235,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     String naziv,
     double cena,
     String? katalogStableArticleId,
+    String interniNazivKategorije,
   ) async {
     final accepted = await _confirmInsufficientStockSelectionIfNeeded(
       naziv: naziv,
@@ -236,6 +252,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     await widget.iriuRepo.azurirajKatalogIzborStavke(
       row: widget.stavka,
       katalogStableArticleId: katalogStableArticleId,
+      interniNaziv: interniNazivKategorije,
       nazivPrikaz: _normalizedText(_nazivCtrl),
       kom: _normalizedText(_komCtrl),
       iznos: _parsedIznos(),
@@ -782,7 +799,12 @@ class _ArtikliPickerContent extends StatefulWidget {
 
   final PodesavanjaRepository podesavanjaRepo;
   final List<KatalogPickerArticleSummary> artikli;
-  final void Function(String naziv, double cena, String? katalogStableArticleId)
+  final void Function(
+    String naziv,
+    double cena,
+    String? katalogStableArticleId,
+    String interniNazivKategorije,
+  )
   onIzabrano;
   final VoidCallback onZatvori;
   final int crossAxisCount;
@@ -821,7 +843,12 @@ class _ArtikliPickerContentState extends State<_ArtikliPickerContent> {
   void _izaberiArtikl(KatalogPickerArticleSummary artikl) {
     _zatvoriPregled();
     widget.onZatvori();
-    widget.onIzabrano(artikl.naziv, artikl.cena, artikl.stableArticleId);
+    widget.onIzabrano(
+      artikl.naziv,
+      artikl.cena,
+      artikl.stableArticleId,
+      artikl.interniNazivKategorije,
+    );
   }
 
   @override
@@ -1369,7 +1396,12 @@ class _ArtikliPicker extends StatelessWidget {
 
   final PodesavanjaRepository podesavanjaRepo;
   final List<KatalogPickerArticleSummary> artikli;
-  final void Function(String naziv, double cena, String? katalogStableArticleId)
+  final void Function(
+    String naziv,
+    double cena,
+    String? katalogStableArticleId,
+    String interniNazivKategorije,
+  )
   onIzabrano;
 
   @override
@@ -1413,7 +1445,12 @@ class _ArtikliPickerDialog extends StatelessWidget {
 
   final PodesavanjaRepository podesavanjaRepo;
   final List<KatalogPickerArticleSummary> artikli;
-  final void Function(String naziv, double cena, String? katalogStableArticleId)
+  final void Function(
+    String naziv,
+    double cena,
+    String? katalogStableArticleId,
+    String interniNazivKategorije,
+  )
   onIzabrano;
 
   @override
