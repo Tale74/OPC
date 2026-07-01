@@ -303,3 +303,15 @@ Why Logos must know it: future behavior changes need current PREDMET identity/ve
 Risk if misunderstood: local ids, filenames, export dates, or incomplete logs become unintended Web/sync authority.
 Read before: Web readiness guardrails and owner decisions.
 Read after: JSON regression evidence and source audit material.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-026
+
+Source file: `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_CHARACTERIZATION.md`
+Related pseudocode sections: `OPC-PSEUDO-028`
+Business meaning: characterizes current business policy evaluator, advisor/guidance status, IRiU truth bridge, finance use, entitlement boundary, and `Pregled i potvrda`.
+Module: evaluator/advisor/Pregled
+Truth boundary: evaluator/advisor/Pregled outputs are derived from PREDMET and related rows; current Pregled is not full advisor or change-log authority.
+Why Logos must know it: future evaluator, advisor, finance, IRiU, Pregled, entitlement, and Web/sync work must not overclaim partial source behavior.
+Risk if misunderstood: partial evaluator flags or IRiU recommendations can be promoted into complete advisor truth or Web/sync authority.
+Read before: `docs/OPC_MODULE_RELATIONSHIP_MAP.md`
+Read after: evaluator, IRiU truth, Pregled, finance, and entitlement source files.

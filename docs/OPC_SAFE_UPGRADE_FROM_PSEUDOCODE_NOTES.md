@@ -272,3 +272,18 @@ Related pseudocode sections: `OPC-PSEUDO-027`
 Safe upgrade note: current PREDMET lifecycle, identity, version, export metadata, same-PREDMET conflict, replacement, and change-log visibility behavior are characterized as evidence only. Local database id, filename, `exportDatum`, and `brojPredmeta` alone must not be promoted into future Web/sync identity authority by documentation wording.
 
 Gap handling rule: lifecycle/version/change-log/Web identity gaps remain characterization or audit status only and do not authorize implementation.
+
+## Business Policy Evaluator Advisor Pregled Characterization Cross-Reference
+
+Source documents:
+
+- `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_CHARACTERIZATION.md`
+- `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_COVERAGE_MATRIX.md`
+- `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_GAP_REGISTER.md`
+- `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_WEB_SYNC_RISK_REGISTER.md`
+
+Related pseudocode sections: `OPC-PSEUDO-028`
+
+Safe upgrade note: current business policy evaluator behavior is characterized as a partial deterministic policy kernel. It derives PREDMET-based flags and feeds IRiU truth, lifecycle planning, finance basis, and selected UI labels/warnings. Current `Pregled i potvrda` is a lifecycle/review surface, not a complete advisor, warning taxonomy, or full change-log overview.
+
+Gap handling rule: evaluator/advisor/Pregled gaps remain owner-review, characterization, test, runtime, or implementation-blocked status only and do not authorize implementation.

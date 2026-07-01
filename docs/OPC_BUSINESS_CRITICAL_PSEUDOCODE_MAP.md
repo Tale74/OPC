@@ -1108,3 +1108,75 @@ Known gaps: full lifecycle tests, version increment matrix, full change-log over
 Bug/nedoslednost candidates: unprotected lifecycle/version/log behavior remains a characterization gap until confirmed.
 Safe upgrade notes: behavior changes remain blocked until current behavior and owner intent are classified.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARTIAL / CHARACTERIZATION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-028
+
+Business area: Business policy evaluator, advisor status, and Pregled characterization
+Source/docs files: `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_CHARACTERIZATION.md`; `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_COVERAGE_MATRIX.md`; `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_GAP_REGISTER.md`; `docs/OPC_BUSINESS_POLICY_EVALUATOR_ADVISOR_PREGLED_WEB_SYNC_RISK_REGISTER.md`
+Related source files: `lib/features/predmeti/core_v2/business_policy/business_policy_evaluator.dart`; `lib/features/predmeti/core_v2/services/predmet_iriu_truth_service.dart`; `lib/features/predmeti/core_v2/rules/iriu_truth_rules.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/presentation/segments/finansije_segment.dart`; `lib/core/entitlements/opc_entitlement_policy.dart`
+Related modules: business policy evaluator, advisor/guidance, IRiU, finance, Pregled i potvrda, entitlement, future Web/sync
+Business purpose: lock current evaluator/advisor/Pregled behavior as characterized evidence before behavior changes.
+Inputs: PREDMET death facts, ceremony facts, cemetery/grob facts, international/reception flags, scenario id, stored IRiU rows, package policy, current Pregled state.
+Decision points: evaluator scenario fallback, derived policy flags, IRiU active/recommended/suppressed/financial states, lifecycle conflicts, current Pregled display, entitlement boundary, advisor implementation status.
+Pseudocode:
+
+```text
+WHEN characterizing current business policy evaluator:
+    resolve PREDMET.businessScenarioId
+    IF empty or unknown:
+        use default funeral ceremony policy
+
+    read PREDMET facts:
+        death place and cause
+        ceremony type
+        cemetery and grob facts
+        international and reception flags
+
+    derive policy snapshot:
+        normalized death place
+        cremation flag
+        hospital-death flag
+        cemetery flags
+        international flag
+        reception flag
+        cause-override flag
+        infectious non-hospital biohazard precondition
+
+    do not persist the evaluator snapshot directly
+
+WHEN deriving IRiU truth:
+    evaluate current stored IRiU rows against PREDMET conditions
+    classify each row as active or suppressed
+    classify recommendation state
+    classify biohazard state
+    classify financial inclusion or exclusion
+    classify derivative exclusions
+    mark user-resolution requirement where managed rules require it
+
+WHEN lifecycle services plan consequences:
+    IF a required managed category is missing and not dismissed:
+        plan insert or confirmation according to current service path
+    IF a previously active managed row becomes inactive:
+        mark conflict requiring user resolution
+
+WHEN reviewing Pregled i potvrda:
+    show status
+    show business version
+    show saved or unsaved working state
+    show save, close, or edit actions according to lifecycle status
+    do not claim full advisor checklist or full change-log overview
+
+WHEN checking entitlement boundary:
+    treat business policy scenario as core-available in current source
+    keep STANJE ROBE, documents, JSON, PARTA/CITULJE gates separate
+```
+
+Outputs: evaluator/advisor/Pregled characterization docs, coverage matrix, gap register, Web/sync risk register, and pseudocode cross-reference.
+Side effects: documentation-only.
+What this must not change: no source, tests, database/schema, UI, PDF, JSON behavior, filename-generation behavior, import/export behavior, backup/restore behavior, evaluator behavior, IRiU behavior, STANJE ROBE behavior, finance behavior, Web/backend/API/sync/storage/payment/licensing/entitlement/role behavior, or runtime behavior.
+Evidence: evaluator source, IRiU truth source, lifecycle services, Pregled source, finance source, entitlement source, and selected IRiU critical scenario tests.
+Tests: `test/business_policy_iriu_critical_scenarios_test.dart` protects selected Blok 2 consequence slices only.
+Known gaps: direct evaluator tests, complete advisor engine, Pregled advisor/change-log overview, death-place/international/reception tests, finance matrix, entitlement matrix, runtime parity, and Web/sync derived-output boundary.
+Bug/nedoslednost candidates: partial evaluator output can be misunderstood as complete advisor guidance.
+Safe upgrade notes: behavior changes remain blocked until evaluator/advisor/Pregled behavior and owner intent are classified.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARTIAL / POLICY EXISTS / IMPLEMENTATION NOT FOUND`.
