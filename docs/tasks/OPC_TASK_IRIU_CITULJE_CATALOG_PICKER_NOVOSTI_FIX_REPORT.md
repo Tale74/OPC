@@ -94,6 +94,14 @@ Runner diagnosis recorded for future project work:
 - Direct Flutter tool snapshot outside sandbox was confirmed as the working focused-test command shape.
 - Full Flutter analyze through the direct tool snapshot remained running in `analysis_server.dart.snapshot` child processes and was stopped; it was not used as a passing validation.
 
+Post-repair validation recorded after local toolchain correction:
+
+- PowerShell profile and user `FLUTTER_ROOT` now target `C:\flutter`.
+- Stale Flutter cache lock files were removed after process checks.
+- `flutter --version` completed in this OPC repo and reported Flutter `3.41.7` with Dart `3.11.5`.
+- `flutter analyze --no-pub` completed in this OPC repo with `No issues found!`.
+- `flutter test --no-pub test\iriu_citulje_catalog_picker_test.dart` completed in this OPC repo with `+2: All tests passed!`.
+
 Manual/runtime verification status: focused automated Flutter test passed; no manual UI runtime click-through was executed.
 
 ## Behavior Boundaries

@@ -304,7 +304,7 @@ Gap handling rule: future grouped picker changes must verify that shared display
 
 ## Dart Flutter Validation Runner Note
 
-Observed environment:
+Earlier observed environment before local toolchain repair:
 
 - PowerShell `dart` and `flutter` commands are profile functions pointing to missing `C:\Projekti\flutter_sdk`.
 - `C:\flutter\bin\dart.bat` and `C:\flutter\bin\flutter.bat` can hang and leave `cmd.exe` wrapper processes.
@@ -313,10 +313,30 @@ Observed environment:
 - In sandbox, Flutter cannot write `C:\flutter\bin\cache\lockfile`; direct Flutter validation must run outside sandbox when that cache write is required.
 - Full Flutter analyze through the direct tool snapshot can leave `analysis_server.dart.snapshot` child processes running in this environment and was not used as the final validation for the CITULJE picker fix.
 
-Validated command shape for focused Flutter tests outside sandbox:
+Local toolchain repair recorded after the CITULJE picker fix:
+
+- PowerShell profile now targets `C:\flutter` instead of missing `C:\Projekti\flutter_sdk`.
+- User environment variable `FLUTTER_ROOT` is set to `C:\flutter`.
+- Stale Flutter cache locks `C:\flutter\bin\cache\lockfile` and `C:\flutter\bin\cache\flutter.bat.lock` were removed after process checks.
+- `dart --version`, `flutter --version`, and `flutter doctor -v` completed after repair.
+- Remaining doctor issue from the external repair report: Chrome executable not found; this does not affect current Windows CLI analyze/test validation.
+
+Validated command shape before repair for focused Flutter tests outside sandbox:
 
 ```powershell
 & 'C:\flutter\bin\cache\dart-sdk\bin\dart.exe' --packages='C:\flutter\packages\flutter_tools\.dart_tool\package_config.json' 'C:\flutter\bin\cache\flutter_tools.snapshot' test test\iriu_citulje_catalog_picker_test.dart
 ```
 
 Recorded result for this task: the focused IRiU CITULJE picker test passed with `+2: All tests passed!`.
+
+Post-repair OPC validation commands from `C:\Projekti\OPC\OPC v.1\SOURCE`:
+
+```powershell
+flutter analyze --no-pub
+flutter test --no-pub test\iriu_citulje_catalog_picker_test.dart
+```
+
+Post-repair OPC validation result:
+
+- `flutter analyze --no-pub`: `No issues found!`
+- `flutter test --no-pub test\iriu_citulje_catalog_picker_test.dart`: `+2: All tests passed!`
