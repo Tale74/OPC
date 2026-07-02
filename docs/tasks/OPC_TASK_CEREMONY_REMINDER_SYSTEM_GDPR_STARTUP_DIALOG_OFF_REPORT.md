@@ -65,17 +65,17 @@ Required manifest, workflow, pseudocode documents, and the two latest task repor
 - `lib/core/database/database.dart`: schema 18; creates local `ceremony_reminder_settings` on create/upgrade/before-open.
 - `lib/features/predmeti/reminders/ceremony_reminder_model.dart`: enabled/frequency configuration, allowed frequencies `1, 2, 3, 4, 6, 8, 12, 24`, 48-hour occurrence calculation, past filtering, local IDs, and active dialog slot.
 - `ceremony_reminder_repository.dart`: local configuration and scheduled-ID persistence.
-- `ceremony_reminder_coordinator.dart`: cancel/replace scheduling, minimal content, and ceremony date/time parsing.
+- `ceremony_reminder_coordinator.dart`: cancel/replace scheduling, owner-approved PREDMET identity content, and ceremony date/time parsing.
 - `ceremony_notification_gateway.dart`: Android-only local plugin initialization, device timezone, notification permission, inexact idle scheduling, private lock-screen visibility, cancellation, and local channel.
 - `ceremonija_segment.dart`: compact enable switch and frequency dropdown adjacent to ceremony date/time; configuration changes and date/time changes reschedule.
 - `lista_predmeta_screen.dart`: removes automatic GDPR dialogs; preserves manual GDPR; reconciles notifications on startup/resume; shows one session-deduped Windows/Android in-app reminder dialog for active slots. Existing Windows banner remains.
 - `android/app/src/main/AndroidManifest.xml`: boot permission and scheduled-notification receivers. Exact-alarm permission is not requested because scheduling uses `inexactAllowWhileIdle`.
 - `pubspec.yaml`, `pubspec.lock`, generated Windows plugin registration: maintained local-notification/timezone dependencies.
-- `test/ceremony_reminder_system_test.dart`: 2/1/0 default, multiple hourly deliveries, past skip, disabled state, cancel/replace dedupe, privacy content, and GDPR startup/manual preservation.
+- `test/ceremony_reminder_system_test.dart`: 2/1/0 default, multiple hourly deliveries, past skip, disabled state, cancel/replace dedupe, owner-approved identity content, and GDPR startup/manual preservation.
 
 Default 24-hour frequency exactly represents 2 days before, 1 day before, and ceremony time. The minimum 1-hour choice caps one case at 49 occurrences across the 48-hour window, avoiding unbounded scheduling.
 
-Notification content is limited to `Predmet <brojPredmeta>` and ceremony date/time. It excludes deceased name and other unnecessary personal data.
+Corrected by the owner follow-up task: notification content uses exact ceremony type, PREMINULO LICE full name, ceremony date/time, and the preparation instruction. The earlier omission of deceased identity was unauthorized and is revoked.
 
 ## Business meaning, risk, and boundary
 
@@ -113,7 +113,7 @@ No Windows or Android artifact was built.
 - Android notifications are local OS notifications, not remote push.
 - Windows/Android in-app dialogs use the same frequency-slot model.
 - Duplicate replacement and past-time skip are deterministic and tested.
-- No unnecessary personal data is included in notification content.
+- Reminder content includes the owner-required PREMINULO LICE identity and ceremony facts without adding fields outside the approved formula.
 - No remote push/backend dependency or unrelated module behavior was introduced.
 - No unresolved placeholders remain.
 

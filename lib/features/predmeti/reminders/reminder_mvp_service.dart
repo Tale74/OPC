@@ -5,7 +5,9 @@ class ReminderMvpEntry {
   const ReminderMvpEntry({
     required this.predmetId,
     required this.brojPredmeta,
-    required this.prikazImena,
+    required this.ime,
+    required this.prezime,
+    required this.vrstaCeremonije,
     required this.datumCeremonije,
     required this.vremeCeremonije,
     required this.daysUntilCeremony,
@@ -13,7 +15,9 @@ class ReminderMvpEntry {
 
   final int predmetId;
   final String brojPredmeta;
-  final String prikazImena;
+  final String ime;
+  final String prezime;
+  final String vrstaCeremonije;
   final String datumCeremonije;
   final String vremeCeremonije;
   final int daysUntilCeremony;
@@ -34,9 +38,6 @@ class ReminderMvpService {
 
   bool _isEligibleStatus(String status) =>
       status == 'OTVOREN' || status == 'ZATVOREN';
-
-  String _displayName(PredmetiData predmet) =>
-      '${predmet.prezime} ${predmet.ime}'.trim();
 
   DateTime? _ceremonyDate(PredmetiData predmet) =>
       parseDateValue(predmet.datumCeremonije);
@@ -63,7 +64,9 @@ class ReminderMvpService {
         ReminderMvpEntry(
           predmetId: predmet.id,
           brojPredmeta: predmet.brojPredmeta,
-          prikazImena: _displayName(predmet),
+          ime: predmet.ime,
+          prezime: predmet.prezime,
+          vrstaCeremonije: predmet.vrstaCeremonije,
           datumCeremonije: predmet.datumCeremonije,
           vremeCeremonije: predmet.vremeCeremonije,
           daysUntilCeremony: delta,

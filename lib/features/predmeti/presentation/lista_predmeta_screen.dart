@@ -22,6 +22,7 @@ import '../reminders/ceremony_notification_gateway.dart';
 import '../reminders/ceremony_reminder_coordinator.dart';
 import '../reminders/ceremony_reminder_model.dart';
 import '../reminders/ceremony_reminder_repository.dart';
+import '../reminders/ceremony_reminder_text.dart';
 import '../reminders/reminder_mvp_service.dart';
 import 'izvestaji_screen.dart';
 import 'predmet_screen.dart';
@@ -140,7 +141,11 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       );
       await _ceremonyReminderCoordinator.reschedule(
         predmetId: predmet.id,
-        brojPredmeta: predmet.brojPredmeta,
+        ceremonyType: predmet.vrstaCeremonije,
+        deceasedFirstName: predmet.ime,
+        deceasedLastName: predmet.prezime,
+        ceremonyDate: predmet.datumCeremonije,
+        ceremonyTime: predmet.vremeCeremonije,
         ceremonyAt: ceremonyAt,
         now: now,
         requestPermission: permissionPending && stored.config.enabled,
@@ -156,8 +161,13 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       final key = '${predmet.id}:${slot.toIso8601String()}';
       if (!_shownCeremonyDialogKeys.add(key)) continue;
       dueLines.add(
-        'Predmet ${predmet.brojPredmeta} • '
-        '${predmet.datumCeremonije} ${predmet.vremeCeremonije}',
+        buildCeremonyReminderText(
+          ceremonyType: predmet.vrstaCeremonije,
+          deceasedFirstName: predmet.ime,
+          deceasedLastName: predmet.prezime,
+          ceremonyDate: predmet.datumCeremonije,
+          ceremonyTime: predmet.vremeCeremonije,
+        ),
       );
     }
     if (!mounted || dueLines.isEmpty) return;
@@ -1038,14 +1048,14 @@ class _WindowsReminderLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final headline = entry.prikazImena.isNotEmpty
-        ? entry.prikazImena
-        : 'Predmet ${entry.brojPredmeta}';
-    final details = <String>[
-      'Broj ${entry.brojPredmeta}',
-      entry.datumCeremonije,
-      if (entry.vremeCeremonije.isNotEmpty) entry.vremeCeremonije,
-    ].join(' • ');
+    final headline = '${entry.ime} ${entry.prezime}'.trim();
+    final details = buildCeremonyReminderText(
+      ceremonyType: entry.vrstaCeremonije,
+      deceasedFirstName: entry.ime,
+      deceasedLastName: entry.prezime,
+      ceremonyDate: entry.datumCeremonije,
+      ceremonyTime: entry.vremeCeremonije,
+    );
 
     return Container(
       width: double.infinity,

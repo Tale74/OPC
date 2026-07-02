@@ -8,6 +8,7 @@ import 'package:opc_v4/features/predmeti/reminders/ceremony_notification_gateway
 import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_coordinator.dart';
 import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_model.dart';
 import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_repository.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_text.dart';
 
 void main() {
   group('ceremony reminder model', () {
@@ -84,23 +85,51 @@ void main() {
 
     await coordinator.reschedule(
       predmetId: 7,
-      brojPredmeta: 'P-7',
+      ceremonyType: 'SAHRANA',
+      deceasedFirstName: 'Petar',
+      deceasedLastName: 'Petrović',
+      ceremonyDate: '10.07.2026.',
+      ceremonyTime: '12:00',
       ceremonyAt: ceremonyAt,
       now: DateTime(2026, 7, 1),
     );
     final firstIds = Set<int>.from(store.ids);
     await coordinator.reschedule(
       predmetId: 7,
-      brojPredmeta: 'P-7',
+      ceremonyType: 'SAHRANA',
+      deceasedFirstName: 'Petar',
+      deceasedLastName: 'Petrović',
+      ceremonyDate: '10.07.2026.',
+      ceremonyTime: '13:00',
       ceremonyAt: ceremonyAt.add(const Duration(hours: 1)),
       now: DateTime(2026, 7, 1),
     );
 
     expect(gateway.cancelled, containsAll(firstIds));
     expect(gateway.pending.keys.toSet(), store.ids.toSet());
-    expect(gateway.lastBody, contains('Predmet P-7'));
-    expect(gateway.lastBody, isNot(contains('ime')));
+    expect(
+      gateway.lastBody,
+      'CEREMONIJA (SAHRANA) ZA (Petar Petrović) JE (10.07.2026.) U '
+      '(13:00). DOVRŠITE NEOPHODNE PRIPREME.',
+    );
   });
+
+  test(
+    'owner-approved reminder text includes all PREDMET ceremony identity',
+    () {
+      expect(
+        buildCeremonyReminderText(
+          ceremonyType: 'KREMACIJA',
+          deceasedFirstName: 'Ana',
+          deceasedLastName: 'Jovanović',
+          ceremonyDate: '11.07.2026.',
+          ceremonyTime: '15:30',
+        ),
+        'CEREMONIJA (KREMACIJA) ZA (Ana Jovanović) JE (11.07.2026.) U '
+        '(15:30). DOVRŠITE NEOPHODNE PRIPREME.',
+      );
+    },
+  );
 
   test(
     'persists local reminder configuration outside PREDMET fields',

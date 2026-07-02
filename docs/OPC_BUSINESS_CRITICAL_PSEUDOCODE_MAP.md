@@ -1361,8 +1361,11 @@ WHEN app is active inside the 2-day window:
     show one in-app reminder dialog per slot/session on Windows or Android
 
 notification content:
-    include PREDMET number and ceremony term only
-    exclude deceased identity and unnecessary sensitive data
+    use formula:
+        CEREMONIJA (vrstaCeremonije) ZA (ime prezime PREMINULO LICE)
+        JE (datumCeremonije) U (vremeCeremonije).
+        DOVRŠITE NEOPHODNE PRIPREME.
+    treat PREMINULO LICE name as required PREDMET business identity
 ```
 
 Business meaning: reminders are local operational helpers around time-critical CEREMONIJA facts.

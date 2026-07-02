@@ -366,6 +366,7 @@ Read after: `lib/features/predmeti/data/predmeti_repository.dart` and manual GDP
 Source file: `lib/features/predmeti/reminders/ceremony_reminder_coordinator.dart`
 Related pseudocode sections: `OPC-PSEUDO-033`
 Business meaning: Windows in-app reminders and Android local notifications derive from the same PREDMET ceremony term and local frequency configuration.
+Reminder content: exact `vrstaCeremonije`, PREMINULO LICE `ime + prezime`, `datumCeremonije`, `vremeCeremonije`, and the preparation instruction are required PREDMET business identity.
 Truth boundary: local reminder settings/IDs are operational state; PREDMET ceremony date/time remains master truth and local id is not cross-device identity.
 Risk if misunderstood: scheduled state can become parallel ceremony truth or imply remote push infrastructure.
 Read after: reminder model/repository/gateway, CEREMONIJA segment, Android manifest, and focused tests.

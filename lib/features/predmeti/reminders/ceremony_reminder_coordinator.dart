@@ -2,6 +2,7 @@ import '../../../core/format/app_date_format.dart';
 import 'ceremony_notification_gateway.dart';
 import 'ceremony_reminder_model.dart';
 import 'ceremony_reminder_repository.dart';
+import 'ceremony_reminder_text.dart';
 
 DateTime? parseCeremonyReminderDateTime(String date, String time) {
   final parsedDate = parseDateValue(date);
@@ -30,7 +31,11 @@ class CeremonyReminderCoordinator {
 
   Future<List<CeremonyReminderOccurrence>> reschedule({
     required int predmetId,
-    required String brojPredmeta,
+    required String ceremonyType,
+    required String deceasedFirstName,
+    required String deceasedLastName,
+    required String ceremonyDate,
+    required String ceremonyTime,
     required DateTime? ceremonyAt,
     DateTime? now,
     bool requestPermission = false,
@@ -54,7 +59,13 @@ class CeremonyReminderCoordinator {
         id: occurrence.notificationId,
         scheduledAt: occurrence.scheduledAt,
         title: 'Podsetnik za ceremoniju',
-        body: 'Predmet $brojPredmeta • termin ${_format(ceremonyAt!)}',
+        body: buildCeremonyReminderText(
+          ceremonyType: ceremonyType,
+          deceasedFirstName: deceasedFirstName,
+          deceasedLastName: deceasedLastName,
+          ceremonyDate: ceremonyDate,
+          ceremonyTime: ceremonyTime,
+        ),
         payload: 'predmet:$predmetId',
       );
     }
@@ -63,13 +74,5 @@ class CeremonyReminderCoordinator {
       occurrences.map((item) => item.notificationId).toList(),
     );
     return occurrences;
-  }
-
-  String _format(DateTime value) {
-    final day = value.day.toString().padLeft(2, '0');
-    final month = value.month.toString().padLeft(2, '0');
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$day.$month.${value.year}. $hour:$minute';
   }
 }
