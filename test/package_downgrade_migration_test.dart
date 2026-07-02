@@ -84,6 +84,16 @@ void main() {
         <bool>[false, false, true, true],
       );
     });
+
+    test('RACUN remains a standard operational PDF action', () {
+      final policy = _policy(OpcPackageLevel.osnovni);
+
+      expect(policy.isModuleAvailable(OpcModule.operationalDocuments), isTrue);
+      expect(
+        policy.isDocumentActionVisible(OpcDocumentAction.racunPdf),
+        isTrue,
+      );
+    });
   });
 }
 

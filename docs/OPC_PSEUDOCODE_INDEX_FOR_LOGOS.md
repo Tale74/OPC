@@ -391,3 +391,25 @@ Why Logos must know it: `1.234.56` deliberately uses the last separator as decim
 Risk if misunderstood: a presentation fix can accidentally become a finance or persistence policy change.
 Read before: `OPC-PSEUDO-009` and `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`.
 Read after: `lib/core/database/tables/iriu_table.dart`, `lib/features/predmeti/data/iriu_repository.dart`, and `test/iriu_manual_amount_format_test.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-034
+
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/stanje_robe/application/stanje_robe_operational_availability.dart`; `lib/core/database/tables/app_podesavanja_table.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`
+Related pseudocode sections: `OPC-PSEUDO-036`
+Business meaning: POTPUN availability and active stock tracking are separate; active use defaults off and remains an ADMINISTRATOR choice.
+Module: STANJE ROBE / entitlement / settings
+Truth boundary: entitlement exposes capability; the persisted toggle controls operational effects without owning PREDMET truth.
+Why Logos must know it: package inclusion must not be interpreted as automatic inventory tracking.
+Risk if misunderstood: runtime validation may expect stock movement before the user enables it.
+Read after: `test/stanje_robe_operational_toggle_test.dart` and `test/package_downgrade_migration_test.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-035
+
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/pdf/racun_pdf_export.dart`
+Related pseudocode sections: `OPC-PSEUDO-037`
+Business meaning: RAČUN is a standard visible PDF action in the PREDMET DOKUMENTI section.
+Module: PREDMET documents / PDF
+Truth boundary: RAČUN is a PREDMET-derived output, not independent business truth.
+Why Logos must know it: runtime document expectations must include the source-confirmed RAČUN action.
+Risk if misunderstood: a verification task could accidentally alter the document set.
+Read after: `test/package_downgrade_migration_test.dart`.

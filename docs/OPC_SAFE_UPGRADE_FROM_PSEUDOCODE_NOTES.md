@@ -253,6 +253,16 @@ Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> 
 
 Catalog/stored IRiU doubles already render through the Serbian formatter, but the previous manual parser rejected `1234,56` and `1.234.56` -> parse only manual IRiU amount conventions, use the last separator as decimal when repeated, retain valid numeric value, normalize on commit/focus loss, and reject invalid text without saving zero -> manual and catalog commercial amounts look consistent -> permissive parsing can create a plausible wrong price or alter totals -> keep the change within manual IRiU `iznos` parsing/controller display; quantity remains free text and catalog, calculations, persistence schema, PDF/JSON/export/import remain unchanged.
 
+## Pre-Runtime STANJE ROBE And RAČUN PDF Cross-Reference
+
+Related pseudocode: `OPC-PSEUDO-036`, `OPC-PSEUDO-037`.
+
+Source paths -> source behavior -> pseudocode -> business meaning -> risk if changed blindly -> safe upgrade boundary:
+
+`opc_entitlement_policy.dart`, `app_podesavanja_table.dart`, database seed/migration guards, operational availability, settings toggle, and stock tests -> POTPUN makes STANJE ROBE available while a separate setting defaults off and can be controlled by ADMINISTRATOR -> availability then persisted toggle determine notLicensed/disabled/active -> users may decline inventory tracking even with POTPUN -> conflating entitlement and activation can force stock effects -> preserve POTPUN availability, default-off activation, and user choice without changing stock logic.
+
+`opc_entitlement_policy.dart`, `predmet_screen.dart`, and `racun_pdf_export.dart` -> RAČUN uses the standard operational-document gate, is listed in DOKUMENTI, and has a dedicated exporter -> include RAČUN in expected standard PDF actions -> runtime document verification has a source-confirmed expectation -> changing the set during verification can create product drift -> status is `RAČUN IS PART OF STANDARD PDF EXPORT`; do not add/remove or alter the PDF without owner-approved behavior change.
+
 ## Characterization Evidence Foundation Cross-Reference
 
 Source documents:

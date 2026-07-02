@@ -1426,3 +1426,55 @@ Business meaning: manually entered goods/service amounts communicate the same co
 Risk if changed blindly: an ambiguous separator or invalid text can become a plausible but wrong amount and alter totals.
 Safe upgrade boundary: IRiU manual `iznos` parsing and controller display only; no catalog price, quantity, calculation, persistence schema, PDF, JSON, finance, or unrelated module semantics change.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARSER / RUNTIME NOT PRODUCED`.
+
+## PSEUDO-ID: OPC-PSEUDO-036
+
+Business area: STANJE ROBE availability versus user-enabled active use
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/core/database/tables/app_podesavanja_table.dart`; `lib/core/database/database.dart`; `lib/features/podesavanja/data/podesavanja_repository.dart`; `lib/features/stanje_robe/application/stanje_robe_operational_availability.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `test/stanje_robe_operational_toggle_test.dart`; `test/package_downgrade_migration_test.dart`
+Source behavior: `POTPUN` makes the module available, while a separate persisted operational setting defaults to false and is controlled by an ADMINISTRATOR toggle.
+Pseudocode:
+
+```text
+entitlementAvailable = package is POTPUN
+    OR package is SREDNJI with STANJE ROBE add-on
+
+IF entitlementAvailable is false:
+    status = notLicensed
+ELSE IF persisted operational toggle is false:
+    status = disabled
+ELSE:
+    status = active
+
+ON new database, migration without the setting, or missing-column repair:
+    operational toggle = false
+
+ADMINISTRATOR may enable or disable the persisted toggle.
+Package availability never forces the toggle on.
+```
+
+Business meaning: POTPUN users may use inventory tracking but retain the choice not to use it.
+Risk if changed blindly: entitlement could force stock effects or removing the entitlement could hide an owner-approved package capability.
+Safe upgrade boundary: preserve POTPUN availability and the independent default-off user setting; do not change stock data, movements, consequences, or calculations.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED / NO CORRECTION REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-037
+
+Business area: RAČUN standard PDF export status
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/pdf/racun_pdf_export.dart`; `test/package_downgrade_migration_test.dart`
+Source behavior: `racunPdf` is an `OpcDocumentAction`, uses the same `operationalDocuments` visibility gate as standard PDF actions, appears in the DOKUMENTI action list as `RAČUN PDF`, and invokes the dedicated exporter.
+Pseudocode:
+
+```text
+IF operational documents are available:
+    show standard PDF document actions
+    include RAČUN PDF
+
+WHEN user chooses RAČUN PDF:
+    invoke izvoziRacunPdf for the current PREDMET
+```
+
+Verified status: `RAČUN IS PART OF STANDARD PDF EXPORT`.
+Business meaning: pre-runtime validation should expect RAČUN among the standard DOKUMENTI PDF actions.
+Risk if changed blindly: adding or removing the action can make runtime expectations contradict the source-approved document set.
+Safe upgrade boundary: verification and characterization only; do not add/remove RAČUN or change its layout/content without an owner-approved product decision.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED VISIBILITY / NO PDF CHANGE`.
