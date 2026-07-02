@@ -368,6 +368,14 @@ Related pseudocode sections: `OPC-PSEUDO-033`
 Business meaning: Windows in-app reminders and Android local notifications derive from the same PREDMET ceremony term and local frequency configuration.
 Reminder content: exact `vrstaCeremonije`, PREMINULO LICE `ime + prezime`, `datumCeremonije`, `vremeCeremonije`, and the preparation instruction are required PREDMET business identity.
 Formula starts directly with `vrstaCeremonije`; literal `CEREMONIJA` is not prefixed.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-032
+
+Source files: `preminulo_lice_segment.dart`; `ceremonija_segment.dart`; `app_date_format.dart`
+Related pseudocode sections: `OPC-PSEUDO-034`
+Business meaning: birth, death, and ceremony dates use calendar dialogs while preserving existing Serbian field text and autosave behavior.
+Truth boundary: input method does not redefine date facts, storage, outputs, or reminder semantics.
+Risk if misunderstood: a UI convenience change can be mistaken for date-model migration.
 Truth boundary: local reminder settings/IDs are operational state; PREDMET ceremony date/time remains master truth and local id is not cross-device identity.
 Risk if misunderstood: scheduled state can become parallel ceremony truth or imply remote push infrastructure.
 Read after: reminder model/repository/gateway, CEREMONIJA segment, Android manifest, and focused tests.

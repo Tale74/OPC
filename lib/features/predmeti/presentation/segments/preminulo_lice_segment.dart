@@ -9,12 +9,7 @@ import '../../../../core/format/app_format.dart';
 import '../../core_v2/rules/iriu_truth_rules.dart';
 import 'predmet_decision_controls.dart';
 
-enum PreminuloLiceSegmentMode {
-  all,
-  osnovno,
-  cinjeniceOSmrti,
-  statusi,
-}
+enum PreminuloLiceSegmentMode { all, osnovno, cinjeniceOSmrti, statusi }
 
 /// Segment 1 + 1a: PREMINULO LICE i RADNI STATUS.
 class PreminuloLiceSegment extends StatefulWidget {
@@ -133,12 +128,7 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     'NEUDATA',
     'VANBRAČNA ZAJEDNICA',
   ];
-  static const _saBracnimDrugom = {
-    'OŽENJEN',
-    'UDATA',
-    'UDOVAC',
-    'UDOVICA',
-  };
+  static const _saBracnimDrugom = {'OŽENJEN', 'UDATA', 'UDOVAC', 'UDOVICA'};
   static const _mozePravoBD = {'OŽENJEN', 'UDATA'};
 
   bool get _jePenzionerSrbije =>
@@ -169,8 +159,7 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     _bdJmbgCtrl = TextEditingController(text: d.bracniDrugJmbg);
 
     _cinCtrlRS = TextEditingController(text: d.cin);
-    _radniStatusNapomenaCtrl =
-        TextEditingController(text: d.penzionerNapomena);
+    _radniStatusNapomenaCtrl = TextEditingController(text: d.penzionerNapomena);
 
     _pol = d.pol.isNotEmpty ? d.pol : 'M';
     _mestoSmrti = IriuTruthRules.normalizeMestoSmrti(d.mestoSmrti);
@@ -230,11 +219,23 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
   void dispose() {
     _debounce?.cancel();
     for (final c in [
-      _imeCtrl, _prezimeCtrl, _srednjeCtrl, _devojackoCtrl, _jmbgCtrl,
-      _datumRodjenjaCtrl, _mestoRodjenjaCtrl, _datumSmrtiCtrl, _adresaCtrl,
-      _imeOcaCtrl, _imeMajkeCtrl,
-      _bdImeCtrl, _bdPrezimeCtrl, _bdDevojackoCtrl, _bdJmbgCtrl,
-      _cinCtrlRS, _radniStatusNapomenaCtrl,
+      _imeCtrl,
+      _prezimeCtrl,
+      _srednjeCtrl,
+      _devojackoCtrl,
+      _jmbgCtrl,
+      _datumRodjenjaCtrl,
+      _mestoRodjenjaCtrl,
+      _datumSmrtiCtrl,
+      _adresaCtrl,
+      _imeOcaCtrl,
+      _imeMajkeCtrl,
+      _bdImeCtrl,
+      _bdPrezimeCtrl,
+      _bdDevojackoCtrl,
+      _bdJmbgCtrl,
+      _cinCtrlRS,
+      _radniStatusNapomenaCtrl,
     ]) {
       c.dispose();
     }
@@ -251,8 +252,8 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
 
   void _save() {
     // Izračunaj legacy boolean polja iz radniStatusSet
-    final jePenzioner = _jePenzionerSrbije ||
-        _radniStatusSet.contains('INOSTRANI_PENZIONER');
+    final jePenzioner =
+        _jePenzionerSrbije || _radniStatusSet.contains('INOSTRANI_PENZIONER');
     final jePenzionerSrbije = _jePenzionerSrbije;
     final jeVojniPenzioner = _jeVojniPenzioner;
 
@@ -287,12 +288,11 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
         vojnePocasti: Value(_vojnePocasti ? 'DA' : 'NE'),
         posmrtnaPomoc: Value(_posmrtnaPomoc ? 'DA' : 'NE'),
         cin: Value(_normalizedText(_cinCtrlRS)),
-        bracniDrugOstvarujePravo:
-            Value(_bracniDrugOstvarujePravo ? 'DA' : 'NE'),
-        bracniDrugJePenzioner:
-            Value(_bracniDrugJePenzioner ? 'DA' : 'NE'),
-        penzionerNapomena:
-            Value(_normalizedText(_radniStatusNapomenaCtrl)),
+        bracniDrugOstvarujePravo: Value(
+          _bracniDrugOstvarujePravo ? 'DA' : 'NE',
+        ),
+        bracniDrugJePenzioner: Value(_bracniDrugJePenzioner ? 'DA' : 'NE'),
+        penzionerNapomena: Value(_normalizedText(_radniStatusNapomenaCtrl)),
       ),
     );
   }
@@ -327,22 +327,36 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
               ),
               const SizedBox(height: 12),
               _row([
-                _field('IME', _imeCtrl, e, caps: true,
-                    focusNode: _imeFocus,
-                    errorText: (_imeTouched || _prezimeTouched) &&
-                            _imeCtrl.text.isEmpty && _prezimeCtrl.text.isEmpty
-                        ? 'Bar ime ili prezime'
-                        : null),
+                _field(
+                  'IME',
+                  _imeCtrl,
+                  e,
+                  caps: true,
+                  focusNode: _imeFocus,
+                  errorText:
+                      (_imeTouched || _prezimeTouched) &&
+                          _imeCtrl.text.isEmpty &&
+                          _prezimeCtrl.text.isEmpty
+                      ? 'Bar ime ili prezime'
+                      : null,
+                ),
                 _field('SREDNJE IME / SLOVO', _srednjeCtrl, e, caps: true),
               ]),
               const SizedBox(height: 12),
               _row([
-                _field('PREZIME', _prezimeCtrl, e, caps: true,
-                    focusNode: _prezimeFocus,
-                    errorText: (_imeTouched || _prezimeTouched) &&
-                            _imeCtrl.text.isEmpty && _prezimeCtrl.text.isEmpty
-                        ? 'Bar ime ili prezime'
-                        : null),
+                _field(
+                  'PREZIME',
+                  _prezimeCtrl,
+                  e,
+                  caps: true,
+                  focusNode: _prezimeFocus,
+                  errorText:
+                      (_imeTouched || _prezimeTouched) &&
+                          _imeCtrl.text.isEmpty &&
+                          _prezimeCtrl.text.isEmpty
+                      ? 'Bar ime ili prezime'
+                      : null,
+                ),
                 if (_pol == 'Z')
                   _field(
                     'DEVOJAČKO PREZIME',
@@ -357,20 +371,39 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
               ]),
               const SizedBox(height: 12),
               _row([
-                _field('JMBG', _jmbgCtrl, e,
-                    keyboard: TextInputType.number, protected: true),
+                _field(
+                  'JMBG',
+                  _jmbgCtrl,
+                  e,
+                  keyboard: TextInputType.number,
+                  protected: true,
+                ),
                 _polSelector(e),
               ]),
               const SizedBox(height: 12),
               _row([
-                _datumField('DATUM ROĐENJA', _datumRodjenjaCtrl, e,
-                    protected: true),
-                _field('MESTO ROĐENJA', _mestoRodjenjaCtrl, e,
-                    caps: true, protected: true),
+                _datumField(
+                  'DATUM ROĐENJA',
+                  _datumRodjenjaCtrl,
+                  e,
+                  protected: true,
+                ),
+                _field(
+                  'MESTO ROĐENJA',
+                  _mestoRodjenjaCtrl,
+                  e,
+                  caps: true,
+                  protected: true,
+                ),
               ]),
               const SizedBox(height: 12),
-              _field('ADRESA PREBIVALIŠTA', _adresaCtrl, e,
-                  caps: true, protected: true),
+              _field(
+                'ADRESA PREBIVALIŠTA',
+                _adresaCtrl,
+                e,
+                caps: true,
+                protected: true,
+              ),
               const SizedBox(height: 12),
               _row([
                 _field('IME OCA', _imeOcaCtrl, e, caps: true),
@@ -406,21 +439,34 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
                 const SizedBox(height: 12),
                 _row([
                   _field('IME BRAČNOG DRUGA', _bdImeCtrl, e, caps: true),
-                  _field('PREZIME BRAČNOG DRUGA', _bdPrezimeCtrl, e,
-                      caps: true),
+                  _field(
+                    'PREZIME BRAČNOG DRUGA',
+                    _bdPrezimeCtrl,
+                    e,
+                    caps: true,
+                  ),
                 ]),
                 const SizedBox(height: 12),
                 _row([
                   _polSelectorBD(e),
                   if (_bdPol == 'Z')
-                    _field('DEVOJAČKO PREZIME BD', _bdDevojackoCtrl, e,
-                        caps: true)
+                    _field(
+                      'DEVOJAČKO PREZIME BD',
+                      _bdDevojackoCtrl,
+                      e,
+                      caps: true,
+                    )
                   else
                     const Expanded(child: SizedBox()),
                 ]),
                 const SizedBox(height: 12),
-                _field('JMBG BRAČNOG DRUGA', _bdJmbgCtrl, e,
-                    keyboard: TextInputType.number, protected: true),
+                _field(
+                  'JMBG BRAČNOG DRUGA',
+                  _bdJmbgCtrl,
+                  e,
+                  keyboard: TextInputType.number,
+                  protected: true,
+                ),
               ],
               const SizedBox(height: 20),
               const Divider(),
@@ -442,26 +488,26 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
                     selected: selected,
                     enabled: e,
                     onSelected: (v) => setState(() {
-                              if (v) {
-                                _radniStatusSet = {..._radniStatusSet, t.$1};
-                              } else {
-                                _radniStatusSet = _radniStatusSet
-                                    .where((k) => k != t.$1)
-                                    .toSet();
-                              }
-                              // Resetuj zavisna polja ako više nisu relevantna
-                              if (!_jePenzionerSrbije) {
-                                _vojnePocasti = false;
-                                _posmrtnaPomoc = false;
-                                _bracniDrugOstvarujePravo = false;
-                                _bracniDrugJePenzioner = false;
-                              }
-                              if (!_jeVojniPenzioner) {
-                                _vojnePocasti = false;
-                                _posmrtnaPomoc = false;
-                              }
-                              _scheduleSave();
-                            }),
+                      if (v) {
+                        _radniStatusSet = {..._radniStatusSet, t.$1};
+                      } else {
+                        _radniStatusSet = _radniStatusSet
+                            .where((k) => k != t.$1)
+                            .toSet();
+                      }
+                      // Resetuj zavisna polja ako više nisu relevantna
+                      if (!_jePenzionerSrbije) {
+                        _vojnePocasti = false;
+                        _posmrtnaPomoc = false;
+                        _bracniDrugOstvarujePravo = false;
+                        _bracniDrugJePenzioner = false;
+                      }
+                      if (!_jeVojniPenzioner) {
+                        _vojnePocasti = false;
+                        _posmrtnaPomoc = false;
+                      }
+                      _scheduleSave();
+                    }),
                   );
                 }).toList(),
               ),
@@ -471,45 +517,59 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
                 if (_jeVojniPenzioner) ...[
                   _field('ČIN', _cinCtrlRS, e, caps: true),
                   const SizedBox(height: 8),
-                  _checkRow('Vojne počasti', _vojnePocasti, e,
-                      (v) => setState(() {
-                            _vojnePocasti = v;
-                            _scheduleSave();
-                          })),
-                  _checkRow('Posmrtna pomoć', _posmrtnaPomoc, e,
-                      (v) => setState(() {
-                            _posmrtnaPomoc = v;
-                            _scheduleSave();
-                          })),
+                  _checkRow(
+                    'Vojne počasti',
+                    _vojnePocasti,
+                    e,
+                    (v) => setState(() {
+                      _vojnePocasti = v;
+                      _scheduleSave();
+                    }),
+                  ),
+                  _checkRow(
+                    'Posmrtna pomoć',
+                    _posmrtnaPomoc,
+                    e,
+                    (v) => setState(() {
+                      _posmrtnaPomoc = v;
+                      _scheduleSave();
+                    }),
+                  ),
                   const SizedBox(height: 4),
                 ],
                 if (_mozeOstvaritPravoBD) ...[
                   const SizedBox(height: 4),
                   _checkRow(
-                      'Pravo na porodičnu penziju',
-                      _bracniDrugOstvarujePravo,
-                      e,
-                      (v) => setState(() {
-                            _bracniDrugOstvarujePravo = v;
-                            if (!v) _bracniDrugJePenzioner = false;
-                            _scheduleSave();
-                          })),
+                    'Pravo na porodičnu penziju',
+                    _bracniDrugOstvarujePravo,
+                    e,
+                    (v) => setState(() {
+                      _bracniDrugOstvarujePravo = v;
+                      if (!v) _bracniDrugJePenzioner = false;
+                      _scheduleSave();
+                    }),
+                  ),
                   if (_bracniDrugOstvarujePravo)
                     _checkRow(
-                        'Bračni drug je penzioner',
-                        _bracniDrugJePenzioner,
-                        e,
-                        (v) => setState(() {
-                              _bracniDrugJePenzioner = v;
-                              _scheduleSave();
-                            })),
+                      'Bračni drug je penzioner',
+                      _bracniDrugJePenzioner,
+                      e,
+                      (v) => setState(() {
+                        _bracniDrugJePenzioner = v;
+                        _scheduleSave();
+                      }),
+                    ),
                 ],
                 const SizedBox(height: 8),
               ],
               if (_radniStatusSet.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                _field('NAPOMENA (radni status)', _radniStatusNapomenaCtrl, e,
-                    maxLines: 2),
+                _field(
+                  'NAPOMENA (radni status)',
+                  _radniStatusNapomenaCtrl,
+                  e,
+                  maxLines: 2,
+                ),
               ],
             ],
           ],
@@ -532,297 +592,316 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     FocusNode? focusNode,
     bool emphasize = false,
     bool protected = false,
-  }) =>
-      Builder(
-        builder: (context) {
-          final cs = Theme.of(context).colorScheme;
-          final highlightBorder = OutlineInputBorder(
-            borderSide: BorderSide(
-              color: cs.tertiary,
-              width: 1.6,
-            ),
-          );
-          if (protected) {
-            return PredmetProtectedTextField(
-              labelText: label,
-              controller: ctrl,
-              enabled: enabled,
-              keyboardType: keyboard,
-              maxLines: maxLines,
-              focusNode: focusNode,
-              textCapitalization:
-                  caps ? TextCapitalization.characters : TextCapitalization.none,
-              hintText: hint,
-              errorText: errorText,
-              onChanged: (_) => _scheduleSave(),
-            );
-          }
-
-          return TextFormField(
-            controller: ctrl,
-            enabled: enabled,
-            keyboardType: keyboard,
-            maxLines: maxLines,
-            focusNode: focusNode,
-            textCapitalization:
-                caps ? TextCapitalization.characters : TextCapitalization.none,
-            decoration: InputDecoration(
-              labelText: label,
-              hintText: hint,
-              border: const OutlineInputBorder(),
-              isDense: true,
-              errorText: errorText,
-              filled: emphasize,
-              fillColor:
-                  emphasize ? cs.tertiaryContainer.withAlpha(110) : null,
-              enabledBorder: emphasize ? highlightBorder : null,
-              focusedBorder: emphasize
-                  ? highlightBorder.copyWith(
-                      borderSide: BorderSide(
-                        color: cs.tertiary,
-                        width: 2,
-                      ),
-                    )
-                  : null,
-            ),
-            onChanged: (_) => _scheduleSave(),
-          );
-        },
+  }) => Builder(
+    builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      final highlightBorder = OutlineInputBorder(
+        borderSide: BorderSide(color: cs.tertiary, width: 1.6),
       );
+      if (protected) {
+        return PredmetProtectedTextField(
+          labelText: label,
+          controller: ctrl,
+          enabled: enabled,
+          keyboardType: keyboard,
+          maxLines: maxLines,
+          focusNode: focusNode,
+          textCapitalization: caps
+              ? TextCapitalization.characters
+              : TextCapitalization.none,
+          hintText: hint,
+          errorText: errorText,
+          onChanged: (_) => _scheduleSave(),
+        );
+      }
+
+      return TextFormField(
+        controller: ctrl,
+        enabled: enabled,
+        keyboardType: keyboard,
+        maxLines: maxLines,
+        focusNode: focusNode,
+        textCapitalization: caps
+            ? TextCapitalization.characters
+            : TextCapitalization.none,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          border: const OutlineInputBorder(),
+          isDense: true,
+          errorText: errorText,
+          filled: emphasize,
+          fillColor: emphasize ? cs.tertiaryContainer.withAlpha(110) : null,
+          enabledBorder: emphasize ? highlightBorder : null,
+          focusedBorder: emphasize
+              ? highlightBorder.copyWith(
+                  borderSide: BorderSide(color: cs.tertiary, width: 2),
+                )
+              : null,
+        ),
+        onChanged: (_) => _scheduleSave(),
+      );
+    },
+  );
 
   Widget _datumField(
     String label,
     TextEditingController ctrl,
-    bool enabled,
-    {bool protected = false}
-  ) =>
-      Expanded(
-        child: protected
-            ? PredmetProtectedTextField(
-                labelText: label,
-                controller: ctrl,
-                enabled: enabled,
-                keyboardType: TextInputType.datetime,
-                hintText: 'DD.MM.YYYY',
-                onChanged: (_) => _scheduleSave(),
-              )
-            : TextFormField(
-          controller: ctrl,
-          enabled: enabled,
-          decoration: InputDecoration(
+    bool enabled, {
+    bool protected = false,
+  }) => Expanded(
+    child: protected && ctrl.text.trim().toLowerCase() == 'redacted'
+        ? PredmetProtectedTextField(
             labelText: label,
+            controller: ctrl,
+            enabled: false,
+            keyboardType: TextInputType.datetime,
             hintText: 'DD.MM.YYYY',
-            border: const OutlineInputBorder(),
-            isDense: true,
+            onChanged: (_) => _scheduleSave(),
+          )
+        : TextFormField(
+            controller: ctrl,
+            enabled: enabled,
+            readOnly: true,
+            onTap: enabled ? () => _pickDate(ctrl) : null,
+            decoration: InputDecoration(
+              labelText: label,
+              hintText: 'DD.MM.YYYY',
+              border: const OutlineInputBorder(),
+              isDense: true,
+              suffixIcon: IconButton(
+                tooltip: ctrl.text.isEmpty ? 'Izaberi datum' : 'Obriši datum',
+                onPressed: !enabled
+                    ? null
+                    : ctrl.text.isEmpty
+                    ? () => _pickDate(ctrl)
+                    : () {
+                        ctrl.clear();
+                        _scheduleSave();
+                        setState(() {});
+                      },
+                icon: Icon(
+                  ctrl.text.isEmpty
+                      ? Icons.calendar_month_outlined
+                      : Icons.clear,
+                ),
+              ),
+            ),
           ),
-          onChanged: (_) => _scheduleSave(),
-          onEditingComplete: () {
-            final parsed = parseDateInput(ctrl.text);
-            if (parsed != ctrl.text) {
-              ctrl.text = parsed;
-              ctrl.selection =
-                  TextSelection.collapsed(offset: parsed.length);
-            }
-          },
-        ),
-      );
+  );
+
+  Future<void> _pickDate(TextEditingController ctrl) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: parseDateValue(ctrl.text) ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100, 12, 31),
+    );
+    if (picked == null || !mounted) return;
+    ctrl.text = formatCalendarPickerSelection(picked);
+    _scheduleSave();
+    setState(() {});
+  }
 
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
 
   Widget _row(List<Widget> children) => LayoutBuilder(
-        builder: (context, constraints) {
-          final normalizedChildren = children
-              .map<Widget>((w) => w is Expanded ? w.child : w)
-              .toList(growable: false);
+    builder: (context, constraints) {
+      final normalizedChildren = children
+          .map<Widget>((w) => w is Expanded ? w.child : w)
+          .toList(growable: false);
 
-          if (constraints.maxWidth < 700) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: normalizedChildren
+      if (constraints.maxWidth < 700) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children:
+              normalizedChildren
                   .expand((w) => [w, const SizedBox(height: 12)])
                   .toList()
                 ..removeLast(),
-            );
-          }
+        );
+      }
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: normalizedChildren
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:
+            normalizedChildren
                 .map<Widget>((w) => Expanded(child: w))
                 .expand((w) => [w, const SizedBox(width: 12)])
                 .toList()
               ..removeLast(),
-          );
-        },
       );
+    },
+  );
 
   Widget _polSelector(bool enabled) => Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'POL',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'M', label: Text('M')),
-                ButtonSegment(value: 'Z', label: Text('Ž')),
-              ],
-              selected: {_pol},
-              onSelectionChanged: enabled
-                  ? (s) => setState(() {
-                        final prethodniPol = _pol;
-                        _pol = s.first;
-                        if (_bracnoStanje == 'VANBRAČNA ZAJEDNICA' ||
-                            _bracnoStanje.isEmpty) {
-                          _bdPol = _autoBdPol;
-                        }
-                        if (_pol == 'Z' && prethodniPol != 'Z') {
-                          _devojackoNeedsAttention =
-                              _devojackoCtrl.text.trim().isEmpty;
-                        } else if (_pol != 'Z') {
-                          _devojackoNeedsAttention = false;
-                        }
-                        _scheduleSave();
-                      })
-                  : null,
-              style: const ButtonStyle(
-                  visualDensity: VisualDensity.compact),
-            ),
-          ],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'POL',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
-      );
+        const SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'M', label: Text('M')),
+            ButtonSegment(value: 'Z', label: Text('Ž')),
+          ],
+          selected: {_pol},
+          onSelectionChanged: enabled
+              ? (s) => setState(() {
+                  final prethodniPol = _pol;
+                  _pol = s.first;
+                  if (_bracnoStanje == 'VANBRAČNA ZAJEDNICA' ||
+                      _bracnoStanje.isEmpty) {
+                    _bdPol = _autoBdPol;
+                  }
+                  if (_pol == 'Z' && prethodniPol != 'Z') {
+                    _devojackoNeedsAttention = _devojackoCtrl.text
+                        .trim()
+                        .isEmpty;
+                  } else if (_pol != 'Z') {
+                    _devojackoNeedsAttention = false;
+                  }
+                  _scheduleSave();
+                })
+              : null,
+          style: const ButtonStyle(visualDensity: VisualDensity.compact),
+        ),
+      ],
+    ),
+  );
 
   Widget _polSelectorBD(bool enabled) => Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'POL BRAČNOG DRUGA',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'M', label: Text('M')),
-                ButtonSegment(value: 'Z', label: Text('Ž')),
-              ],
-              selected: {_bdPol},
-              onSelectionChanged: enabled
-                  ? (s) => setState(() {
-                        _bdPol = s.first;
-                        _scheduleSave();
-                      })
-                  : null,
-              style: const ButtonStyle(
-                  visualDensity: VisualDensity.compact),
-            ),
-          ],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'POL BRAČNOG DRUGA',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
-      );
+        const SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'M', label: Text('M')),
+            ButtonSegment(value: 'Z', label: Text('Ž')),
+          ],
+          selected: {_bdPol},
+          onSelectionChanged: enabled
+              ? (s) => setState(() {
+                  _bdPol = s.first;
+                  _scheduleSave();
+                })
+              : null,
+          style: const ButtonStyle(visualDensity: VisualDensity.compact),
+        ),
+      ],
+    ),
+  );
 
   /// Sub-sekcija naslov.
-  Widget _sectionLabel(BuildContext context, String title, [String hint = '']) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
+  Widget _sectionLabel(
+    BuildContext context,
+    String title, [
+    String hint = '',
+  ]) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+      if (hint.isNotEmpty) ...[
+        const SizedBox(height: 2),
+        Text(
+          hint,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              hint,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ],
-        ],
-      );
+        ),
+      ],
+    ],
+  );
 
   Widget _mestoSmrtiDropdown(bool enabled) => Expanded(
-        child: DropdownButtonFormField<String>(
-          key: ValueKey('mestoSmrti:$_mestoSmrti'),
-          initialValue: _mestoSmrti.isEmpty ? null : _mestoSmrti,
-          decoration: const InputDecoration(
-            labelText: 'MESTO SMRTI',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
-          items: _mestoSmrtiOpcije
-              .map((v) => DropdownMenuItem(value: v, child: Text(v)))
-              .toList(),
-          onChanged: enabled
-              ? (v) => setState(() {
-                    _mestoSmrti = IriuTruthRules.normalizeMestoSmrti(v ?? '');
-                    _scheduleSave();
-                  })
-              : null,
-        ),
-      );
+    child: DropdownButtonFormField<String>(
+      key: ValueKey('mestoSmrti:$_mestoSmrti'),
+      initialValue: _mestoSmrti.isEmpty ? null : _mestoSmrti,
+      decoration: const InputDecoration(
+        labelText: 'MESTO SMRTI',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: _mestoSmrtiOpcije
+          .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+          .toList(),
+      onChanged: enabled
+          ? (v) => setState(() {
+              _mestoSmrti = IriuTruthRules.normalizeMestoSmrti(v ?? '');
+              _scheduleSave();
+            })
+          : null,
+    ),
+  );
 
   Widget _uzrokSmrtiDropdown(bool enabled) => DropdownButtonFormField<String>(
-        key: ValueKey('uzrokSmrti:$_uzrokSmrti'),
-        initialValue: _uzrokSmrti.isEmpty ? null : _uzrokSmrti,
-        decoration: const InputDecoration(
-          labelText: 'UZROK SMRTI',
-          border: OutlineInputBorder(),
-          isDense: true,
-        ),
-        items: _uzrokSmrtiOpcije
-            .map((v) => DropdownMenuItem(value: v, child: Text(v)))
-            .toList(),
-        onChanged: enabled
-            ? (v) => setState(() {
-                  _uzrokSmrti = v ?? '';
-                  _scheduleSave();
-                })
-            : null,
-      );
+    key: ValueKey('uzrokSmrti:$_uzrokSmrti'),
+    initialValue: _uzrokSmrti.isEmpty ? null : _uzrokSmrti,
+    decoration: const InputDecoration(
+      labelText: 'UZROK SMRTI',
+      border: OutlineInputBorder(),
+      isDense: true,
+    ),
+    items: _uzrokSmrtiOpcije
+        .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+        .toList(),
+    onChanged: enabled
+        ? (v) => setState(() {
+            _uzrokSmrti = v ?? '';
+            _scheduleSave();
+          })
+        : null,
+  );
 
   Widget _bracnoStanjeDropdown(bool enabled) => DropdownButtonFormField<String>(
-        key: ValueKey('bracnoStanje:$_bracnoStanje'),
-        initialValue: _bracnoStanje.isEmpty ? null : _bracnoStanje,
-        decoration: const InputDecoration(
-          labelText: 'BRAČNO STANJE',
-          border: OutlineInputBorder(),
-          isDense: true,
-        ),
-        items: _bracnaStanjaOpcije
-            .map((v) => DropdownMenuItem(value: v, child: Text(v)))
-            .toList(),
-        onChanged: enabled
-            ? (v) => setState(() {
-                  _bracnoStanje = v ?? '';
-                  _bdPol = _autoBdPol;
-                  _scheduleSave();
-                })
-            : null,
-      );
+    key: ValueKey('bracnoStanje:$_bracnoStanje'),
+    initialValue: _bracnoStanje.isEmpty ? null : _bracnoStanje,
+    decoration: const InputDecoration(
+      labelText: 'BRAČNO STANJE',
+      border: OutlineInputBorder(),
+      isDense: true,
+    ),
+    items: _bracnaStanjaOpcije
+        .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+        .toList(),
+    onChanged: enabled
+        ? (v) => setState(() {
+            _bracnoStanje = v ?? '';
+            _bdPol = _autoBdPol;
+            _scheduleSave();
+          })
+        : null,
+  );
 
   Widget _checkRow(
     String label,
     bool value,
     bool enabled,
     ValueChanged<bool> onChanged,
-  ) =>
-      PredmetBooleanDecisionTile(
-        title: label,
-        value: value,
-        enabled: enabled,
-        onChanged: onChanged,
-      );
+  ) => PredmetBooleanDecisionTile(
+    title: label,
+    value: value,
+    enabled: enabled,
+    onChanged: onChanged,
+  );
 }

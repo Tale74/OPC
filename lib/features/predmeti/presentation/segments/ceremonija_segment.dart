@@ -375,6 +375,22 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _scheduleSave();
   }
 
+  Future<void> _pickCeremonyDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: parseDateValue(_datumCeremonijeCtrl.text) ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100, 12, 31),
+    );
+    if (picked == null || !mounted) return;
+    _datumCeremonijeCtrl.text = formatCalendarPickerSelection(
+      picked,
+      trailingDot: true,
+    );
+    _scheduleSave();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final e = widget.enabled;
@@ -735,6 +751,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   child: TextFormField(
                     controller: _datumCeremonijeCtrl,
                     enabled: e,
+                    readOnly: true,
                     focusNode: _datumCeremFocus,
                     decoration: InputDecoration(
                       labelText: 'DATUM CEREMONIJE',
@@ -747,18 +764,27 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                               _datumCeremonijeCtrl.text.isEmpty
                           ? 'Obavezno'
                           : null,
+                      suffixIcon: IconButton(
+                        tooltip: _datumCeremonijeCtrl.text.isEmpty
+                            ? 'Izaberi datum'
+                            : 'Obriši datum',
+                        onPressed: !e
+                            ? null
+                            : _datumCeremonijeCtrl.text.isEmpty
+                            ? _pickCeremonyDate
+                            : () {
+                                _datumCeremonijeCtrl.clear();
+                                _scheduleSave();
+                                setState(() {});
+                              },
+                        icon: Icon(
+                          _datumCeremonijeCtrl.text.isEmpty
+                              ? Icons.calendar_month_outlined
+                              : Icons.clear,
+                        ),
+                      ),
                     ),
-                    onChanged: (_) => _scheduleSave(),
-                    onEditingComplete: () {
-                      final p = normalizeCeremonyDateInput(
-                        _datumCeremonijeCtrl.text,
-                      );
-                      if (p != _datumCeremonijeCtrl.text) {
-                        _datumCeremonijeCtrl.text = p;
-                        _datumCeremonijeCtrl.selection =
-                            TextSelection.collapsed(offset: p.length);
-                      }
-                    },
+                    onTap: e ? _pickCeremonyDate : null,
                   ),
                 ),
                 Expanded(

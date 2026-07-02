@@ -1373,3 +1373,26 @@ Business meaning: reminders are local operational helpers around time-critical C
 Risk if changed blindly: duplicate alarms, past-time spam, stale terms, permission failures, or parallel ceremony truth.
 Safe upgrade boundary: local settings/scheduling/dialogs only; no remote push, Firebase, JSON transfer, identity, Web/sync, or unrelated module changes.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED CORE / RUNTIME NOT PRODUCED`.
+
+## PSEUDO-ID: OPC-PSEUDO-034
+
+Business area: calendar picker date input with preserved Serbian date format
+Source files: `lib/features/predmeti/presentation/segments/preminulo_lice_segment.dart`; `ceremonija_segment.dart`; `lib/core/format/app_date_format.dart`
+Pseudocode:
+
+```text
+FOR DATUM ROĐENJA, DATUM SMRTI, and DATUM CEREMONIJE:
+    field is readable but not manually typed
+    tap opens showDatePicker using existing value or today
+    IF user cancels: keep current value
+    IF user selects: write existing Serbian normalized text
+        birth/death = DD.MM.YYYY
+        ceremony = existing DD.MM.YYYY. representation
+    clear action remains available
+    invoke the existing autosave path
+```
+
+Business meaning: calendar selection reduces input errors without changing date facts.
+Risk if changed blindly: picker code can alter storage/output format or reminder inputs.
+Safe upgrade boundary: UI input method only; date meaning, storage, PDF, JSON, reminder, and GDPR behavior remain unchanged.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED FORMAT / RUNTIME NOT PRODUCED`.
