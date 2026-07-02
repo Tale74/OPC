@@ -6,6 +6,10 @@ import '../data/predmeti_repository.dart';
 import '../statistika_v1/statistika_snapshot_service.dart';
 import 'statistika_aggregator.dart';
 
+bool useCompactStatistikaFilters(TargetPlatform platform) {
+  return platform == TargetPlatform.android;
+}
+
 class StatistikaScreen extends StatefulWidget {
   const StatistikaScreen({
     super.key,
@@ -46,10 +50,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
         unselectedLabelColor: scheme.onSurfaceVariant,
         indicatorColor: scheme.primary,
         dividerColor: scheme.outlineVariant.withValues(alpha: 0.5),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-        ),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 13,
@@ -62,8 +63,9 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
     final predmeti = await widget.predmetiRepo.getSvePredmete();
     final iriu = await widget.iriuRepo.getSveIriu();
     final korisnici = await widget.predmetiRepo.getSveKorisnike();
-    final kategorije =
-        await widget.predmetiRepo.db.select(widget.predmetiRepo.db.iriuKatalogConfig).get();
+    final kategorije = await widget.predmetiRepo.db
+        .select(widget.predmetiRepo.db.iriuKatalogConfig)
+        .get();
 
     final kataloskeKategorije = kategorije
         .where(
@@ -90,31 +92,29 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
     final today = DateTime(now.year, now.month, now.day);
     return switch (_preset) {
       _StatistikaPreset.poslednjih7Dana => StatistikaDateRange(
-          dateFrom: today.subtract(const Duration(days: 6)),
-          dateTo: today,
-        ),
+        dateFrom: today.subtract(const Duration(days: 6)),
+        dateTo: today,
+      ),
       _StatistikaPreset.poslednjih30Dana => StatistikaDateRange(
-          dateFrom: today.subtract(const Duration(days: 29)),
-          dateTo: today,
-        ),
+        dateFrom: today.subtract(const Duration(days: 29)),
+        dateTo: today,
+      ),
       _StatistikaPreset.trenutniMesec => StatistikaDateRange(
-          dateFrom: DateTime(today.year, today.month, 1),
-          dateTo: today,
-        ),
+        dateFrom: DateTime(today.year, today.month, 1),
+        dateTo: today,
+      ),
       _StatistikaPreset.trenutnaGodina => StatistikaDateRange(
-          dateFrom: DateTime(today.year, 1, 1),
-          dateTo: today,
-        ),
+        dateFrom: DateTime(today.year, 1, 1),
+        dateTo: today,
+      ),
       _StatistikaPreset.custom => StatistikaDateRange(
-          dateFrom: _customDateFrom ?? today,
-          dateTo: _customDateTo ?? today,
-        ),
+        dateFrom: _customDateFrom ?? today,
+        dateTo: _customDateTo ?? today,
+      ),
     };
   }
 
-  Future<void> _pickCustomDate({
-    required bool isFrom,
-  }) async {
+  Future<void> _pickCustomDate({required bool isFrom}) async {
     final activeRange = _resolveRange();
     final initialDate = isFrom
         ? (_customDateFrom ?? activeRange.dateFrom)
@@ -172,14 +172,62 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
     return '${_formatDay(range.dateFrom)} - ${_formatDay(range.dateTo)}';
   }
 
+  Future<void> _showAndroidFilters() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final range = _resolveRange();
+            return FractionallySizedBox(
+              heightFactor: 0.9,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 12,
+                  top: 12,
+                  right: 12,
+                  bottom: 12 + MediaQuery.viewInsetsOf(context).bottom,
+                ),
+                child: _FilterCard(
+                  preset: _preset,
+                  rangeLabel: _formatRangeLabel(range),
+                  customDateFrom: _customDateFrom,
+                  customDateTo: _customDateTo,
+                  formatDay: _formatDay,
+                  onPresetSelected: (preset) {
+                    setState(() {
+                      _preset = preset;
+                      if (preset != _StatistikaPreset.custom) {
+                        _customDateFrom = null;
+                        _customDateTo = null;
+                      }
+                    });
+                    setSheetState(() {});
+                  },
+                  onPickDateFrom: () async {
+                    await _pickCustomDate(isFrom: true);
+                    if (sheetContext.mounted) setSheetState(() {});
+                  },
+                  onPickDateTo: () async {
+                    await _pickCustomDate(isFrom: false);
+                    if (sheetContext.mounted) setSheetState(() {});
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final range = _resolveRange();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('STATISTIKA'),
-      ),
+      appBar: AppBar(title: const Text('STATISTIKA')),
       body: FutureBuilder<_StatistikaSourceData>(
         future: _future,
         builder: (context, snapshot) {
@@ -212,49 +260,59 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
             dateFrom: range.dateFrom,
             dateTo: range.dateTo,
           );
-          final data = _aggregator.build(
-            source: periodSnapshot,
+          final data = _aggregator.build(source: periodSnapshot);
+          final compactFilters = useCompactStatistikaFilters(
+            Theme.of(context).platform,
           );
 
           return DefaultTabController(
             length: 5,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Column(
-                    children: [
-                      _FilterCard(
-                        preset: _preset,
-                        rangeLabel: _formatRangeLabel(range),
-                        customDateFrom: _customDateFrom,
-                        customDateTo: _customDateTo,
-                        formatDay: _formatDay,
-                        onPresetSelected: (preset) {
-                          setState(() {
-                            _preset = preset;
-                            if (preset != _StatistikaPreset.custom) {
-                              _customDateFrom = null;
-                              _customDateTo = null;
-                            }
-                          });
-                        },
-                        onPickDateFrom: () => _pickCustomDate(isFrom: true),
-                        onPickDateTo: () => _pickCustomDate(isFrom: false),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Jedan posmatrani period važi za sve prikazane statistike.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
+                if (compactFilters)
+                  _CompactFilterSummary(
+                    rangeLabel: _formatRangeLabel(range),
+                    onOpenFilters: _showAndroidFilters,
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                    child: Column(
+                      children: [
+                        _FilterCard(
+                          preset: _preset,
+                          rangeLabel: _formatRangeLabel(range),
+                          customDateFrom: _customDateFrom,
+                          customDateTo: _customDateTo,
+                          formatDay: _formatDay,
+                          onPresetSelected: (preset) {
+                            setState(() {
+                              _preset = preset;
+                              if (preset != _StatistikaPreset.custom) {
+                                _customDateFrom = null;
+                                _customDateTo = null;
+                              }
+                            });
+                          },
+                          onPickDateFrom: () => _pickCustomDate(isFrom: true),
+                          onPickDateTo: () => _pickCustomDate(isFrom: false),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Jedan posmatrani period važi za sve prikazane statistike.',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 Material(
                   color: Theme.of(context).colorScheme.surfaceContainerLow,
                   child: Theme(
@@ -364,6 +422,40 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
   }
 }
 
+class _CompactFilterSummary extends StatelessWidget {
+  const _CompactFilterSummary({
+    required this.rangeLabel,
+    required this.onOpenFilters,
+  });
+
+  final String rangeLabel;
+  final VoidCallback onOpenFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      key: const Key('statistika-compact-filter-summary'),
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: ListTile(
+        dense: true,
+        leading: const Icon(Icons.date_range_outlined),
+        title: const Text('Posmatrani period'),
+        subtitle: Text(
+          rangeLabel,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: TextButton.icon(
+          key: const Key('statistika-open-filters'),
+          onPressed: onOpenFilters,
+          icon: const Icon(Icons.tune, size: 18),
+          label: const Text('FILTERI'),
+        ),
+      ),
+    );
+  }
+}
+
 enum _StatistikaPreset {
   poslednjih7Dana,
   poslednjih30Dana,
@@ -387,26 +479,18 @@ class _StatistikaSourceData {
 }
 
 class _StatistikaTabBody extends StatelessWidget {
-  const _StatistikaTabBody({
-    required this.children,
-  });
+  const _StatistikaTabBody({required this.children});
 
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: children,
-    );
+    return ListView(padding: const EdgeInsets.all(16), children: children);
   }
 }
 
 class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionHeading({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -542,10 +626,7 @@ class _FilterCard extends StatelessWidget {
 }
 
 class _InfoPill extends StatelessWidget {
-  const _InfoPill({
-    required this.icon,
-    required this.text,
-  });
+  const _InfoPill({required this.icon, required this.text});
 
   final IconData icon;
   final String text;
@@ -567,9 +648,9 @@ class _InfoPill extends StatelessWidget {
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: scheme.onSecondaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -579,10 +660,7 @@ class _InfoPill extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.summary,
-    required this.formatMoney,
-  });
+  const _SummaryCard({required this.summary, required this.formatMoney});
 
   final StatistikaSummary summary;
   final String Function(double value) formatMoney;
@@ -646,8 +724,11 @@ class _MetricTile extends StatelessWidget {
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: (emphasize ? theme.textTheme.titleMedium : theme.textTheme.titleSmall)
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style:
+                (emphasize
+                        ? theme.textTheme.titleMedium
+                        : theme.textTheme.titleSmall)
+                    ?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -696,7 +777,8 @@ class _BreakdownSection extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest.withAlpha(90),
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withAlpha(90),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -723,7 +805,9 @@ class _BreakdownSection extends StatelessWidget {
                             ),
                             _InlineMetric(
                               label: 'Prosek',
-                              value: formatMoney(row.prosecnaIriuVrednostPoPredmetu),
+                              value: formatMoney(
+                                row.prosecnaIriuVrednostPoPredmetu,
+                              ),
                             ),
                           ],
                         ),
@@ -740,10 +824,7 @@ class _BreakdownSection extends StatelessWidget {
 }
 
 class _InlineMetric extends StatelessWidget {
-  const _InlineMetric({
-    required this.label,
-    required this.value,
-  });
+  const _InlineMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -773,9 +854,7 @@ class _InlineMetric extends StatelessWidget {
 }
 
 class _TopArtikliSection extends StatelessWidget {
-  const _TopArtikliSection({
-    required this.sections,
-  });
+  const _TopArtikliSection({required this.sections});
 
   final List<StatistikaTopKategorijaSection> sections;
 

@@ -337,3 +337,18 @@ Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> 
 The grid retains the loaded category-scoped summaries and opens a root responsive detail dialog with its selected index -> previous/next changes only the local displayed index and selection returns the currently displayed summary -> users can inspect real goods/services photographs efficiently without changing catalog truth -> a detached index or altered callback can return the wrong `stableArticleId` or source category -> keep changes within responsive detail layout, scoped keyboard/mouse/touch navigation, and the existing selection callback; do not change catalog filtering/data or downstream IRiU semantics.
 
 Platform note: Windows and Android share the viewer widget. It branches only on available viewport shape and platform margin, uses the Flutter application viewport rather than OS screen metrics, and does not force device orientation or change Android back behavior.
+
+## STATISTIKA Filter/Data Layout Cross-Reference
+
+Source paths:
+
+- `lib/features/predmeti/presentation/izvestaji_screen.dart`
+- `lib/features/predmeti/statistika_v1/statistika_snapshot_service.dart`
+- `lib/features/predmeti/presentation/statistika_aggregator.dart`
+- `test/statistika_filter_layout_test.dart`
+
+Related pseudocode sections: `OPC-PSEUDO-031`
+
+Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> safe upgrade boundary:
+
+The shared STATISTIKA screen previously kept the full multi-row period filter permanently above its expanded data tabs -> Android now keeps a compact active-period summary and opens the unchanged controls in a temporary scrollable sheet, while desktop retains the existing card -> statistical data becomes the primary permanent Android content without losing filter access or state -> moving controls can reset dates, alter calculation inputs, break back behavior, or regress desktop if state and platform boundaries are not preserved -> restrict changes to Android presentation and local visibility; preserve `_resolveRange`, snapshot construction, aggregation, filter defaults, and all unrelated product layers.

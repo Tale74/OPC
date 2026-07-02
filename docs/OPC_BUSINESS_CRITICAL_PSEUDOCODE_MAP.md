@@ -1268,3 +1268,43 @@ Business meaning: larger photography and adjacent-item browsing improve real goo
 Risk if changed blindly: displayed and selected articles can diverge, CITULJE source identity can be lost, or responsive controls can become inaccessible.
 Safe upgrade boundary: responsive picker-detail UI and local list navigation only; no repository, catalog seed, PREDMET, finance, PDF, JSON, stock, package, Web, sync, backend, payment, or licensing changes.
 Classification: `SOURCE-CONFIRMED / TEST-PARTIAL / RUNTIME REVIEW REQUIRED`.
+
+## PSEUDO-ID: OPC-PSEUDO-031
+
+Business area: STATISTIKA screen filter/data layout priority
+Source files: `lib/features/predmeti/presentation/izvestaji_screen.dart`; `lib/features/predmeti/statistika_v1/statistika_snapshot_service.dart`; `lib/features/predmeti/presentation/statistika_aggregator.dart`
+Related modules: PREDMET-derived statistics UI
+Business purpose: keep statistical data as the primary visible screen content while preserving access to the period controls.
+Inputs: current period preset, optional custom dates, available platform viewport, PREDMET-derived statistics source data.
+Decision points: Android compact presentation versus existing desktop filter card; filter sheet open/closed; unchanged period selection.
+Pseudocode:
+
+```text
+WHEN STATISTIKA loads:
+    keep current period preset and custom dates in screen state
+    derive the same date range, snapshot, and statistics as before
+
+IF platform is Android:
+    show one compact active-period row above the statistics tabs
+    keep statistics tab content expanded into remaining screen space
+    WHEN user opens FILTERI:
+        show the existing period controls in a temporary scrollable sheet
+        update the same screen state without resetting statistics context
+        close/back dismisses only the sheet
+ELSE:
+    show the existing desktop filter card and explanatory text unchanged
+
+Changing filter visibility or orientation:
+    must not change period meaning, defaults, date normalization,
+    snapshot construction, or aggregation calculations
+```
+
+Outputs: compact Android control summary plus the existing tabbed statistical data; unchanged desktop filter form.
+Side effects: filter selection updates only the existing local UI state and recalculates the same derived statistics.
+What this must not change: statistical formulas, filter meanings/defaults, PREDMET data, repository state, route identity, exports, or other modules.
+Evidence: `StatistikaScreen` branches only on `TargetPlatform.android`; `_FilterCard`, `_resolveRange`, `StatistikaSnapshotService`, and `StatistikaAggregator` remain the same calculation/control paths.
+Tests: `test/statistika_filter_layout_test.dart` protects Android-only compact layout selection; full Flutter suite protects existing tested behavior.
+Business meaning: filters remain available controls, while statistical insight regains the majority of permanent Android screen space in portrait and landscape.
+Risk if changed blindly: filters can reset, date semantics can drift, the sheet can conflict with back navigation, or desktop can regress.
+Safe upgrade boundary: Android filter presentation and local visibility interaction only; no calculation, persistence, schema, PREDMET, IRiU, PARTA, catalog, finance, PDF, JSON, Web, sync, package, or licensing changes.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED LAYOUT POLICY / RUNTIME NOT PRODUCED`.

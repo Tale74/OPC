@@ -339,3 +339,15 @@ Why Logos must know it: the displayed photograph and returned `stableArticleId` 
 Risk if misunderstood: navigation can show one article and select another, or a nested picker constraint can make full-size layout ineffective.
 Read before: `OPC-PSEUDO-029` and `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`.
 Read after: `lib/features/podesavanja/presentation/katalog_photo_policy.dart` and `test/iriu_citulje_catalog_picker_test.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-029
+
+Source file: `lib/features/predmeti/presentation/izvestaji_screen.dart`
+Related pseudocode sections: `OPC-PSEUDO-031`
+Business meaning: Android STATISTIKA permanently shows only the active-period summary and keeps the full period controls in a temporary sheet so statistical data remains primary.
+Module: PREDMET-derived statistics UI
+Truth boundary: filter presentation does not change date-range semantics, snapshot inputs, calculations, or PREDMET truth.
+Why Logos must know it: the filter is a control surface, not the primary business output of STATISTIKA.
+Risk if misunderstood: compact presentation can be mistaken for permission to remove filters or change statistical meaning.
+Read before: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`.
+Read after: `lib/features/predmeti/statistika_v1/statistika_snapshot_service.dart`, `lib/features/predmeti/presentation/statistika_aggregator.dart`, and `test/statistika_filter_layout_test.dart`.
