@@ -6,7 +6,7 @@ String buildCeremonyReminderText({
   required String ceremonyTime,
 }) {
   final fullName = '$deceasedFirstName $deceasedLastName'.trim();
-  return 'CEREMONIJA (${ceremonyType.trim()}) ZA ($fullName) JE '
-      '(${ceremonyDate.trim()}) U (${ceremonyTime.trim()}). '
+  return '${ceremonyType.trim()} ZA $fullName JE '
+      '${ceremonyDate.trim()} U ${ceremonyTime.trim()}. '
       'DOVRŠITE NEOPHODNE PRIPREME.';
 }

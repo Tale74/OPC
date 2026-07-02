@@ -62,7 +62,7 @@ Manifest read: YES
 
 Exact formula:
 
-`CEREMONIJA (vrstaCeremonije) ZA (ime prezime PREMINULO LICE) JE (datumCeremonije) U (vremeCeremonije). DOVRŠITE NEOPHODNE PRIPREME.`
+Superseded formula correction: reminder text now starts directly with `vrstaCeremonije`; the literal `CEREMONIJA` prefix is removed by the owner follow-up task.
 
 PREMINULO LICE full name is explicitly included as owner-required PREDMET business identity. No implementation-invented privacy filtering remains.
 

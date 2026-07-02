@@ -109,8 +109,8 @@ void main() {
     expect(gateway.pending.keys.toSet(), store.ids.toSet());
     expect(
       gateway.lastBody,
-      'CEREMONIJA (SAHRANA) ZA (Petar Petrović) JE (10.07.2026.) U '
-      '(13:00). DOVRŠITE NEOPHODNE PRIPREME.',
+      'SAHRANA ZA Petar Petrović JE 10.07.2026. U '
+      '13:00. DOVRŠITE NEOPHODNE PRIPREME.',
     );
   });
 
@@ -125,8 +125,8 @@ void main() {
           ceremonyDate: '11.07.2026.',
           ceremonyTime: '15:30',
         ),
-        'CEREMONIJA (KREMACIJA) ZA (Ana Jovanović) JE (11.07.2026.) U '
-        '(15:30). DOVRŠITE NEOPHODNE PRIPREME.',
+        'KREMACIJA ZA Ana Jovanović JE 11.07.2026. U '
+        '15:30. DOVRŠITE NEOPHODNE PRIPREME.',
       );
     },
   );

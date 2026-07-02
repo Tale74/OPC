@@ -1362,9 +1362,10 @@ WHEN app is active inside the 2-day window:
 
 notification content:
     use formula:
-        CEREMONIJA (vrstaCeremonije) ZA (ime prezime PREMINULO LICE)
-        JE (datumCeremonije) U (vremeCeremonije).
+        vrstaCeremonije ZA ime prezime PREMINULO LICE
+        JE datumCeremonije U vremeCeremonije.
         DOVRŠITE NEOPHODNE PRIPREME.
+    start directly with exact vrstaCeremonije; no literal CEREMONIJA prefix
     treat PREMINULO LICE name as required PREDMET business identity
 ```
 
