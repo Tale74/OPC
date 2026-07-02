@@ -327,3 +327,15 @@ Why Logos must know it: one display label (`CITULJE`) maps to two source catalog
 Risk if misunderstood: Novosti CITULJE can become unreachable or a Novosti article can be stored under the Politika internal category.
 Read before: `docs/OPC_SOURCE_OF_TRUTH_MAP.md`
 Read after: `lib/features/podesavanja/data/podesavanja_repository.dart`, `lib/features/predmeti/data/iriu_repository.dart`, and `test/iriu_citulje_catalog_picker_test.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-028
+
+Source file: `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`
+Related pseudocode sections: `OPC-PSEUDO-030`
+Business meaning: the category-scoped catalog grid opens a near-window-size detail viewer; previous/next changes only the displayed list index, and `IZABERI` returns that displayed article through the existing callback.
+Module: IRiU table / KATALOG picker detail UX
+Truth boundary: responsive image layout and local navigation do not own catalog filtering, catalog master data, or IRiU persistence semantics.
+Why Logos must know it: the displayed photograph and returned `stableArticleId` must remain synchronized while browsing adjacent articles.
+Risk if misunderstood: navigation can show one article and select another, or a nested picker constraint can make full-size layout ineffective.
+Read before: `OPC-PSEUDO-029` and `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`.
+Read after: `lib/features/podesavanja/presentation/katalog_photo_policy.dart` and `test/iriu_citulje_catalog_picker_test.dart`.

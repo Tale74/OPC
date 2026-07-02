@@ -1223,3 +1223,48 @@ Known gaps: no manual runtime UI click-through was executed in this continuation
 Bug/nedoslednost candidates: a business row labelled CITULJE can silently hide Novosti if picker source is limited to the current `CITULJA_POLITIKA` row key.
 Safe upgrade notes: future picker grouping must preserve source category identity when multiple catalog categories share one business display label.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED TARGETED / UI FLOW FIX`.
+
+## PSEUDO-ID: OPC-PSEUDO-030
+
+Business area: catalog article detail viewer full-size display and same-category navigation
+Source files: `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`; `lib/features/podesavanja/data/podesavanja_repository.dart`; `lib/features/podesavanja/presentation/katalog_photo_policy.dart`
+Related modules: IRiU table, KATALOG picker
+Business purpose: inspect a catalog photograph at near-window size and browse the loaded category-scoped articles without weakening selection identity.
+Inputs: category-scoped `KatalogPickerArticleSummary` list, selected grid index, cached article photo, keyboard/mouse/touch action.
+Decision points: current index, previous/next boundary, available viewport orientation, select versus close.
+Pseudocode:
+
+```text
+WHEN catalog grid opens:
+    load the existing category-scoped article summary list
+
+WHEN user opens one article detail:
+    open a root detail dialog with the same list and selected index
+    size it from the available Flutter application viewport
+    preserve image aspect ratio with BoxFit.contain
+    use wide image-plus-info layout in wide/landscape viewports
+    use image-above-info layout in portrait viewports
+
+WHEN Left/Previous or Right/Next is activated:
+    clamp movement to the loaded list boundaries
+    change only the locally displayed current index
+    keep the detail dialog open
+
+WHEN user selects:
+    return the currently displayed article summary
+    invoke the existing IRiU catalog selection path with that article's
+        name, price, stableArticleId, and source category
+
+WHEN user closes, presses Escape, or uses Android back:
+    close only the detail dialog and reveal the unchanged grid picker
+```
+
+Outputs: responsive detail view; currently displayed article returned through the existing selection callback.
+Side effects: only explicit `IZABERI` continues to the existing IRiU row update flow.
+What this must not change: grid behavior, catalog data/filtering, article/category IDs, `interniNaziv`, `stableArticleId`, price semantics, manual KATALOSKA, or IRiU persistence semantics.
+Evidence: root navigator removes the parent grid-dialog width constraint; viewer receives the existing list plus index; image uses `BoxFit.contain`; navigation changes local index; `Navigator.pop(context, _article)` returns the displayed summary.
+Tests: `test/iriu_citulje_catalog_picker_test.dart` covers navigation/boundaries and retains Politika/Novosti category coverage; runtime visual acceptance remains owner review.
+Business meaning: larger photography and adjacent-item browsing improve real goods/services selection while the selected catalog article remains the only returned business identity.
+Risk if changed blindly: displayed and selected articles can diverge, CITULJE source identity can be lost, or responsive controls can become inaccessible.
+Safe upgrade boundary: responsive picker-detail UI and local list navigation only; no repository, catalog seed, PREDMET, finance, PDF, JSON, stock, package, Web, sync, backend, payment, or licensing changes.
+Classification: `SOURCE-CONFIRMED / TEST-PARTIAL / RUNTIME REVIEW REQUIRED`.

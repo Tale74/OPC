@@ -320,3 +320,20 @@ Validated command shape for focused Flutter tests outside sandbox:
 ```
 
 Recorded result for this task: the focused IRiU CITULJE picker test passed with `+2: All tests passed!`.
+
+## Catalog Article Detail Viewer Cross-Reference
+
+Source paths:
+
+- `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`
+- `lib/features/podesavanja/data/podesavanja_repository.dart`
+- `lib/features/podesavanja/presentation/katalog_photo_policy.dart`
+- `test/iriu_citulje_catalog_picker_test.dart`
+
+Related pseudocode sections: `OPC-PSEUDO-030`
+
+Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> safe upgrade boundary:
+
+The grid retains the loaded category-scoped summaries and opens a root responsive detail dialog with its selected index -> previous/next changes only the local displayed index and selection returns the currently displayed summary -> users can inspect real goods/services photographs efficiently without changing catalog truth -> a detached index or altered callback can return the wrong `stableArticleId` or source category -> keep changes within responsive detail layout, scoped keyboard/mouse/touch navigation, and the existing selection callback; do not change catalog filtering/data or downstream IRiU semantics.
+
+Platform note: Windows and Android share the viewer widget. It branches only on available viewport shape and platform margin, uses the Flutter application viewport rather than OS screen metrics, and does not force device orientation or change Android back behavior.

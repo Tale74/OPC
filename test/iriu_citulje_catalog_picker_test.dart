@@ -23,4 +23,44 @@ void main() {
       );
     });
   });
+
+  group('catalog article detail navigation', () {
+    test('moves within the category-scoped article list', () {
+      expect(
+        resolveCatalogDetailNavigationIndex(
+          currentIndex: 1,
+          offset: 1,
+          articleCount: 3,
+        ),
+        2,
+      );
+      expect(
+        resolveCatalogDetailNavigationIndex(
+          currentIndex: 1,
+          offset: -1,
+          articleCount: 3,
+        ),
+        0,
+      );
+    });
+
+    test('does not navigate outside the loaded article list', () {
+      expect(
+        resolveCatalogDetailNavigationIndex(
+          currentIndex: 0,
+          offset: -1,
+          articleCount: 3,
+        ),
+        0,
+      );
+      expect(
+        resolveCatalogDetailNavigationIndex(
+          currentIndex: 2,
+          offset: 1,
+          articleCount: 3,
+        ),
+        2,
+      );
+    });
+  });
 }
