@@ -379,3 +379,15 @@ Risk if misunderstood: a UI convenience change can be mistaken for date-model mi
 Truth boundary: local reminder settings/IDs are operational state; PREDMET ceremony date/time remains master truth and local id is not cross-device identity.
 Risk if misunderstood: scheduled state can become parallel ceremony truth or imply remote push infrastructure.
 Read after: reminder model/repository/gateway, CEREMONIJA segment, Android manifest, and focused tests.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-033
+
+Source files: `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`; `lib/core/format/app_money_format.dart`
+Related pseudocode sections: `OPC-PSEUDO-035`
+Business meaning: manual IRiU `iznos` accepts practical comma/dot input and commits the same numeric value in Serbian display format.
+Module: IRiU table / manual amount input
+Truth boundary: controller parsing and display do not redefine catalog prices, quantity, totals, storage, PDF, or JSON.
+Why Logos must know it: `1.234.56` deliberately uses the last separator as decimal, while invalid text must not silently overwrite a business amount.
+Risk if misunderstood: a presentation fix can accidentally become a finance or persistence policy change.
+Read before: `OPC-PSEUDO-009` and `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`.
+Read after: `lib/core/database/tables/iriu_table.dart`, `lib/features/predmeti/data/iriu_repository.dart`, and `test/iriu_manual_amount_format_test.dart`.

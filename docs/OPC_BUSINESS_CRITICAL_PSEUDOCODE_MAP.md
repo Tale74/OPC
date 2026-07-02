@@ -1396,3 +1396,33 @@ Business meaning: calendar selection reduces input errors without changing date 
 Risk if changed blindly: picker code can alter storage/output format or reminder inputs.
 Safe upgrade boundary: UI input method only; date meaning, storage, PDF, JSON, reminder, and GDPR behavior remain unchanged.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED FORMAT / RUNTIME NOT PRODUCED`.
+
+## PSEUDO-ID: OPC-PSEUDO-035
+
+Business area: IRiU manual amount Serbian display normalization
+Source files: `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`; `lib/core/format/app_money_format.dart`; `lib/core/database/tables/iriu_table.dart`
+Source behavior: catalog-selected and stored IRiU amounts already use `formatMoneyNumber`, while manual text previously passed through a parser that rejected comma-only decimals and mixed separators.
+Pseudocode:
+
+```text
+WHEN user manually edits IRiU iznos:
+    accept digits with comma or dot decimal separator
+    IF several separators exist:
+        use the last separator as decimal
+        treat earlier separators as grouping
+    IF input is valid:
+        retain the same numeric double value for autosave/calculation
+        on commit or focus loss display Serbian #.##0,00 format
+    ELSE IF input is empty:
+        preserve existing zero/empty behavior
+    ELSE:
+        show invalid input and do not replace the last valid amount
+
+Catalog selection continues to supply its existing double price and formatter.
+Quantity remains free informational text and is not part of this rule.
+```
+
+Business meaning: manually entered goods/service amounts communicate the same commercial value as catalog-selected amounts.
+Risk if changed blindly: an ambiguous separator or invalid text can become a plausible but wrong amount and alter totals.
+Safe upgrade boundary: IRiU manual `iznos` parsing and controller display only; no catalog price, quantity, calculation, persistence schema, PDF, JSON, finance, or unrelated module semantics change.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARSER / RUNTIME NOT PRODUCED`.

@@ -71,6 +71,9 @@ class _IriuRowTileState extends State<IriuRowTile> {
   late final TextEditingController _nazivCtrl;
   late final TextEditingController _komCtrl;
   late final TextEditingController _iznosCtrl;
+  late final FocusNode _iznosFocusNode;
+  late double _lastValidIznos;
+  bool _iznosInvalid = false;
 
   bool _mozeIzgledatiKaoDostupanKatalog(bool? imaArtikala) {
     return imaArtikala ?? false;
@@ -79,7 +82,23 @@ class _IriuRowTileState extends State<IriuRowTile> {
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
 
-  double _parsedIznos() => parseMoneyInput(_iznosCtrl.text);
+  double _parsedIznos() =>
+      tryParseSerbianManualAmount(_iznosCtrl.text) ?? _lastValidIznos;
+
+  void _normalizeIznosDisplay() {
+    final formatted = normalizeSerbianManualAmount(_iznosCtrl.text);
+    if (formatted == null) {
+      if (!_iznosInvalid && mounted) setState(() => _iznosInvalid = true);
+      return;
+    }
+    _lastValidIznos = tryParseSerbianManualAmount(_iznosCtrl.text) ?? 0.0;
+    if (formatted == _iznosCtrl.text && !_iznosInvalid) return;
+    setState(() {
+      _iznosInvalid = false;
+      _iznosCtrl.text = formatted;
+      _iznosCtrl.selection = TextSelection.collapsed(offset: formatted.length);
+    });
+  }
 
   bool _showSnackBarSafely(SnackBar snackBar) {
     if (!mounted) return false;
@@ -181,6 +200,11 @@ class _IriuRowTileState extends State<IriuRowTile> {
     _iznosCtrl = TextEditingController(
       text: s.iznos > 0 ? formatMoneyNumber(s.iznos) : '',
     );
+    _lastValidIznos = s.iznos;
+    _iznosFocusNode = FocusNode();
+    _iznosFocusNode.addListener(() {
+      if (!_iznosFocusNode.hasFocus) _normalizeIznosDisplay();
+    });
   }
 
   @override
@@ -189,6 +213,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     _nazivCtrl.dispose();
     _komCtrl.dispose();
     _iznosCtrl.dispose();
+    _iznosFocusNode.dispose();
     super.dispose();
   }
 
@@ -257,6 +282,8 @@ class _IriuRowTileState extends State<IriuRowTile> {
       _nazivCtrl.text = naziv;
       _komCtrl.text = '1';
       _iznosCtrl.text = cena > 0 ? formatMoneyNumber(cena) : '';
+      _lastValidIznos = cena;
+      _iznosInvalid = false;
     });
     _debounce?.cancel();
     await widget.iriuRepo.azurirajKatalogIzborStavke(
@@ -422,6 +449,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     Widget amountField({double? width}) {
       final field = TextFormField(
         controller: _iznosCtrl,
+        focusNode: _iznosFocusNode,
         enabled: fe,
         textAlign: TextAlign.right,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -430,26 +458,24 @@ class _IriuRowTileState extends State<IriuRowTile> {
             horizontal: 8,
             vertical: 8,
           ),
-        ),
+        ).copyWith(errorText: _iznosInvalid ? 'Neispravan iznos' : null),
         style: TextStyle(
           fontSize: 13,
           color: aktivan ? null : cs.onSurfaceVariant,
         ),
         onChanged: (_) {
-          setState(() {});
-          _scheduleSave();
+          final parsed = tryParseSerbianManualAmount(_iznosCtrl.text);
+          setState(() => _iznosInvalid = parsed == null);
+          if (parsed != null) {
+            _lastValidIznos = parsed;
+            _scheduleSave();
+          } else {
+            _debounce?.cancel();
+          }
         },
         onEditingComplete: () {
-          final parsed = _parsedIznos();
-          final formatted = parsed > 0 ? formatMoneyNumber(parsed) : '';
-          if (formatted != _iznosCtrl.text) {
-            setState(() {
-              _iznosCtrl.text = formatted;
-              _iznosCtrl.selection = TextSelection.collapsed(
-                offset: formatted.length,
-              );
-            });
-          }
+          _normalizeIznosDisplay();
+          _iznosFocusNode.unfocus();
         },
       );
       return width == null ? field : SizedBox(width: width, child: field);

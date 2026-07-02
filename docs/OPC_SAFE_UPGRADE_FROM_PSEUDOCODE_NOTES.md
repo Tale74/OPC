@@ -243,6 +243,16 @@ This cross-reference records the grouped families created by the modular foundat
 
 Safe upgrade note: these families require characterization evidence, owner decisions, or technical audits where listed in `docs/OPC_GROUPED_SAFE_UPGRADE_PLAN.md`. They do not authorize implementation.
 
+## IRiU Manual Amount Serbian Format Cross-Reference
+
+Source paths: `lib/core/format/app_money_format.dart`; `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`; `lib/core/database/tables/iriu_table.dart`; `test/iriu_manual_amount_format_test.dart`.
+
+Related pseudocode: `OPC-PSEUDO-035`.
+
+Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> safe upgrade boundary:
+
+Catalog/stored IRiU doubles already render through the Serbian formatter, but the previous manual parser rejected `1234,56` and `1.234.56` -> parse only manual IRiU amount conventions, use the last separator as decimal when repeated, retain valid numeric value, normalize on commit/focus loss, and reject invalid text without saving zero -> manual and catalog commercial amounts look consistent -> permissive parsing can create a plausible wrong price or alter totals -> keep the change within manual IRiU `iznos` parsing/controller display; quantity remains free text and catalog, calculations, persistence schema, PDF/JSON/export/import remain unchanged.
+
 ## Characterization Evidence Foundation Cross-Reference
 
 Source documents:
