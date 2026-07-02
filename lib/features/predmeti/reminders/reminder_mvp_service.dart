@@ -21,10 +21,10 @@ class ReminderMvpEntry {
   String get sessionKey => '$predmetId:$daysUntilCeremony';
 
   String get windowsLeadLabel => switch (daysUntilCeremony) {
-        2 => 'ZA 2 DANA',
-        1 => 'SUTRA',
-        _ => 'DANAS',
-      };
+    2 => 'ZA 2 DANA',
+    1 => 'SUTRA',
+    _ => 'DANAS',
+  };
 
   DateTime? get parsedDate => parseDateValue(datumCeremonije);
 }
@@ -74,8 +74,9 @@ class ReminderMvpService {
     entries.sort((a, b) {
       final byDays = a.daysUntilCeremony.compareTo(b.daysUntilCeremony);
       if (byDays != 0) return byDays;
-      final byDate = (a.parsedDate ?? DateTime(9999))
-          .compareTo(b.parsedDate ?? DateTime(9999));
+      final byDate = (a.parsedDate ?? DateTime(9999)).compareTo(
+        b.parsedDate ?? DateTime(9999),
+      );
       if (byDate != 0) return byDate;
       return a.brojPredmeta.compareTo(b.brojPredmeta);
     });

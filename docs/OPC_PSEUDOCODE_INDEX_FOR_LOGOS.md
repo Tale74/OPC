@@ -351,3 +351,21 @@ Why Logos must know it: the filter is a control surface, not the primary busines
 Risk if misunderstood: compact presentation can be mistaken for permission to remove filters or change statistical meaning.
 Read before: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`.
 Read after: `lib/features/predmeti/statistika_v1/statistika_snapshot_service.dart`, `lib/features/predmeti/presentation/statistika_aggregator.dart`, and `test/statistika_filter_layout_test.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-030
+
+Source file: `lib/features/predmeti/presentation/lista_predmeta_screen.dart`
+Related pseudocode sections: `OPC-PSEUDO-032`
+Business meaning: automatic GDPR startup dialogs are retired while manual per-PREDMET GDPR anonymization remains available.
+Truth boundary: startup presentation does not own GDPR eligibility, data, legal behavior, or PREDMET lifecycle.
+Risk if misunderstood: startup-dialog removal can be mistaken for permission to delete GDPR behavior.
+Read after: `lib/features/predmeti/data/predmeti_repository.dart` and manual GDPR actions in `predmet_screen.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-031
+
+Source file: `lib/features/predmeti/reminders/ceremony_reminder_coordinator.dart`
+Related pseudocode sections: `OPC-PSEUDO-033`
+Business meaning: Windows in-app reminders and Android local notifications derive from the same PREDMET ceremony term and local frequency configuration.
+Truth boundary: local reminder settings/IDs are operational state; PREDMET ceremony date/time remains master truth and local id is not cross-device identity.
+Risk if misunderstood: scheduled state can become parallel ceremony truth or imply remote push infrastructure.
+Read after: reminder model/repository/gateway, CEREMONIJA segment, Android manifest, and focused tests.

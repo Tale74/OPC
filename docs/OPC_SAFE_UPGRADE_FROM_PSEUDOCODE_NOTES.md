@@ -352,3 +352,15 @@ Related pseudocode sections: `OPC-PSEUDO-031`
 Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> safe upgrade boundary:
 
 The shared STATISTIKA screen previously kept the full multi-row period filter permanently above its expanded data tabs -> Android now keeps a compact active-period summary and opens the unchanged controls in a temporary scrollable sheet, while desktop retains the existing card -> statistical data becomes the primary permanent Android content without losing filter access or state -> moving controls can reset dates, alter calculation inputs, break back behavior, or regress desktop if state and platform boundaries are not preserved -> restrict changes to Android presentation and local visibility; preserve `_resolveRange`, snapshot construction, aggregation, filter defaults, and all unrelated product layers.
+
+## GDPR Startup And Ceremony Reminder Cross-Reference
+
+Source paths: `lista_predmeta_screen.dart`; `predmet_screen.dart`; `ceremonija_segment.dart`; `lib/features/predmeti/reminders/`; `lib/core/database/database.dart`; `android/app/src/main/AndroidManifest.xml`.
+
+Related pseudocode sections: `OPC-PSEUDO-032`, `OPC-PSEUDO-033`
+
+Source behavior -> pseudocode -> business meaning -> risk if changed blindly -> safe upgrade boundary:
+
+GDPR previously displayed automatic eligibility dialogs during list startup while manual GDPR already existed -> startup invocation is removed and manual paths remain -> GDPR becomes deliberate rather than interruptive -> deleting shared eligibility/repository code would remove required legal behavior -> change startup presentation only.
+
+Windows previously derived a 2/1/0-day in-app banner and Android had no scheduler -> a shared 48-hour/frequency model now cancels/replaces local IDs, skips past times, drives session-deduped dialogs, and schedules Android-only local notifications -> ceremony reminders support operational timing without redefining CEREMONIJA -> stale/duplicate alarms or sensitive content can cause business/privacy harm -> keep PREDMET date/time authoritative and reminder persistence local/non-JSON; introduce no remote push/backend.

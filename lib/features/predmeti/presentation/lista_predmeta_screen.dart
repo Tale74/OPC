@@ -18,9 +18,17 @@ import '../../stanje_robe/application/stanje_robe_operational_availability.dart'
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
 import '../data/iriu_repository.dart';
 import '../data/predmeti_repository.dart';
+import '../reminders/ceremony_notification_gateway.dart';
+import '../reminders/ceremony_reminder_coordinator.dart';
+import '../reminders/ceremony_reminder_model.dart';
+import '../reminders/ceremony_reminder_repository.dart';
 import '../reminders/reminder_mvp_service.dart';
 import 'izvestaji_screen.dart';
 import 'predmet_screen.dart';
+
+const bool automaticGdprStartupDialogEnabled = false;
+
+bool manualGdprActionAvailable(String status) => status == 'ZAVRŠEN';
 
 class ListaPredmetaScreen extends StatefulWidget {
   const ListaPredmetaScreen({
@@ -46,7 +54,8 @@ class ListaPredmetaScreen extends StatefulWidget {
   State<ListaPredmetaScreen> createState() => _ListaPredmetaScreenState();
 }
 
-class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
+class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
+    with WidgetsBindingObserver {
   static const _entitlementPolicy = OpcEntitlementPolicy.current();
   final _pretragaCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
@@ -55,10 +64,19 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
   bool _kreiram = false;
   Map<int, String> _savetnici = {};
   final Set<String> _dismissedReminderKeys = <String>{};
+  final Set<String> _shownCeremonyDialogKeys = <String>{};
+  late final CeremonyReminderRepository _ceremonyReminderRepository =
+      CeremonyReminderRepository(widget.predmetiRepo.db);
+  late final CeremonyReminderCoordinator _ceremonyReminderCoordinator =
+      CeremonyReminderCoordinator(
+        repository: _ceremonyReminderRepository,
+        gateway: AndroidCeremonyNotificationGateway(),
+      );
   late final ReminderMvpService _reminderService =
       widget.reminderService ?? ReminderMvpService();
-  late final AuthSecurityRepository _authSecurityRepo =
-      AuthSecurityRepository(widget.predmetiRepo.db);
+  late final AuthSecurityRepository _authSecurityRepo = AuthSecurityRepository(
+    widget.predmetiRepo.db,
+  );
   late final SetupReadinessService _setupReadinessService =
       SetupReadinessService(authSecurityRepository: _authSecurityRepo);
   late final StanjeRobePoslediceRepository _stockConsequencesRepo =
@@ -72,11 +90,19 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.runStartupSideEffects) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         unawaited(_runStartupSideEffects());
       });
       unawaited(_ucitajSavetnike());
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && widget.runStartupSideEffects) {
+      unawaited(_refreshCeremonyRemindersAndDialog());
     }
   }
 
@@ -86,7 +112,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
     try {
       await widget.predmetiRepo.osveziAutomatskeStatuse();
       if (!mounted) return;
-      await _gdprCheck();
+      await _refreshCeremonyRemindersAndDialog(requestPermission: true);
       if (!mounted) return;
       await _refreshSetupReadiness(showWarning: true);
     } finally {
@@ -94,9 +120,66 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
     }
   }
 
+  Future<void> _refreshCeremonyRemindersAndDialog({
+    bool requestPermission = false,
+  }) async {
+    final predmeti = await widget.predmetiRepo.getSvePredmete();
+    final now = DateTime.now();
+    final dueLines = <String>[];
+    var permissionPending = requestPermission;
+    for (final predmet in predmeti) {
+      if (predmet.status != 'OTVOREN' && predmet.status != 'ZATVOREN') {
+        continue;
+      }
+      final ceremonyAt = parseCeremonyReminderDateTime(
+        predmet.datumCeremonije,
+        predmet.vremeCeremonije,
+      );
+      final stored = await _ceremonyReminderRepository.getForPredmet(
+        predmet.id,
+      );
+      await _ceremonyReminderCoordinator.reschedule(
+        predmetId: predmet.id,
+        brojPredmeta: predmet.brojPredmeta,
+        ceremonyAt: ceremonyAt,
+        now: now,
+        requestPermission: permissionPending && stored.config.enabled,
+      );
+      permissionPending = false;
+      if (ceremonyAt == null) continue;
+      final slot = activeCeremonyReminderSlot(
+        ceremonyAt: ceremonyAt,
+        config: stored.config,
+        now: now,
+      );
+      if (slot == null) continue;
+      final key = '${predmet.id}:${slot.toIso8601String()}';
+      if (!_shownCeremonyDialogKeys.add(key)) continue;
+      dueLines.add(
+        'Predmet ${predmet.brojPredmeta} • '
+        '${predmet.datumCeremonije} ${predmet.vremeCeremonije}',
+      );
+    }
+    if (!mounted || dueLines.isEmpty) return;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Podsetnik za ceremoniju'),
+        content: Text(dueLines.join('\n')),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('U REDU'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _refreshSetupReadiness({required bool showWarning}) async {
-    final readiness =
-        await _setupReadinessService.evaluateForSession(widget.session);
+    final readiness = await _setupReadinessService.evaluateForSession(
+      widget.session,
+    );
     if (!mounted) return;
     setState(() {
       _setupReadiness = readiness;
@@ -160,6 +243,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pretragaCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
@@ -255,8 +339,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
         : consequence.katalogStableArticleId;
     final categoryLabel =
         StanjeRobeLifecycleService.displayLabelForCoveredCategory(
-      consequence.kategorija,
-    );
+          consequence.kategorija,
+        );
     return '$categoryLabel — $article';
   }
 
@@ -278,8 +362,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
     PredmetiData p,
   ) async {
     if (!await _stanjeRobeAktivno()) return false;
-    final unresolved =
-        await _stockConsequencesRepo.listActiveUnresolvedForPredmet(p.id);
+    final unresolved = await _stockConsequencesRepo
+        .listActiveUnresolvedForPredmet(p.id);
     if (unresolved.isEmpty) return false;
     if (!mounted) return true;
 
@@ -363,7 +447,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
   }
 
   Future<void> _anonimizuj(PredmetiData p) async {
-    if (p.status != 'ZAVRŠEN') {
+    if (!manualGdprActionAvailable(p.status)) {
       if (!mounted) return;
       _showSnackBarSafely(
         const SnackBar(
@@ -443,75 +527,12 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
     );
   }
 
-  /// GDPR provera pri startu: upozorenje bez automatske anonimizacije.
-  Future<void> _gdprCheck() async {
-    if (!mounted) return;
-    final predmeti = await widget.predmetiRepo.getZavrseneZaGdpr();
-    if (!mounted) return;
-
-    final danas = DateTime.now();
-    final danasDate = DateTime(danas.year, danas.month, danas.day);
-
-    final List<PredmetiData> dan9 = [];
-    final List<PredmetiData> dan10plus = [];
-
-    for (final p in predmeti) {
-      final dostupnoOd = widget.predmetiRepo.datumDostupnostiAnonimizacije(p);
-      if (dostupnoOd == null) continue;
-      final daniDoDostupnosti = dostupnoOd.difference(danasDate).inDays;
-      if (daniDoDostupnosti <= 0) {
-        dan10plus.add(p);
-      } else if (daniDoDostupnosti == 1) {
-        dan9.add(p);
-      }
-    }
-
-    if (dan10plus.isNotEmpty && mounted) {
-      if (mounted) {
-        await showDialog<void>(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('GDPR \u2014 anonimizacija dostupna'),
-            content: Text(
-              '${dan10plus.length} predmet(a) je dostupno za GDPR anonimizaciju.\n\n'
-              'GDPR za\u0161tita podataka o li\u010dnosti se pokre\u0107e ru\u010dno iz menija predmeta.',
-            ),
-            actions: [
-              FilledButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('U REDU'),
-              ),
-            ],
-          ),
-        );
-      }
-    }
-
-    if (dan9.isNotEmpty && mounted) {
-      await showDialog<void>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('GDPR \u2014 Upozorenje'),
-          content: Text(
-            '${dan9.length} predmet(a) dostiže raniji GDPR rok sutra.\n\n'
-            'GDPR zaštita podataka o ličnosti se pokreće ručno iz menija predmeta.',
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('RAZUMEM'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   void _dismissWindowsReminder(Iterable<ReminderMvpEntry> entries) {
     setState(() {
       _dismissedReminderKeys.addAll(entries.map((entry) => entry.sessionKey));
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -640,7 +661,9 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
           _buildFilteri(),
           Expanded(
             child: StreamBuilder<List<PredmetiData>>(
-              stream: widget.predmetiStreamOverride ?? widget.predmetiRepo.watchSvi(),
+              stream:
+                  widget.predmetiStreamOverride ??
+                  widget.predmetiRepo.watchSvi(),
               builder: (context, snap) {
                 if (snap.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -652,9 +675,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
                     : const <ReminderMvpEntry>[];
                 final visibleReminderEntries = dueEntries
                     .where(
-                      (entry) => !_dismissedReminderKeys.contains(
-                        entry.sessionKey,
-                      ),
+                      (entry) =>
+                          !_dismissedReminderKeys.contains(entry.sessionKey),
                     )
                     .toList();
                 if (lista.isEmpty) {
@@ -794,8 +816,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
           Text(
             baza
                 ? (kIsWindowsBuild
-                    ? 'Nema predmeta.'
-                    : 'Nema predmeta.\nPritisnite + NOVI PREDMET.')
+                      ? 'Nema predmeta.'
+                      : 'Nema predmeta.\nPritisnite + NOVI PREDMET.')
                 : 'Nema predmeta koji odgovaraju filteru.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -854,8 +876,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
             child: Text(
               'Prikazano ${lista.length} od $ukupno',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -870,13 +892,25 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
               final pos = _scrollCtrl.position;
               double? target;
               if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                target = (_scrollCtrl.offset + 80).clamp(0, pos.maxScrollExtent);
+                target = (_scrollCtrl.offset + 80).clamp(
+                  0,
+                  pos.maxScrollExtent,
+                );
               } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                target = (_scrollCtrl.offset - 80).clamp(0, pos.maxScrollExtent);
+                target = (_scrollCtrl.offset - 80).clamp(
+                  0,
+                  pos.maxScrollExtent,
+                );
               } else if (event.logicalKey == LogicalKeyboardKey.pageDown) {
-                target = (_scrollCtrl.offset + 500).clamp(0, pos.maxScrollExtent);
+                target = (_scrollCtrl.offset + 500).clamp(
+                  0,
+                  pos.maxScrollExtent,
+                );
               } else if (event.logicalKey == LogicalKeyboardKey.pageUp) {
-                target = (_scrollCtrl.offset - 500).clamp(0, pos.maxScrollExtent);
+                target = (_scrollCtrl.offset - 500).clamp(
+                  0,
+                  pos.maxScrollExtent,
+                );
               } else if (event.logicalKey == LogicalKeyboardKey.home) {
                 target = 0;
               } else if (event.logicalKey == LogicalKeyboardKey.end) {
@@ -900,8 +934,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
               itemBuilder: (context, i) => _PredmetListItem(
                 predmet: lista[i],
                 savetnikIme: _savetnici[lista[i].savetnikId] ?? '',
-                hasUnresolvedStockConsequence:
-                    unresolvedStockPredmetIds.contains(lista[i].id),
+                hasUnresolvedStockConsequence: unresolvedStockPredmetIds
+                    .contains(lista[i].id),
                 onTap: () => _otvoriPredmet(lista[i]),
                 onZatvori: () => _zatvoriPredmetSaListe(lista[i]),
                 onOtvoriZaIzmenu: () => _otvoriZaIzmenuSaListe(lista[i]),
@@ -918,12 +952,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen> {
   }
 }
 
-
 class _WindowsReminderBanner extends StatelessWidget {
-  const _WindowsReminderBanner({
-    required this.entries,
-    required this.onClose,
-  });
+  const _WindowsReminderBanner({required this.entries, required this.onClose});
 
   final List<ReminderMvpEntry> entries;
   final VoidCallback onClose;
@@ -942,9 +972,7 @@ class _WindowsReminderBanner extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: scheme.tertiary.withValues(alpha: 0.35),
-          ),
+          border: Border.all(color: scheme.tertiary.withValues(alpha: 0.35)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -985,10 +1013,7 @@ class _WindowsReminderBanner extends StatelessWidget {
                 IconButton(
                   onPressed: onClose,
                   tooltip: 'Zatvori za ovu sesiju',
-                  icon: Icon(
-                    Icons.close,
-                    color: scheme.onTertiaryContainer,
-                  ),
+                  icon: Icon(Icons.close, color: scheme.onTertiaryContainer),
                 ),
               ],
             ),
@@ -1184,7 +1209,8 @@ class _PredmetListItem extends StatelessWidget {
       'ZAVR\u0160EN' => const Color(0xFFF1F8E9),
       _ => Colors.grey.shade200,
     };
-    final primaryTextColor = stockWarningStyle?.primaryTextColor ??
+    final primaryTextColor =
+        stockWarningStyle?.primaryTextColor ??
         (isDarkTheme ? const Color(0xFF1F1F1F) : null);
     final mutedPrimaryTextColor = isDarkTheme
         ? stockWarningStyle?.secondaryTextColor ?? const Color(0xFF3F3F46)
@@ -1196,9 +1222,9 @@ class _PredmetListItem extends StatelessWidget {
         ? (isDarkTheme ? const Color(0xFF52525B) : Colors.grey)
         : scheme.onPrimaryContainer;
     final sekundarni = theme.textTheme.bodySmall?.copyWith(
-          fontSize: 13,
-          color: secondaryTextColor,
-        );
+      fontSize: 13,
+      color: secondaryTextColor,
+    );
 
     return Card(
       color: stockWarningStyle?.backgroundColor ?? cardColor,
@@ -1254,7 +1280,9 @@ class _PredmetListItem extends StatelessWidget {
                                   if (showStockWarning)
                                     const _StockWarningBadge(),
                                   if (imaCeremoniju)
-                                    _TerminBadge(datum: predmet.datumCeremonije),
+                                    _TerminBadge(
+                                      datum: predmet.datumCeremonije,
+                                    ),
                                 ],
                               ),
                               const SizedBox(height: 10),
@@ -1391,7 +1419,9 @@ class _PredmetListItem extends StatelessWidget {
                                   if (showStockWarning)
                                     const _StockWarningBadge(),
                                   if (imaCeremoniju)
-                                    _TerminBadge(datum: predmet.datumCeremonije),
+                                    _TerminBadge(
+                                      datum: predmet.datumCeremonije,
+                                    ),
                                 ],
                               ),
                               if (savetnikIme.isNotEmpty) ...[
@@ -1450,10 +1480,7 @@ class _SetupReadinessBanner extends StatelessWidget {
             final header = Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.security_outlined,
-                  color: colorScheme.error,
-                ),
+                Icon(Icons.security_outlined, color: colorScheme.error),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1461,10 +1488,9 @@ class _SetupReadinessBanner extends StatelessWidget {
                     children: [
                       Text(
                         'Podesite oporavak pristupa',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       const Text(
@@ -1489,11 +1515,7 @@ class _SetupReadinessBanner extends StatelessWidget {
             if (isCompact) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  header,
-                  const SizedBox(height: 12),
-                  action,
-                ],
+                children: [header, const SizedBox(height: 12), action],
               );
             }
 
@@ -1513,11 +1535,7 @@ class _SetupReadinessBanner extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.text,
-    required this.style,
-  });
+  const _InfoRow({required this.icon, required this.text, required this.style});
 
   final IconData icon;
   final String text;
@@ -1534,11 +1552,7 @@ class _InfoRow extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 1),
-          child: Icon(
-            icon,
-            size: 15,
-            color: iconColor,
-          ),
+          child: Icon(icon, size: 15, color: iconColor),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -1598,11 +1612,7 @@ class _TileActions extends StatelessWidget {
           border: Border.all(color: triggerBorder),
         ),
         child: PopupMenuButton<String>(
-          icon: Icon(
-            Icons.more_vert,
-            size: 20,
-            color: triggerIconColor,
-          ),
+          icon: Icon(Icons.more_vert, size: 20, color: triggerIconColor),
           tooltip: 'Više opcija',
           padding: EdgeInsets.zero,
           splashRadius: 20,
@@ -1682,7 +1692,6 @@ class _TileActions extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _TerminBadge extends StatelessWidget {
@@ -1844,5 +1853,3 @@ class _FilterChip extends StatelessWidget {
     );
   }
 }
-
-

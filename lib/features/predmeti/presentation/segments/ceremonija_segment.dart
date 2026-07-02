@@ -7,6 +7,10 @@ import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
 import '../../data/iriu_repository.dart';
+import '../../reminders/ceremony_notification_gateway.dart';
+import '../../reminders/ceremony_reminder_coordinator.dart';
+import '../../reminders/ceremony_reminder_model.dart';
+import '../../reminders/ceremony_reminder_repository.dart';
 import 'predmet_decision_controls.dart';
 
 /// Segment 3: POGREBNA CEREMONIJA.
@@ -74,6 +78,10 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   final _vremeCeremFocus = FocusNode();
   bool _datumCeremTouched = false;
   bool _vremeCeremTouched = false;
+  late final CeremonyReminderRepository _reminderRepository;
+  late final CeremonyReminderCoordinator _reminderCoordinator;
+  CeremonyReminderConfig _reminderConfig = const CeremonyReminderConfig();
+  String? _lastReminderSource;
 
   // Vrsta ceremonije -> dostupna mesta opela
   static const _opeloMestaMap = {
@@ -167,11 +175,17 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   void initState() {
     super.initState();
     final d = widget.initialData;
+    _reminderRepository = CeremonyReminderRepository(widget.iriuRepo.db);
+    _reminderCoordinator = CeremonyReminderCoordinator(
+      repository: _reminderRepository,
+      gateway: AndroidCeremonyNotificationGateway(),
+    );
 
     _grobljeCt = TextEditingController(text: d.groblje);
     _tipGroblja = d.tipGroblja.isEmpty ? 'GRADSKO' : d.tipGroblja;
-    _vrstaCeremonije =
-        d.vrstaCeremonije.isEmpty ? 'SAHRANA' : d.vrstaCeremonije;
+    _vrstaCeremonije = d.vrstaCeremonije.isEmpty
+        ? 'SAHRANA'
+        : d.vrstaCeremonije;
 
     _opelo = d.opelo == 'DA';
     _opeloMesto = d.opeloMesto;
@@ -184,8 +198,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _vremeCeremonijeCtrl = TextEditingController(text: d.vremeCeremonije);
 
     _grobnoMesto = d.grobnoMesto.isEmpty ? 'NOVO' : d.grobnoMesto;
-    _tipGrobnogMesta =
-        d.tipGrobnogMesta.isEmpty ? 'GROB' : d.tipGrobnogMesta;
+    _tipGrobnogMesta = d.tipGrobnogMesta.isEmpty ? 'GROB' : d.tipGrobnogMesta;
     _parcelaCtrl = TextEditingController(text: d.parcela);
     _grobBrojCtrl = TextEditingController(text: d.grobBroj);
     _redGrobCtrl = TextEditingController(text: d.redGrob);
@@ -206,6 +219,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _docekPosmrtnihOstataka = d.docekPosmrtnihOstataka;
     _docekMestoCtrl = TextEditingController(text: d.docekMesto);
     _docekVremeCtrl = TextEditingController(text: d.docekVreme);
+    unawaited(_loadReminderConfig());
 
     // Blur validacija - prikazuje gre\u0161ku samo nakon napu\u0161tanja polja
     _datumCeremFocus.addListener(() {
@@ -220,12 +234,25 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   void dispose() {
     _debounce?.cancel();
     for (final c in [
-      _grobljeCt, _datumCeremonijeCtrl, _vremeCeremonijeCtrl,
-      _vremeOpelaCtrl, _vremeIspracajaCtrl,
-      _parcelaCtrl, _grobBrojCtrl, _redGrobCtrl, _npkCtrl, _grobnicaCtrl,
-      _oznakUrneCtrl, _urnaParcelaCtrl, _urnaBrojCtrl, _urnaRedCtrl,
+      _grobljeCt,
+      _datumCeremonijeCtrl,
+      _vremeCeremonijeCtrl,
+      _vremeOpelaCtrl,
+      _vremeIspracajaCtrl,
+      _parcelaCtrl,
+      _grobBrojCtrl,
+      _redGrobCtrl,
+      _npkCtrl,
+      _grobnicaCtrl,
+      _oznakUrneCtrl,
+      _urnaParcelaCtrl,
+      _urnaBrojCtrl,
+      _urnaRedCtrl,
       _urnaNpkCtrl,
-      _svisZemljaCtrl, _svisGradCtrl, _docekMestoCtrl, _docekVremeCtrl,
+      _svisZemljaCtrl,
+      _svisGradCtrl,
+      _docekMestoCtrl,
+      _docekVremeCtrl,
     ]) {
       c.dispose();
     }
@@ -273,6 +300,43 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         docekMesto: Value(_normalizedText(_docekMestoCtrl)),
         docekVreme: Value(_normalizedTime(_docekVremeCtrl)),
       ),
+    );
+    unawaited(_rescheduleRemindersIfChanged());
+  }
+
+  Future<void> _loadReminderConfig() async {
+    final stored = await _reminderRepository.getForPredmet(widget.predmetId);
+    if (!mounted) return;
+    setState(() => _reminderConfig = stored.config);
+    await _rescheduleRemindersIfChanged();
+  }
+
+  Future<void> _saveReminderConfig(
+    CeremonyReminderConfig config, {
+    bool requestPermission = false,
+  }) async {
+    await _reminderRepository.saveConfig(widget.predmetId, config);
+    if (!mounted) return;
+    setState(() => _reminderConfig = config);
+    _lastReminderSource = null;
+    await _rescheduleRemindersIfChanged(requestPermission: requestPermission);
+  }
+
+  Future<void> _rescheduleRemindersIfChanged({
+    bool requestPermission = false,
+  }) async {
+    final date = normalizeCeremonyDateInput(_datumCeremonijeCtrl.text);
+    final time = normalizeTimeInput(_vremeCeremonijeCtrl.text);
+    final source =
+        '$date|$time|${_reminderConfig.enabled}|'
+        '${_reminderConfig.normalizedFrequencyHours}';
+    if (_lastReminderSource == source && !requestPermission) return;
+    _lastReminderSource = source;
+    await _reminderCoordinator.reschedule(
+      predmetId: widget.predmetId,
+      brojPredmeta: widget.initialData.brojPredmeta,
+      ceremonyAt: parseCeremonyReminderDateTime(date, time),
+      requestPermission: requestPermission,
     );
   }
 
@@ -379,83 +443,97 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   ),
                 ]),
               ],
-            const SizedBox(height: 12),
-            // Vrsta ceremonije
-            DropdownButtonFormField<String>(
-              key: ValueKey(_vrstaCeremonije),
-              initialValue: _vrstaCeremonije,
-              decoration: const InputDecoration(
-                labelText: 'VRSTA CEREMONIJE',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              items: _vrsteCeremonije
-                  .map((t) => DropdownMenuItem(
-                        value: t.$1,
-                        child: Text(t.$2),
-                      ))
-                  .toList(),
-              onChanged: e
-                  ? (v) {
-                      final nova = v ?? _vrstaCeremonije;
-                      setState(() {
-                        _vrstaCeremonije = nova;
-                        // Ako prelazimo na vrstu gde opelo nije mogu\u0107e
-                        if (_opelaNije.contains(nova)) {
-                          _opelo = false;
-                          _opeloMesto = '';
-                        }
-                        // Ako trenutno mesto opela nije u novoj listi
-                        final mesta = _opeloMestaMap[nova] ?? [];
-                        if (_opeloMesto.isNotEmpty &&
-                            !mesta.contains(_opeloMesto)) {
-                          _opeloMesto = '';
-                        }
-                      });
-                      _scheduleSave();
-                    }
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            // Grobno mesto (sahrana)
-            if (_vrstaCeremonije.startsWith('SAHRANA')) ...[
-              const Divider(),
-              const SizedBox(height: 8),
-              Text(
-                'GROBNO MESTO',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              _row([
-                Expanded(
-                  child: _segButton('', [
-                    const ButtonSegment(value: 'NOVO', label: Text('NOVO')),
-                    const ButtonSegment(
-                        value: 'POSTOJECE', label: Text('POSTOJE\u0106E')),
-                  ], _grobnoMesto, e, (v) {
-                    _grobnoMesto = v;
-                    _scheduleSave();
-                  }),
-                ),
-                Expanded(
-                  child: _segButton('', [
-                    const ButtonSegment(
-                        value: 'GROB', label: Text('GROB')),
-                    const ButtonSegment(
-                        value: 'GROBNICA', label: Text('GROBNICA')),
-                  ], _tipGrobnogMesta, e, (v) {
-                    _tipGrobnogMesta = v;
-                    _scheduleSave();
-                  }),
-                ),
-              ]),
               const SizedBox(height: 12),
-              if (_grobnoMesto != 'NOVO' &&
-                  (_tipGrobnogMesta == 'GROB' ||
-                      _tipGrobnogMesta == 'GROBNICA')) ...[
-                /* if (false && isNarrowAndroid) ...[
+              // Vrsta ceremonije
+              DropdownButtonFormField<String>(
+                key: ValueKey(_vrstaCeremonije),
+                initialValue: _vrstaCeremonije,
+                decoration: const InputDecoration(
+                  labelText: 'VRSTA CEREMONIJE',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: _vrsteCeremonije
+                    .map(
+                      (t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)),
+                    )
+                    .toList(),
+                onChanged: e
+                    ? (v) {
+                        final nova = v ?? _vrstaCeremonije;
+                        setState(() {
+                          _vrstaCeremonije = nova;
+                          // Ako prelazimo na vrstu gde opelo nije mogu\u0107e
+                          if (_opelaNije.contains(nova)) {
+                            _opelo = false;
+                            _opeloMesto = '';
+                          }
+                          // Ako trenutno mesto opela nije u novoj listi
+                          final mesta = _opeloMestaMap[nova] ?? [];
+                          if (_opeloMesto.isNotEmpty &&
+                              !mesta.contains(_opeloMesto)) {
+                            _opeloMesto = '';
+                          }
+                        });
+                        _scheduleSave();
+                      }
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              // Grobno mesto (sahrana)
+              if (_vrstaCeremonije.startsWith('SAHRANA')) ...[
+                const Divider(),
+                const SizedBox(height: 8),
+                Text(
+                  'GROBNO MESTO',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _row([
+                  Expanded(
+                    child: _segButton(
+                      '',
+                      [
+                        const ButtonSegment(value: 'NOVO', label: Text('NOVO')),
+                        const ButtonSegment(
+                          value: 'POSTOJECE',
+                          label: Text('POSTOJE\u0106E'),
+                        ),
+                      ],
+                      _grobnoMesto,
+                      e,
+                      (v) {
+                        _grobnoMesto = v;
+                        _scheduleSave();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: _segButton(
+                      '',
+                      [
+                        const ButtonSegment(value: 'GROB', label: Text('GROB')),
+                        const ButtonSegment(
+                          value: 'GROBNICA',
+                          label: Text('GROBNICA'),
+                        ),
+                      ],
+                      _tipGrobnogMesta,
+                      e,
+                      (v) {
+                        _tipGrobnogMesta = v;
+                        _scheduleSave();
+                      },
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 12),
+                if (_grobnoMesto != 'NOVO' &&
+                    (_tipGrobnogMesta == 'GROB' ||
+                        _tipGrobnogMesta == 'GROBNICA')) ...[
+                  /* if (false && isNarrowAndroid) ...[
                   DropdownButtonFormField<String>(
                     key: ValueKey('${_vrstaCeremonije}_opelo_$_opeloMesto'),
                     initialValue: _opeloMesto.isEmpty
@@ -493,297 +571,318 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                     onChanged: (_) => _scheduleSave(),
                   ),
                 ] else */
-                _row([
-                  Expanded(
-                    child: TextFormField(
-                      controller: _parcelaCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'PARCELA',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                  _row([
+                    Expanded(
+                      child: TextFormField(
+                        controller: _parcelaCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'PARCELA',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _grobBrojCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'BROJ GROBA',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                    Expanded(
+                      child: TextFormField(
+                        controller: _grobBrojCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'BROJ GROBA',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _redGrobCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'RED',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                    Expanded(
+                      child: TextFormField(
+                        controller: _redGrobCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'RED',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _npkCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'NPK',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                    Expanded(
+                      child: TextFormField(
+                        controller: _npkCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'NPK',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
-                  ),
-                ]),
+                  ]),
+                ],
+                const SizedBox(height: 4),
               ],
-              const SizedBox(height: 4),
-            ],
-            // Kremacija
-            if (_jeKremacija) ...[
-              const Divider(),
-              const SizedBox(height: 8),
-              Text(
-                'KREMACIJA',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _oznakUrneCtrl,
-                enabled: e,
-                textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'OZNAKA URNE',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+              // Kremacija
+              if (_jeKremacija) ...[
+                const Divider(),
+                const SizedBox(height: 8),
+                Text(
+                  'KREMACIJA',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-                onChanged: (_) => _scheduleSave(),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                key: ValueKey(_tipPolaganja),
-                initialValue: _tipPolaganja.isEmpty ? null : _tipPolaganja,
-                decoration: const InputDecoration(
-                  labelText: 'TIP POLAGANJA URNE',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                hint: const Text('- odaberite -'),
-                items: _tipPolaganjaOpcije
-                    .map((t) => DropdownMenuItem(
-                          value: t.$1,
-                          child: Text(t.$2),
-                        ))
-                    .toList(),
-                onChanged: e
-                    ? (v) => setState(() {
-                          _tipPolaganja =
-                              _normalizeTipPolaganjaValue(v ?? '');
-                          _scheduleSave();
-                        })
-                    : null,
-              ),
-              if (_saLokalitetom.contains(_tipPolaganja)) ...[
-                const SizedBox(height: 12),
-                _row([
-                  Expanded(
-                    child: TextFormField(
-                      controller: _urnaParcelaCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'PARCELA',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _urnaBrojCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'BROJ',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _urnaRedCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'RED',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _urnaNpkCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'NPK',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
-                    ),
-                  ),
-                ]),
-              ],
-              const SizedBox(height: 4),
-            ],
-            // Opelo
-            const Divider(),
-            const SizedBox(height: 8),
-            _row([
-              Expanded(
-                child: TextFormField(
-                  controller: _datumCeremonijeCtrl,
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _oznakUrneCtrl,
                   enabled: e,
-                  focusNode: _datumCeremFocus,
-                  decoration: InputDecoration(
-                    labelText: 'DATUM CEREMONIJE',
-                    hintText: 'npr. 17.04.2026.',
-                    helperText: 'Prihva\u0107eno: 17.4.2026. ili 17.04.2026.',
-                    border: const OutlineInputBorder(),
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'OZNAKA URNE',
+                    border: OutlineInputBorder(),
                     isDense: true,
-                    errorText: _datumCeremTouched &&
-                            _datumCeremonijeCtrl.text.isEmpty
-                        ? 'Obavezno'
-                        : null,
                   ),
                   onChanged: (_) => _scheduleSave(),
-                  onEditingComplete: () {
-                    final p =
-                        normalizeCeremonyDateInput(_datumCeremonijeCtrl.text);
-                    if (p != _datumCeremonijeCtrl.text) {
-                      _datumCeremonijeCtrl.text = p;
-                      _datumCeremonijeCtrl.selection =
-                          TextSelection.collapsed(offset: p.length);
-                    }
-                  },
                 ),
-              ),
-              Expanded(
-                child: TextFormField(
-                  controller: _vremeCeremonijeCtrl,
-                  enabled: e,
-                  focusNode: _vremeCeremFocus,
-                  decoration: InputDecoration(
-                    labelText: 'VREME CEREMONIJE',
-                    hintText: 'HH:MM',
-                    border: const OutlineInputBorder(),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  key: ValueKey(_tipPolaganja),
+                  initialValue: _tipPolaganja.isEmpty ? null : _tipPolaganja,
+                  decoration: const InputDecoration(
+                    labelText: 'TIP POLAGANJA URNE',
+                    border: OutlineInputBorder(),
                     isDense: true,
-                    errorText: _vremeCeremTouched &&
-                            _vremeCeremonijeCtrl.text.isEmpty
-                        ? 'Obavezno'
-                        : null,
                   ),
-                  onChanged: _onVremeCeremonijeChanged,
-                  onEditingComplete: () {
-                    final normalized =
-                        normalizeTimeInput(_vremeCeremonijeCtrl.text);
-                    if (normalized != _vremeCeremonijeCtrl.text) {
-                      _vremeCeremonijeCtrl.text = normalized;
-                      _vremeCeremonijeCtrl.selection =
-                          TextSelection.collapsed(offset: normalized.length);
-                    }
-                  },
+                  hint: const Text('- odaberite -'),
+                  items: _tipPolaganjaOpcije
+                      .map(
+                        (t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)),
+                      )
+                      .toList(),
+                  onChanged: e
+                      ? (v) => setState(() {
+                          _tipPolaganja = _normalizeTipPolaganjaValue(v ?? '');
+                          _scheduleSave();
+                        })
+                      : null,
                 ),
-              ),
-            ]),
-            const SizedBox(height: 12),
-            const Divider(),
-            if (_mozeOpelo) ...[
-              PredmetBooleanDecisionTile(
-                title: 'Opelo',
-                value: _opelo,
-                enabled: e,
-                onChanged: (v) {
-                        setState(() => _opelo = v);
-                        if (v) {
-                          _predloziIriu([IriuK.kompletZaOpelo]);
-                          final pomereno =
-                              _pomerVreme(_vremeCeremonijeCtrl.text, 30);
-                          if (pomereno.isNotEmpty) {
-                            _vremeOpelaCtrl.text = pomereno;
-                          }
-                          // Inicijalizuj mesto opela na prvu opciju ako prazno
-                          if (_opeloMesto.isEmpty &&
-                              _dostupnaMestaOpela.isNotEmpty) {
-                            setState(() {
-                              _opeloMesto = _dostupnaMestaOpela.first;
-                            });
-                          }
-                        }
-                        _scheduleSave();
-                      },
-              ),
-              if (_opelo) ...[
-                const SizedBox(height: 8),
-                if (isNarrowAndroid) ...[
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('${_vrstaCeremonije}_opelo_$_opeloMesto'),
-                    initialValue: _opeloMesto.isEmpty
-                        ? null
-                        : (_dostupnaMestaOpela.contains(_opeloMesto)
-                            ? _opeloMesto
-                            : null),
-                    decoration: const InputDecoration(
-                      labelText: 'MESTO OPELA',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    hint: const Text('- odaberite -'),
-                    items: _dostupnaMestaOpela
-                        .map((m) =>
-                            DropdownMenuItem(value: m, child: Text(m)))
-                        .toList(),
-                    onChanged: e
-                        ? (v) => setState(() {
-                              _opeloMesto = v ?? '';
-                              _scheduleSave();
-                            })
-                        : null,
-                  ),
+                if (_saLokalitetom.contains(_tipPolaganja)) ...[
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _vremeOpelaCtrl,
+                  _row([
+                    Expanded(
+                      child: TextFormField(
+                        controller: _urnaParcelaCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'PARCELA',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _urnaBrojCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'BROJ',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _urnaRedCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'RED',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _urnaNpkCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'NPK',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
+                      ),
+                    ),
+                  ]),
+                ],
+                const SizedBox(height: 4),
+              ],
+              // Opelo
+              const Divider(),
+              const SizedBox(height: 8),
+              _row([
+                Expanded(
+                  child: TextFormField(
+                    controller: _datumCeremonijeCtrl,
                     enabled: e,
-                    decoration: const InputDecoration(
-                      labelText: 'VREME OPELA',
-                      hintText: 'HH:MM',
-                      border: OutlineInputBorder(),
+                    focusNode: _datumCeremFocus,
+                    decoration: InputDecoration(
+                      labelText: 'DATUM CEREMONIJE',
+                      hintText: 'npr. 17.04.2026.',
+                      helperText: 'Prihva\u0107eno: 17.4.2026. ili 17.04.2026.',
+                      border: const OutlineInputBorder(),
                       isDense: true,
+                      errorText:
+                          _datumCeremTouched &&
+                              _datumCeremonijeCtrl.text.isEmpty
+                          ? 'Obavezno'
+                          : null,
                     ),
                     onChanged: (_) => _scheduleSave(),
+                    onEditingComplete: () {
+                      final p = normalizeCeremonyDateInput(
+                        _datumCeremonijeCtrl.text,
+                      );
+                      if (p != _datumCeremonijeCtrl.text) {
+                        _datumCeremonijeCtrl.text = p;
+                        _datumCeremonijeCtrl.selection =
+                            TextSelection.collapsed(offset: p.length);
+                      }
+                    },
                   ),
-                ] else
-                _row([
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<String>(
+                ),
+                Expanded(
+                  child: TextFormField(
+                    controller: _vremeCeremonijeCtrl,
+                    enabled: e,
+                    focusNode: _vremeCeremFocus,
+                    decoration: InputDecoration(
+                      labelText: 'VREME CEREMONIJE',
+                      hintText: 'HH:MM',
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                      errorText:
+                          _vremeCeremTouched &&
+                              _vremeCeremonijeCtrl.text.isEmpty
+                          ? 'Obavezno'
+                          : null,
+                    ),
+                    onChanged: _onVremeCeremonijeChanged,
+                    onEditingComplete: () {
+                      final normalized = normalizeTimeInput(
+                        _vremeCeremonijeCtrl.text,
+                      );
+                      if (normalized != _vremeCeremonijeCtrl.text) {
+                        _vremeCeremonijeCtrl.text = normalized;
+                        _vremeCeremonijeCtrl.selection =
+                            TextSelection.collapsed(offset: normalized.length);
+                      }
+                    },
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              Card.outlined(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SwitchListTile(
+                        key: const Key('ceremony-reminders-enabled'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Podsetnici za ceremoniju'),
+                        subtitle: const Text(
+                          'Za 2 dana, za 1 dan i na dan ceremonije',
+                        ),
+                        value: _reminderConfig.enabled,
+                        onChanged: e
+                            ? (value) => _saveReminderConfig(
+                                _reminderConfig.copyWith(enabled: value),
+                                requestPermission: value,
+                              )
+                            : null,
+                      ),
+                      if (_reminderConfig.enabled)
+                        DropdownButtonFormField<int>(
+                          key: const Key('ceremony-reminder-frequency-hours'),
+                          initialValue:
+                              _reminderConfig.normalizedFrequencyHours,
+                          decoration: const InputDecoration(
+                            labelText: 'UČESTALOST PODSETNIKA',
+                            helperText: 'Izabrani razmak u satima',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          items: CeremonyReminderConfig.allowedFrequencyHours
+                              .map(
+                                (hours) => DropdownMenuItem(
+                                  value: hours,
+                                  child: Text('$hours h'),
+                                ),
+                              )
+                              .toList(growable: false),
+                          onChanged: e
+                              ? (hours) {
+                                  if (hours == null) return;
+                                  _saveReminderConfig(
+                                    _reminderConfig.copyWith(
+                                      frequencyHours: hours,
+                                    ),
+                                    requestPermission: true,
+                                  );
+                                }
+                              : null,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(),
+              if (_mozeOpelo) ...[
+                PredmetBooleanDecisionTile(
+                  title: 'Opelo',
+                  value: _opelo,
+                  enabled: e,
+                  onChanged: (v) {
+                    setState(() => _opelo = v);
+                    if (v) {
+                      _predloziIriu([IriuK.kompletZaOpelo]);
+                      final pomereno = _pomerVreme(
+                        _vremeCeremonijeCtrl.text,
+                        30,
+                      );
+                      if (pomereno.isNotEmpty) {
+                        _vremeOpelaCtrl.text = pomereno;
+                      }
+                      // Inicijalizuj mesto opela na prvu opciju ako prazno
+                      if (_opeloMesto.isEmpty &&
+                          _dostupnaMestaOpela.isNotEmpty) {
+                        setState(() {
+                          _opeloMesto = _dostupnaMestaOpela.first;
+                        });
+                      }
+                    }
+                    _scheduleSave();
+                  },
+                ),
+                if (_opelo) ...[
+                  const SizedBox(height: 8),
+                  if (isNarrowAndroid) ...[
+                    DropdownButtonFormField<String>(
                       key: ValueKey('${_vrstaCeremonije}_opelo_$_opeloMesto'),
                       initialValue: _opeloMesto.isEmpty
                           ? null
                           : (_dostupnaMestaOpela.contains(_opeloMesto)
-                              ? _opeloMesto
-                              : null),
+                                ? _opeloMesto
+                                : null),
                       decoration: const InputDecoration(
                         labelText: 'MESTO OPELA',
                         border: OutlineInputBorder(),
@@ -791,19 +890,19 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                       ),
                       hint: const Text('- odaberite -'),
                       items: _dostupnaMestaOpela
-                          .map((m) =>
-                              DropdownMenuItem(value: m, child: Text(m)))
+                          .map(
+                            (m) => DropdownMenuItem(value: m, child: Text(m)),
+                          )
                           .toList(),
                       onChanged: e
                           ? (v) => setState(() {
-                                _opeloMesto = v ?? '';
-                                _scheduleSave();
-                              })
+                              _opeloMesto = v ?? '';
+                              _scheduleSave();
+                            })
                           : null,
                     ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
+                    const SizedBox(height: 12),
+                    TextFormField(
                       controller: _vremeOpelaCtrl,
                       enabled: e,
                       decoration: const InputDecoration(
@@ -814,134 +913,177 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                       ),
                       onChanged: (_) => _scheduleSave(),
                     ),
-                  ),
-                ]),
-                const SizedBox(height: 6),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Vreme opela se ra\u010duna automatski, ali ga mo\u017eete ru\u010dno izmeniti.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+                  ] else
+                    _row([
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          key: ValueKey(
+                            '${_vrstaCeremonije}_opelo_$_opeloMesto',
+                          ),
+                          initialValue: _opeloMesto.isEmpty
+                              ? null
+                              : (_dostupnaMestaOpela.contains(_opeloMesto)
+                                    ? _opeloMesto
+                                    : null),
+                          decoration: const InputDecoration(
+                            labelText: 'MESTO OPELA',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          hint: const Text('- odaberite -'),
+                          items: _dostupnaMestaOpela
+                              .map(
+                                (m) =>
+                                    DropdownMenuItem(value: m, child: Text(m)),
+                              )
+                              .toList(),
+                          onChanged: e
+                              ? (v) => setState(() {
+                                  _opeloMesto = v ?? '';
+                                  _scheduleSave();
+                                })
+                              : null,
                         ),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _vremeOpelaCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'VREME OPELA',
+                            hintText: 'HH:MM',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
+                        ),
+                      ),
+                    ]),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Vreme opela se ra\u010duna automatski, ali ga mo\u017eete ru\u010dno izmeniti.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                ],
+              ],
+              if (!_opelo && _mozeOpelo) ...[
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _vremeIspracajaCtrl,
+                  enabled: e,
+                  decoration: const InputDecoration(
+                    labelText: 'VREME ISPRA\u0106AJA',
+                    hintText: 'HH:MM',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (_) => _scheduleSave(),
                 ),
                 const SizedBox(height: 12),
               ],
-            ],
-            if (!_opelo && _mozeOpelo) ...[
+              // Datum i vreme ceremonije (na kraju)
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _vremeIspracajaCtrl,
-                enabled: e,
-                decoration: const InputDecoration(
-                  labelText: 'VREME ISPRA\u0106AJA',
-                  hintText: 'HH:MM',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (_) => _scheduleSave(),
-              ),
-              const SizedBox(height: 12),
-            ],
-            // Datum i vreme ceremonije (na kraju)
-            const SizedBox(height: 8),
 
-            _decisionTile(
-              title: 'Sahrana van Srbije',
-              value: _sahranaVanSrbije,
-              enabled: e,
-              onChanged: (v) {
-                setState(() => _sahranaVanSrbije = v);
-                if (v) {
-                  _predloziIriu([
-                    IriuK.medjunarodniPrevoz,
-                    IriuK.medjunarodnaDocumentacija,
-                    IriuK.balsamovanje,
-                  ]);
-                }
-                _scheduleSave();
-              },
-            ),
-            if (_sahranaVanSrbije) ...[
-              _row([
-                Expanded(
-                  child: TextFormField(
-                    controller: _svisZemljaCtrl,
-                    enabled: e,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'ZEMLJA',
-                      border: OutlineInputBorder(),
-                      isDense: true,
+              _decisionTile(
+                title: 'Sahrana van Srbije',
+                value: _sahranaVanSrbije,
+                enabled: e,
+                onChanged: (v) {
+                  setState(() => _sahranaVanSrbije = v);
+                  if (v) {
+                    _predloziIriu([
+                      IriuK.medjunarodniPrevoz,
+                      IriuK.medjunarodnaDocumentacija,
+                      IriuK.balsamovanje,
+                    ]);
+                  }
+                  _scheduleSave();
+                },
+              ),
+              if (_sahranaVanSrbije) ...[
+                _row([
+                  Expanded(
+                    child: TextFormField(
+                      controller: _svisZemljaCtrl,
+                      enabled: e,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'ZEMLJA',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (_) => _scheduleSave(),
                     ),
-                    onChanged: (_) => _scheduleSave(),
                   ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _svisGradCtrl,
-                    enabled: e,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'GRAD',
-                      border: OutlineInputBorder(),
-                      isDense: true,
+                  Expanded(
+                    child: TextFormField(
+                      controller: _svisGradCtrl,
+                      enabled: e,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'GRAD',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (_) => _scheduleSave(),
                     ),
-                    onChanged: (_) => _scheduleSave(),
                   ),
-                ),
-              ]),
-              const SizedBox(height: 8),
+                ]),
+                const SizedBox(height: 8),
+              ],
+              _decisionTile(
+                title: 'Do\u010dek posmrtnih ostataka',
+                value: _docekPosmrtnihOstataka,
+                enabled: e,
+                onChanged: (v) {
+                  setState(() => _docekPosmrtnihOstataka = v);
+                  if (v) {
+                    _predloziIriu([IriuK.cargoTroskovi]);
+                  }
+                  _scheduleSave();
+                },
+              ),
+              if (_docekPosmrtnihOstataka) ...[
+                _row([
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      controller: _docekMestoCtrl,
+                      enabled: e,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'MESTO DO\u010cEKA',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (_) => _scheduleSave(),
+                    ),
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _docekVremeCtrl,
+                      enabled: e,
+                      decoration: const InputDecoration(
+                        labelText: 'VREME DO\u010cEKA',
+                        hintText: 'HH:MM',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (_) => _scheduleSave(),
+                    ),
+                  ),
+                ]),
+              ],
             ],
-            _decisionTile(
-              title: 'Do\u010dek posmrtnih ostataka',
-              value: _docekPosmrtnihOstataka,
-              enabled: e,
-              onChanged: (v) {
-                setState(() => _docekPosmrtnihOstataka = v);
-                if (v) {
-                  _predloziIriu([IriuK.cargoTroskovi]);
-                }
-                _scheduleSave();
-              },
-            ),
-            if (_docekPosmrtnihOstataka) ...[
-              _row([
-                Expanded(
-                  flex: 2,
-                  child: TextFormField(
-                    controller: _docekMestoCtrl,
-                    enabled: e,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'MESTO DO\u010cEKA',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    onChanged: (_) => _scheduleSave(),
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: _docekVremeCtrl,
-                    enabled: e,
-                    decoration: const InputDecoration(
-                      labelText: 'VREME DO\u010cEKA',
-                      hintText: 'HH:MM',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    onChanged: (_) => _scheduleSave(),
-                  ),
-                ),
-              ]),
-            ],
-          ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -952,13 +1094,8 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     return Theme(
       data: baseTheme.copyWith(
         checkboxTheme: baseTheme.checkboxTheme.copyWith(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          side: BorderSide(
-            color: cs.onSurfaceVariant,
-            width: 1.5,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          side: BorderSide(color: cs.onSurfaceVariant, width: 1.5),
           fillColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
               return cs.primary;
@@ -973,13 +1110,14 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   }
 
   Widget _row(List<Widget> children) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children:
+        children
             .map<Widget>((w) => w is Expanded ? w : Expanded(child: w))
             .expand((w) => [w, const SizedBox(width: 12)])
             .toList()
           ..removeLast(),
-      );
+  );
 
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
@@ -1022,10 +1160,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Switch(
-                  value: value,
-                  onChanged: enabled ? onChanged : null,
-                ),
+                Switch(value: value, onChanged: enabled ? onChanged : null),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -1034,21 +1169,19 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 3),
                         Text(
                           subtitle,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: enabled
-                                        ? scheme.onSurfaceVariant
-                                        : scheme.onSurface.withValues(
-                                            alpha: 0.45,
-                                          ),
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: enabled
+                                    ? scheme.onSurfaceVariant
+                                    : scheme.onSurface.withValues(alpha: 0.45),
+                              ),
                         ),
                       ],
                     ],
@@ -1069,45 +1202,43 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     String selected,
     bool enabled,
     ValueChanged<String> onChanged,
-  ) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 4),
-          if (_isNarrowAndroid(context))
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: segments.map((segment) {
-                final isSelected = selected == segment.value;
-                final labelWidget = segment.label;
-                final labelText = labelWidget is Text
-                    ? (labelWidget.data ?? '')
-                    : segment.value;
-                return PredmetSelectionChip(
-                  label: labelText,
-                  selected: isSelected,
-                  enabled: enabled,
-                  onSelected: (_) => setState(() => onChanged(segment.value)),
-                );
-              }).toList(),
-            )
-          else
-            SegmentedButton<String>(
-              segments: segments,
-              selected: {selected},
-              onSelectionChanged: enabled
-                  ? (s) => setState(() => onChanged(s.first))
-                  : null,
-              style:
-                  const ButtonStyle(visualDensity: VisualDensity.compact),
-            ),
-        ],
-      );
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+      const SizedBox(height: 4),
+      if (_isNarrowAndroid(context))
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: segments.map((segment) {
+            final isSelected = selected == segment.value;
+            final labelWidget = segment.label;
+            final labelText = labelWidget is Text
+                ? (labelWidget.data ?? '')
+                : segment.value;
+            return PredmetSelectionChip(
+              label: labelText,
+              selected: isSelected,
+              enabled: enabled,
+              onSelected: (_) => setState(() => onChanged(segment.value)),
+            );
+          }).toList(),
+        )
+      else
+        SegmentedButton<String>(
+          segments: segments,
+          selected: {selected},
+          onSelectionChanged: enabled
+              ? (s) => setState(() => onChanged(s.first))
+              : null,
+          style: const ButtonStyle(visualDensity: VisualDensity.compact),
+        ),
+    ],
+  );
 }

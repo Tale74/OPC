@@ -1308,3 +1308,64 @@ Business meaning: filters remain available controls, while statistical insight r
 Risk if changed blindly: filters can reset, date semantics can drift, the sheet can conflict with back navigation, or desktop can regress.
 Safe upgrade boundary: Android filter presentation and local visibility interaction only; no calculation, persistence, schema, PREDMET, IRiU, PARTA, catalog, finance, PDF, JSON, Web, sync, package, or licensing changes.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED LAYOUT POLICY / RUNTIME NOT PRODUCED`.
+
+## PSEUDO-ID: OPC-PSEUDO-032
+
+Business area: GDPR startup dialog retirement and manual GDPR preservation
+Source files: `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/data/predmeti_repository.dart`
+Business purpose: stop automatic GDPR interruption while retaining deliberate per-PREDMET anonymization.
+Pseudocode:
+
+```text
+WHEN ListaPredmetaScreen starts:
+    refresh automatic PREDMET statuses
+    do not query/show GDPR eligibility startup dialogs
+
+WHEN user explicitly chooses GDPR anonimizacija for a ZAVRŠEN PREDMET:
+    keep existing confirmation, optional export, and anonymization path
+    preserve GDPR data, text, eligibility, and repository behavior
+```
+
+Business meaning: GDPR remains an explicit legal/data action, not an automatic operational reminder.
+Risk if changed blindly: removing startup dialogs must not remove manual anonymization or eligibility rules.
+Safe upgrade boundary: startup invocation only; no GDPR data, legal text, repository, export, or PREDMET lifecycle changes.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED STARTUP RETIREMENT`.
+
+## PSEUDO-ID: OPC-PSEUDO-033
+
+Business area: ceremony reminder model for Windows dialogs and Android local notifications
+Source files: `lib/features/predmeti/reminders/ceremony_reminder_model.dart`; `ceremony_reminder_repository.dart`; `ceremony_reminder_coordinator.dart`; `ceremony_notification_gateway.dart`; `lib/features/predmeti/presentation/segments/ceremonija_segment.dart`; `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/core/database/database.dart`; `android/app/src/main/AndroidManifest.xml`
+Business purpose: derive local operational reminders from PREDMET ceremony facts without creating ceremony truth.
+Pseudocode:
+
+```text
+configuration per local predmet_id:
+    enabled = true by default
+    frequencyHours in [1, 2, 3, 4, 6, 8, 12, 24]
+    scheduledNotificationIds = local cancellation state
+
+WHEN ceremony date/time or reminder configuration changes,
+OR app starts/resumes:
+    read PREDMET.datumCeremonije + vremeCeremonije
+    cancel every stored local notification id for that PREDMET
+    IF enabled and ceremony is future:
+        generate times from 2 days before through ceremony time
+        advance by frequencyHours
+        skip every time <= now
+        include ceremony time
+        schedule Android local notifications with deterministic local ids
+        store replacement ids
+
+WHEN app is active inside the 2-day window:
+    derive current frequency slot
+    show one in-app reminder dialog per slot/session on Windows or Android
+
+notification content:
+    include PREDMET number and ceremony term only
+    exclude deceased identity and unnecessary sensitive data
+```
+
+Business meaning: reminders are local operational helpers around time-critical CEREMONIJA facts.
+Risk if changed blindly: duplicate alarms, past-time spam, stale terms, permission failures, or parallel ceremony truth.
+Safe upgrade boundary: local settings/scheduling/dialogs only; no remote push, Firebase, JSON transfer, identity, Web/sync, or unrelated module changes.
+Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED CORE / RUNTIME NOT PRODUCED`.

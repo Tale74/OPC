@@ -50,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -58,6 +58,7 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
       await _prepareAuthSecuritySchema();
       await _createIriuLifecycleDecisionTable();
+      await _createCeremonyReminderSettingsTable();
       await _seedIriuKatalog();
       await _seedPredlosciDokumenata();
       await _seedSingletons();
@@ -128,6 +129,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 17) {
         await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
       }
+      if (from < 18) {
+        await _createCeremonyReminderSettingsTable();
+      }
     },
     beforeOpen: (details) async {
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
@@ -135,6 +139,7 @@ class AppDatabase extends _$AppDatabase {
       await _ensureStanjeRobeStableArticleIdUniqueIndex();
       await _ensureStanjeRobeAppliedEffectsIndexes();
       await _ensureStanjeRobePoslediceIndexes();
+      await _createCeremonyReminderSettingsTable();
       await backfillMissingKatalogStableArticleIds();
       await canonicalizeSeedCatalogStableArticleIds();
     },
@@ -257,6 +262,18 @@ class AppDatabase extends _$AppDatabase {
         decision_key TEXT NOT NULL,
         created_at TEXT NOT NULL,
         UNIQUE(predmet_id, interni_naziv, scope_key, decision_key)
+      )
+    ''');
+  }
+
+  Future<void> _createCeremonyReminderSettingsTable() {
+    return customStatement('''
+      CREATE TABLE IF NOT EXISTS ceremony_reminder_settings (
+        predmet_id INTEGER PRIMARY KEY REFERENCES predmeti(id) ON DELETE CASCADE,
+        enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+        frequency_hours INTEGER NOT NULL DEFAULT 24,
+        scheduled_notification_ids TEXT NOT NULL DEFAULT '[]',
+        updated_at TEXT NOT NULL DEFAULT ''
       )
     ''');
   }
@@ -1072,10 +1089,10 @@ class AppDatabase extends _$AppDatabase {
         final name = row.read<String>('naziv');
         final canonicalStableId =
             StockCatalogIdentity.canonicalStableIdForKnownLegacySeedReference(
-          interniNazivKategorije: category,
-          naziv: name,
-          currentStableArticleId: currentStableId ?? '',
-        );
+              interniNazivKategorije: category,
+              naziv: name,
+              currentStableArticleId: currentStableId ?? '',
+            );
         if (canonicalStableId == null ||
             currentStableId == null ||
             currentStableId.isEmpty ||
