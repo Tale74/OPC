@@ -10,5 +10,6 @@ void main() {
       formatCalendarPickerSelection(selected, trailingDot: true),
       '02.07.2026.',
     );
+    expect(normalizeDateInput('02.07.2026'), '02.07.2026.');
   });
 }

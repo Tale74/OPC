@@ -385,6 +385,10 @@ GDPR previously displayed automatic eligibility dialogs during list startup whil
 
 Windows previously derived a 2/1/0-day in-app banner and Android had no scheduler -> a shared 48-hour/frequency model now cancels/replaces local IDs, skips past times, drives session-deduped dialogs, and schedules Android-only local notifications -> reminder text starts directly with `vrstaCeremonije`, followed by PREMINULO LICE `ime + prezime`, `datumCeremonije`, `vremeCeremonije`, and `DOVRŠITE NEOPHODNE PRIPREME`; literal `CEREMONIJA` is not prefixed -> stale/duplicate alarms or incomplete identity can cause operational harm -> keep scheduling/GDPR/persistence/platform behavior unchanged and PREDMET facts authoritative.
 
+## Shared Runtime FAIL Corrections Cross-Reference
+
+Related pseudocode: `OPC-PSEUDO-038` through `OPC-PSEUDO-043`. Keep future changes within the documented presentation, local reminder configuration, input-validation, and entitlement-propagation boundaries. Do not infer authorization to alter PREDMET truth, package rules, stock effects, financial policy, catalog identity, PDF/JSON output, or GDPR behavior. The slow Windows-exit finding remains `NOT CHANGED / TECHNICAL AUDIT REQUIRED` until timing evidence identifies a blocking stage.
+
 ## Calendar Date Input Cross-Reference
 
 Related pseudocode: `OPC-PSEUDO-034`. Manual typing in `DATUM ROĐENJA`, `DATUM SMRTI`, and `DATUM CEREMONIJE` is replaced by `showDatePicker`; selection writes the existing Serbian normalized string, cancel preserves the current value, and clear/autosave remain. Safe boundary is UI input only: no storage, PDF, JSON, reminder, GDPR, or business-date change.

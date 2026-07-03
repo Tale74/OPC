@@ -94,7 +94,7 @@ String normalizeDateInput(String input) {
   final trimmed = input.trim();
   final parsed = parseDateValue(trimmed);
   if (parsed == null) return trimmed;
-  return formatDateUi(parsed);
+  return formatDateUiSr(parsed, trailingDot: true);
 }
 
 String normalizeCeremonyDateInput(String input) {

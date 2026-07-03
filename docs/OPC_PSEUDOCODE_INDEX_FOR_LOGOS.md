@@ -413,3 +413,12 @@ Truth boundary: RAČUN is a PREDMET-derived output, not independent business tru
 Why Logos must know it: runtime document expectations must include the source-confirmed RAČUN action.
 Risk if misunderstood: a verification task could accidentally alter the document set.
 Read after: `test/package_downgrade_migration_test.dart`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-036
+
+Source files: catalog photo policy, reminder model/repository/UI, date formatting/PREMINULO LICE, FINANSIJE, and app entitlement routing
+Related pseudocode sections: `OPC-PSEUDO-038` through `OPC-PSEUDO-043`
+Business meaning: shared runtime corrections preserve catalog proportions, use explicit reminder clock times, retain Serbian historical-date formatting, validate financial input, propagate the installed package, and keep marital vocabulary consistent with POL.
+Truth boundary: presentation, local operational configuration, validation, and entitlement routing do not redefine PREDMET facts.
+Risk if misunderstood: these corrections could be expanded into unauthorized catalog, package, finance, date, stock, PDF, JSON, or GDPR policy changes.
+Read after: `docs/tasks/OPC_TASK_SHARED_RUNTIME_FAIL_CORRECTIONS_BUILD_REPORT.md` and its focused tests.

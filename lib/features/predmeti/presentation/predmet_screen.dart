@@ -14,7 +14,8 @@ import '../data/iriu_repository.dart';
 import '../data/kontakt_lica_repository.dart';
 import '../data/predmeti_repository.dart';
 import '../pdf/lista_pdf_export.dart';
-import 'package:opc_v4/features/predmeti/pdf/nalog_za_opremanje_pdf_export.dart' as nalog_za_opremanje_pdf_export;
+import 'package:opc_v4/features/predmeti/pdf/nalog_za_opremanje_pdf_export.dart'
+    as nalog_za_opremanje_pdf_export;
 import '../pdf/predracun_pdf_export.dart';
 import '../pdf/predmet_pdf_snapshot_export.dart';
 import '../pdf/racun_pdf_export.dart';
@@ -51,12 +52,7 @@ class _PredmetSectionInfo {
   final IconData icon;
 }
 
-enum _SectionProgressLevel {
-  notStarted,
-  started,
-  needsMore,
-  ready,
-}
+enum _SectionProgressLevel { notStarted, started, needsMore, ready }
 
 class _SectionProgress {
   const _SectionProgress(this.level);
@@ -124,19 +120,20 @@ class PredmetScreen extends StatefulWidget {
     required this.predmetiRepo,
     required this.session,
     this.openDocuments = false,
+    this.entitlementPolicy = const OpcEntitlementPolicy.current(),
   });
 
   final int predmetId;
   final PredmetiRepository predmetiRepo;
   final SessionService session;
   final bool openDocuments;
+  final OpcEntitlementPolicy entitlementPolicy;
 
   @override
   State<PredmetScreen> createState() => _PredmetScreenState();
 }
 
 class _PredmetScreenState extends State<PredmetScreen> {
-  static const _entitlementPolicy = OpcEntitlementPolicy.current();
   late final IriuRepository _iriuRepo;
   late final KontaktLicaRepository _kontaktRepo;
   late final PodesavanjaRepository _podesavanjaRepo;
@@ -164,8 +161,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
     _iriuRepo = IriuRepository(widget.predmetiRepo.db);
     _kontaktRepo = KontaktLicaRepository(widget.predmetiRepo.db);
     _podesavanjaRepo = PodesavanjaRepository(widget.predmetiRepo.db);
-    _stockConsequencesRepo =
-        StanjeRobePoslediceRepository(widget.predmetiRepo.db);
+    _stockConsequencesRepo = StanjeRobePoslediceRepository(
+      widget.predmetiRepo.db,
+    );
     _ucitaj();
   }
 
@@ -187,7 +185,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
     final predmet = results[0] as PredmetiData;
     final poslednjiSaveSnapshot = results[3] as String?;
     final baselineSnapshot =
-        poslednjiSaveSnapshot ?? widget.predmetiRepo.snapshotZaSaveCommit(predmet);
+        poslednjiSaveSnapshot ??
+        widget.predmetiRepo.snapshotZaSaveCommit(predmet);
     final cekaPrviEksplicitniSave = poslednjiSaveSnapshot == null;
     setState(() {
       _predmet = predmet;
@@ -213,10 +212,13 @@ class _PredmetScreenState extends State<PredmetScreen> {
     if (p == null) return true;
     return p.ime.trim().isNotEmpty || p.prezime.trim().isNotEmpty;
   }
+
   bool get _trebaPotvrdaZaIzlazIzOtvorenogPredmeta =>
       _predmet != null && _otvoren && _imaMinimumIdentiteta && !_anonimizovan;
   bool get _mozeDirektanIzlaz =>
-      _dozvoliJedanIzlaz || _anonimizovan || (!_otvoren && _imaMinimumIdentiteta);
+      _dozvoliJedanIzlaz ||
+      _anonimizovan ||
+      (!_otvoren && _imaMinimumIdentiteta);
 
   String _predmetHeader(PredmetiData predmet) {
     final identitet = _predmetIdentity(predmet);
@@ -238,10 +240,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
     return values.any((value) => value.trim().isNotEmpty);
   }
 
-  _SectionProgress _progress({
-    required bool started,
-    required bool ready,
-  }) {
+  _SectionProgress _progress({required bool started, required bool ready}) {
     if (ready) return const _SectionProgress(_SectionProgressLevel.ready);
     if (started) return const _SectionProgress(_SectionProgressLevel.needsMore);
     return const _SectionProgress(_SectionProgressLevel.notStarted);
@@ -269,8 +268,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
         final started = _hasAnyText([p.datumSmrti, p.mestoSmrti, p.uzrokSmrti]);
         return _progress(
           started: started,
-          ready: p.datumSmrti.trim().isNotEmpty &&
-              p.mestoSmrti.trim().isNotEmpty,
+          ready:
+              p.datumSmrti.trim().isNotEmpty && p.mestoSmrti.trim().isNotEmpty,
         );
       case _PredmetLogicalSection.statusi:
         final started = _hasAnyText([
@@ -291,33 +290,25 @@ class _PredmetScreenState extends State<PredmetScreen> {
         ]);
         return _progress(started: started, ready: started);
       case _PredmetLogicalSection.ceremonija:
-        final started = _hasAnyText([
-              p.datumCeremonije,
-              p.vremeCeremonije,
-              p.groblje,
-            ]) ||
+        final started =
+            _hasAnyText([p.datumCeremonije, p.vremeCeremonije, p.groblje]) ||
             p.sahranaVanSrbije ||
             p.docekPosmrtnihOstataka;
         return _progress(
           started: started,
-          ready: p.datumCeremonije.trim().isNotEmpty ||
+          ready:
+              p.datumCeremonije.trim().isNotEmpty ||
               p.groblje.trim().isNotEmpty,
         );
       case _PredmetLogicalSection.parte:
         final started = _hasAnyText([p.parteIme, p.ozaloseni]);
         return _progress(started: started, ready: started);
       case _PredmetLogicalSection.robaIUsluge:
-        return const _SectionProgress(
-          _SectionProgressLevel.started,
-        );
+        return const _SectionProgress(_SectionProgressLevel.started);
       case _PredmetLogicalSection.finansije:
-        return const _SectionProgress(
-          _SectionProgressLevel.started,
-        );
+        return const _SectionProgress(_SectionProgressLevel.started);
       case _PredmetLogicalSection.dokumenti:
-        return const _SectionProgress(
-          _SectionProgressLevel.started,
-        );
+        return const _SectionProgress(_SectionProgressLevel.started);
       case _PredmetLogicalSection.pregledIPotvrda:
         return _SectionProgress(
           _imaNesacuvanihIzmena
@@ -413,11 +404,12 @@ class _PredmetScreenState extends State<PredmetScreen> {
     return _cekaPrviEksplicitniSave || snapshot != baselineSnapshot;
   }
 
-
   Future<void> _onSave(PredmetiCompanion companion) async {
     final current = _predmet;
     if (current == null) return;
-    final sledeceIme = companion.ime.present ? companion.ime.value : current.ime;
+    final sledeceIme = companion.ime.present
+        ? companion.ime.value
+        : current.ime;
     final sledecePrezime = companion.prezime.present
         ? companion.prezime.value
         : current.prezime;
@@ -511,7 +503,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
   }
 
   String _stockCategoryLabel(String kategorija) {
-    return StanjeRobeLifecycleService.displayLabelForCoveredCategory(kategorija);
+    return StanjeRobeLifecycleService.displayLabelForCoveredCategory(
+      kategorija,
+    );
   }
 
   String _stockBlockerLine(StanjeRobePoslediceData consequence) {
@@ -524,7 +518,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
   Future<bool> _stanjeRobeAktivno() {
     return StanjeRobeOperationalAvailability(
       podesavanjaRepository: _podesavanjaRepo,
-      entitlementPolicy: _entitlementPolicy,
+      entitlementPolicy: widget.entitlementPolicy,
     ).isActive();
   }
 
@@ -991,10 +985,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         : 'Radno stanje: sačuvano';
     final buttonStyle = FilledButton.styleFrom(
       minimumSize: const Size.fromHeight(48),
-      textStyle: const TextStyle(
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0,
-      ),
+      textStyle: const TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0),
     );
 
     return Material(
@@ -1013,9 +1004,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
                   statusText,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: cs.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -1039,10 +1030,12 @@ class _PredmetScreenState extends State<PredmetScreen> {
                         icon: const Icon(Icons.lock_outline),
                         label: const Text('ZATVORI'),
                         style: buttonStyle.copyWith(
-                          backgroundColor:
-                              WidgetStateProperty.all(Colors.orange),
-                          foregroundColor:
-                              WidgetStateProperty.all(Colors.white),
+                          backgroundColor: WidgetStateProperty.all(
+                            Colors.orange,
+                          ),
+                          foregroundColor: WidgetStateProperty.all(
+                            Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -1123,8 +1116,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
     required PredmetiData predmet,
     required _DocumentActionVisibility documentVisibility,
   }) {
-    final selected =
-        _selectedSection ?? _PredmetLogicalSection.preminuloLice;
+    final selected = _selectedSection ?? _PredmetLogicalSection.preminuloLice;
     final info = _sectionInfo(selected);
     return Row(
       children: [
@@ -1236,9 +1228,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
           iriuRepo: _iriuRepo,
           podesavanjaRepo: _podesavanjaRepo,
           enabled: _otvoren,
-          onNapomenaSave: (napomena) => _onSave(
-            PredmetiCompanion(napomena: Value(napomena)),
-          ),
+          onNapomenaSave: (napomena) =>
+              _onSave(PredmetiCompanion(napomena: Value(napomena))),
           initialNapomena: predmet.napomena,
         );
       case _PredmetLogicalSection.finansije:
@@ -1339,8 +1330,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
               children: [
                 if (_otvoren)
                   FilledButton.icon(
-                    onPressed:
-                        _cuvaPoslovnuVerziju ? null : _sacuvajPredmet,
+                    onPressed: _cuvaPoslovnuVerziju ? null : _sacuvajPredmet,
                     icon: const Icon(Icons.save_outlined),
                     label: Text(_cuvaPoslovnuVerziju ? 'ČUVA...' : 'SAČUVAJ'),
                   ),
@@ -1378,8 +1368,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
     }
     final p = _predmet!;
     final imePrezime = _predmetIdentity(p);
-    final appBarIdentity =
-        imePrezime.isNotEmpty ? imePrezime : 'Predmet: novi predmet';
+    final appBarIdentity = imePrezime.isNotEmpty
+        ? imePrezime
+        : 'Predmet: novi predmet';
 
     const headerTextStyle = TextStyle(
       fontSize: 13,
@@ -1389,20 +1380,24 @@ class _PredmetScreenState extends State<PredmetScreen> {
     final isNarrowAndroid =
         Theme.of(context).platform == TargetPlatform.android &&
         MediaQuery.of(context).size.width < 600;
-    final showSpecifikacijaTroskovaPdf = _entitlementPolicy
+    final showSpecifikacijaTroskovaPdf = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.specifikacijaTroskovaPdf);
-    final showPredracunPdf =
-        _entitlementPolicy.isDocumentActionVisible(OpcDocumentAction.predracunPdf);
-    final showListaPdf =
-        _entitlementPolicy.isDocumentActionVisible(OpcDocumentAction.listaPdf);
-    final showNalogZaOpremanjePdf = _entitlementPolicy
+    final showPredracunPdf = widget.entitlementPolicy.isDocumentActionVisible(
+      OpcDocumentAction.predracunPdf,
+    );
+    final showListaPdf = widget.entitlementPolicy.isDocumentActionVisible(
+      OpcDocumentAction.listaPdf,
+    );
+    final showNalogZaOpremanjePdf = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.nalogZaOpremanjePdf);
-    final showPredmetPdfSnapshot = _entitlementPolicy
+    final showPredmetPdfSnapshot = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.predmetPdfSnapshot);
-    final showJsonTransfer =
-        _entitlementPolicy.isDocumentActionVisible(OpcDocumentAction.jsonTransfer);
-    final showRacunPdf =
-        _entitlementPolicy.isDocumentActionVisible(OpcDocumentAction.racunPdf);
+    final showJsonTransfer = widget.entitlementPolicy.isDocumentActionVisible(
+      OpcDocumentAction.jsonTransfer,
+    );
+    final showRacunPdf = widget.entitlementPolicy.isDocumentActionVisible(
+      OpcDocumentAction.racunPdf,
+    );
     final primaryHeaderTextStyle = headerTextStyle.copyWith(
       fontWeight: FontWeight.w700,
       fontSize: isNarrowAndroid ? 14 : headerTextStyle.fontSize,
@@ -1413,156 +1408,155 @@ class _PredmetScreenState extends State<PredmetScreen> {
     );
 
     return PopScope(
-      canPop: !(isNarrowAndroid && _selectedSection != null) &&
-          _mozeDirektanIzlaz,
+      canPop:
+          !(isNarrowAndroid && _selectedSection != null) && _mozeDirektanIzlaz,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         if (_handleNarrowSectionBack(isNarrowAndroid)) return;
         await _obradiPokusanIzlazaIzPredmeta();
       },
       child: Scaffold(
-      appBar: AppBar(
-        titleSpacing: isNarrowAndroid ? 12 : null,
-        toolbarHeight: isNarrowAndroid ? 84 : null,
-        title: isNarrowAndroid
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    appBarIdentity,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: primaryHeaderTextStyle,
-                  ),
-                  const SizedBox(height: 6),
-                  _StatusChip(status: p.status),
-                ],
-              )
-            : Text(
-                appBarIdentity,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: primaryHeaderTextStyle,
-              ),
-        actions: [
-          if (!isNarrowAndroid) ...[
-            _StatusChip(status: p.status),
-            const SizedBox(width: 4),
-          ],
-          if (!_anonimizovan) ...[
-            if (_otvoren)
-              if (!isNarrowAndroid) ...[
-                FilledButton(
-                  onPressed: _cuvaPoslovnuVerziju ? null : _sacuvajPredmet,
-                  style: FilledButton.styleFrom(
-                    padding: headerActionPadding,
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  child: Text(_cuvaPoslovnuVerziju ? 'ČUVA...' : 'SAČUVAJ'),
+        appBar: AppBar(
+          titleSpacing: isNarrowAndroid ? 12 : null,
+          toolbarHeight: isNarrowAndroid ? 84 : null,
+          title: isNarrowAndroid
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appBarIdentity,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: primaryHeaderTextStyle,
+                    ),
+                    const SizedBox(height: 6),
+                    _StatusChip(status: p.status),
+                  ],
+                )
+              : Text(
+                  appBarIdentity,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: primaryHeaderTextStyle,
                 ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: _zatvori,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    padding: headerActionPadding,
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          actions: [
+            if (!isNarrowAndroid) ...[
+              _StatusChip(status: p.status),
+              const SizedBox(width: 4),
+            ],
+            if (!_anonimizovan) ...[
+              if (_otvoren)
+                if (!isNarrowAndroid) ...[
+                  FilledButton(
+                    onPressed: _cuvaPoslovnuVerziju ? null : _sacuvajPredmet,
+                    style: FilledButton.styleFrom(
+                      padding: headerActionPadding,
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    child: Text(_cuvaPoslovnuVerziju ? 'ČUVA...' : 'SAČUVAJ'),
                   ),
-                  child: const Text('ZATVORI'),
-                ),
-              ]
-            else if (_zatvoren && !isNarrowAndroid)
-              OutlinedButton(
-                onPressed: _otkljucajZaIzmenu,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white54),
-                  padding: headerActionPadding,
-                ),
-                child: const Text('IZMENI'),
-              ),
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'save') _sacuvajPredmet();
-                if (v == 'close') _zatvori();
-                if (v == 'edit') _otkljucajZaIzmenu();
-                if (v == 'anon') _anonimizuj();
-                if (v == 'delete') _obrisiPredmet();
-              },
-              itemBuilder: (_) => [
-                if (!_anonimizovan)
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _zatvori,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: headerActionPadding,
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    child: const Text('ZATVORI'),
+                  ),
+                ] else if (_zatvoren && !isNarrowAndroid)
+                  OutlinedButton(
+                    onPressed: _otkljucajZaIzmenu,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white54),
+                      padding: headerActionPadding,
+                    ),
+                    child: const Text('IZMENI'),
+                  ),
+              PopupMenuButton<String>(
+                onSelected: (v) {
+                  if (v == 'save') _sacuvajPredmet();
+                  if (v == 'close') _zatvori();
+                  if (v == 'edit') _otkljucajZaIzmenu();
+                  if (v == 'anon') _anonimizuj();
+                  if (v == 'delete') _obrisiPredmet();
+                },
+                itemBuilder: (_) => [
+                  if (!_anonimizovan)
+                    PopupMenuItem(
+                      value: 'anon',
+                      enabled: _mozeAnonimizacija,
+                      child: const ListTile(
+                        leading: Icon(Icons.person_remove_outlined),
+                        title: Text('GDPR anonimizacija'),
+                        dense: true,
+                      ),
+                    ),
                   PopupMenuItem(
-                    value: 'anon',
-                    enabled: _mozeAnonimizacija,
-                    child: const ListTile(
-                      leading: Icon(Icons.person_remove_outlined),
-                      title: Text('GDPR anonimizacija'),
+                    value: 'delete',
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.delete_forever_outlined,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      title: Text(
+                        'Obriši predmet trajno',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                       dense: true,
                     ),
                   ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.delete_forever_outlined,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    title: Text(
-                      'Obriši predmet trajno',
-                      style: TextStyle(
+                ],
+              ),
+            ],
+            if (_anonimizovan)
+              PopupMenuButton<String>(
+                onSelected: (v) {
+                  if (v == 'delete') _obrisiPredmet();
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.delete_forever_outlined,
                         color: Theme.of(context).colorScheme.error,
                       ),
+                      title: Text(
+                        'Obriši predmet trajno',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      dense: true,
                     ),
-                    dense: true,
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            const SizedBox(width: 4),
           ],
-          if (_anonimizovan)
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'delete') _obrisiPredmet();
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: 'delete',
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.delete_forever_outlined,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    title: Text(
-                      'Obriši predmet trajno',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    dense: true,
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(width: 4),
-        ],
+        ),
+        body: _buildPredmetWorkspace(
+          predmet: p,
+          isNarrowAndroid: isNarrowAndroid,
+          showSpecifikacijaTroskovaPdf: showSpecifikacijaTroskovaPdf,
+          showPredracunPdf: showPredracunPdf,
+          showListaPdf: showListaPdf,
+          showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
+          showPredmetPdfSnapshot: showPredmetPdfSnapshot,
+          showJsonTransfer: showJsonTransfer,
+          showRacunPdf: showRacunPdf,
+        ),
       ),
-      body: _buildPredmetWorkspace(
-        predmet: p,
-        isNarrowAndroid: isNarrowAndroid,
-        showSpecifikacijaTroskovaPdf: showSpecifikacijaTroskovaPdf,
-        showPredracunPdf: showPredracunPdf,
-        showListaPdf: showListaPdf,
-        showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
-        showPredmetPdfSnapshot: showPredmetPdfSnapshot,
-        showJsonTransfer: showJsonTransfer,
-        showRacunPdf: showRacunPdf,
-      ),
-    ));
+    );
   }
 }
-
 
 class _DocumentActionVisibility {
   const _DocumentActionVisibility({
@@ -1595,9 +1589,9 @@ class _PredmetOrientationHeader extends StatelessWidget {
       text,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
     );
   }
 }
@@ -1652,9 +1646,7 @@ class _PredmetHubCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             info.label,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
+                            style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                         ),
@@ -1732,11 +1724,7 @@ class _DocumentActionButton extends StatelessWidget {
             Icon(icon),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                label,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
             ),
           ],
         ),
@@ -1782,7 +1770,6 @@ class _ReviewRow extends StatelessWidget {
   }
 }
 
-
 // Section header
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
@@ -1814,18 +1801,16 @@ class _SectionHeader extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.primary,
-                  letterSpacing: 0.5,
-                ),
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.primary,
+              letterSpacing: 0.5,
+            ),
           ),
         ],
       ),
     );
   }
 }
-
-
 
 // Status chip
 class _StatusChip extends StatelessWidget {
@@ -1862,6 +1847,3 @@ class _StatusChip extends StatelessWidget {
     );
   }
 }
-
-
-

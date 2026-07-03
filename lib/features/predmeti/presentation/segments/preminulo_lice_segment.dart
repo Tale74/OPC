@@ -11,6 +11,24 @@ import 'predmet_decision_controls.dart';
 
 enum PreminuloLiceSegmentMode { all, osnovno, cinjeniceOSmrti, statusi }
 
+const _maleMaritalStatuses = <String>[
+  'OŽENJEN',
+  'UDOVAC',
+  'RAZVEDEN',
+  'NEOŽENJEN',
+  'VANBRAČNA ZAJEDNICA',
+];
+const _femaleMaritalStatuses = <String>[
+  'UDATA',
+  'UDOVICA',
+  'RAZVEDENA',
+  'NEUDATA',
+  'VANBRAČNA ZAJEDNICA',
+];
+
+List<String> maritalStatusOptionsForSex(String sex) =>
+    sex == 'Z' ? _femaleMaritalStatuses : _maleMaritalStatuses;
+
 /// Segment 1 + 1a: PREMINULO LICE i RADNI STATUS.
 class PreminuloLiceSegment extends StatefulWidget {
   const PreminuloLiceSegment({
@@ -116,17 +134,6 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     'NASILNA',
     'ZARAZNA',
     'NEDEFINISANA',
-  ];
-  static const _bracnaStanjaOpcije = [
-    'OŽENJEN',
-    'UDATA',
-    'UDOVAC',
-    'UDOVICA',
-    'RAZVEDEN',
-    'RAZVEDENA',
-    'NEOŽENJEN',
-    'NEUDATA',
-    'VANBRAČNA ZAJEDNICA',
   ];
   static const _saBracnimDrugom = {'OŽENJEN', 'UDATA', 'UDOVAC', 'UDOVICA'};
   static const _mozePravoBD = {'OŽENJEN', 'UDATA'};
@@ -387,6 +394,7 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
                   _datumRodjenjaCtrl,
                   e,
                   protected: true,
+                  historicalYearFirst: true,
                 ),
                 _field(
                   'MESTO ROĐENJA',
@@ -649,6 +657,7 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     TextEditingController ctrl,
     bool enabled, {
     bool protected = false,
+    bool historicalYearFirst = false,
   }) => Expanded(
     child: protected && ctrl.text.trim().toLowerCase() == 'redacted'
         ? PredmetProtectedTextField(
@@ -663,7 +672,10 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
             controller: ctrl,
             enabled: enabled,
             readOnly: true,
-            onTap: enabled ? () => _pickDate(ctrl) : null,
+            onTap: enabled
+                ? () =>
+                      _pickDate(ctrl, historicalYearFirst: historicalYearFirst)
+                : null,
             decoration: InputDecoration(
               labelText: label,
               hintText: 'DD.MM.YYYY',
@@ -674,7 +686,10 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
                 onPressed: !enabled
                     ? null
                     : ctrl.text.isEmpty
-                    ? () => _pickDate(ctrl)
+                    ? () => _pickDate(
+                        ctrl,
+                        historicalYearFirst: historicalYearFirst,
+                      )
                     : () {
                         ctrl.clear();
                         _scheduleSave();
@@ -690,15 +705,22 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
           ),
   );
 
-  Future<void> _pickDate(TextEditingController ctrl) async {
+  Future<void> _pickDate(
+    TextEditingController ctrl, {
+    bool historicalYearFirst = false,
+  }) async {
+    final today = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: parseDateValue(ctrl.text) ?? DateTime.now(),
+      initialDate: parseDateValue(ctrl.text) ?? today,
       firstDate: DateTime(1900),
-      lastDate: DateTime(2100, 12, 31),
+      lastDate: historicalYearFirst ? today : DateTime(2100, 12, 31),
+      initialDatePickerMode: historicalYearFirst
+          ? DatePickerMode.year
+          : DatePickerMode.day,
     );
     if (picked == null || !mounted) return;
-    ctrl.text = formatCalendarPickerSelection(picked);
+    ctrl.text = formatCalendarPickerSelection(picked, trailingDot: true);
     _scheduleSave();
     setState(() {});
   }
@@ -756,6 +778,11 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
               ? (s) => setState(() {
                   final prethodniPol = _pol;
                   _pol = s.first;
+                  if (!maritalStatusOptionsForSex(
+                    _pol,
+                  ).contains(_bracnoStanje)) {
+                    _bracnoStanje = '';
+                  }
                   if (_bracnoStanje == 'VANBRAČNA ZAJEDNICA' ||
                       _bracnoStanje.isEmpty) {
                     _bdPol = _autoBdPol;
@@ -881,9 +908,9 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
       border: OutlineInputBorder(),
       isDense: true,
     ),
-    items: _bracnaStanjaOpcije
-        .map((v) => DropdownMenuItem(value: v, child: Text(v)))
-        .toList(),
+    items: maritalStatusOptionsForSex(
+      _pol,
+    ).map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
     onChanged: enabled
         ? (v) => setState(() {
             _bracnoStanje = v ?? '';

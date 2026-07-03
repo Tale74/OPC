@@ -14,7 +14,7 @@ void main() {
   group('ceremony reminder model', () {
     final ceremonyAt = DateTime(2026, 7, 10, 12);
 
-    test('default 24-hour frequency represents 2 / 1 / 0 day windows', () {
+    test('default clock time is scheduled on 2 / 1 / 0 day windows', () {
       final occurrences = buildCeremonyReminderOccurrences(
         predmetId: 7,
         ceremonyAt: ceremonyAt,
@@ -22,29 +22,29 @@ void main() {
         now: DateTime(2026, 7, 1),
       );
       expect(occurrences.map((item) => item.scheduledAt), [
-        DateTime(2026, 7, 8, 12),
-        DateTime(2026, 7, 9, 12),
-        DateTime(2026, 7, 10, 12),
+        DateTime(2026, 7, 8, 9),
+        DateTime(2026, 7, 9, 9),
+        DateTime(2026, 7, 10, 9),
       ]);
     });
 
-    test('supports multiple user-selected delivery hours', () {
+    test('supports multiple user-selected clock times', () {
       final occurrences = buildCeremonyReminderOccurrences(
         predmetId: 7,
         ceremonyAt: ceremonyAt,
-        config: const CeremonyReminderConfig(frequencyHours: 6),
+        config: const CeremonyReminderConfig(deliveryTimes: ['09:00', '19:00']),
         now: DateTime(2026, 7, 1),
       );
-      expect(occurrences, hasLength(9));
-      expect(occurrences.first.scheduledAt, DateTime(2026, 7, 8, 12));
-      expect(occurrences.last.scheduledAt, ceremonyAt);
+      expect(occurrences, hasLength(5));
+      expect(occurrences.first.scheduledAt, DateTime(2026, 7, 8, 9));
+      expect(occurrences.last.scheduledAt, DateTime(2026, 7, 10, 9));
     });
 
     test('skips past delivery times without immediate spam', () {
       final occurrences = buildCeremonyReminderOccurrences(
         predmetId: 7,
         ceremonyAt: ceremonyAt,
-        config: const CeremonyReminderConfig(frequencyHours: 6),
+        config: const CeremonyReminderConfig(deliveryTimes: ['09:00', '19:00']),
         now: DateTime(2026, 7, 9, 16),
       );
       expect(
@@ -54,11 +54,22 @@ void main() {
         isTrue,
       );
       expect(occurrences.map((item) => item.scheduledAt), [
-        DateTime(2026, 7, 9, 18),
-        DateTime(2026, 7, 10),
-        DateTime(2026, 7, 10, 6),
-        DateTime(2026, 7, 10, 12),
+        DateTime(2026, 7, 9, 19),
+        DateTime(2026, 7, 10, 9),
       ]);
+    });
+
+    test('active slot follows selected clock time on reminder day', () {
+      expect(
+        activeCeremonyReminderSlot(
+          ceremonyAt: ceremonyAt,
+          config: const CeremonyReminderConfig(
+            deliveryTimes: ['09:00', '19:00'],
+          ),
+          now: DateTime(2026, 7, 9, 18),
+        ),
+        DateTime(2026, 7, 9, 9),
+      );
     });
 
     test('disabled reminders produce no occurrences', () {
@@ -148,13 +159,16 @@ void main() {
 
       await repository.saveConfig(
         predmetId,
-        const CeremonyReminderConfig(enabled: true, frequencyHours: 3),
+        const CeremonyReminderConfig(
+          enabled: true,
+          deliveryTimes: ['09:00', '19:00'],
+        ),
       );
       await repository.saveScheduledIds(predmetId, [11, 12]);
       final stored = await repository.getForPredmet(predmetId);
 
       expect(stored.config.enabled, isTrue);
-      expect(stored.config.frequencyHours, 3);
+      expect(stored.config.normalizedDeliveryTimes, ['09:00', '19:00']);
       expect(stored.scheduledNotificationIds, [11, 12]);
     },
   );

@@ -1478,3 +1478,39 @@ Business meaning: pre-runtime validation should expect RAČUN among the standard
 Risk if changed blindly: adding or removing the action can make runtime expectations contradict the source-approved document set.
 Safe upgrade boundary: verification and characterization only; do not add/remove RAČUN or change its layout/content without an owner-approved product decision.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED VISIBILITY / NO PDF CHANGE`.
+
+## PSEUDO-ID: OPC-PSEUDO-038
+
+Business area: Catalog detail photograph aspect-ratio preservation
+Source files: `katalog_photo_policy.dart`; `iriu_row_tile.dart`
+Rule: constrain one raster decode edge, leave the other unconstrained, and use `BoxFit.contain` so the source photograph ratio is preserved. Catalog identity, navigation, selection, persistence, and prices do not change.
+
+## PSEUDO-ID: OPC-PSEUDO-039
+
+Business area: Ceremony reminder delivery clock times
+Source files: reminder model/repository; `ceremonija_segment.dart`; `database.dart`
+Rule: for every normalized unique selected clock time, schedule future occurrences on ceremony day minus 2, minus 1, and day 0, but never after the ceremony. Persist the list locally and default to `09:00`. PREDMET ceremony facts and reminder text remain authoritative.
+
+## PSEUDO-ID: OPC-PSEUDO-040
+
+Business area: Historical date selection and Serbian final-dot format
+Source files: `app_date_format.dart`; `preminulo_lice_segment.dart`
+Rule: birth selection opens in year mode with 1900 through today bounds. Birth/death picker results and normalized saved values use `DD.MM.YYYY.`; cancel preserves and clear removes the value. Date facts, JSON, PDF, GDPR, and reminder semantics do not change.
+
+## PSEUDO-ID: OPC-PSEUDO-041
+
+Business area: FINANSIJE manual amount Serbian normalization
+Source files: `finansije_segment.dart`; `app_money_format.dart`
+Rule: AVANS, TROSKOVI JKP, and POPUST use the shared practical comma/dot parser; commit or focus loss displays Serbian `#.##0,00`; invalid text shows an error and never replaces the last valid amount with zero. Existing calculation/autosave ownership remains.
+
+## PSEUDO-ID: OPC-PSEUDO-042
+
+Business area: Installed entitlement propagation for STANJE ROBE
+Source files: `app.dart`; `lista_predmeta_screen.dart`; `predmet_screen.dart`; entitlement bootstrap
+Rule: evaluate the installed local license once at startup and pass its policy through runtime routes. Package policy controls module availability; the independent persisted operational toggle stays default-off. Package rules, roles, stock data, and effects do not change.
+
+## PSEUDO-ID: OPC-PSEUDO-043
+
+Business area: Marital-status vocabulary by POL
+Source file: `preminulo_lice_segment.dart`
+Rule: POL M offers OZENJEN, UDOVAC, RAZVEDEN, NEOZENJEN, VANBRACNA ZAJEDNICA; POL Z offers UDATA, UDOVICA, RAZVEDENA, NEUDATA, VANBRACNA ZAJEDNICA. A POL change clears a current value invalid for the new list. Identity, GDPR, PDF, and JSON models do not change.

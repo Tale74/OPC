@@ -50,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -132,6 +132,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 18) {
         await _createCeremonyReminderSettingsTable();
       }
+      if (from < 19) {
+        await _ensureCeremonyReminderDeliveryTimesColumn();
+      }
     },
     beforeOpen: (details) async {
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
@@ -140,6 +143,7 @@ class AppDatabase extends _$AppDatabase {
       await _ensureStanjeRobeAppliedEffectsIndexes();
       await _ensureStanjeRobePoslediceIndexes();
       await _createCeremonyReminderSettingsTable();
+      await _ensureCeremonyReminderDeliveryTimesColumn();
       await backfillMissingKatalogStableArticleIds();
       await canonicalizeSeedCatalogStableArticleIds();
     },
@@ -167,6 +171,17 @@ class AppDatabase extends _$AppDatabase {
         ALTER TABLE app_podesavanja
         ADD COLUMN $columnName INTEGER NOT NULL DEFAULT 0
         CHECK ("$columnName" IN (0, 1))
+      ''');
+  }
+
+  Future<void> _ensureCeremonyReminderDeliveryTimesColumn() async {
+    const columnName = 'delivery_times';
+    if (await _tableHasColumn('ceremony_reminder_settings', columnName)) {
+      return;
+    }
+    await customStatement('''
+        ALTER TABLE ceremony_reminder_settings
+        ADD COLUMN $columnName TEXT NOT NULL DEFAULT '["09:00"]'
       ''');
   }
 
@@ -272,6 +287,7 @@ class AppDatabase extends _$AppDatabase {
         predmet_id INTEGER PRIMARY KEY REFERENCES predmeti(id) ON DELETE CASCADE,
         enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
         frequency_hours INTEGER NOT NULL DEFAULT 24,
+        delivery_times TEXT NOT NULL DEFAULT '["09:00"]',
         scheduled_notification_ids TEXT NOT NULL DEFAULT '[]',
         updated_at TEXT NOT NULL DEFAULT ''
       )

@@ -1065,11 +1065,14 @@ class _CatalogArticleDetailViewerState
             builder: (context, snapshot) {
               final bytes = snapshot.data;
               if (bytes != null) {
+                final decode = KatalogPhotoPolicy.aspectRatioSafePreviewDecode(
+                  context,
+                );
                 return KatalogPhotoPolicy.memoryImage(
                   bytes,
                   fit: BoxFit.contain,
-                  cacheWidth: KatalogPhotoPolicy.previewDecodeTarget(context),
-                  cacheHeight: KatalogPhotoPolicy.previewDecodeTarget(context),
+                  cacheWidth: decode.cacheWidth,
+                  cacheHeight: decode.cacheHeight,
                   errorBuilder: (_, e, st) => const Center(
                     child: Icon(Icons.broken_image_outlined, size: 80),
                   ),

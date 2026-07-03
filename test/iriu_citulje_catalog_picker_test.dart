@@ -2,29 +2,36 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/features/predmeti/presentation/segments/iriu_row_tile.dart';
+import 'package:opc_v4/features/podesavanja/presentation/katalog_photo_policy.dart';
 
 void main() {
   group('IRiU citulje catalog picker', () {
     test('uses Politika and Novosti catalog categories for citulje rows', () {
-      expect(
-        resolveIriuCatalogPickerCategoryKeys(IriuK.cituljaP),
-        const [IriuK.cituljaP, IriuK.cituljaNo],
-      );
-      expect(
-        resolveIriuCatalogPickerCategoryKeys(IriuK.cituljaNo),
-        const [IriuK.cituljaP, IriuK.cituljaNo],
-      );
+      expect(resolveIriuCatalogPickerCategoryKeys(IriuK.cituljaP), const [
+        IriuK.cituljaP,
+        IriuK.cituljaNo,
+      ]);
+      expect(resolveIriuCatalogPickerCategoryKeys(IriuK.cituljaNo), const [
+        IriuK.cituljaP,
+        IriuK.cituljaNo,
+      ]);
     });
 
     test('keeps non-citulje rows scoped to their own catalog category', () {
-      expect(
-        resolveIriuCatalogPickerCategoryKeys(IriuK.sanduk),
-        const [IriuK.sanduk],
-      );
+      expect(resolveIriuCatalogPickerCategoryKeys(IriuK.sanduk), const [
+        IriuK.sanduk,
+      ]);
     });
   });
 
   group('catalog article detail navigation', () {
+    test('detail decode constrains one edge and preserves source ratio', () {
+      final dimensions = KatalogPhotoPolicy.aspectRatioSafeDecodeForTarget(
+        1600,
+      );
+      expect(dimensions.cacheWidth, 1600);
+      expect(dimensions.cacheHeight, isNull);
+    });
     test('moves within the category-scoped article list', () {
       expect(
         resolveCatalogDetailNavigationIndex(

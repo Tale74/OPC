@@ -29,7 +29,7 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
   Future<CeremonyReminderStoredConfig> getForPredmet(int predmetId) async {
     final row = await db
         .customSelect(
-          'SELECT enabled, frequency_hours, scheduled_notification_ids '
+          'SELECT enabled, delivery_times, scheduled_notification_ids '
           'FROM ceremony_reminder_settings WHERE predmet_id = ?',
           variables: [Variable.withInt(predmetId)],
         )
@@ -41,10 +41,13 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
       );
     }
     final rawIds = jsonDecode(row.read<String>('scheduled_notification_ids'));
+    final rawTimes = jsonDecode(row.read<String>('delivery_times'));
     return CeremonyReminderStoredConfig(
       config: CeremonyReminderConfig(
         enabled: row.read<int>('enabled') == 1,
-        frequencyHours: row.read<int>('frequency_hours'),
+        deliveryTimes: rawTimes is List
+            ? rawTimes.whereType<String>().toList(growable: false)
+            : const <String>['09:00'],
       ),
       scheduledNotificationIds: rawIds is List
           ? rawIds.whereType<num>().map((value) => value.toInt()).toList()
@@ -55,13 +58,13 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
   Future<void> saveConfig(int predmetId, CeremonyReminderConfig config) {
     return db.customStatement(
       'INSERT INTO ceremony_reminder_settings '
-      '(predmet_id, enabled, frequency_hours, updated_at) VALUES (?, ?, ?, ?) '
+      '(predmet_id, enabled, delivery_times, updated_at) VALUES (?, ?, ?, ?) '
       'ON CONFLICT(predmet_id) DO UPDATE SET enabled = excluded.enabled, '
-      'frequency_hours = excluded.frequency_hours, updated_at = excluded.updated_at',
+      'delivery_times = excluded.delivery_times, updated_at = excluded.updated_at',
       [
         predmetId,
         config.enabled ? 1 : 0,
-        config.normalizedFrequencyHours,
+        jsonEncode(config.normalizedDeliveryTimes),
         DateTime.now().toIso8601String(),
       ],
     );

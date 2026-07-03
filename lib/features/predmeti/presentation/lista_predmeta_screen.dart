@@ -41,6 +41,7 @@ class ListaPredmetaScreen extends StatefulWidget {
     this.reminderService,
     this.predmetiStreamOverride,
     this.runStartupSideEffects = true,
+    this.entitlementPolicy = const OpcEntitlementPolicy.current(),
   });
 
   final PredmetiRepository predmetiRepo;
@@ -50,6 +51,7 @@ class ListaPredmetaScreen extends StatefulWidget {
   final ReminderMvpService? reminderService;
   final Stream<List<PredmetiData>>? predmetiStreamOverride;
   final bool runStartupSideEffects;
+  final OpcEntitlementPolicy entitlementPolicy;
 
   @override
   State<ListaPredmetaScreen> createState() => _ListaPredmetaScreenState();
@@ -57,7 +59,6 @@ class ListaPredmetaScreen extends StatefulWidget {
 
 class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     with WidgetsBindingObserver {
-  static const _entitlementPolicy = OpcEntitlementPolicy.current();
   final _pretragaCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   String _pretraga = '';
@@ -235,6 +236,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
           authRepo: widget.authRepo,
           session: widget.session,
           initialSection: OpcSettingsSection.korisnici,
+          entitlementPolicy: widget.entitlementPolicy,
         ),
       ),
     );
@@ -308,6 +310,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
             predmetId: id,
             predmetiRepo: widget.predmetiRepo,
             session: widget.session,
+            entitlementPolicy: widget.entitlementPolicy,
           ),
         ),
       );
@@ -324,6 +327,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
           predmetId: predmet.id,
           predmetiRepo: widget.predmetiRepo,
           session: widget.session,
+          entitlementPolicy: widget.entitlementPolicy,
         ),
       ),
     );
@@ -337,6 +341,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
           predmetId: predmet.id,
           predmetiRepo: widget.predmetiRepo,
           session: widget.session,
+          entitlementPolicy: widget.entitlementPolicy,
           openDocuments: true,
         ),
       ),
@@ -357,14 +362,14 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   Future<bool> _stanjeRobeAktivno() {
     return StanjeRobeOperationalAvailability(
       podesavanjaRepository: widget.podesavanjaRepo,
-      entitlementPolicy: _entitlementPolicy,
+      entitlementPolicy: widget.entitlementPolicy,
     ).isActive();
   }
 
   Stream<StanjeRobeOperationalStatus> _stanjeRobeStatusStream() {
     return StanjeRobeOperationalAvailability(
       podesavanjaRepository: widget.podesavanjaRepo,
-      entitlementPolicy: _entitlementPolicy,
+      entitlementPolicy: widget.entitlementPolicy,
     ).watchStatus();
   }
 
@@ -581,10 +586,11 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   Widget _buildScaffold(BuildContext context) {
     final isWindowsDerivative = kIsWindowsBuild;
     final mozeStatistika =
-        _entitlementPolicy.isModuleAvailable(OpcModule.statistika) &&
+        widget.entitlementPolicy.isModuleAvailable(OpcModule.statistika) &&
         widget.session.jeAdmin;
     final mozePodesavanja =
-        _entitlementPolicy.hasVisibleSettingsSections && widget.session.jeAdmin;
+        widget.entitlementPolicy.hasVisibleSettingsSections &&
+        widget.session.jeAdmin;
     return Scaffold(
       appBar: AppBar(
         title: const Text('OPC \u2014 LISTA PREDMETA'),
@@ -611,6 +617,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
                   builder: (_) => KorisniciScreen(
                     authRepo: widget.authRepo,
                     session: widget.session,
+                    entitlementPolicy: widget.entitlementPolicy,
                   ),
                 ),
               ),
