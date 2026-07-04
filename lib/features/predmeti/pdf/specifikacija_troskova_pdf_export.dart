@@ -30,24 +30,25 @@ Future<void> izvoziSpecifikacijaTroskovaPdf({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(db.predmeti)
-          ..where((t) => t.id.equals(predmetId)))
-        .getSingle();
-    final iriuStavke = await (db.select(db.iriu)
-          ..where((t) => t.predmetId.equals(predmetId))
-          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-        .get();
-    final firma = await (db.select(db.firmaPodaci)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
-    final app = await (db.select(db.appPodesavanja)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((t) => t.id.equals(predmetId))).getSingle();
+    final iriuStavke =
+        await (db.select(db.iriu)
+              ..where((t) => t.predmetId.equals(predmetId))
+              ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
+            .get();
+    final firma = await (db.select(
+      db.firmaPodaci,
+    )..where((t) => t.id.equals(1))).getSingle();
+    final app = await (db.select(
+      db.appPodesavanja,
+    )..where((t) => t.id.equals(1))).getSingle();
     final savetnik = predmet.savetnikId == null
         ? null
-        : await (db.select(db.korisnici)
-              ..where((t) => t.id.equals(predmet.savetnikId!)))
-            .getSingleOrNull();
+        : await (db.select(
+            db.korisnici,
+          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
 
     final bytes = await _buildSpecifikacijaPdf(
       predmet: predmet,
@@ -64,7 +65,6 @@ Future<void> izvoziSpecifikacijaTroskovaPdf({
     );
     final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
     final lokacija = koriceFajlLokacija(fajl);
-
 
     if (!ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -242,7 +242,8 @@ pw.Widget _buildHeader(_SpecifikacijaPdfSnapshot snapshot) {
   ].join(' | ');
 
   final identitet = <String>[
-    if (snapshot.firma.pib.trim().isNotEmpty) 'PIB ${snapshot.firma.pib.trim()}',
+    if (snapshot.firma.pib.trim().isNotEmpty)
+      'PIB ${snapshot.firma.pib.trim()}',
     if (snapshot.firma.mb.trim().isNotEmpty) 'MB ${snapshot.firma.mb.trim()}',
     if (snapshot.app.ziroRacun.trim().isNotEmpty)
       'Račun ${snapshot.app.ziroRacun.trim()}',
@@ -276,7 +277,9 @@ pw.Widget _buildHeader(_SpecifikacijaPdfSnapshot snapshot) {
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(snapshot.firma.adresa.trim()),
+                        documentTextCodec.normalize(
+                          snapshot.firma.adresa.trim(),
+                        ),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
@@ -300,11 +303,7 @@ pw.Widget _buildHeader(_SpecifikacijaPdfSnapshot snapshot) {
               ),
             ),
             if (snapshot.firma.logo?.isNotEmpty ?? false)
-              buildMemorandumLogo(
-                snapshot.firma.logo!,
-                reservedWidth: 72,
-                reservedHeight: 52,
-              ),
+              buildMemorandumLogo(snapshot.firma.logo!),
           ],
         ),
         pw.SizedBox(height: 7),
@@ -398,13 +397,8 @@ pw.Widget _buildFooter({
   );
 }
 
-pw.Widget _buildSimpleSection({
-  required String title,
-}) {
-  return _buildSectionShell(
-    title: title,
-    child: pw.SizedBox.shrink(),
-  );
+pw.Widget _buildSimpleSection({required String title}) {
+  return _buildSectionShell(title: title, child: pw.SizedBox.shrink());
 }
 
 pw.Widget _buildPayerSection(_SpecifikacijaPdfSnapshot snapshot) {
@@ -485,8 +479,10 @@ pw.Widget _buildIriuFinancialSection({
                   ),
                 )
               : pw.Table(
-                  border:
-                      pw.TableBorder.all(color: PdfColors.grey300, width: 0.6),
+                  border: pw.TableBorder.all(
+                    color: PdfColors.grey300,
+                    width: 0.6,
+                  ),
                   columnWidths: const <int, pw.TableColumnWidth>{
                     0: pw.FlexColumnWidth(5.8),
                     1: pw.FlexColumnWidth(1.4),
@@ -496,8 +492,9 @@ pw.Widget _buildIriuFinancialSection({
                       pw.TableCellVerticalAlignment.middle,
                   children: [
                     pw.TableRow(
-                      decoration:
-                          const pw.BoxDecoration(color: PdfColors.blueGrey50),
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColors.blueGrey50,
+                      ),
                       children: [
                         _buildTableHeaderCell('NAZIV'),
                         _buildTableHeaderCell('KOM', horizontalPadding: 3),
@@ -512,10 +509,7 @@ pw.Widget _buildIriuFinancialSection({
                       (item) => pw.TableRow(
                         children: [
                           _buildTableBodyCell(item.naziv),
-                          _buildTableBodyCell(
-                            item.kom,
-                            horizontalPadding: 3,
-                          ),
+                          _buildTableBodyCell(item.kom, horizontalPadding: 3),
                           _buildTableBodyCell(
                             formatMoneyRsd(item.iznos),
                             alignRight: true,
@@ -528,10 +522,7 @@ pw.Widget _buildIriuFinancialSection({
                 ),
         ),
         pw.SizedBox(width: 6),
-        pw.Expanded(
-          flex: 2,
-          child: _buildFinancialSection(rows),
-        ),
+        pw.Expanded(flex: 2, child: _buildFinancialSection(rows)),
       ],
     ),
   );
@@ -599,10 +590,7 @@ pw.Widget _buildTableHeaderCell(
     child: pw.Text(
       documentTextCodec.normalize(text),
       textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
-      style: pw.TextStyle(
-        fontSize: 8.0,
-        fontWeight: pw.FontWeight.bold,
-      ),
+      style: pw.TextStyle(fontSize: 8.0, fontWeight: pw.FontWeight.bold),
     ),
   );
 }
@@ -656,9 +644,10 @@ pw.Widget _buildSectionShell({
 }
 
 String _displayName(String ime, String prezime) {
-  final fullName = [ime.trim(), prezime.trim()]
-      .where((value) => value.isNotEmpty)
-      .join(' ');
+  final fullName = [
+    ime.trim(),
+    prezime.trim(),
+  ].where((value) => value.isNotEmpty).join(' ');
   return fullName.isEmpty ? '-' : fullName;
 }
 
@@ -705,8 +694,9 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   int columnCount,
 ) {
   if (values.isEmpty) return const <List<ListaPdfLabelValue>>[];
-  final normalizedCount =
-      values.length < columnCount ? values.length : columnCount;
+  final normalizedCount = values.length < columnCount
+      ? values.length
+      : columnCount;
   final perColumn = (values.length / normalizedCount).ceil();
   final columns = <List<ListaPdfLabelValue>>[];
   for (var i = 0; i < values.length; i += perColumn) {
@@ -715,7 +705,3 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   }
   return List<List<ListaPdfLabelValue>>.unmodifiable(columns);
 }
-
-
-
-

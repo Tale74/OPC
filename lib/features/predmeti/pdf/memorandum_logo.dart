@@ -2,23 +2,22 @@ import 'dart:typed_data';
 
 import 'package:pdf/widgets.dart' as pw;
 
-pw.Widget buildMemorandumLogo(
-  Uint8List logoBytes, {
-  required double reservedWidth,
-  required double reservedHeight,
-  double leftMargin = 12,
-}) {
+const memorandumLogoWidth = 96.0;
+const memorandumLogoHeight = 60.0;
+const memorandumLogoLeftMargin = 10.0;
+
+pw.Widget buildMemorandumLogo(Uint8List logoBytes) {
   final image = pw.MemoryImage(logoBytes);
 
   return pw.Container(
-    width: reservedWidth,
-    height: reservedHeight,
-    margin: pw.EdgeInsets.only(left: leftMargin),
+    width: memorandumLogoWidth,
+    height: memorandumLogoHeight,
+    margin: const pw.EdgeInsets.only(left: memorandumLogoLeftMargin),
     alignment: pw.Alignment.centerRight,
     child: pw.Image(
       image,
-      width: reservedWidth,
-      height: reservedHeight,
+      width: memorandumLogoWidth,
+      height: memorandumLogoHeight,
       fit: pw.BoxFit.contain,
       alignment: pw.Alignment.centerRight,
     ),

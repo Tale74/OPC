@@ -26,24 +26,25 @@ Future<void> izvoziPredmetPdfSnapshot({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(db.predmeti)
-          ..where((t) => t.id.equals(predmetId)))
-        .getSingle();
-    final iriuStavke = await (db.select(db.iriu)
-          ..where((t) => t.predmetId.equals(predmetId))
-          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-        .get();
-    final firma = await (db.select(db.firmaPodaci)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
-    final app = await (db.select(db.appPodesavanja)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((t) => t.id.equals(predmetId))).getSingle();
+    final iriuStavke =
+        await (db.select(db.iriu)
+              ..where((t) => t.predmetId.equals(predmetId))
+              ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
+            .get();
+    final firma = await (db.select(
+      db.firmaPodaci,
+    )..where((t) => t.id.equals(1))).getSingle();
+    final app = await (db.select(
+      db.appPodesavanja,
+    )..where((t) => t.id.equals(1))).getSingle();
     final savetnik = predmet.savetnikId == null
         ? null
-        : await (db.select(db.korisnici)
-              ..where((t) => t.id.equals(predmet.savetnikId!)))
-            .getSingleOrNull();
+        : await (db.select(
+            db.korisnici,
+          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
 
     final bytes = await _buildPredmetPdfSnapshot(
       predmet: predmet,
@@ -56,7 +57,6 @@ Future<void> izvoziPredmetPdfSnapshot({
     final naziv = _predmetPdfSnapshotFajlNaziv(predmet);
     final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
     final lokacija = koriceFajlLokacija(fajl);
-
 
     if (!ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -114,14 +114,13 @@ Future<Uint8List> _buildPredmetPdfSnapshot({
     predmet: predmet,
     storedRows: iriuStavke,
   );
-  final finansijskaOsnova =
-      const FinancialTruthService().buildRobaIUsluge(truthSnapshot);
+  final finansijskaOsnova = const FinancialTruthService().buildRobaIUsluge(
+    truthSnapshot,
+  );
   final datumIzvoza = DateTime.now();
   final dokumentVerzija = 'v${predmet.verzija}';
   final savetnikIme = documentTextCodec.normalize(
-    savetnik?.imePrezime.trim().isNotEmpty == true
-        ? savetnik!.imePrezime
-        : '',
+    savetnik?.imePrezime.trim().isNotEmpty == true ? savetnik!.imePrezime : '',
   );
 
   final doc = pw.Document(
@@ -237,20 +236,13 @@ pw.Widget _buildHeader({
               ),
             ),
             if (firma.logo != null && firma.logo!.isNotEmpty)
-              buildMemorandumLogo(
-                firma.logo!,
-                reservedWidth: 72,
-                reservedHeight: 56,
-              ),
+              buildMemorandumLogo(firma.logo!),
           ],
         ),
         pw.SizedBox(height: 10),
         pw.Text(
           _kPredmetPdfSnapshotTitle,
-          style: pw.TextStyle(
-            fontWeight: pw.FontWeight.bold,
-            fontSize: 14,
-          ),
+          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14),
         ),
         pw.SizedBox(height: 3),
         pw.Text(
@@ -469,9 +461,7 @@ List<pw.Widget> _buildParteSection(PredmetiData p) {
 }
 
 List<pw.Widget> _buildIriuSection(List<IriuData> stavke) {
-  final widgets = <pw.Widget>[
-    _sectionTitle('IRIU — IZABRANA ROBA I USLUGE'),
-  ];
+  final widgets = <pw.Widget>[_sectionTitle('IRIU — IZABRANA ROBA I USLUGE')];
 
   if (stavke.isEmpty) {
     widgets.add(_fieldRow('STAVKE', ''));
@@ -564,10 +554,7 @@ pw.Widget _sectionTitle(String title) {
     ),
     child: pw.Text(
       documentTextCodec.normalize(title),
-      style: pw.TextStyle(
-        fontWeight: pw.FontWeight.bold,
-        fontSize: 11,
-      ),
+      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
     ),
   );
 }
@@ -582,10 +569,7 @@ pw.Widget _fieldRow(String label, String value) {
           width: _kLabelWidth,
           child: pw.Text(
             documentTextCodec.normalize(label),
-            style: pw.TextStyle(
-              fontWeight: pw.FontWeight.bold,
-              fontSize: 9,
-            ),
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
           ),
         ),
         pw.Expanded(
@@ -656,7 +640,3 @@ String _joinJsonOptions(String raw) {
   }
   return raw;
 }
-
-
-
-

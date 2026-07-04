@@ -29,24 +29,25 @@ Future<void> izvoziListaPdf({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(db.predmeti)
-          ..where((t) => t.id.equals(predmetId)))
-        .getSingle();
-    final iriuStavke = await (db.select(db.iriu)
-          ..where((t) => t.predmetId.equals(predmetId))
-          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-        .get();
-    final firma = await (db.select(db.firmaPodaci)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
-    final app = await (db.select(db.appPodesavanja)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((t) => t.id.equals(predmetId))).getSingle();
+    final iriuStavke =
+        await (db.select(db.iriu)
+              ..where((t) => t.predmetId.equals(predmetId))
+              ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
+            .get();
+    final firma = await (db.select(
+      db.firmaPodaci,
+    )..where((t) => t.id.equals(1))).getSingle();
+    final app = await (db.select(
+      db.appPodesavanja,
+    )..where((t) => t.id.equals(1))).getSingle();
     final savetnik = predmet.savetnikId == null
         ? null
-        : await (db.select(db.korisnici)
-              ..where((t) => t.id.equals(predmet.savetnikId!)))
-            .getSingleOrNull();
+        : await (db.select(
+            db.korisnici,
+          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
 
     final bytes = await _buildListaPdf(
       predmet: predmet,
@@ -63,7 +64,6 @@ Future<void> izvoziListaPdf({
     );
     final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
     final lokacija = koriceFajlLokacija(fajl);
-
 
     if (!ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -124,9 +124,7 @@ Future<Uint8List> _buildListaPdf({
     app: app,
     savetnik: savetnik,
   );
-  final snapshot = _ListaPdfSnapshot.fromPreparedData(
-    preparedData,
-  );
+  final snapshot = _ListaPdfSnapshot.fromPreparedData(preparedData);
 
   final doc = pw.Document(
     title: _kListaPdfTitle,
@@ -200,7 +198,9 @@ class _ListaPdfSnapshot {
     required this.parteSimbol,
   });
 
-  factory _ListaPdfSnapshot.fromPreparedData(ListaPdfPreparedData preparedData) {
+  factory _ListaPdfSnapshot.fromPreparedData(
+    ListaPdfPreparedData preparedData,
+  ) {
     final iriuItems = preparedData.iriuItems;
     return _ListaPdfSnapshot(
       predmet: preparedData.predmet,
@@ -300,7 +300,10 @@ const _kIriuProfiles = <_IriuLayoutProfile>[
 ];
 
 _IriuPagePlan _planIriuLayout(List<ListaPdfIriuRenderItem> items) {
-  final totalUnits = items.fold<int>(0, (sum, item) => sum + item.estimatedUnits);
+  final totalUnits = items.fold<int>(
+    0,
+    (sum, item) => sum + item.estimatedUnits,
+  );
   final profile = _kIriuProfiles.firstWhere(
     (candidate) => totalUnits <= candidate.totalBudget,
     orElse: () => _kIriuProfiles.last,
@@ -354,7 +357,8 @@ pw.Widget _buildHeader(_ListaPdfSnapshot snapshot) {
   ].join(' | ');
 
   final identitet = <String>[
-    if (snapshot.firma.pib.trim().isNotEmpty) 'PIB ${snapshot.firma.pib.trim()}',
+    if (snapshot.firma.pib.trim().isNotEmpty)
+      'PIB ${snapshot.firma.pib.trim()}',
     if (snapshot.firma.mb.trim().isNotEmpty) 'MB ${snapshot.firma.mb.trim()}',
     if (snapshot.app.ziroRacun.trim().isNotEmpty)
       'Racun ${snapshot.app.ziroRacun.trim()}',
@@ -389,7 +393,9 @@ pw.Widget _buildHeader(_ListaPdfSnapshot snapshot) {
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(snapshot.firma.adresa.trim()),
+                        documentTextCodec.normalize(
+                          snapshot.firma.adresa.trim(),
+                        ),
                         style: const pw.TextStyle(fontSize: 8.5),
                       ),
                     ),
@@ -413,22 +419,13 @@ pw.Widget _buildHeader(_ListaPdfSnapshot snapshot) {
               ),
             ),
             if (snapshot.firma.logo?.isNotEmpty ?? false)
-              buildMemorandumLogo(
-                snapshot.firma.logo!,
-                reservedWidth: 76,
-                reservedHeight: 56,
-              ),
+              buildMemorandumLogo(snapshot.firma.logo!),
           ],
         ),
         pw.SizedBox(height: 8),
         pw.Text(
-          documentTextCodec.normalize(
-            'LISTA',
-          ),
-          style: pw.TextStyle(
-            fontWeight: pw.FontWeight.bold,
-            fontSize: 10.2,
-          ),
+          documentTextCodec.normalize('LISTA'),
+          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10.2),
         ),
         if (snapshot.predmet.brojPredmeta.trim().isNotEmpty)
           pw.Padding(
@@ -503,11 +500,7 @@ pw.Widget _buildPageOneBody(_ListaPdfSnapshot snapshot) {
       pw.Expanded(
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-          children: [
-            pw.Expanded(
-              child: _buildIriuFinanceLayout(snapshot),
-            ),
-          ],
+          children: [pw.Expanded(child: _buildIriuFinanceLayout(snapshot))],
         ),
       ),
     ],
@@ -605,10 +598,7 @@ pw.Widget _buildPreparedSection(ListaPdfSectionData section) {
         )
       : _buildPreparedColumns(section.columns);
 
-  return _buildSectionShell(
-    title: section.title,
-    child: body,
-  );
+  return _buildSectionShell(title: section.title, child: body);
 }
 
 pw.Widget _buildPreparedColumns(List<List<ListaPdfLabelValue>> columns) {
@@ -640,49 +630,47 @@ pw.Widget _buildFinancialSection(List<ListaPdfLabelValue> rows) {
     child: pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: rows
-          .map(
-            (row) {
-              if (row.kind == ListaPdfRowKind.divider) {
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                  child: pw.Divider(
-                    height: 1,
-                    thickness: 0.8,
-                    color: PdfColors.grey500,
-                  ),
-                );
-              }
-
-              final isEmphasis = row.kind == ListaPdfRowKind.emphasis;
-              final fontSize = isEmphasis ? _kHeaderFontSize : _kBodyFontSize;
-
+          .map((row) {
+            if (row.kind == ListaPdfRowKind.divider) {
               return pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Expanded(
-                      child: pw.Text(
-                        documentTextCodec.normalize(row.label),
-                        style: pw.TextStyle(
-                          fontSize: fontSize,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    pw.SizedBox(width: 8),
-                    pw.Text(
-                      documentTextCodec.normalize(row.value),
+                padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                child: pw.Divider(
+                  height: 1,
+                  thickness: 0.8,
+                  color: PdfColors.grey500,
+                ),
+              );
+            }
+
+            final isEmphasis = row.kind == ListaPdfRowKind.emphasis;
+            final fontSize = isEmphasis ? _kHeaderFontSize : _kBodyFontSize;
+
+            return pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 3),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      documentTextCodec.normalize(row.label),
                       style: pw.TextStyle(
                         fontSize: fontSize,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          )
+                  ),
+                  pw.SizedBox(width: 8),
+                  pw.Text(
+                    documentTextCodec.normalize(row.value),
+                    style: pw.TextStyle(
+                      fontSize: fontSize,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          })
           .toList(growable: false),
     ),
   );
@@ -721,11 +709,7 @@ pw.Widget _buildIriuTable(
           children: [
             _buildIriuCheckCell(profile),
             _buildIriuBodyCell(item.naziv, profile),
-            _buildIriuBodyCell(
-              item.kom,
-              profile,
-              horizontalPadding: 3,
-            ),
+            _buildIriuBodyCell(item.kom, profile, horizontalPadding: 3),
             _buildIriuBodyCell(
               formatMoneyRsd(item.iznos),
               profile,
@@ -741,13 +725,17 @@ pw.Widget _buildIriuTable(
 
 pw.Widget _buildNotesSection(List<ListaPdfDocumentNote> notes) {
   final standaloneNotes = notes
-      .where((note) => note.groupTitle == null || note.groupTitle!.trim().isEmpty)
+      .where(
+        (note) => note.groupTitle == null || note.groupTitle!.trim().isEmpty,
+      )
       .toList(growable: false);
   final groupedNotes = <String, List<ListaPdfDocumentNote>>{};
   for (final note in notes) {
     final groupTitle = note.groupTitle?.trim() ?? '';
     if (groupTitle.isEmpty) continue;
-    groupedNotes.putIfAbsent(groupTitle, () => <ListaPdfDocumentNote>[]).add(note);
+    groupedNotes
+        .putIfAbsent(groupTitle, () => <ListaPdfDocumentNote>[])
+        .add(note);
   }
 
   return _buildSectionShell(
@@ -758,7 +746,9 @@ pw.Widget _buildNotesSection(List<ListaPdfDocumentNote> notes) {
       children: [
         if (standaloneNotes.isEmpty && groupedNotes.isEmpty)
           pw.Text(
-            documentTextCodec.normalize('Prostor za operativne i rucne napomene.'),
+            documentTextCodec.normalize(
+              'Prostor za operativne i rucne napomene.',
+            ),
             style: pw.TextStyle(
               fontStyle: pw.FontStyle.italic,
               fontSize: _kCompactBodyFontSize,
@@ -781,7 +771,9 @@ pw.Widget _buildNotesSection(List<ListaPdfDocumentNote> notes) {
                             text: pw.TextSpan(
                               children: [
                                 pw.TextSpan(
-                                  text: documentTextCodec.normalize('${note.label}: '),
+                                  text: documentTextCodec.normalize(
+                                    '${note.label}: ',
+                                  ),
                                   style: pw.TextStyle(
                                     fontWeight: pw.FontWeight.bold,
                                     fontSize: _kCompactBodyFontSize,
@@ -817,7 +809,9 @@ pw.Widget _buildNotesSection(List<ListaPdfDocumentNote> notes) {
                     ),
                     pw.TextSpan(
                       text: documentTextCodec.normalize(note.value),
-                      style: const pw.TextStyle(fontSize: _kCompactBodyFontSize),
+                      style: const pw.TextStyle(
+                        fontSize: _kCompactBodyFontSize,
+                      ),
                     ),
                   ],
                 ),
@@ -1055,11 +1049,3 @@ double _safeLayoutValue(
   if (safe >= max) return max;
   return safe;
 }
-
-
-
-
-
-
-
-

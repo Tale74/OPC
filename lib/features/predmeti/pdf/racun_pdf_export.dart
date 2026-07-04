@@ -31,24 +31,25 @@ Future<void> izvoziRacunPdf({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(db.predmeti)
-          ..where((t) => t.id.equals(predmetId)))
-        .getSingle();
-    final iriuStavke = await (db.select(db.iriu)
-          ..where((t) => t.predmetId.equals(predmetId))
-          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-        .get();
-    final firma = await (db.select(db.firmaPodaci)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
-    final app = await (db.select(db.appPodesavanja)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((t) => t.id.equals(predmetId))).getSingle();
+    final iriuStavke =
+        await (db.select(db.iriu)
+              ..where((t) => t.predmetId.equals(predmetId))
+              ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
+            .get();
+    final firma = await (db.select(
+      db.firmaPodaci,
+    )..where((t) => t.id.equals(1))).getSingle();
+    final app = await (db.select(
+      db.appPodesavanja,
+    )..where((t) => t.id.equals(1))).getSingle();
     final savetnik = predmet.savetnikId == null
         ? null
-        : await (db.select(db.korisnici)
-              ..where((t) => t.id.equals(predmet.savetnikId!)))
-            .getSingleOrNull();
+        : await (db.select(
+            db.korisnici,
+          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
 
     final bytes = await _buildRacunPdf(
       predmet: predmet,
@@ -65,7 +66,6 @@ Future<void> izvoziRacunPdf({
     );
     final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
     final lokacija = koriceFajlLokacija(fajl);
-
 
     if (!ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -199,7 +199,9 @@ class _RacunPdfSnapshot {
     required this.finansijskiRedovi,
   });
 
-  factory _RacunPdfSnapshot.fromPreparedData(ListaPdfPreparedData preparedData) {
+  factory _RacunPdfSnapshot.fromPreparedData(
+    ListaPdfPreparedData preparedData,
+  ) {
     final preminuloImePrezime = _displayName(
       preparedData.predmet.ime,
       preparedData.predmet.prezime,
@@ -217,7 +219,9 @@ class _RacunPdfSnapshot {
       platilacNaslov: _resolvePlatilacNaslov(preparedData.predmet),
       platilacDetalji: _buildPlatilacDetalji(preparedData.predmet),
       iriuItems: preparedData.iriuItems,
-      finansijskiRedovi: _buildRacunFinancialRows(preparedData.finansijskiRedovi),
+      finansijskiRedovi: _buildRacunFinancialRows(
+        preparedData.finansijskiRedovi,
+      ),
     );
   }
 
@@ -243,7 +247,8 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
   ].join(' | ');
 
   final identitet = <String>[
-    if (snapshot.firma.pib.trim().isNotEmpty) 'PIB ${snapshot.firma.pib.trim()}',
+    if (snapshot.firma.pib.trim().isNotEmpty)
+      'PIB ${snapshot.firma.pib.trim()}',
     if (snapshot.firma.mb.trim().isNotEmpty) 'MB ${snapshot.firma.mb.trim()}',
     if (snapshot.app.ziroRacun.trim().isNotEmpty)
       'Račun ${snapshot.app.ziroRacun.trim()}',
@@ -281,7 +286,9 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(snapshot.firma.adresa.trim()),
+                        documentTextCodec.normalize(
+                          snapshot.firma.adresa.trim(),
+                        ),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
@@ -305,11 +312,7 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
               ),
             ),
             if (snapshot.firma.logo?.isNotEmpty ?? false)
-              buildMemorandumLogo(
-                snapshot.firma.logo!,
-                reservedWidth: 72,
-                reservedHeight: 52,
-              ),
+              buildMemorandumLogo(snapshot.firma.logo!),
           ],
         ),
         pw.SizedBox(height: 7),
@@ -388,13 +391,8 @@ pw.Widget _buildFooter({
   );
 }
 
-pw.Widget _buildSimpleSection({
-  required String title,
-}) {
-  return _buildSectionShell(
-    title: title,
-    child: pw.SizedBox.shrink(),
-  );
+pw.Widget _buildSimpleSection({required String title}) {
+  return _buildSectionShell(title: title, child: pw.SizedBox.shrink());
 }
 
 pw.Widget _buildPayerSection(_RacunPdfSnapshot snapshot) {
@@ -533,10 +531,7 @@ pw.Widget _buildIriuFinancialSection({
           ),
         ),
         pw.SizedBox(width: 6),
-        pw.Expanded(
-          flex: 2,
-          child: _buildFinancialSection(rows),
-        ),
+        pw.Expanded(flex: 2, child: _buildFinancialSection(rows)),
       ],
     ),
   );
@@ -607,10 +602,7 @@ pw.Widget _buildStampAndSignatureBlock() {
                 height: 24,
                 decoration: const pw.BoxDecoration(
                   border: pw.Border(
-                    bottom: pw.BorderSide(
-                      color: PdfColors.grey700,
-                      width: 0.8,
-                    ),
+                    bottom: pw.BorderSide(color: PdfColors.grey700, width: 0.8),
                   ),
                 ),
               ),
@@ -660,10 +652,7 @@ pw.Widget _buildTableHeaderCell(
     child: pw.Text(
       documentTextCodec.normalize(text),
       textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
-      style: pw.TextStyle(
-        fontSize: 8.0,
-        fontWeight: pw.FontWeight.bold,
-      ),
+      style: pw.TextStyle(fontSize: 8.0, fontWeight: pw.FontWeight.bold),
     ),
   );
 }
@@ -717,9 +706,10 @@ pw.Widget _buildSectionShell({
 }
 
 String _displayName(String ime, String prezime) {
-  final fullName = [ime.trim(), prezime.trim()]
-      .where((value) => value.isNotEmpty)
-      .join(' ');
+  final fullName = [
+    ime.trim(),
+    prezime.trim(),
+  ].where((value) => value.isNotEmpty).join(' ');
   return fullName.isEmpty ? '-' : fullName;
 }
 
@@ -729,11 +719,7 @@ List<ListaPdfLabelValue> _buildRacunFinancialRows(
   return rows
       .map(
         (row) => row.label.trim() == 'ZA NAPLATU'
-            ? ListaPdfLabelValue(
-                'UKUPNO',
-                row.value,
-                kind: row.kind,
-              )
+            ? ListaPdfLabelValue('UKUPNO', row.value, kind: row.kind)
             : row,
       )
       .toList(growable: false);
@@ -782,8 +768,9 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   int columnCount,
 ) {
   if (values.isEmpty) return const <List<ListaPdfLabelValue>>[];
-  final normalizedCount =
-      values.length < columnCount ? values.length : columnCount;
+  final normalizedCount = values.length < columnCount
+      ? values.length
+      : columnCount;
   final perColumn = (values.length / normalizedCount).ceil();
   final columns = <List<ListaPdfLabelValue>>[];
   for (var i = 0; i < values.length; i += perColumn) {
@@ -792,7 +779,3 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   }
   return List<List<ListaPdfLabelValue>>.unmodifiable(columns);
 }
-
-
-
-

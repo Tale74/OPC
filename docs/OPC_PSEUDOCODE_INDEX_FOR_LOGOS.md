@@ -422,3 +422,14 @@ Business meaning: shared runtime corrections preserve catalog proportions, use e
 Truth boundary: presentation, local operational configuration, validation, and entitlement routing do not redefine PREDMET facts.
 Risk if misunderstood: these corrections could be expanded into unauthorized catalog, package, finance, date, stock, PDF, JSON, or GDPR policy changes.
 Read after: `docs/tasks/OPC_TASK_SHARED_RUNTIME_FAIL_CORRECTIONS_BUILD_REPORT.md` and its focused tests.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-037
+
+Source files: `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/pdf/memorandum_logo.dart`; the six document export files under `lib/features/predmeti/pdf/`; `lib/core/database/tables/firma_podaci_table.dart`
+Related pseudocode: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md`
+Business meaning: PREDMET-derived PDFs use document-specific headers but share proportional rendering of the optional FirmaPodaci logo.
+Module: PREDMET documents / PDF memorandum
+Truth boundary: the shared 96 x 60 point logo slot changes presentation only; document set, text, metadata, dates, calculations, QR, JSON, and export behavior remain protected.
+Why Logos must know it: a shared logo helper does not mean the complete headers are shared; title, date, and `Broj predmeta` placement deliberately diverge.
+Risk if misunderstood: blindly consolidating or rearranging headers can alter RAČUN wording, crowd long company data, or damage document-specific legal/financial readability.
+Read after: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md` and the six exporter header builders.
