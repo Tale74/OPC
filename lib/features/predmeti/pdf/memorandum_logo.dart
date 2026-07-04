@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:pdf/widgets.dart' as pw;
 
-const memorandumLogoWidth = 96.0;
-const memorandumLogoHeight = 60.0;
-const memorandumLogoLeftMargin = 10.0;
+const memorandumLogoWidth = 192.0;
+const memorandumLogoHeight = 120.0;
+const memorandumLogoLeftMargin = 8.0;
 
 pw.Widget buildMemorandumLogo(Uint8List logoBytes) {
   final image = pw.MemoryImage(logoBytes);

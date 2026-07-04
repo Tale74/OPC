@@ -25,8 +25,8 @@ its page and header composition. They do not share one complete header builder.
 FirmaPodaci.logo stores optional image bytes selected in PODEŠAVANJA
 
 IF logo bytes exist:
-    reserve one shared 96 x 60 point logo slot
-    keep 10 points of separation from company text
+    reserve one shared 192 x 120 point maximum logo box
+    keep 8 points of separation from company text
     scale image proportionally with contain fit
     align image to the right inside the slot
 ELSE:
@@ -36,9 +36,8 @@ ELSE:
 Before this correction, callers supplied separate 72–76 point widths and
 52–56 point heights, while the helper also added a 12-point left margin. The
 small fixed slots constrained the image even when the memorandum row had more
-available space. The shared helper now owns one moderately larger size and a
-slightly smaller separation margin, so all six headers receive the same narrow
-visual correction.
+available space. The maximum-layout correction below supersedes that moderate
+allocation.
 
 ## Document-specific title metadata
 
@@ -66,8 +65,8 @@ PREDMET:
 
 `Broj predmeta` was intentionally not moved. RAČUN uses it as part of its
 established title, PREDMET combines it with status/date metadata, and LISTA has
-no matching date column. A uniform move would not be source-consistent and was
-not safe without deferred PDF visual review.
+no matching date column. A uniform move is not required for the maximum-layout
+correction and remains outside its safe scope.
 
 ## Protected boundary
 
@@ -76,3 +75,28 @@ the PDF export set, filenames, document text, title/date/case-number semantics,
 PREDMET/IRiU/finance data, IPS QR content/layout, calculations, JSON, saving, or
 runtime flow. PDFs remain derived outputs; PREDMET remains master business
 truth.
+
+## Maximum-layout correction
+
+The previous shared `96 x 60` point slot was rejected as visually too small.
+The new `192 x 120` point box doubles both dimensions and provides four times
+the bounded area. On A4 pages with the current 24-point side margins, it uses
+about 35 percent of the approximately 547-point content width and leaves the
+expanded company block about 347 points after the 8-point separation.
+
+The helper constrains both its parent container and image to the maximum box.
+`contain` chooses the largest proportional rendering that fits both bounds, so
+wide, tall, square, small, large, and transparent source images remain inside
+the box without stretching, squashing, or clipping. Whitespace already inside
+the selected image remains part of the image; this layout does not crop or
+process it.
+
+All six exporters call the same helper. The first memorandum row naturally
+grows from a 60-point to a 120-point minimum when a logo exists. Title, date,
+and case-number blocks remain in their separate document-specific row, so
+`Broj predmeta` is intentionally not moved. No fixed full-header height is
+introduced; longer company text can still determine a greater row height.
+
+Source-level layout and automated tests do not establish visual acceptance.
+Windows/Android build, runtime PDF export, and owner review of representative
+wide, tall, square, transparent, and whitespace-bearing logos remain pending.

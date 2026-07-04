@@ -134,7 +134,7 @@ Truth boundary: output derivative.
 Why Logos must know it: documents reveal business-visible expectations but are not source of truth.
 Risk if misunderstood: PDF rules become hidden policy.
 Read before: PREDMET and finance sections.
-Read after: document tests when added.
+Read after: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md` and document tests.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-012
 
