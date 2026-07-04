@@ -1,8 +1,4 @@
-enum OpcPackageLevel {
-  osnovni,
-  srednji,
-  potpun,
-}
+enum OpcPackageLevel { osnovni, srednji, potpun }
 
 enum OpcEntitlementSourceKind {
   localLicense,
@@ -11,18 +7,9 @@ enum OpcEntitlementSourceKind {
   demoTest,
 }
 
-enum OpcEntitlementEnvironment {
-  production,
-  test,
-  developer,
-}
+enum OpcEntitlementEnvironment { production, test, developer }
 
-enum OpcAddOn {
-  stanjeRobe,
-  advancedParte,
-  cituljeSaDeklaracijom,
-  lkOcr,
-}
+enum OpcAddOn { stanjeRobe, advancedParte, cituljeSaDeklaracijom, lkOcr }
 
 enum OpcModule {
   predmetCore,
@@ -290,11 +277,7 @@ final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
   }
 
   static String _normalized(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll('_', '')
-        .replaceAll('-', '');
+    return value.trim().toLowerCase().replaceAll('_', '').replaceAll('-', '');
   }
 }
 
@@ -352,13 +335,13 @@ final class OpcEntitlementPolicy {
   const OpcEntitlementPolicy._(this._source);
 
   const OpcEntitlementPolicy.current()
-      : this._(const OpcSelectedEntitlementSource());
+    : this._(const OpcSelectedEntitlementSource());
 
   const OpcEntitlementPolicy.fromSource(OpcEntitlementSource source)
-      : this._(source);
+    : this._(source);
 
   OpcEntitlementPolicy.fromPayload(OpcEntitlementPayload payload)
-      : this._(_StaticOpcEntitlementSource(payload));
+    : this._(_StaticOpcEntitlementSource(payload));
 
   final OpcEntitlementSource _source;
 
@@ -429,18 +412,17 @@ final class OpcEntitlementPolicy {
       OpcModule.operationalDocuments ||
       OpcModule.jsonSinglePredmetTransfer ||
       OpcModule.authRecovery => true,
-      OpcModule.podsetnik || OpcModule.nalogCvecari =>
-        _isSrednjiOrPotpun(),
-      OpcModule.advancedParte =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.advancedParte),
-      OpcModule.cituljeSaDeklaracijom =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.cituljeSaDeklaracijom),
+      OpcModule.podsetnik || OpcModule.nalogCvecari => _isSrednjiOrPotpun(),
+      OpcModule.advancedParte => _isPotpunOrSrednjiAddOn(
+        OpcAddOn.advancedParte,
+      ),
+      OpcModule.cituljeSaDeklaracijom => _isPotpunOrSrednjiAddOn(
+        OpcAddOn.cituljeSaDeklaracijom,
+      ),
       OpcModule.androidLkChipReading ||
       OpcModule.windowsMupCelikIntegration ||
-      OpcModule.ocrIdPassport =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.lkOcr),
-      OpcModule.stanjeRobe =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.stanjeRobe),
+      OpcModule.ocrIdPassport => _isPotpunOrSrednjiAddOn(OpcAddOn.lkOcr),
+      OpcModule.stanjeRobe => _isPotpunOrSrednjiAddOn(OpcAddOn.stanjeRobe),
     };
   }
 
@@ -449,10 +431,10 @@ final class OpcEntitlementPolicy {
       OpcSettingsSection.podaciFirme ||
       OpcSettingsSection.refundacijaPio ||
       OpcSettingsSection.katalog ||
+      OpcSettingsSection.moduli ||
       OpcSettingsSection.korisnici ||
       OpcSettingsSection.uputstvoZaPlacanje ||
       OpcSettingsSection.oAplikaciji => true,
-      OpcSettingsSection.moduli => isModuleAvailable(OpcModule.stanjeRobe),
     };
   }
 
@@ -462,12 +444,15 @@ final class OpcEntitlementPolicy {
       OpcDocumentAction.listaPdf ||
       OpcDocumentAction.predracunPdf ||
       OpcDocumentAction.specifikacijaTroskovaPdf ||
-      OpcDocumentAction.nalogZaOpremanjePdf =>
-        isModuleAvailable(OpcModule.operationalDocuments),
-      OpcDocumentAction.jsonTransfer =>
-        isModuleAvailable(OpcModule.jsonSinglePredmetTransfer),
-      OpcDocumentAction.racunPdf =>
-        isModuleAvailable(OpcModule.operationalDocuments),
+      OpcDocumentAction.nalogZaOpremanjePdf => isModuleAvailable(
+        OpcModule.operationalDocuments,
+      ),
+      OpcDocumentAction.jsonTransfer => isModuleAvailable(
+        OpcModule.jsonSinglePredmetTransfer,
+      ),
+      OpcDocumentAction.racunPdf => isModuleAvailable(
+        OpcModule.operationalDocuments,
+      ),
     };
   }
 

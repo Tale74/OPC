@@ -348,6 +348,21 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     );
   }
 
+  Future<void> _otvoriPodsetnik(PredmetiData predmet) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PredmetScreen(
+          predmetId: predmet.id,
+          predmetiRepo: widget.predmetiRepo,
+          session: widget.session,
+          entitlementPolicy: widget.entitlementPolicy,
+          openCeremony: true,
+        ),
+      ),
+    );
+  }
+
   String _stockBlockerLine(StanjeRobePoslediceData consequence) {
     final article = consequence.selectedNazivSnapshot.trim().isNotEmpty
         ? consequence.selectedNazivSnapshot.trim()
@@ -957,6 +972,12 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
                 onZatvori: () => _zatvoriPredmetSaListe(lista[i]),
                 onOtvoriZaIzmenu: () => _otvoriZaIzmenuSaListe(lista[i]),
                 onDokumenti: () => _otvoriDokumente(lista[i]),
+                canOpenPodsetnik:
+                    widget.entitlementPolicy.isModuleAvailable(
+                      OpcModule.podsetnik,
+                    ) &&
+                    lista[i].status != 'ANONIMIZOVAN',
+                onPodsetnik: () => _otvoriPodsetnik(lista[i]),
                 canAnonimizuj: lista[i].status == 'ZAVRŠEN',
                 onAnonimizuj: () => _anonimizuj(lista[i]),
                 onObrisi: () => _obrisi(lista[i]),
@@ -1158,6 +1179,8 @@ class _PredmetListItem extends StatelessWidget {
     required this.onZatvori,
     required this.onOtvoriZaIzmenu,
     required this.onDokumenti,
+    required this.canOpenPodsetnik,
+    required this.onPodsetnik,
     required this.canAnonimizuj,
     required this.onAnonimizuj,
     required this.onObrisi,
@@ -1170,6 +1193,8 @@ class _PredmetListItem extends StatelessWidget {
   final VoidCallback onZatvori;
   final VoidCallback onOtvoriZaIzmenu;
   final VoidCallback onDokumenti;
+  final bool canOpenPodsetnik;
+  final VoidCallback onPodsetnik;
   final bool canAnonimizuj;
   final VoidCallback onAnonimizuj;
   final VoidCallback onObrisi;
@@ -1333,6 +1358,8 @@ class _PredmetListItem extends StatelessWidget {
                           onZatvori: onZatvori,
                           onOtvoriZaIzmenu: onOtvoriZaIzmenu,
                           onDokumenti: onDokumenti,
+                          canOpenPodsetnik: canOpenPodsetnik,
+                          onPodsetnik: onPodsetnik,
                           onAnonimizuj: onAnonimizuj,
                           onObrisi: onObrisi,
                         ),
@@ -1456,6 +1483,8 @@ class _PredmetListItem extends StatelessWidget {
                                 onZatvori: onZatvori,
                                 onOtvoriZaIzmenu: onOtvoriZaIzmenu,
                                 onDokumenti: onDokumenti,
+                                canOpenPodsetnik: canOpenPodsetnik,
+                                onPodsetnik: onPodsetnik,
                                 onAnonimizuj: onAnonimizuj,
                                 onObrisi: onObrisi,
                               ),
@@ -1592,6 +1621,8 @@ class _TileActions extends StatelessWidget {
     required this.onZatvori,
     required this.onOtvoriZaIzmenu,
     required this.onDokumenti,
+    required this.canOpenPodsetnik,
+    required this.onPodsetnik,
     required this.onAnonimizuj,
     required this.onObrisi,
   });
@@ -1601,6 +1632,8 @@ class _TileActions extends StatelessWidget {
   final VoidCallback onZatvori;
   final VoidCallback onOtvoriZaIzmenu;
   final VoidCallback onDokumenti;
+  final bool canOpenPodsetnik;
+  final VoidCallback onPodsetnik;
   final VoidCallback onAnonimizuj;
   final VoidCallback onObrisi;
 
@@ -1637,6 +1670,7 @@ class _TileActions extends StatelessWidget {
             if (v == 'close') onZatvori();
             if (v == 'edit') onOtvoriZaIzmenu();
             if (v == 'docs') onDokumenti();
+            if (v == 'reminder') onPodsetnik();
             if (v == 'anon') onAnonimizuj();
             if (v == 'delete') onObrisi();
           },
@@ -1669,9 +1703,10 @@ class _TileActions extends StatelessWidget {
                   dense: true,
                 ),
               ),
-              const PopupMenuItem(
-                enabled: false,
-                child: ListTile(
+              PopupMenuItem(
+                value: 'reminder',
+                enabled: canOpenPodsetnik,
+                child: const ListTile(
                   leading: Icon(Icons.notifications_none_outlined),
                   title: Text('Podsetnik'),
                   dense: true,

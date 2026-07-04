@@ -429,7 +429,18 @@ Source files: `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/fea
 Related pseudocode: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md`
 Business meaning: PREDMET-derived PDFs use document-specific headers but share proportional rendering of the optional FirmaPodaci logo.
 Module: PREDMET documents / PDF memorandum
-Truth boundary: the shared 96 x 60 point logo slot changes presentation only; document set, text, metadata, dates, calculations, QR, JSON, and export behavior remain protected.
+Truth boundary: the shared 192 x 120 point maximum logo box changes presentation only; document set, text, metadata, dates, calculations, QR, JSON, and export behavior remain protected.
 Why Logos must know it: a shared logo helper does not mean the complete headers are shared; title, date, and `Broj predmeta` placement deliberately diverge.
 Risk if misunderstood: blindly consolidating or rearranging headers can alter RAČUN wording, crowd long company data, or damage document-specific legal/financial readability.
 Read after: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md` and the six exporter header builders.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-038
+
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`
+Related pseudocode: `docs/OPC_PREBUILD_STANJE_ROBE_PODSETNIK_PSEUDOCODE.md`
+Business meaning: STANJE ROBE package availability remains separate from ADMINISTRATOR-controlled active use, while the PREDMET-list Podsetnik action is an entitlement-aware shortcut to existing CEREMONIJA reminder settings.
+Module: settings / STANJE ROBE / PREDMET reminders
+Truth boundary: locked-module visibility and navigation do not change package ownership, stock effects, reminder configuration/scheduling, ceremony facts, or PREDMET truth.
+Why Logos must know it: an Osnovni runtime should explain the locked stock module without exposing its switch, and Podsetnik must reuse CEREMONIJA rather than become a second reminder system.
+Risk if misunderstood: visibility could be confused with entitlement, or shortcut navigation could be expanded into duplicate reminder logic.
+Read after: `test/stanje_robe_operational_toggle_test.dart`, `test/lista_predmeta_screen_smoke_test.dart`, and the existing reminder model/repository/coordinator.

@@ -120,6 +120,7 @@ class PredmetScreen extends StatefulWidget {
     required this.predmetiRepo,
     required this.session,
     this.openDocuments = false,
+    this.openCeremony = false,
     this.entitlementPolicy = const OpcEntitlementPolicy.current(),
   });
 
@@ -127,6 +128,7 @@ class PredmetScreen extends StatefulWidget {
   final PredmetiRepository predmetiRepo;
   final SessionService session;
   final bool openDocuments;
+  final bool openCeremony;
   final OpcEntitlementPolicy entitlementPolicy;
 
   @override
@@ -157,6 +159,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
     super.initState();
     if (widget.openDocuments) {
       _selectedSection = _PredmetLogicalSection.dokumenti;
+    } else if (widget.openCeremony) {
+      _selectedSection = _PredmetLogicalSection.ceremonija;
     }
     _iriuRepo = IriuRepository(widget.predmetiRepo.db);
     _kontaktRepo = KontaktLicaRepository(widget.predmetiRepo.db);

@@ -128,10 +128,7 @@ void main() {
           entitlementPolicy: _potpunPolicy(),
         );
 
-        expect(
-          await repo.isStanjeRobeOperativnoOmoguceno(),
-          isFalse,
-        );
+        expect(await repo.isStanjeRobeOperativnoOmoguceno(), isFalse);
         expect(
           await availability.readStatus(),
           StanjeRobeOperationalStatus.disabled,
@@ -637,66 +634,64 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('ADMIN initialization includes real SANDUK V-0 catalog article', (
-      tester,
-    ) async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
+    testWidgets(
+      'ADMIN initialization includes real SANDUK V-0 catalog article',
+      (tester) async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
 
-      final authRepo = AuthRepository(db);
-      final session = SessionService();
-      final podesavanjaRepo = PodesavanjaRepository(db);
-      final admin = await authRepo.kreirajPrvogAdmina(
-        imePrezime: 'Test Administrator',
-        pin: '1234',
-      );
-      session.prijavi(admin);
-      await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
-      await _insertCatalogArticle(
-        db,
-        stableId: StockCatalogIdentity.sandukV0StableId,
-        category: 'SANDUK',
-        name: 'SANDUK V-0',
-      );
-      await _insertCatalogArticle(
-        db,
-        stableId: StockCatalogIdentity.sandukV17PolukovcegStableId,
-        category: 'SANDUK',
-        name: 'SANDUK V-17 POLUKOVČEG',
-      );
+        final authRepo = AuthRepository(db);
+        final session = SessionService();
+        final podesavanjaRepo = PodesavanjaRepository(db);
+        final admin = await authRepo.kreirajPrvogAdmina(
+          imePrezime: 'Test Administrator',
+          pin: '1234',
+        );
+        session.prijavi(admin);
+        await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
+        await _insertCatalogArticle(
+          db,
+          stableId: StockCatalogIdentity.sandukV0StableId,
+          category: 'SANDUK',
+          name: 'SANDUK V-0',
+        );
+        await _insertCatalogArticle(
+          db,
+          stableId: StockCatalogIdentity.sandukV17PolukovcegStableId,
+          category: 'SANDUK',
+          name: 'SANDUK V-17 POLUKOVČEG',
+        );
 
-      await tester.pumpWidget(
-        wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
-            session: session,
-            initialSection: OpcSettingsSection.moduli,
-            entitlementPolicy: _potpunPolicy(),
+        await tester.pumpWidget(
+          wrapForTest(
+            PodesavanjaScreen(
+              repo: podesavanjaRepo,
+              authRepo: authRepo,
+              session: session,
+              initialSection: OpcSettingsSection.moduli,
+              entitlementPolicy: _potpunPolicy(),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Upravljaj stanjem robe'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Inicijalizuj stanje robe iz kataloga'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Upravljaj stanjem robe'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Inicijalizuj stanje robe iz kataloga'));
+        await tester.pumpAndSettle();
 
-      final rows = await db.select(db.stanjeRobeStavke).get();
-      final stableIds = rows.map((row) => row.stableArticleId).toSet();
-      expect(
-        stableIds,
-        contains(StockCatalogIdentity.sandukV0StableId),
-      );
-      expect(
-        stableIds,
-        contains(StockCatalogIdentity.sandukV17PolukovcegStableId),
-      );
+        final rows = await db.select(db.stanjeRobeStavke).get();
+        final stableIds = rows.map((row) => row.stableArticleId).toSet();
+        expect(stableIds, contains(StockCatalogIdentity.sandukV0StableId));
+        expect(
+          stableIds,
+          contains(StockCatalogIdentity.sandukV17PolukovcegStableId),
+        );
 
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-    });
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+    );
 
     test('stock catalog read path returns covered catalog articles', () async {
       final db = createTestDatabase();
@@ -750,45 +745,48 @@ void main() {
       expect(stableIds, isNot(contains('stock-read-cvece')));
     });
 
-    test('visible catalog read path includes stock-covered categories', () async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
+    test(
+      'visible catalog read path includes stock-covered categories',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
 
-      final repo = PodesavanjaRepository(db);
-      await _insertCatalogArticle(
-        db,
-        stableId: 'visible-sanduk',
-        category: 'SANDUK',
-        name: 'Visible sanduk',
-      );
-      await _insertCatalogArticle(
-        db,
-        stableId: 'visible-obelezje',
-        category: 'OBELEZJE',
-        name: 'Visible obelezje',
-      );
-      await _insertCatalogArticle(
-        db,
-        stableId: 'visible-pokrov',
-        category: 'POKROV_GARNITURA',
-        name: 'Visible pokrov',
-      );
+        final repo = PodesavanjaRepository(db);
+        await _insertCatalogArticle(
+          db,
+          stableId: 'visible-sanduk',
+          category: 'SANDUK',
+          name: 'Visible sanduk',
+        );
+        await _insertCatalogArticle(
+          db,
+          stableId: 'visible-obelezje',
+          category: 'OBELEZJE',
+          name: 'Visible obelezje',
+        );
+        await _insertCatalogArticle(
+          db,
+          stableId: 'visible-pokrov',
+          category: 'POKROV_GARNITURA',
+          name: 'Visible pokrov',
+        );
 
-      final entries = await repo.getKatalogSaArtiklimaLightweight();
-      final articleStableIds = entries
-          .expand((entry) => entry.artikli)
-          .map((article) => article.stableArticleId)
-          .toSet();
+        final entries = await repo.getKatalogSaArtiklimaLightweight();
+        final articleStableIds = entries
+            .expand((entry) => entry.artikli)
+            .map((article) => article.stableArticleId)
+            .toSet();
 
-      expect(
-        articleStableIds,
-        containsAll(<String>{
-          'visible-sanduk',
-          'visible-obelezje',
-          'visible-pokrov',
-        }),
-      );
-    });
+        expect(
+          articleStableIds,
+          containsAll(<String>{
+            'visible-sanduk',
+            'visible-obelezje',
+            'visible-pokrov',
+          }),
+        );
+      },
+    );
 
     testWidgets(
       'ADMIN stock row falls back to stable id when catalog display is missing',
@@ -892,10 +890,7 @@ void main() {
       ]);
 
       expect(await db.select(db.stanjeRobeStavke).get(), hasLength(1));
-      expect(
-        await podesavanjaRepo.isStanjeRobeOperativnoOmoguceno(),
-        isFalse,
-      );
+      expect(await podesavanjaRepo.isStanjeRobeOperativnoOmoguceno(), isFalse);
       expect(
         await StanjeRobeOperationalAvailability(
           podesavanjaRepository: podesavanjaRepo,
@@ -947,7 +942,10 @@ void main() {
         final consequences = await db.select(db.stanjeRobePosledice).get();
         expect(result.outcome, StanjeRobeLifecycleOutcome.unresolvedRecorded);
         expect(effects, hasLength(1));
-        expect(effects.single.stableArticleId, StockCatalogIdentity.sandukV0StableId);
+        expect(
+          effects.single.stableArticleId,
+          StockCatalogIdentity.sandukV0StableId,
+        );
         expect(effects.single.effectStatus, stanjeRobeEffectStatusUnresolved);
         expect(consequences, hasLength(1));
         expect(
@@ -995,13 +993,13 @@ void main() {
           selectedIznosSnapshot: 49960,
         );
 
-        final stock = await (db.select(db.stanjeRobeStavke)
-              ..where(
-                (s) => s.stableArticleId.equals(
-                  StockCatalogIdentity.sandukV17PolukovcegStableId,
-                ),
-              ))
-            .getSingle();
+        final stock =
+            await (db.select(db.stanjeRobeStavke)..where(
+                  (s) => s.stableArticleId.equals(
+                    StockCatalogIdentity.sandukV17PolukovcegStableId,
+                  ),
+                ))
+                .getSingle();
         final effects = await db.select(db.stanjeRobeAppliedEffects).get();
         final current = await StanjeRobeEffectsRepository(db)
             .getCurrentEffectForSelection(
@@ -1014,7 +1012,10 @@ void main() {
         ).listActiveUnresolvedForPredmet(predmet.id);
 
         expect(applied.outcome, StanjeRobeLifecycleOutcome.applied);
-        expect(replaced.outcome, StanjeRobeLifecycleOutcome.replacedWithUnresolved);
+        expect(
+          replaced.outcome,
+          StanjeRobeLifecycleOutcome.replacedWithUnresolved,
+        );
         expect(stock.trenutnaKolicina, 1);
         expect(effects, hasLength(2));
         expect(
@@ -1062,16 +1063,15 @@ void main() {
           stableId: StockCatalogIdentity.sandukV17PolukovcegStableId,
         );
 
-        final result = await StanjeRobeLifecycleService(
-          db: db,
-        ).replaceSelectionEffectForCoveredCategory(
-          predmetId: predmet.id,
-          iriuId: iriuId,
-          kategorija: 'SANDUK',
-          stableArticleId: StockCatalogIdentity.sandukV0StableId,
-          selectedNazivSnapshot: 'SANDUK V-0',
-          selectedIznosSnapshot: 49960,
-        );
+        final result = await StanjeRobeLifecycleService(db: db)
+            .replaceSelectionEffectForCoveredCategory(
+              predmetId: predmet.id,
+              iriuId: iriuId,
+              kategorija: 'SANDUK',
+              stableArticleId: StockCatalogIdentity.sandukV0StableId,
+              selectedNazivSnapshot: 'SANDUK V-0',
+              selectedIznosSnapshot: 49960,
+            );
 
         final effects = await db.select(db.stanjeRobeAppliedEffects).get();
         final current = await StanjeRobeEffectsRepository(db)
@@ -1085,7 +1085,10 @@ void main() {
         ).listActiveUnresolvedForPredmet(predmet.id);
         final consequences = await db.select(db.stanjeRobePosledice).get();
 
-        expect(result.outcome, StanjeRobeLifecycleOutcome.replacedWithUnresolved);
+        expect(
+          result.outcome,
+          StanjeRobeLifecycleOutcome.replacedWithUnresolved,
+        );
         expect(effects, hasLength(2));
         expect(
           effects.where(
@@ -1178,8 +1181,9 @@ void main() {
                 predmetId: 1,
                 interniNaziv: 'SANDUK',
                 nazivPrikaz: const Value('SANDUK V-0'),
-                katalogStableArticleId:
-                    const Value(StockCatalogIdentity.legacySandukV0StableId),
+                katalogStableArticleId: const Value(
+                  StockCatalogIdentity.legacySandukV0StableId,
+                ),
               ),
             );
         await StanjeRobeRepository(db).sacuvajStanje(
@@ -1239,6 +1243,50 @@ void main() {
         findsOneWidget,
       );
       expect(find.byType(SwitchListTile), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('Osnovni ADMIN sees locked module explanation without toggle', (
+      tester,
+    ) async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+
+      final authRepo = AuthRepository(db);
+      final session = SessionService();
+      final podesavanjaRepo = PodesavanjaRepository(db);
+      final admin = await authRepo.kreirajPrvogAdmina(
+        imePrezime: 'Test Administrator',
+        pin: '1234',
+      );
+      session.prijavi(admin);
+
+      await tester.pumpWidget(
+        wrapForTest(
+          PodesavanjaScreen(
+            repo: podesavanjaRepo,
+            authRepo: authRepo,
+            session: session,
+            initialSection: OpcSettingsSection.moduli,
+            entitlementPolicy: OpcEntitlementPolicy.fromPayload(
+              OpcEntitlementPayload.safeProductionFallback,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('MODULI'), findsOneWidget);
+      expect(find.text('STANJE ROBE'), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsNothing);
+      expect(
+        find.text(
+          'Podešavanje nije dostupno jer trenutni paket/licenca ne dozvoljava STANJE ROBE.',
+        ),
+        findsOneWidget,
+      );
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
