@@ -454,3 +454,13 @@ Module: PAKETI / MODULI / PODSETNIK
 Truth boundary: PODSETNIK owns reminder configuration only; PREDMET/CEREMONIJA own ceremony facts and the existing reminder engine owns persistence/scheduling/delivery.
 Why Logos must know it: UI ownership and data ownership are distinct and must not drift together.
 Risk if misunderstood: package checks could become ad-hoc or module settings could become parallel business truth.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-040
+
+Source files: `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/reminders/`; `lib/features/predmeti/presentation/izvestaji_screen.dart`; `lib/features/predmeti/pdf/`; `lib/app.dart`; `windows/runner/`
+Related pseudocode: `docs/OPC_PRE_POINT_4_CORRECTIONS_AUDIT_PSEUDOCODE.md`
+Business meaning: A–H pre-implementation map separates source-proven module behavior, presentation debt, Android delivery proof, narrow PDF polish, and Windows exit profiling before Point 4 smoke.
+Module: STANJE ROBE / PODSETNIK / STATISTIKA / PDF / platform support
+Truth boundary: all areas consume or present PREDMET facts; none may replace PREDMET or alter unrelated business logic.
+Why Logos must know it: source/test confidence must not be reported as native notification, PDF visual, licensed-runtime, or shutdown-timing proof.
+Risk if misunderstood: unrelated corrections could be grouped into a broad refactor or smoke could start before platform-specific unknowns are measured.
