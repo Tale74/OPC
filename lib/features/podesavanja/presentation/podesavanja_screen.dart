@@ -17,6 +17,8 @@ import '../../auth/data/auth_repository.dart';
 import '../../auth/data/auth_security_repository.dart';
 import '../../auth/domain/session_service.dart';
 import '../../auth/presentation/korisnici_screen.dart';
+import '../../podsetnik/presentation/podsetnik_module_screen.dart';
+import '../../predmeti/data/predmeti_repository.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
 import '../../stanje_robe/data/stanje_robe_repository.dart';
@@ -66,10 +68,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         unselectedLabelColor: scheme.onSurfaceVariant,
         indicatorColor: scheme.primary,
         dividerColor: scheme.outlineVariant.withValues(alpha: 0.5),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-        ),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 13,
@@ -121,8 +120,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
     final requestedInitialIndex = widget.initialSection == null
         ? -1
         : visibleSections.indexOf(widget.initialSection!);
-    final initialIndex =
-        requestedInitialIndex >= 0 ? requestedInitialIndex : 0;
+    final initialIndex = requestedInitialIndex >= 0 ? requestedInitialIndex : 0;
     return PopScope(
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {
@@ -150,10 +148,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         initialIndex: initialIndex,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text(
-              'PODEŠAVANJA',
-              overflow: TextOverflow.ellipsis,
-            ),
+            title: const Text('PODEŠAVANJA', overflow: TextOverflow.ellipsis),
             actions: [
               IconButton(
                 icon: const Icon(Icons.save_alt_outlined),
@@ -197,13 +192,13 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   Tab _buildTabForSection(OpcSettingsSection section) {
     return switch (section) {
       OpcSettingsSection.podaciFirme => const Tab(text: 'PODACI FIRME'),
-      OpcSettingsSection.refundacijaPio =>
-        const Tab(text: 'REFUNDACIJA PIO'),
+      OpcSettingsSection.refundacijaPio => const Tab(text: 'REFUNDACIJA PIO'),
       OpcSettingsSection.katalog => const Tab(text: 'KATALOG'),
       OpcSettingsSection.moduli => const Tab(text: 'MODULI'),
       OpcSettingsSection.korisnici => const Tab(text: 'KORISNICI'),
-      OpcSettingsSection.uputstvoZaPlacanje =>
-        const Tab(text: 'UPUTSTVO ZA PLAĆANJE'),
+      OpcSettingsSection.uputstvoZaPlacanje => const Tab(
+        text: 'UPUTSTVO ZA PLAĆANJE',
+      ),
       OpcSettingsSection.oAplikaciji => const Tab(text: 'O APLIKACIJI'),
     };
   }
@@ -211,36 +206,36 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   Widget _buildTabViewForSection(OpcSettingsSection section) {
     return switch (section) {
       OpcSettingsSection.podaciFirme => _FirmaTab(
-          key: _firmaKey,
-          repo: widget.repo,
-          prikaziOnboarding: widget.prikaziOnboarding,
-          onDirtyChanged: (v) => setState(() => _firmaIsDirty = v),
-        ),
+        key: _firmaKey,
+        repo: widget.repo,
+        prikaziOnboarding: widget.prikaziOnboarding,
+        onDirtyChanged: (v) => setState(() => _firmaIsDirty = v),
+      ),
       OpcSettingsSection.refundacijaPio => _RefundacijaTab(
-          key: _refKey,
-          repo: widget.repo,
-          onDirtyChanged: (v) => setState(() => _refIsDirty = v),
-        ),
+        key: _refKey,
+        repo: widget.repo,
+        onDirtyChanged: (v) => setState(() => _refIsDirty = v),
+      ),
       OpcSettingsSection.katalog => KatalogTab(repo: widget.repo),
       OpcSettingsSection.moduli => _ModuliTab(
-          repo: widget.repo,
-          session: widget.session,
-          entitlementPolicy: widget.entitlementPolicy,
-        ),
+        repo: widget.repo,
+        session: widget.session,
+        entitlementPolicy: widget.entitlementPolicy,
+      ),
       OpcSettingsSection.korisnici => _KorisniciSecurityTab(
-          db: widget.repo.db,
-          authRepo: widget.authRepo,
-          session: widget.session,
-        ),
+        db: widget.repo.db,
+        authRepo: widget.authRepo,
+        session: widget.session,
+      ),
       OpcSettingsSection.uputstvoZaPlacanje => _UputstvoZaPlacanjeTab(
-          key: _uputstvoKey,
-          repo: widget.repo,
-          onDirtyChanged: (v) => setState(() => _uputstvoIsDirty = v),
-        ),
+        key: _uputstvoKey,
+        repo: widget.repo,
+        onDirtyChanged: (v) => setState(() => _uputstvoIsDirty = v),
+      ),
       OpcSettingsSection.oAplikaciji => _OAplikacijiTab(
-          session: widget.session,
-          entitlementPolicy: widget.entitlementPolicy,
-        ),
+        session: widget.session,
+        entitlementPolicy: widget.entitlementPolicy,
+      ),
     };
   }
 }
@@ -306,69 +301,106 @@ class _ModuliTab extends StatelessWidget {
           child: StreamBuilder<StanjeRobeOperationalStatus>(
             stream: availability.watchStatus(),
             builder: (context, snap) {
-              final status = snap.data ?? StanjeRobeOperationalStatus.notLicensed;
+              final status =
+                  snap.data ?? StanjeRobeOperationalStatus.notLicensed;
               final enabled = status == StanjeRobeOperationalStatus.active;
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'STANJE ROBE',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+              return Column(
+                children: [
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.notifications_outlined),
+                      title: const Text('PODSETNIK'),
+                      subtitle: Text(
+                        entitlementPolicy.isModuleAvailable(OpcModule.podsetnik)
+                            ? 'Modul je dostupan. Podešavanja se čuvaju po PREDMETU.'
+                            : 'Nije dostupno u trenutnom paketu/licenci.',
                       ),
-                      const SizedBox(height: 8),
-                      _StanjeRobeStatusBanner(status: status),
-                      const SizedBox(height: 12),
-                      if (!session.jeAdmin)
-                        const Text(
-                          'Samo ADMINISTRATOR može da uključi ili isključi ovaj modul.',
-                        )
-                      else if (status == StanjeRobeOperationalStatus.notLicensed)
-                        const Text(
-                          'Podešavanje nije dostupno jer trenutni paket/licenca ne dozvoljava STANJE ROBE.',
-                        )
-                      else
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('STANJE ROBE aktivno'),
-                          subtitle: const Text(
-                            'Isključivanje ne briše zalihe, primenjene efekte niti nerazrešene posledice.',
-                          ),
-                          value: enabled,
-                          onChanged: (value) => repo
-                              .setStanjeRobeOperativnoOmoguceno(value),
-                        ),
-                      if (session.jeAdmin &&
-                          status != StanjeRobeOperationalStatus.notLicensed)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: FilledButton.icon(
-                            onPressed: () => Navigator.push<void>(
+                      trailing: const Icon(Icons.chevron_right),
+                      enabled: entitlementPolicy.isModuleAvailable(
+                        OpcModule.podsetnik,
+                      ),
+                      onTap:
+                          entitlementPolicy.isModuleAvailable(
+                            OpcModule.podsetnik,
+                          )
+                          ? () => Navigator.push<void>(
                               context,
                               MaterialPageRoute<void>(
-                                builder: (_) => StanjeRobeAdminScreen(
-                                  session: session,
-                                  podesavanjaRepository: repo,
-                                  stanjeRobeRepository:
-                                      StanjeRobeRepository(repo.db),
-                                  poslediceRepository:
-                                      StanjeRobePoslediceRepository(repo.db),
-                                  entitlementPolicy: entitlementPolicy,
+                                builder: (_) => PodsetnikModuleScreen(
+                                  predmetiRepository: PredmetiRepository(
+                                    repo.db,
+                                  ),
                                 ),
                               ),
-                            ),
-                            icon: const Icon(Icons.inventory_2_outlined),
-                            label: const Text('Upravljaj stanjem robe'),
-                          ),
-                        ),
-                    ],
+                            )
+                          : null,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'STANJE ROBE',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          _StanjeRobeStatusBanner(status: status),
+                          const SizedBox(height: 12),
+                          if (!session.jeAdmin)
+                            const Text(
+                              'Samo ADMINISTRATOR može da uključi ili isključi ovaj modul.',
+                            )
+                          else if (status ==
+                              StanjeRobeOperationalStatus.notLicensed)
+                            const Text(
+                              'Podešavanje nije dostupno jer trenutni paket/licenca ne dozvoljava STANJE ROBE.',
+                            )
+                          else
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('STANJE ROBE aktivno'),
+                              subtitle: const Text(
+                                'Isključivanje ne briše zalihe, primenjene efekte niti nerazrešene posledice.',
+                              ),
+                              value: enabled,
+                              onChanged: (value) =>
+                                  repo.setStanjeRobeOperativnoOmoguceno(value),
+                            ),
+                          if (session.jeAdmin &&
+                              status != StanjeRobeOperationalStatus.notLicensed)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: FilledButton.icon(
+                                onPressed: () => Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => StanjeRobeAdminScreen(
+                                      session: session,
+                                      podesavanjaRepository: repo,
+                                      stanjeRobeRepository:
+                                          StanjeRobeRepository(repo.db),
+                                      poslediceRepository:
+                                          StanjeRobePoslediceRepository(
+                                            repo.db,
+                                          ),
+                                      entitlementPolicy: entitlementPolicy,
+                                    ),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.inventory_2_outlined),
+                                label: const Text('Upravljaj stanjem robe'),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -482,11 +514,12 @@ class _RecoveryMaterialCardState extends State<_RecoveryMaterialCard> {
 
     setState(() => _creating = true);
     try {
-      final result = await widget.securityRepo.createInstallationRecoveryMaterial(
-        actorType: 'USER',
-        actorUserId: adminId,
-        details: 'Initial setup from PODEŠAVANJA',
-      );
+      final result = await widget.securityRepo
+          .createInstallationRecoveryMaterial(
+            actorType: 'USER',
+            actorUserId: adminId,
+            details: 'Initial setup from PODEŠAVANJA',
+          );
       if (!mounted) return;
       await showDialog<void>(
         context: context,
@@ -504,9 +537,9 @@ class _RecoveryMaterialCardState extends State<_RecoveryMaterialCard> {
               SelectableText(
                 result.plaintext,
                 style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
               ),
             ],
           ),
@@ -573,18 +606,14 @@ class _RecoveryMaterialCardState extends State<_RecoveryMaterialCard> {
                         children: [
                           Text(
                             'Oporavak pristupa aplikaciji',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 8),
                           if (snap.connectionState == ConnectionState.waiting)
                             const Text('Učitavanje statusa...')
                           else if (missing) ...[
-                            const Text(
-                              'Sigurnosni kod nije podešen.',
-                            ),
+                            const Text('Sigurnosni kod nije podešen.'),
                             const SizedBox(height: 4),
                             const Text(
                               'Podesite ga da bi opcija Zaboravljen PIN mogla bezbedno da se koristi.',
@@ -685,8 +714,15 @@ class _FirmaTabState extends State<_FirmaTab> {
     _emailCtrl = TextEditingController();
     _sajtCtrl = TextEditingController();
     for (final c in [
-      _nazivCtrl, _adresaCtrl, _pibCtrl, _mbCtrl, _sifraCtrl,
-      _telefonCtrl, _odgovornoCtrl, _emailCtrl, _sajtCtrl,
+      _nazivCtrl,
+      _adresaCtrl,
+      _pibCtrl,
+      _mbCtrl,
+      _sifraCtrl,
+      _telefonCtrl,
+      _odgovornoCtrl,
+      _emailCtrl,
+      _sajtCtrl,
     ]) {
       c.addListener(_setDirty);
     }
@@ -774,9 +810,7 @@ class _FirmaTabState extends State<_FirmaTab> {
       ),
     );
     await widget.repo.saveAppPodesavanja(
-      AppPodesavanjaCompanion(
-        qrPrimalacNaziv: Value(nazivFirme),
-      ),
+      AppPodesavanjaCompanion(qrPrimalacNaziv: Value(nazivFirme)),
     );
     if (!mounted) return;
     setState(() => _cuva = false);
@@ -1022,11 +1056,7 @@ class _FirmaTabState extends State<_FirmaTab> {
             if (isNarrow) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  preview,
-                  const SizedBox(height: 16),
-                  details,
-                ],
+                children: [preview, const SizedBox(height: 16), details],
               );
             }
 
@@ -1127,8 +1157,9 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
             children: [
               TextFormField(
                 controller: _refundacijaCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 textAlign: TextAlign.right,
                 decoration: const InputDecoration(
                   labelText: 'IZNOS REFUNDACIJE PIO (RSD)',
@@ -1141,8 +1172,9 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
                   final f = v > 0 ? formatBroj(v) : '';
                   if (f != _refundacijaCtrl.text) {
                     _refundacijaCtrl.text = f;
-                    _refundacijaCtrl.selection =
-                        TextSelection.collapsed(offset: f.length);
+                    _refundacijaCtrl.selection = TextSelection.collapsed(
+                      offset: f.length,
+                    );
                   }
                 },
               ),
@@ -1172,8 +1204,8 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
                     Text(
                       'Pravo na refundaciju ostvaruje se pod sledećim uslovima:',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     const _InfoRed(
@@ -1199,10 +1231,8 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
                       'Iznos refundacije oduzima se od ukupnog iznosa robe i usluga '
                       'pri obračunu u segmentu FINANSIJE.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -1226,8 +1256,7 @@ class _UputstvoZaPlacanjeTab extends StatefulWidget {
   final ValueChanged<bool>? onDirtyChanged;
 
   @override
-  State<_UputstvoZaPlacanjeTab> createState() =>
-      _UputstvoZaPlacanjeTabState();
+  State<_UputstvoZaPlacanjeTab> createState() => _UputstvoZaPlacanjeTabState();
 }
 
 class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
@@ -1296,10 +1325,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
     final greska = NbsIpsQrPayloadBuilder.validateConfig(config);
     if (greska != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(greska),
-          backgroundColor: Colors.red.shade700,
-        ),
+        SnackBar(content: Text(greska), backgroundColor: Colors.red.shade700),
       );
       return;
     }
@@ -1310,10 +1336,12 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
         nazivBanke: Value(_bankaCtrl.text.trim()),
         qrPrimalacNaziv: Value(nazivFirme),
         qrSifraPlacanja: Value(_qrSifraCtrl.text.trim()),
-        qrSvrhaPlacanja:
-            const Value(NbsIpsQrPayloadBuilder.obaveznaSvrhaPlacanja),
-        pozivNaBrojTip:
-            const Value(NbsIpsQrPayloadBuilder.obavezniPozivNaBrojTip),
+        qrSvrhaPlacanja: const Value(
+          NbsIpsQrPayloadBuilder.obaveznaSvrhaPlacanja,
+        ),
+        pozivNaBrojTip: const Value(
+          NbsIpsQrPayloadBuilder.obavezniPozivNaBrojTip,
+        ),
       ),
     );
     if (!mounted) return;
@@ -1397,8 +1425,8 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
               Text(
                 'POZIV NA BROJ — TIP',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -1471,16 +1499,25 @@ class _OAplikacijiTab extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Icon(Icons.business_center_outlined,
-                        size: 64, color: colorScheme.primary),
+                    Icon(
+                      Icons.business_center_outlined,
+                      size: 64,
+                      color: colorScheme.primary,
+                    ),
                     const SizedBox(height: 12),
-                    Text('OPC',
-                        style: textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'OPC',
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Organizator pogrebne ceremonije',
-                        style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant)),
+                    Text(
+                      'Organizator pogrebne ceremonije',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
                       onPressed: () => showModalBottomSheet<void>(
@@ -1498,48 +1535,67 @@ class _OAplikacijiTab extends StatelessWidget {
               const SizedBox(height: 32),
               const Divider(),
               const SizedBox(height: 16),
-              Text('DEVELOPER',
-                  style: textTheme.labelLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              Text(
+                'DEVELOPER',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
-              const _InfoRed(ikona: Icons.person_outline, tekst: 'Saša Andonov'),
+              const _InfoRed(
+                ikona: Icons.person_outline,
+                tekst: 'Saša Andonov',
+              ),
               const SizedBox(height: 8),
               const _InfoRed(
-                  ikona: Icons.email_outlined, tekst: 'sasa.andonov@gmail.com'),
+                ikona: Icons.email_outlined,
+                tekst: 'sasa.andonov@gmail.com',
+              ),
               const SizedBox(height: 8),
               const _InfoRed(
-                  ikona: Icons.location_on_outlined, tekst: 'Republika Srbija'),
+                ikona: Icons.location_on_outlined,
+                tekst: 'Republika Srbija',
+              ),
               const SizedBox(height: 8),
               const _InfoRed(
-                  ikona: Icons.code_outlined,
-                  tekst: 'Flutter / Dart — Windows desktop'),
+                ikona: Icons.code_outlined,
+                tekst: 'Flutter / Dart — Windows desktop',
+              ),
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-              Text('LICENCA',
-                  style: textTheme.labelLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              Text(
+                'LICENCA',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 'Ova aplikacija je vlasništvo korisnika.\n'
                 'Zabranjeno kopiranje, distribucija i modifikacija '
                 'bez pisane saglasnosti developera.',
-                style: textTheme.bodySmall
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-              Text('NAPOMENA',
-                  style: textTheme.labelLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              Text(
+                'NAPOMENA',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 'Aplikacija je u razvoju. Sve izmene i dopune se vrše '
                 'po dogovoru sa korisnikom.\n\n'
                 'Baza podataka se čuva lokalno na računaru korisnika.',
-                style: textTheme.bodySmall
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               if (session.jeAdmin) ...[
                 const SizedBox(height: 24),
@@ -1562,9 +1618,7 @@ class _OAplikacijiTab extends StatelessWidget {
 }
 
 class _LicenseActivationDiagnosticPanel extends StatefulWidget {
-  const _LicenseActivationDiagnosticPanel({
-    required this.entitlementPolicy,
-  });
+  const _LicenseActivationDiagnosticPanel({required this.entitlementPolicy});
 
   final OpcEntitlementPolicy entitlementPolicy;
 
@@ -1615,9 +1669,9 @@ class _LicenseActivationDiagnosticPanelState
 
   Future<OpcLocalLicenseBootstrapResult> _readBootstrapResult() async {
     try {
-      return await _bootstrapService
-          .evaluateInstalledLicense()
-          .timeout(const Duration(seconds: 2));
+      return await _bootstrapService.evaluateInstalledLicense().timeout(
+        const Duration(seconds: 2),
+      );
     } catch (_) {
       return const OpcLocalLicenseBootstrapResult.invalid(
         safeReason: OpcLocalLicenseBootstrapSafeReason.readFailed,
@@ -1654,10 +1708,7 @@ class _LicenseActivationDiagnosticPanelState
               children: [
                 Icon(
                   _licenseStatusIcon(result?.status),
-                  color: _licenseStatusColor(
-                    colorScheme,
-                    result?.status,
-                  ),
+                  color: _licenseStatusColor(colorScheme, result?.status),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1695,9 +1746,8 @@ class _LicenseActivationDiagnosticPanelState
               Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  onPressed: () => _copyInstallationId(
-                    diagnostic.installationId,
-                  ),
+                  onPressed: () =>
+                      _copyInstallationId(diagnostic.installationId),
                   icon: const Icon(Icons.copy_outlined),
                   label: const Text('Kopiraj ID instalacije'),
                 ),
@@ -1761,12 +1811,11 @@ class _LicenseActivationDiagnosticPanelState
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color:
-                        colorScheme.secondaryContainer.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant,
+                    color: colorScheme.secondaryContainer.withValues(
+                      alpha: 0.55,
                     ),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Text(
                     'Produkcioni javni ključ još nije dodat, pa produkciona '
@@ -1801,8 +1850,8 @@ IconData _licenseStatusIcon(OpcLocalLicenseBootstrapStatus? status) {
   return switch (status) {
     OpcLocalLicenseBootstrapStatus.valid => Icons.verified_outlined,
     OpcLocalLicenseBootstrapStatus.invalid => Icons.warning_amber_rounded,
-    OpcLocalLicenseBootstrapStatus.missing || null =>
-      Icons.admin_panel_settings_outlined,
+    OpcLocalLicenseBootstrapStatus.missing ||
+    null => Icons.admin_panel_settings_outlined,
   };
 }
 
@@ -1918,7 +1967,8 @@ class _DatabaseLaneDiagnosticPanelState
       future: _diagnosticFuture,
       builder: (context, snap) {
         final diagnostic = snap.data;
-        final alternateLanes = diagnostic?.existingAlternateLanes ??
+        final alternateLanes =
+            diagnostic?.existingAlternateLanes ??
             const <DatabaseLaneFileInfo>[];
         final hasAlternate = alternateLanes.isNotEmpty;
 
@@ -2170,10 +2220,7 @@ class _AboutTextBlock extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          body,
-          style: textTheme.bodyMedium,
-        ),
+        Text(body, style: textTheme.bodyMedium),
       ],
     );
   }
@@ -2189,11 +2236,15 @@ class _InfoRed extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(ikona,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant),
+        Icon(
+          ikona,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 12),
-        Expanded(child: Text(tekst, style: Theme.of(context).textTheme.bodyMedium)),
+        Expanded(
+          child: Text(tekst, style: Theme.of(context).textTheme.bodyMedium),
+        ),
       ],
     );
   }

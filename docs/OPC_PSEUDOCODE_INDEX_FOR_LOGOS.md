@@ -438,9 +438,19 @@ Read after: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md` and the six exporter 
 
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`
 Related pseudocode: `docs/OPC_PREBUILD_STANJE_ROBE_PODSETNIK_PSEUDOCODE.md`
-Business meaning: STANJE ROBE package availability remains separate from ADMINISTRATOR-controlled active use, while the PREDMET-list Podsetnik action is an entitlement-aware shortcut to existing CEREMONIJA reminder settings and due-event dialog rows use spaced alternating theme surfaces.
-Module: settings / STANJE ROBE / PREDMET reminders
+Business meaning: STANJE ROBE package availability remains separate from ADMINISTRATOR-controlled active use, while PODSETNIK is a Srednji/Potpun module with its own settings identity and CEREMONIJA remains its source of ceremony facts.
+Module: settings / STANJE ROBE / MODULI / PODSETNIK
 Truth boundary: locked-module visibility and navigation do not change package ownership, stock effects, reminder configuration/scheduling, ceremony facts, or PREDMET truth.
-Why Logos must know it: an Osnovni runtime should explain the locked stock module without exposing its switch, and Podsetnik must reuse CEREMONIJA rather than become a second reminder system.
-Risk if misunderstood: visibility could be confused with entitlement, or shortcut navigation could be expanded into duplicate reminder logic.
+Why Logos must know it: an Osnovni runtime must not expose PODSETNIK functionality, while Srednji/Potpun navigation must use the module-owned surface and the existing reminder engine.
+Risk if misunderstood: CEREMONIJA could again become the module identity, or relocation could create duplicate reminder/PREDMET truth.
 Read after: `test/stanje_robe_operational_toggle_test.dart`, `test/lista_predmeta_screen_smoke_test.dart`, and the existing reminder model/repository/coordinator.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-039
+
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `lib/features/podsetnik/presentation/podsetnik_module_screen.dart`; `lib/features/predmeti/presentation/segments/ceremonija_segment.dart`
+Related pseudocode: `docs/OPC_MODULI_PAKETI_PODSETNIK_ARCHITECTURE_PSEUDOCODE.md`
+Business meaning: PAKETI grant capabilities through centralized entitlement; MODULI give operational/package capabilities a clear identity around, but never above, PREDMET.
+Module: PAKETI / MODULI / PODSETNIK
+Truth boundary: PODSETNIK owns reminder configuration only; PREDMET/CEREMONIJA own ceremony facts and the existing reminder engine owns persistence/scheduling/delivery.
+Why Logos must know it: UI ownership and data ownership are distinct and must not drift together.
+Risk if misunderstood: package checks could become ad-hoc or module settings could become parallel business truth.

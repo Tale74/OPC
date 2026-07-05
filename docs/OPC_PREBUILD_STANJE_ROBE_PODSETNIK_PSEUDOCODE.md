@@ -45,15 +45,18 @@ WHEN user opens one PREDMET overflow menu:
         keep Podsetnik disabled
 
 WHEN enabled Podsetnik is selected:
-    open the existing PREDMET screen
-    select its existing CEREMONIJA section initially
+    open the MODULI / PODSETNIK surface for that PREDMET
+    show CEREMONIJA facts as read-only reminder inputs
+    keep CEREMONIJA as the place where those facts are edited
     do not create or mutate reminder configuration during navigation
 ```
 
 An `Osnovni` runtime is not entitled to Podsetnik, so its visible grey shortcut
 is expected. `Srednji` and `POTPUN` are entitled; their non-anonymized PREDMET
 shortcut is enabled even when optional ceremony fields are incomplete or
-reminder events already exist. Anonymized PREDMET remains disabled.
+reminder events already exist. Anonymized PREDMET remains disabled. PODSETNIK
+reuses the existing reminder repository, coordinator and notification gateway;
+it does not own a second copy of ceremony or PREDMET truth.
 
 CEREMONIJA remains the only settings surface for enabling reminders and choosing
 delivery times. Its existing repository, coordinator, validation, scheduling,

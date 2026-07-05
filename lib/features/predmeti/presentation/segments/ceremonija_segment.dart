@@ -311,51 +311,6 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     await _rescheduleRemindersIfChanged();
   }
 
-  Future<void> _saveReminderConfig(
-    CeremonyReminderConfig config, {
-    bool requestPermission = false,
-  }) async {
-    await _reminderRepository.saveConfig(widget.predmetId, config);
-    if (!mounted) return;
-    setState(() => _reminderConfig = config);
-    _lastReminderSource = null;
-    await _rescheduleRemindersIfChanged(requestPermission: requestPermission);
-  }
-
-  Future<void> _addReminderTime() async {
-    final initial = _reminderConfig.normalizedDeliveryTimes.first.split(':');
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(
-        hour: int.parse(initial[0]),
-        minute: int.parse(initial[1]),
-      ),
-    );
-    if (picked == null || !mounted) return;
-    final value =
-        '${picked.hour.toString().padLeft(2, '0')}:'
-        '${picked.minute.toString().padLeft(2, '0')}';
-    await _saveReminderConfig(
-      _reminderConfig.copyWith(
-        deliveryTimes: {
-          ..._reminderConfig.normalizedDeliveryTimes,
-          value,
-        }.toList(),
-      ),
-      requestPermission: true,
-    );
-  }
-
-  Future<void> _removeReminderTime(String value) async {
-    final current = _reminderConfig.normalizedDeliveryTimes;
-    if (current.length <= 1) return;
-    await _saveReminderConfig(
-      _reminderConfig.copyWith(
-        deliveryTimes: current.where((item) => item != value).toList(),
-      ),
-    );
-  }
-
   Future<void> _rescheduleRemindersIfChanged({
     bool requestPermission = false,
   }) async {
@@ -852,44 +807,6 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                 ),
               ]),
               const SizedBox(height: 12),
-              SwitchListTile(
-                key: const Key('ceremony-reminders-enabled'),
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-                title: const Text('Podsetnici za ceremoniju'),
-                value: _reminderConfig.enabled,
-                onChanged: e
-                    ? (value) => _saveReminderConfig(
-                        _reminderConfig.copyWith(enabled: value),
-                        requestPermission: value,
-                      )
-                    : null,
-              ),
-              if (_reminderConfig.enabled)
-                Wrap(
-                  key: const Key('ceremony-reminder-delivery-times'),
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    for (final value in _reminderConfig.normalizedDeliveryTimes)
-                      InputChip(
-                        label: Text(value),
-                        onDeleted:
-                            e &&
-                                _reminderConfig.normalizedDeliveryTimes.length >
-                                    1
-                            ? () => _removeReminderTime(value)
-                            : null,
-                      ),
-                    IconButton.filledTonal(
-                      key: const Key('ceremony-reminder-add-time'),
-                      tooltip: 'Dodaj vreme podsetnika',
-                      onPressed: e ? _addReminderTime : null,
-                      icon: const Icon(Icons.add_alarm_outlined),
-                    ),
-                  ],
-                ),
               const SizedBox(height: 12),
               const Divider(),
               if (_mozeOpelo) ...[

@@ -60,7 +60,7 @@ void main() {
   });
 
   testWidgets(
-    'POTPUN Podsetnik shortcut opens existing CEREMONIJA reminder settings',
+    'POTPUN Podsetnik shortcut opens PODSETNIK module settings',
     (tester) async {
       final db = createTestDatabase();
 
@@ -108,11 +108,10 @@ void main() {
       await tester.tap(shortcut);
       await tester.pumpAndSettle();
 
-      expect(find.text('Ceremonija'), findsWidgets);
-      expect(
-        find.byKey(const Key('ceremony-reminders-enabled')),
-        findsOneWidget,
-      );
+      expect(find.text('MODULI / PODSETNIK'), findsOneWidget);
+      expect(find.byKey(const Key('podsetnik-module-settings')), findsOneWidget);
+      expect(find.byKey(const Key('podsetnik-reminders-enabled')), findsOneWidget);
+      expect(find.byKey(const Key('ceremony-reminders-enabled')), findsNothing);
 
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
@@ -134,6 +133,20 @@ void main() {
       ),
       isFalse,
     );
+  });
+
+  test('Srednji and Potpun keep Podsetnik module entitlement', () {
+    for (final package in [OpcPackageLevel.srednji, OpcPackageLevel.potpun]) {
+      final policy = OpcEntitlementPolicy.fromPayload(
+        OpcEntitlementPayload(
+          schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+          sourceKind: OpcEntitlementSourceKind.demoTest,
+          environment: OpcEntitlementEnvironment.test,
+          packageLevel: package,
+        ),
+      );
+      expect(policy.isModuleAvailable(OpcModule.podsetnik), isTrue);
+    }
   });
 
   test('anonymized PREDMET keeps Podsetnik shortcut disabled', () {

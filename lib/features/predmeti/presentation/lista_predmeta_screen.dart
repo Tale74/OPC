@@ -11,6 +11,7 @@ import '../../auth/data/auth_repository.dart';
 import '../../auth/data/auth_security_repository.dart';
 import '../../auth/domain/session_service.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
+import '../../podsetnik/presentation/podsetnik_module_screen.dart';
 import '../../podesavanja/presentation/podesavanja_screen.dart';
 import '../../setup/application/setup_readiness_service.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
@@ -360,12 +361,9 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     await Navigator.push<void>(
       context,
       MaterialPageRoute(
-        builder: (_) => PredmetScreen(
+        builder: (_) => PodsetnikModuleScreen(
+          predmetiRepository: widget.predmetiRepo,
           predmetId: predmet.id,
-          predmetiRepo: widget.predmetiRepo,
-          session: widget.session,
-          entitlementPolicy: widget.entitlementPolicy,
-          openCeremony: true,
         ),
       ),
     );

@@ -89,6 +89,51 @@ void main() {
     );
     expect(find.text('Aktivni moduli/dodaci: STANJE ROBE.'), findsOneWidget);
   });
+
+  testWidgets('MODULI exposes PODSETNIK with package-safe visibility', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await tester.idle();
+      await tester.pump(const Duration(milliseconds: 1));
+      await tester.pumpAndSettle();
+      await db.close();
+    });
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Test Administrator',
+      pin: '1234',
+    );
+    session.prijavi(admin);
+
+    await tester.pumpWidget(
+      wrapForTest(
+        PodesavanjaScreen(
+          repo: PodesavanjaRepository(db),
+          authRepo: authRepo,
+          session: session,
+          initialSection: OpcSettingsSection.moduli,
+          entitlementPolicy: _potpunDemoPolicy(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('PODSETNIK'), findsOneWidget);
+    expect(
+      find.text('Modul je dostupan. Podešavanja se čuvaju po PREDMETU.'),
+      findsOneWidget,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.idle();
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pumpAndSettle();
+  });
 }
 
 Future<void> _pumpUntilText(
