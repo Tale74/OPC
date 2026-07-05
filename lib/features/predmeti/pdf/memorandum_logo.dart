@@ -6,6 +6,16 @@ const memorandumLogoWidth = 192.0;
 const memorandumLogoHeight = 120.0;
 const memorandumLogoLeftMargin = 8.0;
 
+List<String> buildMemorandumIdentityRows({
+  required String pib,
+  required String mb,
+  required String racun,
+}) => <String>[
+  if (pib.trim().isNotEmpty) 'PIB ${pib.trim()}',
+  if (mb.trim().isNotEmpty) 'MB ${mb.trim()}',
+  if (racun.trim().isNotEmpty) 'Račun ${racun.trim()}',
+];
+
 pw.Widget buildMemorandumLogo(Uint8List logoBytes) {
   final image = pw.MemoryImage(logoBytes);
 

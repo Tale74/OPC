@@ -19,6 +19,27 @@ The six standard exporters in this layout group are PREDMET, LISTA, NALOG ZA
 OPREMANJE, PREDRAČUN, RAČUN, and SPECIFIKACIJA TROŠKOVA. Each exporter owns
 its page and header composition. They do not share one complete header builder.
 
+## Shared identity rows
+
+```text
+PDF remains a derivative of PREDMET and settings data
+
+buildMemorandumIdentityRows receives PIB, MB and account values
+    omit an empty value
+    return each present value as a separate row, in this order:
+        PIB <value>
+        MB <value>
+        Račun <value>
+
+each of the six duplicated headers renders every returned entry
+as its own PDF text widget
+never join PIB, MB and Račun with a separator
+always spell Račun with the Serbian diacritic
+```
+
+Only identity-row text construction is shared. Complete header composition
+remains exporter-owned, as do document title, date, case number and body.
+
 ## Shared memorandum logo
 
 ```text
@@ -100,3 +121,7 @@ introduced; longer company text can still determine a greater row height.
 Source-level layout and automated tests do not establish visual acceptance.
 Windows/Android build, runtime PDF export, and owner review of representative
 wide, tall, square, transparent, and whitespace-bearing logos remain pending.
+
+The identity-row correction does not change logo bounds, PREDMET/IRiU/catalog
+truth, finance or totals, RAČUN legal/business meaning, JSON, or DOKUMENTI
+navigation.

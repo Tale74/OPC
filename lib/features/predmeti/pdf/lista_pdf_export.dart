@@ -356,13 +356,11 @@ pw.Widget _buildHeader(_ListaPdfSnapshot snapshot) {
     if (snapshot.firma.sajt.trim().isNotEmpty) snapshot.firma.sajt.trim(),
   ].join(' | ');
 
-  final identitet = <String>[
-    if (snapshot.firma.pib.trim().isNotEmpty)
-      'PIB ${snapshot.firma.pib.trim()}',
-    if (snapshot.firma.mb.trim().isNotEmpty) 'MB ${snapshot.firma.mb.trim()}',
-    if (snapshot.app.ziroRacun.trim().isNotEmpty)
-      'Racun ${snapshot.app.ziroRacun.trim()}',
-  ].join(' | ');
+  final identityRows = buildMemorandumIdentityRows(
+    pib: snapshot.firma.pib,
+    mb: snapshot.firma.mb,
+    racun: snapshot.app.ziroRacun,
+  );
 
   return pw.Container(
     margin: const pw.EdgeInsets.only(bottom: 10),
@@ -407,11 +405,11 @@ pw.Widget _buildHeader(_ListaPdfSnapshot snapshot) {
                         style: const pw.TextStyle(fontSize: 8.5),
                       ),
                     ),
-                  if (identitet.isNotEmpty)
+                  for (final identityRow in identityRows)
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(identitet),
+                        documentTextCodec.normalize(identityRow),
                         style: const pw.TextStyle(fontSize: 8.5),
                       ),
                     ),

@@ -464,3 +464,13 @@ Module: STANJE ROBE / PODSETNIK / STATISTIKA / PDF / platform support
 Truth boundary: all areas consume or present PREDMET facts; none may replace PREDMET or alter unrelated business logic.
 Why Logos must know it: source/test confidence must not be reported as native notification, PDF visual, licensed-runtime, or shutdown-timing proof.
 Risk if misunderstood: unrelated corrections could be grouped into a broad refactor or smoke could start before platform-specific unknowns are measured.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-041
+
+Source files: `lib/features/predmeti/pdf/memorandum_logo.dart` and the six standard PDF exporters
+Related pseudocode: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md`
+Business meaning: memorandum identity information renders PIB, MB and Račun as three independent optional rows with the canonical Serbian label.
+Module: PDF / DOKUMENTI derivative presentation
+Truth boundary: the helper formats existing values only; it does not own or change PREDMET, settings, finance, IRiU or catalog truth.
+Why Logos must know it: complete headers remain duplicated/exporter-owned while only the narrow identity-row contract is shared.
+Risk if misunderstood: this presentation polish could be expanded into a broad PDF layout or business-content rewrite.

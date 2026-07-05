@@ -43,9 +43,9 @@ E STATISTIKA (PREDMET-consuming informational module):
 F PDF memorandum/header (PREDMET-derived output):
     six standard exporters each own a header
     only logo sizing is shared
-    PIB + MB + account are joined into one line with separators
-    LISTA alone spells account label "Racun"; other exporters use "Račun"
-    future correction is limited to three identity rows and the diacritic
+    shared identity-row builder emits PIB, MB and Račun separately
+    all six headers render those entries as separate text rows
+    LISTA "Racun" drift is corrected to "Račun"
     do not reopen logo acceptance, finance, invoice legality or document body logic
 
 G Windows slow exit (technical/platform support):

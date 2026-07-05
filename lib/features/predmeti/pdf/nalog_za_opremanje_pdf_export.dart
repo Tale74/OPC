@@ -226,11 +226,11 @@ pw.Widget _buildHeader({
     if (firma.sajt.trim().isNotEmpty) firma.sajt.trim(),
   ].join(' | ');
 
-  final identitet = <String>[
-    if (firma.pib.trim().isNotEmpty) 'PIB ${firma.pib.trim()}',
-    if (firma.mb.trim().isNotEmpty) 'MB ${firma.mb.trim()}',
-    if (app.ziroRacun.trim().isNotEmpty) 'Ra\u010Dun ${app.ziroRacun.trim()}',
-  ].join(' | ');
+  final identityRows = buildMemorandumIdentityRows(
+    pib: firma.pib,
+    mb: firma.mb,
+    racun: app.ziroRacun,
+  );
 
   return pw.Container(
     padding: const pw.EdgeInsets.only(bottom: 8),
@@ -272,11 +272,11 @@ pw.Widget _buildHeader({
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
-                  if (identitet.isNotEmpty)
+                  for (final identityRow in identityRows)
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(identitet),
+                        documentTextCodec.normalize(identityRow),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
