@@ -31,6 +31,14 @@ const bool automaticGdprStartupDialogEnabled = false;
 
 bool manualGdprActionAvailable(String status) => status == 'ZAVRŠEN';
 
+bool podsetnikShortcutEnabled({
+  required OpcEntitlementPolicy entitlementPolicy,
+  required String predmetStatus,
+}) {
+  return entitlementPolicy.isModuleAvailable(OpcModule.podsetnik) &&
+      predmetStatus != 'ANONIMIZOVAN';
+}
+
 class ListaPredmetaScreen extends StatefulWidget {
   const ListaPredmetaScreen({
     super.key,
@@ -176,7 +184,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Podsetnik za ceremoniju'),
-        content: Text(dueLines.join('\n')),
+        content: CeremonyReminderEventList(events: dueLines),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(context),
@@ -972,11 +980,10 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
                 onZatvori: () => _zatvoriPredmetSaListe(lista[i]),
                 onOtvoriZaIzmenu: () => _otvoriZaIzmenuSaListe(lista[i]),
                 onDokumenti: () => _otvoriDokumente(lista[i]),
-                canOpenPodsetnik:
-                    widget.entitlementPolicy.isModuleAvailable(
-                      OpcModule.podsetnik,
-                    ) &&
-                    lista[i].status != 'ANONIMIZOVAN',
+                canOpenPodsetnik: podsetnikShortcutEnabled(
+                  entitlementPolicy: widget.entitlementPolicy,
+                  predmetStatus: lista[i].status,
+                ),
                 onPodsetnik: () => _otvoriPodsetnik(lista[i]),
                 canAnonimizuj: lista[i].status == 'ZAVRŠEN',
                 onAnonimizuj: () => _anonimizuj(lista[i]),
@@ -986,6 +993,41 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
           ),
         ),
       ],
+    );
+  }
+}
+
+class CeremonyReminderEventList extends StatelessWidget {
+  const CeremonyReminderEventList({super.key, required this.events});
+
+  final List<String> events;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 520,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 420),
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: events.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          itemBuilder: (context, index) => Container(
+            key: Key('ceremony-reminder-event-$index'),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: index.isEven
+                  ? scheme.surfaceContainerLow
+                  : scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: scheme.outlineVariant),
+            ),
+            child: Text(events[index]),
+          ),
+        ),
+      ),
     );
   }
 }

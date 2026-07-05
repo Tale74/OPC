@@ -438,7 +438,7 @@ Read after: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md` and the six exporter 
 
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`
 Related pseudocode: `docs/OPC_PREBUILD_STANJE_ROBE_PODSETNIK_PSEUDOCODE.md`
-Business meaning: STANJE ROBE package availability remains separate from ADMINISTRATOR-controlled active use, while the PREDMET-list Podsetnik action is an entitlement-aware shortcut to existing CEREMONIJA reminder settings.
+Business meaning: STANJE ROBE package availability remains separate from ADMINISTRATOR-controlled active use, while the PREDMET-list Podsetnik action is an entitlement-aware shortcut to existing CEREMONIJA reminder settings and due-event dialog rows use spaced alternating theme surfaces.
 Module: settings / STANJE ROBE / PREDMET reminders
 Truth boundary: locked-module visibility and navigation do not change package ownership, stock effects, reminder configuration/scheduling, ceremony facts, or PREDMET truth.
 Why Logos must know it: an Osnovni runtime should explain the locked stock module without exposing its switch, and Podsetnik must reuse CEREMONIJA rather than become a second reminder system.

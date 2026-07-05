@@ -60,14 +60,9 @@ void main() {
   });
 
   testWidgets(
-    'Podsetnik shortcut opens existing CEREMONIJA reminder settings',
+    'POTPUN Podsetnik shortcut opens existing CEREMONIJA reminder settings',
     (tester) async {
       final db = createTestDatabase();
-      addTearDown(() async {
-        await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pumpAndSettle();
-        await db.close();
-      });
 
       final authRepo = AuthRepository(db);
       final session = SessionService();
@@ -87,7 +82,7 @@ void main() {
           schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
           sourceKind: OpcEntitlementSourceKind.demoTest,
           environment: OpcEntitlementEnvironment.test,
-          packageLevel: OpcPackageLevel.srednji,
+          packageLevel: OpcPackageLevel.potpun,
         ),
       );
 
@@ -118,6 +113,74 @@ void main() {
         find.byKey(const Key('ceremony-reminders-enabled')),
         findsOneWidget,
       );
+
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      await db.close();
+      await tester.pump();
+      await tester.pumpAndSettle();
     },
+  );
+
+  test('Osnovni keeps Podsetnik shortcut disabled', () {
+    expect(
+      podsetnikShortcutEnabled(
+        entitlementPolicy: OpcEntitlementPolicy.fromPayload(
+          OpcEntitlementPayload.safeProductionFallback,
+        ),
+        predmetStatus: 'OTVOREN',
+      ),
+      isFalse,
+    );
+  });
+
+  test('anonymized PREDMET keeps Podsetnik shortcut disabled', () {
+    expect(
+      podsetnikShortcutEnabled(
+        entitlementPolicy: _potpunPolicy(),
+        predmetStatus: 'ANONIMIZOVAN',
+      ),
+      isFalse,
+    );
+  });
+
+  testWidgets(
+    'reminder dialog rows use spacing and alternating theme surfaces',
+    (tester) async {
+      await tester.pumpWidget(
+        wrapForTest(
+          const Scaffold(
+            body: CeremonyReminderEventList(
+              events: ['Prvi događaj', 'Drugi događaj'],
+            ),
+          ),
+        ),
+      );
+
+      final first = tester.widget<Container>(
+        find.byKey(const Key('ceremony-reminder-event-0')),
+      );
+      final second = tester.widget<Container>(
+        find.byKey(const Key('ceremony-reminder-event-1')),
+      );
+      final firstDecoration = first.decoration! as BoxDecoration;
+      final secondDecoration = second.decoration! as BoxDecoration;
+
+      expect(firstDecoration.color, isNot(secondDecoration.color));
+      expect(find.byType(SizedBox), findsWidgets);
+    },
+  );
+}
+
+OpcEntitlementPolicy _potpunPolicy() {
+  return OpcEntitlementPolicy.fromPayload(
+    const OpcEntitlementPayload(
+      schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+      sourceKind: OpcEntitlementSourceKind.demoTest,
+      environment: OpcEntitlementEnvironment.test,
+      packageLevel: OpcPackageLevel.potpun,
+    ),
   );
 }

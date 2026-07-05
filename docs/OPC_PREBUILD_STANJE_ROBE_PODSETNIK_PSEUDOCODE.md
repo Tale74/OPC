@@ -50,6 +50,11 @@ WHEN enabled Podsetnik is selected:
     do not create or mutate reminder configuration during navigation
 ```
 
+An `Osnovni` runtime is not entitled to Podsetnik, so its visible grey shortcut
+is expected. `Srednji` and `POTPUN` are entitled; their non-anonymized PREDMET
+shortcut is enabled even when optional ceremony fields are incomplete or
+reminder events already exist. Anonymized PREDMET remains disabled.
+
 CEREMONIJA remains the only settings surface for enabling reminders and choosing
 delivery times. Its existing repository, coordinator, validation, scheduling,
 and notification gateway remain unchanged.
@@ -57,6 +62,21 @@ and notification gateway remain unchanged.
 Incomplete ceremony data is safe: the shortcut only navigates. CEREMONIJA shows
 its existing fields and reminder controls, while the existing coordinator
 produces no scheduled occurrences without a valid ceremony date/time.
+
+## Reminder dialog readability
+
+```text
+WHEN multiple reminder events are due:
+    render one bounded row per event
+    keep visible vertical space between rows
+    alternate between theme-provided low/high surface colors
+    keep the existing reminder text unchanged
+```
+
+The list is scroll-bounded for many events and uses the active theme's surface
+and outline colors, so light/dark readability does not depend on hard-coded
+colors. This is presentation only; event identity, text, timing, persistence,
+scheduling, and delivery remain unchanged.
 
 ## Protected boundary
 
