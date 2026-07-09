@@ -474,3 +474,13 @@ Module: PDF / DOKUMENTI derivative presentation
 Truth boundary: the helper formats existing values only; it does not own or change PREDMET, settings, finance, IRiU or catalog truth.
 Why Logos must know it: complete headers remain duplicated/exporter-owned while only the narrow identity-row contract is shared.
 Risk if misunderstood: this presentation polish could be expanded into a broad PDF layout or business-content rewrite.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-042
+
+Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/core/entitlements/opc_runtime_entitlement_resolver.dart`; `lib/app.dart`
+Related pseudocode: `docs/OPC_PRESENTATION_POTPUN_BUILD_PSEUDOCODE.md`
+Business meaning: an explicit owner/internal presentation build can run as POTPUN through `OPC_PRESENTATION_POTPUN=true` without requiring installed local-license activation.
+Module: entitlement/packages / presentation build
+Truth boundary: the override controls runtime availability only; it does not redefine PREDMET, database ownership, PDF/JSON output, STANJE ROBE operational state, or real production licensing.
+Why Logos must know it: this is a named non-production build mode, not a silent permanent conversion of normal builds to unlicensed POTPUN.
+Risk if misunderstood: presentation evidence could be mistaken for production license readiness or Point 4 smoke clearance.

@@ -1915,6 +1915,7 @@ String _entitlementSourceLabel(OpcEntitlementSourceKind sourceKind) {
     OpcEntitlementSourceKind.saas => 'SaaS',
     OpcEntitlementSourceKind.developerAllUnlocked => 'developer',
     OpcEntitlementSourceKind.demoTest => 'demo/test',
+    OpcEntitlementSourceKind.presentationOwner => 'prezentacija',
   };
 }
 

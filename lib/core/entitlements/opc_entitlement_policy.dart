@@ -5,6 +5,7 @@ enum OpcEntitlementSourceKind {
   saas,
   developerAllUnlocked,
   demoTest,
+  presentationOwner,
 }
 
 enum OpcEntitlementEnvironment { production, test, developer }
@@ -84,6 +85,20 @@ final class OpcEntitlementPayload {
     diagnosticsLabel: 'developer_all_unlocked',
   );
 
+  static const presentationPotpun = OpcEntitlementPayload(
+    schemaVersion: currentSchemaVersion,
+    sourceKind: OpcEntitlementSourceKind.presentationOwner,
+    environment: OpcEntitlementEnvironment.test,
+    packageLevel: OpcPackageLevel.potpun,
+    enabledAddOns: <OpcAddOn>{
+      OpcAddOn.stanjeRobe,
+      OpcAddOn.advancedParte,
+      OpcAddOn.cituljeSaDeklaracijom,
+      OpcAddOn.lkOcr,
+    },
+    diagnosticsLabel: 'presentation_potpun_owner_build',
+  );
+
   final int schemaVersion;
   final OpcEntitlementSourceKind sourceKind;
   final OpcEntitlementEnvironment environment;
@@ -102,6 +117,15 @@ final class OpcEntitlementPayload {
   bool get isDeveloperAllUnlocked =>
       sourceKind == OpcEntitlementSourceKind.developerAllUnlocked &&
       environment != OpcEntitlementEnvironment.production;
+}
+
+final class OpcPresentationBuildMode {
+  const OpcPresentationBuildMode._();
+
+  static const bool presentationPotpunRequested = bool.fromEnvironment(
+    'OPC_PRESENTATION_POTPUN',
+    defaultValue: false,
+  );
 }
 
 abstract interface class OpcEntitlementSource {
@@ -181,6 +205,16 @@ final class OpcDemoTestEntitlementSource implements OpcEntitlementSource {
   }
 }
 
+final class OpcPresentationPotpunEntitlementSource
+    implements OpcEntitlementSource {
+  const OpcPresentationPotpunEntitlementSource();
+
+  @override
+  OpcEntitlementPayload loadPayload() {
+    return OpcEntitlementPayload.presentationPotpun;
+  }
+}
+
 final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
   const OpcSelectedEntitlementSource();
 
@@ -209,6 +243,10 @@ final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
   OpcEntitlementPayload loadPayload() {
     final environment = _environmentFromValue(_requestedEnvironment);
     final source = _normalized(_requestedSource);
+
+    if (OpcPresentationBuildMode.presentationPotpunRequested) {
+      return const OpcPresentationPotpunEntitlementSource().loadPayload();
+    }
 
     if (_developerAllUnlockedRequested || source == 'developerallunlocked') {
       return OpcDeveloperAllUnlockedEntitlementSource(

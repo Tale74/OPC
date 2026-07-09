@@ -5,7 +5,7 @@ import 'package:window_manager/window_manager.dart';
 
 import 'core/database/database.dart';
 import 'core/entitlements/opc_entitlement_policy.dart';
-import 'core/entitlements/opc_local_license_bootstrap_service.dart';
+import 'core/entitlements/opc_runtime_entitlement_resolver.dart';
 import 'core/theme/app_typography.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/domain/session_service.dart';
@@ -43,9 +43,7 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
     _podesavanjaRepo = PodesavanjaRepository(widget.db);
     _predmetiRepo = PredmetiRepository(widget.db);
     _reminderService = ReminderMvpService();
-    _entitlementPolicyFuture = OpcLocalLicenseBootstrapService()
-        .evaluateInstalledLicense()
-        .then((result) => OpcEntitlementPolicy.fromPayload(result.payload));
+    _entitlementPolicyFuture = const OpcRuntimeEntitlementResolver().resolve();
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       windowManager.addListener(this);
     }
