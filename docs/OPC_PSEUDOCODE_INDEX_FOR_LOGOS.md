@@ -505,3 +505,14 @@ Truth boundary: derived warnings and technical delivery state may belong to PODS
 Why Logos must know it: read, acknowledgement, postponement, dismissal and explicit business completion are different states, and current source has no standalone PREDMET segment named NAPOMENE.
 Risk if misunderstood: PODSETNIK could become a second case-management database, notification dismissal could be mistaken for completion, or structured tasks could be hidden inside the current free-text note without version/JSON/migration discipline.
 Read after: `docs/tasks/OPC_TASK_PODSETNIK_CONTROL_FLOW_USER_CONFIRMATION_AUDIT_REPORT.md` and the owner-decision queue in that report.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-045
+
+Source files: `lib/features/predmeti/presentation/segments/preminulo_lice_segment.dart`; `lib/features/predmeti/presentation/segments/ceremonija_segment.dart`; `lib/features/predmeti/presentation/segments/iriu_segment.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/presentation/segments/parte_segment.dart`; `lib/core/utils/json_export_import.dart`; PODSETNIK/reminder/entitlement source
+Related pseudocode: `docs/OPC_OWNER_DECISIONS_STATUSI_CEREMONIJA_PSEUDOCODE.md`
+Business meaning: owner-approved STATUSI, CEREMONIJA and partial cross-segment decisions define possible, accepted, executed, revoked and cancelled obligations, explicit fallbacks, ZAVRŠEN gates and derived readiness without claiming that future behavior already exists.
+Module: PREDMET / STATUSI / CEREMONIJA / IRIU / PARTE / PODSETNIK / LISTA
+Truth boundary: PREDMET owns business facts, obligations, state and history; PODSETNIK may present and schedule but owns only technical reminder state; PARTE remains derivative.
+Why Logos must know it: every future design must distinguish current source, owner-approved future rules, known correction debt and unresolved IRIU/readiness decisions by stable owner-decision ID.
+Risk if misunderstood: documentation could be mistaken for implementation, notification interaction could become business completion, BALSAMOVANJE could retain the wrong future source grouping, or missing cross-segment conditions could be silently overridden.
+Read after: `docs/OPC_OWNER_DECISION_GUIDE.md`; `docs/OPC_OWNER_DECISION_INDEX.md`; `docs/tasks/OPC_TASK_OWNER_DECISIONS_STATUSI_CEREMONIJA_DOCUMENTATION_REPORT.md`.
