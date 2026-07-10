@@ -330,6 +330,61 @@ Android build output:
 
 Runtime not performed in this task; builds produced only.
 
+## Post-delivery incident audit note
+
+This section was added after the original presentation build handoff as an
+audit-only provenance clarification. It does not change the delivered affected
+build identity and does not conclude that presentation mode caused the incident.
+
+### CONFIRMED BUILD PROVENANCE
+
+The affected client build was the OPC presentation POTPUN build created from commit:
+
+`701477f3abca57effee9ceb0bab006afa25ee6cf`
+
+with:
+
+```powershell
+--dart-define=OPC_PRESENTATION_POTPUN=true
+```
+
+Therefore, the audit must specifically verify whether presentation-mode startup
+bypasses, skips, changes, races with, or reorders any of the following:
+
+- local Administrator bootstrap;
+- persisted user loading;
+- current-user restoration;
+- local-license bootstrap;
+- database initialization;
+- TEST seed/fallback logic;
+- login/user-selection routing.
+
+Do not assume presentation mode caused the incident.
+
+However, normal-build-only reproduction is insufficient. Controlled reproduction
+must first use the exact presentation POTPUN build mode that was delivered.
+
+### Required controlled reproduction order
+
+1. Build exact presentation POTPUN Windows release from commit `701477f`.
+2. Start with clean synthetic data.
+3. Create a real synthetic Administrator, not TEST.
+4. Close and reopen three times.
+5. Verify database path and user rows after every cycle.
+6. Test `Promeni savetnika`.
+7. Test `Zaboravljen PIN`.
+8. Copy/move the release folder and repeat, if database-path logic makes this relevant.
+9. Only afterward compare with a normal build from the same commit.
+
+### Central audit question
+
+Does `OPC_PRESENTATION_POTPUN=true` change only entitlement, as this task
+claimed, or does the real startup flow indirectly change bootstrap/identity
+behavior?
+
+Incident status remains audit-only. There is not yet proof that presentation
+mode caused the incident, nor proof that Administrator data was deleted.
+
 ## GitHub completion verification
 
 - GitHub branch visibility: PASS
