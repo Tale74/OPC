@@ -58,13 +58,15 @@ reminder events already exist. Anonymized PREDMET remains disabled. PODSETNIK
 reuses the existing reminder repository, coordinator and notification gateway;
 it does not own a second copy of ceremony or PREDMET truth.
 
-CEREMONIJA remains the only settings surface for enabling reminders and choosing
-delivery times. Its existing repository, coordinator, validation, scheduling,
-and notification gateway remain unchanged.
+MODULI / PODSETNIK is the current settings surface for enabling reminders and
+choosing delivery times. CEREMONIJA remains the authoritative editor of ceremony
+facts and reschedules through the same repository, coordinator, validation,
+scheduling, and notification gateway when those facts change.
 
 Incomplete ceremony data is safe: the shortcut only navigates. CEREMONIJA shows
-its existing fields and reminder controls, while the existing coordinator
-produces no scheduled occurrences without a valid ceremony date/time.
+its existing source fields, MODULI / PODSETNIK shows reminder controls, and the
+existing coordinator produces no scheduled occurrences without a valid
+ceremony date/time.
 
 ## Reminder dialog readability
 

@@ -494,3 +494,14 @@ Module: Windows identity/auth/database lane audit
 Truth boundary: audit evidence may classify hypotheses but must not mutate client data, create replacement administrators, reset PINs, or change production source behavior.
 Why Logos must know it: the visible TEST/ADMINISTRATOR symptom can be caused by several unresolved branches, especially opened database mismatch versus actual user-row loss.
 Risk if misunderstood: a recovery or correction task could be launched before proving whether the real Administrator row still exists and which database was opened.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-044
+
+Source files: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/podsetnik/presentation/podsetnik_module_screen.dart`; `lib/features/predmeti/reminders/`; `lib/core/utils/json_export_import.dart`; role and entitlement source
+Related pseudocode: `docs/OPC_PODSETNIK_CONTROL_FLOW_AND_USER_CONFIRMATION_PSEUDOCODE.md`
+Business meaning: a future PODSETNIK control surface may present and initiate confirmation of organizational steps only when their authoritative existence, responsibility, business state and completion history remain owned by the PREDMET domain.
+Module: PREDMET / NAPOMENA audit / MODULI / PODSETNIK / notifications
+Truth boundary: derived warnings and technical delivery state may belong to PODSETNIK infrastructure; the only copy of a business obligation or completion fact may not.
+Why Logos must know it: read, acknowledgement, postponement, dismissal and explicit business completion are different states, and current source has no standalone PREDMET segment named NAPOMENE.
+Risk if misunderstood: PODSETNIK could become a second case-management database, notification dismissal could be mistaken for completion, or structured tasks could be hidden inside the current free-text note without version/JSON/migration discipline.
+Read after: `docs/tasks/OPC_TASK_PODSETNIK_CONTROL_FLOW_USER_CONFIRMATION_AUDIT_REPORT.md` and the owner-decision queue in that report.
