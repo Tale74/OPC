@@ -484,3 +484,13 @@ Module: entitlement/packages / presentation build
 Truth boundary: the override controls runtime availability only; it does not redefine PREDMET, database ownership, PDF/JSON output, STANJE ROBE operational state, or real production licensing.
 Why Logos must know it: this is a named non-production build mode, not a silent permanent conversion of normal builds to unlicensed POTPUN.
 Risk if misunderstood: presentation evidence could be mistaken for production license readiness or Point 4 smoke clearance.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-043
+
+Source files: `lib/main.dart`; `lib/app.dart`; `lib/core/config/app_config.dart`; `lib/core/database/database.dart`; `lib/core/database/database_lane_diagnostics.dart`; `lib/features/auth/**`; `lib/core/entitlements/opc_runtime_entitlement_resolver.dart`
+Related pseudocode: `docs/OPC_WINDOWS_IDENTITY_PERSISTENCE_AUDIT_PSEUDOCODE.md`
+Business meaning: Windows identity persistence depends on the active SQLite lane, `korisnici` rows, auth/recovery flow, and startup routing; presentation POTPUN entitlement is a separate startup branch that must be audited without assuming root cause.
+Module: Windows identity/auth/database lane audit
+Truth boundary: audit evidence may classify hypotheses but must not mutate client data, create replacement administrators, reset PINs, or change production source behavior.
+Why Logos must know it: the visible TEST/ADMINISTRATOR symptom can be caused by several unresolved branches, especially opened database mismatch versus actual user-row loss.
+Risk if misunderstood: a recovery or correction task could be launched before proving whether the real Administrator row still exists and which database was opened.
