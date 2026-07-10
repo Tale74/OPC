@@ -198,7 +198,7 @@ Validation results are recorded after the documentation set is complete:
 - UTF-8/BOM/mojibake check: PASS — valid UTF-8 without BOM; no mojibake in new documents
 - documentation path/link check: PASS
 - working tree scope check: PASS — documentation only
-- GitHub visibility gate: PENDING
+- GitHub visibility gate: PASS — remote branch matched content commit `0b4e56d9b8cf81d55ff55f1336fdc44c3d871369`; branch and four required new artifacts returned HTTP 200
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
@@ -235,8 +235,17 @@ If not compliant, classify:
 ## PASS / NOT PASS Rule
 
 PASS / NOT PASS:
-- PASS WITH PENDING REMOTE CI — local validation complete; GitHub visibility gate pending
+- PASS
 
 ## 10. Handoff
 
 This documentation is the owner-decision authority for future design work in the covered scope, but it is not proof of runtime behavior and not authorization to implement. Future tasks must cite decision IDs from `docs/OPC_OWNER_DECISION_INDEX.md`, preserve the current/future distinction and close applicable fallback dependencies before source changes begin.
+
+GitHub-visible evidence:
+
+- [branch](https://github.com/Tale74/OPC/tree/task/OPC-OWNER-DECISIONS-STATUSI-CEREMONIJA-DOCUMENTATION)
+- [content commit](https://github.com/Tale74/OPC/commit/0b4e56d9b8cf81d55ff55f1336fdc44c3d871369)
+- [owner decision guide](https://github.com/Tale74/OPC/blob/task/OPC-OWNER-DECISIONS-STATUSI-CEREMONIJA-DOCUMENTATION/docs/OPC_OWNER_DECISION_GUIDE.md)
+- [owner decision index](https://github.com/Tale74/OPC/blob/task/OPC-OWNER-DECISIONS-STATUSI-CEREMONIJA-DOCUMENTATION/docs/OPC_OWNER_DECISION_INDEX.md)
+- [pseudocode](https://github.com/Tale74/OPC/blob/task/OPC-OWNER-DECISIONS-STATUSI-CEREMONIJA-DOCUMENTATION/docs/OPC_OWNER_DECISIONS_STATUSI_CEREMONIJA_PSEUDOCODE.md)
+- [task report](https://github.com/Tale74/OPC/blob/task/OPC-OWNER-DECISIONS-STATUSI-CEREMONIJA-DOCUMENTATION/docs/tasks/OPC_TASK_OWNER_DECISIONS_STATUSI_CEREMONIJA_DOCUMENTATION_REPORT.md)
