@@ -516,3 +516,14 @@ Truth boundary: PREDMET owns business facts, obligations, state and history; POD
 Why Logos must know it: every future design must distinguish current source, owner-approved future rules, known correction debt and unresolved IRIU/readiness decisions by stable owner-decision ID.
 Risk if misunderstood: documentation could be mistaken for implementation, notification interaction could become business completion, BALSAMOVANJE could retain the wrong future source grouping, or missing cross-segment conditions could be silently overridden.
 Read after: `docs/OPC_OWNER_DECISION_GUIDE.md`; `docs/OPC_OWNER_DECISION_INDEX.md`; `docs/tasks/OPC_TASK_OWNER_DECISIONS_STATUSI_CEREMONIJA_DOCUMENTATION_REPORT.md`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-046
+
+Source files: `lib/core/database/tables/iriu_table.dart`; `lib/core/constants/iriu_constants.dart`; `lib/features/predmeti/data/iriu_repository.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/features/predmeti/core_v2/business_policy/`; `lib/features/predmeti/core_v2/rules/iriu_truth_rules.dart`; `lib/features/predmeti/core_v2/services/`; `lib/features/predmeti/presentation/segments/iriu_segment.dart`; `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`; `lib/features/predmeti/pdf/`; `lib/core/utils/json_export_import.dart`; STANJE ROBE and entitlement source
+Related pseudocode: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`
+Business meaning: current ROBA I USLUGE rows are mixed stored PREDMET child snapshots whose active, suppressed, recommended, financial, stock and document consequences are derived from PREDMET facts; they are not a general accepted/completed obligation model.
+Module: PREDMET / ČINJENICE O SMRTI / CEREMONIJA / IRIU / FINANSIJE / STANJE ROBE / STATISTIKA / NALOG ZA OPREMANJE / PDF / JSON / future PODSETNIK
+Truth boundary: PREDMET remains authoritative; `IriuTruthRules` is current row-rule authority; NALOG ZA OPREMANJE and other outputs are derivatives; PODSETNIK cannot infer completion or readiness from row presence or a generated PDF.
+Why Logos must know it: source rules are split across initialization, presentation triggers, truth/lifecycle services, finance, stock, JSON and document builders, with different reversal/history behavior by category.
+Risk if misunderstood: a stored or active row could be mistaken for an executed obligation, `cekiran` or a paper signature line could be mistaken for completion, suppressed rows/history could disappear, IRIU-only changes could be overclaimed as version evidence, or the known BALSAMOVANJE/DOČEK future conflict could be silently implemented.
+Read after: `docs/OPC_IRIU_BUSINESS_LOGIC_AUDIT_REPORT.md`; `docs/tasks/OPC_TASK_IRIU_BUSINESS_LOGIC_AUDIT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md`.
