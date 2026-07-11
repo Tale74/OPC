@@ -254,7 +254,7 @@ No production Dart, database/schema, JSON, PDF, finance, status, IRIU, NALOG, ST
 - UTF-8/BOM/mojibake check: PASS — new documents are valid UTF-8 without BOM or mojibake
 - documentation path/link check: PASS
 - documentation-only scope check: PASS
-- GitHub visibility gate: PENDING
+- GitHub visibility gate: PASS — remote branch matched content commit `3cc4e7fc0ea55017516df2637da3c9b0e732e331`; branch and all required artifacts returned HTTP 200
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
@@ -291,8 +291,17 @@ If not compliant, classify:
 ## PASS / NOT PASS Rule
 
 PASS / NOT PASS:
-- PASS WITH PENDING REMOTE CI — local validation complete; GitHub visibility pending
+- PASS
 
 ## 15. Final status
 
 `AUDIT PASS — EXISTING SOURCE CONFLICTS REQUIRE OWNER REVIEW`
+
+GitHub-visible evidence:
+
+- [branch](https://github.com/Tale74/OPC/tree/task/OPC-IRIU-BUSINESS-LOGIC-AUDIT-BEFORE-OWNER-PASS)
+- [content commit](https://github.com/Tale74/OPC/commit/3cc4e7fc0ea55017516df2637da3c9b0e732e331)
+- [IRIU business logic audit](https://github.com/Tale74/OPC/blob/task/OPC-IRIU-BUSINESS-LOGIC-AUDIT-BEFORE-OWNER-PASS/docs/OPC_IRIU_BUSINESS_LOGIC_AUDIT_REPORT.md)
+- [IRIU pseudocode](https://github.com/Tale74/OPC/blob/task/OPC-IRIU-BUSINESS-LOGIC-AUDIT-BEFORE-OWNER-PASS/docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md)
+- [Logos index](https://github.com/Tale74/OPC/blob/task/OPC-IRIU-BUSINESS-LOGIC-AUDIT-BEFORE-OWNER-PASS/docs/OPC_PSEUDOCODE_INDEX_FOR_LOGOS.md)
+- [task report](https://github.com/Tale74/OPC/blob/task/OPC-IRIU-BUSINESS-LOGIC-AUDIT-BEFORE-OWNER-PASS/docs/tasks/OPC_TASK_IRIU_BUSINESS_LOGIC_AUDIT_REPORT.md)
