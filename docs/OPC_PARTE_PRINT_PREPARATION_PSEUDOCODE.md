@@ -1,0 +1,558 @@
+# OPC PARTE Print-Preparation and Media-Lifecycle Pseudocode
+
+## 1. Contract
+
+```text
+DOCUMENT_KIND = AUDIT_PSEUDOCODE
+IMPLEMENTATION_AUTHORIZATION = FALSE
+
+MASTER_TRUTH = PREDMET
+PARTE_ROLE = DERIVATIVE_PUBLIC_PRINT_PREPARATION
+PREVIEW_ROLE = DERIVATIVE
+GENERATED_PDF_OR_IMAGE_ROLE = DERIVATIVE_ARTIFACT
+EXPORTED_OR_PRINTED_COPY_ROLE = DERIVATIVE_ARTIFACT
+
+FORBID:
+  parallel_PREDMET_truth
+  silent_personal_value_truncation
+  silent_grammar_default
+  silent_symbol_substitution
+  machine_absolute_path_as_only_media_identity
+  deletion_of_user_external_original
+  biometric_identification
+```
+
+## 2. Current source truth
+
+```text
+CURRENT_PREDMET_INPUTS:
+  ime, prezime, srednje
+  pol
+  datumRodjenja, datumSmrti
+  zanimanje, zanimanjeNaParti
+  titula, titulaIspred
+  cin, cinNaParti, vojniPenzioner
+  nadimak, nadimakNaParti, nadimakCrtica
+  groblje
+  vrstaCeremonije, datumCeremonije, vremeCeremonije
+  opelo, opeloMesto, vremeOpela, vremeIspracaja
+  simbol, pismo, ozaloseni
+
+CURRENT_ORPHANED_FIELD:
+  parteIme = STORED_AND_JSON_TRANSFERRED
+  parteIme = NOT_EDITED_OR_CONSUMED_BY_CURRENT_PARTE_COMPOSER
+
+CURRENT_PARTE_OUTPUT:
+  inline_text_preview
+  LISTA_PDF_page_two_text_panel
+  PREDMET_PDF_raw_field_rows
+
+CURRENTLY_ABSENT:
+  deceased_photo
+  crop_metadata
+  real_symbol_rendering_in_PARTE
+  template_id_and_version
+  standalone_PARTE_PDF_or_image
+  PARTE_print_preview
+  direct_print_action
+  generated_artifact_reference
+```
+
+## 3. Proposed future data boundary — owner decision required
+
+```text
+FUTURE_PARTE_INPUT_MODEL CANDIDATES:
+  authoritative_references_to_existing_PREDMET_facts
+  selectedSymbolId
+  photoMediaId
+  photoMimeType
+  normalizedPixelWidth
+  normalizedPixelHeight
+  photoContentHash
+  cropAspectRatio
+  cropRectNormalized
+  templateId
+  templateVersion
+  optional_generation_metadata
+
+DO_NOT_DUPLICATE:
+  deceased_identity
+  death_date
+  ceremony_datetime
+  cemetery
+  opelo_state
+
+DO_NOT_ADD without owner approval:
+  sentence_override
+  print_status
+  finalization_state
+  artifact_retention_state
+```
+
+## 4. Composition and grammar
+
+```text
+FUNCTION composeParte(PREDMET, parte_choices):
+  validation = validateAuthoritativeInputs(PREDMET, parte_choices)
+  IF validation has blocking_issue:
+    RETURN no_final_output + explicit_issues
+
+  IF PREDMET.pol == Z AND owner-approved grammar mapping exists:
+    intro = feminine_intro
+    deathVerb = feminine_death_verb
+  ELSE IF PREDMET.pol == M AND owner-approved grammar mapping exists:
+    intro = masculine_intro
+    deathVerb = masculine_death_verb
+  ELSE:
+    RETURN REVIEW_REQUIRED_MISSING_OR_CONFLICTING_GRAMMAR
+
+  displayName = ordered non-empty parts:
+    optional title_before
+    first_name
+    optional middle_name
+    optional quoted_nickname_between
+    surname
+    optional dash_nickname_after
+    optional title_after
+
+  IF displayName is empty:
+    BLOCK final_generation
+
+  optional profession_line = profession IF explicitly_enabled
+  optional rank_line = rank IF explicitly_enabled AND valid_source_condition
+
+  lifeYears = owner-approved policy:
+    both years OR one year OR omitted OR blocked
+  NEVER invent year
+
+  deathSentence = deathVerb + strictly_valid Serbian death date
+
+  ceremonySentence = derive from current:
+    ceremony_type
+    strict weekday/date
+    normalized time
+    reviewed cemetery wording
+  INCLUDE "časova" only according to approved public wording
+
+  IF opelo == DA:
+    include OPELO sentence from current place/time
+    DO_NOT include stale send-off sentence
+  ELSE:
+    include ISPRAĆAJ only if current send-off data is valid
+    DO_NOT include stale OPELO sentence
+
+  mourners = normalized multiline free text
+  IF too_long:
+    RETURN CONTENT_REVIEW_REQUIRED
+
+  IF pismo == CIRILICA:
+    transliterate only according to approved user-review policy
+  ELSE IF pismo == LATINICA:
+    preserve Latin output
+  ELSE:
+    RETURN SCRIPT_REVIEW_REQUIRED
+
+  RETURN structured_lines + warnings + provenance_to_PREDMET_fields
+```
+
+The future composer should be shared by UI preview and every artifact. Current duplicated UI/LISTA composition must not be extended as two independent authorities.
+
+## 5. Strict date/time fallback
+
+```text
+FUNCTION validatePublicDate(raw):
+  parsed = strict_parse(raw)
+  IF parsed is null:
+    RETURN INVALID
+  IF reconstructed_date != raw_calendar_components:
+    RETURN INVALID
+  RETURN parsed
+
+IF death_date missing_or_invalid:
+  BLOCK death_sentence_and_final_output according to owner policy
+
+IF ceremony_date_or_time missing_or_invalid:
+  DO_NOT generate malformed sentence
+  SHOW exact source field blocker
+
+IF ceremony rescheduled:
+  invalidate current preview cache
+  invalidate generated artifact freshness
+  regenerate only from new authoritative PREDMET facts
+```
+
+## 6. Symbol catalog
+
+```text
+SYMBOL_CATALOG_ENTRY CANDIDATE:
+  stableId
+  displayLabel
+  assetPath
+  assetFormat
+  assetVersion
+  printDimensions
+  transparencyMode
+  colorMode
+  provenance
+  licenseNote
+  active
+
+ON symbol_selection:
+  store stableId on PREDMET
+  NEVER derive from sex
+
+IF selectedSymbolId == BEZ_SIMBOLA:
+  use explicit no-symbol layout only if owner allows
+
+IF selectedSymbolId missing:
+  owner decision: BLOCK OR explicit no-symbol review
+
+IF selectedSymbolId unknown_or_asset_deleted:
+  preserve stored ID
+  SHOW persistent warning
+  BLOCK symbol-dependent final generation
+  NEVER substitute default
+
+IF asset fails on one platform:
+  preserve PREDMET state
+  fail generation safely
+```
+
+## 7. Photograph import ownership boundary
+
+```text
+EXTERNAL_ORIGINAL.owner = USER_OUTSIDE_OPC
+OPC_NORMALIZED_COPY.owner = OPC_APPLICATION
+IMPORT_TEMP.owner = OPC_APPLICATION
+
+HARD_RULE:
+  NEVER modify_or_delete EXTERNAL_ORIGINAL
+
+ON user_selects_photo:
+  read external original only
+  validate file bytes and decoded image
+
+  IF unsupported OR corrupt:
+    retain existing valid OPC copy
+    delete only newly-created OPC temp
+    RETURN actionable error
+
+  IF decoded pixel count OR input bytes exceed approved limit:
+    fail before unbounded memory/storage use
+
+  apply orientation metadata
+  present user-controlled crop
+  DO_NOT run face recognition_or_identification
+
+  IF user cancels crop:
+    delete OPC temp
+    do not change PREDMET
+
+  normalize to approved format, dimensions and quality
+  compute effective print DPI
+
+  IF below minimum quality:
+    SHOW visible warning
+    owner decision: BLOCK OR explicitly_confirmed_override
+
+  write app-owned copy to temporary destination
+  verify copy can decode
+  atomically persist media identity + crop + PREDMET relation
+  atomically publish app-owned copy
+
+  IF persistence fails:
+    retain old valid PREDMET media
+    delete only new OPC temp/copy
+```
+
+## 8. Storage models under owner review
+
+```text
+MODEL_A = store_original_inside_OPC
+MODEL_B = store_normalized_app_owned_copy
+MODEL_C = temporary_only_delete_after_artifact
+MODEL_D = retain_until_explicit_user_delete
+MODEL_E = hybrid_B_plus_D_plus_optional_finalization
+
+AUDIT_RECOMMENDATION_OWNER_DECISION_REQUIRED = MODEL_E built on MODEL_B
+
+MODEL_C RISK:
+  generated_artifact becomes only photo representation
+  future edit/regeneration/new template impossible
+  missing artifact cannot be rebuilt
+
+NO_MODEL may use external_absolute_path as sole source
+```
+
+## 9. Preview and print artifact
+
+```text
+FUNCTION preparePreview(PREDMET, media, symbol, template):
+  composition = composeParte(...)
+  IF blocking_issue:
+    show issue list and source navigation
+    no final artifact
+
+  render same shared layout model used for PDF
+  show photo/symbol/media-state warnings
+  show one-page overflow preflight
+
+FUNCTION generatePdf(...):
+  require current PREDMET version/snapshot
+  require valid composition
+  require owner-approved template version
+  require available symbol asset OR explicit no-symbol policy
+  require valid photo OR explicit no-photo policy
+
+  render to OPC-owned temporary PDF
+  embed fonts, photo and symbol
+  enforce page size, margins and one-page invariant
+
+  IF any personal value truncated OR ellipsized OR fit-compressed:
+    FAIL generation
+
+  verify PDF bytes, page count and embedded media
+  atomically publish to KORICE
+
+  IF publish fails:
+    keep PREDMET and media unchanged
+    remove only OPC temp
+
+  generated PDF remains derivative, never PREDMET truth
+```
+
+## 10. Long-content policy
+
+```text
+IF name exceeds approved line/size profile:
+  SHOW preview warning
+  require user review or approved alternate template
+  NEVER horizontal_fit_squeeze
+  NEVER ellipsis
+
+IF mourners exceeds approved measured area:
+  SHOW exact overflow
+  allow edit or owner-approved alternate layout
+  NEVER truncate
+
+IF title_or_profession overflows:
+  allow approved wrap/size profile
+  otherwise BLOCK
+```
+
+## 11. Photo deletion paths
+
+```text
+ON user_requests_delete_app_owned_photo:
+  display exact ownership and regeneration consequences
+  require explicit confirmation
+
+  IF user declines:
+    do nothing
+
+  IF confirmed:
+    delete only OPC-owned copy
+    atomically update PREDMET media state
+
+  IF file delete fails:
+    do not claim deleted
+    preserve/reconcile metadata
+    show retry/support path
+
+  IF metadata update fails after file deletion:
+    set explicit MISSING_MEDIA_REVIEW_REQUIRED
+    never point silently to another file
+
+ON optional_auto_delete_after_finalization:
+  FORBIDDEN until owner approves policy
+  require verified published artifact
+  require explicit acceptance of non-regeneration
+  target only OPC-owned copy
+  never target external original
+```
+
+## 12. Missing media and regeneration
+
+```text
+IF app_owned_photo missing AND artifact exists:
+  artifact may be opened as derivative
+  mark regeneration unavailable
+  do not claim source is complete
+
+IF artifact missing AND app_owned_photo exists:
+  allow regeneration from current PREDMET
+
+IF artifact missing AND app_owned_photo missing:
+  require new user-selected photo or explicit no-photo layout
+
+IF symbol asset missing:
+  preserve stable ID and require review
+```
+
+## 13. JSON and backup
+
+```text
+SINGLE_PREDMET_TRANSFER future candidate MUST include atomically:
+  PREDMET fields
+  PARTE media metadata
+  photo bytes_or_portable_sidecar IF regeneration is promised
+  crop metadata
+  template ID/version
+
+FULL_BACKUP MUST include same recoverable state
+
+FORBID:
+  Windows absolute path as portable identity
+  Android content URI as portable identity
+  missing binary with "photo present" success state
+
+ON import_other_device:
+  restore app-owned media to local owned storage
+  assign local physical path behind stable media identity
+  verify decode/hash
+
+  IF media absent_or_invalid:
+    import non-media PREDMET state only according to approved atomicity policy
+    mark PHOTO_MISSING_REVIEW_REQUIRED
+    never substitute local file by filename guess
+```
+
+## 14. Anonymization
+
+```text
+CURRENT_ANONYMIZATION:
+  keeps names
+  keeps mourners
+  keeps symbol
+  has no photo/artifact rule
+
+FUTURE owner policy MUST decide:
+  photo delete_or_retain
+  mourners redact_or_retain
+  app-owned artifact delete_or_retain
+  exported KORICE artifact responsibility
+  temp/cache cleanup
+
+ON anonymize:
+  execute approved DB + media policy as one recoverable operation
+
+  IF media deletion fails:
+    do not claim full anonymization success
+    show explicit partial-failure state
+
+  NEVER log personal file path, original filename or photo bytes
+```
+
+## 15. Package downgrade
+
+```text
+CURRENT_PARTE_SECTION = NOT_GATED_BY advancedParte
+CURRENT_advancedParte_ENTITLEMENT = EXISTS_BUT_NOT_CONSUMED_BY_PARTE_UI
+
+FUTURE package decision = OWNER_DECISION_REQUIRED
+
+ON package_downgrade:
+  may hide_or_disable future capability
+  MUST preserve PREDMET fields
+  MUST preserve app-owned photo and crop
+  MUST preserve JSON/backup/anonymization support
+  MUST NOT delete media
+
+ON reupgrade:
+  restore capability against same data
+```
+
+## 16. Windows and Android parity
+
+```text
+SHARED:
+  PREDMET fields
+  composer/grammar
+  validation
+  symbol catalog identity
+  crop coordinates
+  layout model
+  PDF bytes
+  retention/anonymization/package rules
+
+PLATFORM_DELIVERY_MAY_DIFFER:
+  external picker API
+  app-owned physical storage
+  KORICE path_or_contentUri
+  viewer/direct-print availability
+
+ANDROID_NARROW:
+  vertical stack
+  scroll
+  wrapping symbol gallery
+  compact actions
+  no hidden controls
+  no overflow
+
+IF direct_print unavailable:
+  save/open PDF
+  keep business state unchanged
+```
+
+## 17. Output format audit
+
+```text
+AUDIT_RECOMMENDATION_OWNER_DECISION_REQUIRED:
+  primary artifact = deterministic one-page PDF
+  preview = derived from same layout model
+  optional image = secondary derivative
+  direct print = separate later delivery capability
+
+DO_NOT use DOCX floating-object filling as shared Windows/Android engine
+DO_NOT use generated artifact as only authoritative PREDMET state
+```
+
+## 18. Safe future sequence
+
+```text
+PHASE_1:
+  owner decisions
+  authoritative data/media/template contracts
+  JSON/backup/anonymization/package policy
+  shared structured composer
+
+PHASE_2:
+  atomic app-owned photo import
+  crop/normalize/quality warnings
+  symbol catalog and provenance
+  explicit deletion states
+
+PHASE_3:
+  one approved layout
+  font/photo/symbol embedding
+  one-page/no-truncation PDF
+  stale-artifact invalidation
+
+PHASE_4:
+  Windows and Android UI
+  narrow Android behavior
+  preview/export/open/delete/regenerate
+
+PHASE_5:
+  synthetic fidelity tests
+  transfer/anonymization/downgrade/restart
+  platform parity
+  separately authorized printer test
+```
+
+## 19. Audit stop boundary
+
+```text
+DO_NOT_IMPLEMENT until owner decides at least:
+  required fields
+  grammar fallback
+  template/page/font strategy
+  symbol catalog/default/fallback/provenance
+  photo formats/crop/quality
+  media storage and transfer
+  retention/deletion/regeneration
+  output format
+  anonymization
+  package behavior
+  long-content policy
+```

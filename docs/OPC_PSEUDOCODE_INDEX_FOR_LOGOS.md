@@ -538,3 +538,14 @@ Truth boundary: PREDMET stores DOČEK facts and source conditions; IRIU truth de
 Why Logos must know it: old JSON receives an empty DATUM DOČEKA fallback, manually changed generated rows remain stored while suppressed, and narrow Android grows vertically while Windows retains the horizontal layout.
 Risk if misunderstood: missing dates could be silently invented, source-invalid rows could remain financially active, user edits could be deleted, or PODSETNIK/readiness behavior could be inferred from this narrow correction.
 Read after: `docs/tasks/OPC_TASK_IRIU_CONFIRMED_BUSINESS_LOGIC_ALIGNMENT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md`; `docs/OPC_OWNER_DECISION_INDEX.md`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-048
+
+Source files: `lib/features/predmeti/presentation/segments/parte_segment.dart`; `lib/features/predmeti/presentation/segments/preminulo_lice_segment.dart`; `lib/features/predmeti/presentation/segments/ceremonija_segment.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/database/tables/predmeti_table.dart`; `lib/core/utils/json_export_import.dart`; `lib/core/utils/export_utils.dart`; `lib/features/predmeti/pdf/`; `lib/features/podesavanja/`; `lib/core/entitlements/opc_entitlement_policy.dart`; Android/Windows delivery source; existing symbol assets; two owner-supplied local DOCX references
+Related pseudocode: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`
+Business meaning: current PARTE persists PREDMET-scoped public-display choices and derives text, while future print preparation would add reviewed grammar, a real symbol, an app-owned prepared photograph and a deterministic derivative artifact without making the artifact a second PREDMET truth.
+Module: PREDMET / PREMINULO LICE / CEREMONIJA / PARTE / PDF / media / JSON / backup / anonymization / packages / Windows / Android
+Truth boundary: external original photographs remain user-owned and untouched; a future normalized copy may be OPC-owned; preview/PDF/image/print remain derivatives; photo retention/deletion, symbol fallback, anonymization and package behavior require owner decisions.
+Why Logos must know it: the two references share one floating-object layout with grammatical variants, but current source has no standalone PARTE artifact or photo lifecycle, current symbol output is label-only, `parteIme` is orphaned, and current anonymization does not cover mourners/media/artifacts.
+Risk if misunderstood: OPC could delete an external original, make a PDF the only surviving truth, publish wrong grammar, silently replace a religious symbol, truncate personal text, break cross-device restore or delete media on package downgrade.
+Read after: `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`; `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md` section 8.

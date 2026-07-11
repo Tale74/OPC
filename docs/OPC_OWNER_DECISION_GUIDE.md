@@ -343,3 +343,59 @@ Trenutni source:
 Zato je merodavan zaključak ovog dokumentacionog taska:
 
 `DOCUMENTATION PASS — CURRENT SOURCE / OWNER-APPROVED FUTURE RULE CONFLICT RECORDED — IMPLEMENTATION NOT AUTHORIZED`
+
+## 8. PARTE print-preparation and media audit queue
+
+**Status: `AUDIT ONLY — OWNER DECISIONS REQUIRED`**
+
+This section records source findings, owner proposals and unresolved questions. It does not approve implementation and does not modify `OPC-OD-CER-011`: PREDMET remains authoritative and PARTE remains derivative.
+
+### 8.1 Current source findings
+
+- Current PARTE stores public-display choices and produces an inline text preview.
+- LISTA PDF repeats the text preview as a derivative panel; there is no standalone print-ready PARTE.
+- PREDMET already stores identity, dates, gender, title/profession/rank/name choices, ceremony, cemetery, OPELO/send-off, script, symbol ID and mourners.
+- Photograph, crop/media identity, template identity, real symbol rendering, standalone artifact and print workflow are absent.
+- `parteIme` is stored/transferred but is not currently edited or used by the PARTE composer.
+- Current symbol options and individual packaged assets are not a complete one-to-one catalog.
+- Current anonymization has no photograph/artifact rule and retains current mourners text.
+- `advancedParte` entitlement exists, but current PARTE UI does not consume it.
+
+### 8.2 Owner proposals under audit
+
+- prepare a concrete printable death notice/poster from PREDMET;
+- support a deceased-person photograph;
+- package appropriate symbol assets in OPC and let the user select one;
+- minimize retained photo storage;
+- consider deletion of an OPC-owned prepared copy after safe generation, or explicit deletion from PARTE;
+- preserve equal Windows/Android product meaning.
+
+These are `OWNER PROPOSAL — AUDIT ONLY`, not approved implementation behavior.
+
+### 8.3 Non-negotiable safety boundary
+
+OPC must never silently modify or delete the user's original external photograph. Any future deletion may target only an OPC-created app-owned copy or temporary file under an owner-approved retention/finalization policy.
+
+Unknown or deleted symbol IDs must not be silently replaced. Long public values must not be silently truncated, ellipsized or fit-compressed.
+
+### 8.4 Unresolved PARTE queue
+
+The following queue IDs are audit navigation IDs, not owner-decision IDs and not approved decisions:
+
+- `OPC-PARTE-ODQ-001`: required/optional printed fields and blockers;
+- `OPC-PARTE-ODQ-002`: template, paper, margins, font and version strategy;
+- `OPC-PARTE-ODQ-003`: grammar fallback for missing/conflicting gender;
+- `OPC-PARTE-ODQ-004`: exact public wording, punctuation, cemetery case and `časova`;
+- `OPC-PARTE-ODQ-005`: meaning/migration of `parteIme`;
+- `OPC-PARTE-ODQ-006`: symbol catalog, default/no-symbol, missing-ID and provenance/license policy;
+- `OPC-PARTE-ODQ-007`: photo formats, crop, DPI and quality thresholds;
+- `OPC-PARTE-ODQ-008`: app-owned photo storage and portable identity;
+- `OPC-PARTE-ODQ-009`: retention, deletion, finalization and regeneration;
+- `OPC-PARTE-ODQ-010`: SQLite, single-PREDMET JSON and full-backup media transfer;
+- `OPC-PARTE-ODQ-011`: anonymization of photo, mourners and artifacts;
+- `OPC-PARTE-ODQ-012`: PDF/image/direct-print delivery boundary;
+- `OPC-PARTE-ODQ-013`: long-name/mourners overflow policy;
+- `OPC-PARTE-ODQ-014`: package/add-on ownership and downgrade behavior;
+- `OPC-PARTE-ODQ-015`: generated artifact metadata and any print-status meaning.
+
+Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md` and `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`.
