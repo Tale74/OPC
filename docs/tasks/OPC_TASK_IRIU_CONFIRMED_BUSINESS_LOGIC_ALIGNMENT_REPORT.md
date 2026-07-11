@@ -4,6 +4,8 @@
 
 - Branch: `task/OPC-IRIU-CONFIRMED-BUSINESS-LOGIC-ALIGNMENT`
 - Base commit: `c0bac9e67fbe2de499fd4e67243066eed4899a53`
+- Validated implementation commit: `bd713eb2a02b6a50f264f74aa3b495b10ca88533`
+- Final report-completion commit: branch tip verified in the final handoff (a commit cannot contain its own hash)
 - Task class: source correction / business alignment / documentation / Windows-Android parity
 - Release or presentation build: not run and not authorized
 - Runtime smoke: not run and not required
@@ -143,7 +145,7 @@ Documentation:
 - OPC manifest gate: PASS — one changed task report validated against base `c0bac9e67fbe2de499fd4e67243066eed4899a53`
 - UTF-8/BOM validation: PASS — 17 changed files are valid UTF-8 without BOM
 - `git diff --check`: PASS
-- GitHub visibility: PENDING COMMIT/PUSH VERIFICATION
+- GitHub visibility: PASS — implementation commit and named branch matched exactly after push
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
@@ -184,13 +186,13 @@ Special gates satisfied:
 - YES — source/test/manifest/encoding/UI gates passed
 
 GitHub verification status:
-- PENDING COMMIT AND PUSH
+- PASS — remote branch resolved to validated implementation commit `bd713eb2a02b6a50f264f74aa3b495b10ca88533`; report-completion tip is verified in the final handoff
 
 Manifest compliance checked:
 - YES
 
 PASS allowed:
-- YES, subject only to commit/push visibility verification
+- YES
 
 ## PASS / NOT PASS
 
