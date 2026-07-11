@@ -71,6 +71,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
 
   bool _docekPosmrtnihOstataka = false;
   late final TextEditingController _docekMestoCtrl;
+  late final TextEditingController _docekDatumCtrl;
   late final TextEditingController _docekVremeCtrl;
 
   // Blur validacija
@@ -218,6 +219,9 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
 
     _docekPosmrtnihOstataka = d.docekPosmrtnihOstataka;
     _docekMestoCtrl = TextEditingController(text: d.docekMesto);
+    _docekDatumCtrl = TextEditingController(
+      text: normalizeCeremonyDateInput(d.docekDatum),
+    );
     _docekVremeCtrl = TextEditingController(text: d.docekVreme);
     unawaited(_loadReminderConfig());
 
@@ -252,6 +256,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
       _svisZemljaCtrl,
       _svisGradCtrl,
       _docekMestoCtrl,
+      _docekDatumCtrl,
       _docekVremeCtrl,
     ]) {
       c.dispose();
@@ -298,6 +303,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         svisGrad: Value(_normalizedText(_svisGradCtrl)),
         docekPosmrtnihOstataka: Value(_docekPosmrtnihOstataka),
         docekMesto: Value(_normalizedText(_docekMestoCtrl)),
+        docekDatum: Value(normalizeCeremonyDateInput(_docekDatumCtrl.text)),
         docekVreme: Value(_normalizedTime(_docekVremeCtrl)),
       ),
     );
@@ -373,6 +379,22 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     );
     if (picked == null || !mounted) return;
     _datumCeremonijeCtrl.text = formatCalendarPickerSelection(
+      picked,
+      trailingDot: true,
+    );
+    _scheduleSave();
+    setState(() {});
+  }
+
+  Future<void> _pickDocekDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: parseDateValue(_docekDatumCtrl.text) ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100, 12, 31),
+    );
+    if (picked == null || !mounted) return;
+    _docekDatumCtrl.text = formatCalendarPickerSelection(
       picked,
       trailingDot: true,
     );
@@ -1014,35 +1036,18 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                 },
               ),
               if (_docekPosmrtnihOstataka) ...[
-                _row([
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _docekMestoCtrl,
-                      enabled: e,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'MESTO DO\u010cEKA',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _docekVremeCtrl,
-                      enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'VREME DO\u010cEKA',
-                        hintText: 'HH:MM',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
-                    ),
-                  ),
-                ]),
+                if (isNarrowAndroid) ...[
+                  _docekMestoField(e),
+                  const SizedBox(height: 12),
+                  _docekDatumField(e),
+                  const SizedBox(height: 12),
+                  _docekVremeField(e),
+                ] else
+                  _row([
+                    Expanded(flex: 2, child: _docekMestoField(e)),
+                    Expanded(child: _docekDatumField(e)),
+                    Expanded(child: _docekVremeField(e)),
+                  ]),
               ],
             ],
           ),
@@ -1084,6 +1089,62 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
 
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
+
+  Widget _docekMestoField(bool enabled) => TextFormField(
+    controller: _docekMestoCtrl,
+    enabled: enabled,
+    textCapitalization: TextCapitalization.words,
+    decoration: const InputDecoration(
+      labelText: 'MESTO DO\u010cEKA',
+      border: OutlineInputBorder(),
+      isDense: true,
+    ),
+    onChanged: (_) => _scheduleSave(),
+  );
+
+  Widget _docekDatumField(bool enabled) => TextFormField(
+    controller: _docekDatumCtrl,
+    enabled: enabled,
+    readOnly: true,
+    decoration: InputDecoration(
+      labelText: 'DATUM DO\u010cEKA',
+      hintText: 'npr. 17.04.2026.',
+      border: const OutlineInputBorder(),
+      isDense: true,
+      suffixIcon: IconButton(
+        tooltip: _docekDatumCtrl.text.isEmpty
+            ? 'Izaberi datum do\u010deka'
+            : 'Obri\u0161i datum do\u010deka',
+        onPressed: !enabled
+            ? null
+            : _docekDatumCtrl.text.isEmpty
+            ? _pickDocekDate
+            : () {
+                _docekDatumCtrl.clear();
+                _scheduleSave();
+                setState(() {});
+              },
+        icon: Icon(
+          _docekDatumCtrl.text.isEmpty
+              ? Icons.calendar_month_outlined
+              : Icons.clear,
+        ),
+      ),
+    ),
+    onTap: enabled ? _pickDocekDate : null,
+  );
+
+  Widget _docekVremeField(bool enabled) => TextFormField(
+    controller: _docekVremeCtrl,
+    enabled: enabled,
+    decoration: const InputDecoration(
+      labelText: 'VREME DO\u010cEKA',
+      hintText: 'HH:MM',
+      border: OutlineInputBorder(),
+      isDense: true,
+    ),
+    onChanged: (_) => _scheduleSave(),
+  );
 
   String _normalizedTime(TextEditingController ctrl) =>
       normalizeTimeInput(ctrl.text);

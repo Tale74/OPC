@@ -4,6 +4,8 @@
 
 Ovaj dokument rekonstruiše stvarno postojeću poslovnu logiku segmenta **ROBA I USLUGE (IRIU)**, sa posebnim osvrtom na postojeći dokument **NALOG ZA OPREMANJE**. Audit ne odobrava implementaciju, ne projektuje budući tok i ne popunjava nedostajuće owner odluke pretpostavkama.
 
+> Naknadno owner usklađivanje: `BALSAMOVANJE` je potvrđeno kao uslovna, neobavezna i uklonjiva stavka `SAHRANA VAN SRBIJE`, bez zavisnosti od `DOČEK POSMRTNIH OSTATAKA`. `DOČEK` pripada `CARGO TROŠKOVI` i sada ima `MESTO`, `DATUM` i `VREME DOČEKA`. `KOMPLET ZA OPELO` se od korektivnog taska potiskuje kada `OPELO = NE`. Istorijski nalazi ispod opisuju stanje u trenutku originalnog audita; aktuelni autoritet su usklađeni pseudocode i izveštaj korektivnog taska.
+
 Stalna granica:
 
 ```text
@@ -39,8 +41,8 @@ Ne postoji opšti poslovni model `PREUZETO / IZVRŠENO / OTKAZANO / ZAMENJENO`. 
 Najvažniji konflikti/gap-ovi:
 
 - owner je tokom audita potvrdio da je `NALOG ZA OPREMANJE` tačan termin; `NALOG ZA PRIPREMU` u početnom tekstu taska bila je omaška;
-- owner-approved buduće grupisanje vezuje `BALSAMOVANJE` za `DOČEK POSMRTNIH OSTATAKA`, dok ga current source vezuje za `SAHRANA VAN SRBIJE`;
-- `KOMPLET ZA OPELO` se automatski dodaje kada OPELO postane `DA`, ali se pri `DA → NE` ne potiskuje niti uklanja;
+- naknadna owner potvrda zadržava `BALSAMOVANJE` uz `SAHRANA VAN SRBIJE`; ranije zabeležen konflikt sa `DOČEK POSMRTNIH OSTATAKA` više nije važeći;
+- `KOMPLET ZA OPELO` se automatski dodaje kada OPELO postane `DA`, a naknadna korekcija ga pri `DA → NE` zadržava stored i potiskuje iz aktivne istine;
 - međunarodni/doček redovi se pri gašenju izvornog uslova čuvaju kao potisnuti, bez business-history događaja i bez potvrde korisnika;
 - single-PREDMET JSON prenosi IRIU redove, ali ne prenosi `iriu_lifecycle_decisions`, pa se memorija odbijenih auto-predloga ne prenosi tim kanalom;
 - IRIU redovi nisu deo postojećeg `snapshotZaSaveCommit(PredmetiData)`, pa samo IRIU promena nije deo save/confirmed-close poređenja PREDMET polja;
@@ -48,7 +50,7 @@ Najvažniji konflikti/gap-ovi:
 
 Zbog ovih konflikata završna klasifikacija audita je:
 
-`AUDIT PASS — EXISTING SOURCE CONFLICTS REQUIRE OWNER REVIEW`
+`HISTORICAL AUDIT PASS — CONFIRMED ALIGNMENT SUPERSEDES IDENTIFIED BALSAMOVANJE/OPELO GAPS`
 
 ## 3. IRIU domen i persistence model
 
@@ -158,9 +160,9 @@ Klasifikacija:
 | 7 | Nije kremacija i `UZROK SMRTI ∈ {NASILNA, ZARAZNA, NEDEFINISANA}` / ČINJENICE O SMRTI | `LIMENI ULOŽAK` i `LEMOVANJE` bez obzira na GROB/GROBNICA. | Conflict flow kada override prestane. | Override pravilo, test-confirmed. | Nedostajući/kontradiktorni uzrok i izvršena radnja/history. |
 | 8 | `VRSTA CEREMONIJE ∈ {KREMACIJA, KREMACIJA_EKSPRES}` / CEREMONIJA | Isključuje preporuku/aktivnost limenog uloška i lemovanja čak i uz override uzrok. | Prelazak iz kremacije ponovo procenjuje i može tražiti dodavanje. | Kremacija ima prioritet nad Blok 2 pravilom. | Owner potvrda posledica ako su stavke već korišćene/izvršene. |
 | 9 | `TIP GROBLJA = LOKALNO` / CEREMONIJA | `PREVOZ SPROVODA` je recommended/auto-managed. | Isti Blok 2 add/conflict/dismissal flow. | Lokalno groblje aktivira transportnu preporuku. | Razlika između preporuke i obaveze/readiness uslova. |
-| 10 | `OPELO = DA` / CEREMONIJA | Auto-predlaže `KOMPLET ZA OPELO`. | `DA → NE` ne potiskuje, ne briše i ne otvara konflikt; red ostaje aktivan. | Jednosmeran auto-predlog. | **Owner review:** source-change fallback i istorija; postojeći red ne sme biti protumačen kao izvršen. |
-| 11 | `SAHRANA VAN SRBIJE = true` / CEREMONIJA | Umeće i aktivira `MEĐUNARODNI PREVOZ`, `MEĐUNARODNA DOKUMENTACIJA`, `BALSAMOVANJE`. | `true → false`: redovi ostaju stored, postaju suppressed, bez dijaloga ili history događaja. | Current international-case grouping. | Konflikt sa owner-approved budućim grupisanjem; accepted/executed/cancellation fallback nije modelovan. |
-| 12 | `DOČEK POSMRTNIH OSTATAKA = true` / CEREMONIJA | Umeće i aktivira samo `CARGO TROŠKOVI`. | `true → false`: stored + suppressed, bez dijaloga/history. | Current reception grouping. | Owner future kaže `BALSAMOVANJE + CARGO`; **KNOWN CORRECTION DEBT**. |
+| 10 | `OPELO = DA` / CEREMONIJA | Auto-predlaže `KOMPLET ZA OPELO`. | Naknadno korigovano: `DA → NE` čuva red i ručne izmene, ali ga potiskuje iz aktivne/finansijske istine. | Uslovno aktivan auto-predlog. | Prihvaćeno/izvršeno/cancelled lifecycle ponašanje nije uvedeno. |
+| 11 | `SAHRANA VAN SRBIJE = true` / CEREMONIJA | Umeće i aktivira `MEĐUNARODNI PREVOZ`, `MEĐUNARODNA DOKUMENTACIJA`, `BALSAMOVANJE`. | `true → false`: redovi ostaju stored, postaju suppressed, bez dijaloga ili history događaja. | Owner-potvrđeno international-case grupisanje; BALSAMOVANJE je uslovno, neobavezno i uklonjivo. | Accepted/executed/cancellation fallback nije modelovan. |
+| 12 | `DOČEK POSMRTNIH OSTATAKA = true` / CEREMONIJA | Umeće i aktivira samo `CARGO TROŠKOVI`; čuva `MESTO`, `DATUM` i `VREME DOČEKA`. | `true → false`: vrednosti i red ostaju stored, red je suppressed, bez dijaloga/history. | Owner-potvrđeno reception grupisanje bez BALSAMOVANJA. | Missing datum ostaje prazan; readiness i execution lifecycle nisu uvedeni. |
 | 13 | Bilo `SAHRANA VAN SRBIJE` ili `DOČEK` true / IRIU picker | Picker prikazuje sve četiri međunarodne kategorije. | Picker ih skriva kada su oba false; već sačuvani redovi ostaju. | Availability filter je širi od active pravila. | Korisnik može izabrati red koji će odmah biti suppressed; fallback/UX odluka required. |
 | 14 | Kataloški izbor `SANDUK`, `OBELEŽJE`, `POKROV GARNITURA` sa stable ID + aktivno STANJE ROBE | Effect jedinica 1; dovoljna zaliha decrement; nedovoljna zaliha unresolved posledica i close blocker. | Replace vraća/čisti staro i primenjuje novo; delete vraća/čisti. | Inventory posledica izbora; `kom` nije količina zalihe. | Nedostupan artikal: zamena/dopuna/brisanje; package degradation čuva state. |
 | 15 | Aktivni red sa `iznos > 0` | Ulazi u `ROBA I USLUGE` finansijsku istinu i statistički total. | Suppression ili non-positive amount ga isključuje. | Finansijska stavka; količina se ne množi. | Formula po količini nije odobrena. |
@@ -407,8 +409,8 @@ Zato se iz sadašnjih redova ne može dokazati readiness ni dozvola polaska. U s
 
 1. Klasifikovati svaku IRIU kategoriju: placeholder, izbor, usluga, obaveza, pripremna akcija, informacija ili kombinacija.
 2. Odlučiti mandatory/recommended/optional semantiku MESTO SMRTI i BLOK2 kategorija.
-3. Potvrditi owner-approved buduće grupisanje međunarodnog/doček seta, posebno `BALSAMOVANJE`.
-4. Definisati source-change lifecycle za OPELO komplet, međunarodne, cargo i već izvršene radnje.
+3. `RESOLVED`: owner je potvrdio da `BALSAMOVANJE` pripada `SAHRANA VAN SRBIJE`, a `CARGO TROŠKOVI` pripadaju `DOČEKU`.
+4. Definisati budući accepted/executed/cancelled source-change lifecycle za OPELO komplet, međunarodne, cargo i već izvršene radnje.
 5. Definisati accepted/completed/cancelled/replaced status samo tamo gde je poslovno potreban.
 6. Odlučiti fizičko brisanje naspram istorijskog zatvaranja.
 7. Odlučiti one-per-PREDMET kategorije i duplikat fallback.
@@ -426,7 +428,7 @@ Ovaj audit ne autorizuje:
 - promenu `Iriu` tabele, schema-e, generated koda ili migracije;
 - promenu `IriuTruthRules`, evaluator-a, lifecycle servisa ili UI triggera;
 - preimenovanje NALOGA;
-- korekciju BALSAMOVANJE/CARGO grupisanja;
+- očuvanje potvrđenog BALSAMOVANJE/CARGO grupisanja;
 - dodavanje accepted/completed/readiness/PODSETNIK toka;
 - promenu JSON/PDF/finance/statistics/ZAVRŠEN/version ponašanja;
 - nove testove koji bi buduće owner odluke predstavili kao postojeće zahteve.

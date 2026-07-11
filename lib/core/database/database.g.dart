@@ -3009,6 +3009,18 @@ class $PredmetiTable extends Predmeti
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _docekDatumMeta = const VerificationMeta(
+    'docekDatum',
+  );
+  @override
+  late final GeneratedColumn<String> docekDatum = GeneratedColumn<String>(
+    'docek_datum',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _docekVremeMeta = const VerificationMeta(
     'docekVreme',
   );
@@ -3276,6 +3288,7 @@ class $PredmetiTable extends Predmeti
     svisGrad,
     docekPosmrtnihOstataka,
     docekMesto,
+    docekDatum,
     docekVreme,
     simbol,
     pismo,
@@ -4175,6 +4188,12 @@ class $PredmetiTable extends Predmeti
         docekMesto.isAcceptableOrUnknown(data['docek_mesto']!, _docekMestoMeta),
       );
     }
+    if (data.containsKey('docek_datum')) {
+      context.handle(
+        _docekDatumMeta,
+        docekDatum.isAcceptableOrUnknown(data['docek_datum']!, _docekDatumMeta),
+      );
+    }
     if (data.containsKey('docek_vreme')) {
       context.handle(
         _docekVremeMeta,
@@ -4737,6 +4756,10 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.string,
         data['${effectivePrefix}docek_mesto'],
       )!,
+      docekDatum: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}docek_datum'],
+      )!,
       docekVreme: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}docek_vreme'],
@@ -4914,6 +4937,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String svisGrad;
   final bool docekPosmrtnihOstataka;
   final String docekMesto;
+  final String docekDatum;
   final String docekVreme;
   final String simbol;
   final String pismo;
@@ -5045,6 +5069,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.svisGrad,
     required this.docekPosmrtnihOstataka,
     required this.docekMesto,
+    required this.docekDatum,
     required this.docekVreme,
     required this.simbol,
     required this.pismo,
@@ -5191,6 +5216,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['svis_grad'] = Variable<String>(svisGrad);
     map['docek_posmrtnih_ostataka'] = Variable<bool>(docekPosmrtnihOstataka);
     map['docek_mesto'] = Variable<String>(docekMesto);
+    map['docek_datum'] = Variable<String>(docekDatum);
     map['docek_vreme'] = Variable<String>(docekVreme);
     map['simbol'] = Variable<String>(simbol);
     map['pismo'] = Variable<String>(pismo);
@@ -5333,6 +5359,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       svisGrad: Value(svisGrad),
       docekPosmrtnihOstataka: Value(docekPosmrtnihOstataka),
       docekMesto: Value(docekMesto),
+      docekDatum: Value(docekDatum),
       docekVreme: Value(docekVreme),
       simbol: Value(simbol),
       pismo: Value(pismo),
@@ -5492,6 +5519,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
         json['docekPosmrtnihOstataka'],
       ),
       docekMesto: serializer.fromJson<String>(json['docekMesto']),
+      docekDatum: serializer.fromJson<String>(json['docekDatum']),
       docekVreme: serializer.fromJson<String>(json['docekVreme']),
       simbol: serializer.fromJson<String>(json['simbol']),
       pismo: serializer.fromJson<String>(json['pismo']),
@@ -5632,6 +5660,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'svisGrad': serializer.toJson<String>(svisGrad),
       'docekPosmrtnihOstataka': serializer.toJson<bool>(docekPosmrtnihOstataka),
       'docekMesto': serializer.toJson<String>(docekMesto),
+      'docekDatum': serializer.toJson<String>(docekDatum),
       'docekVreme': serializer.toJson<String>(docekVreme),
       'simbol': serializer.toJson<String>(simbol),
       'pismo': serializer.toJson<String>(pismo),
@@ -5764,6 +5793,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? svisGrad,
     bool? docekPosmrtnihOstataka,
     String? docekMesto,
+    String? docekDatum,
     String? docekVreme,
     String? simbol,
     String? pismo,
@@ -5901,6 +5931,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     docekPosmrtnihOstataka:
         docekPosmrtnihOstataka ?? this.docekPosmrtnihOstataka,
     docekMesto: docekMesto ?? this.docekMesto,
+    docekDatum: docekDatum ?? this.docekDatum,
     docekVreme: docekVreme ?? this.docekVreme,
     simbol: simbol ?? this.simbol,
     pismo: pismo ?? this.pismo,
@@ -6179,6 +6210,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekMesto: data.docekMesto.present
           ? data.docekMesto.value
           : this.docekMesto,
+      docekDatum: data.docekDatum.present
+          ? data.docekDatum.value
+          : this.docekDatum,
       docekVreme: data.docekVreme.present
           ? data.docekVreme.value
           : this.docekVreme,
@@ -6327,6 +6361,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('svisGrad: $svisGrad, ')
           ..write('docekPosmrtnihOstataka: $docekPosmrtnihOstataka, ')
           ..write('docekMesto: $docekMesto, ')
+          ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
           ..write('simbol: $simbol, ')
           ..write('pismo: $pismo, ')
@@ -6461,6 +6496,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     svisGrad,
     docekPosmrtnihOstataka,
     docekMesto,
+    docekDatum,
     docekVreme,
     simbol,
     pismo,
@@ -6595,6 +6631,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.svisGrad == this.svisGrad &&
           other.docekPosmrtnihOstataka == this.docekPosmrtnihOstataka &&
           other.docekMesto == this.docekMesto &&
+          other.docekDatum == this.docekDatum &&
           other.docekVreme == this.docekVreme &&
           other.simbol == this.simbol &&
           other.pismo == this.pismo &&
@@ -6726,6 +6763,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> svisGrad;
   final Value<bool> docekPosmrtnihOstataka;
   final Value<String> docekMesto;
+  final Value<String> docekDatum;
   final Value<String> docekVreme;
   final Value<String> simbol;
   final Value<String> pismo;
@@ -6855,6 +6893,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.svisGrad = const Value.absent(),
     this.docekPosmrtnihOstataka = const Value.absent(),
     this.docekMesto = const Value.absent(),
+    this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
     this.simbol = const Value.absent(),
     this.pismo = const Value.absent(),
@@ -6985,6 +7024,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.svisGrad = const Value.absent(),
     this.docekPosmrtnihOstataka = const Value.absent(),
     this.docekMesto = const Value.absent(),
+    this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
     this.simbol = const Value.absent(),
     this.pismo = const Value.absent(),
@@ -7115,6 +7155,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? svisGrad,
     Expression<bool>? docekPosmrtnihOstataka,
     Expression<String>? docekMesto,
+    Expression<String>? docekDatum,
     Expression<String>? docekVreme,
     Expression<String>? simbol,
     Expression<String>? pismo,
@@ -7256,6 +7297,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (docekPosmrtnihOstataka != null)
         'docek_posmrtnih_ostataka': docekPosmrtnihOstataka,
       if (docekMesto != null) 'docek_mesto': docekMesto,
+      if (docekDatum != null) 'docek_datum': docekDatum,
       if (docekVreme != null) 'docek_vreme': docekVreme,
       if (simbol != null) 'simbol': simbol,
       if (pismo != null) 'pismo': pismo,
@@ -7389,6 +7431,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? svisGrad,
     Value<bool>? docekPosmrtnihOstataka,
     Value<String>? docekMesto,
+    Value<String>? docekDatum,
     Value<String>? docekVreme,
     Value<String>? simbol,
     Value<String>? pismo,
@@ -7525,6 +7568,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       docekPosmrtnihOstataka:
           docekPosmrtnihOstataka ?? this.docekPosmrtnihOstataka,
       docekMesto: docekMesto ?? this.docekMesto,
+      docekDatum: docekDatum ?? this.docekDatum,
       docekVreme: docekVreme ?? this.docekVreme,
       simbol: simbol ?? this.simbol,
       pismo: pismo ?? this.pismo,
@@ -7903,6 +7947,9 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     if (docekMesto.present) {
       map['docek_mesto'] = Variable<String>(docekMesto.value);
     }
+    if (docekDatum.present) {
+      map['docek_datum'] = Variable<String>(docekDatum.value);
+    }
     if (docekVreme.present) {
       map['docek_vreme'] = Variable<String>(docekVreme.value);
     }
@@ -8065,6 +8112,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('svisGrad: $svisGrad, ')
           ..write('docekPosmrtnihOstataka: $docekPosmrtnihOstataka, ')
           ..write('docekMesto: $docekMesto, ')
+          ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
           ..write('simbol: $simbol, ')
           ..write('pismo: $pismo, ')
@@ -14237,6 +14285,7 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> svisGrad,
       Value<bool> docekPosmrtnihOstataka,
       Value<String> docekMesto,
+      Value<String> docekDatum,
       Value<String> docekVreme,
       Value<String> simbol,
       Value<String> pismo,
@@ -14368,6 +14417,7 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> svisGrad,
       Value<bool> docekPosmrtnihOstataka,
       Value<String> docekMesto,
+      Value<String> docekDatum,
       Value<String> docekVreme,
       Value<String> simbol,
       Value<String> pismo,
@@ -15051,6 +15101,11 @@ class $$PredmetiTableFilterComposer
 
   ColumnFilters<String> get docekMesto => $composableBuilder(
     column: $table.docekMesto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get docekDatum => $composableBuilder(
+    column: $table.docekDatum,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15805,6 +15860,11 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get docekDatum => $composableBuilder(
+    column: $table.docekDatum,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get docekVreme => $composableBuilder(
     column: $table.docekVreme,
     builder: (column) => ColumnOrderings(column),
@@ -16372,6 +16432,11 @@ class $$PredmetiTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get docekDatum => $composableBuilder(
+    column: $table.docekDatum,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get docekVreme => $composableBuilder(
     column: $table.docekVreme,
     builder: (column) => column,
@@ -16674,6 +16739,7 @@ class $$PredmetiTableTableManager
                 Value<String> svisGrad = const Value.absent(),
                 Value<bool> docekPosmrtnihOstataka = const Value.absent(),
                 Value<String> docekMesto = const Value.absent(),
+                Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
                 Value<String> simbol = const Value.absent(),
                 Value<String> pismo = const Value.absent(),
@@ -16804,6 +16870,7 @@ class $$PredmetiTableTableManager
                 svisGrad: svisGrad,
                 docekPosmrtnihOstataka: docekPosmrtnihOstataka,
                 docekMesto: docekMesto,
+                docekDatum: docekDatum,
                 docekVreme: docekVreme,
                 simbol: simbol,
                 pismo: pismo,
@@ -16936,6 +17003,7 @@ class $$PredmetiTableTableManager
                 Value<String> svisGrad = const Value.absent(),
                 Value<bool> docekPosmrtnihOstataka = const Value.absent(),
                 Value<String> docekMesto = const Value.absent(),
+                Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
                 Value<String> simbol = const Value.absent(),
                 Value<String> pismo = const Value.absent(),
@@ -17066,6 +17134,7 @@ class $$PredmetiTableTableManager
                 svisGrad: svisGrad,
                 docekPosmrtnihOstataka: docekPosmrtnihOstataka,
                 docekMesto: docekMesto,
+                docekDatum: docekDatum,
                 docekVreme: docekVreme,
                 simbol: simbol,
                 pismo: pismo,

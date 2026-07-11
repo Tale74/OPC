@@ -50,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -134,6 +134,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 19) {
         await _ensureCeremonyReminderDeliveryTimesColumn();
+      }
+      if (from < 20) {
+        await m.addColumn(predmeti, predmeti.docekDatum);
       }
     },
     beforeOpen: (details) async {

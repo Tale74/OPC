@@ -513,8 +513,8 @@ Related pseudocode: `docs/OPC_OWNER_DECISIONS_STATUSI_CEREMONIJA_PSEUDOCODE.md`
 Business meaning: owner-approved STATUSI, CEREMONIJA and partial cross-segment decisions define possible, accepted, executed, revoked and cancelled obligations, explicit fallbacks, ZAVRŠEN gates and derived readiness without claiming that future behavior already exists.
 Module: PREDMET / STATUSI / CEREMONIJA / IRIU / PARTE / PODSETNIK / LISTA
 Truth boundary: PREDMET owns business facts, obligations, state and history; PODSETNIK may present and schedule but owns only technical reminder state; PARTE remains derivative.
-Why Logos must know it: every future design must distinguish current source, owner-approved future rules, known correction debt and unresolved IRIU/readiness decisions by stable owner-decision ID.
-Risk if misunderstood: documentation could be mistaken for implementation, notification interaction could become business completion, BALSAMOVANJE could retain the wrong future source grouping, or missing cross-segment conditions could be silently overridden.
+Why Logos must know it: every future design must distinguish current source, owner-confirmed implemented rules and unresolved IRIU/readiness decisions by stable owner-decision ID.
+Risk if misunderstood: documentation could be mistaken for implementation, notification interaction could become business completion, BALSAMOVANJE could be incorrectly moved away from SAHRANA VAN SRBIJE, or missing cross-segment conditions could be silently overridden.
 Read after: `docs/OPC_OWNER_DECISION_GUIDE.md`; `docs/OPC_OWNER_DECISION_INDEX.md`; `docs/tasks/OPC_TASK_OWNER_DECISIONS_STATUSI_CEREMONIJA_DOCUMENTATION_REPORT.md`.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-046
@@ -525,5 +525,16 @@ Business meaning: current ROBA I USLUGE rows are mixed stored PREDMET child snap
 Module: PREDMET / ČINJENICE O SMRTI / CEREMONIJA / IRIU / FINANSIJE / STANJE ROBE / STATISTIKA / NALOG ZA OPREMANJE / PDF / JSON / future PODSETNIK
 Truth boundary: PREDMET remains authoritative; `IriuTruthRules` is current row-rule authority; NALOG ZA OPREMANJE and other outputs are derivatives; PODSETNIK cannot infer completion or readiness from row presence or a generated PDF.
 Why Logos must know it: source rules are split across initialization, presentation triggers, truth/lifecycle services, finance, stock, JSON and document builders, with different reversal/history behavior by category.
-Risk if misunderstood: a stored or active row could be mistaken for an executed obligation, `cekiran` or a paper signature line could be mistaken for completion, suppressed rows/history could disappear, IRIU-only changes could be overclaimed as version evidence, or the known BALSAMOVANJE/DOČEK future conflict could be silently implemented.
+Risk if misunderstood: a stored or active row could be mistaken for an executed obligation, `cekiran` or a paper signature line could be mistaken for completion, suppressed rows/history could disappear, IRIU-only changes could be overclaimed as version evidence, or owner-confirmed BALSAMOVANJE/DOČEK ownership could regress.
 Read after: `docs/OPC_IRIU_BUSINESS_LOGIC_AUDIT_REPORT.md`; `docs/tasks/OPC_TASK_IRIU_BUSINESS_LOGIC_AUDIT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md`.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-047
+
+Source files: `lib/core/database/tables/predmeti_table.dart`; `lib/core/database/database.dart`; `lib/core/utils/json_export_import.dart`; `lib/features/predmeti/presentation/segments/ceremonija_segment.dart`; `lib/features/predmeti/core_v2/rules/iriu_truth_rules.dart`; focused JSON, IRIU truth and Windows/Android widget tests
+Related pseudocode: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`
+Business meaning: DOČEK POSMRTNIH OSTATAKA now carries first-class MESTO/DATUM/VREME parameters; owner-confirmed IRIU ownership keeps conditional removable BALSAMOVANJE under SAHRANA VAN SRBIJE and CARGO under DOČEK; KOMPLET ZA OPELO is suppressed rather than deleted when OPELO becomes NE.
+Module: PREDMET / CEREMONIJA / IRIU / JSON / Windows / Android
+Truth boundary: PREDMET stores DOČEK facts and source conditions; IRIU truth derives row activity without inventing acceptance, execution, completion or PODSETNIK state.
+Why Logos must know it: old JSON receives an empty DATUM DOČEKA fallback, manually changed generated rows remain stored while suppressed, and narrow Android grows vertically while Windows retains the horizontal layout.
+Risk if misunderstood: missing dates could be silently invented, source-invalid rows could remain financially active, user edits could be deleted, or PODSETNIK/readiness behavior could be inferred from this narrow correction.
+Read after: `docs/tasks/OPC_TASK_IRIU_CONFIRMED_BUSINESS_LOGIC_ALIGNMENT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md`; `docs/OPC_OWNER_DECISION_INDEX.md`.

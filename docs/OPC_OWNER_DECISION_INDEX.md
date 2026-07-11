@@ -28,7 +28,7 @@ This register gives every recorded owner decision a stable identifier. It is a n
 | `OPC-OD-CER-007` | CEREMONIJA | Source-condition change lifecycle | OWNER-APPROVED — NOT YET IMPLEMENTED | 5.7 | 5.7 | Not implemented | History/cancellation storage |
 | `OPC-OD-CER-008` | CEREMONIJA | Cancellation success/failure evidence | OWNER-APPROVED — NOT YET IMPLEMENTED | 5.8 | 5.8 | Not implemented | Reason validation and history UI |
 | `OPC-OD-CER-009` | CEREMONIJA | Ceremony datetime business event | OWNER-APPROVED — NOT YET IMPLEMENTED | 5.9 | 5.9 | Current source directly saves fields | Event versioning/linkage model |
-| `OPC-OD-CER-010` | CEREMONIJA / IRIU | International/reception IRIU grouping | KNOWN CORRECTION DEBT | 5.10 | 5.10 | Current BALSAMOVANJE grouping conflicts | Next ROBA I USLUGE / IRIU owner pass |
+| `OPC-OD-CER-010` | CEREMONIJA / IRIU | International/reception IRIU grouping | CURRENTLY IMPLEMENTED | 5.10 | 5.10 | SAHRANA owns conditional BALSAMOVANJE; DOČEK owns CARGO and MESTO/DATUM/VREME | Accepted/executed source-change lifecycle remains future owner pass |
 | `OPC-OD-CER-011` | CEREMONIJA / PARTE | PARTE remains derivative | CURRENTLY IMPLEMENTED | 5.11 | 5.11 | Implemented | Preserve boundary during future change |
 | `OPC-OD-XSG-001` | CROSS-SEGMENT | Final vehicle departure is derived readiness | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.1 | 6.1 | Not implemented | Full readiness matrix |
 | `OPC-OD-XSG-002` | CROSS-SEGMENT | No manual readiness override | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.2 | 6.2 | Not implemented | Blocker taxonomy and source routing |

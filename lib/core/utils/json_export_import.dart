@@ -134,6 +134,7 @@ const Set<String> _kPredmetBlankTextFields = {
   'svisZemlja',
   'svisGrad',
   'docekMesto',
+  'docekDatum',
   'parteIme',
   'ozaloseni',
   'napomenaPlacanja',
@@ -1483,6 +1484,7 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
   normalized.putIfAbsent('createdByKorisnikId', () => null);
   normalized.putIfAbsent('lastBusinessModifiedByKorisnikId', () => null);
   normalized.putIfAbsent('lastBusinessModifiedAt', () => null);
+  normalized.putIfAbsent('docekDatum', () => '');
   return documentTextCodec.normalizeMap(normalized);
 }
 

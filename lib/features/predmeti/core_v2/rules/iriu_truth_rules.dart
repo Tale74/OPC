@@ -184,6 +184,8 @@ abstract final class IriuTruthRules {
         return predmet.sahranaVanSrbije;
       case IriuK.cargoTroskovi:
         return predmet.docekPosmrtnihOstataka;
+      case IriuK.kompletZaOpelo:
+        return predmet.opelo == 'DA';
       default:
         return true;
     }

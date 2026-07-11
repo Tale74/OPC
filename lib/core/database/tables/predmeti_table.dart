@@ -163,6 +163,7 @@ class Predmeti extends Table {
   BoolColumn get docekPosmrtnihOstataka =>
       boolean().withDefault(const Constant(false))();
   TextColumn get docekMesto => text().withDefault(const Constant(''))();
+  TextColumn get docekDatum => text().withDefault(const Constant(''))();
   TextColumn get docekVreme => text().withDefault(const Constant(''))();
 
   // ── Parte ────────────────────────────────────────────────────────────────

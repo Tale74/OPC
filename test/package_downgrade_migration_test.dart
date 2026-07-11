@@ -60,6 +60,18 @@ void main() {
       },
     );
 
+    test('schema 19 migration adds empty DATUM DOCEKA column', () async {
+      final db = _databaseWithAppPodesavanjaSchemaVersion(
+        schemaVersion: 19,
+        includeOperationalToggleColumn: true,
+        operationalToggleValue: 0,
+      );
+      addTearDown(db.close);
+
+      final columns = await _predmetiColumnNames(db);
+      expect(columns, contains('docek_datum'));
+    });
+
     test('package runtime policy does not fork core database truth', () {
       final policies = <OpcEntitlementPolicy>[
         _policy(OpcPackageLevel.osnovni),
@@ -157,6 +169,11 @@ void _createMinimalSchema16(
   bool includeOperationalToggleColumn,
 ) {
   rawDb.execute('''
+    CREATE TABLE predmeti (
+      id INTEGER PRIMARY KEY AUTOINCREMENT
+    )
+  ''');
+  rawDb.execute('''
     CREATE TABLE app_podesavanja (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       ziro_racun TEXT NOT NULL DEFAULT '',
@@ -223,6 +240,11 @@ void _createMinimalSchema16(
 
 Future<Set<String>> _appPodesavanjaColumnNames(AppDatabase db) async {
   final rows = await db.customSelect('PRAGMA table_info(app_podesavanja)').get();
+  return rows.map((row) => row.read<String>('name')).toSet();
+}
+
+Future<Set<String>> _predmetiColumnNames(AppDatabase db) async {
+  final rows = await db.customSelect('PRAGMA table_info(predmeti)').get();
   return rows.map((row) => row.read<String>('name')).toSet();
 }
 

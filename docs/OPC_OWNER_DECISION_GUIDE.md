@@ -249,17 +249,19 @@ Fallback: bez korisničkog izbora promena se ne finalizuje. Nevalidan novi termi
 
 ### 5.10 IRIU zavisnosti
 
-**Status: `KNOWN CORRECTION DEBT`**
+**Status: `CURRENTLY IMPLEMENTED`**
 **Decision ID: `OPC-OD-CER-010`**
 
-Odobreno buduće grupisanje:
+Owner-potvrđeno i trenutno implementirano grupisanje:
 
-- `SAHRANA VAN SRBIJE` dodaje `MEĐUNARODNI PREVOZ` i `MEĐUNARODNA DOKUMENTACIJA`.
-- `DOČEK POSMRTNIH OSTATAKA` dodaje `BALSAMOVANJE` i `CARGO TROŠKOVI`.
+- `SAHRANA VAN SRBIJE` obavezno dodaje `MEĐUNARODNI PREVOZ` i `MEĐUNARODNA DOKUMENTACIJA`.
+- `BALSAMOVANJE` pripada `SAHRANA VAN SRBIJE`, uslovno se nudi, nije obavezno i može se ukloniti.
+- `DOČEK POSMRTNIH OSTATAKA` dodaje samo `CARGO TROŠKOVI` i ima parametre `MESTO`, `DATUM` i `VREME DOČEKA`.
+- `BALSAMOVANJE` nema zavisnost od `DOČEK POSMRTNIH OSTATAKA`.
 
-Trenutni source vezuje `BALSAMOVANJE` za `SAHRANA VAN SRBIJE`, dok `DOČEK` dodaje samo `CARGO TROŠKOVI`. Redovi se pri gašenju uslova zadržavaju kao potisnuti/neaktivni. Ovo je: **KNOWN CORRECTION DEBT — NOT FIXED IN THIS TASK**.
+Redovi se pri gašenju izvornog uslova zadržavaju kao potisnuti/neaktivni, čime se čuvaju postojeće vrednosti i ručne izmene. `KOMPLET ZA OPELO` se na isti način potiskuje kada `OPELO` postane `NE`.
 
-Fallback i životni ciklus već prihvaćenih/izvršenih IRIU stavki pri promeni izvora zahtevaju sledeću odluku vlasnika; nema tihe primene CEREMONIJA pravila.
+Fallback i životni ciklus budućih prihvaćenih/izvršenih IRIU stavki pri promeni izvora i dalje zahtevaju posebnu odluku vlasnika; ova korekcija ne uvodi takav model.
 
 ### 5.11 PARTE kao izvedeni prikaz
 

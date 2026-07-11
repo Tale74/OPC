@@ -1,10 +1,11 @@
-# OPC IRIU Business Logic Audit Pseudocode
+# OPC IRIU Business Logic Pseudocode
 
 ## 1. Contract
 
 ```text
-DOCUMENT_KIND = SOURCE_RECONSTRUCTION
-IMPLEMENTATION_AUTHORIZATION = FALSE
+DOCUMENT_KIND = SOURCE_RECONSTRUCTION_AND_CONFIRMED_ALIGNMENT
+CONFIRMED_ALIGNMENT_IMPLEMENTED = TRUE
+PODSETNIK_OR_NEW_LIFECYCLE_IMPLEMENTATION_AUTHORIZATION = FALSE
 
 MASTER_TRUTH = PREDMET
 IRIU_ROLE = PREDMET_CHILD_BUSINESS_STATE_AND_DERIVATION_INPUT
@@ -247,8 +248,11 @@ ON OPELO changes NE_TO_DA:
   insert KOMPLET_ZA_OPELO if absent
 
 ON OPELO changes DA_TO_NE:
-  CURRENT_SOURCE performs no deactivate_remove_conflict_history action
-  existing row remains active
+  keep KOMPLET_ZA_OPELO stored
+  mark row operationally SUPPRESSED
+  preserve visible-name, price and other manual edits
+  IF OPELO later returns to DA:
+    activate the same stored row
 
 ON SAHRANA_VAN_SRBIJE changes FALSE_TO_TRUE:
   insert if absent:
@@ -268,6 +272,10 @@ ON SAHRANA_VAN_SRBIJE changes TRUE_TO_FALSE:
 
 ON DOCEK_POSMRTNIH_OSTATAKA changes FALSE_TO_TRUE:
   insert CARGO_TROSKOVI if absent
+  expose first-class PREDMET parameters:
+    MESTO_DOCEKA
+    DATUM_DOCEKA
+    VREME_DOCEKA
 
 active(CARGO_TROSKOVI) = DOCEK_POSMRTNIH_OSTATAKA
 
@@ -276,11 +284,25 @@ ON DOCEK changes TRUE_TO_FALSE:
   mark operationally SUPPRESSED
   no user conflict dialog
   no business cancellation history
+  preserve MESTO_DOCEKA, DATUM_DOCEKA and VREME_DOCEKA
+  IF DOCEK later returns to TRUE:
+    restore the stored parameter values
 
-KNOWN_OWNER_APPROVED_FUTURE_CONFLICT:
-  future DOCEK grouping expects [BALSAMOVANJE, CARGO_TROSKOVI]
-  current source keeps BALSAMOVANJE under SAHRANA_VAN_SRBIJE
-  DO_NOT_FIX_IN_AUDIT
+OWNER_CONFIRMED_GROUPING:
+  SAHRANA_VAN_SRBIJE mandatory rows:
+    MEDJUNARODNI_PREVOZ
+    MEDJUNARODNA_DOKUMENTACIJA
+  SAHRANA_VAN_SRBIJE conditional removable row:
+    BALSAMOVANJE
+  DOCEK_POSMRTNIH_OSTATAKA row:
+    CARGO_TROSKOVI
+  BALSAMOVANJE has no DOCEK dependency
+
+DATUM_DOCEKA_FALLBACK:
+  missing value remains EMPTY
+  DO_NOT invent current date
+  DO_NOT block save, closing or readiness in this correction
+  preserve JSON compatibility by normalizing older payloads to EMPTY
 ```
 
 ## 10. Catalog availability and manual rows
@@ -563,8 +585,7 @@ FUTURE_PODSETNIK MUST_NOT:
 OWNER_PASS_REQUIRED:
   classify each IRIU category business meaning
   mandatory_vs_recommended_vs_optional
-  BALSAMOVANJE and DOCEK future grouping
-  source_change lifecycle for OPELO/international/reception rows
+  source_change lifecycle beyond current stored/suppressed behavior
   accepted_completed_cancelled_replaced states where needed
   deletion_vs_historical_closure
   duplicate category authority

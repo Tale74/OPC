@@ -196,6 +196,8 @@ void main() {
 
         expect(json.containsKey('stanjeRobeConsequenceTransfer'), isFalse);
         expect(json.containsKey('stanjeRobeOperativnoOmoguceno'), isFalse);
+        final predmetJson = json['predmet'] as Map<String, dynamic>;
+        predmetJson.remove('docekDatum');
 
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
@@ -205,9 +207,38 @@ void main() {
 
         expect(importedPredmeti, hasLength(1));
         expect(importedPredmeti.single.brojPredmeta, 'OLD-JSON-001/2026');
+        expect(importedPredmeti.single.docekDatum, isEmpty);
         expect(importedIriu.single.katalogStableArticleId, 'old-json-stable');
       },
     );
+
+    test('DATUM DOCEKA survives single-PREDMET JSON round-trip', () async {
+      final sourceDb = createTestDatabase();
+      final targetDb = createTestDatabase();
+      addTearDown(sourceDb.close);
+      addTearDown(targetDb.close);
+
+      final sourcePredmet = await _insertPredmet(
+        sourceDb,
+        brojPredmeta: 'DOCEK-DATUM-001/2026',
+        docekDatum: '19.07.2026.',
+      );
+      final json = jsonDecode(
+        await serializePredmetJsonForTest(
+          db: sourceDb,
+          predmetId: sourcePredmet.id,
+        ),
+      ) as Map<String, dynamic>;
+
+      expect(
+        (json['predmet'] as Map<String, dynamic>)['docekDatum'],
+        '19.07.2026.',
+      );
+
+      await importPredmetJsonMapForTest(db: targetDb, json: json);
+      final imported = await targetDb.select(targetDb.predmeti).getSingle();
+      expect(imported.docekDatum, '19.07.2026.');
+    });
 
     test(
       'candidate import normalization matches runtime legacy metadata defaults',
@@ -1042,6 +1073,7 @@ Future<PredmetiData> _insertPredmet(
   String businessScenarioId = 'default_funeral_ceremony_policy',
   String sourceIdentity = 'local_opc',
   int exportVerzija = 0,
+  String docekDatum = '',
 }) async {
   final id = await db.into(db.predmeti).insert(
         PredmetiCompanion.insert(
@@ -1052,6 +1084,7 @@ Future<PredmetiData> _insertPredmet(
           businessScenarioId: Value(businessScenarioId),
           sourceIdentity: Value(sourceIdentity),
           exportVerzija: Value(exportVerzija),
+          docekDatum: Value(docekDatum),
         ),
       );
   return _getPredmet(db, id);
