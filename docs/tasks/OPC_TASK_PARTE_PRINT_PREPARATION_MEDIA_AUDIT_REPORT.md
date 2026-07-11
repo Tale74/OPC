@@ -261,8 +261,8 @@ No production source, schema, test fixture, asset, platform or package file was 
 - production-source unchanged gate: PASS — every changed path is under `docs/`; no DOCX, source, asset, schema, fixture, package or platform file is included
 - personal-data documentation scan: PASS — no supplied person name or supplied external path is present in the changed documentation
 - `git diff --check`: PASS
-- GitHub visibility: PENDING
-- clean working tree: PENDING AFTER COMMIT/PUSH
+- GitHub visibility: PASS — branch and required documentation were published; remote branch SHA matched audit commit `c8071fcd8e37b6173e54ef41091ed83cec8cc17d`
+- clean working tree: PASS after the audit commit/push; to be rechecked after this verification-note commit
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
@@ -306,7 +306,12 @@ Special gates satisfied:
 - yes — reference documents were inspected read-only, no photograph was imported or deleted, no symbol asset was added, and no build/runtime/print execution was performed
 
 GitHub verification status:
-- PENDING
+- PASS
+- branch: `https://github.com/Tale74/OPC/tree/task/OPC-PARTE-PRINT-PREPARATION-MEDIA-AUDIT`
+- audit commit: `https://github.com/Tale74/OPC/commit/c8071fcd8e37b6173e54ef41091ed83cec8cc17d`
+- audit report: `https://github.com/Tale74/OPC/blob/task/OPC-PARTE-PRINT-PREPARATION-MEDIA-AUDIT/docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`
+- task report: `https://github.com/Tale74/OPC/blob/task/OPC-PARTE-PRINT-PREPARATION-MEDIA-AUDIT/docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`
+- pseudocode: `https://github.com/Tale74/OPC/blob/task/OPC-PARTE-PRINT-PREPARATION-MEDIA-AUDIT/docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`
 
 If not compliant, classify:
 - NOT PASS
