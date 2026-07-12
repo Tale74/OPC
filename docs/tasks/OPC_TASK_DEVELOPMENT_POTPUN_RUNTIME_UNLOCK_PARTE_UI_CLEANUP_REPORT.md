@@ -18,7 +18,7 @@ The task continues directly from the final public PARTE implementation branch SH
 
 ## 4. Final implementation SHA
 
-`PENDING FINAL COMMIT`
+`5f0a796f14296e654dfab373b0deb44e4580d937`
 
 ## 5. Previous PARTE task context
 
