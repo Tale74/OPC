@@ -223,11 +223,13 @@ Guide section 8 records the implemented policy lock while preserving audit histo
 
 ## 30. GitHub verification
 
-`PENDING UNTIL PUSH AND REMOTE SHA/PUBLIC FILE VERIFICATION`
+`PASS`
+
+The first finalization push produced matching local/remote branch SHA `e891bbe6df5bf345c63264251553c03365c6aafb`. Read-only public HTTP checks returned `200` for this task report, the shared composer source and a new canonical symbol asset at that commit. The report-verification update is pushed in the subsequent final documentation commit; final remote equality is reported in the task handoff.
 
 ## 31. Clean working tree result
 
-`PENDING UNTIL FINAL COMMIT AND PUSH`
+`PASS` after the implementation/finalization commits and before this verification-note commit. Final clean/tracking equality is rechecked after its push.
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
