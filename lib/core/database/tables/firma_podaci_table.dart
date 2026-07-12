@@ -13,4 +13,6 @@ class FirmaPodaci extends Table {
   TextColumn get email => text().withDefault(const Constant(''))();
   TextColumn get sajt => text().withDefault(const Constant(''))();
   BlobColumn get logo => blob().nullable()();
+  TextColumn get parteDefaultTemplateId =>
+      text().withDefault(const Constant('builtin_parte_standard_v1'))();
 }

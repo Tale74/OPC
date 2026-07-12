@@ -549,3 +549,17 @@ Truth boundary: external original photographs remain user-owned and untouched; a
 Why Logos must know it: the two references share one floating-object layout with grammatical variants, but current source has no standalone PARTE artifact or photo lifecycle, current symbol output is label-only, `parteIme` is orphaned, and current anonymization does not cover mourners/media/artifacts.
 Risk if misunderstood: OPC could delete an external original, make a PDF the only surviving truth, publish wrong grammar, silently replace a religious symbol, truncate personal text, break cross-device restore or delete media on package downgrade.
 Read after: `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`; `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md` section 8.
+
+## INDEX-ID: OPC-PSEUDO-INDEX-049
+
+Document path: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`, sections 20-27
+Source paths represented: `lib/features/predmeti/parte/`; `lib/features/predmeti/presentation/segments/parte_segment.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/database/tables/parte_pripreme_table.dart`; `lib/core/database/tables/parte_predlosci_table.dart`; `lib/core/database/tables/predmeti_table.dart`; `lib/core/database/tables/firma_podaci_table.dart`; `lib/core/utils/json_export_import.dart`; `lib/core/json_transfer/predmet_json_transfer_core.dart`; `assets/simboli/parte_*.png`
+Scope: implemented PREDMET-derived PARTE initialization, restart-safe technical preparation, FIRMA templates, owned media lifecycle, one WYSIWYG render plan, KORICE PDF, completion blocker/cleanup, roles, entitlement, JSON boundaries and platform parity.
+Business meaning: PARTE is a controlled derivative print-preparation workflow. PREDMET remains the sole business truth; temporary edits and media never become PREDMET facts.
+Truth boundary: the external original is read-only; the app owns only normalized copies; templates are content-free; exported PDF is a derivative retained after cleanup.
+Last task: `OPC-PARTE-PRINT-PREPARATION-IMPLEMENTATION` (final commit recorded in its report after commit creation).
+Alignment: implementation and pseudocode are aligned for the task branch; real Windows/Android runtime smoke remains separately reported.
+Why Logos must know it: closing or anonymizing a PREDMET is blocked by an unfinished started preparation, while downgrade retains state and re-entitlement resumes it.
+Risk if misunderstood: a temporary draft could be promoted to business truth, external media could be deleted, preview and PDF could drift, or cleanup could destroy the exported artifact.
+Read before: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_OWNER_DECISION_GUIDE.md` section 8.
+Read after: `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.

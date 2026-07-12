@@ -10,6 +10,14 @@ import '../core_v2/business_policy/business_scenario_id.dart';
 
 enum SacuvajPredmetIshod { prviSave, novoSacuvano, bezIzmena }
 
+class PartePreparationBlockException implements Exception {
+  const PartePreparationBlockException();
+
+  @override
+  String toString() =>
+      'PREDMET ima započetu PARTE pripremu koja nije završena.';
+}
+
 class PredmetiRepository {
   const PredmetiRepository(this._db);
 
@@ -28,13 +36,29 @@ class PredmetiRepository {
   AppDatabase get db => _db;
 
   /// Reaktivni stream svih predmeta, sortiran po datumu kreiranja (noviji prvo).
-  Stream<List<PredmetiData>> watchSvi() =>
-      (_db.select(_db.predmeti)
-            ..orderBy([(p) => OrderingTerm.desc(p.datumKreiranja)]))
-          .watch();
+  Stream<List<PredmetiData>> watchSvi() => (_db.select(
+    _db.predmeti,
+  )..orderBy([(p) => OrderingTerm.desc(p.datumKreiranja)])).watch();
 
   Future<PredmetiData> getPredmet(int id) =>
       (_db.select(_db.predmeti)..where((p) => p.id.equals(id))).getSingle();
+
+  Future<bool> imaAktivnuNezavrsenuPartePripremu(int predmetId) async {
+    final preparation =
+        await (_db.select(_db.partePripreme)..where(
+              (row) =>
+                  row.predmetId.equals(predmetId) &
+                  row.status.equals('IN_PROGRESS'),
+            ))
+            .getSingleOrNull();
+    return preparation != null;
+  }
+
+  Future<void> _zahtevajDaParteNeBlokira(int predmetId) async {
+    if (await imaAktivnuNezavrsenuPartePripremu(predmetId)) {
+      throw const PartePreparationBlockException();
+    }
+  }
 
   DateTime? _parseDatumCeremonije(String value) => parseDateValue(value);
 
@@ -47,10 +71,7 @@ class PredmetiRepository {
     return _dateOnly(datum).add(const Duration(days: anonimizacijaPosleDana));
   }
 
-  bool mozeAnonimizacija(
-    PredmetiData predmet, {
-    DateTime? now,
-  }) {
+  bool mozeAnonimizacija(PredmetiData predmet, {DateTime? now}) {
     return predmet.status == 'ZAVRŠEN';
   }
 
@@ -72,69 +93,71 @@ class PredmetiRepository {
     required String staraVrednost,
     required String novaVrednost,
   }) {
-    return _db.into(_db.logIzmena).insert(
-      LogIzmenaCompanion.insert(
-        predmetId: predmetId,
-        korisnikId: korisnikId,
-        datumVreme: DateTime.now().toIso8601String(),
-        polje: polje,
-        staraVrednost: Value(staraVrednost),
-        novaVrednost: Value(novaVrednost),
-      ),
-    );
+    return _db
+        .into(_db.logIzmena)
+        .insert(
+          LogIzmenaCompanion.insert(
+            predmetId: predmetId,
+            korisnikId: korisnikId,
+            datumVreme: DateTime.now().toIso8601String(),
+            polje: polje,
+            staraVrednost: Value(staraVrednost),
+            novaVrednost: Value(novaVrednost),
+          ),
+        );
   }
 
   /// Kreira novi predmet sa generisanim brojem i vraća njegov ID.
   Future<int> kreirajPredmet({required int savetnikId}) {
     final sada = DateTime.now();
-    return _db.into(_db.predmeti).insert(
-      PredmetiCompanion(
-        brojPredmeta: Value(kreirajBrojPredmeta(sada)),
-        datumKreiranja: Value(sada.toIso8601String()),
-        savetnikId: Value(savetnikId),
-        businessScenarioId: Value(_defaultBusinessScenarioId),
-        sourceIdentity: const Value(_localSourceIdentity),
-        createdByKorisnikId: Value(savetnikId),
-        pismo: const Value('CIRILICA'),
-      ),
-    );
+    return _db
+        .into(_db.predmeti)
+        .insert(
+          PredmetiCompanion(
+            brojPredmeta: Value(kreirajBrojPredmeta(sada)),
+            datumKreiranja: Value(sada.toIso8601String()),
+            savetnikId: Value(savetnikId),
+            businessScenarioId: Value(_defaultBusinessScenarioId),
+            sourceIdentity: const Value(_localSourceIdentity),
+            createdByKorisnikId: Value(savetnikId),
+            pismo: const Value('CIRILICA'),
+          ),
+        );
   }
 
   /// Popunjava IRIU tabelu zaključanim Blok 0 minimumom za nov predmet.
   /// Poziva se odmah nakon kreirajPredmet.
   Future<void> inicijalizujIriu(int predmetId) async {
-    final katalog = await (_db.select(_db.iriuKatalogConfig)
-          ..orderBy([(k) => OrderingTerm.asc(k.redosled)]))
-        .get();
+    final katalog = await (_db.select(
+      _db.iriuKatalogConfig,
+    )..orderBy([(k) => OrderingTerm.asc(k.redosled)])).get();
     final katalogByInternalName = {
       for (final row in katalog) row.interniNaziv: row,
     };
-    final blok0Redosled = <({
-      String interniNaziv,
-      String? nazivPrikaz,
-    })>[
+    final blok0Redosled = <({String interniNaziv, String? nazivPrikaz})>[
       (interniNaziv: IriuK.sanduk, nazivPrikaz: null),
       (interniNaziv: IriuK.obelezje, nazivPrikaz: null),
       (interniNaziv: IriuK.pokrovGarnitura, nazivPrikaz: null),
-      (interniNaziv: IriuK.peskirZaKrst, nazivPrikaz: IriuK.naziviPrikaz[IriuK.peskirZaKrst]),
+      (
+        interniNaziv: IriuK.peskirZaKrst,
+        nazivPrikaz: IriuK.naziviPrikaz[IriuK.peskirZaKrst],
+      ),
       (interniNaziv: IriuK.posmrtneParte, nazivPrikaz: null),
       (interniNaziv: IriuK.crnina, nazivPrikaz: null),
       (interniNaziv: IriuK.agencijskeUsluge, nazivPrikaz: null),
       (interniNaziv: IriuK.cvece, nazivPrikaz: null),
-      (interniNaziv: IriuK.cituljaP, nazivPrikaz: IriuK.naziviPrikaz[IriuK.cituljaP]),
+      (
+        interniNaziv: IriuK.cituljaP,
+        nazivPrikaz: IriuK.naziviPrikaz[IriuK.cituljaP],
+      ),
     ];
     final korisnickeStavke = katalog
         .where((row) => row.jeKorisnicka)
         .map(
-          (row) => (
-            interniNaziv: row.interniNaziv,
-            nazivPrikaz: row.nazivPrikaz,
-          ),
+          (row) =>
+              (interniNaziv: row.interniNaziv, nazivPrikaz: row.nazivPrikaz),
         );
-    final inicijalneStavke = <({
-      String interniNaziv,
-      String? nazivPrikaz,
-    })>[
+    final inicijalneStavke = <({String interniNaziv, String? nazivPrikaz})>[
       ...blok0Redosled,
       ...korisnickeStavke,
     ];
@@ -142,110 +165,108 @@ class PredmetiRepository {
     for (final stavka in inicijalneStavke) {
       final katalogRow = katalogByInternalName[stavka.interniNaziv];
       if (katalogRow == null) continue;
-      await _db.into(_db.iriu).insert(
-        IriuCompanion(
-          predmetId: Value(predmetId),
-          interniNaziv: Value(stavka.interniNaziv),
-          nazivPrikaz: Value(stavka.nazivPrikaz ?? katalogRow.nazivPrikaz),
-          kom: const Value('1'),
-          redosled: Value(red++),
-        ),
-      );
+      await _db
+          .into(_db.iriu)
+          .insert(
+            IriuCompanion(
+              predmetId: Value(predmetId),
+              interniNaziv: Value(stavka.interniNaziv),
+              nazivPrikaz: Value(stavka.nazivPrikaz ?? katalogRow.nazivPrikaz),
+              kom: const Value('1'),
+              redosled: Value(red++),
+            ),
+          );
     }
   }
 
-  Future<void> obrisiPredmet(int id) =>
-      _db.transaction(() async {
-        await StanjeRobeLifecycleService(db: _db)
-            .reconcileFullPredmetDelete(id);
-        await (_db.delete(_db.logIzmena)
-              ..where((l) => l.predmetId.equals(id)))
-            .go();
-        await (_db.delete(_db.kontaktLica)
-              ..where((k) => k.predmetId.equals(id)))
-            .go();
-        await (_db.delete(_db.iriu)
-              ..where((i) => i.predmetId.equals(id)))
-            .go();
-        await _db.customStatement(
-          'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
-          [id],
-        );
-        await (_db.delete(_db.predmeti)..where((p) => p.id.equals(id))).go();
-      });
+  Future<void> obrisiPredmet(int id) => _db.transaction(() async {
+    await StanjeRobeLifecycleService(db: _db).reconcileFullPredmetDelete(id);
+    await (_db.delete(
+      _db.logIzmena,
+    )..where((l) => l.predmetId.equals(id))).go();
+    await (_db.delete(
+      _db.kontaktLica,
+    )..where((k) => k.predmetId.equals(id))).go();
+    await (_db.delete(_db.iriu)..where((i) => i.predmetId.equals(id))).go();
+    await _db.customStatement(
+      'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
+      [id],
+    );
+    await (_db.delete(_db.predmeti)..where((p) => p.id.equals(id))).go();
+  });
 
-  Future<void> zatvoriPredmet(int id, {required int korisnikId}) =>
-      _db.transaction(() async {
-        final predmet = await getPredmet(id);
-        if (predmet.status == 'ZATVOREN') return;
-        final trenutniSnapshot = snapshotZaSaveCommit(predmet);
-        final poslednjiPotvrdjeniSnapshot =
-            await procitajPoslednjiConfirmedCloseSnapshot(id);
-        final sourceIdentity = predmet.sourceIdentity.trim().isEmpty
-            ? _localSourceIdentity
-            : predmet.sourceIdentity;
-        final businessScenarioId = predmet.businessScenarioId.trim().isEmpty
-            ? _defaultBusinessScenarioId
-            : predmet.businessScenarioId;
-        final imaPrethodnoPotvrdjenoStanje =
-            poslednjiPotvrdjeniSnapshot != null;
-        final imaPoslovnihIzmena =
-            !imaPrethodnoPotvrdjenoStanje ||
-            poslednjiPotvrdjeniSnapshot != trenutniSnapshot;
-        final staraVerzija = predmet.verzija;
-        final novaVerzija = imaPrethodnoPotvrdjenoStanje
-            ? (imaPoslovnihIzmena ? staraVerzija + 1 : staraVerzija)
-            : staraVerzija;
-        final sada = DateTime.now().toIso8601String();
-        await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
-          PredmetiCompanion(
-            status: const Value('ZATVOREN'),
-            verzija: Value(novaVerzija),
-            businessScenarioId: Value(businessScenarioId),
-            sourceIdentity: Value(sourceIdentity),
-            lastBusinessModifiedByKorisnikId: imaPoslovnihIzmena
-                ? Value(korisnikId)
-                : const Value.absent(),
-            lastBusinessModifiedAt: imaPoslovnihIzmena
-                ? Value(sada)
-                : const Value.absent(),
-          ),
-        );
-        final azuriran = await getPredmet(id);
-        if (novaVerzija != staraVerzija) {
-          await _upisiLogIzmene(
-            predmetId: id,
-            korisnikId: korisnikId,
-            polje: 'verzija',
-            staraVrednost: 'v$staraVerzija',
-            novaVrednost: 'v$novaVerzija',
-          );
-        }
-        await _upisiLogIzmene(
-          predmetId: id,
-          korisnikId: korisnikId,
-          polje: _confirmedCloseSnapshotPolje,
-          staraVrednost: poslednjiPotvrdjeniSnapshot ?? '',
-          novaVrednost: trenutniSnapshot,
-        );
-        final poslednjiSaveSnapshot = await procitajPoslednjiSaveCommitSnapshot(
-          id,
-        );
-        await _upisiLogIzmene(
-          predmetId: id,
-          korisnikId: korisnikId,
-          polje: _saveCommitSnapshotPolje,
-          staraVrednost: poslednjiSaveSnapshot ?? '',
-          novaVrednost: trenutniSnapshot,
-        );
-        await _upisiLogIzmene(
-          predmetId: id,
-          korisnikId: korisnikId,
-          polje: 'radni_ciklus',
-          staraVrednost: 'v${predmet.verzija}:${predmet.status}',
-          novaVrednost: 'v${azuriran.verzija}:${azuriran.status}',
-        );
-      });
+  Future<void> zatvoriPredmet(
+    int id, {
+    required int korisnikId,
+  }) => _db.transaction(() async {
+    final predmet = await getPredmet(id);
+    if (predmet.status == 'ZATVOREN') return;
+    await _zahtevajDaParteNeBlokira(id);
+    final trenutniSnapshot = snapshotZaSaveCommit(predmet);
+    final poslednjiPotvrdjeniSnapshot =
+        await procitajPoslednjiConfirmedCloseSnapshot(id);
+    final sourceIdentity = predmet.sourceIdentity.trim().isEmpty
+        ? _localSourceIdentity
+        : predmet.sourceIdentity;
+    final businessScenarioId = predmet.businessScenarioId.trim().isEmpty
+        ? _defaultBusinessScenarioId
+        : predmet.businessScenarioId;
+    final imaPrethodnoPotvrdjenoStanje = poslednjiPotvrdjeniSnapshot != null;
+    final imaPoslovnihIzmena =
+        !imaPrethodnoPotvrdjenoStanje ||
+        poslednjiPotvrdjeniSnapshot != trenutniSnapshot;
+    final staraVerzija = predmet.verzija;
+    final novaVerzija = imaPrethodnoPotvrdjenoStanje
+        ? (imaPoslovnihIzmena ? staraVerzija + 1 : staraVerzija)
+        : staraVerzija;
+    final sada = DateTime.now().toIso8601String();
+    await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
+      PredmetiCompanion(
+        status: const Value('ZATVOREN'),
+        verzija: Value(novaVerzija),
+        businessScenarioId: Value(businessScenarioId),
+        sourceIdentity: Value(sourceIdentity),
+        lastBusinessModifiedByKorisnikId: imaPoslovnihIzmena
+            ? Value(korisnikId)
+            : const Value.absent(),
+        lastBusinessModifiedAt: imaPoslovnihIzmena
+            ? Value(sada)
+            : const Value.absent(),
+      ),
+    );
+    final azuriran = await getPredmet(id);
+    if (novaVerzija != staraVerzija) {
+      await _upisiLogIzmene(
+        predmetId: id,
+        korisnikId: korisnikId,
+        polje: 'verzija',
+        staraVrednost: 'v$staraVerzija',
+        novaVrednost: 'v$novaVerzija',
+      );
+    }
+    await _upisiLogIzmene(
+      predmetId: id,
+      korisnikId: korisnikId,
+      polje: _confirmedCloseSnapshotPolje,
+      staraVrednost: poslednjiPotvrdjeniSnapshot ?? '',
+      novaVrednost: trenutniSnapshot,
+    );
+    final poslednjiSaveSnapshot = await procitajPoslednjiSaveCommitSnapshot(id);
+    await _upisiLogIzmene(
+      predmetId: id,
+      korisnikId: korisnikId,
+      polje: _saveCommitSnapshotPolje,
+      staraVrednost: poslednjiSaveSnapshot ?? '',
+      novaVrednost: trenutniSnapshot,
+    );
+    await _upisiLogIzmene(
+      predmetId: id,
+      korisnikId: korisnikId,
+      polje: 'radni_ciklus',
+      staraVrednost: 'v${predmet.verzija}:${predmet.status}',
+      novaVrednost: 'v${azuriran.verzija}:${azuriran.status}',
+    );
+  });
 
   Future<void> otvoriPredmet(int id, {required int korisnikId}) =>
       _db.transaction(() async {
@@ -300,6 +321,7 @@ class PredmetiRepository {
   Future<bool> osveziAutomatskiStatusPredmeta(int id) async {
     final predmet = await getPredmet(id);
     if (!_trebaAutomatskiZavrsiti(predmet)) return false;
+    if (await imaAktivnuNezavrsenuPartePripremu(id)) return false;
     await azurirajPredmet(
       id,
       const PredmetiCompanion(status: Value('ZAVRŠEN')),
@@ -308,17 +330,18 @@ class PredmetiRepository {
   }
 
   Future<int> osveziAutomatskeStatuse() async {
-    final kandidati = await (_db.select(_db.predmeti)
-          ..where(
-            (p) =>
-                p.status.equals('ZAVRŠEN').not() &
-                p.status.equals('ANONIMIZOVAN').not() &
-                p.datumCeremonije.isNotValue(''),
-          ))
-        .get();
+    final kandidati =
+        await (_db.select(_db.predmeti)..where(
+              (p) =>
+                  p.status.equals('ZAVRŠEN').not() &
+                  p.status.equals('ANONIMIZOVAN').not() &
+                  p.datumCeremonije.isNotValue(''),
+            ))
+            .get();
     int promenjeno = 0;
     for (final predmet in kandidati) {
-      if (_trebaAutomatskiZavrsiti(predmet)) {
+      if (_trebaAutomatskiZavrsiti(predmet) &&
+          !await imaAktivnuNezavrsenuPartePripremu(predmet.id)) {
         await azurirajPredmet(
           predmet.id,
           const PredmetiCompanion(status: Value('ZAVRŠEN')),
@@ -332,14 +355,15 @@ class PredmetiRepository {
   /// Rediguje zaštićene identifikacione i kontakt podatke.
   /// Imena ostaju vidljiva u OPC v1.
   Future<void> anonimizujPredmet(int id) async {
-    await ((_db.update(_db.kontaktLica)
-          ..where((k) => k.predmetId.equals(id))))
-        .write(
-          const KontaktLicaCompanion(
-            telefon: Value(redactedValue),
-            email: Value(redactedValue),
-          ),
-        );
+    await _zahtevajDaParteNeBlokira(id);
+    await ((_db.update(
+      _db.kontaktLica,
+    )..where((k) => k.predmetId.equals(id)))).write(
+      const KontaktLicaCompanion(
+        telefon: Value(redactedValue),
+        email: Value(redactedValue),
+      ),
+    );
     await azurirajPredmet(
       id,
       const PredmetiCompanion(
@@ -373,10 +397,9 @@ class PredmetiRepository {
   }
 
   /// ZAVRŠEN predmeti — osnova za GDPR provjeru po starosti.
-  Future<List<PredmetiData>> getZavrseneZaGdpr() =>
-      (_db.select(_db.predmeti)
-            ..where((p) => p.status.equals('ZAVRŠEN')))
-          .get();
+  Future<List<PredmetiData>> getZavrseneZaGdpr() => (_db.select(
+    _db.predmeti,
+  )..where((p) => p.status.equals('ZAVRŠEN'))).get();
 
   String snapshotZaSaveCommit(PredmetiData predmet) {
     final data = Map<String, dynamic>.from(predmet.toJson())
@@ -409,22 +432,18 @@ class PredmetiRepository {
     int predmetId,
     String polje,
   ) async {
-    final poslednji = await ((_db.select(_db.logIzmena)
-          ..where(
-            (l) =>
-                l.predmetId.equals(predmetId) &
-                l.polje.equals(polje),
-          )
-          ..limit(1)
-          ..orderBy([(l) => OrderingTerm.desc(l.id)]))
-        .getSingleOrNull());
+    final poslednji =
+        await ((_db.select(_db.logIzmena)
+              ..where(
+                (l) => l.predmetId.equals(predmetId) & l.polje.equals(polje),
+              )
+              ..limit(1)
+              ..orderBy([(l) => OrderingTerm.desc(l.id)]))
+            .getSingleOrNull());
     return poslednji?.novaVrednost;
   }
 
-  Future<bool> imaNesacuvanihIzmena(
-    int id, {
-    String? fallbackSnapshot,
-  }) async {
+  Future<bool> imaNesacuvanihIzmena(int id, {String? fallbackSnapshot}) async {
     final trenutno = await getPredmet(id);
     final poslednjiSnapshot =
         await procitajPoslednjiSaveCommitSnapshot(id) ?? fallbackSnapshot;
@@ -438,47 +457,44 @@ class PredmetiRepository {
     int id, {
     required int korisnikId,
     String? fallbackSnapshot,
-  }) =>
-      _db.transaction(() async {
-        final trenutno = await getPredmet(id);
-        final trenutniSnapshot = snapshotZaSaveCommit(trenutno);
-        final poslednjiSaveSnapshot = await procitajPoslednjiSaveCommitSnapshot(
-          id,
-        );
-        final poslednjiSnapshot = poslednjiSaveSnapshot ?? fallbackSnapshot;
+  }) => _db.transaction(() async {
+    final trenutno = await getPredmet(id);
+    final trenutniSnapshot = snapshotZaSaveCommit(trenutno);
+    final poslednjiSaveSnapshot = await procitajPoslednjiSaveCommitSnapshot(id);
+    final poslednjiSnapshot = poslednjiSaveSnapshot ?? fallbackSnapshot;
 
-        final jePrviSaveCommit = poslednjiSaveSnapshot == null;
-        if (!jePrviSaveCommit && poslednjiSnapshot == trenutniSnapshot) {
-          return SacuvajPredmetIshod.bezIzmena;
-        }
-        final sada = DateTime.now().toIso8601String();
-        final businessScenarioId = trenutno.businessScenarioId.trim().isEmpty
-            ? _defaultBusinessScenarioId
-            : trenutno.businessScenarioId;
-        final sourceIdentity = trenutno.sourceIdentity.trim().isEmpty
-            ? _localSourceIdentity
-            : trenutno.sourceIdentity;
+    final jePrviSaveCommit = poslednjiSaveSnapshot == null;
+    if (!jePrviSaveCommit && poslednjiSnapshot == trenutniSnapshot) {
+      return SacuvajPredmetIshod.bezIzmena;
+    }
+    final sada = DateTime.now().toIso8601String();
+    final businessScenarioId = trenutno.businessScenarioId.trim().isEmpty
+        ? _defaultBusinessScenarioId
+        : trenutno.businessScenarioId;
+    final sourceIdentity = trenutno.sourceIdentity.trim().isEmpty
+        ? _localSourceIdentity
+        : trenutno.sourceIdentity;
 
-        await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
-          PredmetiCompanion(
-            businessScenarioId: Value(businessScenarioId),
-            sourceIdentity: Value(sourceIdentity),
-            lastBusinessModifiedByKorisnikId: Value(korisnikId),
-            lastBusinessModifiedAt: Value(sada),
-          ),
-        );
+    await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
+      PredmetiCompanion(
+        businessScenarioId: Value(businessScenarioId),
+        sourceIdentity: Value(sourceIdentity),
+        lastBusinessModifiedByKorisnikId: Value(korisnikId),
+        lastBusinessModifiedAt: Value(sada),
+      ),
+    );
 
-        await _upisiLogIzmene(
-          predmetId: id,
-          korisnikId: korisnikId,
-          polje: _saveCommitSnapshotPolje,
-          staraVrednost: poslednjiSnapshot ?? '',
-          novaVrednost: trenutniSnapshot,
-        );
-        return jePrviSaveCommit
-            ? SacuvajPredmetIshod.prviSave
-            : SacuvajPredmetIshod.novoSacuvano;
-      });
+    await _upisiLogIzmene(
+      predmetId: id,
+      korisnikId: korisnikId,
+      polje: _saveCommitSnapshotPolje,
+      staraVrednost: poslednjiSnapshot ?? '',
+      novaVrednost: trenutniSnapshot,
+    );
+    return jePrviSaveCommit
+        ? SacuvajPredmetIshod.prviSave
+        : SacuvajPredmetIshod.novoSacuvano;
+  });
 
   Future<void> azurirajPredmet(int id, PredmetiCompanion companion) =>
       _db.transaction(() async {
@@ -486,97 +502,106 @@ class PredmetiRepository {
         final sledece = trenutno.copyWithCompanion(companion);
         if (sledece == trenutno) return;
 
-        await (_db.update(_db.predmeti)..where((p) => p.id.equals(id)))
-            .write(companion);
+        await (_db.update(
+          _db.predmeti,
+        )..where((p) => p.id.equals(id))).write(companion);
       });
 
   Future<int> uveziPredmetSaPovezanimPodacima({
     required PredmetiData predmet,
     required List<IriuData> iriu,
     required List<KontaktLicaData> kontaktLica,
-  }) =>
-      _db.transaction(() async {
-        final newId = await _db.into(_db.predmeti).insert(
-              predmet.toCompanion(true).copyWith(id: const Value.absent()),
-            );
+  }) => _db.transaction(() async {
+    final newId = await _db
+        .into(_db.predmeti)
+        .insert(predmet.toCompanion(true).copyWith(id: const Value.absent()));
 
-        for (final stavka in iriu) {
-          await _db.into(_db.iriu).insert(
-                stavka.toCompanion(true).copyWith(
-                      id: const Value.absent(),
-                      predmetId: Value(newId),
-                    ),
-              );
-        }
+    for (final stavka in iriu) {
+      await _db
+          .into(_db.iriu)
+          .insert(
+            stavka
+                .toCompanion(true)
+                .copyWith(id: const Value.absent(), predmetId: Value(newId)),
+          );
+    }
 
-        for (final kontakt in kontaktLica) {
-          await _db.into(_db.kontaktLica).insert(
-                kontakt.toCompanion(true).copyWith(
-                      id: const Value.absent(),
-                      predmetId: Value(newId),
-                    ),
-              );
-        }
+    for (final kontakt in kontaktLica) {
+      await _db
+          .into(_db.kontaktLica)
+          .insert(
+            kontakt
+                .toCompanion(true)
+                .copyWith(id: const Value.absent(), predmetId: Value(newId)),
+          );
+    }
 
-        return newId;
-      });
+    return newId;
+  });
 
   Future<void> zameniPredmetSaPovezanimPodacima({
     required int lokalniPredmetId,
     required PredmetiData predmet,
     required List<IriuData> iriu,
     required List<KontaktLicaData> kontaktLica,
-  }) =>
-      _db.transaction(() async {
-        await StanjeRobeLifecycleService(db: _db)
-            .reconcilePredmetReplacement(lokalniPredmetId);
-        await (_db.delete(_db.logIzmena)
-              ..where((l) => l.predmetId.equals(lokalniPredmetId)))
-            .go();
-        await (_db.delete(_db.kontaktLica)
-              ..where((k) => k.predmetId.equals(lokalniPredmetId)))
-            .go();
-        await (_db.delete(_db.iriu)
-              ..where((i) => i.predmetId.equals(lokalniPredmetId)))
-            .go();
-        await _db.customStatement(
-          'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
-          [lokalniPredmetId],
-        );
+  }) => _db.transaction(() async {
+    await StanjeRobeLifecycleService(
+      db: _db,
+    ).reconcilePredmetReplacement(lokalniPredmetId);
+    await (_db.delete(
+      _db.logIzmena,
+    )..where((l) => l.predmetId.equals(lokalniPredmetId))).go();
+    await (_db.delete(
+      _db.kontaktLica,
+    )..where((k) => k.predmetId.equals(lokalniPredmetId))).go();
+    await (_db.delete(
+      _db.iriu,
+    )..where((i) => i.predmetId.equals(lokalniPredmetId))).go();
+    await _db.customStatement(
+      'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
+      [lokalniPredmetId],
+    );
 
-        await _db.update(_db.predmeti).replace(
-              predmet.copyWith(id: lokalniPredmetId),
-            );
+    await _db
+        .update(_db.predmeti)
+        .replace(predmet.copyWith(id: lokalniPredmetId));
 
-        for (final stavka in iriu) {
-          await _db.into(_db.iriu).insert(
-                stavka.toCompanion(true).copyWith(
-                      id: const Value.absent(),
-                      predmetId: Value(lokalniPredmetId),
-                    ),
-              );
-        }
+    for (final stavka in iriu) {
+      await _db
+          .into(_db.iriu)
+          .insert(
+            stavka
+                .toCompanion(true)
+                .copyWith(
+                  id: const Value.absent(),
+                  predmetId: Value(lokalniPredmetId),
+                ),
+          );
+    }
 
-        for (final kontakt in kontaktLica) {
-          await _db.into(_db.kontaktLica).insert(
-                kontakt.toCompanion(true).copyWith(
-                      id: const Value.absent(),
-                      predmetId: Value(lokalniPredmetId),
-                    ),
-              );
-        }
-      });
+    for (final kontakt in kontaktLica) {
+      await _db
+          .into(_db.kontaktLica)
+          .insert(
+            kontakt
+                .toCompanion(true)
+                .copyWith(
+                  id: const Value.absent(),
+                  predmetId: Value(lokalniPredmetId),
+                ),
+          );
+    }
+  });
 
   /// Svi predmeti — za izveštaje.
-  Future<List<PredmetiData>> getSvePredmete() =>
-      _db.select(_db.predmeti).get();
+  Future<List<PredmetiData>> getSvePredmete() => _db.select(_db.predmeti).get();
 
   /// Svi korisnici — za izveštaj III (po savetnicima).
   Future<List<KorisniciData>> getSveKorisnike() =>
       _db.select(_db.korisnici).get();
 
   /// Reaktivni stream jednog savetnika — za header predmeta.
-  Stream<KorisniciData?> watchSavetnik(int id) =>
-      (_db.select(_db.korisnici)..where((k) => k.id.equals(id)))
-          .watchSingleOrNull();
+  Stream<KorisniciData?> watchSavetnik(int id) => (_db.select(
+    _db.korisnici,
+  )..where((k) => k.id.equals(id))).watchSingleOrNull();
 }

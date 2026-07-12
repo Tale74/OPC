@@ -20,6 +20,11 @@ import '../pdf/predracun_pdf_export.dart';
 import '../pdf/predmet_pdf_snapshot_export.dart';
 import '../pdf/racun_pdf_export.dart';
 import '../pdf/specifikacija_troskova_pdf_export.dart';
+import '../parte/application/parte_preparation_service.dart';
+import '../parte/data/parte_media_store.dart';
+import '../parte/data/parte_preparation_repository.dart';
+import '../parte/domain/parte_models.dart';
+import '../parte/presentation/parte_composer_screen.dart';
 import 'segments/ceremonija_segment.dart';
 import 'segments/finansije_segment.dart';
 import 'segments/iriu_segment.dart';
@@ -150,6 +155,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
   PredmetiData? _predmet;
   double _refundacijaPioIznos = 0.0;
   FirmaPodaciData? _firmaPodaci;
+  PartePripremeData? _partePriprema;
   _PredmetLogicalSection? _selectedSection;
 
   final _scrollCtrl = ScrollController();
@@ -178,16 +184,30 @@ class _PredmetScreenState extends State<PredmetScreen> {
   }
 
   Future<void> _ucitaj() async {
+    final parteRepository = PartePreparationRepository(widget.predmetiRepo.db);
+    final pendingParte = await parteRepository.findForPredmet(widget.predmetId);
+    if (pendingParte?.cleanupPending == true) {
+      try {
+        await PartePreparationService(
+          repository: parteRepository,
+          mediaStore: ParteMediaStore(),
+        ).retryCleanup(pendingParte!);
+      } catch (_) {
+        // Persisted cleanup-pending remains visible and retryable.
+      }
+    }
     await widget.predmetiRepo.osveziAutomatskiStatusPredmeta(widget.predmetId);
     final results = await Future.wait([
       widget.predmetiRepo.getPredmet(widget.predmetId),
       _podesavanjaRepo.getAppPodesavanja(),
       _podesavanjaRepo.getFirmaPodaci(),
       widget.predmetiRepo.procitajPoslednjiSaveCommitSnapshot(widget.predmetId),
+      parteRepository.findForPredmet(widget.predmetId),
     ]);
     if (!mounted) return;
     final predmet = results[0] as PredmetiData;
     final poslednjiSaveSnapshot = results[3] as String?;
+    final partePriprema = results[4] as PartePripremeData?;
     final baselineSnapshot =
         poslednjiSaveSnapshot ??
         widget.predmetiRepo.snapshotZaSaveCommit(predmet);
@@ -197,6 +217,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
       _refundacijaPioIznos =
           (results[1] as AppPodesavanjaData).refundacijaPioIznos;
       _firmaPodaci = results[2] as FirmaPodaciData;
+      _partePriprema = partePriprema;
       _saveBaselineSnapshot = baselineSnapshot;
       _cekaPrviEksplicitniSave = cekaPrviEksplicitniSave;
       _imaNesacuvanihIzmena =
@@ -305,8 +326,18 @@ class _PredmetScreenState extends State<PredmetScreen> {
               p.groblje.trim().isNotEmpty,
         );
       case _PredmetLogicalSection.parte:
-        final started = _hasAnyText([p.parteIme, p.ozaloseni]);
-        return _progress(started: started, ready: started);
+        if (!p.partePotrebna) {
+          return const _SectionProgress(_SectionProgressLevel.ready);
+        }
+        final status = _partePriprema == null
+            ? null
+            : PartePreparationStatus.fromDb(_partePriprema!.status);
+        return _progress(
+          started: status != null,
+          ready:
+              status == PartePreparationStatus.completed ||
+              status == PartePreparationStatus.cleanupPending,
+        );
       case _PredmetLogicalSection.robaIUsluge:
         return const _SectionProgress(_SectionProgressLevel.started);
       case _PredmetLogicalSection.finansije:
@@ -411,6 +442,22 @@ class _PredmetScreenState extends State<PredmetScreen> {
   Future<void> _onSave(PredmetiCompanion companion) async {
     final current = _predmet;
     if (current == null) return;
+    if (companion.partePotrebna.present &&
+        !companion.partePotrebna.value &&
+        await widget.predmetiRepo.imaAktivnuNezavrsenuPartePripremu(
+          widget.predmetId,
+        )) {
+      if (mounted) {
+        _showSnackBarSafely(
+          const SnackBar(
+            content: Text(
+              'PARTE priprema je već započeta. Završite je pre promene odluke.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
     final sledeceIme = companion.ime.present
         ? companion.ime.value
         : current.ime;
@@ -557,6 +604,35 @@ class _PredmetScreenState extends State<PredmetScreen> {
     return true;
   }
 
+  Future<bool> _blokirajAkoParteNijeZavrsena({
+    String action = 'zatvoren',
+  }) async {
+    final blocks = await widget.predmetiRepo.imaAktivnuNezavrsenuPartePripremu(
+      widget.predmetId,
+    );
+    if (!blocks) return false;
+    if (!mounted) return true;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => _buildHeightFitDialog(
+        context: dialogContext,
+        title: Text('Predmet ne može biti $action'),
+        content: const Text(
+          'PARTE priprema je započeta i nije završena.\n\n'
+          'Potvrdite finalni preview, uspešno izvezite PARTA PDF u KORICE i '
+          'izaberite PRIPREMA ZAVRŠENA.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('U REDU'),
+          ),
+        ],
+      ),
+    );
+    return true;
+  }
+
   Future<bool> _zatvori() async {
     if (!_imaMinimumIdentiteta) {
       if (mounted) {
@@ -569,7 +645,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
       }
       return false;
     }
-    if (await _blokirajZatvaranjeAkoImaStanjeRobePosledica()) {
+    if (await _blokirajAkoParteNijeZavrsena() ||
+        await _blokirajZatvaranjeAkoImaStanjeRobePosledica()) {
       return false;
     }
     if (!mounted) return false;
@@ -714,6 +791,10 @@ class _PredmetScreenState extends State<PredmetScreen> {
       }
       return;
     }
+    if (await _blokirajAkoParteNijeZavrsena(action: 'anonimizovan')) {
+      return;
+    }
+    if (!mounted) return;
     // true → izvezi pa anonimizuj, false → samo anonimizuj, null → odustani
     final izbor = await showDialog<bool?>(
       context: context,
@@ -855,6 +936,24 @@ class _PredmetScreenState extends State<PredmetScreen> {
       db: widget.predmetiRepo.db,
       predmetId: widget.predmetId,
     );
+  }
+
+  Future<void> _otvoriPartePripremu() async {
+    final actor = widget.session.korisnik;
+    if (actor == null) return;
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ParteComposerScreen(
+          predmetId: widget.predmetId,
+          predmetiRepository: widget.predmetiRepo,
+          actor: actor,
+          entitlement: widget.entitlementPolicy,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _ucitaj();
   }
 
   Future<void> _resiNevalidanIzlaz() async {
@@ -1224,6 +1323,10 @@ class _PredmetScreenState extends State<PredmetScreen> {
           initialData: predmet,
           enabled: _otvoren,
           onSave: _onSave,
+          advancedParteAvailable: widget.entitlementPolicy.isModuleAvailable(
+            OpcModule.advancedParte,
+          ),
+          onOpenPreparation: _otvoriPartePripremu,
         );
       case _PredmetLogicalSection.robaIUsluge:
         return IriuSegment(

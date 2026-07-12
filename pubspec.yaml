@@ -26,6 +26,7 @@ dependencies:
 
   # Images & media
   image_picker: ^1.1.2
+  image: ^4.8.0
 
   # Crypto (PIN hash)
   crypto: ^3.0.6

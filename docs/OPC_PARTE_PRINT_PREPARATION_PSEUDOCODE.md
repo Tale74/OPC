@@ -3,8 +3,9 @@
 ## 1. Contract
 
 ```text
-DOCUMENT_KIND = AUDIT_PSEUDOCODE
-IMPLEMENTATION_AUTHORIZATION = FALSE
+DOCUMENT_KIND = IMPLEMENTED_ARCHITECTURE_PSEUDOCODE
+IMPLEMENTATION_AUTHORIZATION = OWNER_TASK_OPC_PARTE_PRINT_PREPARATION_IMPLEMENTATION
+IMPLEMENTATION_STATUS = ALIGNED_WITH_SOURCE_ON_TASK_BRANCH
 
 MASTER_TRUTH = PREDMET
 PARTE_ROLE = DERIVATIVE_PUBLIC_PRINT_PREPARATION
@@ -540,19 +541,201 @@ PHASE_5:
   separately authorized printer test
 ```
 
-## 19. Audit stop boundary
+## 19. Historical audit stop boundary
+
+The audit stop applied before the owner-authorized implementation task. The
+following source-aligned flow supersedes that stop for the implemented scope.
+
+## 20. Implemented truth and persistence boundary
 
 ```text
-DO_NOT_IMPLEMENT until owner decides at least:
-  required fields
-  grammar fallback
-  template/page/font strategy
-  symbol catalog/default/fallback/provenance
-  photo formats/crop/quality
-  media storage and transfer
-  retention/deletion/regeneration
-  output format
-  anonymization
-  package behavior
-  long-content policy
+AUTHORITATIVE_INPUT = PREDMET
+AUTHORITATIVE_PARTE_REQUIRED_FACT = PREDMET.partePotrebna
+
+TEMPORARY_PREPARATION:
+  one restart-safe row per PREDMET
+  technical template snapshot + editable output-only draft
+  media keys point only to app-owned normalized copies
+  preview/export/completion evidence
+  NEVER writes temporary text or layout back to PREDMET
+
+FIRMA_TEMPLATE:
+  reusable technical layout/style only
+  NEVER case text, photograph, path or personal data
+
+PARTE_IME_FACT_CHECK:
+  declaration_and_transfer_confirmed = TRUE
+  editing_or_rendering_business_meaning_confirmed = FALSE
+  result = FACT_CHECK_INCONCLUSIVE_PRESERVED_NOT_REUSED
+```
+
+## 21. Entry, initialization and reconciliation
+
+```text
+OPEN_ADVANCED_PARTE(predmet, actor, entitlement):
+  REQUIRE predmet.partePotrebna == TRUE
+  REQUIRE actor.role IN {ADMINISTRATOR, SAVETNIK}
+  REQUIRE entitlement.advancedParte == AVAILABLE
+
+  IF unfinished preparation exists:
+    RETURN same preparation
+
+  template = FIRMA default OR immutable built-in fallback
+  initial = compose current PREDMET facts into separate editable blocks
+  SAVE atomically:
+    source fingerprint
+    immutable template snapshot
+    draft
+    grammar-review state
+  RETURN preparation
+
+ON_REOPEN:
+  restore draft/layout/media/evidence
+  do not silently refresh from PREDMET
+
+IF current PREDMET fingerprint differs:
+  show source-changed warning
+  preserve draft until user explicitly requests rebuild
+  explicit rebuild uses the preparation-time template snapshot
+```
+
+## 22. Text, grammar, symbols and layout
+
+```text
+COMPOSE_INITIAL_TEXT:
+  preserve Unicode and mixed scripts
+  derive current identity, life/death and ceremony facts
+  include OPELO or ISPRACAJ wording and "časova" where applicable
+  IF POL == M: use male grammar
+  ELSE IF POL == Z: use female grammar
+  ELSE: leave affected generated wording for review and block confirmation
+
+SYMBOL_POLICY:
+  Standardni simbol iz PARTE kataloga -> resolve one of six embedded assets
+  BEZ SIMBOLA -> remove symbol block and recompose available space
+  SLOBODAN IZBOR -> require app-owned custom-symbol copy OR explicit no-symbol acknowledgement
+  never silently substitute an unknown symbol
+
+LAYOUT_POLICY:
+  format = custom 224 x 170 mm landscape
+  margin = 5 mm
+  clamp drag and precision movement to usable surface
+  wrap full text
+  reduce font only to configured minimum
+  IF content still does not fit: block preview confirmation and PDF
+  never clip, truncate or add ellipsis
+```
+
+## 23. Media lifecycle
+
+```text
+IMPORT_MEDIA(external_original):
+  read only; never modify, move or delete original
+  reject empty, oversized, corrupt, unsupported or excessive-pixel input
+  decode and bake orientation
+  resize within safe maximum
+  atomically write normalized PNG under app-owned support directory
+  store portable owned media key, never external absolute path
+  retain old owned copy until replacement reference is durable
+  warn and require acknowledgement for low-resolution photograph
+
+REMOVE_MEDIA_MANUALLY:
+  clear durable reference
+  delete only the referenced app-owned copy
+
+CRASH_OR_RESTART:
+  durable row and owned copies remain resumable
+```
+
+## 24. One composer for preview and PDF
+
+```text
+BUILD_RENDER_PLAN(draft, template_snapshot, owned_media, acknowledgements):
+  measure text and produce bounded positioned blocks
+  produce warnings, blockers and deterministic fingerprint
+
+UI_PREVIEW = render(BUILD_RENDER_PLAN(...))
+PDF_OUTPUT = render_same_plan(BUILD_RENDER_PLAN(...))
+
+CONFIRM_FINAL_PREVIEW only when plan has no blocker
+GENERATE_PDF only when current plan fingerprint is confirmed
+EXPORT using existing filename/version helper to Downloads/KORICE
+record successful filename, location and render fingerprint
+```
+
+## 25. Completion, blockers and recovery
+
+```text
+WHILE preparation.status == IN_PROGRESS:
+  block manual PREDMET close
+  block automatic completion
+  block anonymization
+
+PRIPREMA_ZAVRSENA:
+  REQUIRE confirmed current preview
+  REQUIRE successful current PDF export
+  mark completion/cleanup pending durably
+  delete only app-owned photo/custom-symbol copies
+  clear temporary draft/template snapshot/media references
+  retain exported PDF
+  release PREDMET blocker
+
+IF cleanup fails after completion:
+  keep CLEANUP_PENDING evidence
+  do not report cleanup success
+  allow explicit retry
+```
+
+## 26. Templates, roles, entitlement and JSON
+
+```text
+ADMINISTRATOR:
+  use composer
+  create/duplicate/rename/edit/delete/import/export FIRMA templates
+  cannot mutate or delete built-in template
+
+SAVETNIK:
+  use composer when entitled
+  cannot administer templates
+
+ENTITLEMENT:
+  POTPUN -> advancedParte available
+  SREDNJI + advancedParte add-on -> available
+  OSNOVNI or SREDNJI without add-on -> locked
+  downgrade -> retain preparation/templates/media; deny mutation
+  re-entitlement -> resume same preparation
+
+SINGLE_PREDMET_JSON:
+  include only authoritative partePotrebna fact
+  exclude preparation, FIRMA templates and media
+  legacy missing partePotrebna -> FALSE
+
+FULL_BACKUP_JSON:
+  include content-free user FIRMA templates and default identity
+  exclude temporary preparation and media
+  invalid optional template -> skip and use built-in fallback
+
+DEDICATED_TEMPLATE_TRANSFER:
+  versioned content-free JSON
+  conflict -> replace, import as copy, or cancel
+```
+
+## 27. Platform parity and validation boundary
+
+```text
+WINDOWS_AND_ANDROID:
+  same database, repository, composer, PDF, policy and lifecycle
+  UI adapts width only; narrow screen scrolls and keeps actions reachable
+
+AUTOMATED_ALIGNMENT:
+  migration 20 -> 21
+  composition/grammar/overflow
+  media safety
+  template lifecycle and transfer
+  JSON boundaries
+  PDF/completion evidence
+  role/entitlement and blockers
+
+REAL_DEVICE_RUNTIME:
+  remains a separate smoke-validation obligation
 ```

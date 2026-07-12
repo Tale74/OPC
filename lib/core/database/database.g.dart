@@ -533,6 +533,18 @@ class $FirmaPodaciTable extends FirmaPodaci
     type: DriftSqlType.blob,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _parteDefaultTemplateIdMeta =
+      const VerificationMeta('parteDefaultTemplateId');
+  @override
+  late final GeneratedColumn<String> parteDefaultTemplateId =
+      GeneratedColumn<String>(
+        'parte_default_template_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('builtin_parte_standard_v1'),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -546,6 +558,7 @@ class $FirmaPodaciTable extends FirmaPodaci
     email,
     sajt,
     logo,
+    parteDefaultTemplateId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -625,6 +638,15 @@ class $FirmaPodaciTable extends FirmaPodaci
         logo.isAcceptableOrUnknown(data['logo']!, _logoMeta),
       );
     }
+    if (data.containsKey('parte_default_template_id')) {
+      context.handle(
+        _parteDefaultTemplateIdMeta,
+        parteDefaultTemplateId.isAcceptableOrUnknown(
+          data['parte_default_template_id']!,
+          _parteDefaultTemplateIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -678,6 +700,10 @@ class $FirmaPodaciTable extends FirmaPodaci
         DriftSqlType.blob,
         data['${effectivePrefix}logo'],
       ),
+      parteDefaultTemplateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parte_default_template_id'],
+      )!,
     );
   }
 
@@ -699,6 +725,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
   final String email;
   final String sajt;
   final Uint8List? logo;
+  final String parteDefaultTemplateId;
   const FirmaPodaciData({
     required this.id,
     required this.naziv,
@@ -711,6 +738,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     required this.email,
     required this.sajt,
     this.logo,
+    required this.parteDefaultTemplateId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -728,6 +756,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     if (!nullToAbsent || logo != null) {
       map['logo'] = Variable<Uint8List>(logo);
     }
+    map['parte_default_template_id'] = Variable<String>(parteDefaultTemplateId);
     return map;
   }
 
@@ -744,6 +773,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       email: Value(email),
       sajt: Value(sajt),
       logo: logo == null && nullToAbsent ? const Value.absent() : Value(logo),
+      parteDefaultTemplateId: Value(parteDefaultTemplateId),
     );
   }
 
@@ -764,6 +794,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       email: serializer.fromJson<String>(json['email']),
       sajt: serializer.fromJson<String>(json['sajt']),
       logo: serializer.fromJson<Uint8List?>(json['logo']),
+      parteDefaultTemplateId: serializer.fromJson<String>(
+        json['parteDefaultTemplateId'],
+      ),
     );
   }
   @override
@@ -781,6 +814,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       'email': serializer.toJson<String>(email),
       'sajt': serializer.toJson<String>(sajt),
       'logo': serializer.toJson<Uint8List?>(logo),
+      'parteDefaultTemplateId': serializer.toJson<String>(
+        parteDefaultTemplateId,
+      ),
     };
   }
 
@@ -796,6 +832,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     String? email,
     String? sajt,
     Value<Uint8List?> logo = const Value.absent(),
+    String? parteDefaultTemplateId,
   }) => FirmaPodaciData(
     id: id ?? this.id,
     naziv: naziv ?? this.naziv,
@@ -808,6 +845,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     email: email ?? this.email,
     sajt: sajt ?? this.sajt,
     logo: logo.present ? logo.value : this.logo,
+    parteDefaultTemplateId:
+        parteDefaultTemplateId ?? this.parteDefaultTemplateId,
   );
   FirmaPodaciData copyWithCompanion(FirmaPodaciCompanion data) {
     return FirmaPodaciData(
@@ -826,6 +865,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       email: data.email.present ? data.email.value : this.email,
       sajt: data.sajt.present ? data.sajt.value : this.sajt,
       logo: data.logo.present ? data.logo.value : this.logo,
+      parteDefaultTemplateId: data.parteDefaultTemplateId.present
+          ? data.parteDefaultTemplateId.value
+          : this.parteDefaultTemplateId,
     );
   }
 
@@ -842,7 +884,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
           ..write('odgovornoLice: $odgovornoLice, ')
           ..write('email: $email, ')
           ..write('sajt: $sajt, ')
-          ..write('logo: $logo')
+          ..write('logo: $logo, ')
+          ..write('parteDefaultTemplateId: $parteDefaultTemplateId')
           ..write(')'))
         .toString();
   }
@@ -860,6 +903,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     email,
     sajt,
     $driftBlobEquality.hash(logo),
+    parteDefaultTemplateId,
   );
   @override
   bool operator ==(Object other) =>
@@ -875,7 +919,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
           other.odgovornoLice == this.odgovornoLice &&
           other.email == this.email &&
           other.sajt == this.sajt &&
-          $driftBlobEquality.equals(other.logo, this.logo));
+          $driftBlobEquality.equals(other.logo, this.logo) &&
+          other.parteDefaultTemplateId == this.parteDefaultTemplateId);
 }
 
 class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
@@ -890,6 +935,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
   final Value<String> email;
   final Value<String> sajt;
   final Value<Uint8List?> logo;
+  final Value<String> parteDefaultTemplateId;
   const FirmaPodaciCompanion({
     this.id = const Value.absent(),
     this.naziv = const Value.absent(),
@@ -902,6 +948,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     this.email = const Value.absent(),
     this.sajt = const Value.absent(),
     this.logo = const Value.absent(),
+    this.parteDefaultTemplateId = const Value.absent(),
   });
   FirmaPodaciCompanion.insert({
     this.id = const Value.absent(),
@@ -915,6 +962,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     this.email = const Value.absent(),
     this.sajt = const Value.absent(),
     this.logo = const Value.absent(),
+    this.parteDefaultTemplateId = const Value.absent(),
   });
   static Insertable<FirmaPodaciData> custom({
     Expression<int>? id,
@@ -928,6 +976,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     Expression<String>? email,
     Expression<String>? sajt,
     Expression<Uint8List>? logo,
+    Expression<String>? parteDefaultTemplateId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -941,6 +990,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
       if (email != null) 'email': email,
       if (sajt != null) 'sajt': sajt,
       if (logo != null) 'logo': logo,
+      if (parteDefaultTemplateId != null)
+        'parte_default_template_id': parteDefaultTemplateId,
     });
   }
 
@@ -956,6 +1007,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     Value<String>? email,
     Value<String>? sajt,
     Value<Uint8List?>? logo,
+    Value<String>? parteDefaultTemplateId,
   }) {
     return FirmaPodaciCompanion(
       id: id ?? this.id,
@@ -969,6 +1021,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
       email: email ?? this.email,
       sajt: sajt ?? this.sajt,
       logo: logo ?? this.logo,
+      parteDefaultTemplateId:
+          parteDefaultTemplateId ?? this.parteDefaultTemplateId,
     );
   }
 
@@ -1008,6 +1062,11 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     if (logo.present) {
       map['logo'] = Variable<Uint8List>(logo.value);
     }
+    if (parteDefaultTemplateId.present) {
+      map['parte_default_template_id'] = Variable<String>(
+        parteDefaultTemplateId.value,
+      );
+    }
     return map;
   }
 
@@ -1024,7 +1083,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
           ..write('odgovornoLice: $odgovornoLice, ')
           ..write('email: $email, ')
           ..write('sajt: $sajt, ')
-          ..write('logo: $logo')
+          ..write('logo: $logo, ')
+          ..write('parteDefaultTemplateId: $parteDefaultTemplateId')
           ..write(')'))
         .toString();
   }
@@ -3033,6 +3093,21 @@ class $PredmetiTable extends Predmeti
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _partePotrebnaMeta = const VerificationMeta(
+    'partePotrebna',
+  );
+  @override
+  late final GeneratedColumn<bool> partePotrebna = GeneratedColumn<bool>(
+    'parte_potrebna',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("parte_potrebna" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _simbolMeta = const VerificationMeta('simbol');
   @override
   late final GeneratedColumn<String> simbol = GeneratedColumn<String>(
@@ -3290,6 +3365,7 @@ class $PredmetiTable extends Predmeti
     docekMesto,
     docekDatum,
     docekVreme,
+    partePotrebna,
     simbol,
     pismo,
     parteIme,
@@ -4200,6 +4276,15 @@ class $PredmetiTable extends Predmeti
         docekVreme.isAcceptableOrUnknown(data['docek_vreme']!, _docekVremeMeta),
       );
     }
+    if (data.containsKey('parte_potrebna')) {
+      context.handle(
+        _partePotrebnaMeta,
+        partePotrebna.isAcceptableOrUnknown(
+          data['parte_potrebna']!,
+          _partePotrebnaMeta,
+        ),
+      );
+    }
     if (data.containsKey('simbol')) {
       context.handle(
         _simbolMeta,
@@ -4764,6 +4849,10 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.string,
         data['${effectivePrefix}docek_vreme'],
       )!,
+      partePotrebna: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}parte_potrebna'],
+      )!,
       simbol: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}simbol'],
@@ -4939,6 +5028,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String docekMesto;
   final String docekDatum;
   final String docekVreme;
+  final bool partePotrebna;
   final String simbol;
   final String pismo;
   final String parteIme;
@@ -5071,6 +5161,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.docekMesto,
     required this.docekDatum,
     required this.docekVreme,
+    required this.partePotrebna,
     required this.simbol,
     required this.pismo,
     required this.parteIme,
@@ -5218,6 +5309,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['docek_mesto'] = Variable<String>(docekMesto);
     map['docek_datum'] = Variable<String>(docekDatum);
     map['docek_vreme'] = Variable<String>(docekVreme);
+    map['parte_potrebna'] = Variable<bool>(partePotrebna);
     map['simbol'] = Variable<String>(simbol);
     map['pismo'] = Variable<String>(pismo);
     map['parte_ime'] = Variable<String>(parteIme);
@@ -5361,6 +5453,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekMesto: Value(docekMesto),
       docekDatum: Value(docekDatum),
       docekVreme: Value(docekVreme),
+      partePotrebna: Value(partePotrebna),
       simbol: Value(simbol),
       pismo: Value(pismo),
       parteIme: Value(parteIme),
@@ -5521,6 +5614,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekMesto: serializer.fromJson<String>(json['docekMesto']),
       docekDatum: serializer.fromJson<String>(json['docekDatum']),
       docekVreme: serializer.fromJson<String>(json['docekVreme']),
+      partePotrebna: serializer.fromJson<bool>(json['partePotrebna']),
       simbol: serializer.fromJson<String>(json['simbol']),
       pismo: serializer.fromJson<String>(json['pismo']),
       parteIme: serializer.fromJson<String>(json['parteIme']),
@@ -5662,6 +5756,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'docekMesto': serializer.toJson<String>(docekMesto),
       'docekDatum': serializer.toJson<String>(docekDatum),
       'docekVreme': serializer.toJson<String>(docekVreme),
+      'partePotrebna': serializer.toJson<bool>(partePotrebna),
       'simbol': serializer.toJson<String>(simbol),
       'pismo': serializer.toJson<String>(pismo),
       'parteIme': serializer.toJson<String>(parteIme),
@@ -5795,6 +5890,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? docekMesto,
     String? docekDatum,
     String? docekVreme,
+    bool? partePotrebna,
     String? simbol,
     String? pismo,
     String? parteIme,
@@ -5933,6 +6029,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     docekMesto: docekMesto ?? this.docekMesto,
     docekDatum: docekDatum ?? this.docekDatum,
     docekVreme: docekVreme ?? this.docekVreme,
+    partePotrebna: partePotrebna ?? this.partePotrebna,
     simbol: simbol ?? this.simbol,
     pismo: pismo ?? this.pismo,
     parteIme: parteIme ?? this.parteIme,
@@ -6216,6 +6313,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekVreme: data.docekVreme.present
           ? data.docekVreme.value
           : this.docekVreme,
+      partePotrebna: data.partePotrebna.present
+          ? data.partePotrebna.value
+          : this.partePotrebna,
       simbol: data.simbol.present ? data.simbol.value : this.simbol,
       pismo: data.pismo.present ? data.pismo.value : this.pismo,
       parteIme: data.parteIme.present ? data.parteIme.value : this.parteIme,
@@ -6363,6 +6463,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('docekMesto: $docekMesto, ')
           ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
+          ..write('partePotrebna: $partePotrebna, ')
           ..write('simbol: $simbol, ')
           ..write('pismo: $pismo, ')
           ..write('parteIme: $parteIme, ')
@@ -6498,6 +6599,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     docekMesto,
     docekDatum,
     docekVreme,
+    partePotrebna,
     simbol,
     pismo,
     parteIme,
@@ -6633,6 +6735,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.docekMesto == this.docekMesto &&
           other.docekDatum == this.docekDatum &&
           other.docekVreme == this.docekVreme &&
+          other.partePotrebna == this.partePotrebna &&
           other.simbol == this.simbol &&
           other.pismo == this.pismo &&
           other.parteIme == this.parteIme &&
@@ -6765,6 +6868,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> docekMesto;
   final Value<String> docekDatum;
   final Value<String> docekVreme;
+  final Value<bool> partePotrebna;
   final Value<String> simbol;
   final Value<String> pismo;
   final Value<String> parteIme;
@@ -6895,6 +6999,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.docekMesto = const Value.absent(),
     this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
+    this.partePotrebna = const Value.absent(),
     this.simbol = const Value.absent(),
     this.pismo = const Value.absent(),
     this.parteIme = const Value.absent(),
@@ -7026,6 +7131,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.docekMesto = const Value.absent(),
     this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
+    this.partePotrebna = const Value.absent(),
     this.simbol = const Value.absent(),
     this.pismo = const Value.absent(),
     this.parteIme = const Value.absent(),
@@ -7157,6 +7263,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? docekMesto,
     Expression<String>? docekDatum,
     Expression<String>? docekVreme,
+    Expression<bool>? partePotrebna,
     Expression<String>? simbol,
     Expression<String>? pismo,
     Expression<String>? parteIme,
@@ -7299,6 +7406,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (docekMesto != null) 'docek_mesto': docekMesto,
       if (docekDatum != null) 'docek_datum': docekDatum,
       if (docekVreme != null) 'docek_vreme': docekVreme,
+      if (partePotrebna != null) 'parte_potrebna': partePotrebna,
       if (simbol != null) 'simbol': simbol,
       if (pismo != null) 'pismo': pismo,
       if (parteIme != null) 'parte_ime': parteIme,
@@ -7433,6 +7541,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? docekMesto,
     Value<String>? docekDatum,
     Value<String>? docekVreme,
+    Value<bool>? partePotrebna,
     Value<String>? simbol,
     Value<String>? pismo,
     Value<String>? parteIme,
@@ -7570,6 +7679,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       docekMesto: docekMesto ?? this.docekMesto,
       docekDatum: docekDatum ?? this.docekDatum,
       docekVreme: docekVreme ?? this.docekVreme,
+      partePotrebna: partePotrebna ?? this.partePotrebna,
       simbol: simbol ?? this.simbol,
       pismo: pismo ?? this.pismo,
       parteIme: parteIme ?? this.parteIme,
@@ -7953,6 +8063,9 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     if (docekVreme.present) {
       map['docek_vreme'] = Variable<String>(docekVreme.value);
     }
+    if (partePotrebna.present) {
+      map['parte_potrebna'] = Variable<bool>(partePotrebna.value);
+    }
     if (simbol.present) {
       map['simbol'] = Variable<String>(simbol.value);
     }
@@ -8114,6 +8227,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('docekMesto: $docekMesto, ')
           ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
+          ..write('partePotrebna: $partePotrebna, ')
           ..write('simbol: $simbol, ')
           ..write('pismo: $pismo, ')
           ..write('parteIme: $parteIme, ')
@@ -12801,6 +12915,1854 @@ class PredlosciDokumenataCompanion
   }
 }
 
+class $PartePredlosciTable extends PartePredlosci
+    with TableInfo<$PartePredlosciTable, PartePredlosciData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PartePredlosciTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _firmaIdMeta = const VerificationMeta(
+    'firmaId',
+  );
+  @override
+  late final GeneratedColumn<int> firmaId = GeneratedColumn<int>(
+    'firma_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _nazivMeta = const VerificationMeta('naziv');
+  @override
+  late final GeneratedColumn<String> naziv = GeneratedColumn<String>(
+    'naziv',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _schemaVersionMeta = const VerificationMeta(
+    'schemaVersion',
+  );
+  @override
+  late final GeneratedColumn<int> schemaVersion = GeneratedColumn<int>(
+    'schema_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _configJsonMeta = const VerificationMeta(
+    'configJson',
+  );
+  @override
+  late final GeneratedColumn<String> configJson = GeneratedColumn<String>(
+    'config_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    firmaId,
+    naziv,
+    schemaVersion,
+    configJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'parte_predlosci';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PartePredlosciData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('firma_id')) {
+      context.handle(
+        _firmaIdMeta,
+        firmaId.isAcceptableOrUnknown(data['firma_id']!, _firmaIdMeta),
+      );
+    }
+    if (data.containsKey('naziv')) {
+      context.handle(
+        _nazivMeta,
+        naziv.isAcceptableOrUnknown(data['naziv']!, _nazivMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nazivMeta);
+    }
+    if (data.containsKey('schema_version')) {
+      context.handle(
+        _schemaVersionMeta,
+        schemaVersion.isAcceptableOrUnknown(
+          data['schema_version']!,
+          _schemaVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('config_json')) {
+      context.handle(
+        _configJsonMeta,
+        configJson.isAcceptableOrUnknown(data['config_json']!, _configJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_configJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PartePredlosciData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PartePredlosciData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      firmaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}firma_id'],
+      )!,
+      naziv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}naziv'],
+      )!,
+      schemaVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}schema_version'],
+      )!,
+      configJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PartePredlosciTable createAlias(String alias) {
+    return $PartePredlosciTable(attachedDatabase, alias);
+  }
+}
+
+class PartePredlosciData extends DataClass
+    implements Insertable<PartePredlosciData> {
+  final String id;
+  final int firmaId;
+  final String naziv;
+  final int schemaVersion;
+  final String configJson;
+  final String createdAt;
+  final String updatedAt;
+  const PartePredlosciData({
+    required this.id,
+    required this.firmaId,
+    required this.naziv,
+    required this.schemaVersion,
+    required this.configJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['firma_id'] = Variable<int>(firmaId);
+    map['naziv'] = Variable<String>(naziv);
+    map['schema_version'] = Variable<int>(schemaVersion);
+    map['config_json'] = Variable<String>(configJson);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  PartePredlosciCompanion toCompanion(bool nullToAbsent) {
+    return PartePredlosciCompanion(
+      id: Value(id),
+      firmaId: Value(firmaId),
+      naziv: Value(naziv),
+      schemaVersion: Value(schemaVersion),
+      configJson: Value(configJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PartePredlosciData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PartePredlosciData(
+      id: serializer.fromJson<String>(json['id']),
+      firmaId: serializer.fromJson<int>(json['firmaId']),
+      naziv: serializer.fromJson<String>(json['naziv']),
+      schemaVersion: serializer.fromJson<int>(json['schemaVersion']),
+      configJson: serializer.fromJson<String>(json['configJson']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'firmaId': serializer.toJson<int>(firmaId),
+      'naziv': serializer.toJson<String>(naziv),
+      'schemaVersion': serializer.toJson<int>(schemaVersion),
+      'configJson': serializer.toJson<String>(configJson),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  PartePredlosciData copyWith({
+    String? id,
+    int? firmaId,
+    String? naziv,
+    int? schemaVersion,
+    String? configJson,
+    String? createdAt,
+    String? updatedAt,
+  }) => PartePredlosciData(
+    id: id ?? this.id,
+    firmaId: firmaId ?? this.firmaId,
+    naziv: naziv ?? this.naziv,
+    schemaVersion: schemaVersion ?? this.schemaVersion,
+    configJson: configJson ?? this.configJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PartePredlosciData copyWithCompanion(PartePredlosciCompanion data) {
+    return PartePredlosciData(
+      id: data.id.present ? data.id.value : this.id,
+      firmaId: data.firmaId.present ? data.firmaId.value : this.firmaId,
+      naziv: data.naziv.present ? data.naziv.value : this.naziv,
+      schemaVersion: data.schemaVersion.present
+          ? data.schemaVersion.value
+          : this.schemaVersion,
+      configJson: data.configJson.present
+          ? data.configJson.value
+          : this.configJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePredlosciData(')
+          ..write('id: $id, ')
+          ..write('firmaId: $firmaId, ')
+          ..write('naziv: $naziv, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('configJson: $configJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    firmaId,
+    naziv,
+    schemaVersion,
+    configJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PartePredlosciData &&
+          other.id == this.id &&
+          other.firmaId == this.firmaId &&
+          other.naziv == this.naziv &&
+          other.schemaVersion == this.schemaVersion &&
+          other.configJson == this.configJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PartePredlosciCompanion extends UpdateCompanion<PartePredlosciData> {
+  final Value<String> id;
+  final Value<int> firmaId;
+  final Value<String> naziv;
+  final Value<int> schemaVersion;
+  final Value<String> configJson;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const PartePredlosciCompanion({
+    this.id = const Value.absent(),
+    this.firmaId = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.configJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PartePredlosciCompanion.insert({
+    required String id,
+    this.firmaId = const Value.absent(),
+    required String naziv,
+    this.schemaVersion = const Value.absent(),
+    required String configJson,
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       naziv = Value(naziv),
+       configJson = Value(configJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<PartePredlosciData> custom({
+    Expression<String>? id,
+    Expression<int>? firmaId,
+    Expression<String>? naziv,
+    Expression<int>? schemaVersion,
+    Expression<String>? configJson,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (firmaId != null) 'firma_id': firmaId,
+      if (naziv != null) 'naziv': naziv,
+      if (schemaVersion != null) 'schema_version': schemaVersion,
+      if (configJson != null) 'config_json': configJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PartePredlosciCompanion copyWith({
+    Value<String>? id,
+    Value<int>? firmaId,
+    Value<String>? naziv,
+    Value<int>? schemaVersion,
+    Value<String>? configJson,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PartePredlosciCompanion(
+      id: id ?? this.id,
+      firmaId: firmaId ?? this.firmaId,
+      naziv: naziv ?? this.naziv,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      configJson: configJson ?? this.configJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (firmaId.present) {
+      map['firma_id'] = Variable<int>(firmaId.value);
+    }
+    if (naziv.present) {
+      map['naziv'] = Variable<String>(naziv.value);
+    }
+    if (schemaVersion.present) {
+      map['schema_version'] = Variable<int>(schemaVersion.value);
+    }
+    if (configJson.present) {
+      map['config_json'] = Variable<String>(configJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePredlosciCompanion(')
+          ..write('id: $id, ')
+          ..write('firmaId: $firmaId, ')
+          ..write('naziv: $naziv, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('configJson: $configJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PartePripremeTable extends PartePripreme
+    with TableInfo<$PartePripremeTable, PartePripremeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PartePripremeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _predmetBrojMeta = const VerificationMeta(
+    'predmetBroj',
+  );
+  @override
+  late final GeneratedColumn<String> predmetBroj = GeneratedColumn<String>(
+    'predmet_broj',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('IN_PROGRESS'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceFingerprintMeta = const VerificationMeta(
+    'sourceFingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> sourceFingerprint =
+      GeneratedColumn<String>(
+        'source_fingerprint',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _templateSnapshotJsonMeta =
+      const VerificationMeta('templateSnapshotJson');
+  @override
+  late final GeneratedColumn<String> templateSnapshotJson =
+      GeneratedColumn<String>(
+        'template_snapshot_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _draftJsonMeta = const VerificationMeta(
+    'draftJson',
+  );
+  @override
+  late final GeneratedColumn<String> draftJson = GeneratedColumn<String>(
+    'draft_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _photoMediaKeyMeta = const VerificationMeta(
+    'photoMediaKey',
+  );
+  @override
+  late final GeneratedColumn<String> photoMediaKey = GeneratedColumn<String>(
+    'photo_media_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customSymbolMediaKeyMeta =
+      const VerificationMeta('customSymbolMediaKey');
+  @override
+  late final GeneratedColumn<String> customSymbolMediaKey =
+      GeneratedColumn<String>(
+        'custom_symbol_media_key',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _previewConfirmedFingerprintMeta =
+      const VerificationMeta('previewConfirmedFingerprint');
+  @override
+  late final GeneratedColumn<String> previewConfirmedFingerprint =
+      GeneratedColumn<String>(
+        'preview_confirmed_fingerprint',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _exportedRenderFingerprintMeta =
+      const VerificationMeta('exportedRenderFingerprint');
+  @override
+  late final GeneratedColumn<String> exportedRenderFingerprint =
+      GeneratedColumn<String>(
+        'exported_render_fingerprint',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _exportedFilenameMeta = const VerificationMeta(
+    'exportedFilename',
+  );
+  @override
+  late final GeneratedColumn<String> exportedFilename = GeneratedColumn<String>(
+    'exported_filename',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exportedLocationMeta = const VerificationMeta(
+    'exportedLocation',
+  );
+  @override
+  late final GeneratedColumn<String> exportedLocation = GeneratedColumn<String>(
+    'exported_location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exportedSuccessfullyMeta =
+      const VerificationMeta('exportedSuccessfully');
+  @override
+  late final GeneratedColumn<bool> exportedSuccessfully = GeneratedColumn<bool>(
+    'exported_successfully',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("exported_successfully" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _cleanupPendingMeta = const VerificationMeta(
+    'cleanupPending',
+  );
+  @override
+  late final GeneratedColumn<bool> cleanupPending = GeneratedColumn<bool>(
+    'cleanup_pending',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("cleanup_pending" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _noPhotoAcceptedMeta = const VerificationMeta(
+    'noPhotoAccepted',
+  );
+  @override
+  late final GeneratedColumn<bool> noPhotoAccepted = GeneratedColumn<bool>(
+    'no_photo_accepted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("no_photo_accepted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _noCustomSymbolAcceptedMeta =
+      const VerificationMeta('noCustomSymbolAccepted');
+  @override
+  late final GeneratedColumn<bool> noCustomSymbolAccepted =
+      GeneratedColumn<bool>(
+        'no_custom_symbol_accepted',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("no_custom_symbol_accepted" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _lowResolutionAcceptedMeta =
+      const VerificationMeta('lowResolutionAccepted');
+  @override
+  late final GeneratedColumn<bool> lowResolutionAccepted =
+      GeneratedColumn<bool>(
+        'low_resolution_accepted',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("low_resolution_accepted" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _grammarVerifiedMeta = const VerificationMeta(
+    'grammarVerified',
+  );
+  @override
+  late final GeneratedColumn<bool> grammarVerified = GeneratedColumn<bool>(
+    'grammar_verified',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("grammar_verified" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    predmetId,
+    predmetBroj,
+    status,
+    createdAt,
+    updatedAt,
+    sourceFingerprint,
+    templateId,
+    templateSnapshotJson,
+    draftJson,
+    photoMediaKey,
+    customSymbolMediaKey,
+    previewConfirmedFingerprint,
+    exportedRenderFingerprint,
+    exportedFilename,
+    exportedLocation,
+    exportedSuccessfully,
+    cleanupPending,
+    noPhotoAccepted,
+    noCustomSymbolAccepted,
+    lowResolutionAccepted,
+    grammarVerified,
+    completedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'parte_pripreme';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PartePripremeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetIdMeta);
+    }
+    if (data.containsKey('predmet_broj')) {
+      context.handle(
+        _predmetBrojMeta,
+        predmetBroj.isAcceptableOrUnknown(
+          data['predmet_broj']!,
+          _predmetBrojMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetBrojMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('source_fingerprint')) {
+      context.handle(
+        _sourceFingerprintMeta,
+        sourceFingerprint.isAcceptableOrUnknown(
+          data['source_fingerprint']!,
+          _sourceFingerprintMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceFingerprintMeta);
+    }
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('template_snapshot_json')) {
+      context.handle(
+        _templateSnapshotJsonMeta,
+        templateSnapshotJson.isAcceptableOrUnknown(
+          data['template_snapshot_json']!,
+          _templateSnapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_templateSnapshotJsonMeta);
+    }
+    if (data.containsKey('draft_json')) {
+      context.handle(
+        _draftJsonMeta,
+        draftJson.isAcceptableOrUnknown(data['draft_json']!, _draftJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_draftJsonMeta);
+    }
+    if (data.containsKey('photo_media_key')) {
+      context.handle(
+        _photoMediaKeyMeta,
+        photoMediaKey.isAcceptableOrUnknown(
+          data['photo_media_key']!,
+          _photoMediaKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_symbol_media_key')) {
+      context.handle(
+        _customSymbolMediaKeyMeta,
+        customSymbolMediaKey.isAcceptableOrUnknown(
+          data['custom_symbol_media_key']!,
+          _customSymbolMediaKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('preview_confirmed_fingerprint')) {
+      context.handle(
+        _previewConfirmedFingerprintMeta,
+        previewConfirmedFingerprint.isAcceptableOrUnknown(
+          data['preview_confirmed_fingerprint']!,
+          _previewConfirmedFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_render_fingerprint')) {
+      context.handle(
+        _exportedRenderFingerprintMeta,
+        exportedRenderFingerprint.isAcceptableOrUnknown(
+          data['exported_render_fingerprint']!,
+          _exportedRenderFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_filename')) {
+      context.handle(
+        _exportedFilenameMeta,
+        exportedFilename.isAcceptableOrUnknown(
+          data['exported_filename']!,
+          _exportedFilenameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_location')) {
+      context.handle(
+        _exportedLocationMeta,
+        exportedLocation.isAcceptableOrUnknown(
+          data['exported_location']!,
+          _exportedLocationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_successfully')) {
+      context.handle(
+        _exportedSuccessfullyMeta,
+        exportedSuccessfully.isAcceptableOrUnknown(
+          data['exported_successfully']!,
+          _exportedSuccessfullyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cleanup_pending')) {
+      context.handle(
+        _cleanupPendingMeta,
+        cleanupPending.isAcceptableOrUnknown(
+          data['cleanup_pending']!,
+          _cleanupPendingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('no_photo_accepted')) {
+      context.handle(
+        _noPhotoAcceptedMeta,
+        noPhotoAccepted.isAcceptableOrUnknown(
+          data['no_photo_accepted']!,
+          _noPhotoAcceptedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('no_custom_symbol_accepted')) {
+      context.handle(
+        _noCustomSymbolAcceptedMeta,
+        noCustomSymbolAccepted.isAcceptableOrUnknown(
+          data['no_custom_symbol_accepted']!,
+          _noCustomSymbolAcceptedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('low_resolution_accepted')) {
+      context.handle(
+        _lowResolutionAcceptedMeta,
+        lowResolutionAccepted.isAcceptableOrUnknown(
+          data['low_resolution_accepted']!,
+          _lowResolutionAcceptedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('grammar_verified')) {
+      context.handle(
+        _grammarVerifiedMeta,
+        grammarVerified.isAcceptableOrUnknown(
+          data['grammar_verified']!,
+          _grammarVerifiedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {predmetId},
+  ];
+  @override
+  PartePripremeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PartePripremeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      predmetBroj: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}predmet_broj'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      sourceFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_fingerprint'],
+      )!,
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      )!,
+      templateSnapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_snapshot_json'],
+      )!,
+      draftJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}draft_json'],
+      )!,
+      photoMediaKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_media_key'],
+      ),
+      customSymbolMediaKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_symbol_media_key'],
+      ),
+      previewConfirmedFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}preview_confirmed_fingerprint'],
+      ),
+      exportedRenderFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exported_render_fingerprint'],
+      ),
+      exportedFilename: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exported_filename'],
+      ),
+      exportedLocation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exported_location'],
+      ),
+      exportedSuccessfully: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}exported_successfully'],
+      )!,
+      cleanupPending: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}cleanup_pending'],
+      )!,
+      noPhotoAccepted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}no_photo_accepted'],
+      )!,
+      noCustomSymbolAccepted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}no_custom_symbol_accepted'],
+      )!,
+      lowResolutionAccepted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}low_resolution_accepted'],
+      )!,
+      grammarVerified: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}grammar_verified'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
+    );
+  }
+
+  @override
+  $PartePripremeTable createAlias(String alias) {
+    return $PartePripremeTable(attachedDatabase, alias);
+  }
+}
+
+class PartePripremeData extends DataClass
+    implements Insertable<PartePripremeData> {
+  final int id;
+  final int predmetId;
+  final String predmetBroj;
+  final String status;
+  final String createdAt;
+  final String updatedAt;
+  final String sourceFingerprint;
+  final String templateId;
+  final String templateSnapshotJson;
+  final String draftJson;
+  final String? photoMediaKey;
+  final String? customSymbolMediaKey;
+  final String? previewConfirmedFingerprint;
+  final String? exportedRenderFingerprint;
+  final String? exportedFilename;
+  final String? exportedLocation;
+  final bool exportedSuccessfully;
+  final bool cleanupPending;
+  final bool noPhotoAccepted;
+  final bool noCustomSymbolAccepted;
+  final bool lowResolutionAccepted;
+  final bool grammarVerified;
+  final String? completedAt;
+  const PartePripremeData({
+    required this.id,
+    required this.predmetId,
+    required this.predmetBroj,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.sourceFingerprint,
+    required this.templateId,
+    required this.templateSnapshotJson,
+    required this.draftJson,
+    this.photoMediaKey,
+    this.customSymbolMediaKey,
+    this.previewConfirmedFingerprint,
+    this.exportedRenderFingerprint,
+    this.exportedFilename,
+    this.exportedLocation,
+    required this.exportedSuccessfully,
+    required this.cleanupPending,
+    required this.noPhotoAccepted,
+    required this.noCustomSymbolAccepted,
+    required this.lowResolutionAccepted,
+    required this.grammarVerified,
+    this.completedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['predmet_broj'] = Variable<String>(predmetBroj);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    map['source_fingerprint'] = Variable<String>(sourceFingerprint);
+    map['template_id'] = Variable<String>(templateId);
+    map['template_snapshot_json'] = Variable<String>(templateSnapshotJson);
+    map['draft_json'] = Variable<String>(draftJson);
+    if (!nullToAbsent || photoMediaKey != null) {
+      map['photo_media_key'] = Variable<String>(photoMediaKey);
+    }
+    if (!nullToAbsent || customSymbolMediaKey != null) {
+      map['custom_symbol_media_key'] = Variable<String>(customSymbolMediaKey);
+    }
+    if (!nullToAbsent || previewConfirmedFingerprint != null) {
+      map['preview_confirmed_fingerprint'] = Variable<String>(
+        previewConfirmedFingerprint,
+      );
+    }
+    if (!nullToAbsent || exportedRenderFingerprint != null) {
+      map['exported_render_fingerprint'] = Variable<String>(
+        exportedRenderFingerprint,
+      );
+    }
+    if (!nullToAbsent || exportedFilename != null) {
+      map['exported_filename'] = Variable<String>(exportedFilename);
+    }
+    if (!nullToAbsent || exportedLocation != null) {
+      map['exported_location'] = Variable<String>(exportedLocation);
+    }
+    map['exported_successfully'] = Variable<bool>(exportedSuccessfully);
+    map['cleanup_pending'] = Variable<bool>(cleanupPending);
+    map['no_photo_accepted'] = Variable<bool>(noPhotoAccepted);
+    map['no_custom_symbol_accepted'] = Variable<bool>(noCustomSymbolAccepted);
+    map['low_resolution_accepted'] = Variable<bool>(lowResolutionAccepted);
+    map['grammar_verified'] = Variable<bool>(grammarVerified);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
+    return map;
+  }
+
+  PartePripremeCompanion toCompanion(bool nullToAbsent) {
+    return PartePripremeCompanion(
+      id: Value(id),
+      predmetId: Value(predmetId),
+      predmetBroj: Value(predmetBroj),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      sourceFingerprint: Value(sourceFingerprint),
+      templateId: Value(templateId),
+      templateSnapshotJson: Value(templateSnapshotJson),
+      draftJson: Value(draftJson),
+      photoMediaKey: photoMediaKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoMediaKey),
+      customSymbolMediaKey: customSymbolMediaKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customSymbolMediaKey),
+      previewConfirmedFingerprint:
+          previewConfirmedFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previewConfirmedFingerprint),
+      exportedRenderFingerprint:
+          exportedRenderFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exportedRenderFingerprint),
+      exportedFilename: exportedFilename == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exportedFilename),
+      exportedLocation: exportedLocation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exportedLocation),
+      exportedSuccessfully: Value(exportedSuccessfully),
+      cleanupPending: Value(cleanupPending),
+      noPhotoAccepted: Value(noPhotoAccepted),
+      noCustomSymbolAccepted: Value(noCustomSymbolAccepted),
+      lowResolutionAccepted: Value(lowResolutionAccepted),
+      grammarVerified: Value(grammarVerified),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+    );
+  }
+
+  factory PartePripremeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PartePripremeData(
+      id: serializer.fromJson<int>(json['id']),
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      predmetBroj: serializer.fromJson<String>(json['predmetBroj']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+      sourceFingerprint: serializer.fromJson<String>(json['sourceFingerprint']),
+      templateId: serializer.fromJson<String>(json['templateId']),
+      templateSnapshotJson: serializer.fromJson<String>(
+        json['templateSnapshotJson'],
+      ),
+      draftJson: serializer.fromJson<String>(json['draftJson']),
+      photoMediaKey: serializer.fromJson<String?>(json['photoMediaKey']),
+      customSymbolMediaKey: serializer.fromJson<String?>(
+        json['customSymbolMediaKey'],
+      ),
+      previewConfirmedFingerprint: serializer.fromJson<String?>(
+        json['previewConfirmedFingerprint'],
+      ),
+      exportedRenderFingerprint: serializer.fromJson<String?>(
+        json['exportedRenderFingerprint'],
+      ),
+      exportedFilename: serializer.fromJson<String?>(json['exportedFilename']),
+      exportedLocation: serializer.fromJson<String?>(json['exportedLocation']),
+      exportedSuccessfully: serializer.fromJson<bool>(
+        json['exportedSuccessfully'],
+      ),
+      cleanupPending: serializer.fromJson<bool>(json['cleanupPending']),
+      noPhotoAccepted: serializer.fromJson<bool>(json['noPhotoAccepted']),
+      noCustomSymbolAccepted: serializer.fromJson<bool>(
+        json['noCustomSymbolAccepted'],
+      ),
+      lowResolutionAccepted: serializer.fromJson<bool>(
+        json['lowResolutionAccepted'],
+      ),
+      grammarVerified: serializer.fromJson<bool>(json['grammarVerified']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'predmetId': serializer.toJson<int>(predmetId),
+      'predmetBroj': serializer.toJson<String>(predmetBroj),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+      'sourceFingerprint': serializer.toJson<String>(sourceFingerprint),
+      'templateId': serializer.toJson<String>(templateId),
+      'templateSnapshotJson': serializer.toJson<String>(templateSnapshotJson),
+      'draftJson': serializer.toJson<String>(draftJson),
+      'photoMediaKey': serializer.toJson<String?>(photoMediaKey),
+      'customSymbolMediaKey': serializer.toJson<String?>(customSymbolMediaKey),
+      'previewConfirmedFingerprint': serializer.toJson<String?>(
+        previewConfirmedFingerprint,
+      ),
+      'exportedRenderFingerprint': serializer.toJson<String?>(
+        exportedRenderFingerprint,
+      ),
+      'exportedFilename': serializer.toJson<String?>(exportedFilename),
+      'exportedLocation': serializer.toJson<String?>(exportedLocation),
+      'exportedSuccessfully': serializer.toJson<bool>(exportedSuccessfully),
+      'cleanupPending': serializer.toJson<bool>(cleanupPending),
+      'noPhotoAccepted': serializer.toJson<bool>(noPhotoAccepted),
+      'noCustomSymbolAccepted': serializer.toJson<bool>(noCustomSymbolAccepted),
+      'lowResolutionAccepted': serializer.toJson<bool>(lowResolutionAccepted),
+      'grammarVerified': serializer.toJson<bool>(grammarVerified),
+      'completedAt': serializer.toJson<String?>(completedAt),
+    };
+  }
+
+  PartePripremeData copyWith({
+    int? id,
+    int? predmetId,
+    String? predmetBroj,
+    String? status,
+    String? createdAt,
+    String? updatedAt,
+    String? sourceFingerprint,
+    String? templateId,
+    String? templateSnapshotJson,
+    String? draftJson,
+    Value<String?> photoMediaKey = const Value.absent(),
+    Value<String?> customSymbolMediaKey = const Value.absent(),
+    Value<String?> previewConfirmedFingerprint = const Value.absent(),
+    Value<String?> exportedRenderFingerprint = const Value.absent(),
+    Value<String?> exportedFilename = const Value.absent(),
+    Value<String?> exportedLocation = const Value.absent(),
+    bool? exportedSuccessfully,
+    bool? cleanupPending,
+    bool? noPhotoAccepted,
+    bool? noCustomSymbolAccepted,
+    bool? lowResolutionAccepted,
+    bool? grammarVerified,
+    Value<String?> completedAt = const Value.absent(),
+  }) => PartePripremeData(
+    id: id ?? this.id,
+    predmetId: predmetId ?? this.predmetId,
+    predmetBroj: predmetBroj ?? this.predmetBroj,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+    templateId: templateId ?? this.templateId,
+    templateSnapshotJson: templateSnapshotJson ?? this.templateSnapshotJson,
+    draftJson: draftJson ?? this.draftJson,
+    photoMediaKey: photoMediaKey.present
+        ? photoMediaKey.value
+        : this.photoMediaKey,
+    customSymbolMediaKey: customSymbolMediaKey.present
+        ? customSymbolMediaKey.value
+        : this.customSymbolMediaKey,
+    previewConfirmedFingerprint: previewConfirmedFingerprint.present
+        ? previewConfirmedFingerprint.value
+        : this.previewConfirmedFingerprint,
+    exportedRenderFingerprint: exportedRenderFingerprint.present
+        ? exportedRenderFingerprint.value
+        : this.exportedRenderFingerprint,
+    exportedFilename: exportedFilename.present
+        ? exportedFilename.value
+        : this.exportedFilename,
+    exportedLocation: exportedLocation.present
+        ? exportedLocation.value
+        : this.exportedLocation,
+    exportedSuccessfully: exportedSuccessfully ?? this.exportedSuccessfully,
+    cleanupPending: cleanupPending ?? this.cleanupPending,
+    noPhotoAccepted: noPhotoAccepted ?? this.noPhotoAccepted,
+    noCustomSymbolAccepted:
+        noCustomSymbolAccepted ?? this.noCustomSymbolAccepted,
+    lowResolutionAccepted: lowResolutionAccepted ?? this.lowResolutionAccepted,
+    grammarVerified: grammarVerified ?? this.grammarVerified,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+  );
+  PartePripremeData copyWithCompanion(PartePripremeCompanion data) {
+    return PartePripremeData(
+      id: data.id.present ? data.id.value : this.id,
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      predmetBroj: data.predmetBroj.present
+          ? data.predmetBroj.value
+          : this.predmetBroj,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      sourceFingerprint: data.sourceFingerprint.present
+          ? data.sourceFingerprint.value
+          : this.sourceFingerprint,
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      templateSnapshotJson: data.templateSnapshotJson.present
+          ? data.templateSnapshotJson.value
+          : this.templateSnapshotJson,
+      draftJson: data.draftJson.present ? data.draftJson.value : this.draftJson,
+      photoMediaKey: data.photoMediaKey.present
+          ? data.photoMediaKey.value
+          : this.photoMediaKey,
+      customSymbolMediaKey: data.customSymbolMediaKey.present
+          ? data.customSymbolMediaKey.value
+          : this.customSymbolMediaKey,
+      previewConfirmedFingerprint: data.previewConfirmedFingerprint.present
+          ? data.previewConfirmedFingerprint.value
+          : this.previewConfirmedFingerprint,
+      exportedRenderFingerprint: data.exportedRenderFingerprint.present
+          ? data.exportedRenderFingerprint.value
+          : this.exportedRenderFingerprint,
+      exportedFilename: data.exportedFilename.present
+          ? data.exportedFilename.value
+          : this.exportedFilename,
+      exportedLocation: data.exportedLocation.present
+          ? data.exportedLocation.value
+          : this.exportedLocation,
+      exportedSuccessfully: data.exportedSuccessfully.present
+          ? data.exportedSuccessfully.value
+          : this.exportedSuccessfully,
+      cleanupPending: data.cleanupPending.present
+          ? data.cleanupPending.value
+          : this.cleanupPending,
+      noPhotoAccepted: data.noPhotoAccepted.present
+          ? data.noPhotoAccepted.value
+          : this.noPhotoAccepted,
+      noCustomSymbolAccepted: data.noCustomSymbolAccepted.present
+          ? data.noCustomSymbolAccepted.value
+          : this.noCustomSymbolAccepted,
+      lowResolutionAccepted: data.lowResolutionAccepted.present
+          ? data.lowResolutionAccepted.value
+          : this.lowResolutionAccepted,
+      grammarVerified: data.grammarVerified.present
+          ? data.grammarVerified.value
+          : this.grammarVerified,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePripremeData(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('predmetBroj: $predmetBroj, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('templateId: $templateId, ')
+          ..write('templateSnapshotJson: $templateSnapshotJson, ')
+          ..write('draftJson: $draftJson, ')
+          ..write('photoMediaKey: $photoMediaKey, ')
+          ..write('customSymbolMediaKey: $customSymbolMediaKey, ')
+          ..write('previewConfirmedFingerprint: $previewConfirmedFingerprint, ')
+          ..write('exportedRenderFingerprint: $exportedRenderFingerprint, ')
+          ..write('exportedFilename: $exportedFilename, ')
+          ..write('exportedLocation: $exportedLocation, ')
+          ..write('exportedSuccessfully: $exportedSuccessfully, ')
+          ..write('cleanupPending: $cleanupPending, ')
+          ..write('noPhotoAccepted: $noPhotoAccepted, ')
+          ..write('noCustomSymbolAccepted: $noCustomSymbolAccepted, ')
+          ..write('lowResolutionAccepted: $lowResolutionAccepted, ')
+          ..write('grammarVerified: $grammarVerified, ')
+          ..write('completedAt: $completedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    predmetId,
+    predmetBroj,
+    status,
+    createdAt,
+    updatedAt,
+    sourceFingerprint,
+    templateId,
+    templateSnapshotJson,
+    draftJson,
+    photoMediaKey,
+    customSymbolMediaKey,
+    previewConfirmedFingerprint,
+    exportedRenderFingerprint,
+    exportedFilename,
+    exportedLocation,
+    exportedSuccessfully,
+    cleanupPending,
+    noPhotoAccepted,
+    noCustomSymbolAccepted,
+    lowResolutionAccepted,
+    grammarVerified,
+    completedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PartePripremeData &&
+          other.id == this.id &&
+          other.predmetId == this.predmetId &&
+          other.predmetBroj == this.predmetBroj &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.sourceFingerprint == this.sourceFingerprint &&
+          other.templateId == this.templateId &&
+          other.templateSnapshotJson == this.templateSnapshotJson &&
+          other.draftJson == this.draftJson &&
+          other.photoMediaKey == this.photoMediaKey &&
+          other.customSymbolMediaKey == this.customSymbolMediaKey &&
+          other.previewConfirmedFingerprint ==
+              this.previewConfirmedFingerprint &&
+          other.exportedRenderFingerprint == this.exportedRenderFingerprint &&
+          other.exportedFilename == this.exportedFilename &&
+          other.exportedLocation == this.exportedLocation &&
+          other.exportedSuccessfully == this.exportedSuccessfully &&
+          other.cleanupPending == this.cleanupPending &&
+          other.noPhotoAccepted == this.noPhotoAccepted &&
+          other.noCustomSymbolAccepted == this.noCustomSymbolAccepted &&
+          other.lowResolutionAccepted == this.lowResolutionAccepted &&
+          other.grammarVerified == this.grammarVerified &&
+          other.completedAt == this.completedAt);
+}
+
+class PartePripremeCompanion extends UpdateCompanion<PartePripremeData> {
+  final Value<int> id;
+  final Value<int> predmetId;
+  final Value<String> predmetBroj;
+  final Value<String> status;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<String> sourceFingerprint;
+  final Value<String> templateId;
+  final Value<String> templateSnapshotJson;
+  final Value<String> draftJson;
+  final Value<String?> photoMediaKey;
+  final Value<String?> customSymbolMediaKey;
+  final Value<String?> previewConfirmedFingerprint;
+  final Value<String?> exportedRenderFingerprint;
+  final Value<String?> exportedFilename;
+  final Value<String?> exportedLocation;
+  final Value<bool> exportedSuccessfully;
+  final Value<bool> cleanupPending;
+  final Value<bool> noPhotoAccepted;
+  final Value<bool> noCustomSymbolAccepted;
+  final Value<bool> lowResolutionAccepted;
+  final Value<bool> grammarVerified;
+  final Value<String?> completedAt;
+  const PartePripremeCompanion({
+    this.id = const Value.absent(),
+    this.predmetId = const Value.absent(),
+    this.predmetBroj = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.sourceFingerprint = const Value.absent(),
+    this.templateId = const Value.absent(),
+    this.templateSnapshotJson = const Value.absent(),
+    this.draftJson = const Value.absent(),
+    this.photoMediaKey = const Value.absent(),
+    this.customSymbolMediaKey = const Value.absent(),
+    this.previewConfirmedFingerprint = const Value.absent(),
+    this.exportedRenderFingerprint = const Value.absent(),
+    this.exportedFilename = const Value.absent(),
+    this.exportedLocation = const Value.absent(),
+    this.exportedSuccessfully = const Value.absent(),
+    this.cleanupPending = const Value.absent(),
+    this.noPhotoAccepted = const Value.absent(),
+    this.noCustomSymbolAccepted = const Value.absent(),
+    this.lowResolutionAccepted = const Value.absent(),
+    this.grammarVerified = const Value.absent(),
+    this.completedAt = const Value.absent(),
+  });
+  PartePripremeCompanion.insert({
+    this.id = const Value.absent(),
+    required int predmetId,
+    required String predmetBroj,
+    this.status = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    required String sourceFingerprint,
+    required String templateId,
+    required String templateSnapshotJson,
+    required String draftJson,
+    this.photoMediaKey = const Value.absent(),
+    this.customSymbolMediaKey = const Value.absent(),
+    this.previewConfirmedFingerprint = const Value.absent(),
+    this.exportedRenderFingerprint = const Value.absent(),
+    this.exportedFilename = const Value.absent(),
+    this.exportedLocation = const Value.absent(),
+    this.exportedSuccessfully = const Value.absent(),
+    this.cleanupPending = const Value.absent(),
+    this.noPhotoAccepted = const Value.absent(),
+    this.noCustomSymbolAccepted = const Value.absent(),
+    this.lowResolutionAccepted = const Value.absent(),
+    this.grammarVerified = const Value.absent(),
+    this.completedAt = const Value.absent(),
+  }) : predmetId = Value(predmetId),
+       predmetBroj = Value(predmetBroj),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       sourceFingerprint = Value(sourceFingerprint),
+       templateId = Value(templateId),
+       templateSnapshotJson = Value(templateSnapshotJson),
+       draftJson = Value(draftJson);
+  static Insertable<PartePripremeData> custom({
+    Expression<int>? id,
+    Expression<int>? predmetId,
+    Expression<String>? predmetBroj,
+    Expression<String>? status,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<String>? sourceFingerprint,
+    Expression<String>? templateId,
+    Expression<String>? templateSnapshotJson,
+    Expression<String>? draftJson,
+    Expression<String>? photoMediaKey,
+    Expression<String>? customSymbolMediaKey,
+    Expression<String>? previewConfirmedFingerprint,
+    Expression<String>? exportedRenderFingerprint,
+    Expression<String>? exportedFilename,
+    Expression<String>? exportedLocation,
+    Expression<bool>? exportedSuccessfully,
+    Expression<bool>? cleanupPending,
+    Expression<bool>? noPhotoAccepted,
+    Expression<bool>? noCustomSymbolAccepted,
+    Expression<bool>? lowResolutionAccepted,
+    Expression<bool>? grammarVerified,
+    Expression<String>? completedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (predmetBroj != null) 'predmet_broj': predmetBroj,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (sourceFingerprint != null) 'source_fingerprint': sourceFingerprint,
+      if (templateId != null) 'template_id': templateId,
+      if (templateSnapshotJson != null)
+        'template_snapshot_json': templateSnapshotJson,
+      if (draftJson != null) 'draft_json': draftJson,
+      if (photoMediaKey != null) 'photo_media_key': photoMediaKey,
+      if (customSymbolMediaKey != null)
+        'custom_symbol_media_key': customSymbolMediaKey,
+      if (previewConfirmedFingerprint != null)
+        'preview_confirmed_fingerprint': previewConfirmedFingerprint,
+      if (exportedRenderFingerprint != null)
+        'exported_render_fingerprint': exportedRenderFingerprint,
+      if (exportedFilename != null) 'exported_filename': exportedFilename,
+      if (exportedLocation != null) 'exported_location': exportedLocation,
+      if (exportedSuccessfully != null)
+        'exported_successfully': exportedSuccessfully,
+      if (cleanupPending != null) 'cleanup_pending': cleanupPending,
+      if (noPhotoAccepted != null) 'no_photo_accepted': noPhotoAccepted,
+      if (noCustomSymbolAccepted != null)
+        'no_custom_symbol_accepted': noCustomSymbolAccepted,
+      if (lowResolutionAccepted != null)
+        'low_resolution_accepted': lowResolutionAccepted,
+      if (grammarVerified != null) 'grammar_verified': grammarVerified,
+      if (completedAt != null) 'completed_at': completedAt,
+    });
+  }
+
+  PartePripremeCompanion copyWith({
+    Value<int>? id,
+    Value<int>? predmetId,
+    Value<String>? predmetBroj,
+    Value<String>? status,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<String>? sourceFingerprint,
+    Value<String>? templateId,
+    Value<String>? templateSnapshotJson,
+    Value<String>? draftJson,
+    Value<String?>? photoMediaKey,
+    Value<String?>? customSymbolMediaKey,
+    Value<String?>? previewConfirmedFingerprint,
+    Value<String?>? exportedRenderFingerprint,
+    Value<String?>? exportedFilename,
+    Value<String?>? exportedLocation,
+    Value<bool>? exportedSuccessfully,
+    Value<bool>? cleanupPending,
+    Value<bool>? noPhotoAccepted,
+    Value<bool>? noCustomSymbolAccepted,
+    Value<bool>? lowResolutionAccepted,
+    Value<bool>? grammarVerified,
+    Value<String?>? completedAt,
+  }) {
+    return PartePripremeCompanion(
+      id: id ?? this.id,
+      predmetId: predmetId ?? this.predmetId,
+      predmetBroj: predmetBroj ?? this.predmetBroj,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+      templateId: templateId ?? this.templateId,
+      templateSnapshotJson: templateSnapshotJson ?? this.templateSnapshotJson,
+      draftJson: draftJson ?? this.draftJson,
+      photoMediaKey: photoMediaKey ?? this.photoMediaKey,
+      customSymbolMediaKey: customSymbolMediaKey ?? this.customSymbolMediaKey,
+      previewConfirmedFingerprint:
+          previewConfirmedFingerprint ?? this.previewConfirmedFingerprint,
+      exportedRenderFingerprint:
+          exportedRenderFingerprint ?? this.exportedRenderFingerprint,
+      exportedFilename: exportedFilename ?? this.exportedFilename,
+      exportedLocation: exportedLocation ?? this.exportedLocation,
+      exportedSuccessfully: exportedSuccessfully ?? this.exportedSuccessfully,
+      cleanupPending: cleanupPending ?? this.cleanupPending,
+      noPhotoAccepted: noPhotoAccepted ?? this.noPhotoAccepted,
+      noCustomSymbolAccepted:
+          noCustomSymbolAccepted ?? this.noCustomSymbolAccepted,
+      lowResolutionAccepted:
+          lowResolutionAccepted ?? this.lowResolutionAccepted,
+      grammarVerified: grammarVerified ?? this.grammarVerified,
+      completedAt: completedAt ?? this.completedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (predmetBroj.present) {
+      map['predmet_broj'] = Variable<String>(predmetBroj.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (sourceFingerprint.present) {
+      map['source_fingerprint'] = Variable<String>(sourceFingerprint.value);
+    }
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (templateSnapshotJson.present) {
+      map['template_snapshot_json'] = Variable<String>(
+        templateSnapshotJson.value,
+      );
+    }
+    if (draftJson.present) {
+      map['draft_json'] = Variable<String>(draftJson.value);
+    }
+    if (photoMediaKey.present) {
+      map['photo_media_key'] = Variable<String>(photoMediaKey.value);
+    }
+    if (customSymbolMediaKey.present) {
+      map['custom_symbol_media_key'] = Variable<String>(
+        customSymbolMediaKey.value,
+      );
+    }
+    if (previewConfirmedFingerprint.present) {
+      map['preview_confirmed_fingerprint'] = Variable<String>(
+        previewConfirmedFingerprint.value,
+      );
+    }
+    if (exportedRenderFingerprint.present) {
+      map['exported_render_fingerprint'] = Variable<String>(
+        exportedRenderFingerprint.value,
+      );
+    }
+    if (exportedFilename.present) {
+      map['exported_filename'] = Variable<String>(exportedFilename.value);
+    }
+    if (exportedLocation.present) {
+      map['exported_location'] = Variable<String>(exportedLocation.value);
+    }
+    if (exportedSuccessfully.present) {
+      map['exported_successfully'] = Variable<bool>(exportedSuccessfully.value);
+    }
+    if (cleanupPending.present) {
+      map['cleanup_pending'] = Variable<bool>(cleanupPending.value);
+    }
+    if (noPhotoAccepted.present) {
+      map['no_photo_accepted'] = Variable<bool>(noPhotoAccepted.value);
+    }
+    if (noCustomSymbolAccepted.present) {
+      map['no_custom_symbol_accepted'] = Variable<bool>(
+        noCustomSymbolAccepted.value,
+      );
+    }
+    if (lowResolutionAccepted.present) {
+      map['low_resolution_accepted'] = Variable<bool>(
+        lowResolutionAccepted.value,
+      );
+    }
+    if (grammarVerified.present) {
+      map['grammar_verified'] = Variable<bool>(grammarVerified.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePripremeCompanion(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('predmetBroj: $predmetBroj, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('templateId: $templateId, ')
+          ..write('templateSnapshotJson: $templateSnapshotJson, ')
+          ..write('draftJson: $draftJson, ')
+          ..write('photoMediaKey: $photoMediaKey, ')
+          ..write('customSymbolMediaKey: $customSymbolMediaKey, ')
+          ..write('previewConfirmedFingerprint: $previewConfirmedFingerprint, ')
+          ..write('exportedRenderFingerprint: $exportedRenderFingerprint, ')
+          ..write('exportedFilename: $exportedFilename, ')
+          ..write('exportedLocation: $exportedLocation, ')
+          ..write('exportedSuccessfully: $exportedSuccessfully, ')
+          ..write('cleanupPending: $cleanupPending, ')
+          ..write('noPhotoAccepted: $noPhotoAccepted, ')
+          ..write('noCustomSymbolAccepted: $noCustomSymbolAccepted, ')
+          ..write('lowResolutionAccepted: $lowResolutionAccepted, ')
+          ..write('grammarVerified: $grammarVerified, ')
+          ..write('completedAt: $completedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LogIzmenaTable extends LogIzmena
     with TableInfo<$LogIzmenaTable, LogIzmenaData> {
   @override
@@ -13287,6 +15249,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $StanjeRobePoslediceTable(this);
   late final $PredlosciDokumenataTable predlosciDokumenata =
       $PredlosciDokumenataTable(this);
+  late final $PartePredlosciTable partePredlosci = $PartePredlosciTable(this);
+  late final $PartePripremeTable partePripreme = $PartePripremeTable(this);
   late final $LogIzmenaTable logIzmena = $LogIzmenaTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -13305,6 +15269,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     stanjeRobeAppliedEffects,
     stanjeRobePosledice,
     predlosciDokumenata,
+    partePredlosci,
+    partePripreme,
     logIzmena,
   ];
   @override
@@ -13336,6 +15302,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('stanje_robe_posledice', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('parte_pripreme', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -13577,6 +15550,7 @@ typedef $$FirmaPodaciTableCreateCompanionBuilder =
       Value<String> email,
       Value<String> sajt,
       Value<Uint8List?> logo,
+      Value<String> parteDefaultTemplateId,
     });
 typedef $$FirmaPodaciTableUpdateCompanionBuilder =
     FirmaPodaciCompanion Function({
@@ -13591,6 +15565,7 @@ typedef $$FirmaPodaciTableUpdateCompanionBuilder =
       Value<String> email,
       Value<String> sajt,
       Value<Uint8List?> logo,
+      Value<String> parteDefaultTemplateId,
     });
 
 class $$FirmaPodaciTableFilterComposer
@@ -13654,6 +15629,11 @@ class $$FirmaPodaciTableFilterComposer
 
   ColumnFilters<Uint8List> get logo => $composableBuilder(
     column: $table.logo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parteDefaultTemplateId => $composableBuilder(
+    column: $table.parteDefaultTemplateId,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -13721,6 +15701,11 @@ class $$FirmaPodaciTableOrderingComposer
     column: $table.logo,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get parteDefaultTemplateId => $composableBuilder(
+    column: $table.parteDefaultTemplateId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FirmaPodaciTableAnnotationComposer
@@ -13768,6 +15753,11 @@ class $$FirmaPodaciTableAnnotationComposer
 
   GeneratedColumn<Uint8List> get logo =>
       $composableBuilder(column: $table.logo, builder: (column) => column);
+
+  GeneratedColumn<String> get parteDefaultTemplateId => $composableBuilder(
+    column: $table.parteDefaultTemplateId,
+    builder: (column) => column,
+  );
 }
 
 class $$FirmaPodaciTableTableManager
@@ -13812,6 +15802,7 @@ class $$FirmaPodaciTableTableManager
                 Value<String> email = const Value.absent(),
                 Value<String> sajt = const Value.absent(),
                 Value<Uint8List?> logo = const Value.absent(),
+                Value<String> parteDefaultTemplateId = const Value.absent(),
               }) => FirmaPodaciCompanion(
                 id: id,
                 naziv: naziv,
@@ -13824,6 +15815,7 @@ class $$FirmaPodaciTableTableManager
                 email: email,
                 sajt: sajt,
                 logo: logo,
+                parteDefaultTemplateId: parteDefaultTemplateId,
               ),
           createCompanionCallback:
               ({
@@ -13838,6 +15830,7 @@ class $$FirmaPodaciTableTableManager
                 Value<String> email = const Value.absent(),
                 Value<String> sajt = const Value.absent(),
                 Value<Uint8List?> logo = const Value.absent(),
+                Value<String> parteDefaultTemplateId = const Value.absent(),
               }) => FirmaPodaciCompanion.insert(
                 id: id,
                 naziv: naziv,
@@ -13850,6 +15843,7 @@ class $$FirmaPodaciTableTableManager
                 email: email,
                 sajt: sajt,
                 logo: logo,
+                parteDefaultTemplateId: parteDefaultTemplateId,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -14287,6 +16281,7 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> docekMesto,
       Value<String> docekDatum,
       Value<String> docekVreme,
+      Value<bool> partePotrebna,
       Value<String> simbol,
       Value<String> pismo,
       Value<String> parteIme,
@@ -14419,6 +16414,7 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> docekMesto,
       Value<String> docekDatum,
       Value<String> docekVreme,
+      Value<bool> partePotrebna,
       Value<String> simbol,
       Value<String> pismo,
       Value<String> parteIme,
@@ -14496,6 +16492,24 @@ final class $$PredmetiTableReferences
     final cache = $_typedResult.readTableOrNull(
       _stanjeRobePoslediceRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PartePripremeTable, List<PartePripremeData>>
+  _partePripremeRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.partePripreme,
+    aliasName: $_aliasNameGenerator(db.predmeti.id, db.partePripreme.predmetId),
+  );
+
+  $$PartePripremeTableProcessedTableManager get partePripremeRefs {
+    final manager = $$PartePripremeTableTableManager(
+      $_db,
+      $_db.partePripreme,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_partePripremeRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -15114,6 +17128,11 @@ class $$PredmetiTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get partePotrebna => $composableBuilder(
+    column: $table.partePotrebna,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get simbol => $composableBuilder(
     column: $table.simbol,
     builder: (column) => ColumnFilters(column),
@@ -15240,6 +17259,31 @@ class $$PredmetiTableFilterComposer
           }) => $$StanjeRobePoslediceTableFilterComposer(
             $db: $db,
             $table: $db.stanjeRobePosledice,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> partePripremeRefs(
+    Expression<bool> Function($$PartePripremeTableFilterComposer f) f,
+  ) {
+    final $$PartePripremeTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.partePripreme,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PartePripremeTableFilterComposer(
+            $db: $db,
+            $table: $db.partePripreme,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -15870,6 +17914,11 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get partePotrebna => $composableBuilder(
+    column: $table.partePotrebna,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get simbol => $composableBuilder(
     column: $table.simbol,
     builder: (column) => ColumnOrderings(column),
@@ -16442,6 +18491,11 @@ class $$PredmetiTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get partePotrebna => $composableBuilder(
+    column: $table.partePotrebna,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get simbol =>
       $composableBuilder(column: $table.simbol, builder: (column) => column);
 
@@ -16564,6 +18618,31 @@ class $$PredmetiTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> partePripremeRefs<T extends Object>(
+    Expression<T> Function($$PartePripremeTableAnnotationComposer a) f,
+  ) {
+    final $$PartePripremeTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.partePripreme,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PartePripremeTableAnnotationComposer(
+            $db: $db,
+            $table: $db.partePripreme,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> logIzmenaRefs<T extends Object>(
     Expression<T> Function($$LogIzmenaTableAnnotationComposer a) f,
   ) {
@@ -16607,6 +18686,7 @@ class $$PredmetiTableTableManager
             bool kontaktLicaRefs,
             bool iriuRefs,
             bool stanjeRobePoslediceRefs,
+            bool partePripremeRefs,
             bool logIzmenaRefs,
           })
         > {
@@ -16741,6 +18821,7 @@ class $$PredmetiTableTableManager
                 Value<String> docekMesto = const Value.absent(),
                 Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
+                Value<bool> partePotrebna = const Value.absent(),
                 Value<String> simbol = const Value.absent(),
                 Value<String> pismo = const Value.absent(),
                 Value<String> parteIme = const Value.absent(),
@@ -16872,6 +18953,7 @@ class $$PredmetiTableTableManager
                 docekMesto: docekMesto,
                 docekDatum: docekDatum,
                 docekVreme: docekVreme,
+                partePotrebna: partePotrebna,
                 simbol: simbol,
                 pismo: pismo,
                 parteIme: parteIme,
@@ -17005,6 +19087,7 @@ class $$PredmetiTableTableManager
                 Value<String> docekMesto = const Value.absent(),
                 Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
+                Value<bool> partePotrebna = const Value.absent(),
                 Value<String> simbol = const Value.absent(),
                 Value<String> pismo = const Value.absent(),
                 Value<String> parteIme = const Value.absent(),
@@ -17136,6 +19219,7 @@ class $$PredmetiTableTableManager
                 docekMesto: docekMesto,
                 docekDatum: docekDatum,
                 docekVreme: docekVreme,
+                partePotrebna: partePotrebna,
                 simbol: simbol,
                 pismo: pismo,
                 parteIme: parteIme,
@@ -17162,6 +19246,7 @@ class $$PredmetiTableTableManager
                 kontaktLicaRefs = false,
                 iriuRefs = false,
                 stanjeRobePoslediceRefs = false,
+                partePripremeRefs = false,
                 logIzmenaRefs = false,
               }) {
                 return PrefetchHooks(
@@ -17170,6 +19255,7 @@ class $$PredmetiTableTableManager
                     if (kontaktLicaRefs) db.kontaktLica,
                     if (iriuRefs) db.iriu,
                     if (stanjeRobePoslediceRefs) db.stanjeRobePosledice,
+                    if (partePripremeRefs) db.partePripreme,
                     if (logIzmenaRefs) db.logIzmena,
                   ],
                   addJoins: null,
@@ -17234,6 +19320,27 @@ class $$PredmetiTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (partePripremeRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          PartePripremeData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._partePripremeRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).partePripremeRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (logIzmenaRefs)
                         await $_getPrefetchedData<
                           PredmetiData,
@@ -17279,6 +19386,7 @@ typedef $$PredmetiTableProcessedTableManager =
         bool kontaktLicaRefs,
         bool iriuRefs,
         bool stanjeRobePoslediceRefs,
+        bool partePripremeRefs,
         bool logIzmenaRefs,
       })
     >;
@@ -20151,6 +22259,950 @@ typedef $$PredlosciDokumenataTableProcessedTableManager =
       PredlosciDokumenataData,
       PrefetchHooks Function()
     >;
+typedef $$PartePredlosciTableCreateCompanionBuilder =
+    PartePredlosciCompanion Function({
+      required String id,
+      Value<int> firmaId,
+      required String naziv,
+      Value<int> schemaVersion,
+      required String configJson,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PartePredlosciTableUpdateCompanionBuilder =
+    PartePredlosciCompanion Function({
+      Value<String> id,
+      Value<int> firmaId,
+      Value<String> naziv,
+      Value<int> schemaVersion,
+      Value<String> configJson,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$PartePredlosciTableFilterComposer
+    extends Composer<_$AppDatabase, $PartePredlosciTable> {
+  $$PartePredlosciTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get firmaId => $composableBuilder(
+    column: $table.firmaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PartePredlosciTableOrderingComposer
+    extends Composer<_$AppDatabase, $PartePredlosciTable> {
+  $$PartePredlosciTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get firmaId => $composableBuilder(
+    column: $table.firmaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PartePredlosciTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PartePredlosciTable> {
+  $$PartePredlosciTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get firmaId =>
+      $composableBuilder(column: $table.firmaId, builder: (column) => column);
+
+  GeneratedColumn<String> get naziv =>
+      $composableBuilder(column: $table.naziv, builder: (column) => column);
+
+  GeneratedColumn<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$PartePredlosciTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PartePredlosciTable,
+          PartePredlosciData,
+          $$PartePredlosciTableFilterComposer,
+          $$PartePredlosciTableOrderingComposer,
+          $$PartePredlosciTableAnnotationComposer,
+          $$PartePredlosciTableCreateCompanionBuilder,
+          $$PartePredlosciTableUpdateCompanionBuilder,
+          (
+            PartePredlosciData,
+            BaseReferences<
+              _$AppDatabase,
+              $PartePredlosciTable,
+              PartePredlosciData
+            >,
+          ),
+          PartePredlosciData,
+          PrefetchHooks Function()
+        > {
+  $$PartePredlosciTableTableManager(
+    _$AppDatabase db,
+    $PartePredlosciTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PartePredlosciTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PartePredlosciTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PartePredlosciTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> firmaId = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<String> configJson = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PartePredlosciCompanion(
+                id: id,
+                firmaId: firmaId,
+                naziv: naziv,
+                schemaVersion: schemaVersion,
+                configJson: configJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<int> firmaId = const Value.absent(),
+                required String naziv,
+                Value<int> schemaVersion = const Value.absent(),
+                required String configJson,
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PartePredlosciCompanion.insert(
+                id: id,
+                firmaId: firmaId,
+                naziv: naziv,
+                schemaVersion: schemaVersion,
+                configJson: configJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PartePredlosciTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PartePredlosciTable,
+      PartePredlosciData,
+      $$PartePredlosciTableFilterComposer,
+      $$PartePredlosciTableOrderingComposer,
+      $$PartePredlosciTableAnnotationComposer,
+      $$PartePredlosciTableCreateCompanionBuilder,
+      $$PartePredlosciTableUpdateCompanionBuilder,
+      (
+        PartePredlosciData,
+        BaseReferences<_$AppDatabase, $PartePredlosciTable, PartePredlosciData>,
+      ),
+      PartePredlosciData,
+      PrefetchHooks Function()
+    >;
+typedef $$PartePripremeTableCreateCompanionBuilder =
+    PartePripremeCompanion Function({
+      Value<int> id,
+      required int predmetId,
+      required String predmetBroj,
+      Value<String> status,
+      required String createdAt,
+      required String updatedAt,
+      required String sourceFingerprint,
+      required String templateId,
+      required String templateSnapshotJson,
+      required String draftJson,
+      Value<String?> photoMediaKey,
+      Value<String?> customSymbolMediaKey,
+      Value<String?> previewConfirmedFingerprint,
+      Value<String?> exportedRenderFingerprint,
+      Value<String?> exportedFilename,
+      Value<String?> exportedLocation,
+      Value<bool> exportedSuccessfully,
+      Value<bool> cleanupPending,
+      Value<bool> noPhotoAccepted,
+      Value<bool> noCustomSymbolAccepted,
+      Value<bool> lowResolutionAccepted,
+      Value<bool> grammarVerified,
+      Value<String?> completedAt,
+    });
+typedef $$PartePripremeTableUpdateCompanionBuilder =
+    PartePripremeCompanion Function({
+      Value<int> id,
+      Value<int> predmetId,
+      Value<String> predmetBroj,
+      Value<String> status,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<String> sourceFingerprint,
+      Value<String> templateId,
+      Value<String> templateSnapshotJson,
+      Value<String> draftJson,
+      Value<String?> photoMediaKey,
+      Value<String?> customSymbolMediaKey,
+      Value<String?> previewConfirmedFingerprint,
+      Value<String?> exportedRenderFingerprint,
+      Value<String?> exportedFilename,
+      Value<String?> exportedLocation,
+      Value<bool> exportedSuccessfully,
+      Value<bool> cleanupPending,
+      Value<bool> noPhotoAccepted,
+      Value<bool> noCustomSymbolAccepted,
+      Value<bool> lowResolutionAccepted,
+      Value<bool> grammarVerified,
+      Value<String?> completedAt,
+    });
+
+final class $$PartePripremeTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $PartePripremeTable, PartePripremeData> {
+  $$PartePripremeTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(db.partePripreme.predmetId, db.predmeti.id),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PartePripremeTableFilterComposer
+    extends Composer<_$AppDatabase, $PartePripremeTable> {
+  $$PartePripremeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get predmetBroj => $composableBuilder(
+    column: $table.predmetBroj,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get templateSnapshotJson => $composableBuilder(
+    column: $table.templateSnapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get draftJson => $composableBuilder(
+    column: $table.draftJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoMediaKey => $composableBuilder(
+    column: $table.photoMediaKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customSymbolMediaKey => $composableBuilder(
+    column: $table.customSymbolMediaKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get previewConfirmedFingerprint => $composableBuilder(
+    column: $table.previewConfirmedFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exportedRenderFingerprint => $composableBuilder(
+    column: $table.exportedRenderFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exportedFilename => $composableBuilder(
+    column: $table.exportedFilename,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exportedLocation => $composableBuilder(
+    column: $table.exportedLocation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get exportedSuccessfully => $composableBuilder(
+    column: $table.exportedSuccessfully,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get cleanupPending => $composableBuilder(
+    column: $table.cleanupPending,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get noPhotoAccepted => $composableBuilder(
+    column: $table.noPhotoAccepted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get noCustomSymbolAccepted => $composableBuilder(
+    column: $table.noCustomSymbolAccepted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get lowResolutionAccepted => $composableBuilder(
+    column: $table.lowResolutionAccepted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get grammarVerified => $composableBuilder(
+    column: $table.grammarVerified,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PartePripremeTableOrderingComposer
+    extends Composer<_$AppDatabase, $PartePripremeTable> {
+  $$PartePripremeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get predmetBroj => $composableBuilder(
+    column: $table.predmetBroj,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get templateSnapshotJson => $composableBuilder(
+    column: $table.templateSnapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get draftJson => $composableBuilder(
+    column: $table.draftJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoMediaKey => $composableBuilder(
+    column: $table.photoMediaKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customSymbolMediaKey => $composableBuilder(
+    column: $table.customSymbolMediaKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get previewConfirmedFingerprint => $composableBuilder(
+    column: $table.previewConfirmedFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exportedRenderFingerprint => $composableBuilder(
+    column: $table.exportedRenderFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exportedFilename => $composableBuilder(
+    column: $table.exportedFilename,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exportedLocation => $composableBuilder(
+    column: $table.exportedLocation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get exportedSuccessfully => $composableBuilder(
+    column: $table.exportedSuccessfully,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get cleanupPending => $composableBuilder(
+    column: $table.cleanupPending,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get noPhotoAccepted => $composableBuilder(
+    column: $table.noPhotoAccepted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get noCustomSymbolAccepted => $composableBuilder(
+    column: $table.noCustomSymbolAccepted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get lowResolutionAccepted => $composableBuilder(
+    column: $table.lowResolutionAccepted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get grammarVerified => $composableBuilder(
+    column: $table.grammarVerified,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PartePripremeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PartePripremeTable> {
+  $$PartePripremeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get predmetBroj => $composableBuilder(
+    column: $table.predmetBroj,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get templateSnapshotJson => $composableBuilder(
+    column: $table.templateSnapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get draftJson =>
+      $composableBuilder(column: $table.draftJson, builder: (column) => column);
+
+  GeneratedColumn<String> get photoMediaKey => $composableBuilder(
+    column: $table.photoMediaKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customSymbolMediaKey => $composableBuilder(
+    column: $table.customSymbolMediaKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get previewConfirmedFingerprint => $composableBuilder(
+    column: $table.previewConfirmedFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exportedRenderFingerprint => $composableBuilder(
+    column: $table.exportedRenderFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exportedFilename => $composableBuilder(
+    column: $table.exportedFilename,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exportedLocation => $composableBuilder(
+    column: $table.exportedLocation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get exportedSuccessfully => $composableBuilder(
+    column: $table.exportedSuccessfully,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get cleanupPending => $composableBuilder(
+    column: $table.cleanupPending,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get noPhotoAccepted => $composableBuilder(
+    column: $table.noPhotoAccepted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get noCustomSymbolAccepted => $composableBuilder(
+    column: $table.noCustomSymbolAccepted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get lowResolutionAccepted => $composableBuilder(
+    column: $table.lowResolutionAccepted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get grammarVerified => $composableBuilder(
+    column: $table.grammarVerified,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PartePripremeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PartePripremeTable,
+          PartePripremeData,
+          $$PartePripremeTableFilterComposer,
+          $$PartePripremeTableOrderingComposer,
+          $$PartePripremeTableAnnotationComposer,
+          $$PartePripremeTableCreateCompanionBuilder,
+          $$PartePripremeTableUpdateCompanionBuilder,
+          (PartePripremeData, $$PartePripremeTableReferences),
+          PartePripremeData,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$PartePripremeTableTableManager(_$AppDatabase db, $PartePripremeTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PartePripremeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PartePripremeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PartePripremeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> predmetId = const Value.absent(),
+                Value<String> predmetBroj = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<String> sourceFingerprint = const Value.absent(),
+                Value<String> templateId = const Value.absent(),
+                Value<String> templateSnapshotJson = const Value.absent(),
+                Value<String> draftJson = const Value.absent(),
+                Value<String?> photoMediaKey = const Value.absent(),
+                Value<String?> customSymbolMediaKey = const Value.absent(),
+                Value<String?> previewConfirmedFingerprint =
+                    const Value.absent(),
+                Value<String?> exportedRenderFingerprint = const Value.absent(),
+                Value<String?> exportedFilename = const Value.absent(),
+                Value<String?> exportedLocation = const Value.absent(),
+                Value<bool> exportedSuccessfully = const Value.absent(),
+                Value<bool> cleanupPending = const Value.absent(),
+                Value<bool> noPhotoAccepted = const Value.absent(),
+                Value<bool> noCustomSymbolAccepted = const Value.absent(),
+                Value<bool> lowResolutionAccepted = const Value.absent(),
+                Value<bool> grammarVerified = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+              }) => PartePripremeCompanion(
+                id: id,
+                predmetId: predmetId,
+                predmetBroj: predmetBroj,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                sourceFingerprint: sourceFingerprint,
+                templateId: templateId,
+                templateSnapshotJson: templateSnapshotJson,
+                draftJson: draftJson,
+                photoMediaKey: photoMediaKey,
+                customSymbolMediaKey: customSymbolMediaKey,
+                previewConfirmedFingerprint: previewConfirmedFingerprint,
+                exportedRenderFingerprint: exportedRenderFingerprint,
+                exportedFilename: exportedFilename,
+                exportedLocation: exportedLocation,
+                exportedSuccessfully: exportedSuccessfully,
+                cleanupPending: cleanupPending,
+                noPhotoAccepted: noPhotoAccepted,
+                noCustomSymbolAccepted: noCustomSymbolAccepted,
+                lowResolutionAccepted: lowResolutionAccepted,
+                grammarVerified: grammarVerified,
+                completedAt: completedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int predmetId,
+                required String predmetBroj,
+                Value<String> status = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                required String sourceFingerprint,
+                required String templateId,
+                required String templateSnapshotJson,
+                required String draftJson,
+                Value<String?> photoMediaKey = const Value.absent(),
+                Value<String?> customSymbolMediaKey = const Value.absent(),
+                Value<String?> previewConfirmedFingerprint =
+                    const Value.absent(),
+                Value<String?> exportedRenderFingerprint = const Value.absent(),
+                Value<String?> exportedFilename = const Value.absent(),
+                Value<String?> exportedLocation = const Value.absent(),
+                Value<bool> exportedSuccessfully = const Value.absent(),
+                Value<bool> cleanupPending = const Value.absent(),
+                Value<bool> noPhotoAccepted = const Value.absent(),
+                Value<bool> noCustomSymbolAccepted = const Value.absent(),
+                Value<bool> lowResolutionAccepted = const Value.absent(),
+                Value<bool> grammarVerified = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+              }) => PartePripremeCompanion.insert(
+                id: id,
+                predmetId: predmetId,
+                predmetBroj: predmetBroj,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                sourceFingerprint: sourceFingerprint,
+                templateId: templateId,
+                templateSnapshotJson: templateSnapshotJson,
+                draftJson: draftJson,
+                photoMediaKey: photoMediaKey,
+                customSymbolMediaKey: customSymbolMediaKey,
+                previewConfirmedFingerprint: previewConfirmedFingerprint,
+                exportedRenderFingerprint: exportedRenderFingerprint,
+                exportedFilename: exportedFilename,
+                exportedLocation: exportedLocation,
+                exportedSuccessfully: exportedSuccessfully,
+                cleanupPending: cleanupPending,
+                noPhotoAccepted: noPhotoAccepted,
+                noCustomSymbolAccepted: noCustomSymbolAccepted,
+                lowResolutionAccepted: lowResolutionAccepted,
+                grammarVerified: grammarVerified,
+                completedAt: completedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PartePripremeTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable: $$PartePripremeTableReferences
+                                    ._predmetIdTable(db),
+                                referencedColumn: $$PartePripremeTableReferences
+                                    ._predmetIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PartePripremeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PartePripremeTable,
+      PartePripremeData,
+      $$PartePripremeTableFilterComposer,
+      $$PartePripremeTableOrderingComposer,
+      $$PartePripremeTableAnnotationComposer,
+      $$PartePripremeTableCreateCompanionBuilder,
+      $$PartePripremeTableUpdateCompanionBuilder,
+      (PartePripremeData, $$PartePripremeTableReferences),
+      PartePripremeData,
+      PrefetchHooks Function({bool predmetId})
+    >;
 typedef $$LogIzmenaTableCreateCompanionBuilder =
     LogIzmenaCompanion Function({
       Value<int> id,
@@ -20540,6 +23592,10 @@ class $AppDatabaseManager {
       $$StanjeRobePoslediceTableTableManager(_db, _db.stanjeRobePosledice);
   $$PredlosciDokumenataTableTableManager get predlosciDokumenata =>
       $$PredlosciDokumenataTableTableManager(_db, _db.predlosciDokumenata);
+  $$PartePredlosciTableTableManager get partePredlosci =>
+      $$PartePredlosciTableTableManager(_db, _db.partePredlosci);
+  $$PartePripremeTableTableManager get partePripreme =>
+      $$PartePripremeTableTableManager(_db, _db.partePripreme);
   $$LogIzmenaTableTableManager get logIzmena =>
       $$LogIzmenaTableTableManager(_db, _db.logIzmena);
 }

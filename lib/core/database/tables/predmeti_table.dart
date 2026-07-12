@@ -75,8 +75,7 @@ class Predmeti extends Table {
       text().withDefault(const Constant('NE'))();
   TextColumn get bracniDrugJePenzioner =>
       text().withDefault(const Constant('NE'))();
-  TextColumn get penzionerNapomena =>
-      text().withDefault(const Constant(''))();
+  TextColumn get penzionerNapomena => text().withDefault(const Constant(''))();
 
   // ── Naručilac opreme i usluga ────────────────────────────────────────────
   // FIZICKO_LICE / PRAVNO_LICE
@@ -118,16 +117,14 @@ class Predmeti extends Table {
   TextColumn get jkpPlAdresa => text().withDefault(const Constant(''))();
   TextColumn get jkpPlPib => text().withDefault(const Constant(''))();
   TextColumn get jkpPlMb => text().withDefault(const Constant(''))();
-  TextColumn get jkpPlOdgovornoLice =>
-      text().withDefault(const Constant(''))();
+  TextColumn get jkpPlOdgovornoLice => text().withDefault(const Constant(''))();
   TextColumn get jkpPlTelefon1 => text().withDefault(const Constant(''))();
   TextColumn get jkpPlEmail => text().withDefault(const Constant(''))();
 
   // ── Ceremonija ───────────────────────────────────────────────────────────
   TextColumn get groblje => text().withDefault(const Constant(''))();
   // GRADSKO / LOKALNO
-  TextColumn get tipGroblja =>
-      text().withDefault(const Constant('GRADSKO'))();
+  TextColumn get tipGroblja => text().withDefault(const Constant('GRADSKO'))();
   TextColumn get vrstaCeremonije =>
       text().withDefault(const Constant('SAHRANA'))();
   TextColumn get datumCeremonije => text().withDefault(const Constant(''))();
@@ -138,8 +135,7 @@ class Predmeti extends Table {
   TextColumn get vremeOpela => text().withDefault(const Constant(''))();
   TextColumn get vremeIspracaja => text().withDefault(const Constant(''))();
   // NOVO / POSTOJECE
-  TextColumn get grobnoMesto =>
-      text().withDefault(const Constant('NOVO'))();
+  TextColumn get grobnoMesto => text().withDefault(const Constant('NOVO'))();
   // GROB / GROBNICA
   TextColumn get tipGrobnogMesta =>
       text().withDefault(const Constant('GROB'))();
@@ -167,11 +163,12 @@ class Predmeti extends Table {
   TextColumn get docekVreme => text().withDefault(const Constant(''))();
 
   // ── Parte ────────────────────────────────────────────────────────────────
+  BoolColumn get partePotrebna =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get simbol =>
       text().withDefault(const Constant('PRAVOSLAVNI_KRST_SVETOSAVSKI'))();
   // LATINICA / CIRILICA
-  TextColumn get pismo =>
-      text().withDefault(const Constant('LATINICA'))();
+  TextColumn get pismo => text().withDefault(const Constant('LATINICA'))();
   TextColumn get parteIme => text().withDefault(const Constant(''))();
   TextColumn get ozaloseni => text().withDefault(const Constant(''))();
 

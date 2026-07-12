@@ -344,11 +344,11 @@ Zato je merodavan zaključak ovog dokumentacionog taska:
 
 `DOCUMENTATION PASS — CURRENT SOURCE / OWNER-APPROVED FUTURE RULE CONFLICT RECORDED — IMPLEMENTATION NOT AUTHORIZED`
 
-## 8. PARTE print-preparation and media audit queue
+## 8. PARTE print-preparation and media
 
-**Status: `AUDIT ONLY — OWNER DECISIONS REQUIRED`**
+**Status: `CURRENTLY IMPLEMENTED — REAL-DEVICE RUNTIME SMOKE PENDING`**
 
-This section records source findings, owner proposals and unresolved questions. It does not approve implementation and does not modify `OPC-OD-CER-011`: PREDMET remains authoritative and PARTE remains derivative.
+The historical audit findings and queue remain below for traceability. The owner-authorized task `OPC-PARTE-PRINT-PREPARATION-IMPLEMENTATION` resolved their implementation scope without modifying `OPC-OD-CER-011`: PREDMET remains authoritative and PARTE remains derivative.
 
 ### 8.1 Current source findings
 
@@ -361,7 +361,7 @@ This section records source findings, owner proposals and unresolved questions. 
 - Current anonymization has no photograph/artifact rule and retains current mourners text.
 - `advancedParte` entitlement exists, but current PARTE UI does not consume it.
 
-### 8.2 Owner proposals under audit
+### 8.2 Historical owner proposals resolved by the implementation task
 
 - prepare a concrete printable death notice/poster from PREDMET;
 - support a deceased-person photograph;
@@ -370,7 +370,7 @@ This section records source findings, owner proposals and unresolved questions. 
 - consider deletion of an OPC-owned prepared copy after safe generation, or explicit deletion from PARTE;
 - preserve equal Windows/Android product meaning.
 
-These are `OWNER PROPOSAL — AUDIT ONLY`, not approved implementation behavior.
+These proposals became implemented behavior only through the later explicit implementation task; the audit itself was not authorization.
 
 ### 8.3 Non-negotiable safety boundary
 
@@ -378,9 +378,9 @@ OPC must never silently modify or delete the user's original external photograph
 
 Unknown or deleted symbol IDs must not be silently replaced. Long public values must not be silently truncated, ellipsized or fit-compressed.
 
-### 8.4 Unresolved PARTE queue
+### 8.4 Historical PARTE audit queue
 
-The following queue IDs are audit navigation IDs, not owner-decision IDs and not approved decisions:
+The following queue IDs are retained as audit navigation IDs, not owner-decision IDs. Their authorized implementation resolution is summarized in 8.5:
 
 - `OPC-PARTE-ODQ-001`: required/optional printed fields and blockers;
 - `OPC-PARTE-ODQ-002`: template, paper, margins, font and version strategy;
@@ -399,3 +399,25 @@ The following queue IDs are audit navigation IDs, not owner-decision IDs and not
 - `OPC-PARTE-ODQ-015`: generated artifact metadata and any print-status meaning.
 
 Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md` and `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`.
+
+### 8.5 Implemented policy lock
+
+**Status: `CURRENTLY IMPLEMENTED`**
+**Decision ID: `OPC-OD-PARTE-001`**
+
+- `PREDMET.partePotrebna` is the authoritative decision that PARTE are required. PARTE never becomes a parallel PREDMET and temporary edits never write back.
+- A legitimate entitled open creates or resumes one restart-safe technical preparation. It snapshots the active FIRMA technical template; later default-template changes do not mutate the preparation.
+- A changed authoritative PREDMET source is detected and warned about. Temporary edits are not silently overwritten; rebuild is explicit.
+- The standard format is a custom `224 × 170 mm` landscape page with a `5 mm` margin. Preview and PDF consume one shared measured render plan. Full text wraps, may reduce only to configured minimum, and unresolved overflow blocks confirmation/PDF; there is no silent clipping, truncation or ellipsis.
+- Missing or conflicting gender never defaults silently to male wording. Grammar review/verification is required.
+- Symbol terminology is exactly `Standardni simbol iz PARTE kataloga`, `BEZ SIMBOLA`, and `SLOBODAN IZBOR`. The embedded catalog has Davidova zvezda, Katolički, Običan krst, Petokraka, Polumesec and Svetosavski. No-symbol removes/reflows the block; free choice requires an owned custom copy or explicit no-symbol acknowledgement.
+- External photograph/custom-symbol originals are read-only and are never moved, modified or deleted. OPC stores only normalized app-owned temporary copies under its support storage. Invalid media is rejected without losing the previous durable copy; low-resolution use requires acknowledgement.
+- FIRMA user templates contain technical layout/style only and no case content, media or paths. The built-in template is immutable. ADMINISTRATOR manages templates; SAVETNIK can use the composer but cannot administer templates.
+- `advancedParte` is available in POTPUN and in SREDNJI only with the add-on. A downgrade locks mutation without deleting data; re-entitlement resumes the same preparation. OSNOVNI does not initialize it.
+- Single-PREDMET JSON carries only the authoritative `partePotrebna` fact and excludes preparation/templates/media. Full backup carries content-free FIRMA user templates/default identity but excludes preparation/media. Dedicated template transfer is versioned and supports replace/copy/cancel conflicts.
+- Final preview confirmation and successful current export to `Downloads/KORICE` are mandatory before `PRIPREMA ZAVRŠENA`. A started unfinished preparation blocks manual/automatic completion and anonymization.
+- Completion cleanup deletes only app-owned temporary media/state, retains the exported PDF, and records retryable cleanup-pending state on failure.
+- Windows and Android share the same persistence, policy, composer and PDF logic; Android narrow UI scrolls and keeps controls reachable.
+- `parteIme` fact-check is `FACT CHECK INCONCLUSIVE — PRESERVED, NOT REUSED`: compatibility storage/transfer remains, but the implementation assigns it no guessed filename or business meaning.
+
+Implementation evidence and exact fallback branches are in `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` sections 20-27 and `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.

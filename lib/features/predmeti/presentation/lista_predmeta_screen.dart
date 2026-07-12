@@ -437,7 +437,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       );
       return;
     }
-    if (await _blokirajZatvaranjeAkoImaStanjeRobePosledica(p)) {
+    if (await _blokirajAkoParteNijeZavrsena(p) ||
+        await _blokirajZatvaranjeAkoImaStanjeRobePosledica(p)) {
       return;
     }
     if (!mounted) return;
@@ -496,6 +497,11 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       return;
     }
 
+    if (await _blokirajAkoParteNijeZavrsena(p, action: 'anonimizovan')) {
+      return;
+    }
+    if (!mounted) return;
+
     final izbor = await showDialog<bool?>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -526,6 +532,34 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     if (izbor == null) return;
 
     if (mounted) await widget.predmetiRepo.anonimizujPredmet(p.id);
+  }
+
+  Future<bool> _blokirajAkoParteNijeZavrsena(
+    PredmetiData p, {
+    String action = 'zatvoren',
+  }) async {
+    final blocks = await widget.predmetiRepo.imaAktivnuNezavrsenuPartePripremu(
+      p.id,
+    );
+    if (!blocks) return false;
+    if (!mounted) return true;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Predmet ne može biti $action'),
+        content: const Text(
+          'PARTE priprema je započeta i nije završena. Završite KORICE PDF '
+          'izvoz i izaberite PRIPREMA ZAVRŠENA.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('U REDU'),
+          ),
+        ],
+      ),
+    );
+    return true;
   }
 
   Future<void> _obrisi(PredmetiData p) async {

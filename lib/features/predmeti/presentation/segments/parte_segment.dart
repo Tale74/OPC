@@ -15,11 +15,15 @@ class ParteSegment extends StatefulWidget {
     required this.initialData,
     required this.enabled,
     required this.onSave,
+    required this.advancedParteAvailable,
+    required this.onOpenPreparation,
   });
 
   final PredmetiData initialData;
   final bool enabled;
   final void Function(PredmetiCompanion) onSave;
+  final bool advancedParteAvailable;
+  final VoidCallback onOpenPreparation;
 
   @override
   State<ParteSegment> createState() => _ParteSegmentState();
@@ -30,6 +34,7 @@ class _ParteSegmentState extends State<ParteSegment> {
 
   String _simbol = 'PRAVOSLAVNI_KRST_SVETOSAVSKI';
   String _pismo = 'CIRILICA';
+  bool _partePotrebna = false;
 
   // Atributi
   late final TextEditingController _titulaCtrl;
@@ -48,13 +53,23 @@ class _ParteSegmentState extends State<ParteSegment> {
   late final TextEditingController _ozaloseniCtrl;
 
   static const _simbolOpcije = [
-    ('PRAVOSLAVNI_KRST_SVETOSAVSKI', 'Svetosavski krst'),
-    ('PRAVOSLAVNI_KRST_TROCKI', 'Običan krst'),
-    ('RIMOKATOLICKI_KRST', 'Katolički krst'),
-    ('POLUMESEC', 'Polumesec'),
-    ('DAVIDOVA_ZVEZDA', 'Davidova zvezda'),
-    ('BEZ_SIMBOLA', 'Bez simbola'),
-    ('SLOBODAN_IZBOR', 'Slobodan izbor'),
+    (
+      'PRAVOSLAVNI_KRST_SVETOSAVSKI',
+      'Standardni simbol iz PARTE kataloga — Svetosavski',
+    ),
+    (
+      'PRAVOSLAVNI_KRST_TROCKI',
+      'Standardni simbol iz PARTE kataloga — Običan krst',
+    ),
+    ('RIMOKATOLICKI_KRST', 'Standardni simbol iz PARTE kataloga — Katolički'),
+    ('POLUMESEC', 'Standardni simbol iz PARTE kataloga — Polumesec'),
+    (
+      'DAVIDOVA_ZVEZDA',
+      'Standardni simbol iz PARTE kataloga — Davidova zvezda',
+    ),
+    ('PETOKRAKA', 'Standardni simbol iz PARTE kataloga — Petokraka'),
+    ('BEZ_SIMBOLA', 'BEZ SIMBOLA'),
+    ('SLOBODAN_IZBOR', 'SLOBODAN IZBOR'),
   ];
 
   @override
@@ -64,6 +79,7 @@ class _ParteSegmentState extends State<ParteSegment> {
 
     _simbol = d.simbol.isEmpty ? 'PRAVOSLAVNI_KRST_SVETOSAVSKI' : d.simbol;
     _pismo = d.pismo.isEmpty ? 'CIRILICA' : d.pismo;
+    _partePotrebna = d.partePotrebna;
 
     _titulaCtrl = TextEditingController(text: d.titula);
     _titulaIspred = d.titulaIspred;
@@ -93,11 +109,9 @@ class _ParteSegmentState extends State<ParteSegment> {
   }
 
   /// Vraća prikazni naziv simbola (tekst umesto Unicode karaktera).
+  // ignore: unused_element
   String _simbolNaziv(String simbol) => _simbolOpcije
-      .firstWhere(
-        (t) => t.$1 == simbol,
-        orElse: () => (simbol, simbol),
-      )
+      .firstWhere((t) => t.$1 == simbol, orElse: () => (simbol, simbol))
       .$2;
 
   /// Izvlači godinu iz DD.MM.YYYY formata.
@@ -109,7 +123,9 @@ class _ParteSegmentState extends State<ParteSegment> {
     return '';
   }
 
-  /// Generiše kompletan predlog teksta parte (za preview), po spec §8.3.
+  /// Legacy characterization retained temporarily while the shared composer
+  /// owns every visible preview/PDF path.
+  // ignore: unused_element
   String _generisiPreviewTekst() {
     final d = widget.initialData;
     final lines = <String>[];
@@ -190,7 +206,8 @@ class _ParteSegmentState extends State<ParteSegment> {
       final vreme = _formatirajVreme(d.vremeOpela);
       if (d.opeloMesto.isNotEmpty) {
         lines.add(
-            'Opelo počinje u $vreme u ${_opeloMestoLocativ(d.opeloMesto)}.');
+          'Opelo počinje u $vreme u ${_opeloMestoLocativ(d.opeloMesto)}.',
+        );
       } else {
         lines.add('Opelo počinje u $vreme.');
       }
@@ -315,6 +332,7 @@ class _ParteSegmentState extends State<ParteSegment> {
   void _save() {
     widget.onSave(
       PredmetiCompanion(
+        partePotrebna: Value(_partePotrebna),
         simbol: Value(_simbol),
         pismo: Value(_pismo),
         titula: Value(_normalizedText(_titulaCtrl)),
@@ -333,290 +351,276 @@ class _ParteSegmentState extends State<ParteSegment> {
 
   @override
   Widget build(BuildContext context) {
-    final e = widget.enabled;
+    final e = widget.enabled && _partePotrebna;
     return _withCheckboxVisibilityTheme(
       context,
       Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Simbol ────────────────────────────────────────────────────
-            DropdownButtonFormField<String>(
-              key: ValueKey(_simbol),
-              initialValue: _simbol,
-              decoration: const InputDecoration(
-                labelText: 'SIMBOL',
-                border: OutlineInputBorder(),
-                isDense: true,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PredmetBooleanDecisionTile(
+                title: 'PARTE su potrebne',
+                value: _partePotrebna,
+                enabled: widget.enabled,
+                onChanged: (value) => setState(() {
+                  _partePotrebna = value;
+                  _save();
+                }),
               ),
-              items: _simbolOpcije
-                  .map((t) => DropdownMenuItem(
-                        value: t.$1,
-                        child: Text(t.$2),
-                      ))
-                  .toList(),
-              onChanged: e
-                  ? (v) => setState(() {
+              const SizedBox(height: 12),
+              if (!_partePotrebna)
+                const _ParteInfoCard(
+                  icon: Icons.info_outline,
+                  text:
+                      'Porodica ne želi PARTE. Priprema za štampu nije pokrenuta.',
+                )
+              else if (!widget.advancedParteAvailable)
+                const _ParteInfoCard(
+                  icon: Icons.lock_outline,
+                  text:
+                      'Napredna PARTE priprema nije dostupna u aktivnom paketu. Podaci ostaju sačuvani.',
+                )
+              else
+                FilledButton.icon(
+                  onPressed: widget.onOpenPreparation,
+                  icon: const Icon(Icons.print_outlined),
+                  label: const Text('OTVORI PRIPREMU ZA ŠTAMPU'),
+                ),
+              const SizedBox(height: 16),
+              // ── Simbol ────────────────────────────────────────────────────
+              DropdownButtonFormField<String>(
+                key: ValueKey(_simbol),
+                isExpanded: true,
+                initialValue: _simbol,
+                decoration: const InputDecoration(
+                  labelText: 'SIMBOL',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: _simbolOpcije
+                    .map(
+                      (t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)),
+                    )
+                    .toList(),
+                onChanged: e
+                    ? (v) => setState(() {
                         _simbol = v ?? _simbol;
                         _scheduleSave();
                       })
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            // ── Pismo ─────────────────────────────────────────────────────
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PISMO',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color:
-                            Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(
-                        value: 'LATINICA', label: Text('LATINICA')),
-                    ButtonSegment(
-                        value: 'CIRILICA', label: Text('ĆIRILICA')),
-                  ],
-                  selected: {_pismo},
-                  onSelectionChanged: e
-                      ? (s) => setState(() {
-                            _pismo = s.first;
-                            _scheduleSave();
-                          })
-                      : null,
-                  style: const ButtonStyle(
-                      visualDensity: VisualDensity.compact),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            Text(
-              'UNESITE ATRIBUTE ZA PARTE',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            // ── Titula ────────────────────────────────────────────────────
-            _ParteFieldWithDecision(
-              field: TextFormField(
-                controller: _titulaCtrl,
-                enabled: e,
-                decoration: const InputDecoration(
-                  labelText: 'TITULA',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (_) => _scheduleSave(),
+                    : null,
               ),
-              decision: PredmetBooleanDecisionTile(
-                title: 'Titula ispred imena',
-                value: _titulaIspred,
-                enabled: e,
-                compact: true,
-                onChanged: (v) => setState(() {
-                  _titulaIspred = v;
-                  _scheduleSave();
-                }),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // ── Zanimanje ─────────────────────────────────────────────────
-            _ParteFieldWithDecision(
-              field: TextFormField(
-                controller: _zanimanjeCtrl,
-                enabled: e,
-                decoration: const InputDecoration(
-                  labelText: 'ZANIMANJE',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (_) => _scheduleSave(),
-              ),
-              decision: PredmetBooleanDecisionTile(
-                title: 'Zanimanje na parti',
-                value: _zanimanjeNaParti,
-                enabled: e,
-                compact: true,
-                onChanged: (v) => setState(() {
-                  _zanimanjeNaParti = v;
-                  _scheduleSave();
-                }),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // ── Čin na parti (samo ako VOJNI PENZIONER = DA) ──────────────
-            if (widget.initialData.vojniPenzioner == 'DA') ...[
-              PredmetBooleanDecisionTile(
-                title: 'Čin na parti  '
-                    '(${widget.initialData.cin.isNotEmpty ? widget.initialData.cin : "uneti ČIN u RADNI STATUS"})',
-                value: _cinNaParti,
-                enabled: e,
-                onChanged: (v) => setState(() {
-                          _cinNaParti = v;
-                          _scheduleSave();
-                        }),
-              ),
-              const SizedBox(height: 4),
-            ],
-            // ── Srednje ime na parti ──────────────────────────────────────
-            PredmetBooleanDecisionTile(
-              title: 'Srednje ime / srednje slovo na parti',
-              value: _srednjeNaParti,
-              enabled: e,
-              compact: true,
-              onChanged: (v) => setState(() {
-                        _srednjeNaParti = v;
-                        _scheduleSave();
-                      }),
-            ),
-            const SizedBox(height: 4),
-            // ── Nadimak ───────────────────────────────────────────────────
-            _ParteFieldWithDecision(
-              field: TextFormField(
-                controller: _nadimakCtrl,
-                enabled: e,
-                decoration: const InputDecoration(
-                  labelText: 'NADIMAK',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                onChanged: (_) => _scheduleSave(),
-              ),
-              decision: PredmetBooleanDecisionTile(
-                title: 'Nadimak na parti',
-                value: _nadimakNaParti,
-                enabled: e,
-                compact: true,
-                onChanged: (v) => setState(() {
-                  _nadimakNaParti = v;
-                  if (!v) _nadimakCrtica = false;
-                  _scheduleSave();
-                }),
-              ),
-            ),
-            // ── Pozicija nadimka (vidljivo samo kad je nadimak na parti) ──
-            if (_nadimakNaParti) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              // ── Pismo ─────────────────────────────────────────────────────
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'POZICIJA NADIMKA',
+                    'PISMO',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  SegmentedButton<bool>(
+                  SegmentedButton<String>(
                     segments: const [
-                      ButtonSegment(
-                        value: false,
-                        label: Text(
-                          'Između imena i prezimena',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      ButtonSegment(
-                        value: true,
-                        label: Text(
-                          'Iza prezimena sa crticom',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
+                      ButtonSegment(value: 'LATINICA', label: Text('LATINICA')),
+                      ButtonSegment(value: 'CIRILICA', label: Text('ĆIRILICA')),
                     ],
-                    selected: {_nadimakCrtica},
+                    selected: {_pismo},
                     onSelectionChanged: e
                         ? (s) => setState(() {
+                            _pismo = s.first;
+                            _scheduleSave();
+                          })
+                        : null,
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                'UNESITE ATRIBUTE ZA PARTE',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // ── Titula ────────────────────────────────────────────────────
+              _ParteFieldWithDecision(
+                field: TextFormField(
+                  controller: _titulaCtrl,
+                  enabled: e,
+                  decoration: const InputDecoration(
+                    labelText: 'TITULA',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (_) => _scheduleSave(),
+                ),
+                decision: PredmetBooleanDecisionTile(
+                  title: 'Titula ispred imena',
+                  value: _titulaIspred,
+                  enabled: e,
+                  compact: true,
+                  onChanged: (v) => setState(() {
+                    _titulaIspred = v;
+                    _scheduleSave();
+                  }),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // ── Zanimanje ─────────────────────────────────────────────────
+              _ParteFieldWithDecision(
+                field: TextFormField(
+                  controller: _zanimanjeCtrl,
+                  enabled: e,
+                  decoration: const InputDecoration(
+                    labelText: 'ZANIMANJE',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (_) => _scheduleSave(),
+                ),
+                decision: PredmetBooleanDecisionTile(
+                  title: 'Zanimanje na parti',
+                  value: _zanimanjeNaParti,
+                  enabled: e,
+                  compact: true,
+                  onChanged: (v) => setState(() {
+                    _zanimanjeNaParti = v;
+                    _scheduleSave();
+                  }),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // ── Čin na parti (samo ako VOJNI PENZIONER = DA) ──────────────
+              if (widget.initialData.vojniPenzioner == 'DA') ...[
+                PredmetBooleanDecisionTile(
+                  title:
+                      'Čin na parti  '
+                      '(${widget.initialData.cin.isNotEmpty ? widget.initialData.cin : "uneti ČIN u RADNI STATUS"})',
+                  value: _cinNaParti,
+                  enabled: e,
+                  onChanged: (v) => setState(() {
+                    _cinNaParti = v;
+                    _scheduleSave();
+                  }),
+                ),
+                const SizedBox(height: 4),
+              ],
+              // ── Srednje ime na parti ──────────────────────────────────────
+              PredmetBooleanDecisionTile(
+                title: 'Srednje ime / srednje slovo na parti',
+                value: _srednjeNaParti,
+                enabled: e,
+                compact: true,
+                onChanged: (v) => setState(() {
+                  _srednjeNaParti = v;
+                  _scheduleSave();
+                }),
+              ),
+              const SizedBox(height: 4),
+              // ── Nadimak ───────────────────────────────────────────────────
+              _ParteFieldWithDecision(
+                field: TextFormField(
+                  controller: _nadimakCtrl,
+                  enabled: e,
+                  decoration: const InputDecoration(
+                    labelText: 'NADIMAK',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (_) => _scheduleSave(),
+                ),
+                decision: PredmetBooleanDecisionTile(
+                  title: 'Nadimak na parti',
+                  value: _nadimakNaParti,
+                  enabled: e,
+                  compact: true,
+                  onChanged: (v) => setState(() {
+                    _nadimakNaParti = v;
+                    if (!v) _nadimakCrtica = false;
+                    _scheduleSave();
+                  }),
+                ),
+              ),
+              // ── Pozicija nadimka (vidljivo samo kad je nadimak na parti) ──
+              if (_nadimakNaParti) ...[
+                const SizedBox(height: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'POZICIJA NADIMKA',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(
+                            'Između imena i prezimena',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Text(
+                            'Iza prezimena sa crticom',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                      selected: {_nadimakCrtica},
+                      onSelectionChanged: e
+                          ? (s) => setState(() {
                               _nadimakCrtica = s.first;
                               _scheduleSave();
                             })
-                        : null,
-                    style: const ButtonStyle(
-                        visualDensity: VisualDensity.compact),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            // ── Ožalošćeni ────────────────────────────────────────────────
-            TextFormField(
-              controller: _ozaloseniCtrl,
-              enabled: e,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'OŽALOŠĆENI',
-                hintText: 'Ožalošćeni...',
-                border: OutlineInputBorder(),
-                isDense: true,
-                alignLabelWithHint: true,
-              ),
-              onChanged: (_) => setState(_scheduleSave),
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            // ── Inline preview parte ──────────────────────────────────────
-            Text(
-              'PREVIEW PARTE',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFDE7),
-                border: Border.all(
-                    color: const Color(0xFFBDBD9F), width: 1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Simbol — prikazni naziv (tekst)
-                  if (_simbol != 'BEZ_SIMBOLA') ...[
-                    Text(
-                      '[ ${_simbolNaziv(_simbol)} ]',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
-                        letterSpacing: 0.5,
-                        height: 1.4,
+                          : null,
+                      style: const ButtonStyle(
+                        visualDensity: VisualDensity.compact,
                       ),
                     ),
-                    const SizedBox(height: 8),
                   ],
-                  // Tekst parte
-                  Text(
-                    _generisiPreviewTekst(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.6,
-                      color: Colors.grey.shade900,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+              // ── Ožalošćeni ────────────────────────────────────────────────
+              TextFormField(
+                controller: _ozaloseniCtrl,
+                enabled: e,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'OŽALOŠĆENI',
+                  hintText: 'Ožalošćeni...',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                  alignLabelWithHint: true,
+                ),
+                onChanged: (_) => setState(_scheduleSave),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              const _ParteInfoCard(
+                icon: Icons.preview_outlined,
+                text:
+                    'WYSIWYG preview i PARTA PDF koriste isti merljivi render-plan u pripremi za štampu.',
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -627,13 +631,8 @@ class _ParteSegmentState extends State<ParteSegment> {
     return Theme(
       data: baseTheme.copyWith(
         checkboxTheme: baseTheme.checkboxTheme.copyWith(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          side: BorderSide(
-            color: cs.onSurfaceVariant,
-            width: 1.5,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          side: BorderSide(color: cs.onSurfaceVariant, width: 1.5),
           fillColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
               return cs.primary;
@@ -648,11 +647,32 @@ class _ParteSegmentState extends State<ParteSegment> {
   }
 }
 
+class _ParteInfoCard extends StatelessWidget {
+  const _ParteInfoCard({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 10),
+        Expanded(child: Text(text)),
+      ],
+    ),
+  );
+}
+
 class _ParteFieldWithDecision extends StatelessWidget {
-  const _ParteFieldWithDecision({
-    required this.field,
-    required this.decision,
-  });
+  const _ParteFieldWithDecision({required this.field, required this.decision});
 
   final Widget field;
   final Widget decision;
@@ -664,11 +684,7 @@ class _ParteFieldWithDecision extends StatelessWidget {
         if (constraints.maxWidth < 620) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              field,
-              const SizedBox(height: 8),
-              decision,
-            ],
+            children: [field, const SizedBox(height: 8), decision],
           );
         }
 
@@ -677,10 +693,7 @@ class _ParteFieldWithDecision extends StatelessWidget {
           children: [
             Expanded(child: field),
             const SizedBox(width: 12),
-            SizedBox(
-              width: 300,
-              child: decision,
-            ),
+            SizedBox(width: 300, child: decision),
           ],
         );
       },

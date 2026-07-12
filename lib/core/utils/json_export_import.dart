@@ -12,11 +12,13 @@ import '../database/database.dart';
 import '../format/app_filename_format.dart';
 import '../json_transfer/predmet_json_transfer_core.dart';
 import '../../features/predmeti/data/predmeti_repository.dart';
+import '../../features/predmeti/parte/domain/parte_models.dart';
 import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
 
 const int _kSchemaVersion = 6;
+const int _kBackupSchemaVersion = 7;
 const int _kMaxSupportedSchemaVersion = 7;
 const int _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer = 7;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
@@ -41,6 +43,7 @@ const Set<String> _kFirmaPodaciBlankTextFields = {
   'odgovornoLice',
   'email',
   'sajt',
+  'parteDefaultTemplateId',
 };
 
 const Set<String> _kAppPodesavanjaBlankTextFields = {
@@ -202,6 +205,7 @@ const Set<String> _kPredmetRequiredBoolFields = {
   'sahranaVanSrbije',
   'docekPosmrtnihOstataka',
   'jkpPlacaSamostalno',
+  'partePotrebna',
 };
 
 const Set<String> _kPredmetRequiredNumberFields = {
@@ -526,6 +530,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     db.appPodesavanja,
   )..where((t) => t.id.equals(1))).getSingle();
   final predlosci = await db.select(db.predlosciDokumenata).get();
+  final partePredlosci = await db.select(db.partePredlosci).get();
   final log = await db.select(db.logIzmena).get();
   final stanjeRobeStavke = await db.select(db.stanjeRobeStavke).get();
   final stanjeRobeAppliedEffects = await db
@@ -546,7 +551,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
 
   final map = <String, dynamic>{
     'format': _kBackupTransferFormat,
-    'schemaVersion': _kSchemaVersion,
+    'schemaVersion': _kBackupSchemaVersion,
     'exportDatum': DateTime.now().toIso8601String(),
     'entityType': 'FULL_DATABASE_BACKUP',
     'databaseIdentity': 'OPC',
@@ -561,6 +566,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'iriuKatalogConfig': iriuKat.map((k) => k.toJson()).toList(),
     'appPodesavanja': apPod.toJson(),
     'predlosciDokumenata': predlosci.map((p) => p.toJson()).toList(),
+    'partePredlosci': partePredlosci.map((p) => p.toJson()).toList(),
     'logIzmena': log.map((l) => l.toJson()).toList(),
     'stanjeRobeStavke': stanjeRobeStavke.map((s) => s.toJson()).toList(),
     'stanjeRobeAppliedEffects': stanjeRobeAppliedEffectsZaExport
@@ -651,6 +657,7 @@ Map<String, dynamic> _normalizujBackupPredmetMap(Map<String, dynamic> row) {
 
   normalized['businessScenarioId'] ??= _kDefaultBusinessScenarioId;
   normalized['sourceIdentity'] ??= _kDefaultSourceIdentity;
+  normalized['partePotrebna'] ??= false;
 
   _zahtevajBackupTekstPolja(
     normalized,
@@ -688,6 +695,18 @@ Map<String, dynamic> _normalizujBackupAppPodesavanjaMap(
     normalized[operationalToggleKey] = false;
   } else {
     _requiredBool(normalized, operationalToggleKey, 'appPodesavanja');
+  }
+  return normalized;
+}
+
+Map<String, dynamic> _normalizujBackupFirmaPodaciMap(Map<String, dynamic> row) {
+  final normalized = _normalizujBackupPrazanTekst(
+    row,
+    'firmaPodaci',
+    _kFirmaPodaciBlankTextFields,
+  );
+  if ((normalized['parteDefaultTemplateId'] as String).trim().isEmpty) {
+    normalized['parteDefaultTemplateId'] = parteBuiltinTemplateId;
   }
   return normalized;
 }
@@ -819,6 +838,8 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.iriuKatalogConfig).go();
     await db.delete(db.appPodesavanja).go();
     await db.delete(db.predlosciDokumenata).go();
+    await db.delete(db.partePripreme).go();
+    await db.delete(db.partePredlosci).go();
 
     for (final k in _requiredMapList(json, 'korisnici')) {
       _zahtevajBackupTekstPolja(k, 'korisnici', const [
@@ -840,10 +861,8 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     }
 
     final firmMap = _withDecodedBlob(
-      _normalizujBackupPrazanTekst(
+      _normalizujBackupFirmaPodaciMap(
         (json['firmaPodaci'] as Map).cast<String, dynamic>(),
-        'firmaPodaci',
-        _kFirmaPodaciBlankTextFields,
       ),
       'logo',
     );
@@ -928,6 +947,50 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
+    }
+
+    for (final p in _optionalMapList(json, 'partePredlosci')) {
+      try {
+        _zahtevajBackupTekstPolja(p, 'partePredlosci', const [
+          'id',
+          'naziv',
+          'configJson',
+          'createdAt',
+          'updatedAt',
+        ]);
+        final row = PartePredlosciData.fromJson(p);
+        final config =
+            (jsonDecode(row.configJson) as Map).cast<String, dynamic>()
+              ..['id'] = row.id
+              ..['name'] = row.naziv;
+        ParteTemplate.fromJson(config);
+        await db
+            .into(db.partePredlosci)
+            .insert(row.toCompanion(true), mode: InsertMode.insertOrReplace);
+      } catch (_) {
+        // Optional invalid FIRMA templates do not invalidate an otherwise
+        // valid legacy backup. The built-in default remains available.
+      }
+    }
+
+    final importedFirma = await (db.select(
+      db.firmaPodaci,
+    )..where((row) => row.id.equals(1))).getSingle();
+    if (importedFirma.parteDefaultTemplateId != parteBuiltinTemplateId) {
+      final selected =
+          await (db.select(db.partePredlosci)..where(
+                (row) => row.id.equals(importedFirma.parteDefaultTemplateId),
+              ))
+              .getSingleOrNull();
+      if (selected == null) {
+        await (db.update(
+          db.firmaPodaci,
+        )..where((row) => row.id.equals(1))).write(
+          const FirmaPodaciCompanion(
+            parteDefaultTemplateId: Value(parteBuiltinTemplateId),
+          ),
+        );
+      }
     }
 
     for (final p in _requiredMapList(json, 'predmeti')) {
@@ -1180,6 +1243,14 @@ List<Map<String, dynamic>> _requiredMapList(
         return item.cast<String, dynamic>();
       })
       .toList(growable: false);
+}
+
+List<Map<String, dynamic>> _optionalMapList(
+  Map<String, dynamic> json,
+  String key,
+) {
+  if (!json.containsKey(key)) return const <Map<String, dynamic>>[];
+  return _requiredMapList(json, key);
 }
 
 void _validirajStanjeRobePayload(

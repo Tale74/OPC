@@ -14,6 +14,8 @@ import 'tables/katalog_artikli_table.dart';
 import 'tables/kontakt_lica_table.dart';
 import 'tables/korisnici_table.dart';
 import 'tables/log_izmena_table.dart';
+import 'tables/parte_predlosci_table.dart';
+import 'tables/parte_pripreme_table.dart';
 import 'tables/predlosci_dokumenata_table.dart';
 import 'tables/predmeti_table.dart';
 import 'tables/stanje_robe_applied_effects_table.dart';
@@ -36,6 +38,8 @@ part 'database.g.dart';
     StanjeRobeAppliedEffects,
     StanjeRobePosledice,
     PredlosciDokumenata,
+    PartePredlosci,
+    PartePripreme,
     LogIzmena,
   ],
 )
@@ -50,7 +54,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -138,6 +142,27 @@ class AppDatabase extends _$AppDatabase {
       if (from < 20) {
         await m.addColumn(predmeti, predmeti.docekDatum);
       }
+      if (from < 21) {
+        final hasPredmeti = await _tableExists('predmeti');
+        final hasFirma = await _tableExists('firma_podaci');
+        if (hasPredmeti &&
+            !await _tableHasColumn('predmeti', 'parte_potrebna')) {
+          await m.addColumn(predmeti, predmeti.partePotrebna);
+        }
+        if (hasFirma &&
+            !await _tableHasColumn(
+              'firma_podaci',
+              'parte_default_template_id',
+            )) {
+          await m.addColumn(firmaPodaci, firmaPodaci.parteDefaultTemplateId);
+        }
+        if (!await _tableExists('parte_predlosci')) {
+          await m.createTable(partePredlosci);
+        }
+        if (hasPredmeti && !await _tableExists('parte_pripreme')) {
+          await m.createTable(partePripreme);
+        }
+      }
     },
     beforeOpen: (details) async {
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
@@ -162,6 +187,15 @@ class AppDatabase extends _$AppDatabase {
   Future<bool> _tableHasColumn(String tableName, String columnName) async {
     final columns = await customSelect('PRAGMA table_info($tableName)').get();
     return columns.any((row) => row.read<String>('name').trim() == columnName);
+  }
+
+  Future<bool> _tableExists(String tableName) async {
+    final row = await customSelect(
+      'SELECT 1 AS present FROM sqlite_master '
+      'WHERE type = ? AND name = ? LIMIT 1',
+      variables: [const Variable<String>('table'), Variable<String>(tableName)],
+    ).getSingleOrNull();
+    return row != null;
   }
 
   Future<void> _ensureAppPodesavanjaStanjeRobeOperativnoColumn() async {

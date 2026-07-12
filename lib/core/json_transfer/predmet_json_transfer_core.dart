@@ -13,8 +13,7 @@ const String stanjeRobeConsequenceTransferPolicy =
 const String defaultPredmetBusinessScenarioId =
     'default_funeral_ceremony_policy';
 const String defaultPredmetSourceIdentity = 'local_opc';
-const String stanjeRobeInsufficientStockConsequenceType =
-    'INSUFFICIENT_STOCK';
+const String stanjeRobeInsufficientStockConsequenceType = 'INSUFFICIENT_STOCK';
 const String stanjeRobeUnresolvedConsequenceStatus = 'UNRESOLVED';
 
 const Set<String> stanjeRobeConsequenceTransferCoveredCategories = {
@@ -93,10 +92,14 @@ abstract final class PredmetJsonTransferCore {
       'businessScenarioId',
       () => defaultPredmetBusinessScenarioId,
     );
-    normalized.putIfAbsent('sourceIdentity', () => defaultPredmetSourceIdentity);
+    normalized.putIfAbsent(
+      'sourceIdentity',
+      () => defaultPredmetSourceIdentity,
+    );
     normalized.putIfAbsent('createdByKorisnikId', () => null);
     normalized.putIfAbsent('lastBusinessModifiedByKorisnikId', () => null);
     normalized.putIfAbsent('lastBusinessModifiedAt', () => null);
+    normalized.putIfAbsent('partePotrebna', () => false);
     return normalized;
   }
 }
@@ -135,14 +138,15 @@ class PredmetJsonTransferDocument {
           );
 
     return PredmetJsonTransferDocument(
-      format: _optionalTrimmedNonEmptyString(root, 'format') ??
+      format:
+          _optionalTrimmedNonEmptyString(root, 'format') ??
           legacyBeleznicaTransferFormat,
       schemaVersion: _optionalInt(root, 'schemaVersion'),
-      entityType: _optionalTrimmedNonEmptyString(root, 'entityType') ??
-          'PREDMET',
+      entityType:
+          _optionalTrimmedNonEmptyString(root, 'entityType') ?? 'PREDMET',
       documentSourceIdentity:
           _optionalTrimmedNonEmptyString(root, 'documentSourceIdentity') ??
-              'PREDMET',
+          'PREDMET',
       encoding: _optionalTrimmedNonEmptyString(root, 'encoding') ?? 'utf-8',
       exportVerzija: _optionalInt(root, 'exportVerzija'),
       exportDatum: _optionalTrimmedNonEmptyString(root, 'exportDatum'),
@@ -171,8 +175,7 @@ class PredmetJsonTransferDocument {
 
   bool get isLegacyPredmetFormat => format == legacyBeleznicaTransferFormat;
 
-  String get brojPredmeta =>
-      (predmet['brojPredmeta'] as String?)?.trim() ?? '';
+  String get brojPredmeta => (predmet['brojPredmeta'] as String?)?.trim() ?? '';
 
   Map<String, dynamic> toJsonMap() {
     final map = <String, dynamic>{
@@ -209,8 +212,9 @@ class PredmetJsonIriuBoundary {
   factory PredmetJsonIriuBoundary.fromJsonMap(Map<String, dynamic> json) {
     return PredmetJsonIriuBoundary(
       interniNaziv: _optionalTrimmedNonEmptyString(json, 'interniNaziv'),
-      katalogStableArticleId:
-          _normalizeNullableStableArticleId(json['katalogStableArticleId']),
+      katalogStableArticleId: _normalizeNullableStableArticleId(
+        json['katalogStableArticleId'],
+      ),
       nazivPrikaz: _optionalTrimmedNonEmptyString(json, 'nazivPrikaz'),
       iznos: _optionalFiniteNumber(json, 'iznos'),
     );
@@ -267,15 +271,17 @@ class StanjeRobeConsequenceTransferBlock {
       );
     }
 
-    final items = rawItems.map((rawItem) {
-      final item = StanjeRobeConsequenceTransferItem.fromJsonMap(
-        _castStringMap(rawItem, stanjeRobeConsequenceTransferBlockKey),
-      );
-      if (iriuRows.isNotEmpty) {
-        item.validateAgainstIriuRows(iriuRows);
-      }
-      return item;
-    }).toList(growable: false);
+    final items = rawItems
+        .map((rawItem) {
+          final item = StanjeRobeConsequenceTransferItem.fromJsonMap(
+            _castStringMap(rawItem, stanjeRobeConsequenceTransferBlockKey),
+          );
+          if (iriuRows.isNotEmpty) {
+            item.validateAgainstIriuRows(iriuRows);
+          }
+          return item;
+        })
+        .toList(growable: false);
 
     return StanjeRobeConsequenceTransferBlock(
       schemaVersion: schemaVersion,
@@ -440,10 +446,7 @@ class PredmetJsonTransferValidationException implements Exception {
   String toString() => message;
 }
 
-Map<String, dynamic> _optionalStringMap(
-  Map<String, dynamic> json,
-  String key,
-) {
+Map<String, dynamic> _optionalStringMap(Map<String, dynamic> json, String key) {
   final raw = json[key];
   if (raw == null) return const <String, dynamic>{};
   return _castStringMap(raw, key);
@@ -458,9 +461,7 @@ List<Map<String, dynamic>> _optionalMapList(
   if (raw is! List) {
     throw PredmetJsonTransferValidationException('$key must be a list.');
   }
-  return raw
-      .map((item) => _castStringMap(item, key))
-      .toList(growable: false);
+  return raw.map((item) => _castStringMap(item, key)).toList(growable: false);
 }
 
 Map<String, dynamic> _castStringMap(Object? raw, String section) {
@@ -470,11 +471,7 @@ Map<String, dynamic> _castStringMap(Object? raw, String section) {
   return raw.cast<String, dynamic>();
 }
 
-int _requiredInt(
-  Map<String, dynamic> json,
-  String key,
-  String section,
-) {
+int _requiredInt(Map<String, dynamic> json, String key, String section) {
   final value = json[key];
   if (value is int) return value;
   throw PredmetJsonTransferValidationException('$section.$key must be an int.');
@@ -497,10 +494,7 @@ String _requiredNonEmptyString(
   );
 }
 
-String? _optionalTrimmedNonEmptyString(
-  Map<String, dynamic> json,
-  String key,
-) {
+String? _optionalTrimmedNonEmptyString(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is! String) return null;
   final trimmed = value.trim();
@@ -531,9 +525,7 @@ String? _normalizeNullableStableArticleId(Object? stableArticleId) {
   return normalized.isEmpty ? null : normalized;
 }
 
-void _rejectForbiddenStanjeRobeConsequenceFields(
-  Map<String, dynamic> itemMap,
-) {
+void _rejectForbiddenStanjeRobeConsequenceFields(Map<String, dynamic> itemMap) {
   for (final field in forbiddenStanjeRobeConsequenceTransferItemFields) {
     if (itemMap.containsKey(field)) {
       throw PredmetJsonTransferValidationException(
@@ -544,9 +536,7 @@ void _rejectForbiddenStanjeRobeConsequenceFields(
 }
 
 Map<String, dynamic> _copyJsonMap(Map<String, dynamic> value) {
-  return value.map(
-    (key, mapValue) => MapEntry(key, _copyJsonValue(mapValue)),
-  );
+  return value.map((key, mapValue) => MapEntry(key, _copyJsonValue(mapValue)));
 }
 
 Object? _copyJsonValue(Object? value) {

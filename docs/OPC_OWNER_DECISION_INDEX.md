@@ -36,6 +36,7 @@ This register gives every recorded owner decision a stable identifier. It is a n
 | `OPC-OD-XSG-004` | CROSS-SEGMENT / DOČEK | Explicit reception completion | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.4 | 6.4 | Not implemented | History and revocation decision if required |
 | `OPC-OD-XSG-005` | CROSS-SEGMENT | Stage-two final departure readiness | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.5 | 6.5 | Not implemented | CEREMONIJA/IRIU/cross-segment matrix |
 | `OPC-OD-XSG-006` | CROSS-SEGMENT / IRIU | Remaining readiness decisions | OWNER DECISION STILL REQUIRED | 6.6 | 6.6 | Deliberately undefined | Next ROBA I USLUGE / IRIU owner pass |
+| `OPC-OD-PARTE-001` | PREDMET / PARTE / PDF | Controlled derivative PARTE print preparation | CURRENTLY IMPLEMENTED — REAL-DEVICE RUNTIME SMOKE PENDING | 8.5 | `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` 20-27 | Restart-safe preparation, content-free FIRMA templates, app-owned media, shared WYSIWYG plan, KORICE PDF, blocker and cleanup implemented | Owner/device Windows and Android runtime smoke |
 
 ## Register rules
 
