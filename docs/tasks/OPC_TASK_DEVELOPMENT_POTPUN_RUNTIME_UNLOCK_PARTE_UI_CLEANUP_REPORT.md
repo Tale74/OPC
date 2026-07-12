@@ -194,11 +194,11 @@ Revert the task commits to restore the earlier opt-in presentation behavior and 
 
 ## 30. GitHub visibility
 
-`PENDING PUSH / PUBLIC HTTP VERIFICATION`
+`PASS` — first finalization push produced matching local/remote SHA `9c8b8a0acce8c94e312962c9924392b9994d8080`; public raw HTTP checks returned 200 for this report and the shared runtime resolver. This verification note is pushed in the subsequent final documentation commit.
 
 ## 31. Working tree status
 
-`PENDING FINAL COMMIT / PUSH`
+`PASS` before this verification-note commit; final local/remote equality and clean status are rechecked after its push.
 
 ## 32. OPC MANIFEST COMPLIANCE — TASK END
 
