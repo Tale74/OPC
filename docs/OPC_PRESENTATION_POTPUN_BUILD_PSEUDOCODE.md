@@ -1,8 +1,8 @@
-# OPC Presentation POTPUN Build Pseudocode
+# OPC Native Development POTPUN and Final-Package Licensing Pseudocode
 
-Status: Git-tracked presentation-build memory for an explicit owner/internal POTPUN build mode.
+Status: current owner-approved native development/runtime entitlement boundary, with historical presentation compatibility retained.
 
-## Normal package/license flow
+## Preserved final-package licence flow
 
 ```text
 app starts
@@ -24,7 +24,7 @@ policy may lock modules
 policy must not mutate PREDMET, IRiU, KATALOG, PDF, JSON or database truth
 ```
 
-## Explicit presentation POTPUN override
+## Historical explicit presentation POTPUN compatibility
 
 ```text
 build command may pass:
@@ -38,18 +38,17 @@ IF OPC_PRESENTATION_POTPUN is true:
     known add-ons = enabled for presentation
     installed local license bootstrap is not required
 
-IF OPC_PRESENTATION_POTPUN is absent or false:
-    use normal package/license flow
+The flag remains compatible, but the current native-development default below
+already selects POTPUN until final-package licensing is explicitly restored.
 ```
 
-## Why this is not production licensing
+## Why development POTPUN is not final production licensing
 
 ```text
-presentation mode is explicit by name and build command
-presentation mode is not the default
-presentation mode reports a non-production/test environment
+development mode is a temporary owner-approved native build default
+development mode reports a non-production/test entitlement source
 production local-license parser, bootstrap, repository and public-key registry remain intact
-normal fail-closed package remains OSNOVNI
+explicit final-package mode retains fail-closed OSNOVNI for missing/invalid licence
 OSNOVNI / SREDNJI / POTPUN policy code remains live and tested
 ```
 
@@ -65,7 +64,7 @@ package state does not change STANJE ROBE operational toggle persistence
 package state does not repair PODSETNIK delivery or OS runtime behavior
 ```
 
-## Known unresolved runtime blockers after presentation build
+## Historical runtime blockers recorded by the earlier presentation task
 
 ```text
 PODSETNIK app-open dialog entitlement bypass observed in OSNOVNI runtime remains separate
@@ -75,3 +74,48 @@ Windows slow-exit timing audit remains separate
 STATISTIKA improvements remain deferred
 Point 4 smoke remains blocked
 ```
+
+## Current native development/runtime-validation rule
+
+```text
+DEFAULT while Windows and Android native apps are under development:
+    developmentPotpunActive = true
+    skip installed local licence bootstrap
+    active package = POTPUN
+    evaluate every module through unchanged central package policy
+
+IF build has OPC_FINAL_PACKAGE_LICENSING=true:
+    developmentPotpunActive = false
+    evaluate installed local licence
+    missing/invalid licence = existing fail-closed OSNOVNI
+    valid licence = existing package/add-on payload
+
+The same shared Dart resolver is used by Windows and Android.
+Do not bypass advancedParte or any other individual module.
+Revisit this temporary default after both native apps are final and before final
+OPC Web OS-proof preparation.
+```
+
+## Reproducible build commands
+
+Current approved native development/runtime-validation builds (POTPUN without
+reading or rewriting a local licence):
+
+```powershell
+flutter build windows --release
+flutter build apk --release
+```
+
+Future final-package/licensing verification builds:
+
+```powershell
+flutter build windows --release --dart-define=OPC_FINAL_PACKAGE_LICENSING=true
+flutter build apk --release --dart-define=OPC_FINAL_PACKAGE_LICENSING=true
+```
+
+`OPC_FINAL_PACKAGE_LICENSING` accepts only `true` or `false`. An unknown value
+is a configuration error; it must not silently select POTPUN or OSNOVNI.
+
+Development mode changes only the effective runtime package. Installed licence
+files and the persisted database are read-only with respect to this override,
+so disabling the mode reveals the preserved licensed package again.

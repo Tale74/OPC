@@ -479,10 +479,10 @@ Risk if misunderstood: this presentation polish could be expanded into a broad P
 
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/core/entitlements/opc_runtime_entitlement_resolver.dart`; `lib/app.dart`
 Related pseudocode: `docs/OPC_PRESENTATION_POTPUN_BUILD_PSEUDOCODE.md`
-Business meaning: an explicit owner/internal presentation build can run as POTPUN through `OPC_PRESENTATION_POTPUN=true` without requiring installed local-license activation.
+Business meaning: historical explicit owner/internal presentation builds could run as POTPUN through `OPC_PRESENTATION_POTPUN=true`; the current native-development default and final-package restoration boundary are recorded in the later `Native development POTPUN runtime boundary` entry.
 Module: entitlement/packages / presentation build
 Truth boundary: the override controls runtime availability only; it does not redefine PREDMET, database ownership, PDF/JSON output, STANJE ROBE operational state, or real production licensing.
-Why Logos must know it: this is a named non-production build mode, not a silent permanent conversion of normal builds to unlicensed POTPUN.
+Why Logos must know it: this compatibility flag remains available, but it no longer describes the complete current development-build default.
 Risk if misunderstood: presentation evidence could be mistaken for production license readiness or Point 4 smoke clearance.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-043
@@ -563,3 +563,18 @@ Why Logos must know it: closing or anonymizing a PREDMET is blocked by an unfini
 Risk if misunderstood: a temporary draft could be promoted to business truth, external media could be deleted, preview and PDF could drift, or cleanup could destroy the exported artifact.
 Read before: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_OWNER_DECISION_GUIDE.md` section 8.
 Read after: `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.
+
+## Native development POTPUN runtime boundary
+
+Document: `docs/OPC_PRESENTATION_POTPUN_BUILD_PSEUDOCODE.md`
+
+Scope: shared Windows/Android development POTPUN default, explicit
+`OPC_FINAL_PACKAGE_LICENSING=true` restoration path, unchanged package policy,
+diagnostics and no module-specific bypass.
+
+Source represented: `lib/core/entitlements/opc_entitlement_policy.dart`;
+`lib/core/entitlements/opc_runtime_entitlement_resolver.dart`;
+`lib/features/podesavanja/presentation/podesavanja_screen.dart`.
+
+Last task: `OPC-DEVELOPMENT-POTPUN-RUNTIME-UNLOCK-PARTE-UI-CLEANUP`.
+Implementation/pseudocode aligned: yes.

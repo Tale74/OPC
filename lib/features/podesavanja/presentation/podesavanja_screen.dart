@@ -1755,9 +1755,10 @@ class _LicenseActivationDiagnosticPanelState
               const SizedBox(height: 12),
               _InfoRed(
                 ikona: Icons.workspace_premium_outlined,
-                tekst:
-                    'Instalirana lokalna licenca - paket: '
-                    '${_packageLabel(result.effectivePackage)}',
+                tekst: _localLicensePackageMessage(
+                  result,
+                  diagnostic.activeEntitlementDiagnostics,
+                ),
               ),
               const SizedBox(height: 8),
               _InfoRed(
@@ -1798,12 +1799,18 @@ class _LicenseActivationDiagnosticPanelState
               const SizedBox(height: 8),
               _InfoRed(
                 ikona: Icons.info_outline,
-                tekst: _statusMessage(result),
+                tekst: _runtimeLicenseStatusMessage(
+                  result,
+                  diagnostic.activeEntitlementDiagnostics,
+                ),
               ),
               const SizedBox(height: 8),
               _InfoRed(
                 ikona: Icons.rule_outlined,
-                tekst: _reasonMessage(result),
+                tekst: _runtimeLicenseReasonMessage(
+                  result,
+                  diagnostic.activeEntitlementDiagnostics,
+                ),
               ),
               if (diagnostic.productionRegistryEmpty) ...[
                 const SizedBox(height: 12),
@@ -1866,6 +1873,44 @@ Color _licenseStatusColor(
   };
 }
 
+String _localLicensePackageMessage(
+  OpcLocalLicenseBootstrapResult result,
+  OpcEntitlementDiagnostics diagnostics,
+) {
+  final package = _packageLabel(result.effectivePackage);
+  if (diagnostics.sourceKind == OpcEntitlementSourceKind.presentationOwner) {
+    final storedState = switch (result.status) {
+      OpcLocalLicenseBootstrapStatus.valid => 'važeća',
+      OpcLocalLicenseBootstrapStatus.invalid => 'nevažeća',
+      OpcLocalLicenseBootstrapStatus.missing => 'nije instalirana',
+    };
+    return 'Lokalna licenca (neaktivna u razvojnom POTPUN režimu): '
+        '$storedState; paket: $package';
+  }
+  return 'Instalirana lokalna licenca - paket: $package';
+}
+
+String _runtimeLicenseStatusMessage(
+  OpcLocalLicenseBootstrapResult result,
+  OpcEntitlementDiagnostics diagnostics,
+) {
+  if (diagnostics.sourceKind == OpcEntitlementSourceKind.presentationOwner) {
+    return 'Razvojni/runtime-validation režim je aktivan: POTPUN. Primena '
+        'lokalnog licenciranja je privremeno isključena za ovaj build.';
+  }
+  return _statusMessage(result);
+}
+
+String _runtimeLicenseReasonMessage(
+  OpcLocalLicenseBootstrapResult result,
+  OpcEntitlementDiagnostics diagnostics,
+) {
+  if (diagnostics.sourceKind == OpcEntitlementSourceKind.presentationOwner) {
+    return 'Lokalna licenca nije izvor aktivnih prava; final-package licensing ostaje očuvan iza eksplicitne build konfiguracije.';
+  }
+  return _reasonMessage(result);
+}
+
 String _statusMessage(OpcLocalLicenseBootstrapResult result) {
   return switch (result.status) {
     OpcLocalLicenseBootstrapStatus.missing =>
@@ -1915,7 +1960,7 @@ String _entitlementSourceLabel(OpcEntitlementSourceKind sourceKind) {
     OpcEntitlementSourceKind.saas => 'SaaS',
     OpcEntitlementSourceKind.developerAllUnlocked => 'developer',
     OpcEntitlementSourceKind.demoTest => 'demo/test',
-    OpcEntitlementSourceKind.presentationOwner => 'prezentacija',
+    OpcEntitlementSourceKind.presentationOwner => 'razvojni POTPUN režim',
   };
 }
 

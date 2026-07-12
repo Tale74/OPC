@@ -6,16 +6,25 @@ typedef OpcInstalledLicenseEvaluator =
 
 final class OpcRuntimeEntitlementResolver {
   const OpcRuntimeEntitlementResolver({
-    this.presentationPotpunRequested =
-        OpcPresentationBuildMode.presentationPotpunRequested,
+    this.developmentPotpunActive =
+        OpcNativeDevelopmentBuildMode.developmentPotpunActive,
+    this.developmentConfigurationValid =
+        OpcNativeDevelopmentBuildMode.configurationValid,
     OpcInstalledLicenseEvaluator? evaluateInstalledLicense,
   }) : _evaluateInstalledLicense = evaluateInstalledLicense;
 
-  final bool presentationPotpunRequested;
+  final bool developmentPotpunActive;
+  final bool developmentConfigurationValid;
   final OpcInstalledLicenseEvaluator? _evaluateInstalledLicense;
 
   Future<OpcEntitlementPolicy> resolve() async {
-    if (presentationPotpunRequested) {
+    if (!developmentConfigurationValid) {
+      throw StateError(
+        'Nepoznata OPC_FINAL_PACKAGE_LICENSING build vrednost. '
+        'Dozvoljeno je samo true ili false.',
+      );
+    }
+    if (developmentPotpunActive) {
       return OpcEntitlementPolicy.fromPayload(
         OpcEntitlementPayload.presentationPotpun,
       );

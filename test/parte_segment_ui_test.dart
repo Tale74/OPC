@@ -91,7 +91,38 @@ void main() {
 
     expect(opened, isTrue);
     expect(find.text('PREVIEW PARTE'), findsNothing);
-    expect(find.textContaining('WYSIWYG preview'), findsOneWidget);
+    expect(find.textContaining('WYSIWYG preview'), findsNothing);
+    expect(find.byIcon(Icons.preview_outlined), findsNothing);
+  });
+
+  testWidgets('narrow entitled PARTE has controls without technical gap', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 740);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final predmet = await _predmet(db, partePotrebna: true);
+
+    await tester.pumpWidget(
+      _wrap(
+        ParteSegment(
+          initialData: predmet,
+          enabled: true,
+          onSave: (_) {},
+          advancedParteAvailable: true,
+          onOpenPreparation: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsOneWidget);
+    expect(find.textContaining('WYSIWYG preview'), findsNothing);
+    expect(find.byIcon(Icons.preview_outlined), findsNothing);
+    expect(tester.takeException(), equals(null));
   });
 }
 

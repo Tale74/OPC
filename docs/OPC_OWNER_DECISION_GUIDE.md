@@ -421,3 +421,23 @@ Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_A
 - `parteIme` fact-check is `FACT CHECK INCONCLUSIVE — PRESERVED, NOT REUSED`: compatibility storage/transfer remains, but the implementation assigns it no guessed filename or business meaning.
 
 Implementation evidence and exact fallback branches are in `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` sections 20-27 and `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.
+
+## Temporary native development POTPUN mode (owner decision, 2026-07-12)
+
+Until the standalone Windows and Android applications are final, development,
+presentation and runtime-validation builds use the shared POTPUN entitlement
+without local activation. This is an availability/build decision only: package
+policy and final licensing code remain intact. Final-package licensing is
+explicitly restored with `OPC_FINAL_PACKAGE_LICENSING=true` between completion
+of both native apps and final OPC Web OS-proof preparation.
+
+This does not redefine OSNOVNI, remove package differentiation, or make
+`advancedParte` unconditional. The effective POTPUN package still enters the
+unchanged central entitlement policy; ADMINISTRATOR/SAVETNIK permissions and
+all PREDMET/PARTE blockers remain enforced. Stored licence/package state is not
+rewritten, and Windows/Android use the same shared rule.
+
+Ordinary PARTE working UI must not display internal WYSIWYG/render-plan
+implementation explanations. The shared preview/PDF architecture remains
+documented and implemented, while the technical card is absent from the user
+workflow.

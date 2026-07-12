@@ -47,3 +47,17 @@ The `test/` directory contains unit, regression, migration, and widget smoke tes
 Most domain, persistence, and presentation code currently lives in the same Flutter package. There is no observed separate shared package or web service. Future extraction may be possible, but its exact boundary is not yet established and should not be invented in this baseline.
 
 Licensing/entitlement code is present under `lib/core/entitlements/`; no private signing material or customer license data is part of the public baseline.
+
+## Temporary native development POTPUN mode (owner decision, 2026-07-12)
+
+Until the standalone Windows and Android applications are final, development,
+presentation and runtime-validation builds use the shared POTPUN entitlement
+without local activation. This is an availability/build decision only: package
+policy and final licensing code remain intact. Final-package licensing is
+explicitly restored with `OPC_FINAL_PACKAGE_LICENSING=true` between completion
+of both native apps and final OPC Web OS-proof preparation.
+
+The define accepts only `true` or `false`; unknown values stop entitlement
+resolution instead of silently choosing a package. The temporary override
+changes only effective in-memory access and does not rewrite installed licence
+evidence or the user/FIRMA database.

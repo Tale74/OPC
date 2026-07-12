@@ -128,6 +128,40 @@ final class OpcPresentationBuildMode {
   );
 }
 
+/// Temporary owner-approved native development/runtime-validation boundary.
+///
+/// The raw define is validated so an unknown value can neither unlock POTPUN
+/// nor silently degrade an approved development build to OSNOVNI.
+final class OpcNativeDevelopmentBuildMode {
+  const OpcNativeDevelopmentBuildMode._();
+
+  static const String configuredFinalPackageLicensing = String.fromEnvironment(
+    'OPC_FINAL_PACKAGE_LICENSING',
+    defaultValue: 'false',
+  );
+
+  static const bool configurationValid =
+      configuredFinalPackageLicensing == 'false' ||
+      configuredFinalPackageLicensing == 'true';
+
+  static const bool finalPackageLicensingRequested =
+      configurationValid && configuredFinalPackageLicensing == 'true';
+
+  static const bool developmentPotpunActive =
+      configurationValid &&
+      (OpcPresentationBuildMode.presentationPotpunRequested ||
+          !finalPackageLicensingRequested);
+
+  static void requireValidConfiguration() {
+    if (!configurationValid) {
+      throw StateError(
+        'Nepoznata OPC_FINAL_PACKAGE_LICENSING build vrednost. '
+        'Dozvoljeno je samo true ili false.',
+      );
+    }
+  }
+}
+
 abstract interface class OpcEntitlementSource {
   OpcEntitlementPayload loadPayload();
 }
@@ -241,10 +275,11 @@ final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
 
   @override
   OpcEntitlementPayload loadPayload() {
+    OpcNativeDevelopmentBuildMode.requireValidConfiguration();
     final environment = _environmentFromValue(_requestedEnvironment);
     final source = _normalized(_requestedSource);
 
-    if (OpcPresentationBuildMode.presentationPotpunRequested) {
+    if (OpcNativeDevelopmentBuildMode.developmentPotpunActive) {
       return const OpcPresentationPotpunEntitlementSource().loadPayload();
     }
 

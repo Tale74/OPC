@@ -612,12 +612,6 @@ class _ParteSegmentState extends State<ParteSegment> {
                 ),
                 onChanged: (_) => setState(_scheduleSave),
               ),
-              const SizedBox(height: 16),
-              const _ParteInfoCard(
-                icon: Icons.preview_outlined,
-                text:
-                    'WYSIWYG preview i PARTA PDF koriste isti merljivi render-plan u pripremi za štampu.',
-              ),
             ],
           ),
         ),

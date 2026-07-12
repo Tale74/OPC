@@ -40,13 +40,10 @@ void main() {
 
     expect(find.text('KORISNICI'), findsWidgets);
     expect(find.text('Oporavak pristupa aplikaciji'), findsOneWidget);
-    expect(
-      find.text('Sigurnosni kod nije podešen.'),
-      findsOneWidget,
-    );
+    expect(find.text('Sigurnosni kod nije podešen.'), findsOneWidget);
   });
 
-  testWidgets('O APLIKACIJI separates local license from active entitlement', (
+  testWidgets('O APLIKACIJI shows development POTPUN as effective source', (
     tester,
   ) async {
     final db = createTestDatabase();
@@ -69,7 +66,52 @@ void main() {
           authRepo: authRepo,
           session: session,
           initialSection: OpcSettingsSection.oAplikaciji,
-          entitlementPolicy: _potpunDemoPolicy(),
+          entitlementPolicy: OpcEntitlementPolicy.fromPayload(
+            OpcEntitlementPayload.presentationPotpun,
+          ),
+        ),
+      ),
+    );
+    await _pumpUntilText(tester, 'Aktivni paket runtime-a: Potpun');
+
+    expect(
+      find.textContaining(
+        'Lokalna licenca (neaktivna u razvojnom POTPUN režimu):',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Aktivni paket runtime-a: Potpun'), findsOneWidget);
+    expect(
+      find.text('Aktivni entitlement runtime-a: razvojni POTPUN režim / test.'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Razvojni/runtime-validation režim je aktivan'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('O APLIKACIJI preserves final-package local diagnostics', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Test Administrator',
+      pin: '1234',
+    );
+    session.prijavi(admin);
+
+    await tester.pumpWidget(
+      wrapForTest(
+        PodesavanjaScreen(
+          repo: PodesavanjaRepository(db),
+          authRepo: authRepo,
+          session: session,
+          initialSection: OpcSettingsSection.oAplikaciji,
+          entitlementPolicy: _osnovniLocalPolicy(),
         ),
       ),
     );
@@ -82,12 +124,8 @@ void main() {
       find.text('Instalirana lokalna licenca - paket: Osnovni'),
       findsOneWidget,
     );
-    expect(find.text('Aktivni paket runtime-a: Potpun'), findsOneWidget);
-    expect(
-      find.text('Aktivni entitlement runtime-a: demo/test / test.'),
-      findsOneWidget,
-    );
-    expect(find.text('Aktivni moduli/dodaci: STANJE ROBE.'), findsOneWidget);
+    expect(find.text('Aktivni paket runtime-a: Osnovni'), findsOneWidget);
+    expect(find.textContaining('neaktivna u razvojnom'), findsNothing);
   });
 
   testWidgets('MODULI exposes PODSETNIK with package-safe visibility', (
@@ -162,6 +200,18 @@ OpcEntitlementPolicy _potpunDemoPolicy() {
       sourceKind: OpcEntitlementSourceKind.demoTest,
       environment: OpcEntitlementEnvironment.test,
       packageLevel: OpcPackageLevel.potpun,
+    ),
+  );
+}
+
+OpcEntitlementPolicy _osnovniLocalPolicy() {
+  return OpcEntitlementPolicy.fromPayload(
+    const OpcEntitlementPayload(
+      schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+      sourceKind: OpcEntitlementSourceKind.localLicense,
+      environment: OpcEntitlementEnvironment.production,
+      packageLevel: OpcPackageLevel.osnovni,
+      diagnosticsLabel: 'synthetic_local_osnovni',
     ),
   );
 }

@@ -45,3 +45,21 @@ This register gives every recorded owner decision a stable identifier. It is a n
 3. `SUPERSEDED` entries remain in history and point to the replacing decision.
 4. Every future implementation task must cite the applicable IDs and resolve all listed dependencies/fallbacks in its authorized scope.
 5. If source and guide disagree, the discrepancy is reported; production behavior is not changed by this register.
+
+## OPC-OD-NATIVE-DEV-POTPUN-001
+
+- Decision: Windows/Android development, presentation and runtime validation use
+  shared POTPUN mode without local activation until both native apps are final.
+- Final licensing return point: after native completion and before final OPC Web
+  OS-proof preparation.
+- Implementation: `OpcNativeDevelopmentBuildMode`,
+  `OpcRuntimeEntitlementResolver`.
+- Report: `docs/tasks/OPC_TASK_DEVELOPMENT_POTPUN_RUNTIME_UNLOCK_PARTE_UI_CLEANUP_REPORT.md`.
+
+## OPC-OD-PARTE-002
+
+- Decision: internal WYSIWYG/render-plan explanations do not belong in the
+  ordinary PARTE working UI; shared composer/PDF architecture remains intact.
+- Implementation: technical information card and its exclusive spacing removed
+  from `ParteSegment`.
+- Report: `docs/tasks/OPC_TASK_DEVELOPMENT_POTPUN_RUNTIME_UNLOCK_PARTE_UI_CLEANUP_REPORT.md`.

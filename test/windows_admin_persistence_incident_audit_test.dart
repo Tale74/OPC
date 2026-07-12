@@ -69,7 +69,7 @@ void main() {
         final before = await authRepo.sviKorisnici(samoAktivni: true);
 
         final policy = await const OpcRuntimeEntitlementResolver(
-          presentationPotpunRequested: true,
+          developmentPotpunActive: true,
         ).resolve();
 
         final after = await authRepo.sviKorisnici(samoAktivni: true);
