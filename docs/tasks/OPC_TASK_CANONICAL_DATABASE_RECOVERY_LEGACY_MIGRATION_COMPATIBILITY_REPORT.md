@@ -322,6 +322,9 @@ opened by the corrected WINDOWS_TEST runtime.
 - Implementation commit:
   `e6a0c42c8df59ebe1415d91c1e795082d4bfd283` —
   `https://github.com/Tale74/OPC/commit/e6a0c42c8df59ebe1415d91c1e795082d4bfd283`.
+- Approved GUI-smoke continuation commit:
+  `bc7dceca6d512961003f8aa9627978a587833c39` —
+  `https://github.com/Tale74/OPC/commit/bc7dceca6d512961003f8aa9627978a587833c39`.
 - Public task branch:
   `https://github.com/Tale74/OPC/tree/task/OPC-CANONICAL-DATABASE-RECOVERY-LEGACY-MIGRATION-COMPATIBILITY`.
 - Push: PASS; upstream branch configured.
