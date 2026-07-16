@@ -423,21 +423,21 @@ Classification: `SOURCE-CONFIRMED / TECHNICAL AUDIT REQUIRED`.
 
 Module name: Packages/licensing
 Module type: system/support / future/access
-Business purpose: package/add-on/entitlement gating without changing PREDMET truth.
-Reads from PREDMET: may control module visibility/actions; does not own case truth.
-Applies rules: Osnovni/Srednji/Potpuni, fail-closed entitlements, add-ons.
+Business purpose: Stage 1 compatibility/diagnostics only; PAKETI are abandoned as current native product policy.
+Reads from PREDMET: does not own case truth and does not restrict native module visibility/actions.
+Applies rules: owner unrestricted-native policy first; retained package/add-on payload data is diagnostic only.
 Writes back to PREDMET or related tables: local license/settings, not PREDMET truth.
-Outputs: enabled/disabled features.
+Outputs: compatibility diagnostics; every existing native feature remains available before role/business checks.
 Depends on: license parser/repository, entitlement policy.
 Affects: documents, STANJE ROBE, settings, future access.
 Source files: `opc_entitlement_policy.dart`; `opc_local_license_parser.dart`; `opc_local_license_model.dart`; `opc_local_license_repository.dart`.
 Tests: `test/opc_local_license_parser_test.dart`; `test/package_downgrade_migration_test.dart`; `test/podesavanja_screen_smoke_test.dart`.
-Current implementation state: `SOURCE-CONFIRMED / TEST-CONFIRMED`.
-Known bugs/symptoms: payment/subscription implementation blocked.
-Upgrade risks: package gating changing PREDMET truth.
-Safe upgrade options: payment/access audit before implementation.
+Current implementation state: `STAGE 1 SOURCE-CONFIRMED / TEST-CONFIRMED; STAGE 2 DEFERRED`.
+Known bugs/symptoms: obsolete technical architecture remains intentionally present until post-runtime Stage 2.
+Upgrade risks: treating historical package matrices as current policy or deleting compatibility code before owner runtime validation.
+Safe upgrade options: separate Stage 2 physical-removal task after owner runtime validation.
 Future Web/sync relevance: high.
-Classification: `OWNER DECISION / SOURCE-CONFIRMED`.
+Classification: `OWNER DECISION / SUPERSEDED PRODUCT POLICY / TEMPORARY TECHNICAL COMPATIBILITY`.
 
 ## MODULE-ID: OPC-MODULE-022
 
@@ -458,4 +458,16 @@ Upgrade risks: server-master database drift, browser-storage data loss, platform
 Safe upgrade options: technical architecture audit only.
 Future Web/sync relevance: primary.
 Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.
+# PARTE module relationship correction (2026-07-12)
 
+`PREDMET PARTE business inputs -> MODUL PARTE eligible-PREDMET list -> temporary technical preparation -> PDF/DOCX outputs`
+
+PREDMET remains the sole business source. MODUL PARTE owns only create/resume/edit/export of the temporary print preparation and never writes composer edits back to PREDMET.
+
+## Stage 1 native access and module navigation (2026-07-16)
+
+`owner unrestricted-native policy -> existing role rules -> existing business prerequisites -> module functionality`
+
+PAKETI are abandoned as product policy. Package, add-on, entitlement and local-license records remain temporarily readable for Stage 2 compatibility, but do not hide or disable existing Windows/Android functionality and are not rewritten to POTPUN. Operational `MODULI` is launched from the PREDMET overview beside `STATISTIKA`; PODEŠAVANJA contains configuration only. The catalog exposes PODSETNIK, PARTE and STANJE ROBE, while ADMINISTRATOR/SAVETNIK rules remain authoritative.
+
+Completed PARTE preparation is retained technical state. It remains reopenable, editable and re-exportable until explicit user deletion. PREDMET remains business truth; PDF is authoritative output; DOCX is an editable block-based derivative.

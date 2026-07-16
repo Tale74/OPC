@@ -374,19 +374,19 @@ Recommended next action: Administrator/Savetnik stable ID audit.
 
 ## RULE-ID: OPC-RULE-PACKAGE-001
 
-Name: Package and entitlement fail-closed policy
-Status: PARTIALLY IMPLEMENTED / OWNER DECISION
+Name: Native unrestricted functionality with retained Stage 1 compatibility
+Status: IMPLEMENTED STAGE 1 / OWNER DECISION; STAGE 2 DEFERRED
 Domain: Packages / licensing
-Rule statement: Canonical packages are `Osnovni`, `Srednji`, `Potpuni`; OPC is built as full product and functions/services can be disabled according to paid package without changing PREDMET truth. Unknown/unsafe entitlement must fail closed.
+Rule statement: PAKETI are permanently abandoned as business/production policy. Retained package/license/add-on data must not restrict any existing native Windows/Android function. Roles, PREDMET lifecycle, business prerequisites and operational toggles remain active.
 Evidence classification: OWNER DECISION / SOURCE-CONFIRMED / TEST-CONFIRMED
 Evidence locations: owner decision report; `lib/core/entitlements/opc_entitlement_policy.dart`; `test/opc_local_license_parser_test.dart`; `test/package_downgrade_migration_test.dart`
-Current implementation state: Entitlement policy and tests exist; payment/subscription implementation is blocked.
+Current implementation state: Central owner policy returns native availability for every module/add-on while payload/parser/bootstrap data remains compatible and diagnostic. Stage 2 physical removal waits for owner runtime validation.
 Windows/Android parity: Shared source.
 JSON/PDF/UI relevance: Module/document/settings visibility.
 Future Web/sync relevance: Must not change PREDMET truth or ownership.
-Risk if changed: Paid package logic could corrupt core business data.
-Open questions: Final commercial/payment model.
-Recommended next action: Payment/access gate before implementation.
+Risk if changed: Historical package rules could be reactivated or Stage 2 cleanup could begin before runtime evidence.
+Open questions: None for native Stage 1; OPC Web/commercial access remains a future separate decision.
+Recommended next action: Owner runtime validation, then separately scoped Stage 2 cleanup.
 
 ## RULE-ID: OPC-RULE-PDF-001
 

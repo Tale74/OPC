@@ -18,6 +18,7 @@ import '../../auth/data/auth_security_repository.dart';
 import '../../auth/domain/session_service.dart';
 import '../../auth/presentation/korisnici_screen.dart';
 import '../../podsetnik/presentation/podsetnik_module_screen.dart';
+import '../../predmeti/parte/presentation/parte_module_screen.dart';
 import '../../predmeti/data/predmeti_repository.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
@@ -330,6 +331,44 @@ class _ModuliTab extends StatelessWidget {
                                   predmetiRepository: PredmetiRepository(
                                     repo.db,
                                   ),
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.article_outlined),
+                      title: const Text('PARTE'),
+                      subtitle: Text(
+                        entitlementPolicy.isModuleAvailable(
+                              OpcModule.advancedParte,
+                            )
+                            ? 'Izaberite otvoren PREDMET i pokrenite ili nastavite pripremu.'
+                            : 'Nije dostupno u trenutnom paketu/licenci.',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      enabled:
+                          entitlementPolicy.isModuleAvailable(
+                            OpcModule.advancedParte,
+                          ) &&
+                          session.korisnik != null,
+                      onTap:
+                          entitlementPolicy.isModuleAvailable(
+                                OpcModule.advancedParte,
+                              ) &&
+                              session.korisnik != null
+                          ? () => Navigator.push<void>(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => ParteModuleScreen(
+                                  predmetiRepository: PredmetiRepository(
+                                    repo.db,
+                                  ),
+                                  actor: session.korisnik!,
+                                  entitlement: entitlementPolicy,
                                 ),
                               ),
                             )
@@ -1793,7 +1832,7 @@ class _LicenseActivationDiagnosticPanelState
               _InfoRed(
                 ikona: Icons.workspace_premium_outlined,
                 tekst:
-                    'Aktivni paket runtime-a: '
+                    'Kompatibilni sačuvani paket (ne ograničava funkcije): '
                     '${_packageLabel(diagnostic.activeEntitlementDiagnostics.packageLevel)}',
               ),
               const SizedBox(height: 8),
@@ -1914,10 +1953,11 @@ String _runtimeLicenseReasonMessage(
 String _statusMessage(OpcLocalLicenseBootstrapResult result) {
   return switch (result.status) {
     OpcLocalLicenseBootstrapStatus.missing =>
-      'Licenca nije instalirana. Aplikacija radi u osnovnom režimu.',
+      'Licenca nije instalirana. Sve postojeće funkcije su dostupne po odluci vlasnika.',
     OpcLocalLicenseBootstrapStatus.invalid =>
-      'Instalirana licenca nije važeća. Aplikacija radi u osnovnom režimu.',
-    OpcLocalLicenseBootstrapStatus.valid => 'Licenca je tehnički važeća.',
+      'Instalirana licenca nije važeća, ali ne ograničava funkcije u Stage 1 režimu.',
+    OpcLocalLicenseBootstrapStatus.valid =>
+      'Licenca je tehnički važeća i zadržana samo radi kompatibilnosti.',
   };
 }
 
@@ -1939,19 +1979,14 @@ String _reasonMessage(OpcLocalLicenseBootstrapResult result) {
 }
 
 String _activeEntitlementMessage(OpcEntitlementDiagnostics diagnostics) {
-  return 'Aktivni entitlement runtime-a: '
+  return 'Sve postojeće Windows/Android funkcije su dostupne po odluci vlasnika. '
+      'Kompatibilni entitlement zapis: '
       '${_entitlementSourceLabel(diagnostics.sourceKind)} / '
       '${_entitlementEnvironmentLabel(diagnostics.environment)}.';
 }
 
-String? _activeModulesMessage(OpcEntitlementDiagnostics diagnostics) {
-  final modules = <String>[];
-  if (diagnostics.packageLevel == OpcPackageLevel.potpun ||
-      diagnostics.enabledAddOns.contains(OpcAddOn.stanjeRobe)) {
-    modules.add('STANJE ROBE');
-  }
-  if (modules.isEmpty) return null;
-  return 'Aktivni moduli/dodaci: ${modules.join(', ')}.';
+String? _activeModulesMessage(OpcEntitlementDiagnostics _) {
+  return 'Stage 1 owner policy: nema paketnih ni add-on zaključavanja; uloge i poslovni uslovi ostaju aktivni.';
 }
 
 String _entitlementSourceLabel(OpcEntitlementSourceKind sourceKind) {

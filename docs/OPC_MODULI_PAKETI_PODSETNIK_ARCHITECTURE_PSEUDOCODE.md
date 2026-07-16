@@ -1,18 +1,18 @@
 # OPC MODULI / PAKETI / PODSETNIK Architecture Pseudocode
 
-Status: Git-tracked architecture memory distilled from current source and local TASK 040 product documentation.
+Status: current Stage 1 module/reminder authority; TASK 040 package matrices are historical/superseded.
 
 ## Package and module boundary
 
 ```text
-PAKET is one of osnovni, srednji, potpun
-central entitlement policy maps package/add-ons to capabilities
-UI consumers ask that policy; they do not invent package rights
+PAKETI are abandoned as native business/production policy
+central owner policy makes every existing Windows/Android capability available
+retained entitlement payload/parser/bootstrap data is diagnostic compatibility
+Stage 2 physical removal waits for owner runtime validation
 
-PODSETNIK belongs to srednji and potpun
-STANJE ROBE belongs to potpun or an allowed srednji add-on
+PODSETNIK and STANJE ROBE are available regardless of retained package data
 
-MODULI settings shows module identity and availability
+MODULI catalog shows module identity and availability
 only a module with a documented operational active-use decision gets ON/OFF
 STANJE ROBE has that persisted switch
 PODSETNIK has per-PREDMET reminder configuration, not a global active-use switch
@@ -29,12 +29,13 @@ PODSETNIK owns enabled state and delivery times per PREDMET
 PODSETNIK reuses the existing reminder repository/coordinator/gateway
 PODSETNIK does not copy ceremony facts or scheduling logic
 
-PODEŠAVANJA -> MODULI -> PODSETNIK:
-    IF entitled: open module surface and allow a non-anonymized PREDMET choice
-    ELSE: show locked package-safe identity
+PREDMET overview -> MODULI -> PODSETNIK:
+    open module surface
+    offer PREDMET only when status is not ZAVRŠEN and not ANONIMIZOVAN
+    sort newest PREDMET first and show its name without #number prefix
 
 PREDMET overflow -> Podsetnik:
-    IF entitled AND PREDMET is not anonymized:
+    IF PREDMET is not ZAVRŠEN and not ANONIMIZOVAN:
         open MODULI / PODSETNIK with that PREDMET selected
     ELSE:
         keep action disabled

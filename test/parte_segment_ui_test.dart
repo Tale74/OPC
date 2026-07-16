@@ -21,13 +21,7 @@ void main() {
 
       await tester.pumpWidget(
         _wrap(
-          ParteSegment(
-            initialData: predmet,
-            enabled: true,
-            onSave: (_) {},
-            advancedParteAvailable: true,
-            onOpenPreparation: () {},
-          ),
+          ParteSegment(initialData: predmet, enabled: true, onSave: (_) {}),
         ),
       );
       await tester.pumpAndSettle();
@@ -39,7 +33,7 @@ void main() {
     },
   );
 
-  testWidgets('OSNOVNI lock is visible and does not delete PREDMET fields', (
+  testWidgets('PREDMET keeps business fields and points to MODUL PARTE', (
     tester,
   ) async {
     final db = createTestDatabase();
@@ -47,49 +41,25 @@ void main() {
     final predmet = await _predmet(db, partePotrebna: true);
 
     await tester.pumpWidget(
-      _wrap(
-        ParteSegment(
-          initialData: predmet,
-          enabled: true,
-          onSave: (_) {},
-          advancedParteAvailable: false,
-          onOpenPreparation: () {},
-        ),
-      ),
+      _wrap(ParteSegment(initialData: predmet, enabled: true, onSave: (_) {})),
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining('nije dostupna u aktivnom paketu'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('MODUL PARTE'), findsOneWidget);
     expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsNothing);
     expect(find.text('Sintetički ožalošćeni'), findsOneWidget);
   });
 
-  testWidgets('entitled PARTE shows one controlled composer entry', (
-    tester,
-  ) async {
+  testWidgets('PREDMET has no technical composer entry', (tester) async {
     final db = createTestDatabase();
     addTearDown(db.close);
     final predmet = await _predmet(db, partePotrebna: true);
-    var opened = false;
-
     await tester.pumpWidget(
-      _wrap(
-        ParteSegment(
-          initialData: predmet,
-          enabled: true,
-          onSave: (_) {},
-          advancedParteAvailable: true,
-          onOpenPreparation: () => opened = true,
-        ),
-      ),
+      _wrap(ParteSegment(initialData: predmet, enabled: true, onSave: (_) {})),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('OTVORI PRIPREMU ZA ŠTAMPU'));
-
-    expect(opened, isTrue);
+    expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsNothing);
+    expect(find.textContaining('MODUL PARTE'), findsOneWidget);
     expect(find.text('PREVIEW PARTE'), findsNothing);
     expect(find.textContaining('WYSIWYG preview'), findsNothing);
     expect(find.byIcon(Icons.preview_outlined), findsNothing);
@@ -107,19 +77,12 @@ void main() {
     final predmet = await _predmet(db, partePotrebna: true);
 
     await tester.pumpWidget(
-      _wrap(
-        ParteSegment(
-          initialData: predmet,
-          enabled: true,
-          onSave: (_) {},
-          advancedParteAvailable: true,
-          onOpenPreparation: () {},
-        ),
-      ),
+      _wrap(ParteSegment(initialData: predmet, enabled: true, onSave: (_) {})),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsOneWidget);
+    expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsNothing);
+    expect(find.textContaining('MODUL PARTE'), findsOneWidget);
     expect(find.textContaining('WYSIWYG preview'), findsNothing);
     expect(find.byIcon(Icons.preview_outlined), findsNothing);
     expect(tester.takeException(), equals(null));

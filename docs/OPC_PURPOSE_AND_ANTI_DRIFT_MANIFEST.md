@@ -21,6 +21,27 @@ Android = field app
 
 Platform differences may exist only because of OS, UI form, screen size, input model, packaging, platform APIs, or platform-specific implementation.
 
+## 2.1 Current Native Access Policy — Owner Decision 2026-07-16
+
+OPC permanently abandons `Osnovni` / `Srednji` / `Potpuni` packages as a
+business and production policy. Every existing function and capability of the
+native Windows and Android product is available to every native OPC user.
+
+This is Stage 1 of a safe two-stage transition. Existing package, local-license
+and entitlement payload/parser/bootstrap code remains temporarily present only
+for compatibility, diagnostics and audit continuity. It must not restrict
+native functionality and must not be rewritten to manufacture a false
+`Potpuni` license. Stage 2 physical deletion is a separate future task, allowed
+only after owner runtime validation.
+
+Unrestricted native functionality does not bypass `ADMINISTRATOR` / `SAVETNIK`
+permissions, PREDMET lifecycle rules, business prerequisites, operational
+toggles, validation blockers or data-ownership rules. OPC Web remains a future
+option; it is not implemented here and does not condition native architecture.
+
+Earlier package matrices and licensing plans are historical evidence. They are
+superseded as current product policy by this section.
+
 ## 3. PREDMET As Master Business Truth
 
 `PREDMET` is the central business entity and master business truth.

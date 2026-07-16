@@ -39,11 +39,11 @@ class PartePreparationRepository {
     final predmet = await (_db.select(
       _db.predmeti,
     )..where((row) => row.id.equals(predmetId))).getSingle();
+    final existing = await findForPredmet(predmetId);
+    if (existing != null) return existing;
     if (!predmet.partePotrebna) {
       throw StateError('PARTE nisu označene kao potrebne u PREDMETU.');
     }
-    final existing = await findForPredmet(predmetId);
-    if (existing != null) return existing;
 
     final templateResolution = await ParteTemplateRepository(
       _db,
@@ -264,8 +264,8 @@ class PartePreparationRepository {
       _db.partePripreme,
     )..where((row) => row.id.equals(preparationId))).write(
       PartePripremeCompanion(
-        status: Value(PartePreparationStatus.cleanupPending.dbValue),
-        cleanupPending: const Value(true),
+        status: Value(PartePreparationStatus.completed.dbValue),
+        cleanupPending: const Value(false),
         completedAt: Value(now),
         updatedAt: Value(now),
       ),
@@ -289,10 +289,6 @@ class PartePreparationRepository {
       PartePripremeCompanion(
         status: Value(PartePreparationStatus.completed.dbValue),
         cleanupPending: const Value(false),
-        photoMediaKey: const Value(null),
-        customSymbolMediaKey: const Value(null),
-        draftJson: const Value('{}'),
-        templateSnapshotJson: const Value('{}'),
         updatedAt: Value(DateTime.now().toIso8601String()),
       ),
     );
@@ -303,6 +299,42 @@ class PartePreparationRepository {
     return row != null &&
         PartePreparationStatus.fromDb(row.status) ==
             PartePreparationStatus.inProgress;
+  }
+
+  Future<void> deleteUnfinished({
+    required int preparationId,
+    required KorisniciData actor,
+    required OpcEntitlementPolicy entitlement,
+  }) async {
+    authorization.requirePreparationAccess(
+      user: actor,
+      entitlement: entitlement,
+    );
+    await _requireEditable(preparationId);
+    await (_db.delete(
+      _db.partePripreme,
+    )..where((row) => row.id.equals(preparationId))).go();
+  }
+
+  Future<void> deleteRetainedCompleted({
+    required int preparationId,
+    required KorisniciData actor,
+    required OpcEntitlementPolicy entitlement,
+  }) async {
+    authorization.requirePreparationAccess(
+      user: actor,
+      entitlement: entitlement,
+    );
+    final row = await (_db.select(
+      _db.partePripreme,
+    )..where((item) => item.id.equals(preparationId))).getSingle();
+    if (PartePreparationStatus.fromDb(row.status) !=
+        PartePreparationStatus.completed) {
+      throw StateError('Samo završena sačuvana priprema može biti obrisana.');
+    }
+    await (_db.delete(
+      _db.partePripreme,
+    )..where((item) => item.id.equals(preparationId))).go();
   }
 
   Future<bool> sourceChanged(int preparationId) async {
@@ -368,9 +400,9 @@ class PartePreparationRepository {
     final row = await (_db.select(
       _db.partePripreme,
     )..where((item) => item.id.equals(id))).getSingle();
-    if (PartePreparationStatus.fromDb(row.status) !=
-        PartePreparationStatus.inProgress) {
-      throw StateError('Završena PARTE priprema nije editabilna.');
+    if (PartePreparationStatus.fromDb(row.status) ==
+        PartePreparationStatus.cleanupPending) {
+      throw StateError('PARTE priprema čeka oporavak završnog stanja.');
     }
     return row;
   }

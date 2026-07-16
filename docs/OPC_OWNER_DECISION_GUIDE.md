@@ -406,14 +406,14 @@ Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_A
 **Decision ID: `OPC-OD-PARTE-001`**
 
 - `PREDMET.partePotrebna` is the authoritative decision that PARTE are required. PARTE never becomes a parallel PREDMET and temporary edits never write back.
-- A legitimate entitled open creates or resumes one restart-safe technical preparation. It snapshots the active FIRMA technical template; later default-template changes do not mutate the preparation.
+- A legitimate role/business-rule-valid open creates or resumes one restart-safe technical preparation. It snapshots the active FIRMA technical template; later default-template changes do not mutate the preparation.
 - A changed authoritative PREDMET source is detected and warned about. Temporary edits are not silently overwritten; rebuild is explicit.
 - The standard format is a custom `224 × 170 mm` landscape page with a `5 mm` margin. Preview and PDF consume one shared measured render plan. Full text wraps, may reduce only to configured minimum, and unresolved overflow blocks confirmation/PDF; there is no silent clipping, truncation or ellipsis.
 - Missing or conflicting gender never defaults silently to male wording. Grammar review/verification is required.
 - Symbol terminology is exactly `Standardni simbol iz PARTE kataloga`, `BEZ SIMBOLA`, and `SLOBODAN IZBOR`. The embedded catalog has Davidova zvezda, Katolički, Običan krst, Petokraka, Polumesec and Svetosavski. No-symbol removes/reflows the block; free choice requires an owned custom copy or explicit no-symbol acknowledgement.
 - External photograph/custom-symbol originals are read-only and are never moved, modified or deleted. OPC stores only normalized app-owned temporary copies under its support storage. Invalid media is rejected without losing the previous durable copy; low-resolution use requires acknowledgement.
 - FIRMA user templates contain technical layout/style only and no case content, media or paths. The built-in template is immutable. ADMINISTRATOR manages templates; SAVETNIK can use the composer but cannot administer templates.
-- `advancedParte` is available in POTPUN and in SREDNJI only with the add-on. A downgrade locks mutation without deleting data; re-entitlement resumes the same preparation. OSNOVNI does not initialize it.
+- `advancedParte` package/add-on fields are retained Stage 1 compatibility diagnostics only. Every native user can access PARTE when role and PREDMET business prerequisites allow it; retained package changes never lock, delete or recreate a preparation.
 - Single-PREDMET JSON carries only the authoritative `partePotrebna` fact and excludes preparation/templates/media. Full backup carries content-free FIRMA user templates/default identity but excludes preparation/media. Dedicated template transfer is versioned and supports replace/copy/cancel conflicts.
 - Final preview confirmation and successful current export to `Downloads/KORICE` are mandatory before `PRIPREMA ZAVRŠENA`. A started unfinished preparation blocks manual/automatic completion and anonymization.
 - Completion cleanup deletes only app-owned temporary media/state, retains the exported PDF, and records retryable cleanup-pending state on failure.
@@ -422,7 +422,7 @@ Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_A
 
 Implementation evidence and exact fallback branches are in `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` sections 20-27 and `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.
 
-## Temporary native development POTPUN mode (owner decision, 2026-07-12)
+## Historical native development POTPUN mode (owner decision, 2026-07-12) — SUPERSEDED
 
 Until the standalone Windows and Android applications are final, development,
 presentation and runtime-validation builds use the shared POTPUN entitlement
@@ -435,9 +435,40 @@ This does not redefine OSNOVNI, remove package differentiation, or make
 `advancedParte` unconditional. The effective POTPUN package still enters the
 unchanged central entitlement policy; ADMINISTRATOR/SAVETNIK permissions and
 all PREDMET/PARTE blockers remain enforced. Stored licence/package state is not
-rewritten, and Windows/Android use the same shared rule.
+rewritten, and Windows/Android use the same shared rule. This complete section
+is retained only as historical evidence and is superseded by the locked Stage 1
+decision below; package differentiation is no longer current product policy.
 
 Ordinary PARTE working UI must not display internal WYSIWYG/render-plan
 implementation explanations. The shared preview/PDF architecture remains
 documented and implemented, while the technical card is absent from the user
 workflow.
+# Closed PARTE runtime decisions (2026-07-12)
+
+- Technical preparation belongs to MODUL PARTE; the PREDMET segment owns business inputs only.
+- MODUL PARTE selects eligible OTVOREN PREDMET and the preparation title identifies the deceased.
+- Symbol labels have no technical prefixes.
+- All automatically initialized content follows selected script; later deliberate mixed-script editing is preserved.
+- The built-in layout follows the owner reference; the deceased name stays on one line with bounded horizontal compression.
+- Every text block has left/center/right alignment and a limited embedded cross-platform font catalog.
+- Click/tap selects preview elements; photo/symbol resize keeps aspect ratio by default.
+- Photo adjustments are limited and non-destructive.
+- An unfinished preparation may be explicitly deleted and recreated without deleting PREDMET, external originals or exports.
+- User-facing template title is `ŠABLONI PARTE`; the built-in template is singular and immutable, custom actions are contextual.
+- PDF remains the authoritative WYSIWYG completion output. DOCX is additional, editable, approximate and never required for completion.
+- Android runtime was not conducted in the previous cycle because Windows owner acceptance was NOT PASS.
+
+## Locked Stage 1 decisions — 2026-07-16
+
+- PAKETI are permanently abandoned as business and production policy: every existing native Windows/Android function is available to every native user regardless of package, add-on or license state.
+- Licensing/entitlement architecture stays intact only as non-mutating compatibility and diagnostics until separately authorized Stage 2 deletion.
+- Stage 2 physical deletion is a separate task only after owner runtime validation; Stage 1 must not expand into that cleanup.
+- ADMINISTRATOR/SAVETNIK permissions, PREDMET lifecycle, business prerequisites and operational toggles remain active after unrestricted access.
+- OPC Web remains a future option only; it neither implements nor conditions the native Stage 1 architecture.
+- Operational MODULI belongs beside STATISTIKA on the PREDMET overview, not in PODEŠAVANJA.
+- PRIPREMA ZAVRŠENA never destroys the technical preparation. Completed preparations remain editable and re-exportable; only the user may explicitly delete retained app state/media.
+- Page width/height and horizontal/vertical margins are physical inputs. Their change must reconstruct all block geometry and the render plan.
+- PDF is the authoritative physical page. A calibration PDF assists a real `Actual size / 100%` print, but cannot itself prove physical-print PASS.
+- DOCX maps OPC blocks to independent editable positioned blocks. Noto Sans is the embedded cross-platform source/PDF font; external editors may substitute an installed formal font, so DOCX equality is not claimed.
+- Android API 29+ uses MediaStore `Downloads/KORICE`; API 28 and lower request only the legacy permission they require; a system document picker is the safe fallback.
+- Windows owner acceptance remains the gate before Android runtime. OPC Web remains a future option only.

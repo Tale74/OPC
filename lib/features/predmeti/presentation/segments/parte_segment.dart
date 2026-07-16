@@ -15,15 +15,11 @@ class ParteSegment extends StatefulWidget {
     required this.initialData,
     required this.enabled,
     required this.onSave,
-    required this.advancedParteAvailable,
-    required this.onOpenPreparation,
   });
 
   final PredmetiData initialData;
   final bool enabled;
   final void Function(PredmetiCompanion) onSave;
-  final bool advancedParteAvailable;
-  final VoidCallback onOpenPreparation;
 
   @override
   State<ParteSegment> createState() => _ParteSegmentState();
@@ -53,21 +49,12 @@ class _ParteSegmentState extends State<ParteSegment> {
   late final TextEditingController _ozaloseniCtrl;
 
   static const _simbolOpcije = [
-    (
-      'PRAVOSLAVNI_KRST_SVETOSAVSKI',
-      'Standardni simbol iz PARTE kataloga — Svetosavski',
-    ),
-    (
-      'PRAVOSLAVNI_KRST_TROCKI',
-      'Standardni simbol iz PARTE kataloga — Običan krst',
-    ),
-    ('RIMOKATOLICKI_KRST', 'Standardni simbol iz PARTE kataloga — Katolički'),
-    ('POLUMESEC', 'Standardni simbol iz PARTE kataloga — Polumesec'),
-    (
-      'DAVIDOVA_ZVEZDA',
-      'Standardni simbol iz PARTE kataloga — Davidova zvezda',
-    ),
-    ('PETOKRAKA', 'Standardni simbol iz PARTE kataloga — Petokraka'),
+    ('PRAVOSLAVNI_KRST_SVETOSAVSKI', 'Svetosavski'),
+    ('PRAVOSLAVNI_KRST_TROCKI', 'Običan krst'),
+    ('RIMOKATOLICKI_KRST', 'Katolički'),
+    ('POLUMESEC', 'Polumesec'),
+    ('DAVIDOVA_ZVEZDA', 'Davidova zvezda'),
+    ('PETOKRAKA', 'Petokraka'),
     ('BEZ_SIMBOLA', 'BEZ SIMBOLA'),
     ('SLOBODAN_IZBOR', 'SLOBODAN IZBOR'),
   ];
@@ -376,17 +363,11 @@ class _ParteSegmentState extends State<ParteSegment> {
                   text:
                       'Porodica ne želi PARTE. Priprema za štampu nije pokrenuta.',
                 )
-              else if (!widget.advancedParteAvailable)
-                const _ParteInfoCard(
-                  icon: Icons.lock_outline,
-                  text:
-                      'Napredna PARTE priprema nije dostupna u aktivnom paketu. Podaci ostaju sačuvani.',
-                )
               else
-                FilledButton.icon(
-                  onPressed: widget.onOpenPreparation,
-                  icon: const Icon(Icons.print_outlined),
-                  label: const Text('OTVORI PRIPREMU ZA ŠTAMPU'),
+                const _ParteInfoCard(
+                  icon: Icons.dashboard_customize_outlined,
+                  text:
+                      'Poslovni podaci su sačuvani. Tehnička priprema se pokreće kroz MODUL PARTE.',
                 ),
               const SizedBox(height: 16),
               // ── Simbol ────────────────────────────────────────────────────

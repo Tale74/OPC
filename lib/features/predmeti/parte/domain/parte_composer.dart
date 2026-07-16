@@ -12,6 +12,15 @@ class ParteRenderBlock {
     this.fontSize = 0,
     this.bold = false,
     this.alignment = ParteTextAlign.center,
+    this.fontFamily = ParteFontCatalog.notoSans,
+    this.horizontalScale = 1,
+    this.brightness = 1,
+    this.contrast = 1,
+    this.sharpness = 0,
+    this.grayscale = false,
+    this.border = false,
+    this.borderWidth = 1,
+    this.imageShape = ParteImageShape.rectangle,
     this.assetPath,
     this.mediaKey,
   });
@@ -24,6 +33,15 @@ class ParteRenderBlock {
   final double fontSize;
   final bool bold;
   final ParteTextAlign alignment;
+  final String fontFamily;
+  final double horizontalScale;
+  final double brightness;
+  final double contrast;
+  final double sharpness;
+  final bool grayscale;
+  final bool border;
+  final double borderWidth;
+  final ParteImageShape imageShape;
   final String? assetPath;
   final String? mediaKey;
 
@@ -36,6 +54,15 @@ class ParteRenderBlock {
     'fontSize': fontSize,
     'bold': bold,
     'alignment': alignment.name,
+    'fontFamily': fontFamily,
+    'horizontalScale': horizontalScale,
+    'brightness': brightness,
+    'contrast': contrast,
+    'sharpness': sharpness,
+    'grayscale': grayscale,
+    'border': border,
+    'borderWidth': borderWidth,
+    'imageShape': imageShape.name,
     'assetPath': assetPath,
     'mediaKey': mediaKey,
   };
@@ -45,7 +72,8 @@ class ParteRenderPlan {
   const ParteRenderPlan({
     required this.widthMm,
     required this.heightMm,
-    required this.marginMm,
+    required this.horizontalMarginMm,
+    required this.verticalMarginMm,
     required this.blocks,
     required this.warnings,
     required this.blockers,
@@ -54,7 +82,9 @@ class ParteRenderPlan {
 
   final double widthMm;
   final double heightMm;
-  final double marginMm;
+  final double horizontalMarginMm;
+  final double verticalMarginMm;
+  double get marginMm => horizontalMarginMm;
   final List<ParteRenderBlock> blocks;
   final List<String> warnings;
   final List<String> blockers;
@@ -154,7 +184,8 @@ class ParteComposer {
       final clamped = spec.rect.clampTo(
         pageWidth: draft.widthMm,
         pageHeight: draft.heightMm,
-        margin: input.template.marginMm,
+        horizontalMargin: draft.horizontalMarginMm,
+        verticalMargin: draft.verticalMarginMm,
       );
       if (!_sameRect(spec.rect, clamped)) {
         blockers.add('Blok ${spec.id} izlazi iz upotrebljive površine.');
@@ -169,6 +200,13 @@ class ParteComposer {
               rect: spec.rect,
               layer: spec.layer,
               mediaKey: input.photoMediaKey,
+              brightness: spec.brightness,
+              contrast: spec.contrast,
+              sharpness: spec.sharpness,
+              grayscale: spec.grayscale,
+              border: spec.border,
+              borderWidth: spec.borderWidth,
+              imageShape: spec.imageShape,
             ),
           );
         }
@@ -184,6 +222,9 @@ class ParteComposer {
               layer: spec.layer,
               assetPath: isCustom ? null : standardSymbol?.assetPath,
               mediaKey: isCustom ? input.customSymbolMediaKey : null,
+              border: spec.border,
+              borderWidth: spec.borderWidth,
+              imageShape: spec.imageShape,
             ),
           );
         }
@@ -192,14 +233,10 @@ class ParteComposer {
 
       final content = input.draft.textByBlock[spec.id]?.trim() ?? '';
       if (content.isEmpty) continue;
-      final adjustedSpec = _contentAwareTextSpec(
-        spec,
-        hasPhoto: hasPhoto,
-        hasSymbol: hasRenderedSymbol,
-        pageWidth: draft.widthMm,
-        margin: input.template.marginMm,
-      );
-      final fit = _fitText(content, adjustedSpec);
+      final adjustedSpec = spec;
+      final fit = spec.id == 'name'
+          ? _fitSingleLineName(content, adjustedSpec)
+          : _fitText(content, adjustedSpec);
       if (!fit.fits) {
         blockers.add(
           'Sadržaj bloka ${spec.id} ne može da stane bez skraćivanja.',
@@ -215,6 +252,8 @@ class ParteComposer {
           fontSize: fit.fontSize,
           bold: adjustedSpec.bold,
           alignment: adjustedSpec.alignment,
+          fontFamily: adjustedSpec.fontFamily,
+          horizontalScale: fit.horizontalScale,
         ),
       );
     }
@@ -222,7 +261,8 @@ class ParteComposer {
     final fingerprintSource = <String, Object?>{
       'widthMm': draft.widthMm,
       'heightMm': draft.heightMm,
-      'marginMm': input.template.marginMm,
+      'horizontalMarginMm': draft.horizontalMarginMm,
+      'verticalMarginMm': draft.verticalMarginMm,
       'blocks': blocks.map((block) => block.toFingerprintJson()).toList(),
       'warnings': warnings,
       'blockers': blockers,
@@ -234,33 +274,12 @@ class ParteComposer {
     return ParteRenderPlan(
       widthMm: draft.widthMm,
       heightMm: draft.heightMm,
-      marginMm: input.template.marginMm,
+      horizontalMarginMm: draft.horizontalMarginMm,
+      verticalMarginMm: draft.verticalMarginMm,
       blocks: List.unmodifiable(blocks),
       warnings: List.unmodifiable(warnings),
       blockers: List.unmodifiable(blockers.toSet()),
       fingerprint: parteCanonicalFingerprint(fingerprintSource),
-    );
-  }
-
-  ParteBlockSpec _contentAwareTextSpec(
-    ParteBlockSpec spec, {
-    required bool hasPhoto,
-    required bool hasSymbol,
-    required double pageWidth,
-    required double margin,
-  }) {
-    if (!{'intro', 'name', 'profession', 'years'}.contains(spec.id)) {
-      return spec;
-    }
-    final left = hasPhoto ? spec.rect.x : 14.0;
-    final right = hasSymbol ? 186.0 : pageWidth - margin;
-    return spec.copyWith(
-      rect: ParteRectMm(
-        x: left,
-        y: spec.rect.y,
-        width: (right - left).clamp(20.0, pageWidth - margin * 2),
-        height: spec.rect.height,
-      ),
     );
   }
 
@@ -277,7 +296,12 @@ class ParteComposer {
       );
       final height = lines.length * size * _lineHeightFactor;
       if (height <= spec.rect.height * _pointsPerMm) {
-        return _ParteTextFit(lines: lines, fontSize: size, fits: true);
+        return _ParteTextFit(
+          lines: lines,
+          fontSize: size,
+          horizontalScale: 1,
+          fits: true,
+        );
       }
       size -= 0.5;
     }
@@ -285,7 +309,31 @@ class ParteComposer {
     return _ParteTextFit(
       lines: _wrap(content, spec.rect.width * _pointsPerMm, minimum, spec.bold),
       fontSize: minimum,
+      horizontalScale: 1,
       fits: false,
+    );
+  }
+
+  _ParteTextFit _fitSingleLineName(String content, ParteBlockSpec spec) {
+    final size = spec.initialFontSize
+        .clamp(spec.minimumFontSize, spec.maximumFontSize)
+        .toDouble();
+    final available = spec.rect.width * _pointsPerMm;
+    final natural = _textWidth(
+      content.replaceAll(RegExp(r'\s+'), ' '),
+      size,
+      spec.bold,
+      fontFamily: spec.fontFamily,
+    );
+    final requiredScale = natural <= available ? 1.0 : available / natural;
+    final scale = requiredScale.clamp(0.5, 1.0).toDouble();
+    final heightFits =
+        size * _lineHeightFactor <= spec.rect.height * _pointsPerMm;
+    return _ParteTextFit(
+      lines: [content.replaceAll(RegExp(r'\s+'), ' ')],
+      fontSize: size,
+      horizontalScale: scale,
+      fits: requiredScale >= 0.5 && heightFits,
     );
   }
 
@@ -331,12 +379,17 @@ class ParteComposer {
     return result;
   }
 
-  double _textWidth(String text, double fontSize, bool bold) {
+  double _textWidth(
+    String text,
+    double fontSize,
+    bool bold, {
+    String fontFamily = ParteFontCatalog.notoSans,
+  }) {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
         style: TextStyle(
-          fontFamily: 'NotoSans',
+          fontFamily: fontFamily,
           fontSize: fontSize,
           fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
         ),
@@ -358,10 +411,12 @@ class _ParteTextFit {
   const _ParteTextFit({
     required this.lines,
     required this.fontSize,
+    required this.horizontalScale,
     required this.fits,
   });
 
   final List<String> lines;
   final double fontSize;
+  final double horizontalScale;
   final bool fits;
 }

@@ -24,7 +24,6 @@ import '../parte/application/parte_preparation_service.dart';
 import '../parte/data/parte_media_store.dart';
 import '../parte/data/parte_preparation_repository.dart';
 import '../parte/domain/parte_models.dart';
-import '../parte/presentation/parte_composer_screen.dart';
 import 'segments/ceremonija_segment.dart';
 import 'segments/finansije_segment.dart';
 import 'segments/iriu_segment.dart';
@@ -938,24 +937,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
     );
   }
 
-  Future<void> _otvoriPartePripremu() async {
-    final actor = widget.session.korisnik;
-    if (actor == null) return;
-    await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ParteComposerScreen(
-          predmetId: widget.predmetId,
-          predmetiRepository: widget.predmetiRepo,
-          actor: actor,
-          entitlement: widget.entitlementPolicy,
-        ),
-      ),
-    );
-    if (!mounted) return;
-    await _ucitaj();
-  }
-
   Future<void> _resiNevalidanIzlaz() async {
     final akcija = await showDialog<String>(
       context: context,
@@ -1323,10 +1304,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
           initialData: predmet,
           enabled: _otvoren,
           onSave: _onSave,
-          advancedParteAvailable: widget.entitlementPolicy.isModuleAvailable(
-            OpcModule.advancedParte,
-          ),
-          onOpenPreparation: _otvoriPartePripremu,
         );
       case _PredmetLogicalSection.robaIUsluge:
         return IriuSegment(

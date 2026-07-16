@@ -41,9 +41,37 @@ String toTitleCaseWords(String value) {
   if (normalized.isEmpty) return '';
   return normalized
       .split(' ')
-      .map((word) => word.isEmpty
-          ? word
-          : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+      .map(
+        (word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+      )
+      .join(' ');
+}
+
+/// Display-only casing for Serbian personal-name components.
+/// Hyphenated names and middle initials retain their semantic separators.
+String normalizeSerbianPersonName(String value) {
+  final normalized = normalizeWhitespace(value);
+  if (normalized.isEmpty) return '';
+  return normalized
+      .split(' ')
+      .map((word) {
+        return word
+            .split('-')
+            .map((part) {
+              if (part.isEmpty) return part;
+              final initial = RegExp(
+                r'^\p{L}\.?$',
+                unicode: true,
+              ).hasMatch(part);
+              if (initial) {
+                return '${part[0].toUpperCase()}${part.endsWith('.') ? '.' : ''}';
+              }
+              return '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}';
+            })
+            .join('-');
+      })
       .join(' ');
 }
 
@@ -133,6 +161,77 @@ String transliterateLatinToCyrillic(String value) {
     final char = value[index];
     buffer.write(singleChars[char] ?? char);
     index += 1;
+  }
+  return buffer.toString();
+}
+
+String transliterateCyrillicToLatin(String value) {
+  const chars = <String, String>{
+    'А': 'A',
+    'Б': 'B',
+    'В': 'V',
+    'Г': 'G',
+    'Д': 'D',
+    'Ђ': 'Đ',
+    'Е': 'E',
+    'Ж': 'Ž',
+    'З': 'Z',
+    'И': 'I',
+    'Ј': 'J',
+    'К': 'K',
+    'Л': 'L',
+    'Љ': 'Lj',
+    'М': 'M',
+    'Н': 'N',
+    'Њ': 'Nj',
+    'О': 'O',
+    'П': 'P',
+    'Р': 'R',
+    'С': 'S',
+    'Т': 'T',
+    'Ћ': 'Ć',
+    'У': 'U',
+    'Ф': 'F',
+    'Х': 'H',
+    'Ц': 'C',
+    'Ч': 'Č',
+    'Џ': 'Dž',
+    'Ш': 'Š',
+    'а': 'a',
+    'б': 'b',
+    'в': 'v',
+    'г': 'g',
+    'д': 'd',
+    'ђ': 'đ',
+    'е': 'e',
+    'ж': 'ž',
+    'з': 'z',
+    'и': 'i',
+    'ј': 'j',
+    'к': 'k',
+    'л': 'l',
+    'љ': 'lj',
+    'м': 'm',
+    'н': 'n',
+    'њ': 'nj',
+    'о': 'o',
+    'п': 'p',
+    'р': 'r',
+    'с': 's',
+    'т': 't',
+    'ћ': 'ć',
+    'у': 'u',
+    'ф': 'f',
+    'х': 'h',
+    'ц': 'c',
+    'ч': 'č',
+    'џ': 'dž',
+    'ш': 'š',
+  };
+  final buffer = StringBuffer();
+  for (final rune in value.runes) {
+    final char = String.fromCharCode(rune);
+    buffer.write(chars[char] ?? char);
   }
   return buffer.toString();
 }

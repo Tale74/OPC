@@ -1,6 +1,17 @@
 # OPC Native Development POTPUN and Final-Package Licensing Pseudocode
 
-Status: current owner-approved native development/runtime entitlement boundary, with historical presentation compatibility retained.
+Status: `SUPERSEDED AS CURRENT PRODUCT POLICY` by the 2026-07-16 owner decision; retained as historical build/entitlement audit evidence.
+
+Current authority: all existing Windows/Android functionality is available to
+every native user through the central Stage 1 owner policy. Package/add-on and
+license data plus the build defines described below remain temporarily present
+only for compatibility and diagnostics. They do not restrict functionality and
+must not be read as a future final-package restoration plan. Stage 2 physical
+removal is a separate task after owner runtime validation. Roles, business
+prerequisites and operational toggles remain active. OPC Web stays future-only.
+
+Everything below this notice describes the superseded historical transition and
+is preserved without rewriting its audit trail.
 
 ## Preserved final-package licence flow
 

@@ -191,11 +191,11 @@ Implementation blocked until: platform parity gate for behavior changes.
 ## UPGRADE-GROUP-ID: OPC-SAFE-UPGRADE-014
 
 Group name: Entitlement/package enforcement
-Symptoms / child illnesses: package/add-on gating exists; payment/access implementation is blocked.
+Symptoms / child illnesses: `SUPERSEDED POLICY` — package/add-on gating code remains as Stage 1 compatibility/diagnostics, but native gating is functionally disabled; Stage 2 removal waits for owner runtime validation.
 Affected pseudocode sections: `OPC-PSEUDO-014`, `OPC-PSEUDO-015`
 Affected modules: packages/licensing, roles, settings, documents, STANJE ROBE
 Business risk: disabled module still changes data, or invalid license over-unlocks.
-Current protection: safe fallback to Osnovni and parser tests.
+Current protection: central unrestricted-native owner policy plus retained parser/payload compatibility tests; roles/business rules remain active.
 Unsafe approach to avoid: package gates that mutate PREDMET truth.
 Safe upgrade boundary: entitlement behavior requires characterization before payment/access implementation.
 Characterization tests needed: missing/invalid license, package levels, add-ons, production unsafe sources.

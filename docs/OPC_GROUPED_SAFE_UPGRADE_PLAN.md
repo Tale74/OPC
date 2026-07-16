@@ -217,7 +217,7 @@ Classification: `RUNTIME GAP / TECHNICAL AUDIT REQUIRED`.
 ## UPGRADE-FAMILY-ID: OPC-UPGRADE-FAMILY-014
 
 Family name: entitlement/package enforcement
-Symptoms: package/add-on gating exists; payment/access implementation is blocked.
+Symptoms: `SUPERSEDED POLICY` — package/add-on gating code remains as Stage 1 compatibility/diagnostics, but native gating is functionally disabled; Stage 2 removal waits for owner runtime validation.
 Affected modules: entitlement/packages/licensing, users/roles, documents, STANJE ROBE, settings.
 Affected pseudocode sections: `OPC-PSEUDO-014`, `OPC-PSEUDO-015`, `OPC-PSEUDO-018`, `OPC-PSEUDO-021`.
 Business risk: invalid package unlocks features or disabled module changes data.

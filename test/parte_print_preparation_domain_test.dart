@@ -86,27 +86,25 @@ void main() {
       expect(result.draft.textByBlock['death'], isEmpty);
     });
 
-    test(
-      'mixed scripts remain present and all standard symbols resolve',
-      () async {
-        final db = createTestDatabase();
-        addTearDown(db.close);
-        final predmet = await _insertPredmet(
-          db,
-          ime: 'Милан John',
-          prezime: 'Smith Петровић',
-        );
-        final draft = const ParteInitialComposer()
-            .compose(predmet: predmet)
-            .draft;
-        expect(draft.textByBlock['name'], contains('John'));
-        expect(draft.textByBlock['name'], contains('Петровић'));
-        for (final symbol in ParteSymbolCatalog.standard) {
-          expect(symbol.assetPath, isNotEmpty, reason: symbol.id);
-        }
-        expect(ParteSymbolCatalog.standard, hasLength(6));
-      },
-    );
+    test('selected LATINICA script normalizes all initial content', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final predmet = await _insertPredmet(
+        db,
+        ime: 'Милан John',
+        prezime: 'Smith Петровић',
+      );
+      final draft = const ParteInitialComposer()
+          .compose(predmet: predmet)
+          .draft;
+      expect(draft.textByBlock['name'], contains('John'));
+      expect(draft.textByBlock['name'], contains('Petrović'));
+      expect(draft.textByBlock['name'], isNot(contains('Петровић')));
+      for (final symbol in ParteSymbolCatalog.standard) {
+        expect(symbol.assetPath, isNotEmpty, reason: symbol.id);
+      }
+      expect(ParteSymbolCatalog.standard, hasLength(6));
+    });
 
     test(
       'no photo and free-choice warnings require explicit acknowledgement',
@@ -148,7 +146,11 @@ void main() {
             grammarVerified: true,
           ),
         );
-        expect(accepted.canGeneratePdf, isTrue);
+        expect(
+          accepted.canGeneratePdf,
+          isTrue,
+          reason: accepted.blockers.join(' | '),
+        );
         expect(
           accepted.blocks.any((block) => block.kind == ParteBlockKind.photo),
           isFalse,
@@ -187,6 +189,100 @@ void main() {
       expect(plan.blockers.join(' '), contains('mourners'));
       expect(draft.textByBlock['mourners'], longText);
     });
+
+    test(
+      'physical reflow transforms every block and keeps separate margins',
+      () {
+        final source = ParteDraft(
+          textByBlock: const <String, String>{'name': 'Sintetičko Lice'},
+          blocks: ParteTemplate.builtInStandard.blocks,
+          widthMm: 224,
+          heightMm: 170,
+          horizontalMarginMm: 5,
+          verticalMarginMm: 5,
+          symbolId: 'BEZ_SIMBOLA',
+        );
+        final transformed = source.reflowTo(
+          widthMm: 180,
+          heightMm: 120,
+          horizontalMarginMm: 8,
+          verticalMarginMm: 10,
+        );
+
+        expect(transformed.blocks, hasLength(source.blocks.length));
+        expect(transformed.horizontalMarginMm, 8);
+        expect(transformed.verticalMarginMm, 10);
+        for (var i = 0; i < source.blocks.length; i++) {
+          expect(
+            transformed.blocks[i].rect,
+            isNot(same(source.blocks[i].rect)),
+          );
+          expect(transformed.blocks[i].rect.x, greaterThanOrEqualTo(8));
+          expect(transformed.blocks[i].rect.y, greaterThanOrEqualTo(10));
+        }
+        final decoded = ParteDraft.decode(transformed.encode());
+        expect(decoded.horizontalMarginMm, 8);
+        expect(decoded.verticalMarginMm, 10);
+      },
+    );
+
+    test('legacy one-margin JSON migrates to both axes', () {
+      final legacy = <String, Object?>{
+        'schemaVersion': 2,
+        'textByBlock': <String, String>{'mourners': 'Ožalošćeni:\nPorodica'},
+        'blocks': ParteTemplate.builtInStandard.blocks
+            .where((block) => block.id != 'mournersHeading')
+            .map((block) => block.toJson())
+            .toList(),
+        'widthMm': 224,
+        'heightMm': 170,
+        'marginMm': 7,
+        'symbolId': 'BEZ_SIMBOLA',
+      };
+      final decoded = ParteDraft.fromJson(legacy);
+      expect(decoded.horizontalMarginMm, 7);
+      expect(decoded.verticalMarginMm, 7);
+      expect(decoded.textByBlock['mournersHeading'], 'Ožalošćeni:');
+      expect(decoded.textByBlock['mourners'], 'Porodica');
+      expect(
+        decoded.blocks.any((block) => block.id == 'mournersHeading'),
+        isTrue,
+      );
+    });
+
+    test(
+      'name casing and all weekday forms are display-only correct',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        const weekdays = <String>[
+          'ponedeljak',
+          'utorak',
+          'sredu',
+          'četvrtak',
+          'petak',
+          'subotu',
+          'nedelju',
+        ];
+        for (var index = 0; index < weekdays.length; index++) {
+          final predmet = await _insertPredmet(
+            db,
+            broj: 'WEEKDAY-$index',
+            ime: index == 0 ? 'mILAN-pETAR' : 'Milan',
+            prezime: index == 0 ? 'pETROVIĆ' : 'Sintetić',
+            datumCeremonije: '${20 + index}.07.2026',
+          );
+          final draft = const ParteInitialComposer()
+              .compose(predmet: predmet)
+              .draft;
+          expect(draft.textByBlock['ceremony'], contains(weekdays[index]));
+          if (index == 0) {
+            expect(draft.textByBlock['name'], contains('Milan-Petar Petrović'));
+            expect(predmet.ime, 'mILAN-pETAR');
+          }
+        }
+      },
+    );
   });
 
   group('PARTE persistence, blocker, role and entitlement', () {
@@ -219,7 +315,7 @@ void main() {
     );
 
     test(
-      'not-required and OSNOVNI paths cannot initialize preparation',
+      'business prerequisite remains while OSNOVNI no longer locks PARTE',
       () async {
         final db = createTestDatabase();
         addTearDown(db.close);
@@ -240,47 +336,40 @@ void main() {
           ),
           throwsStateError,
         );
-        expect(
-          () => repository.initializeOrResume(
-            predmetId: required.id,
-            actor: actor,
-            entitlement: osnovni,
-          ),
-          throwsA(isA<ParteAuthorizationException>()),
-        );
-        expect(await db.select(db.partePripreme).get(), isEmpty);
-      },
-    );
-
-    test(
-      'SREDNJI requires the PARTE add-on and then resumes normally',
-      () async {
-        final db = createTestDatabase();
-        addTearDown(db.close);
-        final actor = await _insertUser(db, role: 'SAVETNIK');
-        final predmet = await _insertPredmet(
-          db,
-          broj: 'PARTE-SREDNJI',
-          partePotrebna: true,
-        );
-        final repository = PartePreparationRepository(db);
-
-        expect(
-          () => repository.initializeOrResume(
-            predmetId: predmet.id,
-            actor: actor,
-            entitlement: srednji,
-          ),
-          throwsA(isA<ParteAuthorizationException>()),
-        );
         final created = await repository.initializeOrResume(
-          predmetId: predmet.id,
+          predmetId: required.id,
           actor: actor,
-          entitlement: srednjiParte,
+          entitlement: osnovni,
         );
-        expect(created.predmetId, predmet.id);
+        expect(created.predmetId, required.id);
+        expect(await db.select(db.partePripreme).get(), hasLength(1));
       },
     );
+
+    test('SREDNJI no longer requires the PARTE add-on', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final actor = await _insertUser(db, role: 'SAVETNIK');
+      final predmet = await _insertPredmet(
+        db,
+        broj: 'PARTE-SREDNJI',
+        partePotrebna: true,
+      );
+      final repository = PartePreparationRepository(db);
+
+      final createdWithoutAddOn = await repository.initializeOrResume(
+        predmetId: predmet.id,
+        actor: actor,
+        entitlement: srednji,
+      );
+      final created = await repository.initializeOrResume(
+        predmetId: predmet.id,
+        actor: actor,
+        entitlement: srednjiParte,
+      );
+      expect(created.id, createdWithoutAddOn.id);
+      expect(created.predmetId, predmet.id);
+    });
 
     test(
       'started preparation blocks close, automatic finish and anonymization',
@@ -322,38 +411,35 @@ void main() {
       },
     );
 
-    test(
-      'downgrade retains preparation and re-entitlement resumes it',
-      () async {
-        final db = createTestDatabase();
-        addTearDown(db.close);
-        final actor = await _insertUser(db, role: 'SAVETNIK');
-        final predmet = await _insertPredmet(db, partePotrebna: true);
-        final repository = PartePreparationRepository(db);
-        final created = await repository.initializeOrResume(
+    test('package change retains and resumes the same preparation', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final actor = await _insertUser(db, role: 'SAVETNIK');
+      final predmet = await _insertPredmet(db, partePotrebna: true);
+      final repository = PartePreparationRepository(db);
+      final created = await repository.initializeOrResume(
+        predmetId: predmet.id,
+        actor: actor,
+        entitlement: potpun,
+      );
+      expect(
+        (await repository.initializeOrResume(
+          predmetId: predmet.id,
+          actor: actor,
+          entitlement: osnovni,
+        )).id,
+        created.id,
+      );
+      expect((await repository.findForPredmet(predmet.id))?.id, created.id);
+      expect(
+        (await repository.initializeOrResume(
           predmetId: predmet.id,
           actor: actor,
           entitlement: potpun,
-        );
-        expect(
-          () => repository.initializeOrResume(
-            predmetId: predmet.id,
-            actor: actor,
-            entitlement: osnovni,
-          ),
-          throwsA(isA<ParteAuthorizationException>()),
-        );
-        expect((await repository.findForPredmet(predmet.id))?.id, created.id);
-        expect(
-          (await repository.initializeOrResume(
-            predmetId: predmet.id,
-            actor: actor,
-            entitlement: potpun,
-          )).id,
-          created.id,
-        );
-      },
-    );
+        )).id,
+        created.id,
+      );
+    });
 
     test('SAVETNIK cannot manage FIRMA templates; ADMINISTRATOR can', () async {
       final db = createTestDatabase();

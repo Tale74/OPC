@@ -5,15 +5,11 @@ Status: Logos learning layer for the source-confirmed settings and shortcut flow
 ## STANJE ROBE availability and active use
 
 ```text
-STANJE ROBE belongs to POTPUN
-OR to SREDNJI only when its explicit add-on entitlement is present
+STANJE ROBE is available to every native user under the Stage 1 owner policy
+retained package/add-on/license data does not restrict availability
 
-PODEŠAVANJA always shows the MODULI section:
-    IF current package/context does not entitle STANJE ROBE:
-        show STANJE ROBE as locked/not licensed
-        show no ON/OFF switch
-        expose no stock-management action
-    ELSE IF current user is not ADMINISTRATOR:
+MODULI catalog shows STANJE ROBE:
+    IF current user is not ADMINISTRATOR:
         show module status
         show no ON/OFF switch
         expose no stock-management action
@@ -26,20 +22,20 @@ Entitlement does not change that value to ON
 Stock initialization does not change that value to ON
 
 Operational stock consumers proceed only when:
-    package/context entitles STANJE ROBE
-    AND persisted active-use value is ON
+    persisted active-use value is ON
+    AND role/business rules allow the requested operation
 ```
 
-The visible locked state explains why an `Osnovni` runtime has no active toggle
-without exposing stock functionality outside its package. Availability and
-active use remain separate decisions.
+Availability and active use remain separate decisions. There is no current
+native package-locked state; SAVETNIK role restrictions and the persisted
+ADMINISTRATOR operational toggle remain active.
 
 ## PREDMET-list Podsetnik shortcut
 
 ```text
 WHEN user opens one PREDMET overflow menu:
-    IF current package/context entitles Podsetnik
-       AND PREDMET is not anonymized:
+    IF PREDMET status is not ZAVRŠEN
+       AND PREDMET is not ANONIMIZOVAN:
         enable Podsetnik
     ELSE:
         keep Podsetnik disabled
@@ -51,10 +47,10 @@ WHEN enabled Podsetnik is selected:
     do not create or mutate reminder configuration during navigation
 ```
 
-An `Osnovni` runtime is not entitled to Podsetnik, so its visible grey shortcut
-is expected. `Srednji` and `POTPUN` are entitled; their non-anonymized PREDMET
-shortcut is enabled even when optional ceremony fields are incomplete or
-reminder events already exist. Anonymized PREDMET remains disabled. PODSETNIK
+Every native runtime may open PODSETNIK. Its selector includes every PREDMET
+except ZAVRŠEN and ANONIMIZOVAN, sorts newest first and shows the deceased name
+without a `#<redni_broj>` prefix. Optional ceremony fields may remain incomplete
+and existing reminder events do not affect candidate visibility. PODSETNIK
 reuses the existing reminder repository, coordinator and notification gateway;
 it does not own a second copy of ceremony or PREDMET truth.
 

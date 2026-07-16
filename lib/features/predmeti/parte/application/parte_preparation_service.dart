@@ -145,13 +145,12 @@ class PartePreparationService {
     required KorisniciData actor,
     required OpcEntitlementPolicy entitlement,
   }) async {
-    final pending = await repository.beginCompletion(
+    await repository.beginCompletion(
       preparationId: preparation.id,
       plan: plan,
       actor: actor,
       entitlement: entitlement,
     );
-    await _cleanupPending(pending);
   }
 
   Future<void> retryCleanup(PartePripremeData preparation) async {
@@ -159,9 +158,46 @@ class PartePreparationService {
     await _cleanupPending(preparation);
   }
 
-  Future<void> _cleanupPending(PartePripremeData preparation) async {
+  Future<PartePripremeData> resetAndStartAgain({
+    required PartePripremeData preparation,
+    required KorisniciData actor,
+    required OpcEntitlementPolicy entitlement,
+  }) async {
     await mediaStore.deleteOwned(preparation.photoMediaKey);
     await mediaStore.deleteOwned(preparation.customSymbolMediaKey);
+    await repository.deleteUnfinished(
+      preparationId: preparation.id,
+      actor: actor,
+      entitlement: entitlement,
+    );
+    return repository.initializeOrResume(
+      predmetId: preparation.predmetId,
+      actor: actor,
+      entitlement: entitlement,
+    );
+  }
+
+  Future<void> deleteRetainedCompleted({
+    required PartePripremeData preparation,
+    required KorisniciData actor,
+    required OpcEntitlementPolicy entitlement,
+  }) async {
+    if (PartePreparationStatus.fromDb(preparation.status) !=
+        PartePreparationStatus.completed) {
+      throw StateError('Priprema nije završena i sačuvana.');
+    }
+    await mediaStore.deleteOwned(preparation.photoMediaKey);
+    await mediaStore.deleteOwned(preparation.customSymbolMediaKey);
+    await repository.deleteRetainedCompleted(
+      preparationId: preparation.id,
+      actor: actor,
+      entitlement: entitlement,
+    );
+  }
+
+  Future<void> _cleanupPending(PartePripremeData preparation) async {
+    // Compatibility recovery for interrupted cleanup rows. The retained draft
+    // and app-owned media are now intentionally preserved until user deletion.
     await repository.finishCleanup(preparation.id);
   }
 }

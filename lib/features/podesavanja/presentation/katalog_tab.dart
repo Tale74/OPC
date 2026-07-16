@@ -68,8 +68,10 @@ class KatalogTab extends StatelessWidget {
             ),
             Expanded(
               child: ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 itemCount: stavke.length,
                 itemBuilder: (context, i) => _KatalogItemTile(
                   key: ValueKey(stavke[i].interniNaziv),
@@ -88,11 +90,7 @@ class KatalogTab extends StatelessWidget {
 // ── Tile za jednu stavku kataloga ─────────────────────────────────────────────
 
 class _KatalogItemTile extends StatefulWidget {
-  const _KatalogItemTile({
-    super.key,
-    required this.item,
-    required this.repo,
-  });
+  const _KatalogItemTile({super.key, required this.item, required this.repo});
 
   final IriuKatalogConfigData item;
   final PodesavanjaRepository repo;
@@ -108,8 +106,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
   bool get _jeKorisnicka => widget.item.jeKorisnicka;
 
   Future<void> _editDialog(BuildContext context) async {
-    final nazivCtrl =
-        TextEditingController(text: widget.item.nazivPrikaz);
+    final nazivCtrl = TextEditingController(text: widget.item.nazivPrikaz);
     bool vidljiv = widget.item.vidljiv;
 
     final ok = await showDialog<bool>(
@@ -167,8 +164,9 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
   }
 
   Future<void> _ukloniIliDeaktiviraj(BuildContext context) async {
-    final status = await widget.repo
-        .proveriKategorijuZaLifecycleAkciju(widget.item.interniNaziv);
+    final status = await widget.repo.proveriKategorijuZaLifecycleAkciju(
+      widget.item.interniNaziv,
+    );
     if (status == null || !context.mounted) return;
 
     final ideNaBrisanje = status.mozeFizickoBrisanje;
@@ -218,8 +216,9 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
     );
     if (ok != true || !context.mounted) return;
 
-    final ishod = await widget.repo
-        .ukloniIliDeaktivirajKorisnickuKategoriju(widget.item.interniNaziv);
+    final ishod = await widget.repo.ukloniIliDeaktivirajKorisnickuKategoriju(
+      widget.item.interniNaziv,
+    );
     if (!context.mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
@@ -249,8 +248,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                 : null,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               child: Row(
                 children: [
                   Expanded(
@@ -259,16 +257,10 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                       children: [
                         Text(
                           widget.item.nazivPrikaz,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 3),
-                        Wrap(
-                          spacing: 4,
-                          children: [
-                            _TipChip(_jeKataloska),
-                          ],
-                        ),
+                        Wrap(spacing: 4, children: [_TipChip(_jeKataloska)]),
                       ],
                     ),
                   ),
@@ -285,9 +277,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                     ),
                   if (_jeKataloska)
                     Icon(
-                      _expanded
-                          ? Icons.expand_less
-                          : Icons.expand_more,
+                      _expanded ? Icons.expand_less : Icons.expand_more,
                       color: scheme.primary,
                     ),
                 ],
@@ -316,8 +306,7 @@ class _NovaKategorijaDialog extends StatefulWidget {
   const _NovaKategorijaDialog();
 
   @override
-  State<_NovaKategorijaDialog> createState() =>
-      _NovaKategorijaDialogState();
+  State<_NovaKategorijaDialog> createState() => _NovaKategorijaDialogState();
 }
 
 class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
@@ -337,10 +326,7 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
       setState(() => _greskaNaziv = true);
       return;
     }
-    Navigator.pop(
-      context,
-      _NovaKategorijaResult(naziv: naziv, tip: _tip),
-    );
+    Navigator.pop(context, _NovaKategorijaResult(naziv: naziv, tip: _tip));
   }
 
   @override
@@ -370,9 +356,9 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
             const SizedBox(height: 16),
             Text(
               'Tip kategorije:',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             SegmentedButton<String>(
@@ -389,11 +375,8 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
                 ),
               ],
               selected: {_tip},
-              onSelectionChanged: (sel) =>
-                  setState(() => _tip = sel.first),
-              style: const ButtonStyle(
-                visualDensity: VisualDensity.compact,
-              ),
+              onSelectionChanged: (sel) => setState(() => _tip = sel.first),
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
             const SizedBox(height: 4),
             Text(
@@ -413,10 +396,7 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('ODUSTANI'),
         ),
-        FilledButton(
-          onPressed: _potvrdi,
-          child: const Text('DODAJ'),
-        ),
+        FilledButton(onPressed: _potvrdi, child: const Text('DODAJ')),
       ],
     );
   }
@@ -452,10 +432,7 @@ class _TipChip extends StatelessWidget {
 // ── Lista artikala za KATALOŠKA stavku ────────────────────────────────────────
 
 class _ArtikliSection extends StatefulWidget {
-  const _ArtikliSection({
-    required this.interniNaziv,
-    required this.repo,
-  });
+  const _ArtikliSection({required this.interniNaziv, required this.repo});
 
   final String interniNaziv;
   final PodesavanjaRepository repo;
@@ -468,7 +445,8 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
   bool _ascending = true;
 
   List<KatalogArtikliData> _sortiraj(List<KatalogArtikliData> lista) {
-    final sorted = [...lista]..sort((a, b) {
+    final sorted = [...lista]
+      ..sort((a, b) {
         final byCena = a.cena.compareTo(b.cena);
         if (byCena != 0) return _ascending ? byCena : -byCena;
         final byNaziv = a.naziv.compareTo(b.naziv);
@@ -526,10 +504,7 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
     }
   }
 
-  Future<void> _potvrdiObris(
-    BuildContext context,
-    KatalogArtikliData a,
-  ) async {
+  Future<void> _potvrdiObris(BuildContext context, KatalogArtikliData a) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -577,8 +552,7 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
             const Divider(height: 1),
             // Sort toolbar
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Row(
                 children: [
                   Text(
@@ -588,14 +562,11 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
                   const SizedBox(width: 4),
                   IconButton(
                     icon: Icon(
-                      _ascending
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
+                      _ascending ? Icons.arrow_upward : Icons.arrow_downward,
                       size: 18,
                     ),
                     tooltip: _ascending ? 'Rastuće' : 'Opadajuće',
-                    onPressed: () =>
-                        setState(() => _ascending = !_ascending),
+                    onPressed: () => setState(() => _ascending = !_ascending),
                   ),
                   const Spacer(),
                   TextButton.icon(
@@ -621,10 +592,8 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
                               KatalogPhotoPolicy.smallThumbnailDecodeTarget,
                           cacheHeight:
                               KatalogPhotoPolicy.smallThumbnailDecodeTarget,
-                          errorBuilder: (_, e, st) => const Icon(
-                            Icons.image_outlined,
-                            size: 28,
-                          ),
+                          errorBuilder: (_, e, st) =>
+                              const Icon(Icons.image_outlined, size: 28),
                         ),
                       )
                     : const SizedBox(
@@ -639,8 +608,7 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 18),
                       tooltip: 'Izmeni',
-                      onPressed: () =>
-                          _artiklDialog(context, existing: a),
+                      onPressed: () => _artiklDialog(context, existing: a),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 18),
@@ -734,22 +702,19 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
   }
 
   void _ukloniSliku() => setState(() {
-        _slika = null;
-        _slikaIzmenjena = true;
-      });
+    _slika = null;
+    _slikaIzmenjena = true;
+  });
 
   void _sacuvaj() {
     final naziv = _nazivCtrl.text.trim();
     if (naziv.isEmpty) return;
-    Navigator.pop<_ArtiklResult>(
-      context,
-      (
-        naziv: naziv,
-        cena: parsirajBroj(_cenaCtrl.text),
-        slika: _slika,
-        slikaIzmenjena: _slikaIzmenjena,
-      ),
-    );
+    Navigator.pop<_ArtiklResult>(context, (
+      naziv: naziv,
+      cena: parsirajBroj(_cenaCtrl.text),
+      slika: _slika,
+      slikaIzmenjena: _slikaIzmenjena,
+    ));
   }
 
   @override
@@ -779,8 +744,9 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
               // 2. CENA
               TextField(
                 controller: _cenaCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'CENA (RSD)',
                   border: OutlineInputBorder(),
@@ -833,7 +799,9 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
                     label: const Text('ODABERI'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       textStyle: const TextStyle(fontSize: 12),
                     ),
                     onPressed: _odaberiSliku,
@@ -845,7 +813,9 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
                       label: const Text('UKLONI'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         textStyle: const TextStyle(fontSize: 12),
                       ),
                       onPressed: _ukloniSliku,
@@ -862,10 +832,7 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('OTKAŽI'),
         ),
-        FilledButton(
-          onPressed: _sacuvaj,
-          child: const Text('SAČUVAJ'),
-        ),
+        FilledButton(onPressed: _sacuvaj, child: const Text('SAČUVAJ')),
       ],
     );
   }

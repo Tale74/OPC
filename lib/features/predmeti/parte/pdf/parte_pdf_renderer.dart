@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:vector_math/vector_math_64.dart' show Matrix4;
 
 import '../../../../core/database/database.dart';
 import '../../../../core/entitlements/opc_entitlement_policy.dart';
@@ -10,6 +11,7 @@ import '../../../../core/utils/export_utils.dart';
 import '../data/parte_media_store.dart';
 import '../data/parte_preparation_repository.dart';
 import '../domain/parte_composer.dart';
+import '../domain/parte_image_effects.dart';
 import '../domain/parte_models.dart';
 
 class PartePdfExportResult {
@@ -59,6 +61,89 @@ class PartePdfRenderer {
     return document.save();
   }
 
+  Future<Uint8List> buildCalibration({required ParteRenderPlan plan}) async {
+    final regular = pw.Font.ttf(
+      await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
+    );
+    final document = pw.Document(
+      title: 'OPC PARTE fizička kalibracija',
+      creator: 'OPC',
+    );
+    const mm = PdfPageFormat.mm;
+    final referenceWidth = plan.widthMm >= 120 ? 100.0 : 50.0;
+    final referenceHeight = plan.heightMm >= 80 ? 50.0 : 25.0;
+    document.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat(
+          plan.widthMm * mm,
+          plan.heightMm * mm,
+          marginAll: 0,
+        ),
+        build: (_) => pw.Stack(
+          children: [
+            pw.Positioned.fill(
+              child: pw.Container(
+                decoration: pw.BoxDecoration(border: pw.Border.all(width: 1)),
+              ),
+            ),
+            pw.Positioned(
+              left: plan.horizontalMarginMm * mm,
+              top: plan.verticalMarginMm * mm,
+              child: pw.Container(
+                width: (plan.widthMm - plan.horizontalMarginMm * 2) * mm,
+                height: (plan.heightMm - plan.verticalMarginMm * 2) * mm,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(width: 0.8, color: PdfColors.red),
+                ),
+              ),
+            ),
+            pw.Positioned(
+              left: (plan.horizontalMarginMm + 5) * mm,
+              top: (plan.verticalMarginMm + 24) * mm,
+              child: pw.Container(
+                width: referenceWidth * mm,
+                height: referenceHeight * mm,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(width: 1.2, color: PdfColors.blue),
+                ),
+                alignment: pw.Alignment.center,
+                child: pw.Text(
+                  '${referenceWidth.toStringAsFixed(0)} × ${referenceHeight.toStringAsFixed(0)} mm',
+                  style: pw.TextStyle(font: regular, fontSize: 12),
+                ),
+              ),
+            ),
+            for (var mark = 0; mark <= plan.widthMm.floor(); mark += 10)
+              pw.Positioned(
+                left: mark * mm,
+                top: 0,
+                child: pw.Container(
+                  width: 0.4,
+                  height: 4 * mm,
+                  color: PdfColors.black,
+                ),
+              ),
+            pw.Positioned(
+              left: (plan.horizontalMarginMm + 5) * mm,
+              top: (plan.verticalMarginMm + 5) * mm,
+              child: pw.SizedBox(
+                width: (plan.widthMm - plan.horizontalMarginMm * 2 - 10) * mm,
+                child: pw.Text(
+                  'OPC PARTE KALIBRACIJA — stranica '
+                  '${plan.widthMm.toStringAsFixed(1)} × ${plan.heightMm.toStringAsFixed(1)} mm\n'
+                  'Crvena linija: deklarisana upotrebljiva površina. Plavi pravougaonik: poznata mera.\n'
+                  'Štampati isključivo uz Actual size / 100%. Ne koristiti Fit, Shrink ili Scale to page.',
+                  style: pw.TextStyle(font: regular, fontSize: 9),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return document.save();
+  }
+
   Future<pw.Widget> _buildBlock(ParteRenderBlock block) async {
     final rect = block.rect;
     final child = switch (block.kind) {
@@ -87,21 +172,29 @@ class PartePdfRenderer {
       crossAxisAlignment: alignment,
       children: [
         for (final line in block.lines)
-          pw.Text(
-            line,
-            maxLines: 1,
-            softWrap: false,
-            textAlign: switch (block.alignment) {
-              ParteTextAlign.left => pw.TextAlign.left,
-              ParteTextAlign.center => pw.TextAlign.center,
-              ParteTextAlign.right => pw.TextAlign.right,
+          pw.Transform(
+            transform: Matrix4.diagonal3Values(block.horizontalScale, 1, 1),
+            alignment: switch (block.alignment) {
+              ParteTextAlign.left => pw.Alignment.centerLeft,
+              ParteTextAlign.center => pw.Alignment.center,
+              ParteTextAlign.right => pw.Alignment.centerRight,
             },
-            style: pw.TextStyle(
-              fontSize: block.fontSize,
-              height: 1.22,
-              fontWeight: block.bold
-                  ? pw.FontWeight.bold
-                  : pw.FontWeight.normal,
+            child: pw.Text(
+              line,
+              maxLines: 1,
+              softWrap: false,
+              textAlign: switch (block.alignment) {
+                ParteTextAlign.left => pw.TextAlign.left,
+                ParteTextAlign.center => pw.TextAlign.center,
+                ParteTextAlign.right => pw.TextAlign.right,
+              },
+              style: pw.TextStyle(
+                fontSize: block.fontSize,
+                height: 1.22,
+                fontWeight: block.bold
+                    ? pw.FontWeight.bold
+                    : pw.FontWeight.normal,
+              ),
             ),
           ),
       ],
@@ -119,10 +212,26 @@ class PartePdfRenderer {
                   data.lengthInBytes,
                 ),
               );
-    return pw.Image(
-      pw.MemoryImage(bytes),
+    final renderedBytes = applyParteImageEffects(bytes, block);
+    pw.Widget image = pw.Image(
+      pw.MemoryImage(renderedBytes),
       fit: pw.BoxFit.contain,
       alignment: pw.Alignment.center,
+    );
+    image = switch (block.imageShape) {
+      ParteImageShape.rectangle => image,
+      ParteImageShape.roundedRectangle => pw.ClipRRect(
+        horizontalRadius: 8,
+        verticalRadius: 8,
+        child: image,
+      ),
+      ParteImageShape.oval => pw.ClipOval(child: image),
+    };
+    return pw.Container(
+      decoration: block.border
+          ? pw.BoxDecoration(border: pw.Border.all(width: block.borderWidth))
+          : null,
+      child: image,
     );
   }
 }
@@ -161,6 +270,19 @@ class PartePdfExportService {
       location: location,
       actor: actor,
       entitlement: entitlement,
+    );
+    return PartePdfExportResult(file: file, bytes: bytes);
+  }
+
+  Future<PartePdfExportResult> exportCalibration({
+    required ParteRenderPlan plan,
+  }) async {
+    final bytes = await renderer.buildCalibration(plan: plan);
+    final width = plan.widthMm.toStringAsFixed(1).replaceAll('.', '_');
+    final height = plan.heightMm.toStringAsFixed(1).replaceAll('.', '_');
+    final file = await sacuvajKoricePdfFajlDetalji(
+      'OPC_PARTE_KALIBRACIJA_${width}x$height.pdf',
+      bytes,
     );
     return PartePdfExportResult(file: file, bytes: bytes);
   }

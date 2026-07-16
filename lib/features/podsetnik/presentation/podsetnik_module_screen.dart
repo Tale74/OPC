@@ -29,7 +29,7 @@ class _PodsetnikModuleScreenState extends State<PodsetnikModuleScreen> {
   void initState() {
     super.initState();
     _selectedPredmetId = widget.predmetId;
-    _predmetiFuture = widget.predmetiRepository.getSvePredmete();
+    _predmetiFuture = widget.predmetiRepository.getPodsetnikKandidate();
   }
 
   @override
@@ -42,9 +42,7 @@ class _PodsetnikModuleScreenState extends State<PodsetnikModuleScreen> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          final predmeti = snapshot.data!
-              .where((predmet) => predmet.status != 'ANONIMIZOVAN')
-              .toList(growable: false);
+          final predmeti = snapshot.data!;
           final selectedId = predmeti.any((p) => p.id == _selectedPredmetId)
               ? _selectedPredmetId
               : null;
@@ -104,7 +102,7 @@ class _PodsetnikModuleScreenState extends State<PodsetnikModuleScreen> {
 
   static String _predmetLabel(PredmetiData predmet) {
     final name = '${predmet.ime} ${predmet.prezime}'.trim();
-    return name.isEmpty ? 'PREDMET #${predmet.id}' : '$name (#${predmet.id})';
+    return name.isEmpty ? 'PREDMET' : name;
   }
 }
 

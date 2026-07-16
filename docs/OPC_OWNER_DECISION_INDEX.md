@@ -46,7 +46,7 @@ This register gives every recorded owner decision a stable identifier. It is a n
 4. Every future implementation task must cite the applicable IDs and resolve all listed dependencies/fallbacks in its authorized scope.
 5. If source and guide disagree, the discrepancy is reported; production behavior is not changed by this register.
 
-## OPC-OD-NATIVE-DEV-POTPUN-001
+## OPC-OD-NATIVE-DEV-POTPUN-001 — SUPERSEDED
 
 - Decision: Windows/Android development, presentation and runtime validation use
   shared POTPUN mode without local activation until both native apps are final.
@@ -55,6 +55,7 @@ This register gives every recorded owner decision a stable identifier. It is a n
 - Implementation: `OpcNativeDevelopmentBuildMode`,
   `OpcRuntimeEntitlementResolver`.
 - Report: `docs/tasks/OPC_TASK_DEVELOPMENT_POTPUN_RUNTIME_UNLOCK_PARTE_UI_CLEANUP_REPORT.md`.
+- Superseded by: `OPC-OD-STAGE1-UNRESTRICTED-PARTE-003`; retained for audit only.
 
 ## OPC-OD-PARTE-002
 
@@ -63,3 +64,17 @@ This register gives every recorded owner decision a stable identifier. It is a n
 - Implementation: technical information card and its exclusive spacing removed
   from `ParteSegment`.
 - Report: `docs/tasks/OPC_TASK_DEVELOPMENT_POTPUN_RUNTIME_UNLOCK_PARTE_UI_CLEANUP_REPORT.md`.
+# PARTE runtime corrections — CLOSED
+
+See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`. Closed scope: MODUL PARTE ownership, eligible OTVOREN selection, deceased-name title, canonical symbol labels, full initial-script normalization with manual mixed-script preservation, reference layout, single-line compressed name, per-block alignment/embedded fonts, preview selection, drag/aspect resize, non-destructive photo controls, explicit reset, `ŠABLONI PARTE`, singular built-in/contextual custom templates, authoritative PDF, optional DOCX, and Windows-first runtime gate.
+
+## OPC-OD-STAGE1-UNRESTRICTED-PARTE-003 — CLOSED
+
+- Decision: PAKETI are permanently abandoned as native business/production policy; all existing Windows/Android functionality is available to every native user.
+- Transition: Stage 1 removes functional package restrictions while retaining old technical payload/parser/bootstrap/diagnostic code; Stage 2 physical removal is a separate post-runtime task.
+- Boundary: ADMINISTRATOR/SAVETNIK permissions, business prerequisites and PREDMET lifecycle remain active; OPC Web remains future-only.
+- Decision: MODULI relocated beside STATISTIKA; settings no longer launches operational modules.
+- Decision: completed PARTE is retained, reopenable and deletable only by explicit user action.
+- Decision: separate physical margins, deterministic full reflow, calibration PDF, positioned block DOCX and OS-appropriate Android KORICE access.
+- Runtime: Windows physical print and DOCX owner acceptance must pass before Android runtime begins.
+- Report: `docs/tasks/OPC_TASK_PARTE_RUNTIME_CORRECTIONS_MODULE_WORKFLOW_COMPOSER_DOCX_REPORT.md`.

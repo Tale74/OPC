@@ -116,7 +116,7 @@ Known test gaps: full PREDMET lifecycle UI, finance calculations, PDF outputs, p
 - IRIU feeds finance, operational documents, JSON, and STANJE ROBE.
 - Contacts feed JSON transfer and may appear in operational context.
 - FirmaPodaci feeds PDFs/settings/backup and future identity risk.
-- Entitlement controls visibility/actions but must not change PREDMET truth.
+- Stage 1 owner policy makes existing native visibility/actions unrestricted; retained entitlement data is diagnostic compatibility and must not change PREDMET truth.
 
 ## 9. Domain Web / Sync Sensitivity
 

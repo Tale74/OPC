@@ -164,12 +164,12 @@ Read after: transfer tests.
 
 Source file: `lib/core/entitlements/opc_entitlement_policy.dart`
 Related pseudocode sections: `OPC-PSEUDO-014`
-Business meaning: packages/add-ons/module availability and fail-closed fallback.
-Module: entitlement/packages
-Truth boundary: can hide/lock features; must not mutate PREDMET truth.
-Why Logos must know it: package access and product capability are separate from business truth.
-Risk if misunderstood: licensing changes alter case data.
-Read before: owner package decisions.
+Business meaning: Stage 1 makes every existing native capability available; retained package/add-on/license data is compatibility diagnostics only.
+Module: native access / retained entitlement architecture
+Truth boundary: access does not bypass roles/business prerequisites and never mutates PREDMET truth.
+Why Logos must know it: PAKETI are permanently abandoned as native product policy, while Stage 2 physical code removal is deliberately deferred.
+Risk if misunderstood: historical package matrices could be reactivated or compatibility code deleted before owner runtime validation.
+Read before: current owner Stage 1/Stage 2 decision.
 Read after: license parser tests.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-015
@@ -438,10 +438,10 @@ Read after: `docs/OPC_PDF_MEMORANDUM_HEADER_PSEUDOCODE.md` and the six exporter 
 
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `lib/features/predmeti/presentation/lista_predmeta_screen.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`
 Related pseudocode: `docs/OPC_PREBUILD_STANJE_ROBE_PODSETNIK_PSEUDOCODE.md`
-Business meaning: STANJE ROBE package availability remains separate from ADMINISTRATOR-controlled active use, while PODSETNIK is a Srednji/Potpun module with its own settings identity and CEREMONIJA remains its source of ceremony facts.
+Business meaning: STANJE ROBE and PODSETNIK are available to every native user; ADMINISTRATOR-controlled stock activation, roles and CEREMONIJA/PREDMET truth remain separate.
 Module: settings / STANJE ROBE / MODULI / PODSETNIK
-Truth boundary: locked-module visibility and navigation do not change package ownership, stock effects, reminder configuration/scheduling, ceremony facts, or PREDMET truth.
-Why Logos must know it: an Osnovni runtime must not expose PODSETNIK functionality, while Srednji/Potpun navigation must use the module-owned surface and the existing reminder engine.
+Truth boundary: unrestricted module visibility/navigation does not change stock effects, reminder configuration/scheduling, ceremony facts, roles or PREDMET truth.
+Why Logos must know it: PODSETNIK uses the module-owned surface and existing reminder engine without any current package lock.
 Risk if misunderstood: CEREMONIJA could again become the module identity, or relocation could create duplicate reminder/PREDMET truth.
 Read after: `test/stanje_robe_operational_toggle_test.dart`, `test/lista_predmeta_screen_smoke_test.dart`, and the existing reminder model/repository/coordinator.
 
@@ -449,11 +449,11 @@ Read after: `test/stanje_robe_operational_toggle_test.dart`, `test/lista_predmet
 
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/features/podesavanja/presentation/podesavanja_screen.dart`; `lib/features/podsetnik/presentation/podsetnik_module_screen.dart`; `lib/features/predmeti/presentation/segments/ceremonija_segment.dart`
 Related pseudocode: `docs/OPC_MODULI_PAKETI_PODSETNIK_ARCHITECTURE_PSEUDOCODE.md`
-Business meaning: PAKETI grant capabilities through centralized entitlement; MODULI give operational/package capabilities a clear identity around, but never above, PREDMET.
+Business meaning: the central Stage 1 owner policy grants all existing native capabilities; MODULI gives operational capabilities a clear identity around, but never above, PREDMET.
 Module: PAKETI / MODULI / PODSETNIK
 Truth boundary: PODSETNIK owns reminder configuration only; PREDMET/CEREMONIJA own ceremony facts and the existing reminder engine owns persistence/scheduling/delivery.
 Why Logos must know it: UI ownership and data ownership are distinct and must not drift together.
-Risk if misunderstood: package checks could become ad-hoc or module settings could become parallel business truth.
+Risk if misunderstood: obsolete package checks could return or module settings could become parallel business truth.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-040
 
@@ -479,7 +479,7 @@ Risk if misunderstood: this presentation polish could be expanded into a broad P
 
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `lib/core/entitlements/opc_runtime_entitlement_resolver.dart`; `lib/app.dart`
 Related pseudocode: `docs/OPC_PRESENTATION_POTPUN_BUILD_PSEUDOCODE.md`
-Business meaning: historical explicit owner/internal presentation builds could run as POTPUN through `OPC_PRESENTATION_POTPUN=true`; the current native-development default and final-package restoration boundary are recorded in the later `Native development POTPUN runtime boundary` entry.
+Business meaning: historical explicit owner/internal presentation builds could run as POTPUN through `OPC_PRESENTATION_POTPUN=true`; this is audit evidence superseded by the 2026-07-16 unrestricted-native Stage 1 decision.
 Module: entitlement/packages / presentation build
 Truth boundary: the override controls runtime availability only; it does not redefine PREDMET, database ownership, PDF/JSON output, STANJE ROBE operational state, or real production licensing.
 Why Logos must know it: this compatibility flag remains available, but it no longer describes the complete current development-build default.
@@ -545,9 +545,9 @@ Source files: `lib/features/predmeti/presentation/segments/parte_segment.dart`; 
 Related pseudocode: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`
 Business meaning: current PARTE persists PREDMET-scoped public-display choices and derives text, while future print preparation would add reviewed grammar, a real symbol, an app-owned prepared photograph and a deterministic derivative artifact without making the artifact a second PREDMET truth.
 Module: PREDMET / PREMINULO LICE / CEREMONIJA / PARTE / PDF / media / JSON / backup / anonymization / packages / Windows / Android
-Truth boundary: external original photographs remain user-owned and untouched; a future normalized copy may be OPC-owned; preview/PDF/image/print remain derivatives; photo retention/deletion, symbol fallback, anonymization and package behavior require owner decisions.
+Truth boundary: external original photographs remain user-owned and untouched; an OPC-normalized copy may be OPC-owned; preview/PDF/image/print remain derivatives; photo retention/deletion, symbol fallback and anonymization follow current owner decisions, while historical package behavior is superseded by Stage 1 unrestricted native access.
 Why Logos must know it: the two references share one floating-object layout with grammatical variants, but current source has no standalone PARTE artifact or photo lifecycle, current symbol output is label-only, `parteIme` is orphaned, and current anonymization does not cover mourners/media/artifacts.
-Risk if misunderstood: OPC could delete an external original, make a PDF the only surviving truth, publish wrong grammar, silently replace a religious symbol, truncate personal text, break cross-device restore or delete media on package downgrade.
+Risk if misunderstood: OPC could delete an external original, make a PDF the only surviving truth, publish wrong grammar, silently replace a religious symbol, truncate personal text, break cross-device restore or wrongly revive package-based media behavior.
 Read after: `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`; `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md`; `docs/OPC_OWNER_DECISION_GUIDE.md` section 8.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-049
@@ -559,17 +559,17 @@ Business meaning: PARTE is a controlled derivative print-preparation workflow. P
 Truth boundary: the external original is read-only; the app owns only normalized copies; templates are content-free; exported PDF is a derivative retained after cleanup.
 Last task: `OPC-PARTE-PRINT-PREPARATION-IMPLEMENTATION` (final commit recorded in its report after commit creation).
 Alignment: implementation and pseudocode are aligned for the task branch; real Windows/Android runtime smoke remains separately reported.
-Why Logos must know it: closing or anonymizing a PREDMET is blocked by an unfinished started preparation, while downgrade retains state and re-entitlement resumes it.
+Why Logos must know it: closing or anonymizing a PREDMET is blocked by an unfinished started preparation, while retained package/license data never hides or destroys preparation state.
 Risk if misunderstood: a temporary draft could be promoted to business truth, external media could be deleted, preview and PDF could drift, or cleanup could destroy the exported artifact.
 Read before: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_OWNER_DECISION_GUIDE.md` section 8.
 Read after: `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.
 
-## Native development POTPUN runtime boundary
+## Historical native development POTPUN runtime boundary — SUPERSEDED
 
 Document: `docs/OPC_PRESENTATION_POTPUN_BUILD_PSEUDOCODE.md`
 
-Scope: shared Windows/Android development POTPUN default, explicit
-`OPC_FINAL_PACKAGE_LICENSING=true` restoration path, unchanged package policy,
+Scope: historical shared Windows/Android development POTPUN default and explicit
+`OPC_FINAL_PACKAGE_LICENSING=true` restoration path; superseded as current product policy,
 diagnostics and no module-specific bypass.
 
 Source represented: `lib/core/entitlements/opc_entitlement_policy.dart`;
@@ -578,3 +578,16 @@ Source represented: `lib/core/entitlements/opc_entitlement_policy.dart`;
 
 Last task: `OPC-DEVELOPMENT-POTPUN-RUNTIME-UNLOCK-PARTE-UI-CLEANUP`.
 Implementation/pseudocode aligned: yes.
+# PARTE runtime-corrected learning entry (2026-07-12)
+
+- `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` is authoritative for the split between PREDMET business truth and MODUL PARTE technical preparation.
+- It includes eligible-PREDMET selection, full initial-script normalization, manual mixed-script preservation, reference layout, one-line name compression, preview selection, drag/resize, photo adjustments, reset, contextual templates, authoritative PDF and optional DOCX.
+- Runtime order is Windows first and Android second; a build is not runtime evidence.
+
+## OPC-PSEUDO-INDEX-050 — Stage 1 unrestricted native runtime and retained PARTE
+
+- Source of logic: central `OpcNativeAccessPolicy`, PREDMET overview `ModuliScreen`, retained preparation repository/service, schema-3 PARTE geometry, shared render plan, positioned OOXML exporter and Android KORICE platform channel.
+- Learning rule: package/license data is compatibility diagnostics, never current functional gating and never rewritten as a fake POTPUN license.
+- PARTE rule: completion and retained technical revision are separate; edit invalidates preview/export evidence but does not recreate the business blocker.
+- Output rule: PDF owns physical WYSIWYG; DOCX owns editable independent blocks; Android uses MediaStore or a system destination picker according to OS capability.
+- Runtime gate: Windows owner physical print/DOCX acceptance precedes Android runtime. Build success alone is not runtime acceptance.

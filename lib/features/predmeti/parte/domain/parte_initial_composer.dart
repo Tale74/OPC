@@ -34,7 +34,7 @@ class ParteInitialComposer {
     final validGender = pol == 'M' || pol == 'Z';
     if (!validGender) warnings.add(genderWarning);
 
-    final text = <String, String>{
+    final rawText = <String, String>{
       'intro': validGender
           ? _fixed(pol == 'Z' ? 'Naša voljena' : 'Naš voljeni', pismo)
           : '',
@@ -47,10 +47,12 @@ class ParteInitialComposer {
           : '',
       'ceremony': _ceremonySentence(predmet, pismo),
       'secondary': _secondarySentence(predmet, pismo),
-      'mourners': predmet.ozaloseni.trim().isEmpty
-          ? _fixed('Ožalošćeni:', pismo)
-          : '${_fixed('Ožalošćeni:', pismo)}\n${normalizeText(predmet.ozaloseni)}',
+      'mournersHeading': _fixed('Ožalošćeni:', pismo),
+      'mourners': normalizeText(predmet.ozaloseni),
     };
+    final text = rawText.map(
+      (key, value) => MapEntry(key, _selectedScript(value, pismo)),
+    );
 
     final source = <String, Object?>{
       'brojPredmeta': predmet.brojPredmeta,
@@ -89,6 +91,8 @@ class ParteInitialComposer {
         blocks: List<ParteBlockSpec>.from(template.blocks),
         widthMm: template.widthMm,
         heightMm: template.heightMm,
+        horizontalMarginMm: template.horizontalMarginMm,
+        verticalMarginMm: template.verticalMarginMm,
         symbolId: predmet.simbol,
       ),
       sourceFingerprint: parteCanonicalFingerprint(source),
@@ -99,21 +103,29 @@ class ParteInitialComposer {
   String _fixed(String value, String pismo) =>
       pismo == 'CIRILICA' ? transliterateLatinToCyrillic(value) : value;
 
+  String _selectedScript(String value, String pismo) => pismo == 'CIRILICA'
+      ? transliterateLatinToCyrillic(value)
+      : transliterateCyrillicToLatin(value);
+
   String _displayName(PredmetiData p) {
     final result = <String>[];
     final title = normalizeText(p.titula);
     final nickname = normalizeText(p.nadimak);
     if (p.titulaIspred && title.isNotEmpty) result.add(title);
-    if (p.ime.trim().isNotEmpty) result.add(p.ime.trim());
+    if (p.ime.trim().isNotEmpty) {
+      result.add(normalizeSerbianPersonName(p.ime));
+    }
     if (p.srednjeNaParti && p.srednje.trim().isNotEmpty) {
-      result.add(p.srednje.trim());
+      result.add(normalizeSerbianPersonName(p.srednje));
     }
     if (p.nadimakNaParti && !p.nadimakCrtica && nickname.isNotEmpty) {
-      result.add('"$nickname"');
+      result.add('"${normalizeSerbianPersonName(nickname)}"');
     }
-    if (p.prezime.trim().isNotEmpty) result.add(p.prezime.trim());
+    if (p.prezime.trim().isNotEmpty) {
+      result.add(normalizeSerbianPersonName(p.prezime));
+    }
     if (p.nadimakNaParti && p.nadimakCrtica && nickname.isNotEmpty) {
-      result.add('- $nickname');
+      result.add('- ${normalizeSerbianPersonName(nickname)}');
     }
     if (!p.titulaIspred && title.isNotEmpty) result.add(title);
     return result.join(' ');
@@ -180,11 +192,11 @@ class ParteInitialComposer {
     const days = [
       'ponedeljak',
       'utorak',
-      'sreda',
+      'sredu',
       'četvrtak',
       'petak',
-      'subota',
-      'nedelja',
+      'subotu',
+      'nedelju',
     ];
     try {
       return _fixed(days[DateTime(year, month, day).weekday - 1], pismo);

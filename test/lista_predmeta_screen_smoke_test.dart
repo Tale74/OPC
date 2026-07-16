@@ -57,73 +57,86 @@ void main() {
 
     expect(find.text('OPC — LISTA PREDMETA'), findsOneWidget);
     expect(find.text('NOVI PREDMET'), findsOneWidget);
+    expect(find.byKey(const Key('predmeti-moduli-action')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('predmeti-moduli-action')));
+    await tester.pumpAndSettle();
+    expect(find.text('MODULI'), findsOneWidget);
+    expect(find.text('PODSETNIK'), findsOneWidget);
+    expect(find.text('PARTE'), findsOneWidget);
+    expect(find.text('STANJE ROBE'), findsWidgets);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
   });
 
-  testWidgets(
-    'POTPUN Podsetnik shortcut opens PODSETNIK module settings',
-    (tester) async {
-      final db = createTestDatabase();
+  testWidgets('Podsetnik shortcut opens native PODSETNIK module settings', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
 
-      final authRepo = AuthRepository(db);
-      final session = SessionService();
-      final podesavanjaRepo = PodesavanjaRepository(db);
-      final predmetiRepo = PredmetiRepository(db);
-      final admin = await authRepo.kreirajPrvogAdmina(
-        imePrezime: 'Test Administrator',
-        pin: '1234',
-      );
-      session.prijavi(admin);
-      final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
-      final predmet = await (db.select(
-        db.predmeti,
-      )..where((row) => row.id.equals(predmetId))).getSingle();
-      final podsetnikPolicy = OpcEntitlementPolicy.fromPayload(
-        const OpcEntitlementPayload(
-          schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
-          sourceKind: OpcEntitlementSourceKind.demoTest,
-          environment: OpcEntitlementEnvironment.test,
-          packageLevel: OpcPackageLevel.potpun,
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final podesavanjaRepo = PodesavanjaRepository(db);
+    final predmetiRepo = PredmetiRepository(db);
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Test Administrator',
+      pin: '1234',
+    );
+    session.prijavi(admin);
+    final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((row) => row.id.equals(predmetId))).getSingle();
+    final podsetnikPolicy = OpcEntitlementPolicy.fromPayload(
+      const OpcEntitlementPayload(
+        schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+        sourceKind: OpcEntitlementSourceKind.demoTest,
+        environment: OpcEntitlementEnvironment.test,
+        packageLevel: OpcPackageLevel.potpun,
+      ),
+    );
+
+    await tester.pumpWidget(
+      wrapForTest(
+        ListaPredmetaScreen(
+          predmetiRepo: predmetiRepo,
+          authRepo: authRepo,
+          podesavanjaRepo: podesavanjaRepo,
+          session: session,
+          predmetiStreamOverride: Stream.value([predmet]),
+          runStartupSideEffects: false,
+          entitlementPolicy: podsetnikPolicy,
         ),
-      );
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.pumpWidget(
-        wrapForTest(
-          ListaPredmetaScreen(
-            predmetiRepo: predmetiRepo,
-            authRepo: authRepo,
-            podesavanjaRepo: podesavanjaRepo,
-            session: session,
-            predmetiStreamOverride: Stream.value([predmet]),
-            runStartupSideEffects: false,
-            entitlementPolicy: podsetnikPolicy,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    final shortcut = find.text('Podsetnik');
+    expect(shortcut, findsOneWidget);
+    await tester.tap(shortcut);
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.more_vert));
-      await tester.pumpAndSettle();
-      final shortcut = find.text('Podsetnik');
-      expect(shortcut, findsOneWidget);
-      await tester.tap(shortcut);
-      await tester.pumpAndSettle();
+    expect(find.text('MODULI / PODSETNIK'), findsOneWidget);
+    expect(find.byKey(const Key('podsetnik-module-settings')), findsOneWidget);
+    expect(
+      find.byKey(const Key('podsetnik-reminders-enabled')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('ceremony-reminders-enabled')), findsNothing);
 
-      expect(find.text('MODULI / PODSETNIK'), findsOneWidget);
-      expect(find.byKey(const Key('podsetnik-module-settings')), findsOneWidget);
-      expect(find.byKey(const Key('podsetnik-reminders-enabled')), findsOneWidget);
-      expect(find.byKey(const Key('ceremony-reminders-enabled')), findsNothing);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await db.close();
+    await tester.pump();
+    await tester.pumpAndSettle();
+  });
 
-      await tester.tap(find.byType(BackButton));
-      await tester.pumpAndSettle();
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-      await db.close();
-      await tester.pump();
-      await tester.pumpAndSettle();
-    },
-  );
-
-  test('Osnovni keeps Podsetnik shortcut disabled', () {
+  test('Osnovni no longer disables Podsetnik shortcut', () {
     expect(
       podsetnikShortcutEnabled(
         entitlementPolicy: OpcEntitlementPolicy.fromPayload(
@@ -131,12 +144,12 @@ void main() {
         ),
         predmetStatus: 'OTVOREN',
       ),
-      isFalse,
+      isTrue,
     );
   });
 
-  test('Srednji and Potpun keep Podsetnik module entitlement', () {
-    for (final package in [OpcPackageLevel.srednji, OpcPackageLevel.potpun]) {
+  test('retained package levels do not restrict Podsetnik', () {
+    for (final package in OpcPackageLevel.values) {
       final policy = OpcEntitlementPolicy.fromPayload(
         OpcEntitlementPayload(
           schemaVersion: OpcEntitlementPayload.currentSchemaVersion,

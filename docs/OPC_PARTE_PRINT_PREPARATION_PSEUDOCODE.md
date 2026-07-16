@@ -23,6 +23,40 @@ FORBID:
   biometric_identification
 ```
 
+## Runtime-recovery addendum (2026-07-16)
+
+```text
+ACCESS
+  resolve package/license compatibility diagnostics without mutation
+  effective native access = ALL EXISTING FUNCTIONALITY
+  then apply role permissions and PREDMET business prerequisites
+
+COMPLETION
+  PRIPREMA ZAVRŠENA clears PREDMET blocker
+  retain draft + template snapshot + app-owned reproducibility media
+  completed preparation -> open / inspect / edit / confirm new preview / re-export
+  only explicit OBRIŠI SAČUVANU PRIPREMU removes retained app-owned state/media
+  never remove PREDMET, external originals, PDF or DOCX exports
+
+PHYSICAL LAYOUT
+  draft owns page width/height + horizontal/vertical margins
+  any physical change transforms every block from old usable rectangle to new
+  rebuild one shared render plan for preview and PDF
+  show usable-area boundary; reject out-of-bound output
+  calibration PDF declares millimetres and requires Actual size / 100%
+
+DOCX
+  each OPC text block -> independent positioned editable text box
+  photo/symbol -> independent page-anchored image
+  preserve page/margins/geometry/style as an honest editable approximation
+
+ANDROID OUTPUT
+  API 29+ -> MediaStore Downloads/KORICE, no broad permission
+  API <= 28 -> request WRITE_EXTERNAL_STORAGE limited to API 28
+  denial/direct failure -> ACTION_CREATE_DOCUMENT fallback and retry
+  report success only after output stream write completes
+```
+
 ## 2. Current source truth
 
 ```text
@@ -444,23 +478,20 @@ ON anonymize:
   NEVER log personal file path, original filename or photo bytes
 ```
 
-## 15. Package downgrade
+## 15. Historical package downgrade — SUPERSEDED BY STAGE 1
 
 ```text
-CURRENT_PARTE_SECTION = NOT_GATED_BY advancedParte
-CURRENT_advancedParte_ENTITLEMENT = EXISTS_BUT_NOT_CONSUMED_BY_PARTE_UI
+PAKETI = ABANDONED_AS_NATIVE_PRODUCT_POLICY
+CURRENT_PARTE = AVAILABLE_REGARDLESS_OF_RETAINED_PACKAGE_OR_ADDON_DATA
+RETAINED_ENTITLEMENT_ARCHITECTURE = COMPATIBILITY_AND_DIAGNOSTICS_ONLY
 
-FUTURE package decision = OWNER_DECISION_REQUIRED
+ON retained_package_or_license_change:
+  MUST NOT hide_or_disable PARTE
+  MUST NOT mutate PREDMET or technical preparation
+  role/business/lifecycle rules remain active
 
-ON package_downgrade:
-  may hide_or_disable future capability
-  MUST preserve PREDMET fields
-  MUST preserve app-owned photo and crop
-  MUST preserve JSON/backup/anonymization support
-  MUST NOT delete media
-
-ON reupgrade:
-  restore capability against same data
+STAGE_2 physical removal:
+  separate task after owner runtime validation
 ```
 
 ## 16. Windows and Android parity
@@ -738,4 +769,57 @@ AUTOMATED_ALIGNMENT:
 
 REAL_DEVICE_RUNTIME:
   remains a separate smoke-validation obligation
+```
+# Runtime-corrected PARTE workflow (2026-07-12)
+
+```text
+PREDMET PARTE segment
+  owns only authoritative business inputs
+  saves required flag, script, symbol, title/occupation, name modifiers,
+  mourners and ceremony grammar inputs
+
+MODUL PARTE
+  require PARTE entitlement and permitted user
+  list PREDMET where status == OTVOREN and partePotrebna == true
+  select one PREDMET
+  recheck eligibility
+  create or resume one temporary preparation
+
+INITIAL COMPOSITION
+  read PREDMET snapshot
+  generate every initial/copied text block in selected LATINICA/ĆIRILICA
+  after initialization preserve manual text exactly, including deliberate mixed script
+  use built-in reference layout: photo upper-right, symbol above the name,
+  intro/name central, mourners low
+
+COMPOSER
+  tap/click preview element -> select it (editor-only outline)
+  drag within 5 mm usable margin
+  resize photo/symbol with aspect ratio locked by default
+  text block -> left/center/right, embedded font, size, bold
+  deceased name -> one line; keep size, then horizontal compression;
+  unsafe result -> actionable blocker, never silent wrap/truncation
+  photo -> non-destructive brightness/contrast/sharpness/grayscale/shape/border
+  save only technical temporary draft
+
+RESET
+  explicit confirmation
+  delete app-owned temporary media and unfinished preparation
+  never delete external originals, PREDMET or exported KORICE files
+  initialize a fresh preparation from current PREDMET and active template
+
+ŠABLONI PARTE
+  show one immutable built-in standard plus contextual custom templates
+  apply selected layout to current draft
+  save current layout as new; custom only: save changes, rename, export, delete
+
+OUTPUT
+  confirm current render-plan preview
+  PDF -> authoritative deterministic WYSIWYG KORICE output and completion evidence
+  DOCX -> optional local editable derivative; approximate Word flow; never completion evidence
+  complete only after current confirmed preview and successful current PDF export
+
+RUNTIME GATE
+  Windows owner acceptance first
+  Android shared-flow acceptance only after Windows PASS
 ```

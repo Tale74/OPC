@@ -20,9 +20,11 @@ dependencies:
   printing: ^5.14.2
 
   # File system
+  archive: ^4.0.9
   path_provider: ^2.1.5
   file_picker: ^11.0.2
   path: ^1.9.1
+  vector_math: ^2.2.0
 
   # Images & media
   image_picker: ^1.1.2

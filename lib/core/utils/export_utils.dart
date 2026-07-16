@@ -9,8 +9,9 @@ import '../format/app_filename_format.dart';
 const _kAndroidKoriceChannelName = 'opc_v4/korice_storage';
 const _kAndroidKoriceLocationLabel = 'Downloads/KORICE';
 
-const MethodChannel _androidKoriceChannel =
-    MethodChannel(_kAndroidKoriceChannelName);
+const MethodChannel _androidKoriceChannel = MethodChannel(
+  _kAndroidKoriceChannelName,
+);
 
 class KoriceFileEntry {
   const KoriceFileEntry({
@@ -19,6 +20,7 @@ class KoriceFileEntry {
     required this.locationLabel,
     this.path,
     this.contentUri,
+    this.mimeType,
   });
 
   final String name;
@@ -26,6 +28,7 @@ class KoriceFileEntry {
   final String locationLabel;
   final String? path;
   final String? contentUri;
+  final String? mimeType;
 }
 
 String koriceFajlLokacija(KoriceFileEntry fajl) {
@@ -36,10 +39,12 @@ Future<Directory> getKoriceDir() async {
   final Directory base;
 
   if (Platform.isAndroid) {
-    base = await getExternalStorageDirectory() ??
+    base =
+        await getExternalStorageDirectory() ??
         await getApplicationDocumentsDirectory();
   } else {
-    base = await getDownloadsDirectory() ??
+    base =
+        await getDownloadsDirectory() ??
         await getApplicationDocumentsDirectory();
   }
 
@@ -56,29 +61,17 @@ Future<bool> otvoriKoriceDir() async {
   final dir = await getKoriceDir();
 
   if (Platform.isWindows) {
-    await Process.start(
-      'explorer.exe',
-      [dir.path],
-      runInShell: true,
-    );
+    await Process.start('explorer.exe', [dir.path], runInShell: true);
     return true;
   }
 
   if (Platform.isMacOS) {
-    await Process.start(
-      'open',
-      [dir.path],
-      runInShell: true,
-    );
+    await Process.start('open', [dir.path], runInShell: true);
     return true;
   }
 
   if (Platform.isLinux) {
-    await Process.start(
-      'xdg-open',
-      [dir.path],
-      runInShell: true,
-    );
+    await Process.start('xdg-open', [dir.path], runInShell: true);
     return true;
   }
 
@@ -90,23 +83,10 @@ Future<KoriceFileEntry> sacuvajKoricePdfFajlDetalji(
   Uint8List bytes,
 ) async {
   if (Platform.isAndroid) {
-    final raw = await _androidKoriceChannel.invokeMethod<Map<Object?, Object?>>(
-      'savePdfToDownloadsKorice',
-      <String, Object>{
-        'filename': naziv,
-        'bytes': bytes,
-      },
-    );
-    if (raw == null) {
-      throw StateError('Android KORICE save nije vratio metapodatke fajla.');
-    }
-    return KoriceFileEntry(
-      name: (raw['name'] as String?) ?? naziv,
-      modified: DateTime.now(),
-      locationLabel:
-          (raw['locationLabel'] as String?) ?? _kAndroidKoriceLocationLabel,
-      path: raw['path'] as String?,
-      contentUri: raw['contentUri'] as String?,
+    return _sacuvajAndroidKoriceDokument(
+      naziv,
+      bytes,
+      mimeType: 'application/pdf',
     );
   }
 
@@ -128,25 +108,7 @@ Future<KoriceFileEntry> sacuvajKoriceDokumentFajlDetalji(
   required String mimeType,
 }) async {
   if (Platform.isAndroid) {
-    final raw = await _androidKoriceChannel.invokeMethod<Map<Object?, Object?>>(
-      'saveDocumentToDownloadsKorice',
-      <String, Object>{
-        'filename': naziv,
-        'bytes': bytes,
-        'mimeType': mimeType,
-      },
-    );
-    if (raw == null) {
-      throw StateError('Android KORICE save nije vratio metapodatke fajla.');
-    }
-    return KoriceFileEntry(
-      name: (raw['name'] as String?) ?? naziv,
-      modified: DateTime.now(),
-      locationLabel:
-          (raw['locationLabel'] as String?) ?? _kAndroidKoriceLocationLabel,
-      path: raw['path'] as String?,
-      contentUri: raw['contentUri'] as String?,
-    );
+    return _sacuvajAndroidKoriceDokument(naziv, bytes, mimeType: mimeType);
   }
 
   final dir = await getKoriceDir();
@@ -161,6 +123,60 @@ Future<KoriceFileEntry> sacuvajKoriceDokumentFajlDetalji(
   );
 }
 
+Future<KoriceFileEntry> _sacuvajAndroidKoriceDokument(
+  String naziv,
+  Uint8List bytes, {
+  required String mimeType,
+}) async {
+  Map<Object?, Object?>? raw;
+  PlatformException? directFailure;
+  try {
+    await _androidKoriceChannel.invokeMethod<Map<Object?, Object?>>(
+      'ensureKoriceAccess',
+    );
+    raw = await _androidKoriceChannel.invokeMethod<Map<Object?, Object?>>(
+      'saveDocumentToDownloadsKorice',
+      <String, Object>{'filename': naziv, 'bytes': bytes, 'mimeType': mimeType},
+    );
+  } on PlatformException catch (error) {
+    directFailure = error;
+  }
+
+  if (raw == null) {
+    try {
+      raw = await _androidKoriceChannel.invokeMethod<Map<Object?, Object?>>(
+        'saveDocumentWithSystemPicker',
+        <String, Object>{
+          'filename': naziv,
+          'bytes': bytes,
+          'mimeType': mimeType,
+        },
+      );
+    } on PlatformException catch (fallbackError) {
+      final reason = directFailure?.message ?? directFailure?.code;
+      throw StateError(
+        'Dokument nije sačuvan. '
+        '${reason == null ? '' : '$reason '}'
+        '${fallbackError.message ?? fallbackError.code} '
+        'Pokušajte ponovo; ako je pristup trajno odbijen, omogućite ga u Android podešavanjima.',
+      );
+    }
+  }
+
+  if (raw == null) {
+    throw StateError('Android izvoz nije potvrdio da je fajl upisan.');
+  }
+  return KoriceFileEntry(
+    name: (raw['name'] as String?) ?? naziv,
+    modified: DateTime.now(),
+    locationLabel:
+        (raw['locationLabel'] as String?) ?? _kAndroidKoriceLocationLabel,
+    path: raw['path'] as String?,
+    contentUri: raw['contentUri'] as String?,
+    mimeType: (raw['mimeType'] as String?) ?? mimeType,
+  );
+}
+
 Future<String> sacuvajKoricePdfFajl(String naziv, Uint8List bytes) async {
   final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
   return koriceFajlLokacija(fajl);
@@ -168,13 +184,12 @@ Future<String> sacuvajKoricePdfFajl(String naziv, Uint8List bytes) async {
 
 Future<void> otvoriKoriceFajl(KoriceFileEntry fajl) async {
   if (Platform.isAndroid) {
-    await _androidKoriceChannel.invokeMethod<void>(
-      'openKoriceFile',
-      <String, Object>{
-        if (fajl.contentUri != null) 'contentUri': fajl.contentUri!,
-        if (fajl.path != null) 'path': fajl.path!,
-      },
-    );
+    await _androidKoriceChannel
+        .invokeMethod<void>('openKoriceFile', <String, Object>{
+          if (fajl.contentUri != null) 'contentUri': fajl.contentUri!,
+          if (fajl.path != null) 'path': fajl.path!,
+          if (fajl.mimeType != null) 'mimeType': fajl.mimeType!,
+        });
     return;
   }
 
@@ -184,33 +199,23 @@ Future<void> otvoriKoriceFajl(KoriceFileEntry fajl) async {
   }
 
   if (Platform.isWindows) {
-    await Process.start(
-      'explorer.exe',
-      [path],
-      runInShell: true,
-    );
+    await Process.start('explorer.exe', [path], runInShell: true);
     return;
   }
 
   if (Platform.isMacOS) {
-    await Process.start(
-      'open',
-      [path],
-      runInShell: true,
-    );
+    await Process.start('open', [path], runInShell: true);
     return;
   }
 
   if (Platform.isLinux) {
-    await Process.start(
-      'xdg-open',
-      [path],
-      runInShell: true,
-    );
+    await Process.start('xdg-open', [path], runInShell: true);
     return;
   }
 
-  throw UnsupportedError('Otvaranje KORICE fajla nije podrzano na ovoj platformi.');
+  throw UnsupportedError(
+    'Otvaranje KORICE fajla nije podrzano na ovoj platformi.',
+  );
 }
 
 void prikaziPdfExportSuccessSnackBar(
@@ -267,6 +272,7 @@ Future<List<KoriceFileEntry>> procitajKoriceFajlove() async {
                 _kAndroidKoriceLocationLabel,
             path: item['path'] as String?,
             contentUri: item['contentUri'] as String?,
+            mimeType: item['mimeType'] as String?,
           ),
         )
         .where((item) => item.name.trim().isNotEmpty)
@@ -278,10 +284,7 @@ Future<List<KoriceFileEntry>> procitajKoriceFajlove() async {
     return const <KoriceFileEntry>[];
   }
 
-  final fajlovi = dir
-      .listSync()
-      .whereType<File>()
-      .toList(growable: false);
+  final fajlovi = dir.listSync().whereType<File>().toList(growable: false);
 
   fajlovi.sort(
     (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
@@ -305,12 +308,12 @@ Future<Uint8List> ucitajKoriceFajlZaDeljenje(KoriceFileEntry fajl) async {
   if (Platform.isAndroid && fajl.contentUri != null) {
     final bytes = await _androidKoriceChannel.invokeMethod<Uint8List>(
       'readKoriceFileBytes',
-      <String, Object>{
-        'contentUri': fajl.contentUri!,
-      },
+      <String, Object>{'contentUri': fajl.contentUri!},
     );
     if (bytes != null) return bytes;
-    throw StateError('Android KORICE fajl nije mogu\u0107e u\u010Ditati za deljenje.');
+    throw StateError(
+      'Android KORICE fajl nije mogu\u0107e u\u010Ditati za deljenje.',
+    );
   }
 
   final path = fajl.path;
@@ -322,10 +325,7 @@ Future<Uint8List> ucitajKoriceFajlZaDeljenje(KoriceFileEntry fajl) async {
 }
 
 String koriceFajlNaziv(PredmetiData p, String ext) {
-  return joinFilenameParts(
-    [p.brojPredmeta, p.ime, p.prezime],
-    ext,
-  );
+  return joinFilenameParts([p.brojPredmeta, p.ime, p.prezime], ext);
 }
 
 String koricePdfDerivatFajlNaziv(
@@ -333,15 +333,25 @@ String koricePdfDerivatFajlNaziv(
   String nazivDokumenta, {
   bool includePredmetVersion = true,
 }) {
-  return joinFilenameParts(
-    [
-      p.prezime,
-      p.ime,
-      p.brojPredmeta,
-      nazivDokumenta,
-      if (includePredmetVersion) 'v${p.verzija}',
-    ],
+  return koriceDokumentDerivatFajlNaziv(
+    p,
+    nazivDokumenta,
     'pdf',
+    includePredmetVersion: includePredmetVersion,
   );
 }
 
+String koriceDokumentDerivatFajlNaziv(
+  PredmetiData p,
+  String nazivDokumenta,
+  String extension, {
+  bool includePredmetVersion = true,
+}) {
+  return joinFilenameParts([
+    p.prezime,
+    p.ime,
+    p.brojPredmeta,
+    nazivDokumenta,
+    if (includePredmetVersion) 'v${p.verzija}',
+  ], extension);
+}

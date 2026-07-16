@@ -22,7 +22,7 @@ This document records confirmed owner decisions that future OPC tasks must treat
 | PREDMET identity scope | `brojPredmeta` is unique only within the same firm, not globally across all OPC firms/users. | Future safe conflict identity scope is `PIB + Matični broj + brojPredmeta`; do not use `brojPredmeta` alone as global identity. |
 | Single PREDMET JSON filename | `PREZIME_IME_brojPredmeta_vN.json` is a user-facing, human-readable filename pattern. | Filename helps users recognize a case but must not become canonical system identity. |
 | Roles | Future Administrator/Savetnik roles are tied to firm/license. | Do not implement role architecture until baseline audits are complete. |
-| Packages | Canonical package terms are `Osnovni`, `Srednji`, `Potpuni`. | OPC is built as Potpuni; functions/services can be disabled by paid package without changing `PREDMET` truth. |
+| Native packages | `Osnovni`, `Srednji` and `Potpuni` are permanently abandoned as business/production policy. | Every existing Windows/Android capability is available to every native user; roles and business rules still apply. Stage 1 keeps old technical payload/parser/bootstrap code only for compatibility/diagnostics. Stage 2 physical removal is a separate post-runtime task. |
 | Current milestone | Next milestone is documentation/continuity baseline only. | No implementation until source-of-truth and technical audit queue are clear. |
 
 ## Open Queue

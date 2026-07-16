@@ -14,7 +14,9 @@ import '../data/parte_media_store.dart';
 import '../data/parte_preparation_repository.dart';
 import '../data/parte_template_repository.dart';
 import '../domain/parte_composer.dart';
+import '../domain/parte_image_effects.dart';
 import '../domain/parte_models.dart';
+import '../docx/parte_docx_exporter.dart';
 import '../pdf/parte_pdf_renderer.dart';
 import 'parte_template_management_dialog.dart';
 
@@ -41,6 +43,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   late final ParteMediaStore _mediaStore;
   late final PartePreparationService _service;
   late final PartePdfExportService _pdfService;
+  late final ParteDocxExporter _docxExporter;
   late final ParteTemplateRepository _templateRepository;
 
   PartePripremeData? _preparation;
@@ -55,6 +58,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   final Map<String, TextEditingController> _textControllers = {};
   late final TextEditingController _widthController;
   late final TextEditingController _heightController;
+  late final TextEditingController _horizontalMarginController;
+  late final TextEditingController _verticalMarginController;
 
   @override
   void initState() {
@@ -69,9 +74,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       renderer: PartePdfRenderer(mediaStore: _mediaStore),
       repository: _repository,
     );
+    _docxExporter = ParteDocxExporter(mediaStore: _mediaStore);
     _templateRepository = ParteTemplateRepository(widget.predmetiRepository.db);
     _widthController = TextEditingController();
     _heightController = TextEditingController();
+    _horizontalMarginController = TextEditingController();
+    _verticalMarginController = TextEditingController();
     _initialize();
   }
 
@@ -82,6 +90,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     }
     _widthController.dispose();
     _heightController.dispose();
+    _horizontalMarginController.dispose();
+    _verticalMarginController.dispose();
     super.dispose();
   }
 
@@ -118,8 +128,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     ParteDraft? draft;
     ParteRenderPlan? plan;
     var sourceChanged = false;
-    if (PartePreparationStatus.fromDb(preparation.status) ==
-        PartePreparationStatus.inProgress) {
+    if (PartePreparationStatus.fromDb(preparation.status) !=
+        PartePreparationStatus.cleanupPending) {
       draft = ParteDraft.decode(preparation.draftJson);
       plan = await _service.buildPlan(preparation: preparation);
       sourceChanged = await _repository.sourceChanged(preparation.id);
@@ -134,6 +144,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       _sourceChanged = sourceChanged;
       _widthController.text = draft?.widthMm.toStringAsFixed(1) ?? '';
       _heightController.text = draft?.heightMm.toStringAsFixed(1) ?? '';
+      _horizontalMarginController.text =
+          draft?.horizontalMarginMm.toStringAsFixed(1) ?? '';
+      _verticalMarginController.text =
+          draft?.verticalMarginMm.toStringAsFixed(1) ?? '';
       _loading = false;
       _busy = false;
       _error = null;
@@ -186,12 +200,34 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   Future<void> _applyDimensions() => _run(() async {
     final width = double.tryParse(_widthController.text.replaceAll(',', '.'));
     final height = double.tryParse(_heightController.text.replaceAll(',', '.'));
-    if (width == null || height == null) {
-      throw const FormatException('Unesite numeričke dimenzije.');
+    final horizontalMargin = double.tryParse(
+      _horizontalMarginController.text.replaceAll(',', '.'),
+    );
+    final verticalMargin = double.tryParse(
+      _verticalMarginController.text.replaceAll(',', '.'),
+    );
+    if (width == null ||
+        height == null ||
+        horizontalMargin == null ||
+        verticalMargin == null) {
+      throw const FormatException('Unesite numeričke dimenzije i margine.');
+    }
+    if (horizontalMargin < 0 ||
+        verticalMargin < 0 ||
+        horizontalMargin * 2 >= width ||
+        verticalMargin * 2 >= height) {
+      throw const FormatException(
+        'Margine ne ostavljaju bezbednu radnu površinu.',
+      );
     }
     await _repository.updateDraft(
       preparationId: _preparation!.id,
-      draft: _draft!.copyWith(widthMm: width, heightMm: height),
+      draft: _draft!.reflowTo(
+        widthMm: width,
+        heightMm: height,
+        horizontalMarginMm: horizontalMargin,
+        verticalMarginMm: verticalMargin,
+      ),
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
@@ -201,24 +237,46 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   Future<void> _modifySelected({
     double dx = 0,
     double dy = 0,
+    double widthDelta = 0,
+    double heightDelta = 0,
     double fontDelta = 0,
     bool? bold,
     ParteTextAlign? alignment,
+    String? fontFamily,
+    bool? lockAspectRatio,
+    double? brightness,
+    double? contrast,
+    double? sharpness,
+    bool? grayscale,
+    bool? border,
+    ParteImageShape? imageShape,
   }) => _run(() async {
     final draft = _draft!;
     final blocks = draft.blocks
         .map((block) {
           if (block.id != _selectedBlockId) return block;
+          var nextWidth = (block.rect.width + widthDelta)
+              .clamp(5, draft.widthMm - 10)
+              .toDouble();
+          var nextHeight = (block.rect.height + heightDelta)
+              .clamp(5, draft.heightMm - 10)
+              .toDouble();
+          if (block.kind != ParteBlockKind.text && block.lockAspectRatio) {
+            final ratio = block.rect.width / block.rect.height;
+            if (widthDelta != 0) nextHeight = nextWidth / ratio;
+            if (heightDelta != 0) nextWidth = nextHeight * ratio;
+          }
           final rect =
               ParteRectMm(
                 x: block.rect.x + dx,
                 y: block.rect.y + dy,
-                width: block.rect.width,
-                height: block.rect.height,
+                width: nextWidth,
+                height: nextHeight,
               ).clampTo(
                 pageWidth: draft.widthMm,
                 pageHeight: draft.heightMm,
-                margin: 5,
+                horizontalMargin: draft.horizontalMarginMm,
+                verticalMargin: draft.verticalMarginMm,
               );
           return block.copyWith(
             rect: rect,
@@ -228,6 +286,56 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             ),
             bold: bold,
             alignment: alignment,
+            fontFamily: fontFamily,
+            lockAspectRatio: lockAspectRatio,
+            brightness: brightness,
+            contrast: contrast,
+            sharpness: sharpness,
+            grayscale: grayscale,
+            border: border,
+            imageShape: imageShape,
+          );
+        })
+        .toList(growable: false);
+    await _repository.updateDraft(
+      preparationId: _preparation!.id,
+      draft: draft.copyWith(blocks: blocks),
+      actor: widget.actor,
+      entitlement: widget.entitlement,
+    );
+    await _reload();
+  });
+
+  Future<void> _resetSelectedSize() => _run(() async {
+    final draft = _draft!;
+    final template = _repository.templateSnapshot(_preparation!);
+    ParteBlockSpec? reference;
+    for (final block in template.blocks) {
+      if (block.id == _selectedBlockId) {
+        reference = block;
+        break;
+      }
+    }
+    final referenceBlock = reference;
+    if (referenceBlock == null) {
+      throw StateError('Šablon nema referentnu veličinu izabranog bloka.');
+    }
+    final blocks = draft.blocks
+        .map((block) {
+          if (block.id != _selectedBlockId) return block;
+          return block.copyWith(
+            rect:
+                ParteRectMm(
+                  x: block.rect.x,
+                  y: block.rect.y,
+                  width: referenceBlock.rect.width,
+                  height: referenceBlock.rect.height,
+                ).clampTo(
+                  pageWidth: draft.widthMm,
+                  pageHeight: draft.heightMm,
+                  horizontalMargin: draft.horizontalMarginMm,
+                  verticalMargin: draft.verticalMarginMm,
+                ),
           );
         })
         .toList(growable: false);
@@ -241,7 +349,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   });
 
   Future<void> _moveBlockByDrag(String id, double dxMm, double dyMm) async {
-    _selectedBlockId = id;
+    if (mounted) setState(() => _selectedBlockId = id);
     await _modifySelected(dx: dxMm, dy: dyMm);
   }
 
@@ -344,6 +452,30 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     );
   });
 
+  Future<void> _exportDocx() => _run(() async {
+    final result = await _docxExporter.export(plan: _plan!, predmet: _predmet!);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'PARTA DOCX uspešno izvezen: ${koriceFajlLokacija(result.file)}',
+        ),
+      ),
+    );
+    setState(() => _busy = false);
+  });
+
+  Future<void> _exportCalibrationPdf() => _run(() async {
+    final result = await _pdfService.exportCalibration(plan: _plan!);
+    if (!mounted) return;
+    prikaziPdfExportSuccessSnackBar(
+      context,
+      poruka: 'Kalibracioni PDF je sačuvan. Štampajte uz Actual size / 100%.',
+      fajl: result.file,
+    );
+    setState(() => _busy = false);
+  });
+
   Future<void> _complete() => _run(() async {
     try {
       await _service.completeAndCleanup(
@@ -401,8 +533,76 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     await _reload();
   });
 
+  Future<void> _resetPreparation() => _run(() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Obriši pripremu i počni ponovo'),
+        content: const Text(
+          'Privremeni tekst, raspored i app-owned kopije fotografije/simbola biće obrisani. '
+          'PREDMET i već izvezeni fajlovi neće biti menjani.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('ODUSTANI'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('OBRIŠI I POČNI PONOVO'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
+    await _service.resetAndStartAgain(
+      preparation: _preparation!,
+      actor: widget.actor,
+      entitlement: widget.entitlement,
+    );
+    await _reload();
+  });
+
+  Future<void> _deleteRetainedPreparation() => _run(() async {
+    final deceased = '${_predmet!.ime} ${_predmet!.prezime}'.trim();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Obriši sačuvanu pripremu'),
+        content: Text(
+          'Biće obrisani samo OPC priprema i njene app-owned kopije medija za '
+          'PREDMET ${_predmet!.brojPredmeta} — $deceased.\n\n'
+          'PREDMET, spoljašnji originali i već izvezeni PDF/DOCX fajlovi ostaju sačuvani.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('ODUSTANI'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('OBRIŠI SAČUVANU PRIPREMU'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
+    await _service.deleteRetainedCompleted(
+      preparation: _preparation!,
+      actor: widget.actor,
+      entitlement: widget.entitlement,
+    );
+    if (mounted) Navigator.pop(context, true);
+  });
+
   Future<void> _manageTemplates() async {
-    await showDialog<void>(
+    final selected = await showDialog<ParteTemplate>(
       context: context,
       builder: (_) => ParteTemplateManagementDialog(
         repository: _templateRepository,
@@ -410,6 +610,22 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         currentDraft: _draft!,
       ),
     );
+    if (selected == null) return;
+    await _run(() async {
+      await _repository.updateDraft(
+        preparationId: _preparation!.id,
+        draft: _draft!.copyWith(
+          widthMm: selected.widthMm,
+          heightMm: selected.heightMm,
+          horizontalMarginMm: selected.horizontalMarginMm,
+          verticalMarginMm: selected.verticalMarginMm,
+          blocks: selected.blocks,
+        ),
+        actor: widget.actor,
+        entitlement: widget.entitlement,
+      );
+      await _reload();
+    });
   }
 
   @override
@@ -432,16 +648,14 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       );
     }
     final status = PartePreparationStatus.fromDb(_preparation!.status);
-    if (status != PartePreparationStatus.inProgress) {
+    if (status == PartePreparationStatus.cleanupPending) {
       return Scaffold(
         appBar: AppBar(title: const Text('PARTE PRIPREMA')),
-        body: Center(
+        body: const Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             child: Text(
-              status == PartePreparationStatus.completed
-                  ? 'PRIPREMA JE ZAVRŠENA. Izvezeni PDF ostaje u KORICE.'
-                  : 'PRIPREMA JE ZAVRŠENA. Tehničko čišćenje app kopija čeka ponovni pokušaj.',
+              'Priprema čeka bezbedan oporavak zadržanog tehničkog stanja.',
               textAlign: TextAlign.center,
             ),
           ),
@@ -454,41 +668,61 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     final preview = _buildPreviewAndActions(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('PARTE — ${_predmet!.brojPredmeta}'),
+        title: Text('PARTE — ${_predmet!.ime} ${_predmet!.prezime}'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(24),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text('PREDMET ${_predmet!.brojPredmeta}'),
+          ),
+        ),
         actions: [
           if (widget.actor.uloga == 'ADMINISTRATOR')
             IconButton(
-              tooltip: 'FIRMA PARTE šabloni',
+              tooltip: 'Šabloni PARTE',
               onPressed: _busy ? null : _manageTemplates,
               icon: const Icon(Icons.dashboard_customize_outlined),
             ),
         ],
       ),
       body: SafeArea(
-        child: isNarrow
-            ? ListView(
-                padding: const EdgeInsets.all(12),
-                children: [editor, const SizedBox(height: 16), preview],
-              )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    width: 420,
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [editor],
-                    ),
-                  ),
-                  const VerticalDivider(width: 1),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [preview],
-                    ),
-                  ),
-                ],
+        child: Column(
+          children: [
+            if (status == PartePreparationStatus.completed)
+              const MaterialBanner(
+                content: Text(
+                  'SAČUVANA ZAVRŠENA PRIPREMA — možete je pregledati, urediti i ponovo izvesti. Izmene traže novu potvrdu preview-a.',
+                ),
+                actions: [SizedBox.shrink()],
               ),
+            Expanded(
+              child: isNarrow
+                  ? ListView(
+                      padding: const EdgeInsets.all(12),
+                      children: [editor, const SizedBox(height: 16), preview],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          width: 420,
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [editor],
+                          ),
+                        ),
+                        const VerticalDivider(width: 1),
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [preview],
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -498,6 +732,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         .where((block) => block.kind == ParteBlockKind.text)
         .map((block) => block.id)
         .toList();
+    final selected = _draft!.blocks.firstWhere(
+      (block) => block.id == _selectedBlockId,
+      orElse: () => _draft!.blocks.first,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -579,9 +817,43 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           ],
         ),
         const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _horizontalMarginController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Horizontalna margina',
+                  suffixText: 'mm',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _verticalMarginController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Vertikalna margina',
+                  suffixText: 'mm',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         OutlinedButton(
           onPressed: _busy ? null : _applyDimensions,
-          child: const Text('PRIMENI DIMENZIJE — MARGINA 5 mm'),
+          child: const Text('PRIMENI FIZIČKE DIMENZIJE I MARGINE'),
         ),
         const SizedBox(height: 16),
         Text('MEDIJI', style: Theme.of(context).textTheme.titleSmall),
@@ -678,21 +950,278 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               icon: const Icon(Icons.arrow_downward),
               tooltip: 'Dole 1 mm',
             ),
-            IconButton.filledTonal(
-              onPressed: _busy ? null : () => _modifySelected(fontDelta: -0.5),
-              icon: const Icon(Icons.text_decrease),
-              tooltip: 'Manji font',
-            ),
-            IconButton.filledTonal(
-              onPressed: _busy ? null : () => _modifySelected(fontDelta: 0.5),
-              icon: const Icon(Icons.text_increase),
-              tooltip: 'Veći font',
-            ),
+            if (selected.kind == ParteBlockKind.text) ...[
+              IconButton.filledTonal(
+                onPressed:
+                    _busy ||
+                        selected.initialFontSize <= selected.minimumFontSize
+                    ? null
+                    : () => _modifySelected(fontDelta: -0.5),
+                icon: const Icon(Icons.text_decrease),
+                tooltip: 'Manji font',
+              ),
+              IconButton.filledTonal(
+                onPressed:
+                    _busy ||
+                        selected.initialFontSize >= selected.maximumFontSize
+                    ? null
+                    : () => _modifySelected(fontDelta: 0.5),
+                icon: const Icon(Icons.text_increase),
+                tooltip: 'Veći font',
+              ),
+            ],
           ],
         ),
+        const SizedBox(height: 8),
+        if (selected.kind == ParteBlockKind.text) ...[
+          Text(
+            'Font: ${selected.fontFamily} — '
+            '${selected.initialFontSize.toStringAsFixed(1)} pt '
+            '(min ${selected.minimumFontSize.toStringAsFixed(1)}, '
+            'max ${selected.maximumFontSize.toStringAsFixed(1)})',
+            key: const Key('parte-font-size-state'),
+          ),
+          if (selected.initialFontSize <= selected.minimumFontSize)
+            const Text(
+              'Dostignut je najmanji font. Proširite ili povisite blok.',
+            )
+          else if (selected.initialFontSize >= selected.maximumFontSize)
+            const Text(
+              'Dostignut je najveći font. Proširite blok ili smanjite sadržaj.',
+            ),
+          Text(
+            'Blok: ${selected.rect.width.toStringAsFixed(1)} × '
+            '${selected.rect.height.toStringAsFixed(1)} mm',
+          ),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              OutlinedButton(
+                onPressed: _busy ? null : () => _modifySelected(widthDelta: -1),
+                child: const Text('SUZI'),
+              ),
+              OutlinedButton(
+                onPressed: _busy ? null : () => _modifySelected(widthDelta: 1),
+                child: const Text('PROŠIRI'),
+              ),
+              OutlinedButton(
+                onPressed: _busy
+                    ? null
+                    : () => _modifySelected(heightDelta: -1),
+                child: const Text('SNIZI'),
+              ),
+              OutlinedButton(
+                onPressed: _busy ? null : () => _modifySelected(heightDelta: 1),
+                child: const Text('POVISI'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: selected.fontFamily,
+            decoration: const InputDecoration(
+              labelText: 'Font',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: ParteFontCatalog.supported
+                .map((font) => DropdownMenuItem(value: font, child: Text(font)))
+                .toList(),
+            onChanged: _busy
+                ? null
+                : (value) => _modifySelected(fontFamily: value),
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<ParteTextAlign>(
+            segments: const [
+              ButtonSegment(
+                value: ParteTextAlign.left,
+                icon: Icon(Icons.format_align_left),
+              ),
+              ButtonSegment(
+                value: ParteTextAlign.center,
+                icon: Icon(Icons.format_align_center),
+              ),
+              ButtonSegment(
+                value: ParteTextAlign.right,
+                icon: Icon(Icons.format_align_right),
+              ),
+            ],
+            selected: {selected.alignment},
+            onSelectionChanged: _busy
+                ? null
+                : (value) => _modifySelected(alignment: value.first),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Podebljano'),
+            value: selected.bold,
+            onChanged: _busy ? null : (value) => _modifySelected(bold: value),
+          ),
+        ] else ...[
+          Text(
+            'Veličina: ${selected.rect.width.toStringAsFixed(1)} × '
+            '${selected.rect.height.toStringAsFixed(1)} mm',
+          ),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              if (selected.lockAspectRatio) ...[
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _modifySelected(widthDelta: -1),
+                  child: const Text('UMANJI'),
+                ),
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _modifySelected(widthDelta: 1),
+                  child: const Text('POVEĆAJ'),
+                ),
+              ] else ...[
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _modifySelected(widthDelta: -1),
+                  child: const Text('UŽE'),
+                ),
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _modifySelected(widthDelta: 1),
+                  child: const Text('ŠIRE'),
+                ),
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _modifySelected(heightDelta: -1),
+                  child: const Text('NIŽE'),
+                ),
+                OutlinedButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _modifySelected(heightDelta: 1),
+                  child: const Text('VIŠE'),
+                ),
+              ],
+              OutlinedButton(
+                onPressed: _busy ? null : _resetSelectedSize,
+                child: const Text('VRATI VELIČINU ŠABLONA'),
+              ),
+            ],
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Zaključaj odnos stranica'),
+            value: selected.lockAspectRatio,
+            onChanged: _busy
+                ? null
+                : (value) => _modifySelected(lockAspectRatio: value),
+          ),
+          if (selected.kind == ParteBlockKind.photo) ...[
+            _effectSlider(
+              'Svetlina',
+              selected.brightness,
+              0.5,
+              1.5,
+              (value) => _modifySelected(brightness: value),
+            ),
+            _effectSlider(
+              'Kontrast',
+              selected.contrast,
+              0.5,
+              1.5,
+              (value) => _modifySelected(contrast: value),
+            ),
+            _effectSlider(
+              'Oštrina',
+              selected.sharpness,
+              0,
+              1,
+              (value) => _modifySelected(sharpness: value),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Crno-belo'),
+              value: selected.grayscale,
+              onChanged: _busy
+                  ? null
+                  : (value) => _modifySelected(grayscale: value),
+            ),
+          ],
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Okvir'),
+            value: selected.border,
+            onChanged: _busy ? null : (value) => _modifySelected(border: value),
+          ),
+          DropdownButtonFormField<ParteImageShape>(
+            initialValue: selected.imageShape,
+            decoration: const InputDecoration(
+              labelText: 'Oblik',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: ParteImageShape.rectangle,
+                child: Text('Pravougaonik'),
+              ),
+              DropdownMenuItem(
+                value: ParteImageShape.roundedRectangle,
+                child: Text('Zaobljeni pravougaonik'),
+              ),
+              DropdownMenuItem(
+                value: ParteImageShape.oval,
+                child: Text('Oval'),
+              ),
+            ],
+            onChanged: _busy
+                ? null
+                : (value) => _modifySelected(imageShape: value),
+          ),
+        ],
+        const SizedBox(height: 16),
+        if (PartePreparationStatus.fromDb(_preparation!.status) ==
+            PartePreparationStatus.inProgress)
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _resetPreparation,
+            icon: const Icon(Icons.restart_alt),
+            label: const Text('OBRIŠI PRIPREMU I POČNI NOVU'),
+          )
+        else
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _deleteRetainedPreparation,
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('OBRIŠI SAČUVANU PRIPREMU'),
+          ),
       ],
     );
   }
+
+  Widget _effectSlider(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> onChanged,
+  ) => Row(
+    children: [
+      SizedBox(width: 76, child: Text(label)),
+      Expanded(
+        child: Slider(
+          value: value.clamp(min, max),
+          min: min,
+          max: max,
+          divisions: 20,
+          onChanged: _busy ? null : onChanged,
+        ),
+      ),
+    ],
+  );
 
   Widget _buildPreviewAndActions(BuildContext context) {
     final plan = _plan!;
@@ -716,6 +1245,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           child: PartePlanPreview(
             plan: plan,
             mediaStore: _mediaStore,
+            selectedBlockId: _selectedBlockId,
+            onBlockSelected: (id) => setState(() => _selectedBlockId = id),
             onBlockMoved: _busy ? null : _moveBlockByDrag,
           ),
         ),
@@ -799,12 +1330,24 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                 exported ? 'PONOVO IZVEZI PARTA PDF' : 'IZVEZI PARTA PDF',
               ),
             ),
-            FilledButton.icon(
-              onPressed: _busy || !exported ? null : _complete,
-              style: FilledButton.styleFrom(backgroundColor: Colors.green),
-              icon: const Icon(Icons.task_alt_outlined),
-              label: const Text('PRIPREMA ZAVRŠENA'),
+            OutlinedButton.icon(
+              onPressed: _busy || !previewConfirmed ? null : _exportDocx,
+              icon: const Icon(Icons.description_outlined),
+              label: const Text('IZVEZI PARTA DOCX'),
             ),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _exportCalibrationPdf,
+              icon: const Icon(Icons.straighten_outlined),
+              label: const Text('IZVEZI KALIBRACIONI PDF'),
+            ),
+            if (PartePreparationStatus.fromDb(_preparation!.status) ==
+                PartePreparationStatus.inProgress)
+              FilledButton.icon(
+                onPressed: _busy || !exported ? null : _complete,
+                style: FilledButton.styleFrom(backgroundColor: Colors.green),
+                icon: const Icon(Icons.task_alt_outlined),
+                label: const Text('PRIPREMA ZAVRŠENA'),
+              ),
           ],
         ),
       ],
@@ -820,6 +1363,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     'ceremony' => 'Ceremonija',
     'secondary' => 'OPELO / ISPRAĆAJ',
     'mourners' => 'Ožalošćeni',
+    'mournersHeading' => 'Naslov Ožalošćeni',
     'photo' => 'Fotografija',
     'symbol' => 'Simbol',
     _ => id,
@@ -831,11 +1375,15 @@ class PartePlanPreview extends StatelessWidget {
     super.key,
     required this.plan,
     required this.mediaStore,
+    this.selectedBlockId,
+    this.onBlockSelected,
     this.onBlockMoved,
   });
 
   final ParteRenderPlan plan;
   final ParteMediaStore mediaStore;
+  final String? selectedBlockId;
+  final ValueChanged<String>? onBlockSelected;
   final Future<void> Function(String id, double dxMm, double dyMm)?
   onBlockMoved;
 
@@ -850,6 +1398,21 @@ class PartePlanPreview extends StatelessWidget {
             color: Colors.white,
             child: Stack(
               children: [
+                Positioned(
+                  left: plan.horizontalMarginMm * scale,
+                  top: plan.verticalMarginMm * scale,
+                  width: (plan.widthMm - plan.horizontalMarginMm * 2) * scale,
+                  height: (plan.heightMm - plan.verticalMarginMm * 2) * scale,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 for (final block in plan.blocks)
                   Positioned(
                     left: block.rect.x * scale,
@@ -860,6 +1423,8 @@ class PartePlanPreview extends StatelessWidget {
                       block: block,
                       scale: scale,
                       mediaStore: mediaStore,
+                      selected: selectedBlockId == block.id,
+                      onSelected: onBlockSelected,
                       onMoved: onBlockMoved,
                     ),
                   ),
@@ -877,12 +1442,16 @@ class _DraggableParteBlock extends StatefulWidget {
     required this.block,
     required this.scale,
     required this.mediaStore,
+    required this.selected,
+    required this.onSelected,
     required this.onMoved,
   });
 
   final ParteRenderBlock block;
   final double scale;
   final ParteMediaStore mediaStore;
+  final bool selected;
+  final ValueChanged<String>? onSelected;
   final Future<void> Function(String id, double dxMm, double dyMm)? onMoved;
 
   @override
@@ -898,6 +1467,7 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
       offset: _offset,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
+        onTap: () => widget.onSelected?.call(widget.block.id),
         onPanUpdate: widget.onMoved == null
             ? null
             : (details) => setState(() => _offset += details.delta),
@@ -912,7 +1482,14 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
                   delta.dy / widget.scale,
                 );
               },
-        child: _content(),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: widget.selected
+                ? Border.all(color: Colors.blue, width: 2)
+                : null,
+          ),
+          child: _content(),
+        ),
       ),
     );
   }
@@ -926,22 +1503,30 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
           ParteTextAlign.center => Alignment.topCenter,
           ParteTextAlign.right => Alignment.topRight,
         },
-        child: Text(
-          block.lines.join('\n'),
-          maxLines: block.lines.length,
-          softWrap: false,
-          overflow: TextOverflow.visible,
-          textAlign: switch (block.alignment) {
-            ParteTextAlign.left => TextAlign.left,
-            ParteTextAlign.center => TextAlign.center,
-            ParteTextAlign.right => TextAlign.right,
+        child: Transform.scale(
+          scaleX: block.horizontalScale,
+          alignment: switch (block.alignment) {
+            ParteTextAlign.left => Alignment.topLeft,
+            ParteTextAlign.center => Alignment.topCenter,
+            ParteTextAlign.right => Alignment.topRight,
           },
-          style: TextStyle(
-            color: Colors.black,
-            fontFamily: 'NotoSans',
-            fontSize: block.fontSize * widget.scale * 25.4 / 72,
-            height: 1.22,
-            fontWeight: block.bold ? FontWeight.w700 : FontWeight.w400,
+          child: Text(
+            block.lines.join('\n'),
+            maxLines: block.lines.length,
+            softWrap: false,
+            overflow: TextOverflow.visible,
+            textAlign: switch (block.alignment) {
+              ParteTextAlign.left => TextAlign.left,
+              ParteTextAlign.center => TextAlign.center,
+              ParteTextAlign.right => TextAlign.right,
+            },
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: block.fontFamily,
+              fontSize: block.fontSize * widget.scale * 25.4 / 72,
+              height: 1.22,
+              fontWeight: block.bold ? FontWeight.w700 : FontWeight.w400,
+            ),
           ),
         ),
       );
@@ -950,13 +1535,33 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
       return FutureBuilder<Uint8List>(
         future: widget.mediaStore.read(block.mediaKey!),
         builder: (context, snapshot) => snapshot.hasData
-            ? Image.memory(snapshot.data!, fit: BoxFit.contain)
+            ? _styledImage(applyParteImageEffects(snapshot.data!, block))
             : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
-    return Container(
-      color: Colors.white,
-      child: Image.asset(block.assetPath!, fit: BoxFit.contain),
+    return _shapeAndBorder(Image.asset(block.assetPath!, fit: BoxFit.contain));
+  }
+
+  Widget _styledImage(Uint8List bytes) =>
+      _shapeAndBorder(Image.memory(bytes, fit: BoxFit.contain));
+
+  Widget _shapeAndBorder(Widget image) {
+    final block = widget.block;
+    final shaped = switch (block.imageShape) {
+      ParteImageShape.rectangle => image,
+      ParteImageShape.roundedRectangle => ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: image,
+      ),
+      ParteImageShape.oval => ClipOval(child: image),
+    };
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: block.border
+            ? Border.all(color: Colors.black, width: block.borderWidth)
+            : null,
+      ),
+      child: shaped,
     );
   }
 }

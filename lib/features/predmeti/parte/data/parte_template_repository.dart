@@ -26,7 +26,7 @@ class ParteTemplateRepository {
   });
 
   static const String transferFormat = 'OPC_PARTE_TEMPLATE';
-  static const int transferSchemaVersion = 1;
+  static const int transferSchemaVersion = 2;
   static const int maxImportBytes = 512 * 1024;
 
   final AppDatabase _db;
@@ -114,7 +114,8 @@ class ParteTemplateRepository {
       name: cleanName,
       widthMm: technicalSource.widthMm,
       heightMm: technicalSource.heightMm,
-      marginMm: technicalSource.marginMm,
+      horizontalMarginMm: technicalSource.horizontalMarginMm,
+      verticalMarginMm: technicalSource.verticalMarginMm,
       blocks: technicalSource.blocks,
     );
     _validateContentFree(template);
@@ -179,7 +180,8 @@ class ParteTemplateRepository {
       name: existing.naziv,
       widthMm: technicalSource.widthMm,
       heightMm: technicalSource.heightMm,
-      marginMm: technicalSource.marginMm,
+      horizontalMarginMm: technicalSource.horizontalMarginMm,
+      verticalMarginMm: technicalSource.verticalMarginMm,
       blocks: technicalSource.blocks,
     );
     _validateContentFree(replacement);
@@ -254,9 +256,12 @@ class ParteTemplateRepository {
       throw const FormatException('PARTE šablon je prazan ili prevelik.');
     }
     final root = jsonDecode(utf8.decode(bytes));
+    final sourceVersion = root is Map ? root['schemaVersion'] as int? : null;
     if (root is! Map ||
         root['format'] != transferFormat ||
-        root['schemaVersion'] != transferSchemaVersion) {
+        sourceVersion == null ||
+        sourceVersion < 1 ||
+        sourceVersion > transferSchemaVersion) {
       throw const FormatException('PARTE šablon format nije podržan.');
     }
     final rawTemplate = root['template'];
@@ -280,7 +285,8 @@ class ParteTemplateRepository {
             name: '${imported.name} — kopija',
             widthMm: imported.widthMm,
             heightMm: imported.heightMm,
-            marginMm: imported.marginMm,
+            horizontalMarginMm: imported.horizontalMarginMm,
+            verticalMarginMm: imported.verticalMarginMm,
             blocks: imported.blocks,
           )
         : imported;

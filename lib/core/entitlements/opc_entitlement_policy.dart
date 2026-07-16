@@ -51,6 +51,18 @@ enum OpcDocumentAction {
   racunPdf,
 }
 
+/// Stage 1 owner policy for the native Windows/Android product.
+///
+/// Package and licence payloads are still parsed and retained as compatibility
+/// diagnostics, but they no longer decide whether an existing native feature
+/// is available. Role checks and business prerequisites remain at their
+/// existing application/domain boundaries.
+abstract final class OpcNativeAccessPolicy {
+  static const bool unrestrictedFunctionality = true;
+  static const String diagnosticsLabel =
+      'owner_policy_unrestricted_native_functionality_stage_1';
+}
+
 final class OpcEntitlementPayload {
   const OpcEntitlementPayload({
     required this.schemaVersion,
@@ -393,6 +405,9 @@ final class OpcEntitlementDiagnostics {
 
   Map<String, Object?> toSafeMap() {
     return <String, Object?>{
+      'effectiveAccessPolicy': OpcNativeAccessPolicy.diagnosticsLabel,
+      'allNativeFunctionalityAvailable':
+          OpcNativeAccessPolicy.unrestrictedFunctionality,
       'sourceKind': sourceKind.name,
       'environment': environment.name,
       'packageLevel': packageLevel.name,
@@ -454,13 +469,13 @@ final class OpcEntitlementPolicy {
     OpcSettingsSection.podaciFirme,
     OpcSettingsSection.refundacijaPio,
     OpcSettingsSection.katalog,
-    OpcSettingsSection.moduli,
     OpcSettingsSection.korisnici,
     OpcSettingsSection.uputstvoZaPlacanje,
     OpcSettingsSection.oAplikaciji,
   ];
 
   bool isAddOnEnabled(OpcAddOn addOn) {
+    if (OpcNativeAccessPolicy.unrestrictedFunctionality) return true;
     return isDeveloperAllUnlocked || enabledAddOns.contains(addOn);
   }
 
@@ -474,6 +489,7 @@ final class OpcEntitlementPolicy {
   }
 
   bool isModuleAvailable(OpcModule module) {
+    if (OpcNativeAccessPolicy.unrestrictedFunctionality) return true;
     if (isDeveloperAllUnlocked) return true;
 
     return switch (module) {
@@ -504,10 +520,10 @@ final class OpcEntitlementPolicy {
       OpcSettingsSection.podaciFirme ||
       OpcSettingsSection.refundacijaPio ||
       OpcSettingsSection.katalog ||
-      OpcSettingsSection.moduli ||
       OpcSettingsSection.korisnici ||
       OpcSettingsSection.uputstvoZaPlacanje ||
       OpcSettingsSection.oAplikaciji => true,
+      OpcSettingsSection.moduli => false,
     };
   }
 

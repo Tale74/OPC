@@ -72,7 +72,7 @@ void main() {
       expect(columns, contains('docek_datum'));
     });
 
-    test('package runtime policy does not fork core database truth', () {
+    test('retained package data does not restrict native functionality', () {
       final policies = <OpcEntitlementPolicy>[
         _policy(OpcPackageLevel.osnovni),
         _policy(OpcPackageLevel.srednji),
@@ -83,17 +83,21 @@ void main() {
       for (final policy in policies) {
         expect(policy.isModuleAvailable(OpcModule.predmetCore), isTrue);
         expect(policy.isModuleAvailable(OpcModule.katalog), isTrue);
-        expect(policy.isModuleAvailable(OpcModule.jsonSinglePredmetTransfer),
-            isTrue);
-        expect(policy.isModuleAvailable(OpcModule.businessPolicyScenario),
-            isTrue);
+        expect(
+          policy.isModuleAvailable(OpcModule.jsonSinglePredmetTransfer),
+          isTrue,
+        );
+        expect(
+          policy.isModuleAvailable(OpcModule.businessPolicyScenario),
+          isTrue,
+        );
       }
 
       expect(
         policies
             .map((policy) => policy.isModuleAvailable(OpcModule.stanjeRobe))
             .toList(growable: false),
-        <bool>[false, false, true, true],
+        <bool>[true, true, true, true],
       );
     });
 
@@ -239,7 +243,9 @@ void _createMinimalSchema16(
 }
 
 Future<Set<String>> _appPodesavanjaColumnNames(AppDatabase db) async {
-  final rows = await db.customSelect('PRAGMA table_info(app_podesavanja)').get();
+  final rows = await db
+      .customSelect('PRAGMA table_info(app_podesavanja)')
+      .get();
   return rows.map((row) => row.read<String>('name')).toSet();
 }
 
@@ -249,8 +255,9 @@ Future<Set<String>> _predmetiColumnNames(AppDatabase db) async {
 }
 
 Future<AppPodesavanjaData> _getAppPodesavanja(AppDatabase db) {
-  return (db.select(db.appPodesavanja)..where((p) => p.id.equals(1)))
-      .getSingle();
+  return (db.select(
+    db.appPodesavanja,
+  )..where((p) => p.id.equals(1))).getSingle();
 }
 
 OpcEntitlementPolicy _policy(

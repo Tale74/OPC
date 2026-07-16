@@ -606,44 +606,38 @@ Classification: `SOURCE-CONFIRMED / PARTIALLY IMPLEMENTED / TECHNICAL AUDIT REQU
 
 ## PSEUDO-ID: OPC-PSEUDO-014
 
-Business area: Entitlement, packages, add-ons, roles overlay
+Business area: Stage 1 native access, retained entitlement diagnostics, roles overlay
 Source files: `lib/core/entitlements/opc_entitlement_policy.dart`; `opc_local_license_parser.dart`; `opc_local_license_bootstrap_service.dart`; `test/opc_local_license_parser_test.dart`; `test/package_downgrade_migration_test.dart`
 Related modules: packages/licensing, STANJE ROBE, documents, users/roles, future access
-Business purpose: decide which modules/actions are available without changing PREDMET truth.
+Business purpose: make all existing native modules/actions available without changing PREDMET truth or bypassing roles/business rules.
 Inputs: package level, add-ons, source kind, environment, local license payload, platform/installation.
-Decision points: safe fallback, package availability, add-on enablement, production unsafe source.
+Decision points: owner unrestricted-native policy, role/business prerequisites, retained payload diagnostics.
 Pseudocode:
 
 ```text
-load entitlement:
-    IF installed local license is missing or invalid:
-        fall back to Osnovni safe production package
-    ELSE:
-        parse and verify license
-        validate platform, installation, validity dates, signature
-        map package and add-ons to entitlement payload
+load retained entitlement compatibility data:
+    parse/validate through existing Stage 1 technical architecture
+    preserve real package/add-on/license diagnostics
+    do not manufacture a POTPUN license
 
-evaluate feature/module:
-    IF package includes module:
-        allow module
-    ELSE IF add-on explicitly enables module:
-        allow module
-    ELSE:
-        hide or lock module/action
+evaluate existing native feature/module:
+    owner unrestricted-native policy allows functionality
+    then apply ADMINISTRATOR/SAVETNIK permissions
+    then apply PREDMET lifecycle, business prerequisites and operational toggles
 
 role overlay:
     local Administrator/Savetnik can affect access to some controls
     entitlement still must not mutate PREDMET truth
 ```
 
-Outputs: active package/add-on/module availability.
-Side effects: may hide/disable UI actions; should not rewrite case data.
-What this must not change: package/licensing must never change PREDMET business truth.
+Outputs: unrestricted native availability plus compatibility diagnostics.
+Side effects: no package-based hide/lock; no case-data rewrite.
+What this must not change: roles/business rules, PREDMET truth, or Stage 1/Stage 2 boundary.
 Evidence: source-confirmed policy/parser/bootstrap tests.
 Tests: license parser, package downgrade migration, settings smoke.
-Known gaps: payment/subscription and stable firm/license roles are blocked.
+Known gaps: Stage 2 physical removal is deferred until owner runtime validation; OPC Web remains future-only.
 Bug/nedoslednost candidates: internal `saas` source kind is cleanup candidate, not product terminology.
-Safe upgrade notes: payment/access gate before any commercial implementation.
+Safe upgrade notes: do not begin Stage 2 in a Stage 1/runtime task.
 Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED / OWNER DECISION`.
 
 ## PSEUDO-ID: OPC-PSEUDO-015

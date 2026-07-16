@@ -4,11 +4,8 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- API ≥ 29+: eksport ide u app-specifičan External Storage — nema potrebe za dozvolom -->
+    <!-- API ≥ 29: MediaStore Downloads/KORICE, bez široke storage dozvole. -->
 
     <application
         android:label="OPC"

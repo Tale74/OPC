@@ -48,16 +48,20 @@ Most domain, persistence, and presentation code currently lives in the same Flut
 
 Licensing/entitlement code is present under `lib/core/entitlements/`; no private signing material or customer license data is part of the public baseline.
 
-## Temporary native development POTPUN mode (owner decision, 2026-07-12)
+## Native unrestricted functionality (owner decision, 2026-07-16)
 
-Until the standalone Windows and Android applications are final, development,
-presentation and runtime-validation builds use the shared POTPUN entitlement
-without local activation. This is an availability/build decision only: package
-policy and final licensing code remain intact. Final-package licensing is
-explicitly restored with `OPC_FINAL_PACKAGE_LICENSING=true` between completion
-of both native apps and final OPC Web OS-proof preparation.
+Native Windows and Android now use one central owner policy that makes every
+existing capability available regardless of retained package, add-on or local
+license data. `ADMINISTRATOR` / `SAVETNIK` permissions, PREDMET lifecycle,
+business prerequisites and operational toggles remain enforced after access.
 
-The define accepts only `true` or `false`; unknown values stop entitlement
-resolution instead of silently choosing a package. The temporary override
-changes only effective in-memory access and does not rewrite installed licence
-evidence or the user/FIRMA database.
+This is Stage 1. Code under `lib/core/entitlements/` and the historical build
+defines remain temporarily present as compatibility/diagnostic seams and do
+not control native availability. They are not rewritten as a false POTPUN
+license. Stage 2 physical removal is deferred to a separate owner-approved task
+after native runtime validation.
+
+The earlier temporary development-POTPUN/final-package restoration decision is
+`SUPERSEDED AS CURRENT PRODUCT POLICY`. Its code and documentation remain audit
+evidence during Stage 1. OPC Web remains future-only and does not condition the
+native architecture.

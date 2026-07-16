@@ -193,7 +193,7 @@ Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED / DOCUMENTED POLICY`.
 
 ## 16. Parte Logic
 
-Parte is a derivative of PREDMET fields such as symbol, script, display name, ceremony time, and mourners. It must remain faithful to PREDMET and must not become independent source of truth. Advanced parte package/add-on gating exists in entitlement policy, but exact feature coverage needs separate audit.
+Parte is a derivative of PREDMET fields such as symbol, script, display name, ceremony time, and mourners. It must remain faithful to PREDMET and must not become independent source of truth. Historical advanced-PARTE package/add-on fields remain as Stage 1 compatibility diagnostics, but the current owner policy makes PARTE functionality available to every native user; roles and business prerequisites remain active.
 
 Evidence: `parte_segment.dart`; `predmeti_table.dart`; `opc_entitlement_policy.dart`; rule inventory.
 

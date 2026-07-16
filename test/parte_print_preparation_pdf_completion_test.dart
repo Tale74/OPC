@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:drift/drift.dart';
+import 'package:archive/archive.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
@@ -11,6 +13,7 @@ import 'package:opc_v4/features/predmeti/parte/application/parte_preparation_ser
 import 'package:opc_v4/features/predmeti/parte/data/parte_media_store.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_preparation_repository.dart';
 import 'package:opc_v4/features/predmeti/parte/domain/parte_models.dart';
+import 'package:opc_v4/features/predmeti/parte/docx/parte_docx_exporter.dart';
 import 'package:opc_v4/features/predmeti/parte/pdf/parte_pdf_renderer.dart';
 
 import 'test_bootstrap.dart';
@@ -40,6 +43,8 @@ void main() {
       expect(plan.widthMm, 224);
       expect(plan.heightMm, 170);
       expect(plan.marginMm, 5);
+      expect(plan.horizontalMarginMm, 5);
+      expect(plan.verticalMarginMm, 5);
       expect(plan.canGeneratePdf, isTrue);
       final bytes = await PartePdfRenderer(
         mediaStore: fixture.mediaStore,
@@ -67,7 +72,100 @@ void main() {
   );
 
   test(
-    'export evidence alone does not finish; explicit completion cleans only owned media',
+    'DOCX is a valid local OOXML derivative and does not mark export',
+    () async {
+      final fixture = await _fixture();
+      addTearDown(fixture.dispose);
+      await fixture.repository.updateAcknowledgements(
+        preparationId: fixture.preparation.id,
+        actor: fixture.actor,
+        entitlement: potpun,
+        noPhotoAccepted: true,
+      );
+      final before = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      final plan = await fixture.service.buildPlan(preparation: before);
+      final bytes = await ParteDocxExporter(
+        mediaStore: fixture.mediaStore,
+      ).build(plan: plan);
+      final archive = ZipDecoder().decodeBytes(bytes);
+      final names = archive.files.map((file) => file.name).toSet();
+
+      expect(names, contains('[Content_Types].xml'));
+      expect(names, contains('word/document.xml'));
+      expect(names, contains('word/styles.xml'));
+      final document = utf8.decode(
+        archive.findFile('word/document.xml')!.content as List<int>,
+      );
+      expect(document, contains('Sintetičko Lice'));
+      expect(document, contains('w:orient="landscape"'));
+      expect(document, contains('w:txbxContent'));
+      expect(document, contains('wp:anchor'));
+      expect(document, contains('parte_mournersHeading'));
+      expect(
+        RegExp('w:txbxContent').allMatches(document).length,
+        greaterThanOrEqualTo(5),
+      );
+      final after = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      expect(after.exportedSuccessfully, isFalse);
+    },
+  );
+
+  test('calibration PDF is a standalone exact-page diagnostic', () async {
+    final fixture = await _fixture();
+    addTearDown(fixture.dispose);
+    await fixture.repository.updateAcknowledgements(
+      preparationId: fixture.preparation.id,
+      actor: fixture.actor,
+      entitlement: potpun,
+      noPhotoAccepted: true,
+    );
+    final preparation = (await fixture.repository.findForPredmet(
+      fixture.predmet.id,
+    ))!;
+    final plan = await fixture.service.buildPlan(preparation: preparation);
+    final bytes = await PartePdfRenderer(
+      mediaStore: fixture.mediaStore,
+    ).buildCalibration(plan: plan);
+    expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+    expect(bytes.length, greaterThan(1000));
+  });
+
+  test(
+    'reset deletes only app-owned media and starts a fresh preparation',
+    () async {
+      final fixture = await _fixture();
+      addTearDown(fixture.dispose);
+      final imported = await fixture.service.replaceMedia(
+        preparation: fixture.preparation,
+        sourceBytes: Uint8List.fromList(
+          img.encodePng(img.Image(width: 900, height: 1200)),
+        ),
+        kind: ParteMediaKind.photo,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      final current = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      final fresh = await fixture.service.resetAndStartAgain(
+        preparation: current,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+
+      expect(fresh.id, isNot(current.id));
+      expect(fresh.photoMediaKey, isNull);
+      expect(await fixture.mediaStore.exists(imported.mediaKey), isFalse);
+      expect(fresh.predmetId, fixture.predmet.id);
+    },
+  );
+
+  test(
+    'explicit completion retains editable preparation and owned media',
     () async {
       final fixture = await _fixture();
       addTearDown(fixture.dispose);
@@ -125,14 +223,44 @@ void main() {
       ))!;
       expect(completed.status, PartePreparationStatus.completed.dbValue);
       expect(completed.exportedFilename, 'SYNTHETIC_PARTA_v1.pdf');
-      expect(completed.draftJson, '{}');
-      expect(await fixture.mediaStore.exists(imported.mediaKey), isFalse);
+      expect(completed.draftJson, contains('textByBlock'));
+      expect(await fixture.mediaStore.exists(imported.mediaKey), isTrue);
       expect(await external.exists(), isTrue);
       expect(await external.readAsBytes(), orderedEquals(originalBytes));
       expect(
         await fixture.repository.blocksPredmetCompletion(fixture.predmet.id),
         isFalse,
       );
+      final retainedDraft = ParteDraft.decode(completed.draftJson);
+      await fixture.repository.updateDraft(
+        preparationId: completed.id,
+        draft: retainedDraft.copyWith(
+          textByBlock: <String, String>{
+            ...retainedDraft.textByBlock,
+            'mourners': 'Izmenjeni sintetički tekst',
+          },
+        ),
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      final edited = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      expect(edited.status, PartePreparationStatus.completed.dbValue);
+      expect(edited.previewConfirmedFingerprint, isNull);
+      expect(edited.exportedSuccessfully, isFalse);
+
+      await fixture.service.deleteRetainedCompleted(
+        preparation: edited,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      expect(
+        await fixture.repository.findForPredmet(fixture.predmet.id),
+        isNull,
+      );
+      expect(await fixture.mediaStore.exists(imported.mediaKey), isFalse);
+      expect(await external.exists(), isTrue);
     },
   );
 

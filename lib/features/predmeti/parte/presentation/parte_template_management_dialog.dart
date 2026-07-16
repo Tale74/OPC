@@ -63,7 +63,8 @@ class _ParteTemplateManagementDialogState
     name: 'technical_source',
     widthMm: widget.currentDraft.widthMm,
     heightMm: widget.currentDraft.heightMm,
-    marginMm: 5,
+    horizontalMarginMm: widget.currentDraft.horizontalMarginMm,
+    verticalMarginMm: widget.currentDraft.verticalMarginMm,
     blocks: widget.currentDraft.blocks,
   );
 
@@ -120,22 +121,6 @@ class _ParteTemplateManagementDialogState
         actor: widget.actor,
         name: name,
         technicalSource: _currentTechnical,
-      );
-      _selectedId = created.id;
-    });
-  }
-
-  Future<void> _duplicate() async {
-    final name = await _askName(
-      'Dupliraj šablon',
-      initial: '${_selected.name} — kopija',
-    );
-    if (name == null || name.isEmpty) return;
-    await _run(() async {
-      final created = await widget.repository.duplicate(
-        actor: widget.actor,
-        source: _selected,
-        name: name,
       );
       _selectedId = created.id;
     });
@@ -251,7 +236,7 @@ class _ParteTemplateManagementDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('FIRMA PARTE ŠABLONI'),
+      title: const Text('ŠABLONI PARTE'),
       content: SizedBox(
         width: 620,
         child: _loading
@@ -281,7 +266,7 @@ class _ParteTemplateManagementDialogState
                     const SizedBox(height: 12),
                     Text(
                       _selected.builtIn
-                          ? 'Ugrađeni šablon je nepromenljiv. Može se duplirati.'
+                          ? 'Ugrađeni standard je nepromenljiv.'
                           : 'Korisnički šablon sadrži samo tehnički raspored i stil.',
                     ),
                     const SizedBox(height: 12),
@@ -297,10 +282,6 @@ class _ParteTemplateManagementDialogState
                             ),
                           ),
                           child: const Text('POSTAVI KAO PODRAZUMEVAN'),
-                        ),
-                        OutlinedButton(
-                          onPressed: _duplicate,
-                          child: const Text('DUPLIRAJ'),
                         ),
                         FilledButton.tonal(
                           onPressed: _saveCurrentAsNew,
@@ -343,9 +324,13 @@ class _ParteTemplateManagementDialogState
               ),
       ),
       actions: [
-        FilledButton(
+        TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('ZATVORI'),
+        ),
+        FilledButton(
+          onPressed: _loading ? null : () => Navigator.pop(context, _selected),
+          child: const Text('PRIMENI'),
         ),
       ],
     );

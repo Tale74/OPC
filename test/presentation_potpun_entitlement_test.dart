@@ -26,8 +26,8 @@ void main() {
       } else {
         expect(policy.packageLevel, OpcPackageLevel.osnovni);
         expect(policy.sourceKind, OpcEntitlementSourceKind.localLicense);
-        expect(policy.isModuleAvailable(OpcModule.podsetnik), isFalse);
-        expect(policy.isModuleAvailable(OpcModule.stanjeRobe), isFalse);
+        expect(policy.isModuleAvailable(OpcModule.podsetnik), isTrue);
+        expect(policy.isModuleAvailable(OpcModule.stanjeRobe), isTrue);
       }
     });
 
@@ -143,39 +143,55 @@ void main() {
       expect(windows.packageLevel, OpcPackageLevel.potpun);
     });
 
-    test('package policy still distinguishes Osnovni, Srednji and Potpun', () {
-      final osnovni = _policy(OpcPackageLevel.osnovni);
-      final srednji = _policy(OpcPackageLevel.srednji);
-      final potpun = _policy(OpcPackageLevel.potpun);
+    test(
+      'stored package values remain distinct but no longer restrict access',
+      () {
+        final osnovni = _policy(OpcPackageLevel.osnovni);
+        final srednji = _policy(OpcPackageLevel.srednji);
+        final potpun = _policy(OpcPackageLevel.potpun);
 
-      expect(osnovni.isModuleAvailable(OpcModule.podsetnik), isFalse);
-      expect(osnovni.isModuleAvailable(OpcModule.stanjeRobe), isFalse);
-      expect(osnovni.isModuleAvailable(OpcModule.advancedParte), isFalse);
+        expect(osnovni.packageLevel, OpcPackageLevel.osnovni);
+        expect(srednji.packageLevel, OpcPackageLevel.srednji);
+        expect(potpun.packageLevel, OpcPackageLevel.potpun);
+        for (final policy in [osnovni, srednji, potpun]) {
+          for (final module in OpcModule.values) {
+            expect(
+              policy.isModuleAvailable(module),
+              isTrue,
+              reason: module.name,
+            );
+          }
+          for (final addOn in OpcAddOn.values) {
+            expect(policy.isAddOnEnabled(addOn), isTrue, reason: addOn.name);
+          }
+          expect(
+            policy.diagnostics.toSafeMap()['effectiveAccessPolicy'],
+            OpcNativeAccessPolicy.diagnosticsLabel,
+          );
+        }
+      },
+    );
 
-      expect(srednji.isModuleAvailable(OpcModule.podsetnik), isTrue);
-      expect(srednji.isModuleAvailable(OpcModule.stanjeRobe), isFalse);
-      expect(srednji.isModuleAvailable(OpcModule.advancedParte), isFalse);
+    test(
+      'production SREDNJI add-on data is retained but access is unrestricted',
+      () {
+        final locked = _policy(OpcPackageLevel.srednji);
+        final entitled = OpcEntitlementPolicy.fromPayload(
+          const OpcEntitlementPayload(
+            schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+            sourceKind: OpcEntitlementSourceKind.localLicense,
+            environment: OpcEntitlementEnvironment.production,
+            packageLevel: OpcPackageLevel.srednji,
+            enabledAddOns: {OpcAddOn.advancedParte},
+          ),
+        );
 
-      expect(potpun.isModuleAvailable(OpcModule.podsetnik), isTrue);
-      expect(potpun.isModuleAvailable(OpcModule.stanjeRobe), isTrue);
-      expect(potpun.isModuleAvailable(OpcModule.advancedParte), isTrue);
-    });
-
-    test('production SREDNJI keeps optional advancedParte policy', () {
-      final locked = _policy(OpcPackageLevel.srednji);
-      final entitled = OpcEntitlementPolicy.fromPayload(
-        const OpcEntitlementPayload(
-          schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
-          sourceKind: OpcEntitlementSourceKind.localLicense,
-          environment: OpcEntitlementEnvironment.production,
-          packageLevel: OpcPackageLevel.srednji,
-          enabledAddOns: {OpcAddOn.advancedParte},
-        ),
-      );
-
-      expect(locked.isModuleAvailable(OpcModule.advancedParte), isFalse);
-      expect(entitled.isModuleAvailable(OpcModule.advancedParte), isTrue);
-    });
+        expect(locked.enabledAddOns, isEmpty);
+        expect(locked.isModuleAvailable(OpcModule.advancedParte), isTrue);
+        expect(entitled.enabledAddOns, contains(OpcAddOn.advancedParte));
+        expect(entitled.isModuleAvailable(OpcModule.advancedParte), isTrue);
+      },
+    );
   });
 }
 

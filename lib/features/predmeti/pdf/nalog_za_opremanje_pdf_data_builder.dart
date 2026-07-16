@@ -2,6 +2,7 @@ import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
 import '../core_v2/models/iriu_truth_models.dart';
 import '../core_v2/services/predmet_iriu_truth_service.dart';
+
 class NalogZaOpremanjePdfPreparedData {
   const NalogZaOpremanjePdfPreparedData({
     required this.fullName,
@@ -125,7 +126,8 @@ String _equipmentValue(IriuTruthRow? row, String fallbackInternalName) {
   return IriuK.naziviPrikaz[fallbackInternalName] ?? '—';
 }
 
-String _serviceValue(IriuTruthRow? row) => row != null && row.active ? 'DA' : 'NE';
+String _serviceValue(IriuTruthRow? row) =>
+    row != null && row.active ? 'DA' : 'NE';
 
 String _resolveMestoCeremonije(PredmetiData predmet) {
   final groblje = predmet.groblje.trim();

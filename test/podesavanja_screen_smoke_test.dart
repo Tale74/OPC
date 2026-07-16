@@ -72,7 +72,10 @@ void main() {
         ),
       ),
     );
-    await _pumpUntilText(tester, 'Aktivni paket runtime-a: Potpun');
+    await _pumpUntilText(
+      tester,
+      'Kompatibilni sačuvani paket (ne ograničava funkcije): Potpun',
+    );
 
     expect(
       find.textContaining(
@@ -80,9 +83,14 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Aktivni paket runtime-a: Potpun'), findsOneWidget);
     expect(
-      find.text('Aktivni entitlement runtime-a: razvojni POTPUN režim / test.'),
+      find.text('Kompatibilni sačuvani paket (ne ograničava funkcije): Potpun'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(
+        'Sve postojeće Windows/Android funkcije su dostupne po odluci vlasnika.',
+      ),
       findsOneWidget,
     );
     expect(
@@ -124,13 +132,16 @@ void main() {
       find.text('Instalirana lokalna licenca - paket: Osnovni'),
       findsOneWidget,
     );
-    expect(find.text('Aktivni paket runtime-a: Osnovni'), findsOneWidget);
+    expect(
+      find.text(
+        'Kompatibilni sačuvani paket (ne ograničava funkcije): Osnovni',
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('neaktivna u razvojnom'), findsNothing);
   });
 
-  testWidgets('MODULI exposes PODSETNIK with package-safe visibility', (
-    tester,
-  ) async {
+  testWidgets('operational MODULI are absent from PODEŠAVANJA', (tester) async {
     final db = createTestDatabase();
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
@@ -154,18 +165,14 @@ void main() {
           repo: PodesavanjaRepository(db),
           authRepo: authRepo,
           session: session,
-          initialSection: OpcSettingsSection.moduli,
-          entitlementPolicy: _potpunDemoPolicy(),
+          initialSection: OpcSettingsSection.podaciFirme,
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('PODSETNIK'), findsOneWidget);
-    expect(
-      find.text('Modul je dostupan. Podešavanja se čuvaju po PREDMETU.'),
-      findsOneWidget,
-    );
+    expect(find.text('MODULI'), findsNothing);
+    expect(find.text('PODSETNIK'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
     await tester.idle();
@@ -191,17 +198,6 @@ Future<void> _pumpUntilText(
       .where((value) => value.trim().isNotEmpty)
       .join('\n');
   fail('Text "$text" was not rendered. Rendered text:\n$renderedText');
-}
-
-OpcEntitlementPolicy _potpunDemoPolicy() {
-  return OpcEntitlementPolicy.fromPayload(
-    const OpcEntitlementPayload(
-      schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
-      sourceKind: OpcEntitlementSourceKind.demoTest,
-      environment: OpcEntitlementEnvironment.test,
-      packageLevel: OpcPackageLevel.potpun,
-    ),
-  );
 }
 
 OpcEntitlementPolicy _osnovniLocalPolicy() {

@@ -198,7 +198,7 @@ Classification: `PARTIALLY IMPLEMENTED / POLICY EXISTS / IMPLEMENTATION NOT FOUN
 
 `OpcEntitlementPolicy.isModuleAvailable` treats `OpcModule.businessPolicyScenario` as always available together with core modules. STANJE ROBE, advanced PARTA, and CITULJE add-ons are separately gated. Document actions and JSON transfer are gated through document/action availability checks.
 
-Current source evidence does not show the evaluator or business policy scenario being premium-only, luxury-only, Web-only, payment-only, or role-only. Package gates can affect surrounding modules, but they do not make evaluator output a package-owned truth source.
+Current owner policy makes the evaluator and every surrounding existing native module available regardless of retained package data. Roles and business prerequisites may still affect controls, but neither access nor retained compatibility diagnostics make evaluator output a package-owned truth source.
 
 Classification: `SOURCE-CONFIRMED`.
 

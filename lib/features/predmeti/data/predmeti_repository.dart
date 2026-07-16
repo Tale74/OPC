@@ -40,6 +40,23 @@ class PredmetiRepository {
     _db.predmeti,
   )..orderBy([(p) => OrderingTerm.desc(p.datumKreiranja)])).watch();
 
+  /// PREDMETI koje PODSETNIK sme da ponudi, od najnovijeg ka starijem.
+  ///
+  /// Koristi canonical lifecycle vrednosti iz PREDMETA. ZAVRŠEN i
+  /// ANONIMIZOVAN nikada nisu aktivni izbori za podešavanje podsetnika.
+  Future<List<PredmetiData>> getPodsetnikKandidate() =>
+      (_db.select(_db.predmeti)
+            ..where(
+              (p) =>
+                  p.status.equals('ZAVRŠEN').not() &
+                  p.status.equals('ANONIMIZOVAN').not(),
+            )
+            ..orderBy([
+              (p) => OrderingTerm.desc(p.datumKreiranja),
+              (p) => OrderingTerm.desc(p.id),
+            ]))
+          .get();
+
   Future<PredmetiData> getPredmet(int id) =>
       (_db.select(_db.predmeti)..where((p) => p.id.equals(id))).getSingle();
 

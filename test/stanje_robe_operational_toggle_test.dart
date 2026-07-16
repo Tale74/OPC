@@ -8,7 +8,8 @@ import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/podesavanja/data/podesavanja_repository.dart';
-import 'package:opc_v4/features/podesavanja/presentation/podesavanja_screen.dart';
+import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
+import 'package:opc_v4/features/predmeti/presentation/moduli_screen.dart';
 import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 import 'package:opc_v4/features/predmeti/presentation/lista_predmeta_screen.dart';
 import 'package:opc_v4/features/stanje_robe/application/stanje_robe_lifecycle_service.dart';
@@ -44,13 +45,13 @@ void main() {
           StanjeRobeOperationalStatus.active,
         );
 
-        final deniedAvailability = StanjeRobeOperationalAvailability(
+        final osnovniAvailability = StanjeRobeOperationalAvailability(
           podesavanjaRepository: repo,
           entitlementPolicy: _osnovniPolicy(),
         );
         expect(
-          await deniedAvailability.readStatus(),
-          StanjeRobeOperationalStatus.notLicensed,
+          await osnovniAvailability.readStatus(),
+          StanjeRobeOperationalStatus.active,
         );
 
         await repo.setStanjeRobeOperativnoOmoguceno(false);
@@ -383,21 +384,17 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Status: licencirano i operativno aktivno.'),
-        findsOneWidget,
-      );
+      expect(find.text('Status: operativno aktivno.'), findsOneWidget);
       expect(find.byType(SwitchListTile), findsOneWidget);
       expect(find.text('Upravljaj stanjem robe'), findsOneWidget);
 
@@ -462,11 +459,10 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
@@ -582,11 +578,10 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
@@ -664,11 +659,10 @@ void main() {
 
         await tester.pumpWidget(
           wrapForTest(
-            PodesavanjaScreen(
-              repo: podesavanjaRepo,
-              authRepo: authRepo,
+            ModuliScreen(
+              predmetiRepository: PredmetiRepository(db),
+              podesavanjaRepository: podesavanjaRepo,
               session: session,
-              initialSection: OpcSettingsSection.moduli,
               entitlementPolicy: _potpunPolicy(),
             ),
           ),
@@ -811,11 +805,10 @@ void main() {
 
         await tester.pumpWidget(
           wrapForTest(
-            PodesavanjaScreen(
-              repo: podesavanjaRepo,
-              authRepo: authRepo,
+            ModuliScreen(
+              predmetiRepository: PredmetiRepository(db),
+              podesavanjaRepository: podesavanjaRepo,
               session: session,
-              initialSection: OpcSettingsSection.moduli,
               entitlementPolicy: _potpunPolicy(),
             ),
           ),
@@ -1225,72 +1218,61 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text(
-          'Status: licencirano, ali operativno isključeno u podešavanjima.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('Status: operativno isključeno.'), findsOneWidget);
       expect(find.byType(SwitchListTile), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Osnovni ADMIN sees locked module explanation without toggle', (
-      tester,
-    ) async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
+    testWidgets(
+      'Osnovni ADMIN receives unrestricted module with role controls',
+      (tester) async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
 
-      final authRepo = AuthRepository(db);
-      final session = SessionService();
-      final podesavanjaRepo = PodesavanjaRepository(db);
-      final admin = await authRepo.kreirajPrvogAdmina(
-        imePrezime: 'Test Administrator',
-        pin: '1234',
-      );
-      session.prijavi(admin);
+        final authRepo = AuthRepository(db);
+        final session = SessionService();
+        final podesavanjaRepo = PodesavanjaRepository(db);
+        final admin = await authRepo.kreirajPrvogAdmina(
+          imePrezime: 'Test Administrator',
+          pin: '1234',
+        );
+        session.prijavi(admin);
 
-      await tester.pumpWidget(
-        wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
-            session: session,
-            initialSection: OpcSettingsSection.moduli,
-            entitlementPolicy: OpcEntitlementPolicy.fromPayload(
-              OpcEntitlementPayload.safeProductionFallback,
+        await tester.pumpWidget(
+          wrapForTest(
+            ModuliScreen(
+              predmetiRepository: PredmetiRepository(db),
+              podesavanjaRepository: podesavanjaRepo,
+              session: session,
+              entitlementPolicy: OpcEntitlementPolicy.fromPayload(
+                OpcEntitlementPayload.safeProductionFallback,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('MODULI'), findsOneWidget);
-      expect(find.text('STANJE ROBE'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNothing);
-      expect(
-        find.text(
-          'Podešavanje nije dostupno jer trenutni paket/licenca ne dozvoljava STANJE ROBE.',
-        ),
-        findsOneWidget,
-      );
+        expect(find.text('MODULI'), findsOneWidget);
+        expect(find.text('STANJE ROBE'), findsOneWidget);
+        expect(find.byType(SwitchListTile), findsOneWidget);
+        expect(find.text('Status: operativno isključeno.'), findsOneWidget);
 
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-    });
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+    );
 
     testWidgets('SAVETNIK cannot control the operational toggle', (
       tester,
@@ -1314,11 +1296,10 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),

@@ -26,6 +26,7 @@ import '../reminders/ceremony_reminder_repository.dart';
 import '../reminders/ceremony_reminder_text.dart';
 import '../reminders/reminder_mvp_service.dart';
 import 'izvestaji_screen.dart';
+import 'moduli_screen.dart';
 import 'predmet_screen.dart';
 
 const bool automaticGdprStartupDialogEnabled = false;
@@ -706,6 +707,22 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
                 ),
               ),
             ),
+          IconButton(
+            key: const Key('predmeti-moduli-action'),
+            icon: const Icon(Icons.apps_outlined),
+            tooltip: 'Moduli',
+            onPressed: () => Navigator.push<void>(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => ModuliScreen(
+                  predmetiRepository: widget.predmetiRepo,
+                  podesavanjaRepository: widget.podesavanjaRepo,
+                  session: widget.session,
+                  entitlementPolicy: widget.entitlementPolicy,
+                ),
+              ),
+            ),
+          ),
           if (mozePodesavanja)
             IconButton(
               icon: const Icon(Icons.settings_outlined),
