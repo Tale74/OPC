@@ -37,10 +37,7 @@ class KategorijaLifecycleIshod {
 }
 
 class KategorijaInsertIshod {
-  const KategorijaInsertIshod({
-    required this.uspeh,
-    required this.kategorija,
-  });
+  const KategorijaInsertIshod({required this.uspeh, required this.kategorija});
 
   final bool uspeh;
   final IriuKatalogConfigData? kategorija;
@@ -66,7 +63,7 @@ class KatalogPickerArticleSummary {
 
 typedef KatalogPickerEntry = ({
   IriuKatalogConfigData config,
-  List<KatalogPickerArticleSummary> artikli
+  List<KatalogPickerArticleSummary> artikli,
 });
 
 class PodesavanjaRepository {
@@ -84,17 +81,18 @@ class PodesavanjaRepository {
   Stream<FirmaPodaciData> watchFirmaPodaci() =>
       (_db.select(_db.firmaPodaci)..where((t) => t.id.equals(1))).watchSingle();
 
-  Future<void> saveFirmaPodaci(FirmaPodaciCompanion companion) =>
-      (_db.update(_db.firmaPodaci)..where((t) => t.id.equals(1)))
-          .write(companion);
+  Future<void> saveFirmaPodaci(FirmaPodaciCompanion companion) => (_db.update(
+    _db.firmaPodaci,
+  )..where((t) => t.id.equals(1))).write(companion);
 
-  Future<AppPodesavanjaData> getAppPodesavanja() =>
-      (_db.select(_db.appPodesavanja)..where((t) => t.id.equals(1)))
-          .getSingle();
+  Future<AppPodesavanjaData> getAppPodesavanja() => (_db.select(
+    _db.appPodesavanja,
+  )..where((t) => t.id.equals(1))).getSingle();
 
   Future<void> saveAppPodesavanja(AppPodesavanjaCompanion companion) =>
-      (_db.update(_db.appPodesavanja)..where((t) => t.id.equals(1)))
-          .write(companion);
+      (_db.update(
+        _db.appPodesavanja,
+      )..where((t) => t.id.equals(1))).write(companion);
 
   Stream<bool> watchStanjeRobeOperativnoOmoguceno() =>
       (_db.select(_db.appPodesavanja)..where((t) => t.id.equals(1)))
@@ -108,43 +106,41 @@ class PodesavanjaRepository {
 
   Future<void> setStanjeRobeOperativnoOmoguceno(bool enabled) {
     return saveAppPodesavanja(
-      AppPodesavanjaCompanion(
-        stanjeRobeOperativnoOmoguceno: Value(enabled),
-      ),
+      AppPodesavanjaCompanion(stanjeRobeOperativnoOmoguceno: Value(enabled)),
     );
   }
 
   // ── IRIU Katalog — config stavke ───────────────────────────────────────────
 
-  Stream<List<IriuKatalogConfigData>> watchKatalog() =>
-      (_db.select(_db.iriuKatalogConfig)
-            ..orderBy([(k) => OrderingTerm.asc(k.redosled)]))
-          .watch();
+  Stream<List<IriuKatalogConfigData>> watchKatalog() => (_db.select(
+    _db.iriuKatalogConfig,
+  )..orderBy([(k) => OrderingTerm.asc(k.redosled)])).watch();
 
   Future<void> azurirajKatalogStavku(
     String interniNaziv,
     IriuKatalogConfigCompanion companion,
-  ) =>
-      (_db.update(_db.iriuKatalogConfig)
-            ..where((k) => k.interniNaziv.equals(interniNaziv)))
-          .write(companion);
+  ) => (_db.update(
+    _db.iriuKatalogConfig,
+  )..where((k) => k.interniNaziv.equals(interniNaziv))).write(companion);
 
   Future<KategorijaLifecycleStatus?> proveriKategorijuZaLifecycleAkciju(
     String interniNaziv,
   ) async {
-    final kategorija = await (_db.select(_db.iriuKatalogConfig)
-          ..where((k) => k.interniNaziv.equals(interniNaziv)))
-        .getSingleOrNull();
+    final kategorija = await (_db.select(
+      _db.iriuKatalogConfig,
+    )..where((k) => k.interniNaziv.equals(interniNaziv))).getSingleOrNull();
     if (kategorija == null) return null;
 
-    final koriscenaUIriu = await (_db.select(_db.iriu)
-          ..where((i) => i.interniNaziv.equals(interniNaziv)))
-        .get()
-        .then((rows) => rows.isNotEmpty);
-    final imaPovezaneArtikle = await (_db.select(_db.katalogArtikli)
-          ..where((a) => a.interniNazivKategorije.equals(interniNaziv)))
-        .get()
-        .then((rows) => rows.isNotEmpty);
+    final koriscenaUIriu =
+        await (_db.select(_db.iriu)
+              ..where((i) => i.interniNaziv.equals(interniNaziv)))
+            .get()
+            .then((rows) => rows.isNotEmpty);
+    final imaPovezaneArtikle =
+        await (_db.select(_db.katalogArtikli)
+              ..where((a) => a.interniNazivKategorije.equals(interniNaziv)))
+            .get()
+            .then((rows) => rows.isNotEmpty);
 
     return KategorijaLifecycleStatus(
       interniNaziv: kategorija.interniNaziv,
@@ -168,9 +164,9 @@ class PodesavanjaRepository {
 
     if (status.mozeFizickoBrisanje) {
       await _db.transaction(() async {
-        await (_db.delete(_db.iriuKatalogConfig)
-              ..where((k) => k.interniNaziv.equals(interniNaziv)))
-            .go();
+        await (_db.delete(
+          _db.iriuKatalogConfig,
+        )..where((k) => k.interniNaziv.equals(interniNaziv))).go();
       });
       return KategorijaLifecycleIshod(
         obrisana: true,
@@ -200,8 +196,10 @@ class PodesavanjaRepository {
           .get();
 
   /// Učitava sve vidljive katalog kategorije + artikle za KATALOSKA tip.
-  Future<List<({IriuKatalogConfigData config, List<KatalogArtikliData> artikli})>>
-      getKatalogSaArtiklima() async {
+  Future<
+    List<({IriuKatalogConfigData config, List<KatalogArtikliData> artikli})>
+  >
+  getKatalogSaArtiklima() async {
     final kategorije = await getKatalogVidljive();
     final result =
         <({IriuKatalogConfigData config, List<KatalogArtikliData> artikli})>[];
@@ -235,11 +233,10 @@ class PodesavanjaRepository {
         .toSet();
     if (requested.isEmpty) return const <KatalogPickerEntry>[];
 
-    final kategorije = await ((_db.select(_db.iriuKatalogConfig)
+    final kategorije =
+        await ((_db.select(_db.iriuKatalogConfig)
               ..where(
-                (k) =>
-                    k.vidljiv.equals(true) &
-                    k.interniNaziv.isIn(requested),
+                (k) => k.vidljiv.equals(true) & k.interniNaziv.isIn(requested),
               )
               ..orderBy([(k) => OrderingTerm.asc(k.redosled)]))
             .get());
@@ -257,9 +254,7 @@ class PodesavanjaRepository {
     String interniNaziv,
   ) =>
       (_db.select(_db.katalogArtikli)
-            ..where(
-              (a) => a.interniNazivKategorije.equals(interniNaziv),
-            )
+            ..where((a) => a.interniNazivKategorije.equals(interniNaziv))
             ..orderBy([(a) => OrderingTerm.asc(a.id)]))
           .get();
 
@@ -267,30 +262,32 @@ class PodesavanjaRepository {
     String interniNazivKategorije,
   ) async {
     final photoPresent = _db.katalogArtikli.fotografija.isNotNull();
-    final rows = await (_db.selectOnly(_db.katalogArtikli)
-          ..addColumns([
-            _db.katalogArtikli.id,
-            _db.katalogArtikli.stableArticleId,
-            _db.katalogArtikli.interniNazivKategorije,
-            _db.katalogArtikli.naziv,
-            _db.katalogArtikli.cena,
-            photoPresent,
-          ])
-          ..where(
-            _db.katalogArtikli.interniNazivKategorije.equals(
-              interniNazivKategorije,
-            ),
-          )
-          ..orderBy([OrderingTerm.asc(_db.katalogArtikli.id)]))
-        .get();
+    final rows =
+        await (_db.selectOnly(_db.katalogArtikli)
+              ..addColumns([
+                _db.katalogArtikli.id,
+                _db.katalogArtikli.stableArticleId,
+                _db.katalogArtikli.interniNazivKategorije,
+                _db.katalogArtikli.naziv,
+                _db.katalogArtikli.cena,
+                photoPresent,
+              ])
+              ..where(
+                _db.katalogArtikli.interniNazivKategorije.equals(
+                  interniNazivKategorije,
+                ),
+              )
+              ..orderBy([OrderingTerm.asc(_db.katalogArtikli.id)]))
+            .get();
 
     return rows
         .map(
           (row) => KatalogPickerArticleSummary(
             id: row.read(_db.katalogArtikli.id)!,
             stableArticleId: row.read(_db.katalogArtikli.stableArticleId),
-            interniNazivKategorije:
-                row.read(_db.katalogArtikli.interniNazivKategorije)!,
+            interniNazivKategorije: row.read(
+              _db.katalogArtikli.interniNazivKategorije,
+            )!,
             naziv: row.read(_db.katalogArtikli.naziv)!,
             cena: row.read(_db.katalogArtikli.cena)!,
             hasPhoto: row.read(photoPresent) ?? false,
@@ -300,11 +297,12 @@ class PodesavanjaRepository {
   }
 
   Future<Uint8List?> getKatalogArticlePhotoById(int id) async {
-    final row = await (_db.selectOnly(_db.katalogArtikli)
-          ..addColumns([_db.katalogArtikli.fotografija])
-          ..where(_db.katalogArtikli.id.equals(id))
-          ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (_db.selectOnly(_db.katalogArtikli)
+              ..addColumns([_db.katalogArtikli.fotografija])
+              ..where(_db.katalogArtikli.id.equals(id))
+              ..limit(1))
+            .getSingleOrNull();
     return row?.read(_db.katalogArtikli.fotografija);
   }
 
@@ -313,39 +311,38 @@ class PodesavanjaRepository {
     required String interniNaziv,
     required String nazivPrikaz,
     required String tip, // FIKSNA ili KATALOSKA
+    bool osnovnaUSvakomPredmetu = false,
   }) async {
-    final maxRed = await (_db.select(_db.iriuKatalogConfig)
-          ..orderBy([(k) => OrderingTerm.desc(k.redosled)])
-          ..limit(1))
-        .getSingleOrNull();
+    final maxRed =
+        await (_db.select(_db.iriuKatalogConfig)
+              ..orderBy([(k) => OrderingTerm.desc(k.redosled)])
+              ..limit(1))
+            .getSingleOrNull();
     final noviRed = (maxRed?.redosled ?? 0) + 1;
     try {
-      await _db.into(_db.iriuKatalogConfig).insert(
+      await _db
+          .into(_db.iriuKatalogConfig)
+          .insert(
             IriuKatalogConfigCompanion(
               interniNaziv: Value(interniNaziv),
               nazivPrikaz: Value(nazivPrikaz),
               tip: Value(tip),
               jeKorisnicka: const Value(true),
+              osnovnaUSvakomPredmetu: Value(osnovnaUSvakomPredmetu),
               redosled: Value(noviRed),
             ),
           );
     } catch (_) {
-      final postojeca = await (_db.select(_db.iriuKatalogConfig)
-            ..where((k) => k.interniNaziv.equals(interniNaziv)))
-          .getSingleOrNull();
-      return KategorijaInsertIshod(
-        uspeh: false,
-        kategorija: postojeca,
-      );
+      final postojeca = await (_db.select(
+        _db.iriuKatalogConfig,
+      )..where((k) => k.interniNaziv.equals(interniNaziv))).getSingleOrNull();
+      return KategorijaInsertIshod(uspeh: false, kategorija: postojeca);
     }
 
-    final upisana = await (_db.select(_db.iriuKatalogConfig)
-          ..where((k) => k.interniNaziv.equals(interniNaziv)))
-        .getSingleOrNull();
-    return KategorijaInsertIshod(
-      uspeh: upisana != null,
-      kategorija: upisana,
-    );
+    final upisana = await (_db.select(
+      _db.iriuKatalogConfig,
+    )..where((k) => k.interniNaziv.equals(interniNaziv))).getSingleOrNull();
+    return KategorijaInsertIshod(uspeh: upisana != null, kategorija: upisana);
   }
 
   Stream<List<KatalogArtikliData>> watchArtikli(
@@ -353,15 +350,12 @@ class PodesavanjaRepository {
   ) =>
       (_db.select(_db.katalogArtikli)
             ..where(
-              (a) =>
-                  a.interniNazivKategorije.equals(interniNazivKategorije),
-             )
-             ..orderBy([(a) => OrderingTerm.asc(a.id)]))
-           .watch();
+              (a) => a.interniNazivKategorije.equals(interniNazivKategorije),
+            )
+            ..orderBy([(a) => OrderingTerm.asc(a.id)]))
+          .watch();
 
-  Stream<bool> watchImaArtikalaZaKategoriju(
-    String interniNazivKategorije,
-  ) {
+  Stream<bool> watchImaArtikalaZaKategoriju(String interniNazivKategorije) {
     final brojArtikala = _db.katalogArtikli.id.count();
     return ((_db.selectOnly(_db.katalogArtikli)
               ..addColumns([brojArtikala])
@@ -378,28 +372,28 @@ class PodesavanjaRepository {
     final existingStableId = companion.stableArticleId.present
         ? companion.stableArticleId.value
         : null;
-    final stableId = existingStableId != null &&
-            existingStableId.trim().isNotEmpty
+    final stableId =
+        existingStableId != null && existingStableId.trim().isNotEmpty
         ? existingStableId
         : generateCatalogArticleStableId();
-    return _db.into(_db.katalogArtikli).insert(
-          companion.copyWith(stableArticleId: Value(stableId)),
-        );
+    return _db
+        .into(_db.katalogArtikli)
+        .insert(companion.copyWith(stableArticleId: Value(stableId)));
   }
 
   Future<void> azurirajArtikl(int id, KatalogArtikliCompanion companion) =>
-      (_db.update(_db.katalogArtikli)..where((a) => a.id.equals(id)))
-          .write(companion);
+      (_db.update(
+        _db.katalogArtikli,
+      )..where((a) => a.id.equals(id))).write(companion);
 
   Future<void> obrisiArtikl(int id) =>
       (_db.delete(_db.katalogArtikli)..where((a) => a.id.equals(id))).go();
 
   // ── Predlošci dokumenata ───────────────────────────────────────────────────
 
-  Future<List<PredlosciDokumenataData>> getPredlosciDokumenata() =>
-      (_db.select(_db.predlosciDokumenata)
-            ..orderBy([(t) => OrderingTerm.asc(t.id)]))
-          .get();
+  Future<List<PredlosciDokumenataData>> getPredlosciDokumenata() => (_db.select(
+    _db.predlosciDokumenata,
+  )..orderBy([(t) => OrderingTerm.asc(t.id)])).get();
 
   Future<int> dodajPredlosak(PredlosciDokumenataCompanion companion) =>
       _db.into(_db.predlosciDokumenata).insert(companion);
@@ -407,11 +401,10 @@ class PodesavanjaRepository {
   Future<void> azurirajPredlosak(
     int id,
     PredlosciDokumenataCompanion companion,
-  ) =>
-      (_db.update(_db.predlosciDokumenata)..where((t) => t.id.equals(id)))
-          .write(companion);
+  ) => (_db.update(
+    _db.predlosciDokumenata,
+  )..where((t) => t.id.equals(id))).write(companion);
 
   Future<void> obrisiPredlosak(int id) =>
-      (_db.delete(_db.predlosciDokumenata)..where((t) => t.id.equals(id)))
-          .go();
+      (_db.delete(_db.predlosciDokumenata)..where((t) => t.id.equals(id))).go();
 }

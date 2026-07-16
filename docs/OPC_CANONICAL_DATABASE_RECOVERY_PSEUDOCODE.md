@@ -47,7 +47,14 @@ DRIFT beforeOpen:
     validate complete required target schema
 
 ONLY AFTER onUpgrade and beforeOpen succeed:
-    Drift advances user_version to 21
+    Drift advances user_version to 22
+
+schema 21 -> 22:
+  ensure additive iriu_katalog_config.osnovna_u_svakom_predmetu
+  default existing ordinary user categories to NE
+  idempotently restore known built-in basics and AGENCIJSKE_USLUGE to DA
+  idempotently seed three new FIKSNA categories with NE
+  do not update existing iriu rows
 
 ON interrupted open:
     keep committed valid DDL

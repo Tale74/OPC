@@ -601,3 +601,12 @@ Implementation/pseudocode aligned: yes.
 - Safety rule: malformed, unknown or newer schemas stop; user databases are never deleted, replaced, merged with test lanes or manually version-stamped.
 - Evidence: populated schema 1–21 fixtures, confirmed v19 partial states, malformed-state tests, interruption/retry test and gated owner-copy migration test.
 - Read with: `docs/OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md` and the current task report.
+
+## OPC-PSEUDO-INDEX-052 — KATALOG basic categories and future IRiU materialization
+
+- Document: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`, section “KATALOG basic-category policy (schema 22)”.
+- Source: KATALOG presentation/repository, `iriu_katalog_config`, `PredmetiRepository.inicijalizujIriu`, `IriuOrderingService`, and the existing truth/finance services.
+- Business rule: default `NE`; policy changes affect future PREDMETI only; scenario rows are unchanged; `Agencijske usluge` precedes enabled user basics.
+- Identity/order: deduplicate by stable `interni_naziv`; user-basic order follows persistent category creation order, not rename or toggle time.
+- Manual boundary: a manual IRiU row remains PREDMET-local and never creates or changes KATALOG policy.
+- Read after: `docs/tasks/OPC_TASK_KATALOG_OSNOVNE_KATEGORIJE_IRIU_AUDIT_IMPLEMENTATION_REPORT.md`.

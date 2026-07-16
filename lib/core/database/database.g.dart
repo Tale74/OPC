@@ -9399,6 +9399,21 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _osnovnaUSvakomPredmetuMeta =
+      const VerificationMeta('osnovnaUSvakomPredmetu');
+  @override
+  late final GeneratedColumn<bool> osnovnaUSvakomPredmetu =
+      GeneratedColumn<bool>(
+        'osnovna_u_svakom_predmetu',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("osnovna_u_svakom_predmetu" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   static const VerificationMeta _redosledMeta = const VerificationMeta(
     'redosled',
   );
@@ -9419,6 +9434,7 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     uvekPrikazati,
     tip,
     jeKorisnicka,
+    osnovnaUSvakomPredmetu,
     redosled,
   ];
   @override
@@ -9485,6 +9501,15 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
         ),
       );
     }
+    if (data.containsKey('osnovna_u_svakom_predmetu')) {
+      context.handle(
+        _osnovnaUSvakomPredmetuMeta,
+        osnovnaUSvakomPredmetu.isAcceptableOrUnknown(
+          data['osnovna_u_svakom_predmetu']!,
+          _osnovnaUSvakomPredmetuMeta,
+        ),
+      );
+    }
     if (data.containsKey('redosled')) {
       context.handle(
         _redosledMeta,
@@ -9524,6 +9549,10 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
         DriftSqlType.bool,
         data['${effectivePrefix}je_korisnicka'],
       )!,
+      osnovnaUSvakomPredmetu: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}osnovna_u_svakom_predmetu'],
+      )!,
       redosled: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}redosled'],
@@ -9548,6 +9577,10 @@ class IriuKatalogConfigData extends DataClass
   final bool uvekPrikazati;
   final String tip;
   final bool jeKorisnicka;
+
+  /// Persistent KATALOG policy: materialize this category only in future
+  /// PREDMETI. Existing IRIU rows are intentionally never reconciled from it.
+  final bool osnovnaUSvakomPredmetu;
   final int redosled;
   const IriuKatalogConfigData({
     required this.interniNaziv,
@@ -9556,6 +9589,7 @@ class IriuKatalogConfigData extends DataClass
     required this.uvekPrikazati,
     required this.tip,
     required this.jeKorisnicka,
+    required this.osnovnaUSvakomPredmetu,
     required this.redosled,
   });
   @override
@@ -9567,6 +9601,7 @@ class IriuKatalogConfigData extends DataClass
     map['uvek_prikazati'] = Variable<bool>(uvekPrikazati);
     map['tip'] = Variable<String>(tip);
     map['je_korisnicka'] = Variable<bool>(jeKorisnicka);
+    map['osnovna_u_svakom_predmetu'] = Variable<bool>(osnovnaUSvakomPredmetu);
     map['redosled'] = Variable<int>(redosled);
     return map;
   }
@@ -9579,6 +9614,7 @@ class IriuKatalogConfigData extends DataClass
       uvekPrikazati: Value(uvekPrikazati),
       tip: Value(tip),
       jeKorisnicka: Value(jeKorisnicka),
+      osnovnaUSvakomPredmetu: Value(osnovnaUSvakomPredmetu),
       redosled: Value(redosled),
     );
   }
@@ -9595,6 +9631,9 @@ class IriuKatalogConfigData extends DataClass
       uvekPrikazati: serializer.fromJson<bool>(json['uvekPrikazati']),
       tip: serializer.fromJson<String>(json['tip']),
       jeKorisnicka: serializer.fromJson<bool>(json['jeKorisnicka']),
+      osnovnaUSvakomPredmetu: serializer.fromJson<bool>(
+        json['osnovnaUSvakomPredmetu'],
+      ),
       redosled: serializer.fromJson<int>(json['redosled']),
     );
   }
@@ -9608,6 +9647,7 @@ class IriuKatalogConfigData extends DataClass
       'uvekPrikazati': serializer.toJson<bool>(uvekPrikazati),
       'tip': serializer.toJson<String>(tip),
       'jeKorisnicka': serializer.toJson<bool>(jeKorisnicka),
+      'osnovnaUSvakomPredmetu': serializer.toJson<bool>(osnovnaUSvakomPredmetu),
       'redosled': serializer.toJson<int>(redosled),
     };
   }
@@ -9619,6 +9659,7 @@ class IriuKatalogConfigData extends DataClass
     bool? uvekPrikazati,
     String? tip,
     bool? jeKorisnicka,
+    bool? osnovnaUSvakomPredmetu,
     int? redosled,
   }) => IriuKatalogConfigData(
     interniNaziv: interniNaziv ?? this.interniNaziv,
@@ -9627,6 +9668,8 @@ class IriuKatalogConfigData extends DataClass
     uvekPrikazati: uvekPrikazati ?? this.uvekPrikazati,
     tip: tip ?? this.tip,
     jeKorisnicka: jeKorisnicka ?? this.jeKorisnicka,
+    osnovnaUSvakomPredmetu:
+        osnovnaUSvakomPredmetu ?? this.osnovnaUSvakomPredmetu,
     redosled: redosled ?? this.redosled,
   );
   IriuKatalogConfigData copyWithCompanion(IriuKatalogConfigCompanion data) {
@@ -9645,6 +9688,9 @@ class IriuKatalogConfigData extends DataClass
       jeKorisnicka: data.jeKorisnicka.present
           ? data.jeKorisnicka.value
           : this.jeKorisnicka,
+      osnovnaUSvakomPredmetu: data.osnovnaUSvakomPredmetu.present
+          ? data.osnovnaUSvakomPredmetu.value
+          : this.osnovnaUSvakomPredmetu,
       redosled: data.redosled.present ? data.redosled.value : this.redosled,
     );
   }
@@ -9658,6 +9704,7 @@ class IriuKatalogConfigData extends DataClass
           ..write('uvekPrikazati: $uvekPrikazati, ')
           ..write('tip: $tip, ')
           ..write('jeKorisnicka: $jeKorisnicka, ')
+          ..write('osnovnaUSvakomPredmetu: $osnovnaUSvakomPredmetu, ')
           ..write('redosled: $redosled')
           ..write(')'))
         .toString();
@@ -9671,6 +9718,7 @@ class IriuKatalogConfigData extends DataClass
     uvekPrikazati,
     tip,
     jeKorisnicka,
+    osnovnaUSvakomPredmetu,
     redosled,
   );
   @override
@@ -9683,6 +9731,7 @@ class IriuKatalogConfigData extends DataClass
           other.uvekPrikazati == this.uvekPrikazati &&
           other.tip == this.tip &&
           other.jeKorisnicka == this.jeKorisnicka &&
+          other.osnovnaUSvakomPredmetu == this.osnovnaUSvakomPredmetu &&
           other.redosled == this.redosled);
 }
 
@@ -9694,6 +9743,7 @@ class IriuKatalogConfigCompanion
   final Value<bool> uvekPrikazati;
   final Value<String> tip;
   final Value<bool> jeKorisnicka;
+  final Value<bool> osnovnaUSvakomPredmetu;
   final Value<int> redosled;
   final Value<int> rowid;
   const IriuKatalogConfigCompanion({
@@ -9703,6 +9753,7 @@ class IriuKatalogConfigCompanion
     this.uvekPrikazati = const Value.absent(),
     this.tip = const Value.absent(),
     this.jeKorisnicka = const Value.absent(),
+    this.osnovnaUSvakomPredmetu = const Value.absent(),
     this.redosled = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -9713,6 +9764,7 @@ class IriuKatalogConfigCompanion
     this.uvekPrikazati = const Value.absent(),
     this.tip = const Value.absent(),
     this.jeKorisnicka = const Value.absent(),
+    this.osnovnaUSvakomPredmetu = const Value.absent(),
     this.redosled = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : interniNaziv = Value(interniNaziv),
@@ -9724,6 +9776,7 @@ class IriuKatalogConfigCompanion
     Expression<bool>? uvekPrikazati,
     Expression<String>? tip,
     Expression<bool>? jeKorisnicka,
+    Expression<bool>? osnovnaUSvakomPredmetu,
     Expression<int>? redosled,
     Expression<int>? rowid,
   }) {
@@ -9734,6 +9787,8 @@ class IriuKatalogConfigCompanion
       if (uvekPrikazati != null) 'uvek_prikazati': uvekPrikazati,
       if (tip != null) 'tip': tip,
       if (jeKorisnicka != null) 'je_korisnicka': jeKorisnicka,
+      if (osnovnaUSvakomPredmetu != null)
+        'osnovna_u_svakom_predmetu': osnovnaUSvakomPredmetu,
       if (redosled != null) 'redosled': redosled,
       if (rowid != null) 'rowid': rowid,
     });
@@ -9746,6 +9801,7 @@ class IriuKatalogConfigCompanion
     Value<bool>? uvekPrikazati,
     Value<String>? tip,
     Value<bool>? jeKorisnicka,
+    Value<bool>? osnovnaUSvakomPredmetu,
     Value<int>? redosled,
     Value<int>? rowid,
   }) {
@@ -9756,6 +9812,8 @@ class IriuKatalogConfigCompanion
       uvekPrikazati: uvekPrikazati ?? this.uvekPrikazati,
       tip: tip ?? this.tip,
       jeKorisnicka: jeKorisnicka ?? this.jeKorisnicka,
+      osnovnaUSvakomPredmetu:
+          osnovnaUSvakomPredmetu ?? this.osnovnaUSvakomPredmetu,
       redosled: redosled ?? this.redosled,
       rowid: rowid ?? this.rowid,
     );
@@ -9782,6 +9840,11 @@ class IriuKatalogConfigCompanion
     if (jeKorisnicka.present) {
       map['je_korisnicka'] = Variable<bool>(jeKorisnicka.value);
     }
+    if (osnovnaUSvakomPredmetu.present) {
+      map['osnovna_u_svakom_predmetu'] = Variable<bool>(
+        osnovnaUSvakomPredmetu.value,
+      );
+    }
     if (redosled.present) {
       map['redosled'] = Variable<int>(redosled.value);
     }
@@ -9800,6 +9863,7 @@ class IriuKatalogConfigCompanion
           ..write('uvekPrikazati: $uvekPrikazati, ')
           ..write('tip: $tip, ')
           ..write('jeKorisnicka: $jeKorisnicka, ')
+          ..write('osnovnaUSvakomPredmetu: $osnovnaUSvakomPredmetu, ')
           ..write('redosled: $redosled, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -20261,6 +20325,7 @@ typedef $$IriuKatalogConfigTableCreateCompanionBuilder =
       Value<bool> uvekPrikazati,
       Value<String> tip,
       Value<bool> jeKorisnicka,
+      Value<bool> osnovnaUSvakomPredmetu,
       Value<int> redosled,
       Value<int> rowid,
     });
@@ -20272,6 +20337,7 @@ typedef $$IriuKatalogConfigTableUpdateCompanionBuilder =
       Value<bool> uvekPrikazati,
       Value<String> tip,
       Value<bool> jeKorisnicka,
+      Value<bool> osnovnaUSvakomPredmetu,
       Value<int> redosled,
       Value<int> rowid,
     });
@@ -20312,6 +20378,11 @@ class $$IriuKatalogConfigTableFilterComposer
 
   ColumnFilters<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get osnovnaUSvakomPredmetu => $composableBuilder(
+    column: $table.osnovnaUSvakomPredmetu,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20360,6 +20431,11 @@ class $$IriuKatalogConfigTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get osnovnaUSvakomPredmetu => $composableBuilder(
+    column: $table.osnovnaUSvakomPredmetu,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get redosled => $composableBuilder(
     column: $table.redosled,
     builder: (column) => ColumnOrderings(column),
@@ -20398,6 +20474,11 @@ class $$IriuKatalogConfigTableAnnotationComposer
 
   GeneratedColumn<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get osnovnaUSvakomPredmetu => $composableBuilder(
+    column: $table.osnovnaUSvakomPredmetu,
     builder: (column) => column,
   );
 
@@ -20451,6 +20532,7 @@ class $$IriuKatalogConfigTableTableManager
                 Value<bool> uvekPrikazati = const Value.absent(),
                 Value<String> tip = const Value.absent(),
                 Value<bool> jeKorisnicka = const Value.absent(),
+                Value<bool> osnovnaUSvakomPredmetu = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => IriuKatalogConfigCompanion(
@@ -20460,6 +20542,7 @@ class $$IriuKatalogConfigTableTableManager
                 uvekPrikazati: uvekPrikazati,
                 tip: tip,
                 jeKorisnicka: jeKorisnicka,
+                osnovnaUSvakomPredmetu: osnovnaUSvakomPredmetu,
                 redosled: redosled,
                 rowid: rowid,
               ),
@@ -20471,6 +20554,7 @@ class $$IriuKatalogConfigTableTableManager
                 Value<bool> uvekPrikazati = const Value.absent(),
                 Value<String> tip = const Value.absent(),
                 Value<bool> jeKorisnicka = const Value.absent(),
+                Value<bool> osnovnaUSvakomPredmetu = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => IriuKatalogConfigCompanion.insert(
@@ -20480,6 +20564,7 @@ class $$IriuKatalogConfigTableTableManager
                 uvekPrikazati: uvekPrikazati,
                 tip: tip,
                 jeKorisnicka: jeKorisnicka,
+                osnovnaUSvakomPredmetu: osnovnaUSvakomPredmetu,
                 redosled: redosled,
                 rowid: rowid,
               ),

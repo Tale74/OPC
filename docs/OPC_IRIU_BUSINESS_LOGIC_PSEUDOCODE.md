@@ -332,6 +332,39 @@ ADD_MANUALLY:
       create PREDMET row
 
 OWNER_REVIEW_REQUIRED = Windows_Android_manual_add_parity
+
+## KATALOG basic-category policy (schema 22)
+
+```text
+KATALOG create/edit eligible category:
+  read category type independently from basic policy
+  basic policy default = NE
+  persist osnovna_u_svakom_predmetu
+  keep persistent category redosled unchanged across rename/toggle
+
+new PREDMET:
+  evaluate built-in business scenario through existing rules
+  materialize existing scenario rows through existing lifecycle services
+  append existing built-in basic rows in established relative order
+  append AGENCIJSKE_USLUGE
+  append visible enabled user/configurable basic categories
+    ordered by persistent KATALOG redosled
+    deduplicated by stable interni_naziv
+  calculate all stored rows through existing IRiU truth/financial model
+
+KATALOG policy toggle:
+  affects future PREDMET initialization only
+  never reconcile already stored PREDMET IRIU rows
+
+manual IRiU add:
+  create RUCNO_* row in current PREDMET only
+  do not create/update iriu_katalog_config
+  do not expose or change basic policy
+  do not affect future PREDMETI
+```
+
+Protected boundary: scenario predicates and composition remain unchanged.
+`Agencijske usluge` is a built-in basic boundary row, not a scenario row.
 ```
 
 ## 11. Edit, delete, ordering and dismissal memory

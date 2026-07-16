@@ -26,6 +26,9 @@ abstract final class IriuK {
   static const String cargoTroskovi = 'CARGO_TROSKOVI';
   static const String cituljaP = 'CITULJA_POLITIKA';
   static const String cituljaNo = 'CITULJA_NOVOSTI';
+  static const String doradaPogrebneOpreme = 'DORADA_POGREBNE_OPREME';
+  static const String kucanjeObelezja = 'KUCANJE_OBELEZJA';
+  static const String slovaIBrojevi = 'SLOVA_I_BROJEVI';
 
   /// Nazivi za prikaz po internom nazivu — koriste se pri automatskom unosu.
   static const Map<String, String> naziviPrikaz = {
@@ -53,6 +56,31 @@ abstract final class IriuK {
     cargoTroskovi: 'Cargo troškovi',
     cituljaP: 'Čitulje',
     cituljaNo: 'Čitulje',
+    doradaPogrebneOpreme: 'Dorada pogrebne opreme',
+    kucanjeObelezja: 'Kucanje obeležja',
+    slovaIBrojevi: 'Slova i brojevi',
+  };
+
+  /// Existing non-scenario rows materialized for every new PREDMET.
+  /// Agencijske usluge is kept separate because it is the boundary before
+  /// user-configurable basic categories.
+  static const List<String> ugradjeneOsnovnePreAgencijskih = <String>[
+    sanduk,
+    obelezje,
+    pokrovGarnitura,
+    peskirZaKrst,
+    posmrtneParte,
+    crnina,
+    cvece,
+    cituljaP,
+  ];
+
+  /// Seeded production categories whose basic policy may be changed in
+  /// KATALOG even though they are not user-created rows.
+  static const Set<String> podesiveOsnovneSeedKategorije = <String>{
+    doradaPogrebneOpreme,
+    kucanjeObelezja,
+    slovaIBrojevi,
   };
 
   /// Stavke koje se uvek predlažu na novom predmetu (bez uslova).

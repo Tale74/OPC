@@ -142,7 +142,10 @@ class PredmetiRepository {
         );
   }
 
-  /// Popunjava IRIU tabelu zaključanim Blok 0 minimumom za nov predmet.
+  /// Materijalizuje osnovne IRIU redove samo za nov PREDMET.
+  ///
+  /// Scenario redovi ostaju u postojećim lifecycle servisima. Ovaj snapshot
+  /// politike KATALOGA se kasnije ne usklađuje retroaktivno.
   /// Poziva se odmah nakon kreirajPredmet.
   Future<void> inicijalizujIriu(int predmetId) async {
     final katalog = await (_db.select(
@@ -151,35 +154,32 @@ class PredmetiRepository {
     final katalogByInternalName = {
       for (final row in katalog) row.interniNaziv: row,
     };
-    final blok0Redosled = <({String interniNaziv, String? nazivPrikaz})>[
-      (interniNaziv: IriuK.sanduk, nazivPrikaz: null),
-      (interniNaziv: IriuK.obelezje, nazivPrikaz: null),
-      (interniNaziv: IriuK.pokrovGarnitura, nazivPrikaz: null),
-      (
-        interniNaziv: IriuK.peskirZaKrst,
-        nazivPrikaz: IriuK.naziviPrikaz[IriuK.peskirZaKrst],
-      ),
-      (interniNaziv: IriuK.posmrtneParte, nazivPrikaz: null),
-      (interniNaziv: IriuK.crnina, nazivPrikaz: null),
-      (interniNaziv: IriuK.agencijskeUsluge, nazivPrikaz: null),
-      (interniNaziv: IriuK.cvece, nazivPrikaz: null),
-      (
-        interniNaziv: IriuK.cituljaP,
-        nazivPrikaz: IriuK.naziviPrikaz[IriuK.cituljaP],
-      ),
-    ];
-    final korisnickeStavke = katalog
-        .where((row) => row.jeKorisnicka)
+    final ugradjeneOsnovne = IriuK.ugradjeneOsnovnePreAgencijskih.map(
+      (interniNaziv) => (interniNaziv: interniNaziv, nazivPrikaz: null),
+    );
+    final korisnickeOsnovne = katalog
+        .where(
+          (row) =>
+              row.vidljiv &&
+              row.osnovnaUSvakomPredmetu &&
+              (row.jeKorisnicka ||
+                  IriuK.podesiveOsnovneSeedKategorije.contains(
+                    row.interniNaziv,
+                  )),
+        )
         .map(
           (row) =>
               (interniNaziv: row.interniNaziv, nazivPrikaz: row.nazivPrikaz),
         );
     final inicijalneStavke = <({String interniNaziv, String? nazivPrikaz})>[
-      ...blok0Redosled,
-      ...korisnickeStavke,
+      ...ugradjeneOsnovne,
+      (interniNaziv: IriuK.agencijskeUsluge, nazivPrikaz: null),
+      ...korisnickeOsnovne,
     ];
+    final materializedInternalNames = <String>{};
     int red = 0;
     for (final stavka in inicijalneStavke) {
+      if (!materializedInternalNames.add(stavka.interniNaziv)) continue;
       final katalogRow = katalogByInternalName[stavka.interniNaziv];
       if (katalogRow == null) continue;
       await _db

@@ -482,3 +482,13 @@ workflow.
 - A consistent verified backup and owner-derived copy migration are required before real-user rollout.
 - The corrected build must not open the live owner canonical database until the owner reviews copy evidence and explicitly authorizes the upgrade.
 - Active technical policy: `OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md` and `OPC_CANONICAL_DATABASE_RECOVERY_PSEUDOCODE.md`.
+
+## KATALOG osnovne kategorije za buduće PREDMETE — owner decision 2026-07-16
+
+- KATALOG stores `Osnovna u svakom PREDMETU: DA/NE`; default is `NE`.
+- The setting is independent from `FIKSNA` / `KATALOŠKA` type.
+- Changes affect only PREDMETI created after save; existing IRIU rows are never rewritten.
+- Built-in scenario predicates and scenario row composition remain unchanged.
+- Existing built-in basic rows precede `Agencijske usluge`; enabled user/configurable basic categories follow it in stable category creation order.
+- Manual IRiU addition is local to the current PREDMET and cannot create or change global KATALOG policy.
+- Schema 22 adds the backward-compatible policy column and three initially disabled FIKSNA seeds: Dorada pogrebne opreme, Kucanje obeležja, and Slova i brojevi.

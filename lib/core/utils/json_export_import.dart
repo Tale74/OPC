@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 import '../database/database.dart';
+import '../constants/iriu_constants.dart';
 import '../format/app_filename_format.dart';
 import '../json_transfer/predmet_json_transfer_core.dart';
 import '../../features/predmeti/data/predmeti_repository.dart';
@@ -711,6 +712,22 @@ Map<String, dynamic> _normalizujBackupFirmaPodaciMap(Map<String, dynamic> row) {
   return normalized;
 }
 
+Map<String, dynamic> _normalizujBackupIriuKatalogConfigMap(
+  Map<String, dynamic> row,
+) {
+  final normalized = Map<String, dynamic>.from(row);
+  final internalName = normalized['interniNaziv'];
+  final builtInBasic =
+      internalName is String &&
+      (<String>{
+        ...IriuK.ugradjeneOsnovnePreAgencijskih,
+        IriuK.agencijskeUsluge,
+      }).contains(internalName);
+  normalized['osnovnaUSvakomPredmetu'] ??= builtInBasic;
+  _requiredBool(normalized, 'osnovnaUSvakomPredmetu', 'iriuKatalogConfig');
+  return normalized;
+}
+
 T _procitajBackupRed<T>(
   String section,
   Map<String, dynamic> row,
@@ -896,17 +913,18 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     }
 
     for (final k in _requiredMapList(json, 'iriuKatalogConfig')) {
-      _zahtevajBackupTekstPolja(k, 'iriuKatalogConfig', const [
-        'interniNaziv',
-        'nazivPrikaz',
-        'tip',
-      ]);
+      final normalizedKatalogConfig = _normalizujBackupIriuKatalogConfigMap(k);
+      _zahtevajBackupTekstPolja(
+        normalizedKatalogConfig,
+        'iriuKatalogConfig',
+        const ['interniNaziv', 'nazivPrikaz', 'tip'],
+      );
       await db
           .into(db.iriuKatalogConfig)
           .insert(
             _procitajBackupRed(
               'iriuKatalogConfig',
-              k,
+              normalizedKatalogConfig,
               (row) => IriuKatalogConfigData.fromJson(row),
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,

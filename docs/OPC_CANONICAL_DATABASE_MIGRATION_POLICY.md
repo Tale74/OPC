@@ -45,7 +45,7 @@ Before the first launch of a migration-capable build:
 ## Supported checkpoints
 
 The current migration implementation accepts existing `user_version` values
-1 through 21 and targets schema 21. Versions 1–13 have insufficient surviving
+1 through 22 and targets schema 22. Versions 1–13 have insufficient surviving
 distribution evidence, but remain supported as the safer compatibility
 classification. Versions 14–16 are documented historical stock-schema
 transitions. Version 17 is the public repository baseline. Versions 18–21 are

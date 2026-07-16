@@ -87,3 +87,12 @@ databases upgrade in place through validated idempotent application migrations.
 Test databases are never substituted or merged automatically. Backup-first
 copy proof and explicit owner authorization precede the live canonical upgrade.
 See `OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md`.
+
+## OPC-OD-IRIU-KATALOG-BASIC-005 — LOCKED
+
+KATALOG owns the persistent `Osnovna u svakom PREDMETU: DA/NE` policy; default
+is `NE` and changes affect only future PREDMETI. Existing scenario rules remain
+authoritative and unchanged. Existing built-in basics precede `Agencijske
+usluge`; enabled user/configurable basics follow it in persistent category
+creation order. Manual IRiU addition is PREDMET-local and cannot create or
+change KATALOG policy. Implemented in schema 22; see the focused task report.

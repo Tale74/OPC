@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import '../catalog/stock_catalog_identity.dart';
 import '../config/app_config.dart';
+import '../constants/iriu_constants.dart';
 import '../utils/stable_id_generator.dart';
 import 'migration_test_database_selector.dart';
 import 'schema_recovery.dart';
@@ -59,7 +60,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -70,6 +71,7 @@ class AppDatabase extends _$AppDatabase {
       await _createIriuLifecycleDecisionTable();
       await _createCeremonyReminderSettingsTable();
       await _seedIriuKatalog();
+      await _backfillBuiltInIriuBasicPolicy();
       await _seedPredlosciDokumenata();
       await _seedSingletons();
     },
@@ -167,6 +169,15 @@ class AppDatabase extends _$AppDatabase {
         await _ensureTable(m, partePredlosci);
         await _ensureTable(m, partePripreme);
       }
+      if (from < 22) {
+        await _ensureColumn(
+          m,
+          iriuKatalogConfig,
+          iriuKatalogConfig.osnovnaUSvakomPredmetu,
+        );
+        await _seedIriuKatalog();
+        await _backfillBuiltInIriuBasicPolicy();
+      }
     },
     beforeOpen: (details) async {
       final versionBefore = details.versionBefore;
@@ -178,6 +189,8 @@ class AppDatabase extends _$AppDatabase {
       }
       final migrator = createMigrator();
       await _recoverSupportedAdditiveSchema(migrator);
+      await _seedIriuKatalog();
+      await _backfillBuiltInIriuBasicPolicy();
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
       await _ensureKatalogStableArticleIdUniqueIndex();
       await _ensureStanjeRobeStableArticleIdUniqueIndex();
@@ -321,6 +334,11 @@ class AppDatabase extends _$AppDatabase {
     );
     await _ensureTable(migrator, partePredlosci);
     await _ensureTable(migrator, partePripreme);
+    await _ensureColumn(
+      migrator,
+      iriuKatalogConfig,
+      iriuKatalogConfig.osnovnaUSvakomPredmetu,
+    );
   }
 
   Future<void> _validateRequiredSchema() async {
@@ -856,6 +874,24 @@ class AppDatabase extends _$AppDatabase {
         prikaz: 'Čitulja Novosti',
         tip: 'KATALOSKA',
         red: 20,
+      ),
+      (
+        naziv: IriuK.doradaPogrebneOpreme,
+        prikaz: 'Dorada pogrebne opreme',
+        tip: 'FIKSNA',
+        red: 1001,
+      ),
+      (
+        naziv: IriuK.kucanjeObelezja,
+        prikaz: 'Kucanje obeležja',
+        tip: 'FIKSNA',
+        red: 1002,
+      ),
+      (
+        naziv: IriuK.slovaIBrojevi,
+        prikaz: 'Slova i brojevi',
+        tip: 'FIKSNA',
+        red: 1003,
       ),
     ];
 
@@ -1448,6 +1484,18 @@ class AppDatabase extends _$AppDatabase {
         mode: InsertMode.insertOrIgnore,
       );
     }
+  }
+
+  Future<void> _backfillBuiltInIriuBasicPolicy() async {
+    final builtInBasicCategories = <String>{
+      ...IriuK.ugradjeneOsnovnePreAgencijskih,
+      IriuK.agencijskeUsluge,
+    };
+    await (update(
+      iriuKatalogConfig,
+    )..where((row) => row.interniNaziv.isIn(builtInBasicCategories))).write(
+      const IriuKatalogConfigCompanion(osnovnaUSvakomPredmetu: Value(true)),
+    );
   }
 
   /// Učitava asset kao Uint8List (koristi se pri seeding-u i migraciji).

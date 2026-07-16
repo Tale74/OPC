@@ -5,16 +5,7 @@ class IriuOrderingService {
   const IriuOrderingService();
 
   static const List<String> _systemCategoryOrder = <String>[
-    IriuK.sanduk,
-    IriuK.obelezje,
-    IriuK.pokrovGarnitura,
-    IriuK.peskirZaKrst,
-    IriuK.posmrtneParte,
-    IriuK.crnina,
-    IriuK.agencijskeUsluge,
-    IriuK.cvece,
-    IriuK.cituljaP,
-    IriuK.cituljaNo,
+    // Existing scenario-dependent order is preserved as one leading block.
     IriuK.iznosenje,
     IriuK.transportnaVreca,
     IriuK.prevozDoHladnjace,
@@ -29,10 +20,15 @@ class IriuOrderingService {
     IriuK.medjunarodnaDocumentacija,
     IriuK.balsamovanje,
     IriuK.cargoTroskovi,
+    // Existing built-in basic rows keep their established relative order.
+    ...IriuK.ugradjeneOsnovnePreAgencijskih,
+    IriuK.cituljaNo,
+    // User-configurable basic and manual rows retain their stored order after
+    // this explicit boundary category.
+    IriuK.agencijskeUsluge,
   ];
 
-  static final Set<String> _systemCategories =
-      _systemCategoryOrder.toSet();
+  static final Set<String> _systemCategories = _systemCategoryOrder.toSet();
 
   bool isSystemManagedCategory(String internalName) {
     return _systemCategories.contains(internalName);

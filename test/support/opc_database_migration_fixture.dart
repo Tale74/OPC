@@ -13,7 +13,7 @@ final class OpcDatabaseMigrationFixture {
 
   static Future<File> createPopulatedCurrentTemplate(Directory root) async {
     final file = File(
-      '${root.path}${Platform.pathSeparator}opc_schema_21_template.sqlite',
+      '${root.path}${Platform.pathSeparator}opc_schema_22_template.sqlite',
     );
     final database = AppDatabase.forTesting(NativeDatabase(file));
     await database.customSelect('SELECT 1').get();
@@ -41,6 +41,15 @@ final class OpcDatabaseMigrationFixture {
       INSERT INTO kontakt_lica (
         predmet_id, blok, ime_prezime, telefon, email, napomena, redosled
       ) VALUES (1, 'NARU_OPREMA', 'SYNTHETIC CONTACT', '', '', '', 1)
+    ''');
+    await database.customStatement('''
+      INSERT INTO iriu_katalog_config (
+        interni_naziv, naziv_prikaz, vidljiv, uvek_prikazati,
+        tip, je_korisnicka, osnovna_u_svakom_predmetu, redosled
+      ) VALUES (
+        'KORISNIK_LEGACY', 'Legacy user category', 1, 0,
+        'FIKSNA', 1, 0, 21
+      )
     ''');
     await database.customStatement('''
       INSERT INTO iriu (
@@ -154,6 +163,17 @@ final class OpcDatabaseMigrationFixture {
       db.execute('DROP INDEX IF EXISTS $index');
     }
 
+    if (version < 22) {
+      db.execute('''
+        DELETE FROM iriu_katalog_config
+        WHERE interni_naziv IN (
+          'DORADA_POGREBNE_OPREME',
+          'KUCANJE_OBELEZJA',
+          'SLOVA_I_BROJEVI'
+        )
+      ''');
+      _dropColumn(db, 'iriu_katalog_config', 'osnovna_u_svakom_predmetu');
+    }
     if (version < 21) {
       db.execute('DROP TABLE IF EXISTS parte_pripreme');
       db.execute('DROP TABLE IF EXISTS parte_predlosci');

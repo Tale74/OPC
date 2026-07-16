@@ -591,17 +591,10 @@ class _IriuSegmentState extends State<IriuSegment> {
     );
     if (result == null || !mounted) return;
 
-    String interniNaziv;
-    if (result.tip == 'KATALOSKA') {
-      interniNaziv = 'KORISNIK_${DateTime.now().millisecondsSinceEpoch}';
-      await widget.podesavanjaRepo.dodajKorisnickaKategoriju(
-        interniNaziv: interniNaziv,
-        nazivPrikaz: result.naziv,
-        tip: 'KATALOSKA',
-      );
-    } else {
-      interniNaziv = 'RUCNO_${DateTime.now().millisecondsSinceEpoch}';
-    }
+    // Ručni unos je uvek PREDMET-specifičan snapshot. Čak i kada korisnik
+    // izabere KATALOŠKA, ovaj tok ne kreira kategoriju niti politiku KATALOGA.
+    final interniNaziv =
+        'RUCNO_${result.tip}_${DateTime.now().millisecondsSinceEpoch}';
 
     final red = await widget.iriuRepo.sledeciredosled(widget.predmetId);
     await widget.iriuRepo.dodajStavku(
@@ -1386,7 +1379,7 @@ class _RucnoDialogState extends State<_RucnoDialog> {
             Text(
               _tip == 'FIKSNA'
                   ? 'Cena se unosi ručno po predmetu'
-                  : 'Artikli se biraju iz kataloga (unosite ih u Podešavanja)',
+                  : 'Lokalna kataloška stavka samo za ovaj PREDMET',
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

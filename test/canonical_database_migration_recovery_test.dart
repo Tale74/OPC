@@ -28,8 +28,8 @@ void main() {
     if (await suiteRoot.exists()) await suiteRoot.delete(recursive: true);
   });
 
-  group('confirmed v19 to v21 recovery states', () {
-    test('empty database is created directly as a valid schema 21', () async {
+  group('confirmed v19 to v22 recovery states', () {
+    test('empty database is created directly as a valid schema 22', () async {
       final root = await Directory.systemTemp.createTemp('opc_empty_schema_');
       addTearDown(() async {
         if (await root.exists()) await root.delete(recursive: true);
@@ -38,7 +38,7 @@ void main() {
       final db = AppDatabase.forTesting(NativeDatabase(file));
       addTearDown(db.close);
 
-      expect(await _userVersion(db), 21);
+      expect(await _userVersion(db), 22);
       expect(
         await _tableNames(db),
         containsAll(['predmeti', 'parte_pripreme']),
@@ -46,7 +46,7 @@ void main() {
     });
 
     test(
-      'State A: v19 without docek_datum adds valid v20/v21 schema',
+      'State A: v19 without docek_datum adds valid v20/v21/v22 schema',
       () async {
         final fixture = await _fixture(currentTemplate, 'state_a');
         addTearDown(fixture.dispose);
@@ -127,7 +127,7 @@ void main() {
       },
     );
 
-    test('State D: v20 adds only missing valid v21 objects', () async {
+    test('State D: v20 adds only missing valid v21/v22 objects', () async {
       final fixture = await _fixture(currentTemplate, 'state_d');
       addTearDown(fixture.dispose);
       final db = fixture.openAtVersion(20);
@@ -144,10 +144,10 @@ void main() {
       );
     });
 
-    test('State E: valid v21 opens repeatedly without schema drift', () async {
+    test('State E: valid v22 opens repeatedly without schema drift', () async {
       final fixture = await _fixture(currentTemplate, 'state_e');
       addTearDown(fixture.dispose);
-      final first = fixture.openAtVersion(21);
+      final first = fixture.openAtVersion(22);
       await _expectMigratedAndPreserved(
         first,
         expectReminder: true,
@@ -172,7 +172,7 @@ void main() {
   });
 
   group('supported historical checkpoints', () {
-    for (var version = 1; version <= 21; version++) {
+    for (var version = 1; version <= 22; version++) {
       test('populated schema $version migrates in place and reopens', () async {
         final fixture = await _fixture(currentTemplate, 'history_$version');
         addTearDown(fixture.dispose);
@@ -189,7 +189,7 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 21);
+        expect(await _userVersion(second), 22);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
@@ -304,7 +304,7 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      final db = fixture.openAtVersion(22, physicalVersion: 21);
+      final db = fixture.openAtVersion(23, physicalVersion: 22);
       addTearDown(db.close);
 
       await expectLater(
@@ -313,7 +313,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 22'),
+            contains('unsupported migration checkpoint 23 -> 22'),
           ),
         ),
       );
@@ -363,7 +363,7 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 21);
+    expect(await _userVersion(retried), 22);
     await retried.close();
   });
 }
@@ -382,11 +382,39 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 21);
+  expect(await _userVersion(db), 22);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);
   expect(await _count(db, 'iriu'), 1);
+  expect(
+    await _columnNames(db, 'iriu_katalog_config'),
+    contains('osnovna_u_svakom_predmetu'),
+  );
+  expect(
+    await _scalarInt(
+      db,
+      '''SELECT osnovna_u_svakom_predmetu FROM iriu_katalog_config
+         WHERE interni_naziv = 'KORISNIK_LEGACY' ''',
+    ),
+    0,
+  );
+  expect(
+    await _scalarInt(
+      db,
+      '''SELECT osnovna_u_svakom_predmetu FROM iriu_katalog_config
+         WHERE interni_naziv = 'AGENCIJSKE_USLUGE' ''',
+    ),
+    1,
+  );
+  expect(
+    await _scalarInt(
+      db,
+      '''SELECT COUNT(*) FROM iriu_katalog_config WHERE interni_naziv IN
+         ('DORADA_POGREBNE_OPREME','KUCANJE_OBELEZJA','SLOVA_I_BROJEVI')''',
+    ),
+    3,
+  );
   expect(
     (await db
             .customSelect('SELECT broj_predmeta FROM predmeti WHERE id = 1')
@@ -435,6 +463,11 @@ Future<int> _count(AppDatabase db, String table) async =>
             .customSelect('SELECT COUNT(*) AS count FROM "$table"')
             .getSingle())
         .read<int>('count');
+
+Future<int> _scalarInt(AppDatabase db, String sql) async {
+  final row = await db.customSelect(sql).getSingle();
+  return row.data.values.single as int;
+}
 
 Future<Set<String>> _columnNames(AppDatabase db, String table) async =>
     (await db.customSelect('PRAGMA table_info("$table")').get())

@@ -478,9 +478,19 @@ Module name: Canonical database migration and startup recovery
 Module type: shared persistence/infrastructure
 Business purpose: preserve each user's existing OPC business database while upgrading supported historical or partially migrated schemas in place.
 Reads from PREDMET: schema metadata and existing rows; reports never expose row content.
-Applies rules: explicit canonical designation, backup-first rollout, supported `user_version` 1–21, idempotent additive recovery, malformed-schema stop.
+Applies rules: explicit canonical designation, backup-first rollout, supported `user_version` 1–22, idempotent additive recovery, malformed-schema stop.
 Writes back to PREDMET or related tables: additive schema changes and established deterministic backfills only; no table replacement or arbitrary business-row rewrite.
-Outputs: validated schema 21 or precise `OpcSchemaMismatch`.
+Outputs: validated schema 22 or precise `OpcSchemaMismatch`.
+
+### KATALOG → future PREDMET IRiU policy
+
+KATALOG persists category identity, type, visibility, stable creation order and
+the schema-22 basic-category flag. New-PREDMET initialization snapshots enabled
+eligible categories after built-in basics and `Agencijske usluge`; it never
+reconciles existing PREDMETI. Scenario lifecycle services remain independent
+and authoritative. Manual IRiU addition writes only the current PREDMET child
+row and never mutates KATALOG policy. This shared boundary is identical on
+Windows and Android.
 Depends on: Drift `onUpgrade`/`beforeOpen`, `schema_recovery.dart`, verified backup and owner authorization.
 Affects: Windows and Android equally through shared database code.
 Tests: `canonical_database_migration_recovery_test.dart`, `package_downgrade_migration_test.dart`, `owner_database_copy_migration_test.dart`.

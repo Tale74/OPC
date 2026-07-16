@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/constants/iriu_constants.dart';
 import '../../../core/format/app_format.dart';
 import 'katalog_photo_policy.dart';
 import '../data/podesavanja_repository.dart';
@@ -29,6 +30,7 @@ class KatalogTab extends StatelessWidget {
       interniNaziv: 'KORISNIK_${DateTime.now().millisecondsSinceEpoch}',
       nazivPrikaz: result.naziv,
       tip: result.tip,
+      osnovnaUSvakomPredmetu: result.osnovnaUSvakomPredmetu,
     );
 
     if (!context.mounted) return;
@@ -104,10 +106,14 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
 
   bool get _jeKataloska => widget.item.tip == 'KATALOSKA';
   bool get _jeKorisnicka => widget.item.jeKorisnicka;
+  bool get _osnovnaPolicyEditable =>
+      _jeKorisnicka ||
+      IriuK.podesiveOsnovneSeedKategorije.contains(widget.item.interniNaziv);
 
   Future<void> _editDialog(BuildContext context) async {
     final nazivCtrl = TextEditingController(text: widget.item.nazivPrikaz);
     bool vidljiv = widget.item.vidljiv;
+    bool osnovnaUSvakomPredmetu = widget.item.osnovnaUSvakomPredmetu;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -131,6 +137,18 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                 title: const Text('Vidljivo u katalogu'),
                 contentPadding: EdgeInsets.zero,
               ),
+              if (_osnovnaPolicyEditable) ...[
+                const Divider(),
+                SwitchListTile(
+                  value: osnovnaUSvakomPredmetu,
+                  onChanged: (v) => setDlg(() => osnovnaUSvakomPredmetu = v),
+                  title: const Text('Osnovna u svakom PREDMETU'),
+                  subtitle: const Text(
+                    'Primenjuje se samo na buduće PREDMETE.',
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
             ],
           ),
           actions: [
@@ -158,6 +176,9 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
             noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
           ),
           vidljiv: Value(vidljiv),
+          osnovnaUSvakomPredmetu: _osnovnaPolicyEditable
+              ? Value(osnovnaUSvakomPredmetu)
+              : const Value.absent(),
         ),
       );
     }
@@ -260,7 +281,14 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 3),
-                        Wrap(spacing: 4, children: [_TipChip(_jeKataloska)]),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            _TipChip(_jeKataloska),
+                            _OsnovnaChip(widget.item.osnovnaUSvakomPredmetu),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -296,10 +324,15 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
 }
 
 class _NovaKategorijaResult {
-  _NovaKategorijaResult({required this.naziv, required this.tip});
+  _NovaKategorijaResult({
+    required this.naziv,
+    required this.tip,
+    required this.osnovnaUSvakomPredmetu,
+  });
 
   final String naziv;
   final String tip;
+  final bool osnovnaUSvakomPredmetu;
 }
 
 class _NovaKategorijaDialog extends StatefulWidget {
@@ -312,6 +345,7 @@ class _NovaKategorijaDialog extends StatefulWidget {
 class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
   final _nazivCtrl = TextEditingController();
   String _tip = 'FIKSNA';
+  bool _osnovnaUSvakomPredmetu = false;
   bool _greskaNaziv = false;
 
   @override
@@ -326,7 +360,14 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
       setState(() => _greskaNaziv = true);
       return;
     }
-    Navigator.pop(context, _NovaKategorijaResult(naziv: naziv, tip: _tip));
+    Navigator.pop(
+      context,
+      _NovaKategorijaResult(
+        naziv: naziv,
+        tip: _tip,
+        osnovnaUSvakomPredmetu: _osnovnaUSvakomPredmetu,
+      ),
+    );
   }
 
   @override
@@ -388,6 +429,31 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: 12),
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment<bool>(value: false, label: Text('NE')),
+                ButtonSegment<bool>(value: true, label: Text('DA')),
+              ],
+              selected: {_osnovnaUSvakomPredmetu},
+              onSelectionChanged: (selection) =>
+                  setState(() => _osnovnaUSvakomPredmetu = selection.first),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Osnovna u svakom PREDMETU: '
+              '${_osnovnaUSvakomPredmetu ? 'DA' : 'NE'}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              'Podešavanje važi samo za buduće PREDMETE.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ),
@@ -422,6 +488,29 @@ class _TipChip extends StatelessWidget {
       ),
       backgroundColor: jeKataloska
           ? scheme.primaryContainer
+          : scheme.surfaceContainerHighest,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+    );
+  }
+}
+
+class _OsnovnaChip extends StatelessWidget {
+  const _OsnovnaChip(this.osnovna);
+
+  final bool osnovna;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Chip(
+      label: Text('OSNOVNA: ${osnovna ? 'DA' : 'NE'}'),
+      labelStyle: TextStyle(
+        fontSize: 10,
+        color: osnovna ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
+      ),
+      backgroundColor: osnovna
+          ? scheme.secondaryContainer
           : scheme.surfaceContainerHighest,
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,

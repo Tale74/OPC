@@ -1,5 +1,12 @@
 # OPC IRIU Business Logic Audit Before Owner Pass
 
+> Schema-22 update: the former behavior that appended every user KATALOG
+> category to each new PREDMET is superseded. KATALOG now persists an explicit
+> `Osnovna u svakom PREDMETU` flag (default `NE`); enabled eligible categories
+> are snapshotted only into future PREDMETI after `Agencijske usluge`. Manual
+> IRiU addition is PREDMET-local and no longer creates a global category. The
+> scenario predicates and lifecycle composition described below are unchanged.
+
 ## 1. Namena, autoritet i granica
 
 Ovaj dokument rekonstruiše stvarno postojeću poslovnu logiku segmenta **ROBA I USLUGE (IRIU)**, sa posebnim osvrtom na postojeći dokument **NALOG ZA OPREMANJE**. Audit ne odobrava implementaciju, ne projektuje budući tok i ne popunjava nedostajuće owner odluke pretpostavkama.
