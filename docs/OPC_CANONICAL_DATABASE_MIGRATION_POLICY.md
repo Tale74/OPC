@@ -97,6 +97,15 @@ migration and copy-only runtime validation may precede the live upgrade. The
 real canonical owner database must not be opened by the corrected build until
 the owner reviews the evidence package and explicitly authorizes that step.
 
+The current owner's canonical upgrade was explicitly authorized and completed
+on 2026-07-16 through a PRODUCTION build from migration-code commit
+`0368bd83a57efd03df8ef6e398555e35aec8bf85`. The verified offline backup is
+`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_PRE_CANONICAL_UPGRADE_20260716_212208.sqlite`.
+The canonical database reached schema checkpoint 21 with integrity `ok`, all 19
+table counts/content fingerprints unchanged, and a successful double-start
+smoke. This execution record does not waive the same backup-and-explicit-
+authorization requirement for another database or user.
+
 ## Fail-closed Windows copy smoke selector
 
 The compile-time `MIGRATION_TEST_DATABASE_PATH` hook is accepted only by the

@@ -199,9 +199,10 @@ the final run.
 | Every table content fingerprint | baseline | identical |
 | AppDatabase opens | not applicable | migration open plus repeated open PASS |
 
-No private row value was printed, logged or committed. The real canonical file
-was checked again after copy validation and remains byte-identical to the
-pristine backup at version 19.
+No private row value was printed, logged or committed. At that copy-validation
+stage, the real canonical file was checked again and remained byte-identical to
+the then-current pristine backup at version 19. Its later explicitly authorized
+live upgrade is recorded below.
 
 ## Runtime database selection and copy smoke
 
@@ -263,10 +264,10 @@ After both final starts:
 
 ## Windows build evidence
 
-The final smoke release was built with the repository-approved Windows command
+The isolated-copy smoke release was built with the repository-approved Windows command
 and the two explicit defines `BUILD_VARIANT=WINDOWS_TEST` and
 `MIGRATION_TEST_DATABASE_PATH=<final copy>`. The production artifact/database
-lane was not launched.
+lane had not yet been launched at that stage.
 
 - Artifact: `build\windows\x64\runner\Release\OPC.exe`
 - Artifact size/SHA-256: 89,088 bytes /
@@ -275,6 +276,95 @@ lane was not launched.
 - AOT size/SHA-256: 12,125,104 bytes /
   `0425D635B2C52DFCF9118102E5E1D3BE39E0A08DCC01C36F8306408928F1F64C`.
 - Build and two copy-only launches: PASS.
+
+### Approved PRODUCTION canonical-upgrade build
+
+After the owner explicitly authorized the live upgrade, the repository was
+confirmed clean at exactly
+`0368bd83a57efd03df8ef6e398555e35aec8bf85`. The build command was exactly
+`flutter build windows --release`, with no `dart-define`. It completed with
+exit code 0, so the established fallback selected `PRODUCTION` and
+`C:\Users\Steva\Documents\opc_v4_release.sqlite`.
+
+- Artifact: `build\windows\x64\runner\Release\OPC.exe`.
+- Artifact size/SHA-256: 89,088 bytes /
+  `0527315E5BEE146AD41656DC161B31CB7D5FDBCC4515C37D31F259579B865D44`.
+- AOT payload: `build\windows\x64\runner\Release\data\app.so`.
+- AOT size/SHA-256: 12,125,104 bytes /
+  `157BCA5E515C3520012875273F20F286505ABC407F31E5040A4666DE90E4B6E4`.
+
+## Live canonical migration evidence
+
+Before the live launch, OPC was closed and both canonical WAL/SHM files were
+absent. At the owner's instruction, the canonical state modified at
+2026-07-16 21:22:08 local became the new pre-migration baseline. A plain
+byte-for-byte offline copy was made to:
+
+`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_PRE_CANONICAL_UPGRADE_20260716_212208.sqlite`
+
+| Check | Canonical source before migration | New offline backup |
+| --- | --- | --- |
+| Size | 81,125,376 bytes | 81,125,376 bytes |
+| SHA-256 | `639EF6449564D91D933A43C5F74308D3ACAA48CE59FCE682C67F35E0AC73C023` | identical |
+| `user_version` | 19 | 19 |
+| `integrity_check` | ok | ok |
+| Raw ordered schema signature | `A67718E877DB306C82F8C43C82291C816830ED3F04CF45B6D4C85852D54BC03D` | identical |
+| User tables | 19 | 19 |
+| All row counts/fingerprints | baseline below | identical |
+
+The earlier audit backup
+`opc_v4_release_PRE_SCHEMA_RECOVERY_20260716_183812.sqlite` was not modified;
+its SHA-256 remained
+`277E23AF37A3B1A275148AE3D1A88B4FE47662B00CDAA3972FB91128C19B5361`.
+
+The metadata-only pre-migration baseline and final comparison are:
+
+| Table | Rows | Content SHA-256 | Final match |
+| --- | ---: | --- | --- |
+| `app_podesavanja` | 1 | `1DD80C3544B9BD5D1E52BCB58B493C957168BACB8935C4F02FE17C290E4206BC` | YES |
+| `auth_audit_log` | 1 | `84B4C87340418E63721E51A8C82E0300C20593DCBBA71476BE0A449D720E2595` | YES |
+| `ceremony_reminder_settings` | 18 | `01C736A1B6CFDEFF5D1F24BC5C396CDA4585ABA6A5C1A6D7AC1ECB023624AB80` | YES |
+| `firma_podaci` | 1 | `6431FF1F9DF27E4BE14F2D3ACA42335961838B201FE117BE7D145951A5C1F689` | YES |
+| `iriu` | 529 | `C5C5370ACB6C0A4355D64BBD80EB6D4C77346A7ED47633D54EF32213DA44B5F4` | YES |
+| `iriu_katalog_config` | 21 | `630CC8D82754F804902CCEE92567A516CF86786D493F6F425DCAD3F55EC063F4` | YES |
+| `iriu_lifecycle_decisions` | 30 | `3E9E2DADDCE5DF16286E7BE75921520417CA6B10F7D950CF291F71A73A34EDD9` | YES |
+| `katalog_artikli` | 126 | `E112978B7BF7FF6D52E585D79B08126725ECBD9E8DD09526FE7D3E92E61CC18E` | YES |
+| `kontakt_lica` | 1 | `83BFEC5ED255D965DC595AAB32240300F805557EF8D15341C73C727B505C8BB7` | YES |
+| `korisnici` | 1 | `A474977D270A9EF14DB3E1CF79A45C1A08F40CBC8012FB9E8A16D98507798888` | YES |
+| `log_izmena` | 208 | `648008D0588D5CBBE68497D84957B954817817A59DC0A5171DF12BD70CEA4ED8` | YES |
+| `parte_predlosci` | 0 | `EC02826EE7D7940A636F234FB6E072D9D4D7111D66AAAB7F97D37856AB065187` | YES |
+| `parte_pripreme` | 1 | `6920D83AC17468678ACDB14DA82E3E4D0BC86F861E168AA4D123C47D8A4D1620` | YES |
+| `predlosci_dokumenata` | 5 | `76CCD40DFF4D79C92932A7E5CDA0BEBE230DA26C9DA6F1D2A3FE4B58B82EA004` | YES |
+| `predmeti` | 40 | `7D36386842638CF89C56A0F4F8D444194193D231926D0E63C0BB961035B5FDFA` | YES |
+| `security_settings` | 1 | `66711D9ABEFCF6C220013EE69047433A95AC80465BA8D7B8FD456EA4F21BDA8E` | YES |
+| `stanje_robe_applied_effects` | 61 | `9737927621FF2F6C803465ABCB98F9829E877DF8C027C5D862259D7FB82664E1` | YES |
+| `stanje_robe_posledice` | 45 | `DC6329A01F4DB61C8CCF42970FEC47DBDA7D86011F6197AADEFB9D0FB8FED8A4` | YES |
+| `stanje_robe_stavke` | 33 | `A0CD9427D784F338D13676DD7A422B02C165530AE706141303E2E22614FACE7B` | YES |
+
+The PRODUCTION build opened the existing canonical file in place. No test
+database was copied over it and neither SQL data nor `user_version` was changed
+manually. First startup completed without a migration error; owner PIN/login,
+the PREDMET list and one representative PREDMET passed. The app returned to the
+list and closed through its built-in confirmation. The second startup,
+owner-confirmed PIN/login, PREDMET list and built-in close also passed.
+
+Final read-only state after the second close:
+
+- OPC process count: 0;
+- `user_version = 21`;
+- `integrity_check = ok`;
+- user tables: 19;
+- every row count and every content fingerprint: identical to the new baseline;
+- expected schema change: checkpoint 19 → 21 only; the already-v21-equivalent
+  physical schema signature remained
+  `A67718E877DB306C82F8C43C82291C816830ED3F04CF45B6D4C85852D54BC03D`;
+- canonical WAL/SHM: absent;
+- final canonical size: 81,125,376 bytes;
+- final canonical SHA-256:
+  `4117FF21EDDF6099F03FB391B1A94A60319C12FC8DC8B50D0654BA12ADE9E8C6`.
+
+No private PREDMET value, screenshot, credential or database file is included
+in repository evidence.
 
 ## External-user rollout procedure
 
@@ -298,24 +388,19 @@ lane was not launched.
   populated-fixture support for all of them.
 - Automated migration, owner-derived copy validation and Windows GUI copy smoke
   pass.
-- The only next owner decision is whether to authorize the separately guarded
-  live canonical upgrade. This report does not grant or infer that authority.
+- The owner explicitly authorized the separately guarded live canonical
+  upgrade. It completed with all approved checks passing.
+- Further PARTE runtime, physical print, DOCX acceptance and Android runtime
+  remain outside this authorization and were not started.
 
-Proposed live upgrade after both explicit approvals: close OPC; reconfirm no
-WAL/SHM and canonical hash/state; create a new timestamped consistent backup;
-verify it; launch the accepted corrected production build once; validate v21,
-integrity, core counts and login/PREDMET/FIRMA/PODSETNIK/MODULI/PARTE access;
-close/reopen; retain backup. Never copy the test database over the canonical
-file and never set `user_version` manually.
+## Stop-after-canonical confirmation
 
-## Stop-before-canonical confirmation
+`CANONICAL DATABASE MIGRATION COMPLETE — DOUBLE-START PRODUCTION SMOKE PASS`
 
-`BACKWARD-COMPATIBLE MIGRATION IMPLEMENTED — OWNER COPY AND SUPPORTED HISTORICAL SCHEMAS PASS — CANONICAL UPGRADE AWAITS OWNER AUTHORIZATION`
-
-The real canonical database was never opened through the corrected application
-path, never written, renamed, replaced, deleted or manually altered. Work stops
-before the live upgrade. Only explicitly selected MIGRATION_TEST copies were
-opened by the corrected WINDOWS_TEST runtime.
+The canonical database was upgraded in place only through the explicitly
+approved PRODUCTION application path. It was not renamed, replaced, deleted,
+copied over or manually altered. Work stopped immediately after the approved
+double-start smoke and final read-only verification.
 
 ## GitHub visibility and clean working tree
 
@@ -341,11 +426,12 @@ opened by the corrected WINDOWS_TEST runtime.
 - Shared Windows/Android migration semantics: YES.
 - JSON contracts changed: NO.
 - Stage 2/package/licensing expansion: NO.
-- Canonical database replacement or live modification: NO.
+- Canonical database replacement: NO. Explicitly authorized in-place migration:
+  YES.
 - Privacy scan: PASS; no database, private row value, credential, runtime log or
   build output is tracked.
-- PASS / NOT PASS: PASS — supported historical schemas, automated owner copy and
-  two-start GUI copy smoke pass; canonical upgrade awaits owner authorization.
+- PASS / NOT PASS: PASS — supported historical schemas, isolated-copy smoke and
+  authorized canonical double-start PRODUCTION smoke all pass.
 
 ## Created
 
@@ -370,9 +456,9 @@ Formatter and analyzer: PASS. Selector tests: 9/9 PASS. Final focused suite:
 
 ## Scope status
 
-Implementation, historical compatibility, automated copy validation and GUI
-copy runtime evidence are complete. Canonical upgrade awaits separate explicit
-owner authorization.
+Implementation, historical compatibility, automated copy validation, GUI copy
+runtime evidence and authorized canonical migration are complete. Work is
+stopped before every unapproved downstream runtime/print/DOCX/Android phase.
 
 ## Notes
 
