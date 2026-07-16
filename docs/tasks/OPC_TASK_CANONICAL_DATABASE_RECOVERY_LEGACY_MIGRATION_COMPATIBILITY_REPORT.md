@@ -144,8 +144,8 @@ future/newer schemas remain intentionally outside automatic recovery.
 
 - `dart format`: PASS.
 - `flutter analyze --no-pub`: PASS, no issues.
-- Focused migration suite: PASS, 44 tests.
-- Complete `flutter test --no-pub`: PASS, `216` passed and one gated copy test
+- Final focused selector/reminder/migration suite: PASS, 56 tests.
+- Complete `flutter test --no-pub`: PASS, `226` passed and one gated copy test
   skipped by default.
 - Gated real-copy-path test: PASS; migrated and reopened twice through
   `AppDatabase`.
@@ -211,31 +211,70 @@ Source tracing proves:
 `driftDatabase(name: kDatabaseName)` → Windows Documents →
 `C:\Users\Steva\Documents\opc_v4_release.sqlite`.
 
-`WINDOWS_TEST` selects the fixed `opc_v4_windows_test.sqlite` lane. There is no
-existing repository-supported mechanism that safely points the Windows GUI to
-the timestamped migration copy. Overwriting a fixed test lane or changing
-production selection is prohibited. Therefore GUI copy smoke was not run and
-the corrected production build must not be launched in this task.
+After explicit owner approval, the smallest selector was implemented as
+`MIGRATION_TEST_DATABASE_PATH`. It is compile-time only and active exclusively
+for `BUILD_VARIANT=WINDOWS_TEST`. It requires an absolute, existing regular
+`.sqlite` file with `MIGRATION_TEST` in its filename and a valid SQLite 3 header.
+It rejects the canonical filename and a filesystem alias of the canonical file.
+Missing or invalid input fails before database open. `PRODUCTION`, `WINDOWS`
+and Android behavior are unchanged and ignore the hook. No path is persisted
+and there is no general database picker.
 
-Smallest proposed mechanism for separate owner approval: a fail-closed,
-test-only compile-time absolute database-path selector accepted only together
-with `BUILD_VARIANT=WINDOWS_TEST` and a filename containing `MIGRATION_TEST`;
-production/default builds must reject it and no value may persist in user
-configuration. This proposal is not implemented in this task.
+Final GUI-smoke copy:
+
+`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_MIGRATION_TEST_GUI_SMOKE_FINAL_20260716_210633.sqlite`
+
+It was freshly copied from the pristine v19 backup and initially had size
+81,125,376 bytes and SHA-256
+`277E23AF37A3B1A275148AE3D1A88B4FE47662B00CDAA3972FB91128C19B5361`.
+
+Runtime evidence:
+
+- first launch initialized without migration error and opened the PREDMET list;
+- owner entered the private PIN directly in the application and confirmed login;
+- one representative existing PREDMET opened;
+- its PARTE segment opened;
+- MODULI, PODSETNIK and MODUL PARTE opened;
+- the application closed through its built-in exit confirmation;
+- second launch and owner-confirmed login succeeded;
+- second built-in close completed cleanly.
+
+No private row value or screenshot is committed or included in this report.
+
+The first exploratory smoke copy exposed an existing no-op reminder reschedule
+that changed only `ceremony_reminder_settings.updated_at` for three rows while
+notification IDs were unchanged. That copy was retained as failed audit
+evidence and was not manually repaired. `saveScheduledIds` was made idempotent:
+it now updates the row only when the ID list actually changes. A focused test
+proves both unchanged and changed-ID behavior. The complete validation/build/
+smoke sequence was then repeated against the fresh final copy above.
+
+After both final starts:
+
+- `user_version = 21`;
+- `integrity_check = ok`;
+- schema SHA-256:
+  `A67718E877DB306C82F8C43C82291C816830ED3F04CF45B6D4C85852D54BC03D`;
+- all row counts and content fingerprints for all 19 user tables equal the
+  pristine pre-migration baseline;
+- no copy WAL/SHM remains;
+- final copy SHA-256:
+  `8E6FF9C86832846B62358345F45DA9D1D41C6FB44D69B63B99E2520DC4525FBC`.
 
 ## Windows build evidence
 
-The corrected release is built with the repository-approved command
-`flutter build windows --release`. It has the default `PRODUCTION` lane and
-would open the canonical release database, so it is built but not launched.
+The final smoke release was built with the repository-approved Windows command
+and the two explicit defines `BUILD_VARIANT=WINDOWS_TEST` and
+`MIGRATION_TEST_DATABASE_PATH=<final copy>`. The production artifact/database
+lane was not launched.
 
 - Artifact: `build\windows\x64\runner\Release\OPC.exe`
 - Artifact size/SHA-256: 89,088 bytes /
   `0527315E5BEE146AD41656DC161B31CB7D5FDBCC4515C37D31F259579B865D44`.
 - AOT payload: `build\windows\x64\runner\Release\data\app.so`.
-- AOT size/SHA-256: 12,108,720 bytes /
-  `CD0D0C6156C274EA708F3515979939F4B0397E75BD65A1E868603B2D1B8AF1D4`.
-- Build result: PASS. Corrected executable was not launched.
+- AOT size/SHA-256: 12,125,104 bytes /
+  `0425D635B2C52DFCF9118102E5E1D3BE39E0A08DCC01C36F8306408928F1F64C`.
+- Build and two copy-only launches: PASS.
 
 ## External-user rollout procedure
 
@@ -257,12 +296,10 @@ would open the canonical release database, so it is built but not launched.
 
 - Distribution evidence for versions 1–13 is incomplete, mitigated by full
   populated-fixture support for all of them.
-- Automated migration and owner-derived copy validation pass, but Windows GUI
-  copy smoke is blocked by Stop Condition 12: no safe existing arbitrary-copy
-  selector.
-- Owner decision required: authorize the narrowly scoped test-only selector
-  described above, then run the limited GUI copy smoke; only after reviewing
-  that evidence may the owner separately authorize the live canonical upgrade.
+- Automated migration, owner-derived copy validation and Windows GUI copy smoke
+  pass.
+- The only next owner decision is whether to authorize the separately guarded
+  live canonical upgrade. This report does not grant or infer that authority.
 
 Proposed live upgrade after both explicit approvals: close OPC; reconfirm no
 WAL/SHM and canonical hash/state; create a new timestamped consistent backup;
@@ -273,12 +310,12 @@ file and never set `user_version` manually.
 
 ## Stop-before-canonical confirmation
 
-`STOPPED — CANONICAL DATABASE NOT MODIFIED`
+`BACKWARD-COMPATIBLE MIGRATION IMPLEMENTED — OWNER COPY AND SUPPORTED HISTORICAL SCHEMAS PASS — CANONICAL UPGRADE AWAITS OWNER AUTHORIZATION`
 
 The real canonical database was never opened through the corrected application
 path, never written, renamed, replaced, deleted or manually altered. Work stops
-before corrected-runtime launch and before the live upgrade; build-only artifact
-creation completed without opening a database.
+before the live upgrade. Only explicitly selected MIGRATION_TEST copies were
+opened by the corrected WINDOWS_TEST runtime.
 
 ## GitHub visibility and clean working tree
 
@@ -304,31 +341,35 @@ creation completed without opening a database.
 - Canonical database replacement or live modification: NO.
 - Privacy scan: PASS; no database, private row value, credential, runtime log or
   build output is tracked.
-- PASS / NOT PASS: STOPPED — CANONICAL DATABASE NOT MODIFIED because safe GUI
-  selection of the isolated timestamped copy requires a separate owner decision.
+- PASS / NOT PASS: PASS — supported historical schemas, automated owner copy and
+  two-start GUI copy smoke pass; canonical upgrade awaits owner authorization.
 
 ## Created
 
 - Idempotent schema recovery helper.
 - Populated historical migration fixtures and full compatibility tests.
 - Gated owner-copy path test.
+- Fail-closed WINDOWS_TEST-only migration-copy selector and tests.
 - Canonical migration policy and Logos pseudocode.
 - This task report.
 
 ## Updated
 
 - Drift migration/startup validation path.
+- Idempotent no-op reminder rescheduling persistence.
 - Existing package-downgrade tests.
 - Manifest, owner decision, architecture, relationship and pseudocode indexes.
 
 ## Syntax check
 
-Formatter, analyzer, focused tests and full tests: PASS.
+Formatter and analyzer: PASS. Selector tests: 9/9 PASS. Final focused suite:
+56/56 PASS. Final complete suite: 226 passed with one expected gated skip.
 
 ## Scope status
 
-Implementation and automated/copy evidence complete. GUI copy runtime stopped
-at the required boundary; canonical upgrade awaits explicit owner authorization.
+Implementation, historical compatibility, automated copy validation and GUI
+copy runtime evidence are complete. Canonical upgrade awaits separate explicit
+owner authorization.
 
 ## Notes
 

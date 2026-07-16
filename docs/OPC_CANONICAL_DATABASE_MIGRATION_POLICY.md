@@ -97,6 +97,17 @@ migration and copy-only runtime validation may precede the live upgrade. The
 real canonical owner database must not be opened by the corrected build until
 the owner reviews the evidence package and explicitly authorizes that step.
 
+## Fail-closed Windows copy smoke selector
+
+The compile-time `MIGRATION_TEST_DATABASE_PATH` hook is accepted only by the
+`WINDOWS_TEST` build variant. That variant fails before database open when the
+path is absent, relative, missing, not a regular `.sqlite` file, lacks
+`MIGRATION_TEST` in the filename, lacks a SQLite 3 header, names the canonical
+release file, or resolves to the same filesystem entity as the canonical file.
+
+All other variants ignore this hook and retain their established database lane.
+The path is never persisted and is not exposed as a user database picker.
+
 ## External-user rollout
 
 For another user: identify that user's actual canonical path and build variant,

@@ -77,7 +77,8 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
       '(predmet_id, scheduled_notification_ids, updated_at) VALUES (?, ?, ?) '
       'ON CONFLICT(predmet_id) DO UPDATE SET '
       'scheduled_notification_ids = excluded.scheduled_notification_ids, '
-      'updated_at = excluded.updated_at',
+      'updated_at = excluded.updated_at '
+      'WHERE scheduled_notification_ids <> excluded.scheduled_notification_ids',
       [predmetId, jsonEncode(ids), DateTime.now().toIso8601String()],
     );
   }

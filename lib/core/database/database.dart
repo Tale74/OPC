@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../catalog/stock_catalog_identity.dart';
 import '../config/app_config.dart';
 import '../utils/stable_id_generator.dart';
+import 'migration_test_database_selector.dart';
 import 'schema_recovery.dart';
 
 import 'tables/app_podesavanja_table.dart';
@@ -2025,6 +2027,10 @@ class KorisnikReferenceSummary {
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
+    final migrationTestFile = await resolveMigrationTestDatabaseFile();
+    if (migrationTestFile != null) {
+      return NativeDatabase(migrationTestFile);
+    }
     return driftDatabase(name: kDatabaseName);
   });
 }

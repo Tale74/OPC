@@ -173,6 +173,47 @@ void main() {
     },
   );
 
+  test('re-saving identical notification ids preserves stored row', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+    final predmetId = await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('REMINDER-IDEMPOTENT/2026'),
+            datumKreiranja: const Value('2026-07-01T09:00:00.000'),
+          ),
+        );
+    final repository = CeremonyReminderRepository(db);
+    await repository.saveScheduledIds(predmetId, [11, 12]);
+    await db.customStatement(
+      'UPDATE ceremony_reminder_settings SET updated_at = ? '
+      'WHERE predmet_id = ?',
+      ['fixed-evidence-timestamp', predmetId],
+    );
+
+    await repository.saveScheduledIds(predmetId, [11, 12]);
+    final unchanged = await db
+        .customSelect(
+          'SELECT updated_at FROM ceremony_reminder_settings WHERE predmet_id = ?',
+          variables: [Variable.withInt(predmetId)],
+        )
+        .getSingle();
+    expect(unchanged.read<String>('updated_at'), 'fixed-evidence-timestamp');
+
+    await repository.saveScheduledIds(predmetId, [13]);
+    final changed = await db
+        .customSelect(
+          'SELECT updated_at FROM ceremony_reminder_settings WHERE predmet_id = ?',
+          variables: [Variable.withInt(predmetId)],
+        )
+        .getSingle();
+    expect(
+      changed.read<String>('updated_at'),
+      isNot('fixed-evidence-timestamp'),
+    );
+  });
+
   test('automatic GDPR startup dialog is retired', () {
     expect(automaticGdprStartupDialogEnabled, isFalse);
     expect(manualGdprActionAvailable('ZAVRŠEN'), isTrue);
