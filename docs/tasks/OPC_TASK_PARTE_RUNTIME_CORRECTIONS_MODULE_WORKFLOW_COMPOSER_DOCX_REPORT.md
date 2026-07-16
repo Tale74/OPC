@@ -290,3 +290,33 @@ rescheduling and notification delivery were not changed.
 
 Builds remain pending until the final manifest/diff/privacy and GitHub SHA gates
 below are PASS. Runtime and physical-print status remain unchanged.
+
+## 32. GitHub handoff and repository-approved release builds
+
+Pre-build implementation/documentation commit:
+
+- branch: `task/OPC-PARTE-RUNTIME-CORRECTIONS-MODULE-WORKFLOW-COMPOSER-DOCX`;
+- commit: `c6224e69da8184dfa26dd4ba649449ee384e1946`;
+- push: PASS;
+- public remote branch visibility: PASS;
+- local/remote SHA equality at the build gate: PASS;
+- merge to `main`: NOT PERFORMED.
+
+Repository-approved commands were used without new defines, flavors, signing,
+IDE settings, secrets or machine-specific configuration:
+
+- `C:\flutter\bin\flutter.bat build windows --release`: PASS; Flutter reported
+  `Built build\windows\x64\runner\Release\OPC.exe`. The current compiled Dart
+  payload is `data\app.so`, 12,075,952 bytes, SHA-256
+  `070BA38F3CA3D711F8652617146AE0E648B39E2E0D185FE2EF563C6A61213DFB`.
+- `C:\flutter\bin\flutter.bat build apk --release`: the first identical attempt
+  reached the command timeout without a final Flutter result and was not counted
+  as PASS. The one project-permitted timeout retry used the unchanged command
+  and passed: `Built build\app\outputs\flutter-apk\app-release.apk (66.9MB)`.
+  APK size is 70,194,709 bytes; SHA-256 is
+  `B284D3389B94170E7BBB09B6891758707FEA5397E6A273ACD0D64ED1FDC81971`.
+
+Build PASS proves artifact creation only. Windows owner runtime, DOCX external
+editor acceptance, physical-print measurement and Android runtime remain
+unexecuted. Therefore no runtime or physical-print PASS is claimed, and the
+runtime sequence remains Windows-owner validation before Android smoke.
