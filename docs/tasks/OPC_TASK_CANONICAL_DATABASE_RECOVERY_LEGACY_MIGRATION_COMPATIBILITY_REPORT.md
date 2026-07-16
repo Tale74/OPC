@@ -282,8 +282,16 @@ creation completed without opening a database.
 
 ## GitHub visibility and clean working tree
 
-Final commit/push evidence is populated after repository gates and public push.
-The branch is not merged to `main`.
+- Implementation commit:
+  `e6a0c42c8df59ebe1415d91c1e795082d4bfd283` —
+  `https://github.com/Tale74/OPC/commit/e6a0c42c8df59ebe1415d91c1e795082d4bfd283`.
+- Public task branch:
+  `https://github.com/Tale74/OPC/tree/task/OPC-CANONICAL-DATABASE-RECOVERY-LEGACY-MIGRATION-COMPATIBILITY`.
+- Push: PASS; upstream branch configured.
+- Final evidence-only report update is the branch head following the
+  implementation commit.
+- Working tree: clean after the evidence commit.
+- The branch is not merged to `main`.
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
