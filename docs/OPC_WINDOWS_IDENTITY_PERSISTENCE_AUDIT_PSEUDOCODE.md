@@ -34,6 +34,20 @@ OPC_PRESENTATION_POTPUN=true:
     does not choose a different SQLite file
 ```
 
+Canonical authority is also separate from schema version:
+
+```text
+owner-designated opc_v4_release.sqlite = canonical business database
+opc_v4_windows_test.sqlite = isolated development/test lane
+higher user_version in a test lane != newer business truth
+never substitute or merge test lane automatically
+```
+
+Before launching a migration-capable production build, follow
+`OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md`: close OPC, resolve WAL/SHM,
+verify a consistent backup, prove migration on an owner-derived copy, and wait
+for explicit owner authorization before the live canonical upgrade.
+
 ## Startup/bootstrap flow
 
 ```text

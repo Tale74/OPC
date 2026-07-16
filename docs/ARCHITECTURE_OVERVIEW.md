@@ -28,7 +28,7 @@ The UI uses Flutter Material components. `lib/app.dart` composes repositories an
 
 ## Persistence
 
-Persistence uses Drift over SQLite. The schema is declared in `lib/core/database/` and feature table files, with generated Drift code checked into the source baseline. At baseline inspection the application reports schema version 17 and contains incremental migration/compatibility logic.
+Persistence uses Drift over SQLite. The schema is declared in `lib/core/database/` and feature table files, with generated Drift code checked into the source baseline. The current schema version is 21. Drift owns version sequencing; `schema_recovery.dart` supplies bounded idempotent primitives and a `beforeOpen` validation boundary so committed DDL with a stale checkpoint can be retried safely. Existing malformed same-named objects stop with diagnostics instead of being dropped or ignored. The active canonical/previous-user policy is `OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md`.
 
 Runtime SQLite files are local user data and are explicitly excluded from Git.
 

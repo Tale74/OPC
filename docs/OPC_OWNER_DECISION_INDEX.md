@@ -78,3 +78,12 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 - Decision: separate physical margins, deterministic full reflow, calibration PDF, positioned block DOCX and OS-appropriate Android KORICE access.
 - Runtime: Windows physical print and DOCX owner acceptance must pass before Android runtime begins.
 - Report: `docs/tasks/OPC_TASK_PARTE_RUNTIME_CORRECTIONS_MODULE_WORKFLOW_COMPOSER_DOCX_REPORT.md`.
+
+## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
+
+The owner-designated `opc_v4_release.sqlite` remains canonical regardless of a
+stale schema checkpoint. Supported historical and partially migrated user
+databases upgrade in place through validated idempotent application migrations.
+Test databases are never substituted or merged automatically. Backup-first
+copy proof and explicit owner authorization precede the live canonical upgrade.
+See `OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md`.

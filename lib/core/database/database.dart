@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../catalog/stock_catalog_identity.dart';
 import '../config/app_config.dart';
 import '../utils/stable_id_generator.dart';
+import 'schema_recovery.dart';
 
 import 'tables/app_podesavanja_table.dart';
 import 'tables/firma_podaci_table.dart';
@@ -46,6 +47,8 @@ part 'database.g.dart';
 class AppDatabase extends _$AppDatabase {
   static const String legacyPinHashVersion = 'LEGACY_SHA256';
 
+  late final OpcSchemaRecovery _schemaRecovery = OpcSchemaRecovery(this);
+
   AppDatabase() : super(_openConnection());
 
   /// Korisnički konstruktor za testove — prihvata bilo koji QueryExecutor
@@ -59,6 +62,7 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
+      await _rejectNonEmptyVersionZeroDatabase();
       await m.createAll();
       await _prepareAuthSecuritySchema();
       await _createIriuLifecycleDecisionTable();
@@ -68,67 +72,80 @@ class AppDatabase extends _$AppDatabase {
       await _seedSingletons();
     },
     onUpgrade: (m, from, to) async {
+      _requireSupportedUpgrade(from, to);
       if (from < 2) {
-        await m.addColumn(predmeti, predmeti.radniStatus);
-        await m.addColumn(predmeti, predmeti.naruIme);
-        await m.addColumn(predmeti, predmeti.naruPrezime);
-        await m.addColumn(predmeti, predmeti.jkpIme);
-        await m.addColumn(predmeti, predmeti.jkpPrezime);
-        await m.addColumn(appPodesavanja, appPodesavanja.refundacijaPioIznos);
+        await _ensureColumn(m, predmeti, predmeti.radniStatus);
+        await _ensureColumn(m, predmeti, predmeti.naruIme);
+        await _ensureColumn(m, predmeti, predmeti.naruPrezime);
+        await _ensureColumn(m, predmeti, predmeti.jkpIme);
+        await _ensureColumn(m, predmeti, predmeti.jkpPrezime);
+        await _ensureColumn(
+          m,
+          appPodesavanja,
+          appPodesavanja.refundacijaPioIznos,
+        );
       }
       if (from < 3) {
         // fotografijaPath kolona (privremena — zamenjena BLOB-om u v4)
-        await m.addColumn(katalogArtikli, katalogArtikli.fotografijaPath);
+        await _ensureColumn(m, katalogArtikli, katalogArtikli.fotografijaPath);
       }
       if (from < 4) {
         // Popuni fotografija BLOB za sve sistemske artikle
         await _popuniFotoBlobove();
       }
       if (from < 5) {
-        await m.addColumn(predlosciDokumenata, predlosciDokumenata.zakljucan);
+        await _ensureColumn(
+          m,
+          predlosciDokumenata,
+          predlosciDokumenata.zakljucan,
+        );
         // BELEŽNICA je jedini zaključan predložak
         await (update(predlosciDokumenata)
               ..where((t) => t.naziv.equals('BELEŽNICA')))
             .write(const PredlosciDokumenataCompanion(zakljucan: Value(true)));
       }
       if (from < 6) {
-        await m.addColumn(predmeti, predmeti.exportVerzija);
+        await _ensureColumn(m, predmeti, predmeti.exportVerzija);
       }
       if (from < 7) {
-        await m.addColumn(predmeti, predmeti.uzrokSmrti);
+        await _ensureColumn(m, predmeti, predmeti.uzrokSmrti);
       }
       if (from < 8) {
         await _createIriuLifecycleDecisionTable();
       }
       if (from < 9) {
-        await m.addColumn(appPodesavanja, appPodesavanja.qrPrimalacNaziv);
-        await m.addColumn(appPodesavanja, appPodesavanja.qrSifraPlacanja);
-        await m.addColumn(appPodesavanja, appPodesavanja.qrSvrhaPlacanja);
+        await _ensureColumn(m, appPodesavanja, appPodesavanja.qrPrimalacNaziv);
+        await _ensureColumn(m, appPodesavanja, appPodesavanja.qrSifraPlacanja);
+        await _ensureColumn(m, appPodesavanja, appPodesavanja.qrSvrhaPlacanja);
       }
       if (from < 10) {
         await _prepareAuthSecuritySchema();
       }
       if (from < 11) {
-        await m.addColumn(predmeti, predmeti.businessScenarioId);
-        await m.addColumn(predmeti, predmeti.sourceIdentity);
-        await m.addColumn(predmeti, predmeti.createdByKorisnikId);
-        await m.addColumn(predmeti, predmeti.lastBusinessModifiedByKorisnikId);
-        await m.addColumn(predmeti, predmeti.lastBusinessModifiedAt);
+        await _ensureColumn(m, predmeti, predmeti.businessScenarioId);
+        await _ensureColumn(m, predmeti, predmeti.sourceIdentity);
+        await _ensureColumn(m, predmeti, predmeti.createdByKorisnikId);
+        await _ensureColumn(
+          m,
+          predmeti,
+          predmeti.lastBusinessModifiedByKorisnikId,
+        );
+        await _ensureColumn(m, predmeti, predmeti.lastBusinessModifiedAt);
       }
       if (from < 12) {
-        await m.addColumn(katalogArtikli, katalogArtikli.stableArticleId);
+        await _ensureColumn(m, katalogArtikli, katalogArtikli.stableArticleId);
       }
       if (from < 13) {
-        await m.addColumn(iriu, iriu.katalogStableArticleId);
+        await _ensureColumn(m, iriu, iriu.katalogStableArticleId);
       }
       if (from < 14) {
-        await m.createTable(stanjeRobeStavke);
+        await _ensureTable(m, stanjeRobeStavke);
       }
       if (from < 15) {
-        await m.createTable(stanjeRobeAppliedEffects);
+        await _ensureTable(m, stanjeRobeAppliedEffects);
       }
       if (from < 16) {
-        await m.createTable(stanjeRobePosledice);
+        await _ensureTable(m, stanjeRobePosledice);
       }
       if (from < 17) {
         await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
@@ -140,31 +157,25 @@ class AppDatabase extends _$AppDatabase {
         await _ensureCeremonyReminderDeliveryTimesColumn();
       }
       if (from < 20) {
-        await m.addColumn(predmeti, predmeti.docekDatum);
+        await _ensureColumn(m, predmeti, predmeti.docekDatum);
       }
       if (from < 21) {
-        final hasPredmeti = await _tableExists('predmeti');
-        final hasFirma = await _tableExists('firma_podaci');
-        if (hasPredmeti &&
-            !await _tableHasColumn('predmeti', 'parte_potrebna')) {
-          await m.addColumn(predmeti, predmeti.partePotrebna);
-        }
-        if (hasFirma &&
-            !await _tableHasColumn(
-              'firma_podaci',
-              'parte_default_template_id',
-            )) {
-          await m.addColumn(firmaPodaci, firmaPodaci.parteDefaultTemplateId);
-        }
-        if (!await _tableExists('parte_predlosci')) {
-          await m.createTable(partePredlosci);
-        }
-        if (hasPredmeti && !await _tableExists('parte_pripreme')) {
-          await m.createTable(partePripreme);
-        }
+        await _ensureColumn(m, predmeti, predmeti.partePotrebna);
+        await _ensureColumn(m, firmaPodaci, firmaPodaci.parteDefaultTemplateId);
+        await _ensureTable(m, partePredlosci);
+        await _ensureTable(m, partePripreme);
       }
     },
     beforeOpen: (details) async {
+      final versionBefore = details.versionBefore;
+      if (versionBefore != null && versionBefore > schemaVersion) {
+        throw OpcSchemaMismatch(
+          'database user_version $versionBefore is newer than supported '
+          'version $schemaVersion',
+        );
+      }
+      final migrator = createMigrator();
+      await _recoverSupportedAdditiveSchema(migrator);
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
       await _ensureKatalogStableArticleIdUniqueIndex();
       await _ensureStanjeRobeStableArticleIdUniqueIndex();
@@ -174,92 +185,505 @@ class AppDatabase extends _$AppDatabase {
       await _ensureCeremonyReminderDeliveryTimesColumn();
       await backfillMissingKatalogStableArticleIds();
       await canonicalizeSeedCatalogStableArticleIds();
+      await _validateRequiredSchema();
     },
   );
 
-  Future<void> _prepareAuthSecuritySchema() async {
-    await _ensureKorisniciAuthSecurityColumns();
+  void _requireSupportedUpgrade(int from, int to) {
+    if (from < 1 || from > schemaVersion || to != schemaVersion) {
+      throw OpcSchemaMismatch(
+        'unsupported migration checkpoint $from -> $to; supported existing '
+        'database versions are 1 through $schemaVersion',
+      );
+    }
+  }
+
+  Future<void> _rejectNonEmptyVersionZeroDatabase() async {
+    final existing = await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table' "
+      "AND name NOT LIKE 'sqlite_%' ORDER BY name LIMIT 1",
+    ).getSingleOrNull();
+    if (existing != null) {
+      throw OpcSchemaMismatch(
+        'database has user_version 0 but already contains table '
+        '"${existing.read<String>('name')}"; automatic creation is unsafe',
+      );
+    }
+  }
+
+  Future<void> _ensureColumn(
+    Migrator migrator,
+    TableInfo<Table, Object?> table,
+    GeneratedColumn column,
+  ) => _schemaRecovery.ensureGeneratedColumn(
+    migrator: migrator,
+    table: table,
+    column: column,
+  );
+
+  Future<void> _ensureTable(
+    Migrator migrator,
+    TableInfo<Table, Object?> table,
+  ) => _schemaRecovery.ensureGeneratedTable(migrator: migrator, table: table);
+
+  /// Repairs only additive objects that belong to supported OPC migrations.
+  /// It is intentionally repeatable because SQLite DDL may have committed even
+  /// when Drift has not yet advanced `user_version`.
+  Future<void> _recoverSupportedAdditiveSchema(Migrator migrator) async {
+    const foundationalTables = <String>[
+      'korisnici',
+      'firma_podaci',
+      'app_podesavanja',
+      'predmeti',
+      'kontakt_lica',
+      'iriu',
+      'iriu_katalog_config',
+      'katalog_artikli',
+      'predlosci_dokumenata',
+      'log_izmena',
+    ];
+    for (final table in foundationalTables) {
+      if (!await _schemaRecovery.tableExists(table)) {
+        throw OpcSchemaMismatch(
+          'required foundational table "$table" is missing',
+        );
+      }
+    }
+
+    await _ensureColumn(migrator, predmeti, predmeti.radniStatus);
+    await _ensureColumn(migrator, predmeti, predmeti.naruIme);
+    await _ensureColumn(migrator, predmeti, predmeti.naruPrezime);
+    await _ensureColumn(migrator, predmeti, predmeti.jkpIme);
+    await _ensureColumn(migrator, predmeti, predmeti.jkpPrezime);
+    await _ensureColumn(
+      migrator,
+      appPodesavanja,
+      appPodesavanja.refundacijaPioIznos,
+    );
+    await _ensureColumn(
+      migrator,
+      katalogArtikli,
+      katalogArtikli.fotografijaPath,
+    );
+    await _ensureColumn(
+      migrator,
+      predlosciDokumenata,
+      predlosciDokumenata.zakljucan,
+    );
+    await _ensureColumn(migrator, predmeti, predmeti.exportVerzija);
+    await _ensureColumn(migrator, predmeti, predmeti.uzrokSmrti);
+    await _ensureColumn(
+      migrator,
+      appPodesavanja,
+      appPodesavanja.qrPrimalacNaziv,
+    );
+    await _ensureColumn(
+      migrator,
+      appPodesavanja,
+      appPodesavanja.qrSifraPlacanja,
+    );
+    await _ensureColumn(
+      migrator,
+      appPodesavanja,
+      appPodesavanja.qrSvrhaPlacanja,
+    );
+    await _prepareAuthSecuritySchema(backfillExistingMetadata: false);
+    await _createIriuLifecycleDecisionTable();
+    await _ensureColumn(migrator, predmeti, predmeti.businessScenarioId);
+    await _ensureColumn(migrator, predmeti, predmeti.sourceIdentity);
+    await _ensureColumn(migrator, predmeti, predmeti.createdByKorisnikId);
+    await _ensureColumn(
+      migrator,
+      predmeti,
+      predmeti.lastBusinessModifiedByKorisnikId,
+    );
+    await _ensureColumn(migrator, predmeti, predmeti.lastBusinessModifiedAt);
+    await _ensureColumn(
+      migrator,
+      katalogArtikli,
+      katalogArtikli.stableArticleId,
+    );
+    await _ensureColumn(migrator, iriu, iriu.katalogStableArticleId);
+    await _ensureTable(migrator, stanjeRobeStavke);
+    await _ensureTable(migrator, stanjeRobeAppliedEffects);
+    await _ensureTable(migrator, stanjeRobePosledice);
+    await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
+    await _createCeremonyReminderSettingsTable();
+    await _ensureCeremonyReminderDeliveryTimesColumn();
+    await _ensureColumn(migrator, predmeti, predmeti.docekDatum);
+    await _ensureColumn(migrator, predmeti, predmeti.partePotrebna);
+    await _ensureColumn(
+      migrator,
+      firmaPodaci,
+      firmaPodaci.parteDefaultTemplateId,
+    );
+    await _ensureTable(migrator, partePredlosci);
+    await _ensureTable(migrator, partePripreme);
+  }
+
+  Future<void> _validateRequiredSchema() async {
+    for (final table in allTables) {
+      if (table.actualTableName == 'korisnici') {
+        await _schemaRecovery.validateGeneratedTable(
+          table,
+          allowedExtraColumns: const {
+            'must_change_pin',
+            'pin_updated_at',
+            'pin_hash_version',
+          },
+        );
+      } else if (table.actualTableName == 'app_podesavanja') {
+        await _schemaRecovery.validateGeneratedTable(
+          table,
+          columnOverrides: const {
+            'stanje_robe_operativno_omoguceno': SqliteColumnDefinition(
+              name: 'stanje_robe_operativno_omoguceno',
+              type: 'INTEGER',
+              notNull: true,
+              defaultSql: '0',
+              primaryKeyPosition: 0,
+              acceptedLegacyDefaultSql: <String?>['1'],
+            ),
+          },
+        );
+      } else {
+        await _schemaRecovery.validateGeneratedTable(table);
+      }
+    }
+
+    await _schemaRecovery.validateColumns('korisnici', const [
+      SqliteColumnDefinition(
+        name: 'must_change_pin',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '0',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'pin_updated_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'pin_hash_version',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+    ], rejectUnexpectedColumns: false);
+    await _validateManualTables();
+  }
+
+  Future<void> _validateManualTables() async {
+    await _schemaRecovery.validateColumns('security_settings', const [
+      SqliteColumnDefinition(
+        name: 'id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 1,
+      ),
+      SqliteColumnDefinition(
+        name: 'recovery_code_hash',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'recovery_code_salt',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'recovery_code_version',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'recovery_configured_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'recovery_regenerated_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+    ]);
+    await _schemaRecovery.validateColumns('auth_audit_log', const [
+      SqliteColumnDefinition(
+        name: 'id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 1,
+      ),
+      SqliteColumnDefinition(
+        name: 'timestamp',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'event_type',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'actor_type',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'actor_user_id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'target_user_id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'result',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'details',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'install_context',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+    ]);
+    await _schemaRecovery.validateColumns('iriu_lifecycle_decisions', const [
+      SqliteColumnDefinition(
+        name: 'id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 1,
+      ),
+      SqliteColumnDefinition(
+        name: 'predmet_id',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'interni_naziv',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'scope_key',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'decision_key',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'created_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: null,
+        primaryKeyPosition: 0,
+      ),
+    ]);
+    await _schemaRecovery.validateColumns('ceremony_reminder_settings', const [
+      SqliteColumnDefinition(
+        name: 'predmet_id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 1,
+      ),
+      SqliteColumnDefinition(
+        name: 'enabled',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '1',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'frequency_hours',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '24',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'delivery_times',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: '\'["09:00"]\'',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'scheduled_notification_ids',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "'[]'",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'updated_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+    ]);
+  }
+
+  Future<void> _prepareAuthSecuritySchema({
+    bool backfillExistingMetadata = true,
+  }) async {
+    await _ensureKorisniciAuthSecurityColumns(
+      backfillExistingMetadata: backfillExistingMetadata,
+    );
     await _createSecuritySettingsTable();
     await _seedSecuritySettings();
     await _createAuthAuditLogTable();
   }
 
-  Future<bool> _tableHasColumn(String tableName, String columnName) async {
-    final columns = await customSelect('PRAGMA table_info($tableName)').get();
-    return columns.any((row) => row.read<String>('name').trim() == columnName);
-  }
-
-  Future<bool> _tableExists(String tableName) async {
-    final row = await customSelect(
-      'SELECT 1 AS present FROM sqlite_master '
-      'WHERE type = ? AND name = ? LIMIT 1',
-      variables: [const Variable<String>('table'), Variable<String>(tableName)],
-    ).getSingleOrNull();
-    return row != null;
-  }
-
   Future<void> _ensureAppPodesavanjaStanjeRobeOperativnoColumn() async {
-    const columnName = 'stanje_robe_operativno_omoguceno';
-    if (await _tableHasColumn('app_podesavanja', columnName)) {
-      return;
-    }
-
-    await customStatement('''
+    await _schemaRecovery.ensureColumn(
+      tableName: 'app_podesavanja',
+      expected: const SqliteColumnDefinition(
+        name: 'stanje_robe_operativno_omoguceno',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '0',
+        primaryKeyPosition: 0,
+        acceptedLegacyDefaultSql: <String?>['1'],
+      ),
+      addColumnSql: '''
         ALTER TABLE app_podesavanja
-        ADD COLUMN $columnName INTEGER NOT NULL DEFAULT 0
-        CHECK ("$columnName" IN (0, 1))
-      ''');
+        ADD COLUMN stanje_robe_operativno_omoguceno INTEGER NOT NULL DEFAULT 0
+        CHECK ("stanje_robe_operativno_omoguceno" IN (0, 1))
+      ''',
+    );
   }
 
   Future<void> _ensureCeremonyReminderDeliveryTimesColumn() async {
-    const columnName = 'delivery_times';
-    if (await _tableHasColumn('ceremony_reminder_settings', columnName)) {
-      return;
-    }
-    await customStatement('''
+    await _schemaRecovery.ensureColumn(
+      tableName: 'ceremony_reminder_settings',
+      expected: const SqliteColumnDefinition(
+        name: 'delivery_times',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: '\'["09:00"]\'',
+        primaryKeyPosition: 0,
+      ),
+      addColumnSql: '''
         ALTER TABLE ceremony_reminder_settings
-        ADD COLUMN $columnName TEXT NOT NULL DEFAULT '["09:00"]'
-      ''');
+        ADD COLUMN delivery_times TEXT NOT NULL DEFAULT '["09:00"]'
+      ''',
+    );
   }
 
-  Future<void> _ensureKorisniciAuthSecurityColumns() async {
-    final columns = await customSelect('PRAGMA table_info(korisnici)').get();
-    final existingColumns = columns
-        .map((row) => row.read<String>('name').trim())
-        .where((name) => name.isNotEmpty)
-        .toSet();
-
-    if (!existingColumns.contains('must_change_pin')) {
-      await customStatement('''
+  Future<void> _ensureKorisniciAuthSecurityColumns({
+    required bool backfillExistingMetadata,
+  }) async {
+    await _schemaRecovery.ensureColumn(
+      tableName: 'korisnici',
+      expected: const SqliteColumnDefinition(
+        name: 'must_change_pin',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '0',
+        primaryKeyPosition: 0,
+      ),
+      addColumnSql: '''
           ALTER TABLE korisnici
           ADD COLUMN must_change_pin INTEGER NOT NULL DEFAULT 0
-        ''');
-    }
-    if (!existingColumns.contains('pin_updated_at')) {
-      await customStatement('''
+        ''',
+    );
+    await _schemaRecovery.ensureColumn(
+      tableName: 'korisnici',
+      expected: const SqliteColumnDefinition(
+        name: 'pin_updated_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      addColumnSql: '''
           ALTER TABLE korisnici
           ADD COLUMN pin_updated_at TEXT NOT NULL DEFAULT ''
-        ''');
-    }
-    if (!existingColumns.contains('pin_hash_version')) {
-      await customStatement('''
+        ''',
+    );
+    await _schemaRecovery.ensureColumn(
+      tableName: 'korisnici',
+      expected: const SqliteColumnDefinition(
+        name: 'pin_hash_version',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+      addColumnSql: '''
           ALTER TABLE korisnici
           ADD COLUMN pin_hash_version TEXT NOT NULL DEFAULT ''
+        ''',
+    );
+    if (backfillExistingMetadata) {
+      await customStatement(
+        '''
+          UPDATE korisnici
+          SET pin_hash_version = ?
+          WHERE pin_hash_version = ''
+        ''',
+        [legacyPinHashVersion],
+      );
+      await customStatement('''
+          UPDATE korisnici
+          SET pin_updated_at = datum_kreiranja
+          WHERE pin_updated_at = ''
         ''');
     }
-    await customStatement(
-      '''
-        UPDATE korisnici
-        SET pin_hash_version = ?
-        WHERE pin_hash_version = ''
-      ''',
-      [legacyPinHashVersion],
-    );
-    await customStatement('''
-        UPDATE korisnici
-        SET pin_updated_at = datum_kreiranja
-        WHERE pin_updated_at = ''
-      ''');
   }
 
   Future<void> _createSecuritySettingsTable() {
@@ -1035,63 +1459,147 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> _ensureKatalogStableArticleIdUniqueIndex() async {
-    await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_katalog_artikli_stable_article_id
-      ON katalog_artikli(stable_article_id)
-      WHERE stable_article_id IS NOT NULL
-        AND TRIM(stable_article_id) <> ''
-      ''');
+    await _schemaRecovery.ensureIndex(
+      const SqliteIndexDefinition(
+        name: 'idx_katalog_artikli_stable_article_id',
+        table: 'katalog_artikli',
+        unique: true,
+        columns: ['stable_article_id'],
+        whereSql:
+            "WHERE stable_article_id IS NOT NULL AND TRIM(stable_article_id) <> ''",
+        createSql: '''
+          CREATE UNIQUE INDEX idx_katalog_artikli_stable_article_id
+          ON katalog_artikli(stable_article_id)
+          WHERE stable_article_id IS NOT NULL
+            AND TRIM(stable_article_id) <> ''
+        ''',
+      ),
+    );
   }
 
   Future<void> _ensureStanjeRobeStableArticleIdUniqueIndex() async {
-    await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_stanje_robe_stavke_stable_article_id
-      ON stanje_robe_stavke(stable_article_id)
-      ''');
+    await _schemaRecovery.ensureIndex(
+      const SqliteIndexDefinition(
+        name: 'idx_stanje_robe_stavke_stable_article_id',
+        table: 'stanje_robe_stavke',
+        unique: true,
+        columns: ['stable_article_id'],
+        createSql: '''
+          CREATE UNIQUE INDEX idx_stanje_robe_stavke_stable_article_id
+          ON stanje_robe_stavke(stable_article_id)
+        ''',
+      ),
+    );
   }
 
   Future<void> _ensureStanjeRobeAppliedEffectsIndexes() async {
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_applied_effects_predmet
-      ON stanje_robe_applied_effects(predmet_id)
-      ''');
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_applied_effects_selection
-      ON stanje_robe_applied_effects(predmet_id, iriu_id, kategorija, effect_status)
-      ''');
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_applied_effects_article_status
-      ON stanje_robe_applied_effects(stable_article_id, effect_status)
-      ''');
-    await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_stanje_robe_applied_effects_current_selection
-      ON stanje_robe_applied_effects(predmet_id, iriu_id, kategorija)
-      WHERE effect_status IN ('APPLIED', 'UNRESOLVED')
-      ''');
+    for (final index in const [
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_applied_effects_predmet',
+        table: 'stanje_robe_applied_effects',
+        unique: false,
+        columns: ['predmet_id'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_applied_effects_predmet
+          ON stanje_robe_applied_effects(predmet_id)
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_applied_effects_selection',
+        table: 'stanje_robe_applied_effects',
+        unique: false,
+        columns: ['predmet_id', 'iriu_id', 'kategorija', 'effect_status'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_applied_effects_selection
+          ON stanje_robe_applied_effects(
+            predmet_id, iriu_id, kategorija, effect_status
+          )
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_applied_effects_article_status',
+        table: 'stanje_robe_applied_effects',
+        unique: false,
+        columns: ['stable_article_id', 'effect_status'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_applied_effects_article_status
+          ON stanje_robe_applied_effects(stable_article_id, effect_status)
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_applied_effects_current_selection',
+        table: 'stanje_robe_applied_effects',
+        unique: true,
+        columns: ['predmet_id', 'iriu_id', 'kategorija'],
+        whereSql: "WHERE effect_status IN ('APPLIED', 'UNRESOLVED')",
+        createSql: '''
+          CREATE UNIQUE INDEX idx_stanje_robe_applied_effects_current_selection
+          ON stanje_robe_applied_effects(predmet_id, iriu_id, kategorija)
+          WHERE effect_status IN ('APPLIED', 'UNRESOLVED')
+        ''',
+      ),
+    ]) {
+      await _schemaRecovery.ensureIndex(index);
+    }
   }
 
   Future<void> _ensureStanjeRobePoslediceIndexes() async {
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_posledice_predmet
-      ON stanje_robe_posledice(predmet_id)
-      ''');
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_posledice_iriu
-      ON stanje_robe_posledice(iriu_id)
-      ''');
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_posledice_predmet_iriu
-      ON stanje_robe_posledice(predmet_id, iriu_id)
-      ''');
-    await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_stanje_robe_posledice_predmet_status
-      ON stanje_robe_posledice(predmet_id, status)
-      ''');
-    await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_stanje_robe_posledice_active_row
-      ON stanje_robe_posledice(predmet_id, iriu_id, kategorija)
-      WHERE status = 'UNRESOLVED'
-      ''');
+    for (final index in const [
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_posledice_predmet',
+        table: 'stanje_robe_posledice',
+        unique: false,
+        columns: ['predmet_id'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_posledice_predmet
+          ON stanje_robe_posledice(predmet_id)
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_posledice_iriu',
+        table: 'stanje_robe_posledice',
+        unique: false,
+        columns: ['iriu_id'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_posledice_iriu
+          ON stanje_robe_posledice(iriu_id)
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_posledice_predmet_iriu',
+        table: 'stanje_robe_posledice',
+        unique: false,
+        columns: ['predmet_id', 'iriu_id'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_posledice_predmet_iriu
+          ON stanje_robe_posledice(predmet_id, iriu_id)
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_posledice_predmet_status',
+        table: 'stanje_robe_posledice',
+        unique: false,
+        columns: ['predmet_id', 'status'],
+        createSql: '''
+          CREATE INDEX idx_stanje_robe_posledice_predmet_status
+          ON stanje_robe_posledice(predmet_id, status)
+        ''',
+      ),
+      SqliteIndexDefinition(
+        name: 'idx_stanje_robe_posledice_active_row',
+        table: 'stanje_robe_posledice',
+        unique: true,
+        columns: ['predmet_id', 'iriu_id', 'kategorija'],
+        whereSql: "WHERE status = 'UNRESOLVED'",
+        createSql: '''
+          CREATE UNIQUE INDEX idx_stanje_robe_posledice_active_row
+          ON stanje_robe_posledice(predmet_id, iriu_id, kategorija)
+          WHERE status = 'UNRESOLVED'
+        ''',
+      ),
+    ]) {
+      await _schemaRecovery.ensureIndex(index);
+    }
   }
 
   Future<void> backfillMissingKatalogStableArticleIds() async {

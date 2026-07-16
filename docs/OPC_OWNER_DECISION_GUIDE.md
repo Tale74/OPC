@@ -472,3 +472,13 @@ workflow.
 - DOCX maps OPC blocks to independent editable positioned blocks. Noto Sans is the embedded cross-platform source/PDF font; external editors may substitute an installed formal font, so DOCX equality is not claimed.
 - Android API 29+ uses MediaStore `Downloads/KORICE`; API 28 and lower request only the legacy permission they require; a system document picker is the safe fallback.
 - Windows owner acceptance remains the gate before Android runtime. OPC Web remains a future option only.
+
+## Canonical database recovery decisions — 2026-07-16
+
+- `C:\Users\Steva\Documents\opc_v4_release.sqlite` is the current owner's sole canonical business database.
+- Business authority does not follow the highest `user_version`; test/development databases never replace canonical data automatically.
+- Existing user databases from supported prior OPC versions are upgraded in place by application migrations, never replaced with prepared or empty databases.
+- Supported additive migrations must be idempotent after interrupted startup and validate existing object definitions instead of ignoring duplicate-object errors.
+- A consistent verified backup and owner-derived copy migration are required before real-user rollout.
+- The corrected build must not open the live owner canonical database until the owner reviews copy evidence and explicitly authorizes the upgrade.
+- Active technical policy: `OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md` and `OPC_CANONICAL_DATABASE_RECOVERY_PSEUDOCODE.md`.

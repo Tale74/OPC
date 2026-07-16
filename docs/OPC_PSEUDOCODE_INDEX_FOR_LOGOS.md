@@ -591,3 +591,13 @@ Implementation/pseudocode aligned: yes.
 - PARTE rule: completion and retained technical revision are separate; edit invalidates preview/export evidence but does not recreate the business blocker.
 - Output rule: PDF owns physical WYSIWYG; DOCX owns editable independent blocks; Android uses MediaStore or a system destination picker according to OS capability.
 - Runtime gate: Windows owner physical print/DOCX acceptance precedes Android runtime. Build success alone is not runtime acceptance.
+
+## OPC-PSEUDO-INDEX-051 — Canonical database recovery and legacy migrations
+
+- Document: `docs/OPC_CANONICAL_DATABASE_RECOVERY_PSEUDOCODE.md`.
+- Source: `lib/core/database/database.dart`; `lib/core/database/schema_recovery.dart`.
+- Business rule: an explicitly designated user database remains canonical regardless of a stale checkpoint; test databases never gain business authority from a higher schema version.
+- Migration rule: Drift owns sequencing, while bounded idempotent primitives validate existing columns/tables/indexes and create only supported missing objects.
+- Safety rule: malformed, unknown or newer schemas stop; user databases are never deleted, replaced, merged with test lanes or manually version-stamped.
+- Evidence: populated schema 1–21 fixtures, confirmed v19 partial states, malformed-state tests, interruption/retry test and gated owner-copy migration test.
+- Read with: `docs/OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md` and the current task report.

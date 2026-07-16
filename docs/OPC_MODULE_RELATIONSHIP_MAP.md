@@ -471,3 +471,19 @@ PREDMET remains the sole business source. MODUL PARTE owns only create/resume/ed
 PAKETI are abandoned as product policy. Package, add-on, entitlement and local-license records remain temporarily readable for Stage 2 compatibility, but do not hide or disable existing Windows/Android functionality and are not rewritten to POTPUN. Operational `MODULI` is launched from the PREDMET overview beside `STATISTIKA`; PODEŠAVANJA contains configuration only. The catalog exposes PODSETNIK, PARTE and STANJE ROBE, while ADMINISTRATOR/SAVETNIK rules remain authoritative.
 
 Completed PARTE preparation is retained technical state. It remains reopenable, editable and re-exportable until explicit user deletion. PREDMET remains business truth; PDF is authoritative output; DOCX is an editable block-based derivative.
+
+## MODULE-ID: OPC-MODULE-023
+
+Module name: Canonical database migration and startup recovery
+Module type: shared persistence/infrastructure
+Business purpose: preserve each user's existing OPC business database while upgrading supported historical or partially migrated schemas in place.
+Reads from PREDMET: schema metadata and existing rows; reports never expose row content.
+Applies rules: explicit canonical designation, backup-first rollout, supported `user_version` 1–21, idempotent additive recovery, malformed-schema stop.
+Writes back to PREDMET or related tables: additive schema changes and established deterministic backfills only; no table replacement or arbitrary business-row rewrite.
+Outputs: validated schema 21 or precise `OpcSchemaMismatch`.
+Depends on: Drift `onUpgrade`/`beforeOpen`, `schema_recovery.dart`, verified backup and owner authorization.
+Affects: Windows and Android equally through shared database code.
+Tests: `canonical_database_migration_recovery_test.dart`, `package_downgrade_migration_test.dart`, `owner_database_copy_migration_test.dart`.
+Upgrade risks: confusing test schema age with business authority, stale checkpoints after committed DDL, accepting malformed same-named objects.
+Safe upgrade options: migrate a verified isolated copy first; stop on conflicts; never replace the user database.
+Classification: `IMPLEMENTED SHARED MIGRATION SAFETY / LIVE OWNER UPGRADE REQUIRES AUTHORIZATION`.

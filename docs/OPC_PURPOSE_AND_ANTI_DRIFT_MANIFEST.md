@@ -62,6 +62,21 @@ No database is automatically central/master.
 Valid databases of the same firm may be equal replicas and may replace one another through explicit user-controlled transfer/restore rules.
 ```
 
+### 4.1 Canonical local database and migration policy — Owner Decision 2026-07-16
+
+A database becomes canonical only through explicit user/owner designation, not
+because it has a higher schema version. For the current owner Windows runtime,
+`C:\Users\Steva\Documents\opc_v4_release.sqlite` is the sole canonical
+business database. `opc_v4_windows_test.sqlite` and migration-test copies are
+validation lanes and must never replace or be merged into it automatically.
+
+Every existing user's designated database remains that user's business truth
+and is upgraded in place through supported, idempotent application migrations.
+Deleting, resetting, or distributing a prepared replacement database is
+forbidden. Backup-first copy validation and explicit owner authorization are
+required before the current owner's live canonical upgrade. Active detail is in
+`docs/OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md`.
+
 Server-side or hosted components must not be treated as owners of user/firma `PREDMET` data unless a future explicit owner-approved architecture changes that.
 
 ## 5. Local Windows/Android Model
