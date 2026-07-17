@@ -1,5 +1,14 @@
 # OPC PARTE Print-Preparation, Template and Media-Lifecycle Audit
 
+> HISTORICAL AUDIT EVIDENCE — `SUPERSEDED` AS ACTIVE POLICY where this report
+> leaves format, margins, retention, deletion, or output authority open. The
+> later locked authority is `OPC-OD-STAGE1-UNRESTRICTED-PARTE-003`: configurable
+> page width/height, separate horizontal/vertical margins, retained reopenable
+> and editable completed preparation with reproducibility media until explicit
+> user deletion, authoritative WYSIWYG PDF, and optional editable DOCX. Observed
+> `224 × 170 mm` reference-document measurements remain factual historical
+> evidence only and must not drive implementation.
+
 ## 1. Audit contract
 
 This is an audit and source-learning document. It does not authorize or implement a printable PARTE feature, photograph import, media deletion, symbol assets, schema fields, JSON changes, PDF generation, printing, entitlement changes or UI controls.

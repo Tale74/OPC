@@ -1,5 +1,10 @@
 # OPC KATALOG osnovne kategorije / IRiU audit i implementacija
 
+Documentation authority correction: see
+`OPC_TASK_DOCUMENTATION_ANTI_DRIFT_VALIDATION_GATE_PARTE_AUTHORITY_REPORT.md`
+for the permanent successive validation gate and the explicit classification
+of the first build outputs as superseded pre-gate artifacts.
+
 ## Task identity and Git baseline
 
 - Task: `OPC-KATALOG-OSNOVNE-KATEGORIJE-IRiU-AUDIT-IMPLEMENTATION`
@@ -121,10 +126,16 @@ after both gates pass may a build begin. A timeout, interrupted log, missing
 exit code, failure, or unaccepted skip is not PASS. The commands must never
 overlap.
 
-The Windows and Android artefacts produced earlier in this task preceded a
-conclusive complete-suite result. They remain usable build outputs, but they
-are not sufficient final validation evidence and no new build was started in
-this successive-validation run.
+The first Windows and Android artefacts produced in this task preceded a
+conclusive complete-suite result:
+
+`SUPERSEDED PRE-GATE BUILD ARTIFACTS — NOT ACCEPTED FOR RUNTIME VALIDATION`
+
+They are historical build events only, not final, accepted, runtime-ready, or
+usable evidence of task completion. After the test-only correction, the final
+sequence was repeated in the required order: `flutter analyze` PASS, complete
+`flutter test` PASS, Windows release PASS, then Android release PASS. Only those
+post-gate build results are the accepted task build evidence.
 
 - Pre-validation branch: `task/OPC-KATALOG-OSNOVNE-KATEGORIJE-IRiU-AUDIT-IMPLEMENTATION`.
 - Pre-validation HEAD: `4f8eaa8421f27ef387e3f62866000e396572786c`.

@@ -50,6 +50,17 @@ Required gate before implementation:
 - Product terminology or protected business terms: yes / no
 - Documentation, workflow, or tooling only: yes / no
 
+## Successive Validation / Build Gate
+
+Follow the authoritative procedure in
+[`docs/GIT_WORKFLOW_ARC.md`](../GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate).
+
+- `flutter analyze` final PASS: yes / no / not applicable
+- complete `flutter test` started only after analyze PASS: yes / no / not applicable
+- complete `flutter test` final PASS: yes / no / not applicable
+- build started only after both final PASS results: yes / no / not applicable
+- any timeout/hang/incomplete result honestly classified as NOT PASS: yes / no / not applicable
+
 ## GitHub-Aware Handoff Requirements
 
 Every task handoff must include public GitHub links for:
@@ -99,4 +110,3 @@ PASS / NOT PASS:
 - PASS / NOT PASS / PASS WITH PENDING REMOTE CI
 
 No OPC task may be marked PASS if the start-check or end-compliance block is missing.
-

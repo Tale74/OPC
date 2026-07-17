@@ -400,10 +400,19 @@ The following queue IDs are retained as audit navigation IDs, not owner-decision
 
 Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md` and `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`.
 
-### 8.5 Implemented policy lock
+### 8.5 Historical implementation checkpoint — partially `SUPERSEDED`
 
-**Status: `CURRENTLY IMPLEMENTED`**
+**Status: `SUPERSEDED` for fixed format/margin and completion cleanup; retained
+as historical implementation evidence for the remaining boundaries.**
 **Decision ID: `OPC-OD-PARTE-001`**
+
+The locked Stage 1 decisions dated 2026-07-16 later superseded this checkpoint's
+fixed `224 × 170 mm` / single `5 mm` rule and destructive completion cleanup.
+The current authority is: user-configurable page width/height, separate
+horizontal/vertical margins, retained reopenable/editable/reproducible completed
+preparation, and deletion of retained app-owned state/media only through an
+explicit user action. The historical bullets below must not be used as current
+implementation authority where they conflict with that later lock.
 
 - `PREDMET.partePotrebna` is the authoritative decision that PARTE are required. PARTE never becomes a parallel PREDMET and temporary edits never write back.
 - A legitimate role/business-rule-valid open creates or resumes one restart-safe technical preparation. It snapshots the active FIRMA technical template; later default-template changes do not mutate the preparation.
@@ -420,7 +429,13 @@ Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_A
 - Windows and Android share the same persistence, policy, composer and PDF logic; Android narrow UI scrolls and keeps controls reachable.
 - `parteIme` fact-check is `FACT CHECK INCONCLUSIVE — PRESERVED, NOT REUSED`: compatibility storage/transfer remains, but the implementation assigns it no guessed filename or business meaning.
 
-Implementation evidence and exact fallback branches are in `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` sections 20-27 and `docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`.
+Historical implementation evidence and fallback branches are in
+`docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md` sections 20-27 and
+`docs/tasks/OPC_TASK_PARTE_PRINT_PREPARATION_IMPLEMENTATION_REPORT.md`; both are
+explicitly superseded for format/margins/retention by the Runtime-recovery
+addendum, the locked Stage 1 decisions below, and
+`docs/tasks/OPC_TASK_PARTE_RUNTIME_CORRECTIONS_MODULE_WORKFLOW_COMPOSER_DOCX_REPORT.md`
+sections 22 onward.
 
 ## Historical native development POTPUN mode (owner decision, 2026-07-12) — SUPERSEDED
 

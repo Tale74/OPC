@@ -1,5 +1,10 @@
 # Variant Packaging Lane
 
+Any manual build that follows workspace preparation is blocked until the
+authoritative [successive validation gate](../../docs/GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate)
+has conclusively passed. Analyze and the complete test suite are successive,
+never parallel; a timeout or incomplete result does not open the build gate.
+
 Main [`pubspec.yaml`](../../pubspec.yaml) is production-safe by default and excludes full catalog photo assets from normal packaging.
 
 Full-photo test packaging must use:

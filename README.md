@@ -19,6 +19,11 @@ See:
 - [Git and ARC workflow](docs/GIT_WORKFLOW_ARC.md)
 - [Public visibility test](docs/LOGOS_ACCESS_TEST.md)
 
+The authoritative pre-build rule is the [successive validation and build
+gate](docs/GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate):
+`flutter analyze` must finish green before the complete `flutter test` starts,
+and no Windows/Android build is accepted before both final green exits.
+
 ## Development
 
 The project uses Flutter and Dart. From a configured Flutter environment:
@@ -28,5 +33,8 @@ flutter pub get
 flutter analyze
 flutter test
 ```
+
+These validation commands are successive, never parallel. Timeout, hang,
+incomplete output, or a missing exit code is not PASS.
 
 Platform packaging, signing, publishing, and installer generation require separate release procedures and are not part of the public baseline task.

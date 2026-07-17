@@ -577,6 +577,17 @@ PHASE_5:
 The audit stop applied before the owner-authorized implementation task. The
 following source-aligned flow supersedes that stop for the implemented scope.
 
+> `SUPERSEDED` POLICY NOTICE: sections 20-27 preserve the first implementation
+> checkpoint. Their fixed `224 x 170 mm` page, one `5 mm` margin, completion
+> cleanup, and package-entitlement rules were superseded by the Runtime-recovery
+> addendum dated 2026-07-16 and `OPC-OD-STAGE1-UNRESTRICTED-PARTE-003`. Current
+> implementation authority is user-configurable width/height, separate
+> horizontal/vertical margins, retained reopenable/editable/reproducible
+> completion state/media, explicit user-only deletion, unrestricted native
+> functionality subject to role/business rules, authoritative WYSIWYG PDF, and
+> optional editable DOCX. Sections 20-27 remain historical evidence only where
+> they conflict and must not drive new implementation.
+
 ## 20. Implemented truth and persistence boundary
 
 ```text
@@ -770,7 +781,11 @@ AUTOMATED_ALIGNMENT:
 REAL_DEVICE_RUNTIME:
   remains a separate smoke-validation obligation
 ```
-# Runtime-corrected PARTE workflow (2026-07-12)
+# Historical runtime-corrected PARTE workflow (2026-07-12) — `SUPERSEDED` in format/margins/retention
+
+This chronological checkpoint predates the 2026-07-16 Runtime-recovery
+addendum. Its one `5 mm` margin and any completed-preparation dead-end are not
+current authority; use the addendum at the top of this document.
 
 ```text
 PREDMET PARTE segment

@@ -1,5 +1,16 @@
 # OPC Task — PARTE Print Preparation Implementation Report
 
+> HISTORICAL IMPLEMENTATION CHECKPOINT — PARTIALLY `SUPERSEDED`. Fixed
+> `224 × 170 mm`, one `5 mm` margin, automatic completion cleanup, and completed
+> preparation unavailability are not current policy and must not be used as
+> implementation authority. They were superseded by
+> `OPC-OD-STAGE1-UNRESTRICTED-PARTE-003` and sections 22 onward of
+> `OPC_TASK_PARTE_RUNTIME_CORRECTIONS_MODULE_WORKFLOW_COMPOSER_DOCX_REPORT.md`.
+> Current preparation dimensions are configurable, margins are separate,
+> completed preparation/state/media are retained and reopenable/editable until
+> explicit user deletion, PDF remains authoritative, and DOCX is an additional
+> editable derivative. This report otherwise remains unchanged audit evidence.
+
 ## 1. Task identity
 
 - Task: `OPC-PARTE-PRINT-PREPARATION-IMPLEMENTATION`
