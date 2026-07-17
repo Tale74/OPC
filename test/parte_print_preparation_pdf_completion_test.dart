@@ -76,11 +76,14 @@ void main() {
     () async {
       final fixture = await _fixture();
       addTearDown(fixture.dispose);
-      await fixture.repository.updateAcknowledgements(
-        preparationId: fixture.preparation.id,
+      await fixture.service.replaceMedia(
+        preparation: fixture.preparation,
+        sourceBytes: Uint8List.fromList(
+          img.encodePng(img.Image(width: 900, height: 1200)),
+        ),
+        kind: ParteMediaKind.photo,
         actor: fixture.actor,
         entitlement: potpun,
-        noPhotoAccepted: true,
       );
       final before = (await fixture.repository.findForPredmet(
         fixture.predmet.id,
@@ -89,12 +92,20 @@ void main() {
       final bytes = await ParteDocxExporter(
         mediaStore: fixture.mediaStore,
       ).build(plan: plan);
+      final smokeOutput = Platform.environment['OPC_PARTE_WORD_SMOKE_OUTPUT'];
+      if (smokeOutput != null && smokeOutput.isNotEmpty) {
+        await File(smokeOutput).writeAsBytes(bytes, flush: true);
+      }
       final archive = ZipDecoder().decodeBytes(bytes);
       final names = archive.files.map((file) => file.name).toSet();
 
       expect(names, contains('[Content_Types].xml'));
       expect(names, contains('word/document.xml'));
       expect(names, contains('word/styles.xml'));
+      expect(
+        names.where((name) => name.startsWith('word/media/')),
+        hasLength(2),
+      );
       final document = utf8.decode(
         archive.findFile('word/document.xml')!.content as List<int>,
       );
@@ -102,7 +113,20 @@ void main() {
       expect(document, contains('w:orient="landscape"'));
       expect(document, contains('w:txbxContent'));
       expect(document, contains('wp:anchor'));
+      expect(document, contains('<v:rect'));
+      expect(document, isNot(contains('type="#_x0000_t202"')));
+      expect(
+        document.indexOf('<wp:wrapNone/>'),
+        lessThan(document.indexOf('<wp:docPr')),
+      );
+      expect(document, contains('<wp:cNvGraphicFramePr/>'));
+      expect(
+        document,
+        contains('<w:pgMar w:top="0" w:right="0" w:bottom="0" w:left="0"'),
+      );
       expect(document, contains('parte_mournersHeading'));
+      expect(document, contains('Sintetičko Lice'));
+      expect(document, contains('Ožalošćeni'));
       expect(
         RegExp('w:txbxContent').allMatches(document).length,
         greaterThanOrEqualTo(5),

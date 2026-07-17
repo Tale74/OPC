@@ -472,6 +472,12 @@ PAKETI are abandoned as product policy. Package, add-on, entitlement and local-l
 
 Completed PARTE preparation is retained technical state. It remains reopenable, editable and re-exportable until explicit user deletion. PREDMET remains business truth; PDF is authoritative output; DOCX is an editable block-based derivative.
 
+PARTE physical flow after the printable-zone correction is:
+
+`PREDMET facts -> retained PARTE draft -> outer form + explicit printable zone + safe margins -> one absolute-mm render plan -> PREGLED PRIPREME / PDF / calibration / secondary DOCX`
+
+The draft owns only technical derivative geometry and content overrides. It never writes back to PREDMET. PDF and preview use the same page origin and block rectangles; DOCX approximates those rectangles with Word-compatible independent shapes. Driver feed/scaling and physical paper acceptance remain outside OPC.
+
 ## MODULE-ID: OPC-MODULE-023
 
 Module name: Canonical database migration and startup recovery

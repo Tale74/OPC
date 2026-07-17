@@ -93,6 +93,10 @@ class ParteInitialComposer {
         heightMm: template.heightMm,
         horizontalMarginMm: template.horizontalMarginMm,
         verticalMarginMm: template.verticalMarginMm,
+        printableZoneXmm: template.printableZoneXmm,
+        printableZoneYmm: template.printableZoneYmm,
+        printableZoneWidthMm: template.printableZoneWidthMm,
+        printableZoneHeightMm: template.printableZoneHeightMm,
         symbolId: predmet.simbol,
       ),
       sourceFingerprint: parteCanonicalFingerprint(source),
@@ -146,7 +150,7 @@ class ParteInitialComposer {
     final birth = _year(p.datumRodjenja);
     final death = _year(p.datumSmrti);
     if (birth.isEmpty && death.isEmpty) return '';
-    return '$birth — $death.';
+    return '$birth – $death.';
   }
 
   String _year(String value) {

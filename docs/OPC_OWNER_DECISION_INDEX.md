@@ -79,6 +79,15 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 - Runtime: Windows physical print and DOCX owner acceptance must pass before Android runtime begins.
 - Report: `docs/tasks/OPC_TASK_PARTE_RUNTIME_CORRECTIONS_MODULE_WORKFLOW_COMPOSER_DOCX_REPORT.md`.
 
+## OPC-OD-PARTE-004 — PRINTABLE ZONE AND WORD DERIVATIVE
+
+- Outer form and non-centred printable zone are separate millimetre geometry; safe margins are inside the zone.
+- One render plan owns preview, bounds and authoritative PDF coordinates. Printer-driver scaling is outside OPC and physical print remains owner acceptance.
+- Schema 4 is backward-compatible with PARTE schema 1–3 through a full-page legacy zone and unchanged block coordinates.
+- `PREGLED PRIPREME`, en-dash years, Noto Sans/Noto Serif and collapsible setup sections are current UI policy.
+- DOCX remains secondary but must open, save and reopen in Microsoft Word without repair while retaining independent editable blocks.
+- Report: `docs/tasks/OPC_TASK_PARTE_PRINTABLE_ZONE_PDF_DOCX_UX_CORRECTION_REPORT.md`.
+
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
 
 The owner-designated `opc_v4_release.sqlite` remains canonical regardless of a

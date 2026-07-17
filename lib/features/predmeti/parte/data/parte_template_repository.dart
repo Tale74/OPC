@@ -26,7 +26,7 @@ class ParteTemplateRepository {
   });
 
   static const String transferFormat = 'OPC_PARTE_TEMPLATE';
-  static const int transferSchemaVersion = 2;
+  static const int transferSchemaVersion = 3;
   static const int maxImportBytes = 512 * 1024;
 
   final AppDatabase _db;
@@ -116,6 +116,10 @@ class ParteTemplateRepository {
       heightMm: technicalSource.heightMm,
       horizontalMarginMm: technicalSource.horizontalMarginMm,
       verticalMarginMm: technicalSource.verticalMarginMm,
+      printableZoneXmm: technicalSource.printableZoneXmm,
+      printableZoneYmm: technicalSource.printableZoneYmm,
+      printableZoneWidthMm: technicalSource.printableZoneWidthMm,
+      printableZoneHeightMm: technicalSource.printableZoneHeightMm,
       blocks: technicalSource.blocks,
     );
     _validateContentFree(template);
@@ -182,6 +186,10 @@ class ParteTemplateRepository {
       heightMm: technicalSource.heightMm,
       horizontalMarginMm: technicalSource.horizontalMarginMm,
       verticalMarginMm: technicalSource.verticalMarginMm,
+      printableZoneXmm: technicalSource.printableZoneXmm,
+      printableZoneYmm: technicalSource.printableZoneYmm,
+      printableZoneWidthMm: technicalSource.printableZoneWidthMm,
+      printableZoneHeightMm: technicalSource.printableZoneHeightMm,
       blocks: technicalSource.blocks,
     );
     _validateContentFree(replacement);
@@ -287,6 +295,10 @@ class ParteTemplateRepository {
             heightMm: imported.heightMm,
             horizontalMarginMm: imported.horizontalMarginMm,
             verticalMarginMm: imported.verticalMarginMm,
+            printableZoneXmm: imported.printableZoneXmm,
+            printableZoneYmm: imported.printableZoneYmm,
+            printableZoneWidthMm: imported.printableZoneWidthMm,
+            printableZoneHeightMm: imported.printableZoneHeightMm,
             blocks: imported.blocks,
           )
         : imported;

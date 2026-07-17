@@ -74,16 +74,25 @@ class ParteRenderPlan {
     required this.heightMm,
     required this.horizontalMarginMm,
     required this.verticalMarginMm,
+    this.printableZoneXmm = 0,
+    this.printableZoneYmm = 0,
+    double? printableZoneWidthMm,
+    double? printableZoneHeightMm,
     required this.blocks,
     required this.warnings,
     required this.blockers,
     required this.fingerprint,
-  });
+  }) : printableZoneWidthMm = printableZoneWidthMm ?? widthMm,
+       printableZoneHeightMm = printableZoneHeightMm ?? heightMm;
 
   final double widthMm;
   final double heightMm;
   final double horizontalMarginMm;
   final double verticalMarginMm;
+  final double printableZoneXmm;
+  final double printableZoneYmm;
+  final double printableZoneWidthMm;
+  final double printableZoneHeightMm;
   double get marginMm => horizontalMarginMm;
   final List<ParteRenderBlock> blocks;
   final List<String> warnings;
@@ -140,6 +149,16 @@ class ParteComposer {
         draft.heightMm > 350) {
       blockers.add('Dimenzije moraju biti bezbedan landscape format.');
     }
+    if (draft.printableZoneXmm < 0 ||
+        draft.printableZoneYmm < 0 ||
+        draft.printableZoneWidthMm <= 0 ||
+        draft.printableZoneHeightMm <= 0 ||
+        draft.printableZoneXmm + draft.printableZoneWidthMm > draft.widthMm ||
+        draft.printableZoneYmm + draft.printableZoneHeightMm > draft.heightMm ||
+        draft.horizontalMarginMm * 2 >= draft.printableZoneWidthMm ||
+        draft.verticalMarginMm * 2 >= draft.printableZoneHeightMm) {
+      blockers.add('Zona štampe ili njena sigurna margina nisu bezbedne.');
+    }
 
     final hasPhoto = input.photoMediaKey?.trim().isNotEmpty == true;
     if (!hasPhoto) {
@@ -186,6 +205,10 @@ class ParteComposer {
         pageHeight: draft.heightMm,
         horizontalMargin: draft.horizontalMarginMm,
         verticalMargin: draft.verticalMarginMm,
+        originX: draft.printableZoneXmm,
+        originY: draft.printableZoneYmm,
+        usableWidth: draft.printableZoneWidthMm,
+        usableHeight: draft.printableZoneHeightMm,
       );
       if (!_sameRect(spec.rect, clamped)) {
         blockers.add('Blok ${spec.id} izlazi iz upotrebljive površine.');
@@ -263,6 +286,10 @@ class ParteComposer {
       'heightMm': draft.heightMm,
       'horizontalMarginMm': draft.horizontalMarginMm,
       'verticalMarginMm': draft.verticalMarginMm,
+      'printableZoneXmm': draft.printableZoneXmm,
+      'printableZoneYmm': draft.printableZoneYmm,
+      'printableZoneWidthMm': draft.printableZoneWidthMm,
+      'printableZoneHeightMm': draft.printableZoneHeightMm,
       'blocks': blocks.map((block) => block.toFingerprintJson()).toList(),
       'warnings': warnings,
       'blockers': blockers,
@@ -276,6 +303,10 @@ class ParteComposer {
       heightMm: draft.heightMm,
       horizontalMarginMm: draft.horizontalMarginMm,
       verticalMarginMm: draft.verticalMarginMm,
+      printableZoneXmm: draft.printableZoneXmm,
+      printableZoneYmm: draft.printableZoneYmm,
+      printableZoneWidthMm: draft.printableZoneWidthMm,
+      printableZoneHeightMm: draft.printableZoneHeightMm,
       blocks: List.unmodifiable(blocks),
       warnings: List.unmodifiable(warnings),
       blockers: List.unmodifiable(blockers.toSet()),
@@ -293,6 +324,7 @@ class ParteComposer {
         spec.rect.width * _pointsPerMm,
         size,
         spec.bold,
+        fontFamily: spec.fontFamily,
       );
       final height = lines.length * size * _lineHeightFactor;
       if (height <= spec.rect.height * _pointsPerMm) {
@@ -307,7 +339,13 @@ class ParteComposer {
     }
     final minimum = spec.minimumFontSize;
     return _ParteTextFit(
-      lines: _wrap(content, spec.rect.width * _pointsPerMm, minimum, spec.bold),
+      lines: _wrap(
+        content,
+        spec.rect.width * _pointsPerMm,
+        minimum,
+        spec.bold,
+        fontFamily: spec.fontFamily,
+      ),
       fontSize: minimum,
       horizontalScale: 1,
       fits: false,
@@ -341,8 +379,9 @@ class ParteComposer {
     String content,
     double maxWidth,
     double fontSize,
-    bool bold,
-  ) {
+    bool bold, {
+    String fontFamily = ParteFontCatalog.notoSans,
+  }) {
     final result = <String>[];
     for (final paragraph in content.split('\n')) {
       if (paragraph.isEmpty) {
@@ -352,12 +391,14 @@ class ParteComposer {
       var current = '';
       for (final word in paragraph.split(RegExp(r'\s+'))) {
         final candidate = current.isEmpty ? word : '$current $word';
-        if (_textWidth(candidate, fontSize, bold) <= maxWidth) {
+        if (_textWidth(candidate, fontSize, bold, fontFamily: fontFamily) <=
+            maxWidth) {
           current = candidate;
           continue;
         }
         if (current.isNotEmpty) result.add(current);
-        if (_textWidth(word, fontSize, bold) <= maxWidth) {
+        if (_textWidth(word, fontSize, bold, fontFamily: fontFamily) <=
+            maxWidth) {
           current = word;
           continue;
         }
@@ -365,7 +406,9 @@ class ParteComposer {
         for (final rune in word.runes) {
           final char = String.fromCharCode(rune);
           final next = '$part$char';
-          if (part.isNotEmpty && _textWidth(next, fontSize, bold) > maxWidth) {
+          if (part.isNotEmpty &&
+              _textWidth(next, fontSize, bold, fontFamily: fontFamily) >
+                  maxWidth) {
             result.add(part);
             part = char;
           } else {

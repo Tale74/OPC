@@ -65,6 +65,10 @@ class _ParteTemplateManagementDialogState
     heightMm: widget.currentDraft.heightMm,
     horizontalMarginMm: widget.currentDraft.horizontalMarginMm,
     verticalMarginMm: widget.currentDraft.verticalMarginMm,
+    printableZoneXmm: widget.currentDraft.printableZoneXmm,
+    printableZoneYmm: widget.currentDraft.printableZoneYmm,
+    printableZoneWidthMm: widget.currentDraft.printableZoneWidthMm,
+    printableZoneHeightMm: widget.currentDraft.printableZoneHeightMm,
     blocks: widget.currentDraft.blocks,
   );
 

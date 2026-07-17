@@ -781,6 +781,47 @@ AUTOMATED_ALIGNMENT:
 REAL_DEVICE_RUNTIME:
   remains a separate smoke-validation obligation
 ```
+# Current printable-zone and export correction (2026-07-17)
+
+```text
+OUTER_PAGE = widthMm × heightMm
+PRINTABLE_ZONE = (xMm, yMm, widthMm, heightMm)
+SAFE_RECT = PRINTABLE_ZONE inset(horizontalSafeMarginMm, verticalSafeMarginMm)
+
+VALIDATE:
+  printable zone is positive and wholly inside outer page
+  safe margins leave a positive safe rectangle
+  every block rectangle is wholly inside SAFE_RECT
+
+COMPOSE:
+  retain absolute millimetre block coordinates
+  fit text once, with the selected embedded font
+  create one immutable render plan and fingerprint
+
+PREVIEW and PDF:
+  use page origin (0, 0), scale millimetres only at the adapter boundary
+  consume identical block rectangles; never implicitly center or globally shrink
+
+CALIBRATION:
+  draw outer border, zone border, safe border and known measure
+  print X/Y and require Actual size / 100%; warn against Fit/Shrink
+
+LEGACY schema 1..3:
+  zone = (0, 0, legacyPageWidth, legacyPageHeight)
+  preserve block coordinates and legacy safe margins
+
+DOCX:
+  use page-relative independent shapes
+  text = editable VML rect/textbox; media = valid DrawingML anchor
+  keep PDF authoritative; require real Word open/save/reopen acceptance
+
+UI:
+  label preview PREGLED PRIPREME
+  use en dash for life years
+  text and format ExpansionTiles alter UI state only
+  designer remains outside both collapsible sections
+```
+
 # Historical runtime-corrected PARTE workflow (2026-07-12) — `SUPERSEDED` in format/margins/retention
 
 This chronological checkpoint predates the 2026-07-16 Runtime-recovery

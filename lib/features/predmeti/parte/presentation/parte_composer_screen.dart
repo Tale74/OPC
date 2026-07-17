@@ -60,6 +60,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   late final TextEditingController _heightController;
   late final TextEditingController _horizontalMarginController;
   late final TextEditingController _verticalMarginController;
+  late final TextEditingController _zoneXController;
+  late final TextEditingController _zoneYController;
+  late final TextEditingController _zoneWidthController;
+  late final TextEditingController _zoneHeightController;
+  bool _textExpanded = true;
+  bool _formatExpanded = true;
 
   @override
   void initState() {
@@ -80,6 +86,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     _heightController = TextEditingController();
     _horizontalMarginController = TextEditingController();
     _verticalMarginController = TextEditingController();
+    _zoneXController = TextEditingController();
+    _zoneYController = TextEditingController();
+    _zoneWidthController = TextEditingController();
+    _zoneHeightController = TextEditingController();
     _initialize();
   }
 
@@ -92,6 +102,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     _heightController.dispose();
     _horizontalMarginController.dispose();
     _verticalMarginController.dispose();
+    _zoneXController.dispose();
+    _zoneYController.dispose();
+    _zoneWidthController.dispose();
+    _zoneHeightController.dispose();
     super.dispose();
   }
 
@@ -148,6 +162,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           draft?.horizontalMarginMm.toStringAsFixed(1) ?? '';
       _verticalMarginController.text =
           draft?.verticalMarginMm.toStringAsFixed(1) ?? '';
+      _zoneXController.text = draft?.printableZoneXmm.toStringAsFixed(1) ?? '';
+      _zoneYController.text = draft?.printableZoneYmm.toStringAsFixed(1) ?? '';
+      _zoneWidthController.text =
+          draft?.printableZoneWidthMm.toStringAsFixed(1) ?? '';
+      _zoneHeightController.text =
+          draft?.printableZoneHeightMm.toStringAsFixed(1) ?? '';
       _loading = false;
       _busy = false;
       _error = null;
@@ -206,18 +226,38 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     final verticalMargin = double.tryParse(
       _verticalMarginController.text.replaceAll(',', '.'),
     );
+    final zoneX = double.tryParse(_zoneXController.text.replaceAll(',', '.'));
+    final zoneY = double.tryParse(_zoneYController.text.replaceAll(',', '.'));
+    final zoneWidth = double.tryParse(
+      _zoneWidthController.text.replaceAll(',', '.'),
+    );
+    final zoneHeight = double.tryParse(
+      _zoneHeightController.text.replaceAll(',', '.'),
+    );
     if (width == null ||
         height == null ||
         horizontalMargin == null ||
-        verticalMargin == null) {
-      throw const FormatException('Unesite numeričke dimenzije i margine.');
+        verticalMargin == null ||
+        zoneX == null ||
+        zoneY == null ||
+        zoneWidth == null ||
+        zoneHeight == null) {
+      throw const FormatException(
+        'Unesite numeričke dimenzije, zonu i margine.',
+      );
     }
     if (horizontalMargin < 0 ||
         verticalMargin < 0 ||
-        horizontalMargin * 2 >= width ||
-        verticalMargin * 2 >= height) {
+        zoneX < 0 ||
+        zoneY < 0 ||
+        zoneWidth <= 0 ||
+        zoneHeight <= 0 ||
+        zoneX + zoneWidth > width ||
+        zoneY + zoneHeight > height ||
+        horizontalMargin * 2 >= zoneWidth ||
+        verticalMargin * 2 >= zoneHeight) {
       throw const FormatException(
-        'Margine ne ostavljaju bezbednu radnu površinu.',
+        'Zona štampe ili njene sigurne margine nisu bezbedne.',
       );
     }
     await _repository.updateDraft(
@@ -227,6 +267,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         heightMm: height,
         horizontalMarginMm: horizontalMargin,
         verticalMarginMm: verticalMargin,
+        printableZoneXmm: zoneX,
+        printableZoneYmm: zoneY,
+        printableZoneWidthMm: zoneWidth,
+        printableZoneHeightMm: zoneHeight,
       ),
       actor: widget.actor,
       entitlement: widget.entitlement,
@@ -277,6 +321,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                 pageHeight: draft.heightMm,
                 horizontalMargin: draft.horizontalMarginMm,
                 verticalMargin: draft.verticalMarginMm,
+                originX: draft.printableZoneXmm,
+                originY: draft.printableZoneYmm,
+                usableWidth: draft.printableZoneWidthMm,
+                usableHeight: draft.printableZoneHeightMm,
               );
           return block.copyWith(
             rect: rect,
@@ -335,6 +383,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                   pageHeight: draft.heightMm,
                   horizontalMargin: draft.horizontalMarginMm,
                   verticalMargin: draft.verticalMarginMm,
+                  originX: draft.printableZoneXmm,
+                  originY: draft.printableZoneYmm,
+                  usableWidth: draft.printableZoneWidthMm,
+                  usableHeight: draft.printableZoneHeightMm,
                 ),
           );
         })
@@ -619,6 +671,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           heightMm: selected.heightMm,
           horizontalMarginMm: selected.horizontalMarginMm,
           verticalMarginMm: selected.verticalMarginMm,
+          printableZoneXmm: selected.printableZoneXmm,
+          printableZoneYmm: selected.printableZoneYmm,
+          printableZoneWidthMm: selected.printableZoneWidthMm,
+          printableZoneHeightMm: selected.printableZoneHeightMm,
           blocks: selected.blocks,
         ),
         actor: widget.actor,
@@ -691,7 +747,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             if (status == PartePreparationStatus.completed)
               const MaterialBanner(
                 content: Text(
-                  'SAČUVANA ZAVRŠENA PRIPREMA — možete je pregledati, urediti i ponovo izvesti. Izmene traže novu potvrdu preview-a.',
+                  'SAČUVANA ZAVRŠENA PRIPREMA — možete je pregledati, urediti i ponovo izvesti. Izmene traže novu potvrdu pregleda pripreme.',
                 ),
                 actions: [SizedBox.shrink()],
               ),
@@ -759,101 +815,78 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               ),
             ),
           ),
-        Text(
-          'TEKSTUALNI BLOKOVI',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 8),
-        for (final id in textIds) ...[
-          TextField(
-            controller: _textControllers[id],
-            minLines: id == 'mourners' || id == 'ceremony' ? 2 : 1,
-            maxLines: id == 'mourners' || id == 'ceremony' ? 5 : 3,
-            decoration: InputDecoration(
-              labelText: _blockLabel(id),
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
+        ExpansionTile(
+          initiallyExpanded: _textExpanded,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 8),
+          onExpansionChanged: (value) => _textExpanded = value,
+          title: Text(
+            'TEKSTUALNI BLOKOVI',
+            style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: 8),
-        ],
-        FilledButton.icon(
-          onPressed: _busy ? null : _saveText,
-          icon: const Icon(Icons.save_outlined),
-          label: const Text('SAČUVAJ PRIVREMENI TEKST'),
+          children: [
+            for (final id in textIds) ...[
+              TextField(
+                controller: _textControllers[id],
+                minLines: id == 'mourners' || id == 'ceremony' ? 2 : 1,
+                maxLines: id == 'mourners' || id == 'ceremony' ? 5 : 3,
+                decoration: InputDecoration(
+                  labelText: _blockLabel(id),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            FilledButton.icon(
+              onPressed: _busy ? null : _saveText,
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('SAČUVAJ PRIVREMENI TEKST'),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        Text('FORMAT (mm)', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
-        Row(
+        ExpansionTile(
+          initiallyExpanded: _formatExpanded,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 8),
+          onExpansionChanged: (value) => _formatExpanded = value,
+          title: Text(
+            'FORMAT I ZONA ŠTAMPE (mm)',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          subtitle: Text(
+            'Strana ${_draft!.widthMm.toStringAsFixed(1)} × ${_draft!.heightMm.toStringAsFixed(1)}; '
+            'zona X ${_draft!.printableZoneXmm.toStringAsFixed(1)}, Y ${_draft!.printableZoneYmm.toStringAsFixed(1)}, '
+            '${_draft!.printableZoneWidthMm.toStringAsFixed(1)} × ${_draft!.printableZoneHeightMm.toStringAsFixed(1)}',
+          ),
           children: [
-            Expanded(
-              child: TextField(
-                controller: _widthController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _dimensionField(_widthController, 'Strana — širina'),
+                _dimensionField(_heightController, 'Strana — visina'),
+                _dimensionField(_zoneXController, 'Zona — X'),
+                _dimensionField(_zoneYController, 'Zona — Y'),
+                _dimensionField(_zoneWidthController, 'Zona — širina'),
+                _dimensionField(_zoneHeightController, 'Zona — visina'),
+                _dimensionField(
+                  _horizontalMarginController,
+                  'Sigurna margina — H',
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Širina',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+                _dimensionField(
+                  _verticalMarginController,
+                  'Sigurna margina — V',
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _heightController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Visina',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _busy ? null : _applyDimensions,
+              child: const Text('PRIMENI FORMAT I ZONU ŠTAMPE'),
             ),
           ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _horizontalMarginController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Horizontalna margina',
-                  suffixText: 'mm',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _verticalMarginController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Vertikalna margina',
-                  suffixText: 'mm',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: _busy ? null : _applyDimensions,
-          child: const Text('PRIMENI FIZIČKE DIMENZIJE I MARGINE'),
         ),
         const SizedBox(height: 16),
         Text('MEDIJI', style: Theme.of(context).textTheme.titleSmall),
@@ -975,10 +1008,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         const SizedBox(height: 8),
         if (selected.kind == ParteBlockKind.text) ...[
           Text(
-            'Font: ${selected.fontFamily} — '
-            '${selected.initialFontSize.toStringAsFixed(1)} pt '
-            '(min ${selected.minimumFontSize.toStringAsFixed(1)}, '
-            'max ${selected.maximumFontSize.toStringAsFixed(1)})',
+            '${ParteFontCatalog.displayName(selected.fontFamily)} • '
+            '${selected.initialFontSize.toStringAsFixed(1)} pt',
             key: const Key('parte-font-size-state'),
           ),
           if (selected.initialFontSize <= selected.minimumFontSize)
@@ -989,10 +1020,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             const Text(
               'Dostignut je najveći font. Proširite blok ili smanjite sadržaj.',
             ),
-          Text(
-            'Blok: ${selected.rect.width.toStringAsFixed(1)} × '
-            '${selected.rect.height.toStringAsFixed(1)} mm',
-          ),
           Wrap(
             spacing: 6,
             runSpacing: 6,
@@ -1026,7 +1053,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               isDense: true,
             ),
             items: ParteFontCatalog.supported
-                .map((font) => DropdownMenuItem(value: font, child: Text(font)))
+                .map(
+                  (font) => DropdownMenuItem(
+                    value: font,
+                    child: Text(ParteFontCatalog.displayName(font)),
+                  ),
+                )
                 .toList(),
             onChanged: _busy
                 ? null
@@ -1202,6 +1234,21 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     );
   }
 
+  Widget _dimensionField(TextEditingController controller, String label) =>
+      SizedBox(
+        width: 178,
+        child: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: label,
+            suffixText: 'mm',
+            border: const OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+      );
+
   Widget _effectSlider(
     String label,
     double value,
@@ -1234,7 +1281,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'FINALNI WYSIWYG PREVIEW',
+          'PREGLED PRIPREME',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
@@ -1320,7 +1367,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               label: Text(
                 previewConfirmed
                     ? 'PREVIEW POTVRĐEN'
-                    : 'POTVRDI FINALNI PREVIEW',
+                    : 'POTVRDI PREGLED PRIPREME',
               ),
             ),
             FilledButton.icon(
@@ -1399,10 +1446,31 @@ class PartePlanPreview extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned(
-                  left: plan.horizontalMarginMm * scale,
-                  top: plan.verticalMarginMm * scale,
-                  width: (plan.widthMm - plan.horizontalMarginMm * 2) * scale,
-                  height: (plan.heightMm - plan.verticalMarginMm * 2) * scale,
+                  left: plan.printableZoneXmm * scale,
+                  top: plan.printableZoneYmm * scale,
+                  width: plan.printableZoneWidthMm * scale,
+                  height: plan.printableZoneHeightMm * scale,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left:
+                      (plan.printableZoneXmm + plan.horizontalMarginMm) * scale,
+                  top: (plan.printableZoneYmm + plan.verticalMarginMm) * scale,
+                  width:
+                      (plan.printableZoneWidthMm -
+                          plan.horizontalMarginMm * 2) *
+                      scale,
+                  height:
+                      (plan.printableZoneHeightMm - plan.verticalMarginMm * 2) *
+                      scale,
                   child: IgnorePointer(
                     child: DecoratedBox(
                       decoration: BoxDecoration(

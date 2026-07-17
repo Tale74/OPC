@@ -197,7 +197,7 @@ class PartePreparationRepository {
     );
     await _requireEditable(preparationId);
     if (!plan.canConfirmPreview) {
-      throw StateError('Finalni preview ima nerešene blokere.');
+      throw StateError('Pregled pripreme ima nerešene blokere.');
     }
     await (_db.update(
       _db.partePripreme,
@@ -224,7 +224,7 @@ class PartePreparationRepository {
     final current = await _requireEditable(preparationId);
     if (!plan.canGeneratePdf ||
         current.previewConfirmedFingerprint != plan.fingerprint) {
-      throw StateError('PDF zahteva potvrđen aktuelni finalni preview.');
+      throw StateError('PDF zahteva potvrđen aktuelni pregled pripreme.');
     }
     await (_db.update(
       _db.partePripreme,

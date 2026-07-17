@@ -68,12 +68,30 @@ void main() {
         expect(maleDraft.textByBlock['death'], contains('preminuo'));
         expect(maleDraft.textByBlock['secondary'], contains('Opelo'));
         expect(maleDraft.textByBlock['secondary'], contains('časova'));
+        expect(maleDraft.textByBlock['years'], '1950 – 2026.');
+        expect(maleDraft.textByBlock['years'], isNot(contains('—')));
         expect(femaleDraft.textByBlock['intro'], contains('voljena'));
         expect(femaleDraft.textByBlock['death'], contains('preminula'));
         expect(femaleDraft.textByBlock['secondary'], contains('Ispraćaj'));
         expect(femaleDraft.textByBlock['ceremony'], contains('časova'));
       },
     );
+
+    test('formal font catalog persists supported render families', () {
+      expect(
+        ParteFontCatalog.supported,
+        containsAll(<String>[
+          ParteFontCatalog.notoSans,
+          ParteFontCatalog.notoSerif,
+        ]),
+      );
+      final serif = ParteTemplate.builtInStandard.blocks
+          .firstWhere((block) => block.kind == ParteBlockKind.text)
+          .copyWith(fontFamily: ParteFontCatalog.notoSerif);
+      final decoded = ParteBlockSpec.fromJson(serif.toJson());
+      expect(decoded.fontFamily, ParteFontCatalog.notoSerif);
+      expect(ParteFontCatalog.displayName(decoded.fontFamily), 'Noto Serif');
+    });
 
     test('unknown gender never silently becomes male', () async {
       final db = createTestDatabase();
@@ -242,12 +260,49 @@ void main() {
       final decoded = ParteDraft.fromJson(legacy);
       expect(decoded.horizontalMarginMm, 7);
       expect(decoded.verticalMarginMm, 7);
+      expect(decoded.printableZoneXmm, 0);
+      expect(decoded.printableZoneYmm, 0);
+      expect(decoded.printableZoneWidthMm, 224);
+      expect(decoded.printableZoneHeightMm, 170);
       expect(decoded.textByBlock['mournersHeading'], 'Ožalošćeni:');
       expect(decoded.textByBlock['mourners'], 'Porodica');
       expect(
         decoded.blocks.any((block) => block.id == 'mournersHeading'),
         isTrue,
       );
+    });
+
+    test('schema 4 reflow maps blocks into the explicit printable zone', () {
+      final source = ParteDraft(
+        textByBlock: const <String, String>{'name': 'Sintetičko Lice'},
+        blocks: ParteTemplate.builtInStandard.blocks,
+        widthMm: 224,
+        heightMm: 170,
+        symbolId: 'BEZ_SIMBOLA',
+      );
+      final transformed = source.reflowTo(
+        widthMm: 224,
+        heightMm: 170,
+        horizontalMarginMm: 5,
+        verticalMarginMm: 5,
+        printableZoneXmm: 24.5,
+        printableZoneYmm: 27.5,
+        printableZoneWidthMm: 175,
+        printableZoneHeightMm: 115,
+      );
+
+      expect(transformed.schemaVersion, parteDraftSchemaVersion);
+      expect(transformed.printableZoneXmm, 24.5);
+      expect(transformed.printableZoneWidthMm, 175);
+      for (final block in transformed.blocks) {
+        expect(block.rect.x, greaterThanOrEqualTo(29.5));
+        expect(block.rect.y, greaterThanOrEqualTo(32.5));
+        expect(block.rect.right, lessThanOrEqualTo(194.5));
+        expect(block.rect.bottom, lessThanOrEqualTo(137.5));
+      }
+      final decoded = ParteDraft.decode(transformed.encode());
+      expect(decoded.printableZoneYmm, 27.5);
+      expect(decoded.printableZoneHeightMm, 115);
     });
 
     test(

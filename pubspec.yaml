@@ -78,3 +78,6 @@ flutter:
         - asset: assets/fonts/NotoSans-BoldItalic.ttf
           weight: 700
           style: italic
+    - family: NotoSerif
+      fonts:
+        - asset: assets/fonts/NotoSerif-Variable.ttf

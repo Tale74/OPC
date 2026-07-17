@@ -485,6 +485,16 @@ workflow.
 - Page width/height and horizontal/vertical margins are physical inputs. Their change must reconstruct all block geometry and the render plan.
 - PDF is the authoritative physical page. A calibration PDF assists a real `Actual size / 100%` print, but cannot itself prove physical-print PASS.
 - DOCX maps OPC blocks to independent editable positioned blocks. Noto Sans is the embedded cross-platform source/PDF font; external editors may substitute an installed formal font, so DOCX equality is not claimed.
+
+## PARTE printable-zone correction (2026-07-17)
+
+- User-facing preview is `PREGLED PRIPREME`; WYSIWYG remains an internal architecture term.
+- Outer form dimensions and printable-zone `X`, `Y`, width and height are independent. Horizontal and vertical safe margins are measured inside that zone. No centering is implicit.
+- Preview, overflow validation, PDF and calibration consume one absolute millimetre render plan. The printer driver remains responsible for `Actual size / 100%`; physical-print acceptance belongs to the owner.
+- Template/draft schema 4 stores the zone. Schema 1–3 migrates to `X=0`, `Y=0`, zone equal to the legacy page, preserving absolute block coordinates without a second move.
+- Embedded formal render families are Noto Sans and OFL-licensed Noto Serif. Times New Roman is not bundled or falsely presented.
+- Life years use en dash (`1950 – 2026.`). Temporary text and format sections are collapsible UI state only; designer controls remain available.
+- PDF is authoritative. DOCX is an additional editable positioned-block derivative and must pass a real Microsoft Word open/save/reopen smoke without repair.
 - Android API 29+ uses MediaStore `Downloads/KORICE`; API 28 and lower request only the legacy permission they require; a system document picker is the safe fallback.
 - Windows owner acceptance remains the gate before Android runtime. OPC Web remains a future option only.
 

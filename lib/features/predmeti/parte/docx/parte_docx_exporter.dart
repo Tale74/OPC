@@ -117,23 +117,24 @@ class ParteDocxExporter {
     };
     final size = (block.fontSize * 2).round();
     final scale = (block.horizontalScale * 100).round();
+    final font = _xml(ParteFontCatalog.displayName(block.fontFamily));
     final text = _xml(block.lines.join(' '));
     final left = (block.rect.x * 72 / 25.4).toStringAsFixed(3);
     final top = (block.rect.y * 72 / 25.4).toStringAsFixed(3);
     final width = (block.rect.width * 72 / 25.4).toStringAsFixed(3);
     final height = (block.rect.height * 72 / 25.4).toStringAsFixed(3);
-    return '<w:p><w:r><w:pict><v:shape id="parte_${_xml(block.id)}" '
-        'type="#_x0000_t202" stroked="f" filled="f" '
+    return '<w:p><w:r><w:pict><v:rect id="parte_${_xml(block.id)}" '
+        'stroked="f" filled="f" '
         'style="position:absolute;margin-left:${left}pt;margin-top:${top}pt;'
         'width:${width}pt;height:${height}pt;z-index:${block.layer}">'
         '<v:textbox inset="0,0,0,0"><w:txbxContent>'
         '<w:p><w:pPr><w:jc w:val="$align"/><w:keepLines/></w:pPr>'
-        '<w:r><w:rPr><w:rFonts w:ascii="Noto Sans" w:hAnsi="Noto Sans" '
-        'w:eastAsia="Noto Sans" w:cs="Noto Sans"/><w:sz w:val="$size"/>'
+        '<w:r><w:rPr><w:rFonts w:ascii="$font" w:hAnsi="$font" '
+        'w:eastAsia="$font" w:cs="$font"/><w:sz w:val="$size"/>'
         '<w:szCs w:val="$size"/><w:w w:val="$scale"/>'
         '${block.bold ? '<w:b/><w:bCs/>' : ''}</w:rPr>'
         '<w:t xml:space="preserve">$text</w:t></w:r></w:p>'
-        '</w:txbxContent></v:textbox></v:shape></w:pict></w:r></w:p>';
+        '</w:txbxContent></v:textbox></v:rect></w:pict></w:r></w:p>';
   }
 
   String _imageParagraph(ParteRenderBlock block, String relationId, int id) {
@@ -148,8 +149,9 @@ class ParteDocxExporter {
         '<wp:simplePos x="0" y="0"/>'
         '<wp:positionH relativeFrom="page"><wp:posOffset>$x</wp:posOffset></wp:positionH>'
         '<wp:positionV relativeFrom="page"><wp:posOffset>$y</wp:posOffset></wp:positionV>'
-        '<wp:extent cx="$width" cy="$height"/><wp:docPr id="$id" name="PARTE element $id"/>'
-        '<wp:wrapNone/>'
+        '<wp:extent cx="$width" cy="$height"/><wp:wrapNone/>'
+        '<wp:docPr id="$id" name="PARTE element $id"/>'
+        '<wp:cNvGraphicFramePr/>'
         '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
         '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
         '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
@@ -163,15 +165,12 @@ class ParteDocxExporter {
   String _document(ParteRenderPlan plan, String body) {
     final width = (plan.widthMm * 56.692913).round();
     final height = (plan.heightMm * 56.692913).round();
-    final horizontalMargin = (plan.horizontalMarginMm * 56.692913).round();
-    final verticalMargin = (plan.verticalMarginMm * 56.692913).round();
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
         'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
         'xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">'
         '<w:body>$body<w:sectPr><w:pgSz w:w="$width" w:h="$height" w:orient="landscape"/>'
-        '<w:pgMar w:top="$verticalMargin" w:right="$horizontalMargin" '
-        'w:bottom="$verticalMargin" w:left="$horizontalMargin" '
+        '<w:pgMar w:top="0" w:right="0" w:bottom="0" w:left="0" '
         'w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>';
   }
 

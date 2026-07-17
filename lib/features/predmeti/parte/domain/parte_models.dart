@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 const String parteBuiltinTemplateId = 'builtin_parte_standard_v1';
-const int parteTemplateSchemaVersion = 3;
-const int parteDraftSchemaVersion = 3;
+const int parteTemplateSchemaVersion = 4;
+const int parteDraftSchemaVersion = 4;
 
 enum PartePreparationStatus {
   inProgress('IN_PROGRESS'),
@@ -28,7 +28,13 @@ enum ParteImageShape { rectangle, roundedRectangle, oval }
 
 abstract final class ParteFontCatalog {
   static const String notoSans = 'NotoSans';
-  static const supported = <String>[notoSans];
+  static const String notoSerif = 'NotoSerif';
+  static const supported = <String>[notoSans, notoSerif];
+
+  static String displayName(String value) => switch (safe(value)) {
+    notoSerif => 'Noto Serif',
+    _ => 'Noto Sans',
+  };
 
   static String safe(String value) =>
       supported.contains(value) ? value : notoSans;
@@ -56,16 +62,32 @@ class ParteRectMm {
     double? margin,
     double? horizontalMargin,
     double? verticalMargin,
+    double originX = 0,
+    double originY = 0,
+    double? usableWidth,
+    double? usableHeight,
   }) {
     final horizontal = horizontalMargin ?? margin ?? 0;
     final vertical = verticalMargin ?? margin ?? 0;
-    final maxWidth = (pageWidth - horizontal * 2).clamp(1.0, pageWidth);
-    final maxHeight = (pageHeight - vertical * 2).clamp(1.0, pageHeight);
+    final areaWidth = usableWidth ?? pageWidth;
+    final areaHeight = usableHeight ?? pageHeight;
+    final maxWidth = (areaWidth - horizontal * 2).clamp(1.0, areaWidth);
+    final maxHeight = (areaHeight - vertical * 2).clamp(1.0, areaHeight);
     final safeWidth = width.clamp(1.0, maxWidth).toDouble();
     final safeHeight = height.clamp(1.0, maxHeight).toDouble();
     return ParteRectMm(
-      x: x.clamp(horizontal, pageWidth - horizontal - safeWidth).toDouble(),
-      y: y.clamp(vertical, pageHeight - vertical - safeHeight).toDouble(),
+      x: x
+          .clamp(
+            originX + horizontal,
+            originX + areaWidth - horizontal - safeWidth,
+          )
+          .toDouble(),
+      y: y
+          .clamp(
+            originY + vertical,
+            originY + areaHeight - vertical - safeHeight,
+          )
+          .toDouble(),
       width: safeWidth,
       height: safeHeight,
     );
@@ -231,11 +253,17 @@ class ParteTemplate {
     double marginMm = 5,
     double? horizontalMarginMm,
     double? verticalMarginMm,
+    this.printableZoneXmm = 0,
+    this.printableZoneYmm = 0,
+    double? printableZoneWidthMm,
+    double? printableZoneHeightMm,
     required this.blocks,
     this.builtIn = false,
     this.schemaVersion = parteTemplateSchemaVersion,
   }) : horizontalMarginMm = horizontalMarginMm ?? marginMm,
-       verticalMarginMm = verticalMarginMm ?? marginMm;
+       verticalMarginMm = verticalMarginMm ?? marginMm,
+       printableZoneWidthMm = printableZoneWidthMm ?? widthMm,
+       printableZoneHeightMm = printableZoneHeightMm ?? heightMm;
 
   final String id;
   final String name;
@@ -243,6 +271,10 @@ class ParteTemplate {
   final double heightMm;
   final double horizontalMarginMm;
   final double verticalMarginMm;
+  final double printableZoneXmm;
+  final double printableZoneYmm;
+  final double printableZoneWidthMm;
+  final double printableZoneHeightMm;
   double get marginMm => horizontalMarginMm;
   final List<ParteBlockSpec> blocks;
   final bool builtIn;
@@ -256,8 +288,14 @@ class ParteTemplate {
       heightMm <= 350 &&
       horizontalMarginMm >= 0 &&
       verticalMarginMm >= 0 &&
-      horizontalMarginMm * 2 < widthMm &&
-      verticalMarginMm * 2 < heightMm &&
+      printableZoneXmm >= 0 &&
+      printableZoneYmm >= 0 &&
+      printableZoneWidthMm > 0 &&
+      printableZoneHeightMm > 0 &&
+      printableZoneXmm + printableZoneWidthMm <= widthMm &&
+      printableZoneYmm + printableZoneHeightMm <= heightMm &&
+      horizontalMarginMm * 2 < printableZoneWidthMm &&
+      verticalMarginMm * 2 < printableZoneHeightMm &&
       blocks.isNotEmpty;
 
   Map<String, Object> toJson({bool includeIdentity = true}) => {
@@ -269,6 +307,10 @@ class ParteTemplate {
     'heightMm': heightMm,
     'horizontalMarginMm': horizontalMarginMm,
     'verticalMarginMm': verticalMarginMm,
+    'printableZoneXmm': printableZoneXmm,
+    'printableZoneYmm': printableZoneYmm,
+    'printableZoneWidthMm': printableZoneWidthMm,
+    'printableZoneHeightMm': printableZoneHeightMm,
     'blocks': blocks.map((block) => block.toJson()).toList(),
   };
 
@@ -286,6 +328,10 @@ class ParteTemplate {
       'marginMm',
       'horizontalMarginMm',
       'verticalMarginMm',
+      'printableZoneXmm',
+      'printableZoneYmm',
+      'printableZoneWidthMm',
+      'printableZoneHeightMm',
       'blocks',
     };
     if (json.keys.any((key) => !allowed.contains(key))) {
@@ -320,6 +366,11 @@ class ParteTemplate {
           .toDouble(),
       verticalMarginMm: ((json['verticalMarginMm'] as num?) ?? legacyMargin)
           .toDouble(),
+      printableZoneXmm: ((json['printableZoneXmm'] as num?) ?? 0).toDouble(),
+      printableZoneYmm: ((json['printableZoneYmm'] as num?) ?? 0).toDouble(),
+      printableZoneWidthMm: (json['printableZoneWidthMm'] as num?)?.toDouble(),
+      printableZoneHeightMm: (json['printableZoneHeightMm'] as num?)
+          ?.toDouble(),
       blocks: List<ParteBlockSpec>.unmodifiable(blocks),
       builtIn: builtIn,
     );
@@ -334,6 +385,10 @@ class ParteTemplate {
         pageHeight: template.heightMm,
         horizontalMargin: template.horizontalMarginMm,
         verticalMargin: template.verticalMarginMm,
+        originX: template.printableZoneXmm,
+        originY: template.printableZoneYmm,
+        usableWidth: template.printableZoneWidthMm,
+        usableHeight: template.printableZoneHeightMm,
       );
       if (clamped.toJson().toString() != block.rect.toJson().toString()) {
         throw const FormatException(
@@ -505,8 +560,13 @@ class ParteDraft {
     required this.symbolId,
     this.horizontalMarginMm = 5,
     this.verticalMarginMm = 5,
+    this.printableZoneXmm = 0,
+    this.printableZoneYmm = 0,
+    double? printableZoneWidthMm,
+    double? printableZoneHeightMm,
     this.schemaVersion = parteDraftSchemaVersion,
-  });
+  }) : printableZoneWidthMm = printableZoneWidthMm ?? widthMm,
+       printableZoneHeightMm = printableZoneHeightMm ?? heightMm;
 
   final int schemaVersion;
   final Map<String, String> textByBlock;
@@ -515,6 +575,10 @@ class ParteDraft {
   final double heightMm;
   final double horizontalMarginMm;
   final double verticalMarginMm;
+  final double printableZoneXmm;
+  final double printableZoneYmm;
+  final double printableZoneWidthMm;
+  final double printableZoneHeightMm;
   final String symbolId;
 
   ParteDraft copyWith({
@@ -524,6 +588,10 @@ class ParteDraft {
     double? heightMm,
     double? horizontalMarginMm,
     double? verticalMarginMm,
+    double? printableZoneXmm,
+    double? printableZoneYmm,
+    double? printableZoneWidthMm,
+    double? printableZoneHeightMm,
   }) => ParteDraft(
     textByBlock: textByBlock ?? this.textByBlock,
     blocks: blocks ?? this.blocks,
@@ -531,6 +599,10 @@ class ParteDraft {
     heightMm: heightMm ?? this.heightMm,
     horizontalMarginMm: horizontalMarginMm ?? this.horizontalMarginMm,
     verticalMarginMm: verticalMarginMm ?? this.verticalMarginMm,
+    printableZoneXmm: printableZoneXmm ?? this.printableZoneXmm,
+    printableZoneYmm: printableZoneYmm ?? this.printableZoneYmm,
+    printableZoneWidthMm: printableZoneWidthMm ?? this.printableZoneWidthMm,
+    printableZoneHeightMm: printableZoneHeightMm ?? this.printableZoneHeightMm,
     symbolId: symbolId,
   );
 
@@ -542,6 +614,10 @@ class ParteDraft {
     'heightMm': heightMm,
     'horizontalMarginMm': horizontalMarginMm,
     'verticalMarginMm': verticalMarginMm,
+    'printableZoneXmm': printableZoneXmm,
+    'printableZoneYmm': printableZoneYmm,
+    'printableZoneWidthMm': printableZoneWidthMm,
+    'printableZoneHeightMm': printableZoneHeightMm,
     'symbolId': symbolId,
   };
 
@@ -576,6 +652,11 @@ class ParteDraft {
           .toDouble(),
       verticalMarginMm: ((json['verticalMarginMm'] as num?) ?? legacyMargin)
           .toDouble(),
+      printableZoneXmm: ((json['printableZoneXmm'] as num?) ?? 0).toDouble(),
+      printableZoneYmm: ((json['printableZoneYmm'] as num?) ?? 0).toDouble(),
+      printableZoneWidthMm: (json['printableZoneWidthMm'] as num?)?.toDouble(),
+      printableZoneHeightMm: (json['printableZoneHeightMm'] as num?)
+          ?.toDouble(),
       symbolId: json['symbolId'] as String,
     );
   }
@@ -587,22 +668,30 @@ class ParteDraft {
     required double heightMm,
     required double horizontalMarginMm,
     required double verticalMarginMm,
+    double printableZoneXmm = 0,
+    double printableZoneYmm = 0,
+    double? printableZoneWidthMm,
+    double? printableZoneHeightMm,
   }) {
-    final oldUsableWidth = (this.widthMm - this.horizontalMarginMm * 2).clamp(
+    final newZoneWidth = printableZoneWidthMm ?? widthMm;
+    final newZoneHeight = printableZoneHeightMm ?? heightMm;
+    final oldUsableWidth =
+        (this.printableZoneWidthMm - this.horizontalMarginMm * 2).clamp(
+          1.0,
+          this.printableZoneWidthMm,
+        );
+    final oldUsableHeight =
+        (this.printableZoneHeightMm - this.verticalMarginMm * 2).clamp(
+          1.0,
+          this.printableZoneHeightMm,
+        );
+    final newUsableWidth = (newZoneWidth - horizontalMarginMm * 2).clamp(
       1.0,
-      this.widthMm,
+      newZoneWidth,
     );
-    final oldUsableHeight = (this.heightMm - this.verticalMarginMm * 2).clamp(
+    final newUsableHeight = (newZoneHeight - verticalMarginMm * 2).clamp(
       1.0,
-      this.heightMm,
-    );
-    final newUsableWidth = (widthMm - horizontalMarginMm * 2).clamp(
-      1.0,
-      widthMm,
-    );
-    final newUsableHeight = (heightMm - verticalMarginMm * 2).clamp(
-      1.0,
-      heightMm,
+      newZoneHeight,
     );
     final scaleX = newUsableWidth / oldUsableWidth;
     final scaleY = newUsableHeight / oldUsableHeight;
@@ -613,11 +702,17 @@ class ParteDraft {
           final rect =
               ParteRectMm(
                 x:
+                    printableZoneXmm +
                     horizontalMarginMm +
-                    (source.x - this.horizontalMarginMm) * scaleX,
+                    (source.x -
+                            this.printableZoneXmm -
+                            this.horizontalMarginMm) *
+                        scaleX,
                 y:
+                    printableZoneYmm +
                     verticalMarginMm +
-                    (source.y - this.verticalMarginMm) * scaleY,
+                    (source.y - this.printableZoneYmm - this.verticalMarginMm) *
+                        scaleY,
                 width: source.width * scaleX,
                 height: source.height * scaleY,
               ).clampTo(
@@ -625,6 +720,10 @@ class ParteDraft {
                 pageHeight: heightMm,
                 horizontalMargin: horizontalMarginMm,
                 verticalMargin: verticalMarginMm,
+                originX: printableZoneXmm,
+                originY: printableZoneYmm,
+                usableWidth: newZoneWidth,
+                usableHeight: newZoneHeight,
               );
           return block.copyWith(
             rect: rect,
@@ -642,6 +741,10 @@ class ParteDraft {
       heightMm: heightMm,
       horizontalMarginMm: horizontalMarginMm,
       verticalMarginMm: verticalMarginMm,
+      printableZoneXmm: printableZoneXmm,
+      printableZoneYmm: printableZoneYmm,
+      printableZoneWidthMm: newZoneWidth,
+      printableZoneHeightMm: newZoneHeight,
     );
   }
 

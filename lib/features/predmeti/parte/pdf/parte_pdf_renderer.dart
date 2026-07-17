@@ -36,6 +36,13 @@ class PartePdfRenderer {
     final bold = pw.Font.ttf(
       await rootBundle.load('assets/fonts/NotoSans-Bold.ttf'),
     );
+    final serif = pw.Font.ttf(
+      await rootBundle.load('assets/fonts/NotoSerif-Variable.ttf'),
+    );
+    final fonts = <String, ({pw.Font regular, pw.Font bold})>{
+      ParteFontCatalog.notoSans: (regular: regular, bold: bold),
+      ParteFontCatalog.notoSerif: (regular: serif, bold: serif),
+    };
     final theme = pw.ThemeData.withFont(base: regular, bold: bold);
     final document = pw.Document(
       title: 'PARTA',
@@ -45,7 +52,7 @@ class PartePdfRenderer {
     );
     final widgets = <pw.Widget>[];
     for (final block in plan.blocks) {
-      widgets.add(await _buildBlock(block));
+      widgets.add(await _buildBlock(block, fonts));
     }
     document.addPage(
       pw.Page(
@@ -87,19 +94,34 @@ class PartePdfRenderer {
               ),
             ),
             pw.Positioned(
-              left: plan.horizontalMarginMm * mm,
-              top: plan.verticalMarginMm * mm,
+              left: plan.printableZoneXmm * mm,
+              top: plan.printableZoneYmm * mm,
               child: pw.Container(
-                width: (plan.widthMm - plan.horizontalMarginMm * 2) * mm,
-                height: (plan.heightMm - plan.verticalMarginMm * 2) * mm,
+                width: plan.printableZoneWidthMm * mm,
+                height: plan.printableZoneHeightMm * mm,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(width: 0.8, color: PdfColors.orange),
+                ),
+              ),
+            ),
+            pw.Positioned(
+              left: (plan.printableZoneXmm + plan.horizontalMarginMm) * mm,
+              top: (plan.printableZoneYmm + plan.verticalMarginMm) * mm,
+              child: pw.Container(
+                width:
+                    (plan.printableZoneWidthMm - plan.horizontalMarginMm * 2) *
+                    mm,
+                height:
+                    (plan.printableZoneHeightMm - plan.verticalMarginMm * 2) *
+                    mm,
                 decoration: pw.BoxDecoration(
                   border: pw.Border.all(width: 0.8, color: PdfColors.red),
                 ),
               ),
             ),
             pw.Positioned(
-              left: (plan.horizontalMarginMm + 5) * mm,
-              top: (plan.verticalMarginMm + 24) * mm,
+              left: (plan.printableZoneXmm + plan.horizontalMarginMm + 5) * mm,
+              top: (plan.printableZoneYmm + plan.verticalMarginMm + 30) * mm,
               child: pw.Container(
                 width: referenceWidth * mm,
                 height: referenceHeight * mm,
@@ -124,14 +146,22 @@ class PartePdfRenderer {
                 ),
               ),
             pw.Positioned(
-              left: (plan.horizontalMarginMm + 5) * mm,
-              top: (plan.verticalMarginMm + 5) * mm,
+              left: (plan.printableZoneXmm + plan.horizontalMarginMm + 5) * mm,
+              top: (plan.printableZoneYmm + plan.verticalMarginMm + 5) * mm,
               child: pw.SizedBox(
-                width: (plan.widthMm - plan.horizontalMarginMm * 2 - 10) * mm,
+                width:
+                    (plan.printableZoneWidthMm -
+                        plan.horizontalMarginMm * 2 -
+                        10) *
+                    mm,
                 child: pw.Text(
                   'OPC PARTE KALIBRACIJA — stranica '
                   '${plan.widthMm.toStringAsFixed(1)} × ${plan.heightMm.toStringAsFixed(1)} mm\n'
-                  'Crvena linija: deklarisana upotrebljiva površina. Plavi pravougaonik: poznata mera.\n'
+                  'Zona: X=${plan.printableZoneXmm.toStringAsFixed(1)}, '
+                  'Y=${plan.printableZoneYmm.toStringAsFixed(1)}, '
+                  '${plan.printableZoneWidthMm.toStringAsFixed(1)} × '
+                  '${plan.printableZoneHeightMm.toStringAsFixed(1)} mm.\n'
+                  'Narandžasta: zona štampe. Crvena: sigurna površina. Plava: poznata mera.\n'
                   'Štampati isključivo uz Actual size / 100%. Ne koristiti Fit, Shrink ili Scale to page.',
                   style: pw.TextStyle(font: regular, fontSize: 9),
                 ),
@@ -144,10 +174,13 @@ class PartePdfRenderer {
     return document.save();
   }
 
-  Future<pw.Widget> _buildBlock(ParteRenderBlock block) async {
+  Future<pw.Widget> _buildBlock(
+    ParteRenderBlock block,
+    Map<String, ({pw.Font regular, pw.Font bold})> fonts,
+  ) async {
     final rect = block.rect;
     final child = switch (block.kind) {
-      ParteBlockKind.text => _textBlock(block),
+      ParteBlockKind.text => _textBlock(block, fonts),
       ParteBlockKind.photo || ParteBlockKind.symbol => await _imageBlock(block),
     };
     return pw.Positioned(
@@ -161,7 +194,11 @@ class PartePdfRenderer {
     );
   }
 
-  pw.Widget _textBlock(ParteRenderBlock block) {
+  pw.Widget _textBlock(
+    ParteRenderBlock block,
+    Map<String, ({pw.Font regular, pw.Font bold})> fonts,
+  ) {
+    final selected = fonts[ParteFontCatalog.safe(block.fontFamily)]!;
     final alignment = switch (block.alignment) {
       ParteTextAlign.left => pw.CrossAxisAlignment.start,
       ParteTextAlign.center => pw.CrossAxisAlignment.center,
@@ -189,6 +226,7 @@ class PartePdfRenderer {
                 ParteTextAlign.right => pw.TextAlign.right,
               },
               style: pw.TextStyle(
+                font: block.bold ? selected.bold : selected.regular,
                 fontSize: block.fontSize,
                 height: 1.22,
                 fontWeight: block.bold
@@ -253,7 +291,7 @@ class PartePdfExportService {
     required OpcEntitlementPolicy entitlement,
   }) async {
     if (preparation.previewConfirmedFingerprint != plan.fingerprint) {
-      throw StateError('Potvrdite aktuelni finalni preview pre PDF izvoza.');
+      throw StateError('Potvrdite aktuelni pregled pripreme pre PDF izvoza.');
     }
     final bytes = await renderer.build(plan: plan);
     final filename = koricePdfDerivatFajlNaziv(
