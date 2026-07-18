@@ -26,7 +26,11 @@ class PartePdfRenderer {
 
   final ParteMediaStore mediaStore;
 
-  Future<Uint8List> build({required ParteRenderPlan plan}) async {
+  Future<Uint8List> build({
+    required ParteRenderPlan plan,
+    double horizontalCorrectionMm = 0,
+    double verticalCorrectionMm = 0,
+  }) async {
     if (!plan.canGeneratePdf) {
       throw StateError('PARTE PDF ima nerešene blokere.');
     }
@@ -52,7 +56,14 @@ class PartePdfRenderer {
     );
     final widgets = <pw.Widget>[];
     for (final block in plan.blocks) {
-      widgets.add(await _buildBlock(block, fonts));
+      widgets.add(
+        await _buildBlock(
+          block,
+          fonts,
+          horizontalCorrectionMm,
+          verticalCorrectionMm,
+        ),
+      );
     }
     document.addPage(
       pw.Page(
@@ -145,6 +156,36 @@ class PartePdfRenderer {
                   color: PdfColors.black,
                 ),
               ),
+            for (var mark = 0; mark <= plan.heightMm.floor(); mark += 10)
+              pw.Positioned(
+                left: 0,
+                top: mark * mm,
+                child: pw.Container(
+                  width: 4 * mm,
+                  height: 0.4,
+                  color: PdfColors.black,
+                ),
+              ),
+            pw.Positioned(
+              left:
+                  (plan.printableZoneXmm + plan.printableZoneWidthMm / 2) * mm,
+              top: plan.printableZoneYmm * mm,
+              child: pw.Container(
+                width: 0.5,
+                height: plan.printableZoneHeightMm * mm,
+                color: PdfColors.blueGrey,
+              ),
+            ),
+            pw.Positioned(
+              left: plan.printableZoneXmm * mm,
+              top:
+                  (plan.printableZoneYmm + plan.printableZoneHeightMm / 2) * mm,
+              child: pw.Container(
+                width: plan.printableZoneWidthMm * mm,
+                height: 0.5,
+                color: PdfColors.blueGrey,
+              ),
+            ),
             pw.Positioned(
               left: (plan.printableZoneXmm + plan.horizontalMarginMm + 5) * mm,
               top: (plan.printableZoneYmm + plan.verticalMarginMm + 5) * mm,
@@ -155,14 +196,15 @@ class PartePdfRenderer {
                         10) *
                     mm,
                 child: pw.Text(
-                  'OPC PARTE KALIBRACIJA — stranica '
+                  'OPC PARTE KALIBRACIJA – stranica '
                   '${plan.widthMm.toStringAsFixed(1)} × ${plan.heightMm.toStringAsFixed(1)} mm\n'
                   'Zona: X=${plan.printableZoneXmm.toStringAsFixed(1)}, '
                   'Y=${plan.printableZoneYmm.toStringAsFixed(1)}, '
                   '${plan.printableZoneWidthMm.toStringAsFixed(1)} × '
                   '${plan.printableZoneHeightMm.toStringAsFixed(1)} mm.\n'
                   'Narandžasta: zona štampe. Crvena: sigurna površina. Plava: poznata mera.\n'
-                  'Štampati isključivo uz Actual size / 100%. Ne koristiti Fit, Shrink ili Scale to page.',
+                  'Štampati isključivo uz Actual size / 100%. Ne koristiti Fit, Shrink ili Scale to page.\n'
+                  'Izmerite odstupanje preseka osa od centra obrasca: horizontalno (- levo / + desno) i vertikalno (- gore / + dole).',
                   style: pw.TextStyle(font: regular, fontSize: 9),
                 ),
               ),
@@ -177,6 +219,8 @@ class PartePdfRenderer {
   Future<pw.Widget> _buildBlock(
     ParteRenderBlock block,
     Map<String, ({pw.Font regular, pw.Font bold})> fonts,
+    double horizontalCorrectionMm,
+    double verticalCorrectionMm,
   ) async {
     final rect = block.rect;
     final child = switch (block.kind) {
@@ -184,8 +228,8 @@ class PartePdfRenderer {
       ParteBlockKind.photo || ParteBlockKind.symbol => await _imageBlock(block),
     };
     return pw.Positioned(
-      left: rect.x * PdfPageFormat.mm,
-      top: rect.y * PdfPageFormat.mm,
+      left: (rect.x + horizontalCorrectionMm) * PdfPageFormat.mm,
+      top: (rect.y + verticalCorrectionMm) * PdfPageFormat.mm,
       child: pw.SizedBox(
         width: rect.width * PdfPageFormat.mm,
         height: rect.height * PdfPageFormat.mm,
@@ -289,11 +333,17 @@ class PartePdfExportService {
     required ParteRenderPlan plan,
     required KorisniciData actor,
     required OpcEntitlementPolicy entitlement,
+    double horizontalCorrectionMm = 0,
+    double verticalCorrectionMm = 0,
   }) async {
     if (preparation.previewConfirmedFingerprint != plan.fingerprint) {
       throw StateError('Potvrdite aktuelni pregled pripreme pre PDF izvoza.');
     }
-    final bytes = await renderer.build(plan: plan);
+    final bytes = await renderer.build(
+      plan: plan,
+      horizontalCorrectionMm: horizontalCorrectionMm,
+      verticalCorrectionMm: verticalCorrectionMm,
+    );
     final filename = koricePdfDerivatFajlNaziv(
       predmet,
       'PARTA',

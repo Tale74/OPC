@@ -485,6 +485,8 @@ workflow.
 - Page width/height and horizontal/vertical margins are physical inputs. Their change must reconstruct all block geometry and the render plan.
 - PDF is the authoritative physical page. A calibration PDF assists a real `Actual size / 100%` print, but cannot itself prove physical-print PASS.
 - DOCX maps OPC blocks to independent editable positioned blocks. Noto Sans is the embedded cross-platform source/PDF font; external editors may substitute an installed formal font, so DOCX equality is not claimed.
+- New PARTE preparations use Noto Serif unless a saved template/preparation explicitly requests Noto Sans. Format entry derives a centred printable-zone origin internally; safe margins remain editable. Printer-origin correction is a separate machine-local profile applied only to the PDF output.
+- Composer alignment guides and mild snapping are editor-only. Media retain original aspect ratio through reflow and export. Word media are page-relative movable objects with Behind Text wrapping; the one-line name uses the shared fit result through a Word-compatible equivalent font-size transform.
 
 ## PARTE printable-zone correction (2026-07-17)
 

@@ -72,6 +72,12 @@ class _ParteTemplateManagementDialogState
     blocks: widget.currentDraft.blocks,
   );
 
+  bool get _layoutIsDirty =>
+      parteCanonicalFingerprint(
+        _currentTechnical.toJson(includeIdentity: false),
+      ) !=
+      parteCanonicalFingerprint(_selected.toJson(includeIdentity: false));
+
   Future<String?> _askName(String title, {String initial = ''}) async {
     final controller = TextEditingController(text: initial);
     final value = await showDialog<String>(
@@ -168,6 +174,36 @@ class _ParteTemplateManagementDialogState
     );
   }
 
+  Future<void> _updateSelected() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ažuriraj izabrani šablon'),
+        content: Text(
+          'Zameniti tehnički raspored šablona „${_selected.name}“ trenutnim rasporedom?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('ODUSTANI'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('AŽURIRAJ'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _run(
+      () => widget.repository.updateTechnicalLayout(
+        actor: widget.actor,
+        id: _selected.id,
+        technicalSource: _currentTechnical,
+      ),
+    );
+  }
+
   Future<void> _export() async {
     await _run(() async {
       final source = widget.repository.exportTemplate(_selected);
@@ -260,7 +296,7 @@ class _ParteTemplateManagementDialogState
                             (template) => DropdownMenuItem(
                               value: template.id,
                               child: Text(
-                                '${template.name}${template.id == _defaultId ? ' — PODRAZUMEVAN' : ''}',
+                                '${template.name}${template.id == _defaultId ? ' – PODRAZUMEVAN' : ''}',
                               ),
                             ),
                           )
@@ -278,35 +314,32 @@ class _ParteTemplateManagementDialogState
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        FilledButton.tonal(
-                          onPressed: () => _run(
-                            () => widget.repository.setDefault(
-                              templateId: _selected.id,
-                              actor: widget.actor,
+                        if (_selected.id != _defaultId)
+                          FilledButton.tonal(
+                            onPressed: () => _run(
+                              () => widget.repository.setDefault(
+                                templateId: _selected.id,
+                                actor: widget.actor,
+                              ),
                             ),
+                            child: const Text('POSTAVI KAO PODRAZUMEVAN'),
+                          )
+                        else
+                          const Chip(label: Text('PODRAZUMEVAN')),
+                        if (_layoutIsDirty)
+                          FilledButton.tonal(
+                            onPressed: _saveCurrentAsNew,
+                            child: const Text('SAČUVAJ KAO NOVI ŠABLON'),
                           ),
-                          child: const Text('POSTAVI KAO PODRAZUMEVAN'),
-                        ),
-                        FilledButton.tonal(
-                          onPressed: _saveCurrentAsNew,
-                          child: const Text(
-                            'SAČUVAJ TRENUTNI RASPORED KAO NOVI',
+                        if (!_selected.builtIn && _layoutIsDirty)
+                          OutlinedButton(
+                            onPressed: _updateSelected,
+                            child: const Text('AŽURIRAJ IZABRANI ŠABLON'),
                           ),
-                        ),
                         if (!_selected.builtIn) ...[
                           OutlinedButton(
                             onPressed: _rename,
                             child: const Text('PREIMENUJ'),
-                          ),
-                          OutlinedButton(
-                            onPressed: () => _run(
-                              () => widget.repository.updateTechnicalLayout(
-                                actor: widget.actor,
-                                id: _selected.id,
-                                technicalSource: _currentTechnical,
-                              ),
-                            ),
-                            child: const Text('PRIMENI TRENUTNI RASPORED'),
                           ),
                           OutlinedButton(
                             onPressed: _export,
@@ -317,11 +350,16 @@ class _ParteTemplateManagementDialogState
                             child: const Text('OBRIŠI'),
                           ),
                         ],
-                        OutlinedButton(
-                          onPressed: _import,
-                          child: const Text('UVEZI'),
-                        ),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton(
+                        onPressed: _import,
+                        child: const Text('UVEZI ŠABLON'),
+                      ),
                     ),
                   ],
                 ),
@@ -334,7 +372,7 @@ class _ParteTemplateManagementDialogState
         ),
         FilledButton(
           onPressed: _loading ? null : () => Navigator.pop(context, _selected),
-          child: const Text('PRIMENI'),
+          child: const Text('PRIMENI ŠABLON'),
         ),
       ],
     );

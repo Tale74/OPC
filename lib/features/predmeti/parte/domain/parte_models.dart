@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
 const String parteBuiltinTemplateId = 'builtin_parte_standard_v1';
-const int parteTemplateSchemaVersion = 4;
-const int parteDraftSchemaVersion = 4;
+const int parteTemplateSchemaVersion = 5;
+const int parteDraftSchemaVersion = 5;
 
 enum PartePreparationStatus {
   inProgress('IN_PROGRESS'),
@@ -37,7 +37,7 @@ abstract final class ParteFontCatalog {
   };
 
   static String safe(String value) =>
-      supported.contains(value) ? value : notoSans;
+      supported.contains(value) ? value : notoSerif;
 }
 
 class ParteRectMm {
@@ -55,6 +55,23 @@ class ParteRectMm {
 
   double get right => x + width;
   double get bottom => y + height;
+  double get centerX => x + width / 2;
+  double get centerY => y + height / 2;
+
+  ParteRectMm normalizedToAspectRatio(double ratio) {
+    if (!ratio.isFinite || ratio <= 0 || width <= 0 || height <= 0) {
+      return this;
+    }
+    final current = width / height;
+    final nextWidth = current > ratio ? height * ratio : width;
+    final nextHeight = current > ratio ? height : width / ratio;
+    return ParteRectMm(
+      x: centerX - nextWidth / 2,
+      y: centerY - nextHeight / 2,
+      width: nextWidth,
+      height: nextHeight,
+    );
+  }
 
   ParteRectMm clampTo({
     required double pageWidth,
@@ -118,9 +135,10 @@ class ParteBlockSpec {
     this.maximumFontSize = 60,
     this.bold = false,
     this.alignment = ParteTextAlign.center,
-    this.fontFamily = ParteFontCatalog.notoSans,
+    this.fontFamily = ParteFontCatalog.notoSerif,
     this.horizontalScale = 1,
     this.lockAspectRatio = true,
+    this.sourceAspectRatio,
     this.brightness = 1,
     this.contrast = 1,
     this.sharpness = 0,
@@ -142,6 +160,7 @@ class ParteBlockSpec {
   final String fontFamily;
   final double horizontalScale;
   final bool lockAspectRatio;
+  final double? sourceAspectRatio;
   final double brightness;
   final double contrast;
   final double sharpness;
@@ -159,6 +178,7 @@ class ParteBlockSpec {
     String? fontFamily,
     double? horizontalScale,
     bool? lockAspectRatio,
+    double? sourceAspectRatio,
     double? brightness,
     double? contrast,
     double? sharpness,
@@ -180,6 +200,7 @@ class ParteBlockSpec {
         .clamp(0.5, 1.0)
         .toDouble(),
     lockAspectRatio: lockAspectRatio ?? this.lockAspectRatio,
+    sourceAspectRatio: sourceAspectRatio ?? this.sourceAspectRatio,
     brightness: (brightness ?? this.brightness).clamp(0.5, 1.5).toDouble(),
     contrast: (contrast ?? this.contrast).clamp(0.5, 1.5).toDouble(),
     sharpness: (sharpness ?? this.sharpness).clamp(0, 1).toDouble(),
@@ -190,7 +211,7 @@ class ParteBlockSpec {
     layer: layer,
   );
 
-  Map<String, Object> toJson() => {
+  Map<String, Object?> toJson() => {
     'id': id,
     'kind': kind.name,
     'rect': rect.toJson(),
@@ -202,6 +223,7 @@ class ParteBlockSpec {
     'fontFamily': fontFamily,
     'horizontalScale': horizontalScale,
     'lockAspectRatio': lockAspectRatio,
+    'sourceAspectRatio': sourceAspectRatio,
     'brightness': brightness,
     'contrast': contrast,
     'sharpness': sharpness,
@@ -224,13 +246,14 @@ class ParteBlockSpec {
       (json['alignment'] as String?) ?? ParteTextAlign.center.name,
     ),
     fontFamily: ParteFontCatalog.safe(
-      (json['fontFamily'] as String?) ?? ParteFontCatalog.notoSans,
+      (json['fontFamily'] as String?) ?? ParteFontCatalog.notoSerif,
     ),
     horizontalScale: ((json['horizontalScale'] as num?) ?? 1).toDouble().clamp(
       0.5,
       1.0,
     ),
     lockAspectRatio: (json['lockAspectRatio'] as bool?) ?? true,
+    sourceAspectRatio: (json['sourceAspectRatio'] as num?)?.toDouble(),
     brightness: ((json['brightness'] as num?) ?? 1).toDouble(),
     contrast: ((json['contrast'] as num?) ?? 1).toDouble(),
     sharpness: ((json['sharpness'] as num?) ?? 0).toDouble(),
@@ -401,7 +424,7 @@ class ParteTemplate {
 
   static const builtInStandard = ParteTemplate(
     id: parteBuiltinTemplateId,
-    name: 'OPC standard — landscape',
+    name: 'OPC standard – landscape',
     widthMm: 224,
     heightMm: 170,
     horizontalMarginMm: 5,
@@ -699,32 +722,48 @@ class ParteDraft {
     final transformed = blocks
         .map((block) {
           final source = block.rect;
-          final rect =
-              ParteRectMm(
-                x:
-                    printableZoneXmm +
-                    horizontalMarginMm +
-                    (source.x -
-                            this.printableZoneXmm -
-                            this.horizontalMarginMm) *
-                        scaleX,
-                y:
-                    printableZoneYmm +
-                    verticalMarginMm +
-                    (source.y - this.printableZoneYmm - this.verticalMarginMm) *
-                        scaleY,
-                width: source.width * scaleX,
-                height: source.height * scaleY,
-              ).clampTo(
-                pageWidth: widthMm,
-                pageHeight: heightMm,
-                horizontalMargin: horizontalMarginMm,
-                verticalMargin: verticalMarginMm,
-                originX: printableZoneXmm,
-                originY: printableZoneYmm,
-                usableWidth: newZoneWidth,
-                usableHeight: newZoneHeight,
-              );
+          final mappedCenterX =
+              printableZoneXmm +
+              horizontalMarginMm +
+              (source.centerX -
+                      this.printableZoneXmm -
+                      this.horizontalMarginMm) *
+                  scaleX;
+          final mappedCenterY =
+              printableZoneYmm +
+              verticalMarginMm +
+              (source.centerY - this.printableZoneYmm - this.verticalMarginMm) *
+                  scaleY;
+          final mediaScale = scaleX < scaleY ? scaleX : scaleY;
+          final mappedWidth =
+              block.kind != ParteBlockKind.text && block.lockAspectRatio
+              ? source.width * mediaScale
+              : source.width * scaleX;
+          final mappedHeight =
+              block.kind != ParteBlockKind.text && block.lockAspectRatio
+              ? source.height * mediaScale
+              : source.height * scaleY;
+          var mapped = ParteRectMm(
+            x: mappedCenterX - mappedWidth / 2,
+            y: mappedCenterY - mappedHeight / 2,
+            width: mappedWidth,
+            height: mappedHeight,
+          );
+          if (block.kind != ParteBlockKind.text &&
+              block.lockAspectRatio &&
+              block.sourceAspectRatio != null) {
+            mapped = mapped.normalizedToAspectRatio(block.sourceAspectRatio!);
+          }
+          final rect = mapped.clampTo(
+            pageWidth: widthMm,
+            pageHeight: heightMm,
+            horizontalMargin: horizontalMarginMm,
+            verticalMargin: verticalMarginMm,
+            originX: printableZoneXmm,
+            originY: printableZoneYmm,
+            usableWidth: newZoneWidth,
+            usableHeight: newZoneHeight,
+          );
           return block.copyWith(
             rect: rect,
             initialFontSize: block.kind == ParteBlockKind.text

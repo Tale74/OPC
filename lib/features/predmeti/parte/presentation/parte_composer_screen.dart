@@ -12,6 +12,7 @@ import '../../data/predmeti_repository.dart';
 import '../application/parte_preparation_service.dart';
 import '../data/parte_media_store.dart';
 import '../data/parte_preparation_repository.dart';
+import '../data/parte_print_profile_store.dart';
 import '../data/parte_template_repository.dart';
 import '../domain/parte_composer.dart';
 import '../domain/parte_image_effects.dart';
@@ -27,12 +28,14 @@ class ParteComposerScreen extends StatefulWidget {
     required this.predmetiRepository,
     required this.actor,
     required this.entitlement,
+    this.printProfileStore,
   });
 
   final int predmetId;
   final PredmetiRepository predmetiRepository;
   final KorisniciData actor;
   final OpcEntitlementPolicy entitlement;
+  final PartePrintProfileStore? printProfileStore;
 
   @override
   State<ParteComposerScreen> createState() => _ParteComposerScreenState();
@@ -45,6 +48,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   late final PartePdfExportService _pdfService;
   late final ParteDocxExporter _docxExporter;
   late final ParteTemplateRepository _templateRepository;
+  late final PartePrintProfileStore _printProfileStore;
 
   PartePripremeData? _preparation;
   PredmetiData? _predmet;
@@ -60,10 +64,11 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   late final TextEditingController _heightController;
   late final TextEditingController _horizontalMarginController;
   late final TextEditingController _verticalMarginController;
-  late final TextEditingController _zoneXController;
-  late final TextEditingController _zoneYController;
   late final TextEditingController _zoneWidthController;
   late final TextEditingController _zoneHeightController;
+  late final TextEditingController _printHorizontalController;
+  late final TextEditingController _printVerticalController;
+  PartePrintProfile _printProfile = const PartePrintProfile();
   bool _textExpanded = true;
   bool _formatExpanded = true;
 
@@ -71,6 +76,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   void initState() {
     super.initState();
     _repository = PartePreparationRepository(widget.predmetiRepository.db);
+    _printProfileStore = widget.printProfileStore ?? PartePrintProfileStore();
     _mediaStore = ParteMediaStore();
     _service = PartePreparationService(
       repository: _repository,
@@ -86,11 +92,13 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     _heightController = TextEditingController();
     _horizontalMarginController = TextEditingController();
     _verticalMarginController = TextEditingController();
-    _zoneXController = TextEditingController();
-    _zoneYController = TextEditingController();
     _zoneWidthController = TextEditingController();
     _zoneHeightController = TextEditingController();
-    _initialize();
+    _printHorizontalController = TextEditingController(text: '0.0');
+    _printVerticalController = TextEditingController(text: '0.0');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _initialize();
+    });
   }
 
   @override
@@ -102,15 +110,20 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     _heightController.dispose();
     _horizontalMarginController.dispose();
     _verticalMarginController.dispose();
-    _zoneXController.dispose();
-    _zoneYController.dispose();
     _zoneWidthController.dispose();
     _zoneHeightController.dispose();
+    _printHorizontalController.dispose();
+    _printVerticalController.dispose();
     super.dispose();
   }
 
   Future<void> _initialize() async {
     try {
+      _printProfile = await _printProfileStore.load();
+      _printHorizontalController.text = _printProfile.horizontalCorrectionMm
+          .toStringAsFixed(1);
+      _printVerticalController.text = _printProfile.verticalCorrectionMm
+          .toStringAsFixed(1);
       final preparation = await _repository.initializeOrResume(
         predmetId: widget.predmetId,
         actor: widget.actor,
@@ -162,8 +175,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           draft?.horizontalMarginMm.toStringAsFixed(1) ?? '';
       _verticalMarginController.text =
           draft?.verticalMarginMm.toStringAsFixed(1) ?? '';
-      _zoneXController.text = draft?.printableZoneXmm.toStringAsFixed(1) ?? '';
-      _zoneYController.text = draft?.printableZoneYmm.toStringAsFixed(1) ?? '';
       _zoneWidthController.text =
           draft?.printableZoneWidthMm.toStringAsFixed(1) ?? '';
       _zoneHeightController.text =
@@ -226,8 +237,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     final verticalMargin = double.tryParse(
       _verticalMarginController.text.replaceAll(',', '.'),
     );
-    final zoneX = double.tryParse(_zoneXController.text.replaceAll(',', '.'));
-    final zoneY = double.tryParse(_zoneYController.text.replaceAll(',', '.'));
     final zoneWidth = double.tryParse(
       _zoneWidthController.text.replaceAll(',', '.'),
     );
@@ -238,8 +247,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         height == null ||
         horizontalMargin == null ||
         verticalMargin == null ||
-        zoneX == null ||
-        zoneY == null ||
         zoneWidth == null ||
         zoneHeight == null) {
       throw const FormatException(
@@ -248,18 +255,18 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     }
     if (horizontalMargin < 0 ||
         verticalMargin < 0 ||
-        zoneX < 0 ||
-        zoneY < 0 ||
         zoneWidth <= 0 ||
         zoneHeight <= 0 ||
-        zoneX + zoneWidth > width ||
-        zoneY + zoneHeight > height ||
+        zoneWidth > width ||
+        zoneHeight > height ||
         horizontalMargin * 2 >= zoneWidth ||
         verticalMargin * 2 >= zoneHeight) {
       throw const FormatException(
         'Zona štampe ili njene sigurne margine nisu bezbedne.',
       );
     }
+    final zoneX = (width - zoneWidth) / 2;
+    final zoneY = (height - zoneHeight) / 2;
     await _repository.updateDraft(
       preparationId: _preparation!.id,
       draft: _draft!.reflowTo(
@@ -276,6 +283,44 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       entitlement: widget.entitlement,
     );
     await _reload();
+  });
+
+  Future<void> _applyPrintCorrection() => _run(() async {
+    final horizontal = double.tryParse(
+      _printHorizontalController.text.replaceAll(',', '.'),
+    );
+    final vertical = double.tryParse(
+      _printVerticalController.text.replaceAll(',', '.'),
+    );
+    if (horizontal == null ||
+        vertical == null ||
+        horizontal.abs() > 25 ||
+        vertical.abs() > 25) {
+      throw const FormatException(
+        'Korekcija štampe mora biti između −25 i +25 mm.',
+      );
+    }
+    final profile = PartePrintProfile(
+      horizontalCorrectionMm: horizontal,
+      verticalCorrectionMm: vertical,
+    );
+    await _printProfileStore.save(profile);
+    if (!mounted) return;
+    setState(() {
+      _printProfile = profile;
+      _busy = false;
+    });
+  });
+
+  Future<void> _resetPrintCorrection() => _run(() async {
+    await _printProfileStore.reset();
+    if (!mounted) return;
+    setState(() {
+      _printProfile = const PartePrintProfile();
+      _printHorizontalController.text = '0.0';
+      _printVerticalController.text = '0.0';
+      _busy = false;
+    });
   });
 
   Future<void> _modifySelected({
@@ -306,11 +351,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               .clamp(5, draft.heightMm - 10)
               .toDouble();
           if (block.kind != ParteBlockKind.text && block.lockAspectRatio) {
-            final ratio = block.rect.width / block.rect.height;
+            final ratio =
+                block.sourceAspectRatio ?? block.rect.width / block.rect.height;
             if (widthDelta != 0) nextHeight = nextWidth / ratio;
             if (heightDelta != 0) nextWidth = nextHeight * ratio;
           }
-          final rect =
+          var rect =
               ParteRectMm(
                 x: block.rect.x + dx,
                 y: block.rect.y + dy,
@@ -326,6 +372,9 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                 usableWidth: draft.printableZoneWidthMm,
                 usableHeight: draft.printableZoneHeightMm,
               );
+          if ((dx != 0 || dy != 0) && widthDelta == 0 && heightDelta == 0) {
+            rect = _snapRect(rect, block.id, draft);
+          }
           return block.copyWith(
             rect: rect,
             initialFontSize: (block.initialFontSize + fontDelta).clamp(
@@ -405,6 +454,52 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     await _modifySelected(dx: dxMm, dy: dyMm);
   }
 
+  ParteRectMm _snapRect(ParteRectMm rect, String blockId, ParteDraft draft) {
+    const threshold = 1.5;
+    final safeLeft = draft.printableZoneXmm + draft.horizontalMarginMm;
+    final safeRight =
+        draft.printableZoneXmm +
+        draft.printableZoneWidthMm -
+        draft.horizontalMarginMm;
+    final center = draft.printableZoneXmm + draft.printableZoneWidthMm / 2;
+    final xTargets = <double>[
+      safeLeft,
+      safeRight - rect.width,
+      center - rect.width / 2,
+    ];
+    for (final other in draft.blocks.where((item) => item.id != blockId)) {
+      xTargets.addAll([
+        other.rect.x,
+        other.rect.right - rect.width,
+        other.rect.centerX - rect.width / 2,
+        other.rect.right,
+        other.rect.x - rect.width,
+      ]);
+    }
+    var x = rect.x;
+    for (final target in xTargets) {
+      if ((x - target).abs() <= threshold) {
+        x = target;
+        break;
+      }
+    }
+    return ParteRectMm(
+      x: x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    ).clampTo(
+      pageWidth: draft.widthMm,
+      pageHeight: draft.heightMm,
+      horizontalMargin: draft.horizontalMarginMm,
+      verticalMargin: draft.verticalMarginMm,
+      originX: draft.printableZoneXmm,
+      originY: draft.printableZoneYmm,
+      usableWidth: draft.printableZoneWidthMm,
+      usableHeight: draft.printableZoneHeightMm,
+    );
+  }
+
   Future<Uint8List?> _pickImageBytes(ParteMediaKind kind) async {
     if (Platform.isAndroid) {
       final picked = await ImagePicker().pickImage(
@@ -433,6 +528,32 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       preparation: _preparation!,
       sourceBytes: bytes,
       kind: kind,
+      actor: widget.actor,
+      entitlement: widget.entitlement,
+    );
+    final mediaBlockId = kind == ParteMediaKind.photo ? 'photo' : 'symbol';
+    final ratio = result.width / result.height;
+    final normalizedBlocks = _draft!.blocks
+        .map((block) {
+          if (block.id != mediaBlockId) return block;
+          final normalized = block.rect
+              .normalizedToAspectRatio(ratio)
+              .clampTo(
+                pageWidth: _draft!.widthMm,
+                pageHeight: _draft!.heightMm,
+                horizontalMargin: _draft!.horizontalMarginMm,
+                verticalMargin: _draft!.verticalMarginMm,
+                originX: _draft!.printableZoneXmm,
+                originY: _draft!.printableZoneYmm,
+                usableWidth: _draft!.printableZoneWidthMm,
+                usableHeight: _draft!.printableZoneHeightMm,
+              );
+          return block.copyWith(rect: normalized, sourceAspectRatio: ratio);
+        })
+        .toList(growable: false);
+    await _repository.updateDraft(
+      preparationId: _preparation!.id,
+      draft: _draft!.copyWith(blocks: normalizedBlocks),
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
@@ -494,6 +615,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       plan: _plan!,
       actor: widget.actor,
       entitlement: widget.entitlement,
+      horizontalCorrectionMm: _printProfile.horizontalCorrectionMm,
+      verticalCorrectionMm: _printProfile.verticalCorrectionMm,
     );
     await _reload();
     if (!mounted) return;
@@ -626,7 +749,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         title: const Text('Obriši sačuvanu pripremu'),
         content: Text(
           'Biće obrisani samo OPC priprema i njene app-owned kopije medija za '
-          'PREDMET ${_predmet!.brojPredmeta} — $deceased.\n\n'
+          'PREDMET ${_predmet!.brojPredmeta} – $deceased.\n\n'
           'PREDMET, spoljašnji originali i već izvezeni PDF/DOCX fajlovi ostaju sačuvani.',
         ),
         actions: [
@@ -724,7 +847,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     final preview = _buildPreviewAndActions(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('PARTE — ${_predmet!.ime} ${_predmet!.prezime}'),
+        title: Text('PARTE – ${_predmet!.ime} ${_predmet!.prezime}'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(24),
           child: Padding(
@@ -747,7 +870,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             if (status == PartePreparationStatus.completed)
               const MaterialBanner(
                 content: Text(
-                  'SAČUVANA ZAVRŠENA PRIPREMA — možete je pregledati, urediti i ponovo izvesti. Izmene traže novu potvrdu pregleda pripreme.',
+                  'SAČUVANA ZAVRŠENA PRIPREMA – možete je pregledati, urediti i ponovo izvesti. Izmene traže novu potvrdu pregleda pripreme.',
                 ),
                 actions: [SizedBox.shrink()],
               ),
@@ -856,28 +979,26 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           subtitle: Text(
-            'Strana ${_draft!.widthMm.toStringAsFixed(1)} × ${_draft!.heightMm.toStringAsFixed(1)}; '
-            'zona X ${_draft!.printableZoneXmm.toStringAsFixed(1)}, Y ${_draft!.printableZoneYmm.toStringAsFixed(1)}, '
-            '${_draft!.printableZoneWidthMm.toStringAsFixed(1)} × ${_draft!.printableZoneHeightMm.toStringAsFixed(1)}',
+            '${_draft!.widthMm.toStringAsFixed(1)} × ${_draft!.heightMm.toStringAsFixed(1)} mm · '
+            'zona ${_draft!.printableZoneWidthMm.toStringAsFixed(1)} × ${_draft!.printableZoneHeightMm.toStringAsFixed(1)} mm · '
+            'margina ${_draft!.horizontalMarginMm.toStringAsFixed(1)} × ${_draft!.verticalMarginMm.toStringAsFixed(1)} mm',
           ),
           children: [
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                _dimensionField(_widthController, 'Strana — širina'),
-                _dimensionField(_heightController, 'Strana — visina'),
-                _dimensionField(_zoneXController, 'Zona — X'),
-                _dimensionField(_zoneYController, 'Zona — Y'),
-                _dimensionField(_zoneWidthController, 'Zona — širina'),
-                _dimensionField(_zoneHeightController, 'Zona — visina'),
+                _dimensionField(_widthController, 'Strana – širina'),
+                _dimensionField(_heightController, 'Strana – visina'),
+                _dimensionField(_zoneWidthController, 'Zona štampe – širina'),
+                _dimensionField(_zoneHeightController, 'Zona štampe – visina'),
                 _dimensionField(
                   _horizontalMarginController,
-                  'Sigurna margina — H',
+                  'Sigurna margina – H',
                 ),
                 _dimensionField(
                   _verticalMarginController,
-                  'Sigurna margina — V',
+                  'Sigurna margina – V',
                 ),
               ],
             ),
@@ -885,6 +1006,44 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             OutlinedButton(
               onPressed: _busy ? null : _applyDimensions,
               child: const Text('PRIMENI FORMAT I ZONU ŠTAMPE'),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'KOREKCIJA PROFILA ŠTAMPAČA',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const Text(
+              'Pomera samo ceo PDF otisak; ne menja blokove, šablon ni DOCX. '
+              'Horizontalno: − levo / + desno. Vertikalno: − gore / + dole.',
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _dimensionField(
+                  _printHorizontalController,
+                  'Korekcija štampe – levo/desno',
+                ),
+                _dimensionField(
+                  _printVerticalController,
+                  'Korekcija štampe – gore/dole',
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: _busy ? null : _applyPrintCorrection,
+                  child: const Text('SAČUVAJ PROFIL ŠTAMPAČA'),
+                ),
+                TextButton(
+                  onPressed: _busy ? null : _resetPrintCorrection,
+                  child: const Text('RESETUJ NA 0'),
+                ),
+              ],
             ),
           ],
         ),
@@ -1007,10 +1166,36 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         ),
         const SizedBox(height: 8),
         if (selected.kind == ParteBlockKind.text) ...[
-          Text(
-            '${ParteFontCatalog.displayName(selected.fontFamily)} • '
-            '${selected.initialFontSize.toStringAsFixed(1)} pt',
-            key: const Key('parte-font-size-state'),
+          Row(
+            key: const Key('parte-compact-font-row'),
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  initialValue: selected.fontFamily,
+                  decoration: const InputDecoration(
+                    labelText: 'Font',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  items: ParteFontCatalog.supported
+                      .map(
+                        (font) => DropdownMenuItem(
+                          value: font,
+                          child: Text(ParteFontCatalog.displayName(font)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _busy
+                      ? null
+                      : (value) => _modifySelected(fontFamily: value),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${selected.initialFontSize.toStringAsFixed(1)} pt',
+                key: const Key('parte-font-size-state'),
+              ),
+            ],
           ),
           if (selected.initialFontSize <= selected.minimumFontSize)
             const Text(
@@ -1043,26 +1228,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                 child: const Text('POVISI'),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: selected.fontFamily,
-            decoration: const InputDecoration(
-              labelText: 'Font',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            items: ParteFontCatalog.supported
-                .map(
-                  (font) => DropdownMenuItem(
-                    value: font,
-                    child: Text(ParteFontCatalog.displayName(font)),
-                  ),
-                )
-                .toList(),
-            onChanged: _busy
-                ? null
-                : (value) => _modifySelected(fontFamily: value),
           ),
           const SizedBox(height: 8),
           SegmentedButton<ParteTextAlign>(
@@ -1441,6 +1606,35 @@ class PartePlanPreview extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final scale = constraints.maxWidth / plan.widthMm;
+          final safeLeft = plan.printableZoneXmm + plan.horizontalMarginMm;
+          final safeRight =
+              plan.printableZoneXmm +
+              plan.printableZoneWidthMm -
+              plan.horizontalMarginMm;
+          final zoneCenter =
+              plan.printableZoneXmm + plan.printableZoneWidthMm / 2;
+          ParteRenderBlock? selected;
+          for (final block in plan.blocks) {
+            if (block.id == selectedBlockId) selected = block;
+          }
+          final dynamicGuides = <double>[];
+          if (selected != null) {
+            for (final other in plan.blocks.where(
+              (block) => block.id != selectedBlockId,
+            )) {
+              for (final candidate in <double>[
+                other.rect.x,
+                other.rect.right,
+                other.rect.centerX,
+              ]) {
+                if ((selected.rect.x - candidate).abs() < 0.01 ||
+                    (selected.rect.right - candidate).abs() < 0.01 ||
+                    (selected.rect.centerX - candidate).abs() < 0.01) {
+                  dynamicGuides.add(candidate);
+                }
+              }
+            }
+          }
           return Container(
             color: Colors.white,
             child: Stack(
@@ -1481,6 +1675,31 @@ class PartePlanPreview extends StatelessWidget {
                     ),
                   ),
                 ),
+                for (final x in <double>[safeLeft, zoneCenter, safeRight])
+                  Positioned(
+                    key: ValueKey('parte-editor-guide-$x'),
+                    left: x * scale,
+                    top: plan.printableZoneYmm * scale,
+                    width: 1,
+                    height: plan.printableZoneHeightMm * scale,
+                    child: IgnorePointer(
+                      child: ColoredBox(
+                        color: Colors.blueAccent.withValues(alpha: 0.24),
+                      ),
+                    ),
+                  ),
+                for (final x in dynamicGuides.toSet())
+                  Positioned(
+                    left: x * scale,
+                    top: plan.printableZoneYmm * scale,
+                    width: 1.5,
+                    height: plan.printableZoneHeightMm * scale,
+                    child: IgnorePointer(
+                      child: ColoredBox(
+                        color: Colors.green.withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ),
                 for (final block in plan.blocks)
                   Positioned(
                     left: block.rect.x * scale,

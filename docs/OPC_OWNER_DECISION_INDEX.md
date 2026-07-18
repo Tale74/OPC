@@ -83,10 +83,17 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 
 - Outer form and non-centred printable zone are separate millimetre geometry; safe margins are inside the zone.
 - One render plan owns preview, bounds and authoritative PDF coordinates. Printer-driver scaling is outside OPC and physical print remains owner acceptance.
-- Schema 4 is backward-compatible with PARTE schema 1–3 through a full-page legacy zone and unchanged block coordinates.
+- Schema 5 remains backward-compatible with PARTE schema 1–3 through a full-page legacy zone and unchanged block coordinates; schema 4 additionally migrates with optional media-ratio repair metadata absent.
 - `PREGLED PRIPREME`, en-dash years, Noto Sans/Noto Serif and collapsible setup sections are current UI policy.
 - DOCX remains secondary but must open, save and reopen in Microsoft Word without repair while retaining independent editable blocks.
 - Report: `docs/tasks/OPC_TASK_PARTE_PRINTABLE_ZONE_PDF_DOCX_UX_CORRECTION_REPORT.md`.
+
+### PARTE final runtime print-origin and fidelity correction
+
+- User-visible format input excludes raw X/Y and derives a centred zone; owner geometry `224 × 170`, zone `175 × 115`, margins `5 × 5` derives `24.5/27.5` internally.
+- Printer correction is machine-local, resettable and PDF-only; it never enters PREDMET, a preparation template or DOCX.
+- Schema 5 preserves media source ratio, Noto Serif is the missing-font/new default, guides remain editor-only, and Word media use Behind Text.
+- Physical print remains owner acceptance even after electronic and build PASS.
 
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
 

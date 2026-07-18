@@ -594,7 +594,7 @@ Implementation/pseudocode aligned: yes.
 
 ## OPC-PSEUDO-INDEX-051 — PARTE printable zone, PDF and Word derivative
 
-- Source: PARTE schema-4 draft/template, composer, preview, PDF renderer, calibration renderer and DOCX exporter.
+- Source: PARTE schema-5 draft/template, composer, preview, PDF renderer, calibration renderer and DOCX exporter.
 - Geometry: outer page is separate from configurable printable-zone X/Y/width/height; safe margins are inside the zone; blocks retain absolute page millimetres.
 - Shared-plan rule: preview and PDF consume the same origin, scale, bounds, fitted lines and overflow decision. No implicit centering or global shrink exists.
 - Migration: schema 1–3 becomes a full-page zone with unchanged block coordinates; schema 4 persists the explicit zone.
@@ -602,6 +602,8 @@ Implementation/pseudocode aligned: yes.
 - Output boundary: PDF is authoritative; DOCX is a Word-validated editable positioned-block derivative; physical print remains owner acceptance.
 - Schema: `docs/OPC_PARTE_TEMPLATE_SCHEMA.md`.
 - Report: `docs/tasks/OPC_TASK_PARTE_PRINTABLE_ZONE_PDF_DOCX_UX_CORRECTION_REPORT.md`.
+- Final runtime correction source: centred format input, machine-local PDF-only printer profile, editor guides/snap, schema-5 media ratio repair, Noto Serif fallback, state-aware template actions and Word Behind Text anchors.
+- Acceptance boundary: custom-page electronic geometry and Word smoke can pass while physical print remains pending owner confirmation on the real printer/form.
 
 ## OPC-PSEUDO-INDEX-051 — Canonical database recovery and legacy migrations
 

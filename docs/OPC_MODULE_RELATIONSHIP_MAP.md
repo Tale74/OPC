@@ -478,6 +478,12 @@ PARTE physical flow after the printable-zone correction is:
 
 The draft owns only technical derivative geometry and content overrides. It never writes back to PREDMET. PDF and preview use the same page origin and block rectangles; DOCX approximates those rectangles with Word-compatible independent shapes. Driver feed/scaling and physical paper acceptance remain outside OPC.
 
+`user page/zone/margins -> derived centred zone origin -> absolute-mm block plan -> preview/PDF/DOCX`
+
+`machine-local printer profile -> whole-page PDF translation only`
+
+The second path cannot write PREDMET, draft block coordinates, templates or DOCX. Editor guides and snapping consume the render geometry but are never render-plan blocks and therefore cannot leak into electronic outputs.
+
 ## MODULE-ID: OPC-MODULE-023
 
 Module name: Canonical database migration and startup recovery

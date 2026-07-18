@@ -290,7 +290,7 @@ class ParteTemplateRepository {
         existing != null && conflict == ParteTemplateImportConflict.importAsCopy
         ? ParteTemplate(
             id: _newId(),
-            name: '${imported.name} — kopija',
+            name: '${imported.name} – kopija',
             widthMm: imported.widthMm,
             heightMm: imported.heightMm,
             horizontalMarginMm: imported.horizontalMarginMm,

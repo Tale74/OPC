@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +9,7 @@ import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/predmeti/parte/presentation/parte_module_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/presentation/parte_composer_screen.dart';
+import 'package:opc_v4/features/predmeti/parte/data/parte_print_profile_store.dart';
 
 import 'test_bootstrap.dart';
 
@@ -50,7 +53,10 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    for (var attempt = 0; attempt < 40; attempt++) {
+      await tester.pump(const Duration(milliseconds: 250));
+      if (find.text('TEKSTUALNI BLOKOVI').evaluate().isNotEmpty) break;
+    }
 
     expect(find.text('MODUL PARTE'), findsOneWidget);
     expect(find.text('Otvoreno Lice'), findsOneWidget);
@@ -85,34 +91,36 @@ void main() {
     final predmet = await (db.select(
       db.predmeti,
     )..where((row) => row.brojPredmeta.equals('COMPOSER-004'))).getSingle();
-
     await tester.pumpWidget(
       MaterialApp(
         home: ParteComposerScreen(
           predmetId: predmet.id,
           predmetiRepository: PredmetiRepository(db),
           actor: actor,
+          printProfileStore: _MemoryPrintProfileStore(),
           entitlement: const OpcEntitlementPolicy.fromSource(
             OpcDemoTestEntitlementSource(packageLevel: OpcPackageLevel.potpun),
           ),
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    for (var attempt = 0; attempt < 40; attempt++) {
+      await tester.pump(const Duration(milliseconds: 250));
+      if (find.text('TEKSTUALNI BLOKOVI').evaluate().isNotEmpty) break;
+    }
 
     expect(find.text('TEKSTUALNI BLOKOVI'), findsOneWidget);
     expect(find.text('FORMAT I ZONA ŠTAMPE (mm)'), findsOneWidget);
+    expect(find.text('Zona – X'), findsNothing);
+    expect(find.text('Zona – Y'), findsNothing);
+    expect(find.text('Zona štampe – širina'), findsOneWidget);
+    expect(find.text('Zona štampe – visina'), findsOneWidget);
     expect(find.textContaining('min '), findsNothing);
     expect(tester.takeException(), isNull);
-
     await tester.tap(find.text('TEKSTUALNI BLOKOVI'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('PRECIZNO POMERANJE I STIL'),
-      400,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('PRECIZNO POMERANJE I STIL'), findsOneWidget);
+    expect(find.byKey(const Key('parte-compact-font-row')), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('PREGLED PRIPREME'),
       600,
@@ -142,3 +150,23 @@ Future<void> _insert(
       ),
     )
     .then((_) {});
+
+class _MemoryPrintProfileStore extends PartePrintProfileStore {
+  _MemoryPrintProfileStore()
+    : super(rootDirectory: () async => Directory.current);
+
+  PartePrintProfile _profile = const PartePrintProfile();
+
+  @override
+  Future<PartePrintProfile> load() async => _profile;
+
+  @override
+  Future<void> save(PartePrintProfile profile) async {
+    _profile = profile;
+  }
+
+  @override
+  Future<void> reset() async {
+    _profile = const PartePrintProfile();
+  }
+}

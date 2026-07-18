@@ -159,11 +159,11 @@ class _PartePredmetItem {
     if (row == null) return 'Priprema nije započeta';
     return switch (PartePreparationStatus.fromDb(row.status)) {
       PartePreparationStatus.inProgress when row.exportedSuccessfully =>
-        'PDF je izvezen — završetak nije potvrđen',
+        'PDF je izvezen – završetak nije potvrđen',
       PartePreparationStatus.inProgress => 'Priprema je u toku',
       PartePreparationStatus.cleanupPending => 'Čišćenje je na čekanju',
       PartePreparationStatus.completed =>
-        'Sačuvana završena priprema — OTVORI PRIPREMU',
+        'Sačuvana završena priprema – OTVORI PRIPREMU',
     };
   }
 }

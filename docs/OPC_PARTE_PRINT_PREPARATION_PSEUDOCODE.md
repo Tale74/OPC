@@ -811,6 +811,22 @@ LEGACY schema 1..3:
   preserve block coordinates and legacy safe margins
 
 DOCX:
+
+FINAL_RUNTIME_CORRECTION:
+  accept outer page, printable-zone size and safe margins
+  derive zoneX = (pageWidth - zoneWidth) / 2
+  derive zoneY = (pageHeight - zoneHeight) / 2
+  keep printer correction in a machine-local profile, default 0
+  apply printer correction to the whole PDF block layer only
+  never apply printer correction to draft blocks, templates, PREDMET or DOCX
+  show safe-left, safe-right and zone-centre editor guides
+  mildly snap drag/button movement to guides and neighbouring block edges
+  never serialize or export guides
+  when media aspect is locked, use one scale and normalize legacy malformed rects
+  use Noto Serif only where no explicit saved font exists
+  replace semantic PARTE em-dash output with en-dash
+  export Word media as page-relative Behind Text anchors
+  preserve the full one-line name with the shared fit result
   use page-relative independent shapes
   text = editable VML rect/textbox; media = valid DrawingML anchor
   keep PDF authoritative; require real Word open/save/reopen acceptance

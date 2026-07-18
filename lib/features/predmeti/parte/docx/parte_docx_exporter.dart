@@ -67,7 +67,14 @@ class ParteDocxExporter {
         'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
         'Target="media/$mediaName"/>',
       );
-      body.add(_imageParagraph(block, relationId, imageIndex));
+      body.add(
+        _imageParagraph(
+          block,
+          relationId,
+          imageIndex,
+          decoded.width / decoded.height,
+        ),
+      );
     }
 
     _addText(archive, '[Content_Types].xml', _contentTypes);
@@ -115,10 +122,17 @@ class ParteDocxExporter {
       ParteTextAlign.center => 'center',
       ParteTextAlign.right => 'right',
     };
-    final size = (block.fontSize * 2).round();
-    final scale = (block.horizontalScale * 100).round();
+    final usesEquivalentNameFit = block.id == 'name';
+    final size =
+        (block.fontSize *
+                (usesEquivalentNameFit ? block.horizontalScale : 1) *
+                2)
+            .round();
+    final scale = usesEquivalentNameFit
+        ? 100
+        : (block.horizontalScale * 100).round();
     final font = _xml(ParteFontCatalog.displayName(block.fontFamily));
-    final text = _xml(block.lines.join(' '));
+    final text = _xml(block.lines.join(' ').replaceAll('—', '–'));
     final left = (block.rect.x * 72 / 25.4).toStringAsFixed(3);
     final top = (block.rect.y * 72 / 25.4).toStringAsFixed(3);
     final width = (block.rect.width * 72 / 25.4).toStringAsFixed(3);
@@ -126,9 +140,11 @@ class ParteDocxExporter {
     return '<w:p><w:r><w:pict><v:rect id="parte_${_xml(block.id)}" '
         'stroked="f" filled="f" '
         'style="position:absolute;margin-left:${left}pt;margin-top:${top}pt;'
-        'width:${width}pt;height:${height}pt;z-index:${block.layer}">'
+        'width:${width}pt;height:${height}pt;z-index:${block.layer};'
+        'mso-fit-shape-to-text:f;v-text-anchor:top">'
         '<v:textbox inset="0,0,0,0"><w:txbxContent>'
-        '<w:p><w:pPr><w:jc w:val="$align"/><w:keepLines/></w:pPr>'
+        '<w:p><w:pPr><w:jc w:val="$align"/><w:keepLines/>'
+        '<w:spacing w:before="0" w:after="0"/></w:pPr>'
         '<w:r><w:rPr><w:rFonts w:ascii="$font" w:hAnsi="$font" '
         'w:eastAsia="$font" w:cs="$font"/><w:sz w:val="$size"/>'
         '<w:szCs w:val="$size"/><w:w w:val="$scale"/>'
@@ -137,14 +153,28 @@ class ParteDocxExporter {
         '</w:txbxContent></v:textbox></v:rect></w:pict></w:r></w:p>';
   }
 
-  String _imageParagraph(ParteRenderBlock block, String relationId, int id) {
-    final width = (block.rect.width * 36000).round();
-    final height = (block.rect.height * 36000).round();
-    final x = (block.rect.x * 36000).round();
-    final y = (block.rect.y * 36000).round();
+  String _imageParagraph(
+    ParteRenderBlock block,
+    String relationId,
+    int id,
+    double sourceAspectRatio,
+  ) {
+    final boxRatio = block.rect.width / block.rect.height;
+    final fittedWidth = boxRatio > sourceAspectRatio
+        ? block.rect.height * sourceAspectRatio
+        : block.rect.width;
+    final fittedHeight = boxRatio > sourceAspectRatio
+        ? block.rect.height
+        : block.rect.width / sourceAspectRatio;
+    final fittedX = block.rect.centerX - fittedWidth / 2;
+    final fittedY = block.rect.centerY - fittedHeight / 2;
+    final width = (fittedWidth * 36000).round();
+    final height = (fittedHeight * 36000).round();
+    final x = (fittedX * 36000).round();
+    final y = (fittedY * 36000).round();
     return '<w:p><w:r><w:drawing>'
         '<wp:anchor distT="0" distB="0" distL="0" distR="0" '
-        'simplePos="0" relativeHeight="${block.layer}" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" '
+        'simplePos="0" relativeHeight="${block.layer}" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" '
         'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
         '<wp:simplePos x="0" y="0"/>'
         '<wp:positionH relativeFrom="page"><wp:posOffset>$x</wp:posOffset></wp:positionH>'

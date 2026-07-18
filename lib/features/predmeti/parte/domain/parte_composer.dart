@@ -185,7 +185,7 @@ class ParteComposer {
     final hasCustomSymbol =
         input.customSymbolMediaKey?.trim().isNotEmpty == true;
     if (isCustom && !hasCustomSymbol) {
-      warnings.add('SLOBODAN IZBOR — nastavak bez unetog simbola.');
+      warnings.add('SLOBODAN IZBOR – nastavak bez unetog simbola.');
       if (!input.noCustomSymbolAccepted) {
         blockers.add('Potvrdite nastavak bez prilagođenog simbola.');
       }

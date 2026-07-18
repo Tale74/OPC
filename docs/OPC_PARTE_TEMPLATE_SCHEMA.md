@@ -1,5 +1,7 @@
 # OPC PARTE template and draft schema
 
+Current technical schema: `5`.
+
 Current template and retained-draft schema version: `4`.
 
 ## Geometry
@@ -25,3 +27,9 @@ Supported embedded render families are `NotoSans` and `NotoSerif`; unknown legac
 ## Output authority
 
 Preview and PDF consume the same render plan. Calibration visualizes the outer page, printable zone and safe inset. DOCX is secondary and uses Word-compatible editable positioned objects; it does not replace the PDF authority or physical-print acceptance.
+
+In the normal composer UI the user enters only page width/height, printable-zone width/height and horizontal/vertical safe margins. The origin remains serialized for compatibility but is derived as `(page - zone) / 2`; it is not a regular user control.
+
+Schema 5 adds optional `sourceAspectRatio` to media block specifications. When `lockAspectRatio` is true, reflow uses one uniform scale and malformed legacy rectangles are normalized around their centre before safe-area clamping. Missing explicit text font now resolves to Noto Serif; an explicitly stored Noto Sans value remains unchanged.
+
+The machine-local printer profile is not part of either template or draft schema. Its horizontal/vertical correction translates only PDF blocks, defaults to `0 × 0 mm`, and never changes PREDMET, saved block coordinates or DOCX.

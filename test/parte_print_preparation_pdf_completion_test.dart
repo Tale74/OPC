@@ -113,6 +113,8 @@ void main() {
       expect(document, contains('w:orient="landscape"'));
       expect(document, contains('w:txbxContent'));
       expect(document, contains('wp:anchor'));
+      expect(document, contains('behindDoc="1"'));
+      expect(document, isNot(contains('behindDoc="0"')));
       expect(document, contains('<v:rect'));
       expect(document, isNot(contains('type="#_x0000_t202"')));
       expect(
@@ -126,6 +128,7 @@ void main() {
       );
       expect(document, contains('parte_mournersHeading'));
       expect(document, contains('Sintetičko Lice'));
+      expect(document, isNot(contains('—')));
       expect(document, contains('Ožalošćeni'));
       expect(
         RegExp('w:txbxContent').allMatches(document).length,

@@ -11,6 +11,7 @@ import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/predmeti/parte/application/parte_authorization.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_media_store.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_preparation_repository.dart';
+import 'package:opc_v4/features/predmeti/parte/data/parte_print_profile_store.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_template_repository.dart';
 import 'package:opc_v4/features/predmeti/parte/domain/parte_composer.dart';
 import 'package:opc_v4/features/predmeti/parte/domain/parte_initial_composer.dart';
@@ -91,7 +92,70 @@ void main() {
       final decoded = ParteBlockSpec.fromJson(serif.toJson());
       expect(decoded.fontFamily, ParteFontCatalog.notoSerif);
       expect(ParteFontCatalog.displayName(decoded.fontFamily), 'Noto Serif');
+      expect(
+        ParteTemplate.builtInStandard.blocks
+            .firstWhere((block) => block.kind == ParteBlockKind.text)
+            .fontFamily,
+        ParteFontCatalog.notoSerif,
+      );
+      final explicitSans = serif.copyWith(
+        fontFamily: ParteFontCatalog.notoSans,
+      );
+      expect(
+        ParteBlockSpec.fromJson(explicitSans.toJson()).fontFamily,
+        ParteFontCatalog.notoSans,
+      );
     });
+
+    test('locked media reflow and legacy normalization preserve one ratio', () {
+      const photo = ParteBlockSpec(
+        id: 'photo',
+        kind: ParteBlockKind.photo,
+        rect: ParteRectMm(x: 170, y: 10, width: 40, height: 40),
+        sourceAspectRatio: 0.75,
+      );
+      const draft = ParteDraft(
+        textByBlock: {},
+        blocks: [photo],
+        widthMm: 224,
+        heightMm: 170,
+        symbolId: 'BEZ_SIMBOLA',
+      );
+      final transformed = draft.reflowTo(
+        widthMm: 224,
+        heightMm: 170,
+        horizontalMarginMm: 5,
+        verticalMarginMm: 5,
+        printableZoneXmm: 24.5,
+        printableZoneYmm: 27.5,
+        printableZoneWidthMm: 175,
+        printableZoneHeightMm: 115,
+      );
+      final rect = transformed.blocks.single.rect;
+      expect(rect.width / rect.height, closeTo(0.75, 0.0001));
+    });
+
+    test(
+      'printer correction profile is machine-local and resettable',
+      () async {
+        final root = await Directory.systemTemp.createTemp(
+          'parte_print_profile_',
+        );
+        addTearDown(() => root.delete(recursive: true));
+        final store = PartePrintProfileStore(rootDirectory: () async => root);
+        await store.save(
+          const PartePrintProfile(
+            horizontalCorrectionMm: -2.5,
+            verticalCorrectionMm: 1.25,
+          ),
+        );
+        final loaded = await store.load();
+        expect(loaded.horizontalCorrectionMm, -2.5);
+        expect(loaded.verticalCorrectionMm, 1.25);
+        await store.reset();
+        expect((await store.load()).isCentered, isTrue);
+      },
+    );
 
     test('unknown gender never silently becomes male', () async {
       final db = createTestDatabase();
