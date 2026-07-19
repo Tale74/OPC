@@ -129,13 +129,28 @@ void main() {
         .bottom;
     final introLabelTop = tester.getRect(find.text('Uvodna fraza')).top;
     expect(introLabelTop, greaterThan(textTitleBottom));
+    final formatTitleBottom = tester
+        .getRect(find.text('FORMAT I ZONA ŠTAMPE (mm)'))
+        .bottom;
+    final pageWidthLabelTop = tester.getRect(find.text('Strana – širina')).top;
+    expect(pageWidthLabelTop, greaterThan(formatTitleBottom));
     await tester.scrollUntilVisible(
       find.text('PREGLED PRIPREME'),
       600,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('PREGLED PRIPREME'), findsOneWidget);
-    expect(find.textContaining('Actual size / 100%'), findsNothing);
+    expect(
+      find.byKey(const Key('parte-preview-technical-guide')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Actual size / 100%'), findsOneWidget);
+    expect(find.textContaining('ne ulaze u PDF ni DOCX'), findsOneWidget);
+    final guideBottom = tester
+        .getRect(find.byKey(const Key('parte-preview-technical-guide')))
+        .bottom;
+    final canvasTop = tester.getRect(find.byType(PartePlanPreview)).top;
+    expect(guideBottom, lessThanOrEqualTo(canvasTop));
     expect(tester.takeException(), isNull);
   });
 }

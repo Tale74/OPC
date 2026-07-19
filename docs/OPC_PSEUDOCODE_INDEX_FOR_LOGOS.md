@@ -633,4 +633,20 @@ Implementation/pseudocode aligned: yes.
 - Typography rule: complete one-line name, maximum `74 pt`, bounded canonical fit and source-level en-dash normalization.
 - Template rule: dialog selected, preparation active and persisted default are separate identities and actions.
 - Calibration rule: machine-local correction translates the PDF layer only; physical print remains owner evidence.
+- UI boundary: compact technical help belongs on `PREGLED PRIPREME` outside
+  the printable canvas, never in the command panel or any export/render state.
 - Report: `docs/tasks/OPC_TASK_PARTE_ROOT_CAUSE_RENDER_PIPELINE_CORRECTION_RUNTIME_ACCEPTANCE_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-054 — PARTE final technical-help placement
+
+- Document: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`, `EDITOR CHROME`.
+- Source: `lib/features/predmeti/parte/presentation/parte_composer_screen.dart`;
+  `test/parte_module_screen_test.dart`.
+- Rule: the preview-side help card is ordinary responsive application UI above
+  the `PartePlanPreview`; it is not a render block and never reaches PDF, DOCX,
+  calibration PDF or portable template JSON.
+- Layout rule: technical prose is absent from command controls and expanded
+  format fields retain top clearance for complete floating labels.
+- Acceptance boundary: tested local printer offset and electronic render parity
+  remain protected; Android runtime follows this final UI correction.
+- Report: `docs/tasks/OPC_TASK_PARTE_FINAL_TECHNICAL_TEXT_PLACEMENT_UI_REGRESSION_REPORT.md`.

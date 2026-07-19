@@ -100,10 +100,25 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 - One canonical render plan owns resolved text, fit status, geometry and media for preview, PDF and DOCX; adapters may not refit, repair punctuation or silently omit a required block.
 - The full deceased name remains one line with a `74 pt` maximum and bounded fit; failure is an explicit export blocker. Life years use an en-dash before any exporter.
 - `selected`, preparation `active` and persisted `default` template IDs are independent states and independent actions.
-- Permanent technical legends and PDF-reader instructions are not shown around the preparation; only placement guide lines remain as non-exported editor chrome.
+- The former removal of all technical explanation around the preparation is
+  superseded for placement by `OPC-OD-PARTE-006`; render-plan and non-printing
+  boundaries remain unchanged.
 - Printer correction stays machine-local and PDF-only; A5/Letter observations do not establish a global offset. Owner physical print remains pending.
 - A physically validated correction may be associated locally with a template ID, but its numeric offset never enters portable template JSON; another machine or an unassociated template starts at `0/0`.
 - Report: `docs/tasks/OPC_TASK_PARTE_ROOT_CAUSE_RENDER_PIPELINE_CORRECTION_RUNTIME_ACCEPTANCE_REPORT.md`.
+
+### OPC-OD-PARTE-006 — PREVIEW-SIDE TECHNICAL HELP PLACEMENT
+
+- Technical print/editor help is absent from the command panel and appears on
+  `PREGLED PRIPREME`, outside the printable canvas.
+- The help is application UI only. It never enters the canonical render plan,
+  PDF, DOCX, calibration PDF, portable template JSON or physical print.
+- Format controls keep sufficient top spacing for complete floating labels on
+  Windows and Android narrow layouts.
+- The tested Letter / Actual size physical print remains accepted for the local
+  per-template `+25/+4 mm` printer profile; this decision does not reopen or
+  globalize printer calibration.
+- Report: `docs/tasks/OPC_TASK_PARTE_FINAL_TECHNICAL_TEXT_PLACEMENT_UI_REGRESSION_REPORT.md`.
 
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
 

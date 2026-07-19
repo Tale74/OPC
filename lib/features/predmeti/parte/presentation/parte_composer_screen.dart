@@ -1006,7 +1006,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         ExpansionTile(
           initiallyExpanded: _formatExpanded,
           tilePadding: EdgeInsets.zero,
-          childrenPadding: const EdgeInsets.only(bottom: 8),
+          childrenPadding: const EdgeInsets.only(top: 10, bottom: 8),
           onExpansionChanged: (value) => _formatExpanded = value,
           title: Text(
             'FORMAT I ZONA ŠTAMPE (mm)',
@@ -1042,20 +1042,9 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               child: const Text('PRIMENI FORMAT I ZONU ŠTAMPE'),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'PROFIL ŠTAMPAČA ZA AKTIVNI ŠABLON',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                ),
-                const Tooltip(
-                  message:
-                      'Lokalna korekcija celog PDF otiska za ovaj šablon. Ne ulazi u prenosivi šablon ni DOCX.',
-                  child: Icon(Icons.info_outline, size: 18),
-                ),
-              ],
+            Text(
+              'PROFIL ŠTAMPAČA ZA AKTIVNI ŠABLON',
+              style: Theme.of(context).textTheme.labelLarge,
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -1519,6 +1508,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
+        _PartePreviewTechnicalGuide(profile: _printProfile),
+        const SizedBox(height: 8),
         InteractiveViewer(
           minScale: 0.5,
           maxScale: 4,
@@ -1649,6 +1640,48 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     'symbol' => 'Simbol',
     _ => id,
   };
+}
+
+class _PartePreviewTechnicalGuide extends StatelessWidget {
+  const _PartePreviewTechnicalGuide({required this.profile});
+
+  final PartePrintProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      key: const Key('parte-preview-technical-guide'),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('POMOĆ ZA PREGLED I ŠTAMPU', style: textTheme.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              'Obojene pomoćne linije pripadaju samo editoru i ne ulaze u PDF ni DOCX.',
+              style: textTheme.bodySmall,
+            ),
+            Text(
+              'Profil aktivnog šablona pomera ceo PDF otisak: '
+              '${profile.horizontalCorrectionMm.toStringAsFixed(1)} mm levo/desno i '
+              '${profile.verticalCorrectionMm.toStringAsFixed(1)} mm gore/dole.',
+              style: textTheme.bodySmall,
+            ),
+            Text(
+              'Štampajte uz Actual size / 100% – bez Fit, Shrink ili Scale to page.',
+              style: textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class PartePlanPreview extends StatelessWidget {

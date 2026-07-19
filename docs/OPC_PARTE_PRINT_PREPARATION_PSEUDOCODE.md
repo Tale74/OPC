@@ -887,9 +887,12 @@ PRINTER PROFILE:
   owner physical print is pending until the 224 x 170 mm form is measured
 
 EDITOR CHROME:
-  do not show a permanent technical legend or print-reader instructions
-  keep only the visual guide lines needed for block placement
-  expose exceptional explanations on demand, not as persistent preview text
+  keep technical print/editor help out of the command panel
+  show compact help on PREGLED PRIPREME outside the printable canvas
+  explain non-exported guides, the active-template PDF offset and Actual size
+  never add help to CanonicalRenderPlan, PDF, DOCX, calibration PDF or template JSON
+  keep visual guide lines as non-exported editor-only chrome
+  preserve sufficient expansion padding so floating field labels are not clipped
 ```
 
 # Historical runtime-corrected PARTE workflow (2026-07-12) — `SUPERSEDED` in format/margins/retention
