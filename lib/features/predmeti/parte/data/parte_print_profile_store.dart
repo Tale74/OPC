@@ -37,7 +37,8 @@ class PartePrintProfile {
 }
 
 /// Machine-local printer calibration. It is deliberately excluded from
-/// PREDMET, preparation drafts, templates and DOCX geometry.
+/// PREDMET, preparation drafts, portable templates and DOCX geometry. Profiles
+/// are associated with template IDs only inside this machine-local store.
 class PartePrintProfileStore {
   PartePrintProfileStore({Future<Directory> Function()? rootDirectory})
     : _rootDirectory = rootDirectory ?? getApplicationSupportDirectory;
@@ -47,23 +48,66 @@ class PartePrintProfileStore {
   Future<File> _file() async =>
       File(p.join((await _rootDirectory()).path, 'parte_print_profile.json'));
 
-  Future<PartePrintProfile> load() async {
+  Future<Map<String, dynamic>?> _readRoot() async {
     try {
       final file = await _file();
-      if (!await file.exists()) return const PartePrintProfile();
-      return PartePrintProfile.fromJson(
-        (jsonDecode(await file.readAsString()) as Map).cast<String, dynamic>(),
-      );
+      if (!await file.exists()) return null;
+      return (jsonDecode(await file.readAsString()) as Map)
+          .cast<String, dynamic>();
     } catch (_) {
-      return const PartePrintProfile();
+      return null;
     }
   }
 
-  Future<void> save(PartePrintProfile profile) async {
+  Future<void> _writeProfiles(Map<String, PartePrintProfile> profiles) async {
     final file = await _file();
     await file.parent.create(recursive: true);
-    await file.writeAsString(jsonEncode(profile.toJson()), flush: true);
+    await file.writeAsString(
+      jsonEncode({
+        'schemaVersion': 2,
+        'profilesByTemplateId': {
+          for (final entry in profiles.entries) entry.key: entry.value.toJson(),
+        },
+      }),
+      flush: true,
+    );
   }
 
-  Future<void> reset() => save(const PartePrintProfile());
+  Map<String, PartePrintProfile> _decodeProfiles(Map<String, dynamic>? root) {
+    if (root?['schemaVersion'] != 2) return {};
+    final raw = root?['profilesByTemplateId'];
+    if (raw is! Map) return {};
+    return {
+      for (final entry in raw.entries)
+        if (entry.key is String && entry.value is Map)
+          entry.key as String: PartePrintProfile.fromJson(
+            (entry.value as Map).cast<String, dynamic>(),
+          ),
+    };
+  }
+
+  Future<PartePrintProfile> loadForTemplate(String templateId) async {
+    final root = await _readRoot();
+    if (root?['schemaVersion'] == 1) {
+      final legacy = PartePrintProfile.fromJson(root!);
+      await _writeProfiles({templateId: legacy});
+      return legacy;
+    }
+    return _decodeProfiles(root)[templateId] ?? const PartePrintProfile();
+  }
+
+  Future<void> saveForTemplate(
+    String templateId,
+    PartePrintProfile profile,
+  ) async {
+    final root = await _readRoot();
+    final profiles = _decodeProfiles(root);
+    profiles[templateId] = profile;
+    await _writeProfiles(profiles);
+  }
+
+  Future<void> resetForTemplate(String templateId) async {
+    final profiles = _decodeProfiles(await _readRoot())..remove(templateId);
+    await _writeProfiles(profiles);
+  }
 }

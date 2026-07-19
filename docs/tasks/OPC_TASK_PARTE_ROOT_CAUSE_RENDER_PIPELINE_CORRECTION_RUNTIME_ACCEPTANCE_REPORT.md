@@ -73,10 +73,11 @@ template atomically updates only technical layout/style and invalidates stale
 preview/export evidence.
 
 The command panel is denser and responsive: full format labels wrap safely,
-font size has a synchronized decimal input plus A−/A+ controls, and long printer
-instructions moved to an info affordance. Page/zone dimensions, guide legend,
-local PDF shift and Actual size / 100% guidance appear discreetly outside the
-white preparation; they never enter preview content, PDF or DOCX.
+font size has a synchronized decimal input plus A−/A+ controls, and exceptional
+printer explanations use an on-demand info affordance. A follow-up runtime
+correction removed the permanent page/zone/guide/reader legend above the
+preparation and added top padding so the first `Uvodna fraza` floating label is
+not clipped. Placement guide lines remain editor-only and never enter PDF/DOCX.
 
 ## Calibration analysis
 
@@ -88,6 +89,14 @@ be converted into a global application offset. Recommended procedure is custom
 224 × 170 media, Actual size / 100%, OPC correction initially 0/0, followed by
 measured center-axis correction stored only in the machine-local printer profile.
 
+Follow-up physical evidence established a usable `Letter + Actual size` result
+for the tested HP LaserJet M207-M212 PCLm-S path with `+25 mm` horizontal and
+`+4 mm` vertical correction. This value is not a global constant. Local profile
+schema 2 associates corrections with active template IDs; the legacy single
+profile migrates to the template active on first load. Applying an unassociated
+template or using another machine safely resolves to `0/0`, while portable
+template JSON remains hardware-independent.
+
 ## Evidence and validation
 
 - Focused domain/PDF/DOCX suite: 32 PASS.
@@ -97,9 +106,9 @@ measured center-axis correction stored only in the machine-local printer profile
 - Synthetic DOCX package: full name, canonical scale and all required blocks;
   stable short-name Word 16 render previously confirmed both mourners blocks.
 - Formatter: PASS.
-- `flutter analyze --no-pub`: PASS, no issues, 346.8 s.
-- `flutter test --no-pub`: PASS, 241 PASS + 1 skipped, 0 failed, 19:03.
-- Windows release build: PASS in 250.9 s; `OPC.exe` SHA-256
+- `flutter analyze --no-pub`: PASS, no issues, 34.0 s.
+- `flutter test --no-pub`: PASS, 242 PASS + 1 skipped, 0 failed, 18:51.
+- Windows release build: PASS in 186.6 s; `OPC.exe` SHA-256
   `32172CD5C2760D5A222A949A0F03C8BCE431D76E7F42A9155B6C2312A84B8F39`.
 - Windows runtime electronic smoke: PASS; release process stayed alive,
   responsive and exposed title `OPC ORGANIZATOR POGREBNE CEREMONIJE`.
@@ -110,11 +119,13 @@ measured center-axis correction stored only in the machine-local printer profile
   confirmed both mourners blocks. Additional automated PDF export was not used
   because the owner's already-open Word session blocked all secondary SaveAs
   operations, including an unrelated new reference document.
-- Android release build: PASS in 918.5 s; APK 76,762,814 bytes, SHA-256
-  `96BE7B5C421752CE7CFEB7F328730017A0BA6F84CA2CFBEBE36F19DB101E85A6`.
+- Android release build: PASS in 801.5 s; APK 76,762,706 bytes, SHA-256
+  `57E550F0866CE2A4AD0AF1514576C042E14760D09A3E67ACA6D985C035C75977`.
 - Android narrow smoke: NOT AVAILABLE; `flutter devices` found only Windows and
   Edge, with no connected Android device/emulator.
-- Owner physical print: PENDING.
+- Owner physical print: PASS for the tested Letter / Actual size path with the
+  machine-local `+25/+4 mm` profile; this is evidence for that printer/media
+  path, not a portable or globally hardcoded default.
 
 ## Privacy, manifest and repository hygiene
 
@@ -128,4 +139,4 @@ PARTE production files and three focused test files. Build artifacts stay
 ignored and are not committed.
 
 Current status: `PARTE ROOT-CAUSE PIPELINE CORRECTION PASS – PREVIEW/PDF/DOCX
-ELECTRONIC PARITY PROVEN – OWNER PHYSICAL PRINT PENDING`.
+ELECTRONIC PARITY PROVEN – TESTED LETTER PHYSICAL PRINT PASS`.

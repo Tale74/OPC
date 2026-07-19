@@ -122,16 +122,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
 
   Future<void> _initialize() async {
     try {
-      _printProfile = await _printProfileStore.load();
-      _printHorizontalController.text = _printProfile.horizontalCorrectionMm
-          .toStringAsFixed(1);
-      _printVerticalController.text = _printProfile.verticalCorrectionMm
-          .toStringAsFixed(1);
       final preparation = await _repository.initializeOrResume(
         predmetId: widget.predmetId,
         actor: widget.actor,
         entitlement: widget.entitlement,
       );
+      await _loadPrintProfileForTemplate(preparation.templateId);
       if (preparation.cleanupPending) {
         try {
           await _service.retryCleanup(preparation);
@@ -147,6 +143,15 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         _loading = false;
       });
     }
+  }
+
+  Future<void> _loadPrintProfileForTemplate(String templateId) async {
+    final profile = await _printProfileStore.loadForTemplate(templateId);
+    _printProfile = profile;
+    _printHorizontalController.text = profile.horizontalCorrectionMm
+        .toStringAsFixed(1);
+    _printVerticalController.text = profile.verticalCorrectionMm
+        .toStringAsFixed(1);
   }
 
   Future<void> _reload() async {
@@ -314,7 +319,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       horizontalCorrectionMm: horizontal,
       verticalCorrectionMm: vertical,
     );
-    await _printProfileStore.save(profile);
+    await _printProfileStore.saveForTemplate(_preparation!.templateId, profile);
     if (!mounted) return;
     setState(() {
       _printProfile = profile;
@@ -323,7 +328,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   });
 
   Future<void> _resetPrintCorrection() => _run(() async {
-    await _printProfileStore.reset();
+    await _printProfileStore.resetForTemplate(_preparation!.templateId);
     if (!mounted) return;
     setState(() {
       _printProfile = const PartePrintProfile();
@@ -831,6 +836,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         actor: widget.actor,
         entitlement: widget.entitlement,
       );
+      await _loadPrintProfileForTemplate(selected.id);
       await _reload();
     });
   }
@@ -969,7 +975,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         ExpansionTile(
           initiallyExpanded: _textExpanded,
           tilePadding: EdgeInsets.zero,
-          childrenPadding: const EdgeInsets.only(bottom: 8),
+          childrenPadding: const EdgeInsets.only(top: 10, bottom: 8),
           onExpansionChanged: (value) => _textExpanded = value,
           title: Text(
             'TEKSTUALNI BLOKOVI',
@@ -1040,18 +1046,17 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    'KOREKCIJA PROFILA ŠTAMPAČA',
+                    'PROFIL ŠTAMPAČA ZA AKTIVNI ŠABLON',
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
                 const Tooltip(
                   message:
-                      'Korekcija celog PDF otiska. Ne menja blokove, šablon ni DOCX.',
+                      'Lokalna korekcija celog PDF otiska za ovaj šablon. Ne ulazi u prenosivi šablon ni DOCX.',
                   child: Icon(Icons.info_outline, size: 18),
                 ),
               ],
             ),
-            const Text('Korekcija celog PDF otiska'),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -1067,11 +1072,11 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               children: [
                 OutlinedButton(
                   onPressed: _busy ? null : _applyPrintCorrection,
-                  child: const Text('SAČUVAJ PROFIL ŠTAMPAČA'),
+                  child: const Text('SAČUVAJ PROFIL ZA ŠABLON'),
                 ),
                 TextButton(
                   onPressed: _busy ? null : _resetPrintCorrection,
-                  child: const Text('RESETUJ NA 0'),
+                  child: const Text('RESETUJ PROFIL'),
                 ),
               ],
             ),
@@ -1514,8 +1519,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        _ParteEditorTechnicalGuide(plan: plan, profile: _printProfile),
-        const SizedBox(height: 8),
         InteractiveViewer(
           minScale: 0.5,
           maxScale: 4,
@@ -1646,84 +1649,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     'symbol' => 'Simbol',
     _ => id,
   };
-}
-
-class _ParteEditorTechnicalGuide extends StatelessWidget {
-  const _ParteEditorTechnicalGuide({required this.plan, required this.profile});
-
-  final ParteRenderPlan plan;
-  final PartePrintProfile profile;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Wrap(
-          spacing: 14,
-          runSpacing: 6,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              'Strana ${plan.widthMm.toStringAsFixed(1)} × '
-              '${plan.heightMm.toStringAsFixed(1)} mm',
-              style: textTheme.labelMedium,
-            ),
-            Text(
-              'Zona ${plan.printableZoneWidthMm.toStringAsFixed(1)} × '
-              '${plan.printableZoneHeightMm.toStringAsFixed(1)} mm',
-              style: textTheme.labelMedium,
-            ),
-            const _ParteGuideLabel(color: Colors.orange, label: 'zona štampe'),
-            const _ParteGuideLabel(
-              color: Colors.redAccent,
-              label: 'sigurna površina',
-            ),
-            const _ParteGuideLabel(
-              color: Colors.blueAccent,
-              label: 'pomoćne linije',
-            ),
-            Text(
-              'PDF pomeraj: ${profile.horizontalCorrectionMm.toStringAsFixed(1)} / '
-              '${profile.verticalCorrectionMm.toStringAsFixed(1)} mm',
-              style: textTheme.labelMedium,
-            ),
-            const Tooltip(
-              message:
-                  'Ove oznake su samo deo editora i ne ulaze u PDF ni DOCX.',
-              child: Icon(Icons.visibility_outlined, size: 18),
-            ),
-            Text(
-              'Štampa: Actual size / 100% – bez Fit, Shrink ili Scale to page',
-              style: textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ParteGuideLabel extends StatelessWidget {
-  const _ParteGuideLabel({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(width: 18, height: 2, color: color),
-      const SizedBox(width: 4),
-      Text(label, style: Theme.of(context).textTheme.bodySmall),
-    ],
-  );
 }
 
 class PartePlanPreview extends StatelessWidget {

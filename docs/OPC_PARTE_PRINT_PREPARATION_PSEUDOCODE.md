@@ -879,12 +879,17 @@ TEMPLATE STATE:
 
 PRINTER PROFILE:
   remains machine-local, defaults to 0/0 and translates only the complete PDF layer
+  associate local corrections with the active technical template ID
+  migrate the legacy single local correction to the template active on first load
+  never serialize the correction into template JSON, PREDMET, draft or DOCX
+  applying another template loads only that template's local correction or 0/0
   A5/Letter observations are media-mapping evidence, not a global offset
   owner physical print is pending until the 224 x 170 mm form is measured
 
-EDITOR-ONLY HELP:
-  concise dimensions, guide legend and Actual size / 100% instruction may appear
-  outside the white preparation; they never enter the render plan, PDF or DOCX
+EDITOR CHROME:
+  do not show a permanent technical legend or print-reader instructions
+  keep only the visual guide lines needed for block placement
+  expose exceptional explanations on demand, not as persistent preview text
 ```
 
 # Historical runtime-corrected PARTE workflow (2026-07-12) — `SUPERSEDED` in format/margins/retention

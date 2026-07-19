@@ -32,7 +32,7 @@ In the normal composer UI the user enters only page width/height, printable-zone
 
 Schema 5 adds optional `sourceAspectRatio` to media block specifications. When `lockAspectRatio` is true, reflow uses one uniform scale and malformed legacy rectangles are normalized around their centre before safe-area clamping. Missing explicit text font now resolves to Noto Serif; an explicitly stored Noto Sans value remains unchanged.
 
-The machine-local printer profile is not part of either template or draft schema. Its horizontal/vertical correction translates only PDF blocks, defaults to `0 × 0 mm`, and never changes PREDMET, saved block coordinates or DOCX.
+The machine-local printer profile is not part of either template or draft schema. Its horizontal/vertical correction translates only PDF blocks, defaults to `0 × 0 mm`, and never changes PREDMET, saved block coordinates or DOCX. The local profile store associates a correction with the active template ID, so one technical layout can recall its physically validated printer correction without making that hardware-specific value portable. Missing local association resolves to `0 × 0 mm`.
 
 ## Canonical render and template-state addendum (2026-07-19)
 

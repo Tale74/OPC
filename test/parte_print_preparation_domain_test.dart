@@ -136,24 +136,66 @@ void main() {
     });
 
     test(
-      'printer correction profile is machine-local and resettable',
+      'printer corrections are machine-local and isolated by template',
       () async {
         final root = await Directory.systemTemp.createTemp(
           'parte_print_profile_',
         );
         addTearDown(() => root.delete(recursive: true));
         final store = PartePrintProfileStore(rootDirectory: () async => root);
-        await store.save(
+        await store.saveForTemplate(
+          'template-a',
           const PartePrintProfile(
             horizontalCorrectionMm: -2.5,
             verticalCorrectionMm: 1.25,
           ),
         );
-        final loaded = await store.load();
+        final loaded = await store.loadForTemplate('template-a');
         expect(loaded.horizontalCorrectionMm, -2.5);
         expect(loaded.verticalCorrectionMm, 1.25);
-        await store.reset();
-        expect((await store.load()).isCentered, isTrue);
+        expect((await store.loadForTemplate('template-b')).isCentered, isTrue);
+        await store.resetForTemplate('template-a');
+        expect((await store.loadForTemplate('template-a')).isCentered, isTrue);
+      },
+    );
+
+    test(
+      'legacy single printer profile binds to the active template',
+      () async {
+        final root = await Directory.systemTemp.createTemp(
+          'parte_print_profile_legacy_',
+        );
+        addTearDown(() => root.delete(recursive: true));
+        await File('${root.path}/parte_print_profile.json').writeAsString(
+          jsonEncode(
+            const PartePrintProfile(
+              horizontalCorrectionMm: 25,
+              verticalCorrectionMm: 4,
+            ).toJson(),
+          ),
+        );
+        final store = PartePrintProfileStore(rootDirectory: () async => root);
+
+        final migrated = await store.loadForTemplate('test4-template');
+
+        expect(migrated.horizontalCorrectionMm, 25);
+        expect(migrated.verticalCorrectionMm, 4);
+        expect(
+          (await store.loadForTemplate('another-template')).isCentered,
+          isTrue,
+        );
+        final persisted =
+            jsonDecode(
+                  await File(
+                    '${root.path}/parte_print_profile.json',
+                  ).readAsString(),
+                )
+                as Map<String, dynamic>;
+        expect(persisted['schemaVersion'], 2);
+        expect(
+          (persisted['profilesByTemplateId'] as Map).keys,
+          contains('test4-template'),
+        );
       },
     );
 

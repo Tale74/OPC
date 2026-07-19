@@ -100,8 +100,9 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 - One canonical render plan owns resolved text, fit status, geometry and media for preview, PDF and DOCX; adapters may not refit, repair punctuation or silently omit a required block.
 - The full deceased name remains one line with a `74 pt` maximum and bounded fit; failure is an explicit export blocker. Life years use an en-dash before any exporter.
 - `selected`, preparation `active` and persisted `default` template IDs are independent states and independent actions.
-- Technical guide text is permitted only as discreet editor chrome outside the white preparation and never enters PDF/DOCX.
+- Permanent technical legends and PDF-reader instructions are not shown around the preparation; only placement guide lines remain as non-exported editor chrome.
 - Printer correction stays machine-local and PDF-only; A5/Letter observations do not establish a global offset. Owner physical print remains pending.
+- A physically validated correction may be associated locally with a template ID, but its numeric offset never enters portable template JSON; another machine or an unassociated template starts at `0/0`.
 - Report: `docs/tasks/OPC_TASK_PARTE_ROOT_CAUSE_RENDER_PIPELINE_CORRECTION_RUNTIME_ACCEPTANCE_REPORT.md`.
 
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED

@@ -115,6 +115,8 @@ void main() {
     expect(find.text('Zona – Y'), findsNothing);
     expect(find.text('Zona štampe – širina'), findsOneWidget);
     expect(find.text('Zona štampe – visina'), findsOneWidget);
+    expect(find.text('SAČUVAJ PROFIL ZA ŠABLON'), findsOneWidget);
+    expect(find.text('Korekcija celog PDF otiska'), findsNothing);
     expect(find.textContaining('min '), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('TEKSTUALNI BLOKOVI'));
@@ -122,13 +124,18 @@ void main() {
     expect(find.text('PRECIZNO POMERANJE I STIL'), findsOneWidget);
     expect(find.byKey(const Key('parte-compact-font-row')), findsOneWidget);
     expect(find.byKey(const Key('parte-font-size-state')), findsOneWidget);
+    final textTitleBottom = tester
+        .getRect(find.text('TEKSTUALNI BLOKOVI'))
+        .bottom;
+    final introLabelTop = tester.getRect(find.text('Uvodna fraza')).top;
+    expect(introLabelTop, greaterThan(textTitleBottom));
     await tester.scrollUntilVisible(
       find.text('PREGLED PRIPREME'),
       600,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('PREGLED PRIPREME'), findsOneWidget);
-    expect(find.textContaining('Actual size / 100%'), findsAtLeastNWidgets(1));
+    expect(find.textContaining('Actual size / 100%'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
@@ -157,18 +164,22 @@ class _MemoryPrintProfileStore extends PartePrintProfileStore {
   _MemoryPrintProfileStore()
     : super(rootDirectory: () async => Directory.current);
 
-  PartePrintProfile _profile = const PartePrintProfile();
+  final Map<String, PartePrintProfile> _profiles = {};
 
   @override
-  Future<PartePrintProfile> load() async => _profile;
+  Future<PartePrintProfile> loadForTemplate(String templateId) async =>
+      _profiles[templateId] ?? const PartePrintProfile();
 
   @override
-  Future<void> save(PartePrintProfile profile) async {
-    _profile = profile;
+  Future<void> saveForTemplate(
+    String templateId,
+    PartePrintProfile profile,
+  ) async {
+    _profiles[templateId] = profile;
   }
 
   @override
-  Future<void> reset() async {
-    _profile = const PartePrintProfile();
+  Future<void> resetForTemplate(String templateId) async {
+    _profiles.remove(templateId);
   }
 }
