@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
@@ -13,6 +13,7 @@ import 'package:opc_v4/features/predmeti/parte/application/parte_preparation_ser
 import 'package:opc_v4/features/predmeti/parte/data/parte_media_store.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_preparation_repository.dart';
 import 'package:opc_v4/features/predmeti/parte/domain/parte_models.dart';
+import 'package:opc_v4/features/predmeti/parte/domain/parte_composer.dart';
 import 'package:opc_v4/features/predmeti/parte/docx/parte_docx_exporter.dart';
 import 'package:opc_v4/features/predmeti/parte/pdf/parte_pdf_renderer.dart';
 
@@ -49,8 +50,16 @@ void main() {
       final bytes = await PartePdfRenderer(
         mediaStore: fixture.mediaStore,
       ).build(plan: plan);
+      final smokeOutput = Platform.environment['OPC_PARTE_PDF_SMOKE_OUTPUT'];
+      if (smokeOutput != null && smokeOutput.isNotEmpty) {
+        await File(smokeOutput).writeAsBytes(bytes, flush: true);
+      }
       expect(String.fromCharCodes(bytes.take(4)), '%PDF');
       expect(bytes.length, greaterThan(1000));
+      expect(
+        plan.blocks.singleWhere((block) => block.id == 'name').resolvedText,
+        'Sintetičko Lice',
+      );
     },
   );
 
@@ -138,6 +147,91 @@ void main() {
         fixture.predmet.id,
       ))!;
       expect(after.exportedSuccessfully, isFalse);
+    },
+  );
+
+  test(
+    '74 pt long-name canonical plan produces real PDF and DOCX outputs',
+    () async {
+      final fixture = await _fixture();
+      addTearDown(fixture.dispose);
+      await fixture.service.replaceMedia(
+        preparation: fixture.preparation,
+        sourceBytes: Uint8List.fromList(
+          img.encodePng(img.Image(width: 900, height: 1200)),
+        ),
+        kind: ParteMediaKind.photo,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      var preparation = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      final base = ParteDraft.decode(preparation.draftJson);
+      final draft = base.copyWith(
+        textByBlock: {
+          ...base.textByBlock,
+          'name': 'Aleksandar Petrović Jovanović - Aca',
+          'years': '1944 — 2026.',
+        },
+        blocks: base.blocks
+            .map(
+              (block) => block.id == 'name'
+                  ? block.copyWith(
+                      rect: ParteRectMm(
+                        x: 14,
+                        y: block.rect.y,
+                        width: 196,
+                        height: block.rect.height,
+                      ),
+                      initialFontSize: 74,
+                      maximumFontSize: 74,
+                    )
+                  : block,
+            )
+            .toList(growable: false),
+      );
+      await fixture.repository.updateDraft(
+        preparationId: preparation.id,
+        draft: draft,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      preparation = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      final plan = await fixture.service.buildPlan(preparation: preparation);
+      final name = plan.blocks.singleWhere((block) => block.id == 'name');
+      expect(name.resolvedText, 'Aleksandar Petrović Jovanović - Aca');
+      expect(name.lines, hasLength(1));
+      expect(name.maximumFontSize, 74);
+      expect(name.fitStatus, ParteFitStatus.fitted);
+      expect(
+        plan.blocks.singleWhere((block) => block.id == 'years').resolvedText,
+        '1944 – 2026.',
+      );
+      plan.validateForExport();
+
+      final pdf = await PartePdfRenderer(
+        mediaStore: fixture.mediaStore,
+      ).build(plan: plan);
+      final docx = await ParteDocxExporter(
+        mediaStore: fixture.mediaStore,
+      ).build(plan: plan);
+      final pdfOutput = Platform.environment['OPC_PARTE_LONG_PDF_SMOKE_OUTPUT'];
+      final docxOutput =
+          Platform.environment['OPC_PARTE_LONG_DOCX_SMOKE_OUTPUT'];
+      if (pdfOutput != null && pdfOutput.isNotEmpty) {
+        await File(pdfOutput).writeAsBytes(pdf, flush: true);
+      }
+      if (docxOutput != null && docxOutput.isNotEmpty) {
+        await File(docxOutput).writeAsBytes(docx, flush: true);
+      }
+      expect(String.fromCharCodes(pdf.take(4)), '%PDF');
+      expect(
+        ZipDecoder().decodeBytes(docx).findFile('word/document.xml'),
+        isNotNull,
+      );
     },
   );
 
@@ -386,6 +480,7 @@ Future<_Fixture> _fixture() async {
           datumCeremonije: const Value('20.07.2026'),
           vremeCeremonije: const Value('12:00'),
           groblje: const Value('GRADSKO GROBLJE'),
+          ozaloseni: const Value('Sintetička porodica'),
         ),
       );
   final predmet = await (db.select(

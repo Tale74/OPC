@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:vector_math/vector_math_64.dart' show Matrix4;
 
 import '../../../../core/database/database.dart';
 import '../../../../core/entitlements/opc_entitlement_policy.dart';
@@ -31,9 +30,7 @@ class PartePdfRenderer {
     double horizontalCorrectionMm = 0,
     double verticalCorrectionMm = 0,
   }) async {
-    if (!plan.canGeneratePdf) {
-      throw StateError('PARTE PDF ima nerešene blokere.');
-    }
+    plan.validateForExport();
     final regular = pw.Font.ttf(
       await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
     );
@@ -55,7 +52,9 @@ class PartePdfRenderer {
       theme: theme,
     );
     final widgets = <pw.Widget>[];
-    for (final block in plan.blocks) {
+    for (final block in plan.blocks.where(
+      (block) => block.visible && block.exportEligible,
+    )) {
       widgets.add(
         await _buildBlock(
           block,
@@ -253,14 +252,8 @@ class PartePdfRenderer {
       crossAxisAlignment: alignment,
       children: [
         for (final line in block.lines)
-          pw.Transform(
-            transform: Matrix4.diagonal3Values(block.horizontalScale, 1, 1),
-            alignment: switch (block.alignment) {
-              ParteTextAlign.left => pw.Alignment.centerLeft,
-              ParteTextAlign.center => pw.Alignment.center,
-              ParteTextAlign.right => pw.Alignment.centerRight,
-            },
-            child: pw.Text(
+          if ((block.horizontalScale - 1).abs() < 0.0001)
+            pw.Text(
               line,
               maxLines: 1,
               softWrap: false,
@@ -277,8 +270,15 @@ class PartePdfRenderer {
                     ? pw.FontWeight.bold
                     : pw.FontWeight.normal,
               ),
+            )
+          else
+            _PartePdfScaledText(
+              text: line,
+              font: block.bold ? selected.bold : selected.regular,
+              fontSize: block.fontSize,
+              horizontalScale: block.horizontalScale,
+              alignment: block.alignment,
             ),
-          ),
       ],
     );
   }
@@ -315,6 +315,60 @@ class PartePdfRenderer {
           : null,
       child: image,
     );
+  }
+}
+
+class _PartePdfScaledText extends pw.Widget {
+  _PartePdfScaledText({
+    required this.text,
+    required this.font,
+    required this.fontSize,
+    required this.horizontalScale,
+    required this.alignment,
+  });
+
+  final String text;
+  final pw.Font font;
+  final double fontSize;
+  final double horizontalScale;
+  final ParteTextAlign alignment;
+
+  @override
+  void layout(
+    pw.Context context,
+    pw.BoxConstraints constraints, {
+    bool parentUsesSize = false,
+  }) {
+    box = PdfRect(
+      0,
+      0,
+      constraints.constrainWidth(),
+      constraints.constrainHeight(fontSize * 1.22),
+    );
+  }
+
+  @override
+  void paint(pw.Context context) {
+    super.paint(context);
+    final resolvedFont = font.getFont(context);
+    final metrics = resolvedFont.stringMetrics(text) * fontSize;
+    final renderedWidth = metrics.width * horizontalScale;
+    final x = switch (alignment) {
+      ParteTextAlign.left => box!.left,
+      ParteTextAlign.center => box!.left + (box!.width - renderedWidth) / 2,
+      ParteTextAlign.right => box!.right - renderedWidth,
+    };
+    final baseline = box!.top - metrics.ascent;
+    context.canvas
+      ..setFillColor(PdfColors.black)
+      ..drawString(
+        resolvedFont,
+        fontSize,
+        text,
+        x,
+        baseline,
+        scale: horizontalScale,
+      );
   }
 }
 

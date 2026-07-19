@@ -838,6 +838,55 @@ UI:
   designer remains outside both collapsible sections
 ```
 
+# Canonical render pipeline correction (2026-07-19)
+
+```text
+PreparationState
+  -> normalize semantic text once (including life-years en-dash)
+  -> resolve template snapshot, geometry, media and text style
+  -> fit every required block once
+  -> CanonicalRenderPlan
+       contains resolved lines, rectangle, font, scale, fit status,
+       visibility/export eligibility and media source ratio
+       validates unique IDs, required blocks and unresolved overflow
+       rejects export when any required block is missing, empty or failed
+  -> PreviewAdapter (screen-only guides and selection may surround the page)
+  -> PdfAdapter (authoritative physical geometry)
+  -> DocxAdapter (secondary editable Word derivative)
+
+ADAPTER RULE:
+  adapters consume resolved business/layout state
+  adapters do not refit, truncate, replace punctuation or skip required blocks
+
+NAME FIT:
+  requested and maximum size may be 74 pt
+  keep one line and preserve the complete name
+  use bounded horizontal compression, then lower the font within saved limits
+  unresolved fit is a blocker, never silent omission
+
+DOCX:
+  put all page-relative anchors in one zero-flow document paragraph
+  keep text in independent editable positioned textboxes
+  keep media in page-relative Behind Text anchors
+  retain the canonical font size and horizontal scale
+  require name plus both mourners blocks in the Word-visible result
+
+TEMPLATE STATE:
+  selected = current dialog choice
+  active = snapshot applied to the open preparation
+  default = persisted choice for future preparations
+  selecting, applying and setting default are separate operations
+
+PRINTER PROFILE:
+  remains machine-local, defaults to 0/0 and translates only the complete PDF layer
+  A5/Letter observations are media-mapping evidence, not a global offset
+  owner physical print is pending until the 224 x 170 mm form is measured
+
+EDITOR-ONLY HELP:
+  concise dimensions, guide legend and Actual size / 100% instruction may appear
+  outside the white preparation; they never enter the render plan, PDF or DOCX
+```
+
 # Historical runtime-corrected PARTE workflow (2026-07-12) — `SUPERSEDED` in format/margins/retention
 
 This chronological checkpoint predates the 2026-07-16 Runtime-recovery

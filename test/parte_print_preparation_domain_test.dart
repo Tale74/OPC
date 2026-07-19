@@ -189,6 +189,67 @@ void main() {
     });
 
     test(
+      'canonical plan keeps a 74 pt name on one line and normalizes years',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final predmet = await _insertPredmet(
+          db,
+          ime: 'Aleksandar-Mihailo',
+          prezime: 'Petrović Jovanović',
+        );
+        final base = const ParteInitialComposer()
+            .compose(predmet: predmet)
+            .draft;
+        final draft = base.copyWith(
+          textByBlock: {...base.textByBlock, 'years': '1950 — 2026.'},
+          blocks: base.blocks
+              .map(
+                (block) => block.id == 'name'
+                    ? block.copyWith(
+                        rect: ParteRectMm(
+                          x: 14,
+                          y: block.rect.y,
+                          width: 196,
+                          height: block.rect.height,
+                        ),
+                        initialFontSize: 74,
+                        maximumFontSize: 74,
+                      )
+                    : block,
+              )
+              .toList(growable: false),
+        );
+        final plan = const ParteComposer().compose(
+          ParteCompositionInput(
+            draft: draft,
+            template: ParteTemplate.builtInStandard,
+            photoMediaKey: null,
+            customSymbolMediaKey: null,
+            noPhotoAccepted: true,
+            noCustomSymbolAccepted: true,
+            lowResolutionPhoto: false,
+            lowResolutionAccepted: false,
+            grammarRequiresReview: false,
+            grammarVerified: true,
+          ),
+        );
+
+        final name = plan.blocks.singleWhere((block) => block.id == 'name');
+        final years = plan.blocks.singleWhere((block) => block.id == 'years');
+        expect(name.lines, hasLength(1));
+        expect(name.resolvedText, contains('Aleksandar-Mihailo'));
+        expect(name.fontSize, lessThanOrEqualTo(74));
+        expect(name.maximumFontSize, 74);
+        expect(name.horizontalScale, inInclusiveRange(0.5, 1));
+        expect(name.fitStatus, ParteFitStatus.fitted);
+        expect(years.resolvedText, '1950 – 2026.');
+        expect(plan.canGeneratePdf, isTrue, reason: plan.blockers.join(' | '));
+        expect(plan.validateForExport, returnsNormally);
+      },
+    );
+
+    test(
       'no photo and free-choice warnings require explicit acknowledgement',
       () async {
         final db = createTestDatabase();
@@ -705,6 +766,61 @@ void main() {
         );
         expect(rebuilt.templateSnapshotJson, snapshot);
         expect(await preparations.sourceChanged(started.id), isFalse);
+      },
+    );
+
+    test(
+      'selected apply, active template and persisted default stay independent',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final admin = await _insertUser(db, role: 'ADMINISTRATOR');
+        final predmet = await _insertPredmet(
+          db,
+          broj: 'PARTE-TEMPLATE-STATE',
+          partePotrebna: true,
+        );
+        final templates = ParteTemplateRepository(db);
+        final defaultTemplate = await templates.createUserTemplate(
+          actor: admin,
+          name: 'Default layout',
+          technicalSource: ParteTemplate.builtInStandard,
+        );
+        final appliedTemplate = await templates.createUserTemplate(
+          actor: admin,
+          name: 'Applied layout',
+          technicalSource: ParteTemplate.builtInStandard,
+        );
+        await templates.setDefault(
+          templateId: defaultTemplate.id,
+          actor: admin,
+        );
+        final preparations = PartePreparationRepository(db);
+        var preparation = await preparations.initializeOrResume(
+          predmetId: predmet.id,
+          actor: admin,
+          entitlement: potpun,
+        );
+        final draft = ParteDraft.decode(preparation.draftJson);
+
+        await preparations.applyTemplate(
+          preparationId: preparation.id,
+          currentDraft: draft,
+          template: appliedTemplate,
+          actor: admin,
+          entitlement: potpun,
+        );
+        preparation = (await preparations.findForPredmet(predmet.id))!;
+
+        expect(preparation.templateId, appliedTemplate.id);
+        expect(
+          preparations.templateSnapshot(preparation).id,
+          appliedTemplate.id,
+        );
+        expect(
+          (await templates.resolveActiveTemplate()).template.id,
+          defaultTemplate.id,
+        );
       },
     );
   });

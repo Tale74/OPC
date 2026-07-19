@@ -121,12 +121,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('PRECIZNO POMERANJE I STIL'), findsOneWidget);
     expect(find.byKey(const Key('parte-compact-font-row')), findsOneWidget);
+    expect(find.byKey(const Key('parte-font-size-state')), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('PREGLED PRIPREME'),
       600,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('PREGLED PRIPREME'), findsOneWidget);
+    expect(find.textContaining('Actual size / 100%'), findsAtLeastNWidgets(1));
     expect(tester.takeException(), isNull);
   });
 }

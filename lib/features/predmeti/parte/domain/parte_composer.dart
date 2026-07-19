@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'parte_models.dart';
 
+enum ParteFitStatus { notApplicable, fitted, failed }
+
 class ParteRenderBlock {
   const ParteRenderBlock({
     required this.id,
@@ -23,6 +25,12 @@ class ParteRenderBlock {
     this.imageShape = ParteImageShape.rectangle,
     this.assetPath,
     this.mediaKey,
+    this.minimumFontSize = 0,
+    this.maximumFontSize = 0,
+    this.fitStatus = ParteFitStatus.notApplicable,
+    this.visible = true,
+    this.exportEligible = true,
+    this.sourceAspectRatio,
   });
 
   final String id;
@@ -44,6 +52,14 @@ class ParteRenderBlock {
   final ParteImageShape imageShape;
   final String? assetPath;
   final String? mediaKey;
+  final double minimumFontSize;
+  final double maximumFontSize;
+  final ParteFitStatus fitStatus;
+  final bool visible;
+  final bool exportEligible;
+  final double? sourceAspectRatio;
+
+  String get resolvedText => lines.join('\n');
 
   Map<String, Object?> toFingerprintJson() => {
     'id': id,
@@ -65,6 +81,12 @@ class ParteRenderBlock {
     'imageShape': imageShape.name,
     'assetPath': assetPath,
     'mediaKey': mediaKey,
+    'minimumFontSize': minimumFontSize,
+    'maximumFontSize': maximumFontSize,
+    'fitStatus': fitStatus.name,
+    'visible': visible,
+    'exportEligible': exportEligible,
+    'sourceAspectRatio': sourceAspectRatio,
   };
 }
 
@@ -101,6 +123,44 @@ class ParteRenderPlan {
 
   bool get canConfirmPreview => blockers.isEmpty;
   bool get canGeneratePdf => blockers.isEmpty;
+
+  static const requiredTextBlockIds = <String>{
+    'intro',
+    'name',
+    'years',
+    'death',
+    'ceremony',
+    'mournersHeading',
+    'mourners',
+  };
+
+  void validateForExport() {
+    if (blockers.isNotEmpty) {
+      throw StateError('PARTE render plan ima nereÅ¡ene blokere.');
+    }
+    final ids = <String>{};
+    for (final block in blocks) {
+      if (!ids.add(block.id)) {
+        throw StateError('PARTE render plan sadrÅ¾i dupli blok ${block.id}.');
+      }
+      if (!block.visible || !block.exportEligible) continue;
+      if (block.kind == ParteBlockKind.text &&
+          (block.resolvedText.trim().isEmpty ||
+              block.fitStatus == ParteFitStatus.failed)) {
+        throw StateError('PARTE blok ${block.id} nije spreman za izvoz.');
+      }
+    }
+    final missing = requiredTextBlockIds.difference(ids);
+    if (missing.isNotEmpty) {
+      throw StateError(
+        'PARTE izvoz nema obavezne blokove: ${missing.join(', ')}.',
+      );
+    }
+    final years = blocks.where((block) => block.id == 'years').single;
+    if (years.resolvedText.contains('\u2014')) {
+      throw StateError('PARTE raspon godina sadrÅ¾i em-dash.');
+    }
+  }
 }
 
 class ParteCompositionInput {
@@ -230,6 +290,7 @@ class ParteComposer {
               border: spec.border,
               borderWidth: spec.borderWidth,
               imageShape: spec.imageShape,
+              sourceAspectRatio: spec.sourceAspectRatio,
             ),
           );
         }
@@ -248,13 +309,17 @@ class ParteComposer {
               border: spec.border,
               borderWidth: spec.borderWidth,
               imageShape: spec.imageShape,
+              sourceAspectRatio: spec.sourceAspectRatio,
             ),
           );
         }
         continue;
       }
 
-      final content = input.draft.textByBlock[spec.id]?.trim() ?? '';
+      final content = _canonicalText(
+        spec.id,
+        input.draft.textByBlock[spec.id]?.trim() ?? '',
+      );
       if (content.isEmpty) continue;
       final adjustedSpec = spec;
       final fit = spec.id == 'name'
@@ -277,8 +342,19 @@ class ParteComposer {
           alignment: adjustedSpec.alignment,
           fontFamily: adjustedSpec.fontFamily,
           horizontalScale: fit.horizontalScale,
+          minimumFontSize: adjustedSpec.minimumFontSize,
+          maximumFontSize: adjustedSpec.maximumFontSize,
+          fitStatus: fit.fits ? ParteFitStatus.fitted : ParteFitStatus.failed,
         ),
       );
+    }
+
+    final presentIds = blocks.map((block) => block.id).toSet();
+    final missingRequired = ParteRenderPlan.requiredTextBlockIds.difference(
+      presentIds,
+    );
+    for (final id in missingRequired) {
+      blockers.add('Obavezni blok $id nema sadrÅ¾aj za izvoz.');
     }
 
     final fingerprintSource = <String, Object?>{
@@ -353,27 +429,41 @@ class ParteComposer {
   }
 
   _ParteTextFit _fitSingleLineName(String content, ParteBlockSpec spec) {
-    final size = spec.initialFontSize
+    final normalized = content.replaceAll(RegExp(r'\s+'), ' ');
+    final available = spec.rect.width * _pointsPerMm;
+    var size = spec.initialFontSize
         .clamp(spec.minimumFontSize, spec.maximumFontSize)
         .toDouble();
-    final available = spec.rect.width * _pointsPerMm;
-    final natural = _textWidth(
-      content.replaceAll(RegExp(r'\s+'), ' '),
-      size,
-      spec.bold,
-      fontFamily: spec.fontFamily,
-    );
-    final requiredScale = natural <= available ? 1.0 : available / natural;
-    final scale = requiredScale.clamp(0.5, 1.0).toDouble();
-    final heightFits =
-        size * _lineHeightFactor <= spec.rect.height * _pointsPerMm;
+    while (size >= spec.minimumFontSize) {
+      final natural = _textWidth(
+        normalized,
+        size,
+        spec.bold,
+        fontFamily: spec.fontFamily,
+      );
+      final requiredScale = natural <= available ? 1.0 : available / natural;
+      final heightFits =
+          size * _lineHeightFactor <= spec.rect.height * _pointsPerMm;
+      if (requiredScale >= 0.5 && heightFits) {
+        return _ParteTextFit(
+          lines: [normalized],
+          fontSize: size,
+          horizontalScale: requiredScale.clamp(0.5, 1.0).toDouble(),
+          fits: true,
+        );
+      }
+      size -= 0.5;
+    }
     return _ParteTextFit(
-      lines: [content.replaceAll(RegExp(r'\s+'), ' ')],
-      fontSize: size,
-      horizontalScale: scale,
-      fits: requiredScale >= 0.5 && heightFits,
+      lines: [normalized],
+      fontSize: spec.minimumFontSize,
+      horizontalScale: 0.5,
+      fits: false,
     );
   }
+
+  String _canonicalText(String blockId, String value) =>
+      blockId == 'years' ? value.replaceAll('\u2014', '\u2013') : value;
 
   List<String> _wrap(
     String content,

@@ -33,3 +33,22 @@ In the normal composer UI the user enters only page width/height, printable-zone
 Schema 5 adds optional `sourceAspectRatio` to media block specifications. When `lockAspectRatio` is true, reflow uses one uniform scale and malformed legacy rectangles are normalized around their centre before safe-area clamping. Missing explicit text font now resolves to Noto Serif; an explicitly stored Noto Sans value remains unchanged.
 
 The machine-local printer profile is not part of either template or draft schema. Its horizontal/vertical correction translates only PDF blocks, defaults to `0 × 0 mm`, and never changes PREDMET, saved block coordinates or DOCX.
+
+## Canonical render and template-state addendum (2026-07-19)
+
+Legacy/custom template and retained-draft decoding migrates the deceased-name
+maximum to `74 pt`; no database schema bump is required. The saved minimum,
+maximum and requested size are inputs to one canonical fit pass. The resulting
+font size, horizontal scale, resolved single line and fit status belong to the
+render plan consumed by preview, PDF and DOCX. Export adapters must not make a
+second fit or punctuation decision.
+
+Template identity has three independent meanings: the dialog `selected` ID,
+the preparation `active` snapshot ID and the persisted `default` ID for future
+preparations. Applying a selected template atomically replaces only the open
+preparation's technical snapshot/geometry and invalidates stale preview/export
+evidence. It does not implicitly change the persisted default.
+
+Required text IDs are `intro`, `name`, `years`, `death`, `ceremony`,
+`mournersHeading` and `mourners`. A missing, empty, failed or duplicate required
+block makes PDF and DOCX generation fail explicitly.

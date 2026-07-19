@@ -68,6 +68,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   late final TextEditingController _zoneHeightController;
   late final TextEditingController _printHorizontalController;
   late final TextEditingController _printVerticalController;
+  late final TextEditingController _fontSizeController;
   PartePrintProfile _printProfile = const PartePrintProfile();
   bool _textExpanded = true;
   bool _formatExpanded = true;
@@ -96,6 +97,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     _zoneHeightController = TextEditingController();
     _printHorizontalController = TextEditingController(text: '0.0');
     _printVerticalController = TextEditingController(text: '0.0');
+    _fontSizeController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _initialize();
     });
@@ -114,6 +116,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     _zoneHeightController.dispose();
     _printHorizontalController.dispose();
     _printVerticalController.dispose();
+    _fontSizeController.dispose();
     super.dispose();
   }
 
@@ -163,6 +166,13 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     }
     if (!mounted) return;
     _replaceControllers(draft);
+    if (draft != null) {
+      final selected = draft.blocks.firstWhere(
+        (block) => block.id == _selectedBlockId,
+        orElse: () => draft!.blocks.first,
+      );
+      _fontSizeController.text = selected.initialFontSize.toStringAsFixed(1);
+    }
     setState(() {
       _preparation = preparation;
       _predmet = predmet;
@@ -329,6 +339,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     double widthDelta = 0,
     double heightDelta = 0,
     double fontDelta = 0,
+    double? fontSize,
     bool? bold,
     ParteTextAlign? alignment,
     String? fontFamily,
@@ -377,10 +388,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           }
           return block.copyWith(
             rect: rect,
-            initialFontSize: (block.initialFontSize + fontDelta).clamp(
-              block.minimumFontSize,
-              block.maximumFontSize,
-            ),
+            initialFontSize: (fontSize ?? block.initialFontSize + fontDelta)
+                .clamp(block.minimumFontSize, block.maximumFontSize),
             bold: bold,
             alignment: alignment,
             fontFamily: fontFamily,
@@ -402,6 +411,33 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     );
     await _reload();
   });
+
+  Future<void> _applyFontSizeInput() async {
+    final value = double.tryParse(
+      _fontSizeController.text.trim().replaceAll(',', '.'),
+    );
+    final block = _draft!.blocks.firstWhere(
+      (item) => item.id == _selectedBlockId,
+    );
+    if (value == null ||
+        value < block.minimumFontSize ||
+        value > block.maximumFontSize) {
+      _fontSizeController.text = block.initialFontSize.toStringAsFixed(1);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Veličina fonta mora biti od '
+              '${block.minimumFontSize.toStringAsFixed(1)} do '
+              '${block.maximumFontSize.toStringAsFixed(1)} pt.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+    await _modifySelected(fontSize: value);
+  }
 
   Future<void> _resetSelectedSize() => _run(() async {
     final draft = _draft!;
@@ -783,23 +819,15 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         repository: _templateRepository,
         actor: widget.actor,
         currentDraft: _draft!,
+        activeTemplateId: _preparation!.templateId,
       ),
     );
     if (selected == null) return;
     await _run(() async {
-      await _repository.updateDraft(
+      await _repository.applyTemplate(
         preparationId: _preparation!.id,
-        draft: _draft!.copyWith(
-          widthMm: selected.widthMm,
-          heightMm: selected.heightMm,
-          horizontalMarginMm: selected.horizontalMarginMm,
-          verticalMarginMm: selected.verticalMarginMm,
-          printableZoneXmm: selected.printableZoneXmm,
-          printableZoneYmm: selected.printableZoneYmm,
-          printableZoneWidthMm: selected.printableZoneWidthMm,
-          printableZoneHeightMm: selected.printableZoneHeightMm,
-          blocks: selected.blocks,
-        ),
+        currentDraft: _draft!,
+        template: selected,
         actor: widget.actor,
         entitlement: widget.entitlement,
       );
@@ -1008,27 +1036,29 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               child: const Text('PRIMENI FORMAT I ZONU ŠTAMPE'),
             ),
             const SizedBox(height: 12),
-            Text(
-              'KOREKCIJA PROFILA ŠTAMPAČA',
-              style: Theme.of(context).textTheme.labelLarge,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'KOREKCIJA PROFILA ŠTAMPAČA',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ),
+                const Tooltip(
+                  message:
+                      'Korekcija celog PDF otiska. Ne menja blokove, šablon ni DOCX.',
+                  child: Icon(Icons.info_outline, size: 18),
+                ),
+              ],
             ),
-            const Text(
-              'Pomera samo ceo PDF otisak; ne menja blokove, šablon ni DOCX. '
-              'Horizontalno: − levo / + desno. Vertikalno: − gore / + dole.',
-            ),
+            const Text('Korekcija celog PDF otiska'),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                _dimensionField(
-                  _printHorizontalController,
-                  'Korekcija štampe – levo/desno',
-                ),
-                _dimensionField(
-                  _printVerticalController,
-                  'Korekcija štampe – gore/dole',
-                ),
+                _dimensionField(_printHorizontalController, 'Levo / desno'),
+                _dimensionField(_printVerticalController, 'Gore / dole'),
               ],
             ),
             const SizedBox(height: 8),
@@ -1114,8 +1144,16 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                 ),
               )
               .toList(),
-          onChanged: (value) =>
-              setState(() => _selectedBlockId = value ?? _selectedBlockId),
+          onChanged: (value) {
+            final next = value ?? _selectedBlockId;
+            final block = _draft!.blocks.firstWhere((item) => item.id == next);
+            setState(() {
+              _selectedBlockId = next;
+              _fontSizeController.text = block.initialFontSize.toStringAsFixed(
+                1,
+              );
+            });
+          },
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -1142,60 +1180,86 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               icon: const Icon(Icons.arrow_downward),
               tooltip: 'Dole 1 mm',
             ),
-            if (selected.kind == ParteBlockKind.text) ...[
-              IconButton.filledTonal(
-                onPressed:
-                    _busy ||
-                        selected.initialFontSize <= selected.minimumFontSize
-                    ? null
-                    : () => _modifySelected(fontDelta: -0.5),
-                icon: const Icon(Icons.text_decrease),
-                tooltip: 'Manji font',
-              ),
-              IconButton.filledTonal(
-                onPressed:
-                    _busy ||
-                        selected.initialFontSize >= selected.maximumFontSize
-                    ? null
-                    : () => _modifySelected(fontDelta: 0.5),
-                icon: const Icon(Icons.text_increase),
-                tooltip: 'Veći font',
-              ),
-            ],
           ],
         ),
         const SizedBox(height: 8),
         if (selected.kind == ParteBlockKind.text) ...[
-          Row(
+          LayoutBuilder(
             key: const Key('parte-compact-font-row'),
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: selected.fontFamily,
-                  decoration: const InputDecoration(
-                    labelText: 'Font',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+            builder: (context, constraints) => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                SizedBox(
+                  width: constraints.maxWidth < 360
+                      ? constraints.maxWidth
+                      : constraints.maxWidth - 214,
+                  child: DropdownButtonFormField<String>(
+                    key: ValueKey(
+                      'parte-font-${selected.id}-${selected.fontFamily}',
+                    ),
+                    initialValue: selected.fontFamily,
+                    decoration: const InputDecoration(
+                      labelText: 'Font',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: ParteFontCatalog.supported
+                        .map(
+                          (font) => DropdownMenuItem(
+                            value: font,
+                            child: Text(ParteFontCatalog.displayName(font)),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: _busy
+                        ? null
+                        : (value) => _modifySelected(fontFamily: value),
                   ),
-                  items: ParteFontCatalog.supported
-                      .map(
-                        (font) => DropdownMenuItem(
-                          value: font,
-                          child: Text(ParteFontCatalog.displayName(font)),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _busy
-                      ? null
-                      : (value) => _modifySelected(fontFamily: value),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${selected.initialFontSize.toStringAsFixed(1)} pt',
-                key: const Key('parte-font-size-state'),
-              ),
-            ],
+                SizedBox(
+                  width: 104,
+                  child: TextField(
+                    key: const Key('parte-font-size-state'),
+                    controller: _fontSizeController,
+                    enabled: !_busy,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Veličina',
+                      suffixText: 'pt',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onSubmitted: (_) => _applyFontSizeInput(),
+                    onTapOutside: (_) {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      _applyFontSizeInput();
+                    },
+                  ),
+                ),
+                IconButton.filledTonal(
+                  onPressed:
+                      _busy ||
+                          selected.initialFontSize <= selected.minimumFontSize
+                      ? null
+                      : () => _modifySelected(fontDelta: -0.5),
+                  icon: const Icon(Icons.text_decrease),
+                  tooltip: 'Manji font',
+                ),
+                IconButton.filledTonal(
+                  onPressed:
+                      _busy ||
+                          selected.initialFontSize >= selected.maximumFontSize
+                      ? null
+                      : () => _modifySelected(fontDelta: 0.5),
+                  icon: const Icon(Icons.text_increase),
+                  tooltip: 'Veći font',
+                ),
+              ],
+            ),
           ),
           if (selected.initialFontSize <= selected.minimumFontSize)
             const Text(
@@ -1401,7 +1465,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
 
   Widget _dimensionField(TextEditingController controller, String label) =>
       SizedBox(
-        width: 178,
+        width: 190,
         child: TextField(
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1449,6 +1513,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           'PREGLED PRIPREME',
           style: Theme.of(context).textTheme.titleMedium,
         ),
+        const SizedBox(height: 8),
+        _ParteEditorTechnicalGuide(plan: plan, profile: _printProfile),
         const SizedBox(height: 8),
         InteractiveViewer(
           minScale: 0.5,
@@ -1580,6 +1646,84 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     'symbol' => 'Simbol',
     _ => id,
   };
+}
+
+class _ParteEditorTechnicalGuide extends StatelessWidget {
+  const _ParteEditorTechnicalGuide({required this.plan, required this.profile});
+
+  final ParteRenderPlan plan;
+  final PartePrintProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Wrap(
+          spacing: 14,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              'Strana ${plan.widthMm.toStringAsFixed(1)} × '
+              '${plan.heightMm.toStringAsFixed(1)} mm',
+              style: textTheme.labelMedium,
+            ),
+            Text(
+              'Zona ${plan.printableZoneWidthMm.toStringAsFixed(1)} × '
+              '${plan.printableZoneHeightMm.toStringAsFixed(1)} mm',
+              style: textTheme.labelMedium,
+            ),
+            const _ParteGuideLabel(color: Colors.orange, label: 'zona štampe'),
+            const _ParteGuideLabel(
+              color: Colors.redAccent,
+              label: 'sigurna površina',
+            ),
+            const _ParteGuideLabel(
+              color: Colors.blueAccent,
+              label: 'pomoćne linije',
+            ),
+            Text(
+              'PDF pomeraj: ${profile.horizontalCorrectionMm.toStringAsFixed(1)} / '
+              '${profile.verticalCorrectionMm.toStringAsFixed(1)} mm',
+              style: textTheme.labelMedium,
+            ),
+            const Tooltip(
+              message:
+                  'Ove oznake su samo deo editora i ne ulaze u PDF ni DOCX.',
+              child: Icon(Icons.visibility_outlined, size: 18),
+            ),
+            Text(
+              'Štampa: Actual size / 100% – bez Fit, Shrink ili Scale to page',
+              style: textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ParteGuideLabel extends StatelessWidget {
+  const _ParteGuideLabel({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(width: 18, height: 2, color: color),
+      const SizedBox(width: 4),
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
 }
 
 class PartePlanPreview extends StatelessWidget {

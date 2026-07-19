@@ -173,6 +173,8 @@ class ParteBlockSpec {
   ParteBlockSpec copyWith({
     ParteRectMm? rect,
     double? initialFontSize,
+    double? minimumFontSize,
+    double? maximumFontSize,
     bool? bold,
     ParteTextAlign? alignment,
     String? fontFamily,
@@ -191,8 +193,8 @@ class ParteBlockSpec {
     kind: kind,
     rect: rect ?? this.rect,
     initialFontSize: initialFontSize ?? this.initialFontSize,
-    minimumFontSize: minimumFontSize,
-    maximumFontSize: maximumFontSize,
+    minimumFontSize: minimumFontSize ?? this.minimumFontSize,
+    maximumFontSize: maximumFontSize ?? this.maximumFontSize,
     bold: bold ?? this.bold,
     alignment: alignment ?? this.alignment,
     fontFamily: ParteFontCatalog.safe(fontFamily ?? this.fontFamily),
@@ -379,6 +381,7 @@ class ParteTemplate {
         )
         .toList(growable: true);
     _migrateMournersBlocks(blocks);
+    _migrateTextLimits(blocks);
     final legacyMargin = ((json['marginMm'] as num?) ?? 5).toDouble();
     final template = ParteTemplate(
       id: (json['id'] as String?)?.trim() ?? '',
@@ -459,7 +462,7 @@ class ParteTemplate {
         rect: ParteRectMm(x: 15, y: 34, width: 155, height: 26),
         initialFontSize: 52,
         minimumFontSize: 28,
-        maximumFontSize: 58,
+        maximumFontSize: 74,
         bold: true,
         layer: 4,
       ),
@@ -572,6 +575,14 @@ class ParteTemplate {
       ),
     );
   }
+
+  static void _migrateTextLimits(List<ParteBlockSpec> blocks) {
+    final nameIndex = blocks.indexWhere((block) => block.id == 'name');
+    if (nameIndex < 0) return;
+    final name = blocks[nameIndex];
+    if (name.maximumFontSize >= 74) return;
+    blocks[nameIndex] = name.copyWith(maximumFontSize: 74);
+  }
 }
 
 class ParteDraft {
@@ -666,6 +677,7 @@ class ParteDraft {
         )
         .toList(growable: true);
     ParteTemplate._migrateMournersBlocks(blocks);
+    ParteTemplate._migrateTextLimits(blocks);
     return ParteDraft(
       textByBlock: text,
       blocks: List<ParteBlockSpec>.unmodifiable(blocks),

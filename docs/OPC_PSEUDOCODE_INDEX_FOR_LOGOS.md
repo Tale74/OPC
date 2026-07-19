@@ -623,3 +623,14 @@ Implementation/pseudocode aligned: yes.
 - Identity/order: deduplicate by stable `interni_naziv`; user-basic order follows persistent category creation order, not rename or toggle time.
 - Manual boundary: a manual IRiU row remains PREDMET-local and never creates or changes KATALOG policy.
 - Read after: `docs/tasks/OPC_TASK_KATALOG_OSNOVNE_KATEGORIJE_IRIU_AUDIT_IMPLEMENTATION_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-053 — PARTE canonical render and runtime acceptance
+
+- Document: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`, section “Canonical render pipeline correction (2026-07-19)”.
+- Source: PARTE composer/models, preview, PDF renderer, DOCX exporter, preparation repository and template dialog.
+- Pipeline: `PreparationState -> CanonicalRenderPlan -> PreviewAdapter/PdfAdapter/DocxAdapter`; adapters consume and never reinterpret resolved business/layout state.
+- Required-block rule: name, years, ceremony and both mourners blocks cannot be empty, failed, duplicated or silently absent from an export.
+- Typography rule: complete one-line name, maximum `74 pt`, bounded canonical fit and source-level en-dash normalization.
+- Template rule: dialog selected, preparation active and persisted default are separate identities and actions.
+- Calibration rule: machine-local correction translates the PDF layer only; physical print remains owner evidence.
+- Report: `docs/tasks/OPC_TASK_PARTE_ROOT_CAUSE_RENDER_PIPELINE_CORRECTION_RUNTIME_ACCEPTANCE_REPORT.md`.

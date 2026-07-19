@@ -16,11 +16,13 @@ class ParteTemplateManagementDialog extends StatefulWidget {
     required this.repository,
     required this.actor,
     required this.currentDraft,
+    required this.activeTemplateId,
   });
 
   final ParteTemplateRepository repository;
   final KorisniciData actor;
   final ParteDraft currentDraft;
+  final String activeTemplateId;
 
   @override
   State<ParteTemplateManagementDialog> createState() =>
@@ -47,7 +49,12 @@ class _ParteTemplateManagementDialogState
     setState(() {
       _templates = templates;
       _defaultId = resolution.template.id;
-      _selectedId ??= templates.first.id;
+      _selectedId ??=
+          templates.any((template) => template.id == widget.activeTemplateId)
+          ? widget.activeTemplateId
+          : templates.any((template) => template.id == _defaultId)
+          ? _defaultId
+          : templates.first.id;
       if (!templates.any((template) => template.id == _selectedId)) {
         _selectedId = templates.first.id;
       }
@@ -286,6 +293,7 @@ class _ParteTemplateManagementDialogState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DropdownButtonFormField<String>(
+                      key: ValueKey('parte-template-$_selectedId-$_defaultId'),
                       initialValue: _selectedId,
                       decoration: const InputDecoration(
                         labelText: 'ŠABLON',
@@ -296,12 +304,25 @@ class _ParteTemplateManagementDialogState
                             (template) => DropdownMenuItem(
                               value: template.id,
                               child: Text(
-                                '${template.name}${template.id == _defaultId ? ' – PODRAZUMEVAN' : ''}',
+                                '${template.name}${template.id == _defaultId ? ' – PODRAZUMEVAN' : ''}'
+                                '${template.id == widget.activeTemplateId ? ' – TRENUTNO PRIMENJEN' : ''}',
                               ),
                             ),
                           )
                           .toList(),
                       onChanged: (value) => setState(() => _selectedId = value),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        const Chip(label: Text('IZABRAN')),
+                        if (_selected.id == _defaultId)
+                          const Chip(label: Text('PODRAZUMEVAN')),
+                        if (_selected.id == widget.activeTemplateId)
+                          const Chip(label: Text('TRENUTNO PRIMENJEN')),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -323,9 +344,7 @@ class _ParteTemplateManagementDialogState
                               ),
                             ),
                             child: const Text('POSTAVI KAO PODRAZUMEVAN'),
-                          )
-                        else
-                          const Chip(label: Text('PODRAZUMEVAN')),
+                          ),
                         if (_layoutIsDirty)
                           FilledButton.tonal(
                             onPressed: _saveCurrentAsNew,
@@ -343,7 +362,7 @@ class _ParteTemplateManagementDialogState
                           ),
                           OutlinedButton(
                             onPressed: _export,
-                            child: const Text('IZVEZI'),
+                            child: const Text('IZVEZI IZABRANI ŠABLON'),
                           ),
                           OutlinedButton(
                             onPressed: _delete,

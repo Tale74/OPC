@@ -95,6 +95,15 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 - Schema 5 preserves media source ratio, Noto Serif is the missing-font/new default, guides remain editor-only, and Word media use Behind Text.
 - Physical print remains owner acceptance even after electronic and build PASS.
 
+### OPC-OD-PARTE-005 — CANONICAL RENDER AND TEMPLATE STATE
+
+- One canonical render plan owns resolved text, fit status, geometry and media for preview, PDF and DOCX; adapters may not refit, repair punctuation or silently omit a required block.
+- The full deceased name remains one line with a `74 pt` maximum and bounded fit; failure is an explicit export blocker. Life years use an en-dash before any exporter.
+- `selected`, preparation `active` and persisted `default` template IDs are independent states and independent actions.
+- Technical guide text is permitted only as discreet editor chrome outside the white preparation and never enters PDF/DOCX.
+- Printer correction stays machine-local and PDF-only; A5/Letter observations do not establish a global offset. Owner physical print remains pending.
+- Report: `docs/tasks/OPC_TASK_PARTE_ROOT_CAUSE_RENDER_PIPELINE_CORRECTION_RUNTIME_ACCEPTANCE_REPORT.md`.
+
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
 
 The owner-designated `opc_v4_release.sqlite` remains canonical regardless of a

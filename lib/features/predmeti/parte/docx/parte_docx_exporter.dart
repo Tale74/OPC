@@ -27,15 +27,14 @@ class ParteDocxExporter {
   final ParteMediaStore mediaStore;
 
   Future<Uint8List> build({required ParteRenderPlan plan}) async {
-    if (!plan.canGeneratePdf) {
-      throw StateError('DOCX ima nerešene blokere kompozicije.');
-    }
+    plan.validateForExport();
     final archive = Archive();
     final relationships = <String>[];
     final body = <String>[];
     var imageIndex = 0;
-    final sorted = [...plan.blocks]
-      ..sort((a, b) => a.rect.y.compareTo(b.rect.y));
+    final sorted = [
+      ...plan.blocks.where((block) => block.visible && block.exportEligible),
+    ]..sort((a, b) => a.rect.y.compareTo(b.rect.y));
 
     for (final block in sorted) {
       if (block.kind == ParteBlockKind.text) {
@@ -122,25 +121,20 @@ class ParteDocxExporter {
       ParteTextAlign.center => 'center',
       ParteTextAlign.right => 'right',
     };
-    final usesEquivalentNameFit = block.id == 'name';
-    final size =
-        (block.fontSize *
-                (usesEquivalentNameFit ? block.horizontalScale : 1) *
-                2)
-            .round();
-    final scale = usesEquivalentNameFit
-        ? 100
-        : (block.horizontalScale * 100).round();
+    final size = (block.fontSize * 2).round();
+    final scale = (block.horizontalScale * 100).round();
     final font = _xml(ParteFontCatalog.displayName(block.fontFamily));
-    final text = _xml(block.lines.join(' ').replaceAll('—', '–'));
+    final text = _xml(block.lines.join(' '));
     final left = (block.rect.x * 72 / 25.4).toStringAsFixed(3);
     final top = (block.rect.y * 72 / 25.4).toStringAsFixed(3);
     final width = (block.rect.width * 72 / 25.4).toStringAsFixed(3);
     final height = (block.rect.height * 72 / 25.4).toStringAsFixed(3);
-    return '<w:p><w:r><w:pict><v:rect id="parte_${_xml(block.id)}" '
+    return '<w:r><w:pict><v:rect id="parte_${_xml(block.id)}" '
         'stroked="f" filled="f" '
         'style="position:absolute;margin-left:${left}pt;margin-top:${top}pt;'
         'width:${width}pt;height:${height}pt;z-index:${block.layer};'
+        'mso-position-horizontal-relative:page;'
+        'mso-position-vertical-relative:page;'
         'mso-fit-shape-to-text:f;v-text-anchor:top">'
         '<v:textbox inset="0,0,0,0"><w:txbxContent>'
         '<w:p><w:pPr><w:jc w:val="$align"/><w:keepLines/>'
@@ -150,7 +144,7 @@ class ParteDocxExporter {
         '<w:szCs w:val="$size"/><w:w w:val="$scale"/>'
         '${block.bold ? '<w:b/><w:bCs/>' : ''}</w:rPr>'
         '<w:t xml:space="preserve">$text</w:t></w:r></w:p>'
-        '</w:txbxContent></v:textbox></v:rect></w:pict></w:r></w:p>';
+        '</w:txbxContent></v:textbox></v:rect></w:pict></w:r>';
   }
 
   String _imageParagraph(
@@ -172,7 +166,7 @@ class ParteDocxExporter {
     final height = (fittedHeight * 36000).round();
     final x = (fittedX * 36000).round();
     final y = (fittedY * 36000).round();
-    return '<w:p><w:r><w:drawing>'
+    return '<w:r><w:drawing>'
         '<wp:anchor distT="0" distB="0" distL="0" distR="0" '
         'simplePos="0" relativeHeight="${block.layer}" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" '
         'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
@@ -189,7 +183,7 @@ class ParteDocxExporter {
         '<pic:blipFill><a:blip r:embed="$relationId"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
         '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="$width" cy="$height"/></a:xfrm>'
         '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'
-        '</pic:pic></a:graphicData></a:graphic></wp:anchor></w:drawing></w:r></w:p>';
+        '</pic:pic></a:graphicData></a:graphic></wp:anchor></w:drawing></w:r>';
   }
 
   String _document(ParteRenderPlan plan, String body) {
@@ -199,7 +193,8 @@ class ParteDocxExporter {
         '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
         'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
         'xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">'
-        '<w:body>$body<w:sectPr><w:pgSz w:w="$width" w:h="$height" w:orient="landscape"/>'
+        '<w:body><w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="1" w:lineRule="exact"/></w:pPr>'
+        '$body</w:p><w:sectPr><w:pgSz w:w="$width" w:h="$height" w:orient="landscape"/>'
         '<w:pgMar w:top="0" w:right="0" w:bottom="0" w:left="0" '
         'w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>';
   }

@@ -107,6 +107,46 @@ class PartePreparationRepository {
     );
   }
 
+  Future<void> applyTemplate({
+    required int preparationId,
+    required ParteDraft currentDraft,
+    required ParteTemplate template,
+    required KorisniciData actor,
+    required OpcEntitlementPolicy entitlement,
+  }) async {
+    authorization.requirePreparationAccess(
+      user: actor,
+      entitlement: entitlement,
+    );
+    await _requireEditable(preparationId);
+    final nextDraft = currentDraft.copyWith(
+      widthMm: template.widthMm,
+      heightMm: template.heightMm,
+      horizontalMarginMm: template.horizontalMarginMm,
+      verticalMarginMm: template.verticalMarginMm,
+      printableZoneXmm: template.printableZoneXmm,
+      printableZoneYmm: template.printableZoneYmm,
+      printableZoneWidthMm: template.printableZoneWidthMm,
+      printableZoneHeightMm: template.printableZoneHeightMm,
+      blocks: template.blocks,
+    );
+    await (_db.update(
+      _db.partePripreme,
+    )..where((row) => row.id.equals(preparationId))).write(
+      PartePripremeCompanion(
+        templateId: Value(template.id),
+        templateSnapshotJson: Value(jsonEncode(template.toJson())),
+        draftJson: Value(nextDraft.encode()),
+        updatedAt: Value(DateTime.now().toIso8601String()),
+        previewConfirmedFingerprint: const Value(null),
+        exportedRenderFingerprint: const Value(null),
+        exportedFilename: const Value(null),
+        exportedLocation: const Value(null),
+        exportedSuccessfully: const Value(false),
+      ),
+    );
+  }
+
   Future<void> updateMediaReference({
     required int preparationId,
     required KorisniciData actor,
