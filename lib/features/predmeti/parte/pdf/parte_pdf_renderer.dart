@@ -13,6 +13,9 @@ import '../domain/parte_composer.dart';
 import '../domain/parte_image_effects.dart';
 import '../domain/parte_models.dart';
 
+typedef PartePdfLineObserver =
+    void Function(String blockId, int lineIndex, String text);
+
 class PartePdfExportResult {
   const PartePdfExportResult({required this.file, required this.bytes});
 
@@ -29,6 +32,7 @@ class PartePdfRenderer {
     required ParteRenderPlan plan,
     double horizontalCorrectionMm = 0,
     double verticalCorrectionMm = 0,
+    PartePdfLineObserver? lineObserver,
   }) async {
     plan.validateForExport();
     final regular = pw.Font.ttf(
@@ -61,6 +65,7 @@ class PartePdfRenderer {
           fonts,
           horizontalCorrectionMm,
           verticalCorrectionMm,
+          lineObserver,
         ),
       );
     }
@@ -220,10 +225,11 @@ class PartePdfRenderer {
     Map<String, ({pw.Font regular, pw.Font bold})> fonts,
     double horizontalCorrectionMm,
     double verticalCorrectionMm,
+    PartePdfLineObserver? lineObserver,
   ) async {
     final rect = block.rect;
     final child = switch (block.kind) {
-      ParteBlockKind.text => _textBlock(block, fonts),
+      ParteBlockKind.text => _textBlock(block, fonts, lineObserver),
       ParteBlockKind.photo || ParteBlockKind.symbol => await _imageBlock(block),
     };
     return pw.Positioned(
@@ -240,46 +246,17 @@ class PartePdfRenderer {
   pw.Widget _textBlock(
     ParteRenderBlock block,
     Map<String, ({pw.Font regular, pw.Font bold})> fonts,
+    PartePdfLineObserver? lineObserver,
   ) {
     final selected = fonts[ParteFontCatalog.safe(block.fontFamily)]!;
-    final alignment = switch (block.alignment) {
-      ParteTextAlign.left => pw.CrossAxisAlignment.start,
-      ParteTextAlign.center => pw.CrossAxisAlignment.center,
-      ParteTextAlign.right => pw.CrossAxisAlignment.end,
-    };
-    return pw.Column(
-      mainAxisSize: pw.MainAxisSize.min,
-      crossAxisAlignment: alignment,
-      children: [
-        for (final line in block.lines)
-          if ((block.horizontalScale - 1).abs() < 0.0001)
-            pw.Text(
-              line,
-              maxLines: 1,
-              softWrap: false,
-              textAlign: switch (block.alignment) {
-                ParteTextAlign.left => pw.TextAlign.left,
-                ParteTextAlign.center => pw.TextAlign.center,
-                ParteTextAlign.right => pw.TextAlign.right,
-              },
-              style: pw.TextStyle(
-                font: block.bold ? selected.bold : selected.regular,
-                fontSize: block.fontSize,
-                height: 1.22,
-                fontWeight: block.bold
-                    ? pw.FontWeight.bold
-                    : pw.FontWeight.normal,
-              ),
-            )
-          else
-            _PartePdfScaledText(
-              text: line,
-              font: block.bold ? selected.bold : selected.regular,
-              fontSize: block.fontSize,
-              horizontalScale: block.horizontalScale,
-              alignment: block.alignment,
-            ),
-      ],
+    return _PartePdfTextBlock(
+      blockId: block.id,
+      lines: block.lines,
+      font: block.bold ? selected.bold : selected.regular,
+      fontSize: block.fontSize,
+      horizontalScale: block.horizontalScale,
+      alignment: block.alignment,
+      lineObserver: lineObserver,
     );
   }
 
@@ -318,20 +295,24 @@ class PartePdfRenderer {
   }
 }
 
-class _PartePdfScaledText extends pw.Widget {
-  _PartePdfScaledText({
-    required this.text,
+class _PartePdfTextBlock extends pw.Widget {
+  _PartePdfTextBlock({
+    required this.blockId,
+    required this.lines,
     required this.font,
     required this.fontSize,
     required this.horizontalScale,
     required this.alignment,
+    required this.lineObserver,
   });
 
-  final String text;
+  final String blockId;
+  final List<String> lines;
   final pw.Font font;
   final double fontSize;
   final double horizontalScale;
   final ParteTextAlign alignment;
+  final PartePdfLineObserver? lineObserver;
 
   @override
   void layout(
@@ -343,7 +324,7 @@ class _PartePdfScaledText extends pw.Widget {
       0,
       0,
       constraints.constrainWidth(),
-      constraints.constrainHeight(fontSize * 1.22),
+      constraints.constrainHeight(fontSize * 1.22 * lines.length),
     );
   }
 
@@ -351,24 +332,28 @@ class _PartePdfScaledText extends pw.Widget {
   void paint(pw.Context context) {
     super.paint(context);
     final resolvedFont = font.getFont(context);
-    final metrics = resolvedFont.stringMetrics(text) * fontSize;
-    final renderedWidth = metrics.width * horizontalScale;
-    final x = switch (alignment) {
-      ParteTextAlign.left => box!.left,
-      ParteTextAlign.center => box!.left + (box!.width - renderedWidth) / 2,
-      ParteTextAlign.right => box!.right - renderedWidth,
-    };
-    final baseline = box!.top - metrics.ascent;
-    context.canvas
-      ..setFillColor(PdfColors.black)
-      ..drawString(
+    final lineHeight = fontSize * 1.22;
+    context.canvas.setFillColor(PdfColors.black);
+    for (var index = 0; index < lines.length; index++) {
+      final line = lines[index];
+      final metrics = resolvedFont.stringMetrics(line) * fontSize;
+      final renderedWidth = metrics.width * horizontalScale;
+      final x = switch (alignment) {
+        ParteTextAlign.left => box!.left,
+        ParteTextAlign.center => box!.left + (box!.width - renderedWidth) / 2,
+        ParteTextAlign.right => box!.right - renderedWidth,
+      };
+      final baseline = box!.top - metrics.ascent - index * lineHeight;
+      lineObserver?.call(blockId, index, line);
+      context.canvas.drawString(
         resolvedFont,
         fontSize,
-        text,
+        line,
         x,
         baseline,
         scale: horizontalScale,
       );
+    }
   }
 }
 

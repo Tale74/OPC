@@ -5,6 +5,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class PartePrintProfile {
+  static const double maxAbsCorrectionMm = 100;
+
   const PartePrintProfile({
     this.horizontalCorrectionMm = 0,
     this.verticalCorrectionMm = 0,
@@ -28,10 +30,10 @@ class PartePrintProfile {
     return PartePrintProfile(
       horizontalCorrectionMm: ((json['horizontalCorrectionMm'] as num?) ?? 0)
           .toDouble()
-          .clamp(-25, 25),
+          .clamp(-maxAbsCorrectionMm, maxAbsCorrectionMm),
       verticalCorrectionMm: ((json['verticalCorrectionMm'] as num?) ?? 0)
           .toDouble()
-          .clamp(-25, 25),
+          .clamp(-maxAbsCorrectionMm, maxAbsCorrectionMm),
     );
   }
 }

@@ -309,10 +309,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     );
     if (horizontal == null ||
         vertical == null ||
-        horizontal.abs() > 25 ||
-        vertical.abs() > 25) {
-      throw const FormatException(
-        'Korekcija štampe mora biti između −25 i +25 mm.',
+        horizontal.abs() > PartePrintProfile.maxAbsCorrectionMm ||
+        vertical.abs() > PartePrintProfile.maxAbsCorrectionMm) {
+      throw FormatException(
+        'Korekcija štampe mora biti između '
+        '−${PartePrintProfile.maxAbsCorrectionMm.toStringAsFixed(0)} i '
+        '+${PartePrintProfile.maxAbsCorrectionMm.toStringAsFixed(0)} mm.',
       );
     }
     final profile = PartePrintProfile(
@@ -1011,11 +1013,6 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           title: Text(
             'FORMAT I ZONA ŠTAMPE (mm)',
             style: Theme.of(context).textTheme.titleSmall,
-          ),
-          subtitle: Text(
-            '${_draft!.widthMm.toStringAsFixed(1)} × ${_draft!.heightMm.toStringAsFixed(1)} mm · '
-            'zona ${_draft!.printableZoneWidthMm.toStringAsFixed(1)} × ${_draft!.printableZoneHeightMm.toStringAsFixed(1)} mm · '
-            'margina ${_draft!.horizontalMarginMm.toStringAsFixed(1)} × ${_draft!.verticalMarginMm.toStringAsFixed(1)} mm',
           ),
           children: [
             Wrap(

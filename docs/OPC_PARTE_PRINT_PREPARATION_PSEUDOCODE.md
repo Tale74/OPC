@@ -694,10 +694,16 @@ CRASH_OR_RESTART:
 ```text
 BUILD_RENDER_PLAN(draft, template_snapshot, owned_media, acknowledgements):
   measure text and produce bounded positioned blocks
+  retain every measured canonical line for each multiline block
   produce warnings, blockers and deterministic fingerprint
 
 UI_PREVIEW = render(BUILD_RENDER_PLAN(...))
 PDF_OUTPUT = render_same_plan(BUILD_RENDER_PLAN(...))
+
+FOR EACH visible text block IN PDF_OUTPUT:
+  paint every canonical line in order; line count is not limited to two
+  never replace a canonical multiline block with a clipping widget
+  fail export validation instead of silently omitting remaining lines
 
 CONFIRM_FINAL_PREVIEW only when plan has no blocker
 GENERATE_PDF only when current plan fingerprint is confirmed

@@ -196,6 +196,7 @@ class ParteComposer {
 
   static const double _pointsPerMm = 72 / 25.4;
   static const double _lineHeightFactor = 1.22;
+  static const double _singleLineNameSafetyFactor = 0.94;
 
   ParteRenderPlan compose(ParteCompositionInput input) {
     final warnings = <String>[];
@@ -430,7 +431,11 @@ class ParteComposer {
 
   _ParteTextFit _fitSingleLineName(String content, ParteBlockSpec spec) {
     final normalized = content.replaceAll(RegExp(r'\s+'), ' ');
-    final available = spec.rect.width * _pointsPerMm;
+    // Word and PDF font metrics are not byte-for-byte identical. Keep a small
+    // canonical reserve so the one-line name remains complete in every adapter
+    // instead of fitting exactly against the right edge.
+    final available =
+        spec.rect.width * _pointsPerMm * _singleLineNameSafetyFactor;
     var size = spec.initialFontSize
         .clamp(spec.minimumFontSize, spec.maximumFontSize)
         .toDouble();

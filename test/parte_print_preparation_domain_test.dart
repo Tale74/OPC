@@ -199,6 +199,31 @@ void main() {
       },
     );
 
+    test(
+      'printer profile preserves corrections above the former 25 mm limit',
+      () {
+        final profile = PartePrintProfile.fromJson({
+          'schemaVersion': 1,
+          'horizontalCorrectionMm': 60,
+          'verticalCorrectionMm': -40,
+        });
+
+        expect(profile.horizontalCorrectionMm, 60);
+        expect(profile.verticalCorrectionMm, -40);
+        expect(
+          PartePrintProfile.fromJson({
+            'schemaVersion': 1,
+            'horizontalCorrectionMm': 150,
+            'verticalCorrectionMm': -150,
+          }).toJson(),
+          containsPair(
+            'horizontalCorrectionMm',
+            PartePrintProfile.maxAbsCorrectionMm,
+          ),
+        );
+      },
+    );
+
     test('unknown gender never silently becomes male', () async {
       final db = createTestDatabase();
       addTearDown(db.close);

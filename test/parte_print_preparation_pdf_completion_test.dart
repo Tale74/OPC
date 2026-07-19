@@ -63,6 +63,73 @@ void main() {
     },
   );
 
+  test('PDF paints every canonical line of multiline text blocks', () async {
+    final fixture = await _fixture();
+    addTearDown(fixture.dispose);
+    var preparation = fixture.preparation;
+    final base = ParteDraft.decode(preparation.draftJson);
+    final draft = base.copyWith(
+      textByBlock: {
+        ...base.textByBlock,
+        'ceremony':
+            'Prvi red ceremonije\nDrugi red ceremonije\nTreći red ceremonije',
+        'mourners':
+            'Prvi red ožalošćenih\nDrugi red ožalošćenih\nTreći red ožalošćenih',
+      },
+      blocks: base.blocks
+          .map((block) {
+            if (block.id != 'ceremony' && block.id != 'mourners') return block;
+            return block.copyWith(
+              rect: ParteRectMm(
+                x: block.rect.x,
+                y: block.rect.y,
+                width: block.rect.width,
+                height: 12,
+              ),
+            );
+          })
+          .toList(growable: false),
+    );
+    await fixture.repository.updateDraft(
+      preparationId: preparation.id,
+      draft: draft,
+      actor: fixture.actor,
+      entitlement: potpun,
+    );
+    await fixture.repository.updateAcknowledgements(
+      preparationId: preparation.id,
+      actor: fixture.actor,
+      entitlement: potpun,
+      noPhotoAccepted: true,
+    );
+    preparation = (await fixture.repository.findForPredmet(
+      fixture.predmet.id,
+    ))!;
+    final plan = await fixture.service.buildPlan(preparation: preparation);
+    final ceremony = plan.blocks.singleWhere((block) => block.id == 'ceremony');
+    final mourners = plan.blocks.singleWhere((block) => block.id == 'mourners');
+    expect(plan.blockers, isEmpty);
+    expect(ceremony.lines, hasLength(3));
+    expect(mourners.lines, hasLength(3));
+
+    final painted = <String, List<String>>{};
+    final bytes = await PartePdfRenderer(mediaStore: fixture.mediaStore).build(
+      plan: plan,
+      lineObserver: (blockId, lineIndex, text) {
+        painted.putIfAbsent(blockId, () => <String>[]).add(text);
+      },
+    );
+
+    expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+    expect(painted['ceremony'], ceremony.lines);
+    expect(painted['mourners'], mourners.lines);
+    final smokeOutput =
+        Platform.environment['OPC_PARTE_MULTILINE_PDF_SMOKE_OUTPUT'];
+    if (smokeOutput != null && smokeOutput.isNotEmpty) {
+      await File(smokeOutput).writeAsBytes(bytes, flush: true);
+    }
+  });
+
   test(
     'filename uses existing helper, PREDMET number, PARTA and version',
     () async {
@@ -118,7 +185,8 @@ void main() {
       final document = utf8.decode(
         archive.findFile('word/document.xml')!.content as List<int>,
       );
-      expect(document, contains('Sintetičko Lice'));
+      final normalizedDocument = document.replaceAll('\u00a0', ' ');
+      expect(normalizedDocument, contains('Sintetičko Lice'));
       expect(document, contains('w:orient="landscape"'));
       expect(document, contains('w:txbxContent'));
       expect(document, contains('wp:anchor'));
@@ -136,7 +204,7 @@ void main() {
         contains('<w:pgMar w:top="0" w:right="0" w:bottom="0" w:left="0"'),
       );
       expect(document, contains('parte_mournersHeading'));
-      expect(document, contains('Sintetičko Lice'));
+      expect(normalizedDocument, contains('Sintetičko Lice'));
       expect(document, isNot(contains('—')));
       expect(document, contains('Ožalošćeni'));
       expect(

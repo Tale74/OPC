@@ -124,7 +124,10 @@ class ParteDocxExporter {
     final size = (block.fontSize * 2).round();
     final scale = (block.horizontalScale * 100).round();
     final font = _xml(ParteFontCatalog.displayName(block.fontFamily));
-    final text = _xml(block.lines.join(' '));
+    final joinedText = block.lines.join(' ');
+    final text = _xml(
+      block.id == 'name' ? joinedText.replaceAll(' ', '\u00a0') : joinedText,
+    );
     final left = (block.rect.x * 72 / 25.4).toStringAsFixed(3);
     final top = (block.rect.y * 72 / 25.4).toStringAsFixed(3);
     final width = (block.rect.width * 72 / 25.4).toStringAsFixed(3);

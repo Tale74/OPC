@@ -111,6 +111,8 @@ void main() {
 
     expect(find.text('TEKSTUALNI BLOKOVI'), findsOneWidget);
     expect(find.text('FORMAT I ZONA ŠTAMPE (mm)'), findsOneWidget);
+    expect(find.textContaining('zona 175.0 × 115.0'), findsNothing);
+    expect(find.textContaining('margina 5.0 × 5.0'), findsNothing);
     expect(find.text('Zona – X'), findsNothing);
     expect(find.text('Zona – Y'), findsNothing);
     expect(find.text('Zona štampe – širina'), findsOneWidget);

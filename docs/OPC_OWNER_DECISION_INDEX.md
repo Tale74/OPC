@@ -120,6 +120,16 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
   globalize printer calibration.
 - Report: `docs/tasks/OPC_TASK_PARTE_FINAL_TECHNICAL_TEXT_PLACEMENT_UI_REGRESSION_REPORT.md`.
 
+### OPC-OD-PARTE-007 — COMPLETE MULTILINE PDF AND LOCAL OFFSET RANGE
+
+- PDF paints every canonical line in order; `Ceremonija`, `Ožalošćeni` and
+  other multiline blocks have no two-line adapter limit.
+- The format section heading is exactly `FORMAT I ZONA ŠTAMPE (mm)` without a
+  repeated dimension/zone/margin subtitle.
+- The local per-template printer correction supports the validated technical
+  range `−100..+100 mm`; portable template JSON remains printer-independent.
+- Report: `docs/tasks/OPC_TASK_PARTE_MULTILINE_PDF_FORMAT_OFFSET_REGRESSION_REPORT.md`.
+
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
 
 The owner-designated `opc_v4_release.sqlite` remains canonical regardless of a
