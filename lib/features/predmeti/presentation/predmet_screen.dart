@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/utils/json_export_import.dart';
@@ -125,6 +126,7 @@ class PredmetScreen extends StatefulWidget {
     required this.session,
     this.openDocuments = false,
     this.openCeremony = false,
+    this.openIriuParte = false,
     this.entitlementPolicy = const OpcEntitlementPolicy.current(),
   });
 
@@ -133,6 +135,7 @@ class PredmetScreen extends StatefulWidget {
   final SessionService session;
   final bool openDocuments;
   final bool openCeremony;
+  final bool openIriuParte;
   final OpcEntitlementPolicy entitlementPolicy;
 
   @override
@@ -166,6 +169,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
       _selectedSection = _PredmetLogicalSection.dokumenti;
     } else if (widget.openCeremony) {
       _selectedSection = _PredmetLogicalSection.ceremonija;
+    } else if (widget.openIriuParte) {
+      _selectedSection = _PredmetLogicalSection.robaIUsluge;
     }
     _iriuRepo = IriuRepository(widget.predmetiRepo.db);
     _kontaktRepo = KontaktLicaRepository(widget.predmetiRepo.db);
@@ -1315,6 +1320,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
           onNapomenaSave: (napomena) =>
               _onSave(PredmetiCompanion(napomena: Value(napomena))),
           initialNapomena: predmet.napomena,
+          initialFocusInterniNaziv: widget.openIriuParte
+              ? IriuK.posmrtneParte
+              : null,
         );
       case _PredmetLogicalSection.finansije:
         return FinansijeSegment(

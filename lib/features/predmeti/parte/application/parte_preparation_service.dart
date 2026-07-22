@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
@@ -186,13 +187,35 @@ class PartePreparationService {
         PartePreparationStatus.completed) {
       throw StateError('Priprema nije završena i sačuvana.');
     }
-    await mediaStore.deleteOwned(preparation.photoMediaKey);
-    await mediaStore.deleteOwned(preparation.customSymbolMediaKey);
-    await repository.deleteRetainedCompleted(
-      preparationId: preparation.id,
-      actor: actor,
-      entitlement: entitlement,
-    );
+    final exclusiveMediaKeys = <String>[];
+    for (final key in <String?>[
+      preparation.photoMediaKey,
+      preparation.customSymbolMediaKey,
+    ]) {
+      if (key == null || key.trim().isEmpty) continue;
+      final shared = await repository.isMediaKeyReferencedElsewhere(
+        mediaKey: key,
+        excludingPreparationId: preparation.id,
+      );
+      if (!shared) exclusiveMediaKeys.add(key);
+    }
+    final staged = await mediaStore.stageOwnedDeletion(exclusiveMediaKeys);
+    try {
+      await repository.deleteRetainedCompleted(
+        preparationId: preparation.id,
+        actor: actor,
+        entitlement: entitlement,
+      );
+    } on Object {
+      await staged.restore();
+      rethrow;
+    }
+    try {
+      await staged.purge();
+    } on FileSystemException {
+      // The preparation and its active references are already removed. The
+      // isolated app-owned trash can be purged by a later housekeeping pass.
+    }
   }
 
   Future<void> _cleanupPending(PartePripremeData preparation) async {

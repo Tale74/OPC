@@ -76,6 +76,7 @@ class ModuliScreen extends StatelessWidget {
                               predmetiRepository: predmetiRepository,
                               actor: actor,
                               entitlement: entitlementPolicy,
+                              session: session,
                             ),
                           ),
                         ),

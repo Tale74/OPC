@@ -515,6 +515,16 @@ workflow.
   owner notice.
 - `DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
 
+## PARTE follow-up refinement authorization (2026-07-22)
+
+The owner findings package authorizes only editor gesture ownership, explicit
+deletion of a completed derivative preparation, and same-PREDMET navigation to
+the existing IRiU `POSMRTNE_PARTE` row. PREDMET and IRiU remain authoritative.
+Deleting a MODUL PARTE preparation must not delete or change `POSMRTNE_PARTE`
+or any other IRiU/PREDMET value. Viewport transform is session-only and never
+affects canonical render or export geometry. Flutter validation and builds are
+separately owner-gated after implementation review.
+
 ## Canonical database recovery decisions — 2026-07-16
 
 - `C:\Users\Steva\Documents\opc_v4_release.sqlite` is the current owner's sole canonical business database.

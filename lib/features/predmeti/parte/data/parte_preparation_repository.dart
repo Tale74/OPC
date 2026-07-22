@@ -377,6 +377,25 @@ class PartePreparationRepository {
     )..where((item) => item.id.equals(preparationId))).go();
   }
 
+  Future<bool> isMediaKeyReferencedElsewhere({
+    required String mediaKey,
+    required int excludingPreparationId,
+  }) async {
+    final normalized = mediaKey.trim();
+    if (normalized.isEmpty) return false;
+    final row =
+        await (_db.select(_db.partePripreme)
+              ..where(
+                (item) =>
+                    item.id.isNotValue(excludingPreparationId) &
+                    (item.photoMediaKey.equals(normalized) |
+                        item.customSymbolMediaKey.equals(normalized)),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
   Future<bool> sourceChanged(int preparationId) async {
     final preparation = await (_db.select(
       _db.partePripreme,

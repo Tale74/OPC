@@ -51,6 +51,7 @@ class IriuSegment extends StatefulWidget {
     required this.enabled,
     required this.onNapomenaSave,
     this.initialNapomena,
+    this.initialFocusInterniNaziv,
   });
 
   final int predmetId;
@@ -60,6 +61,7 @@ class IriuSegment extends StatefulWidget {
   final bool enabled;
   final void Function(String) onNapomenaSave;
   final String? initialNapomena;
+  final String? initialFocusInterniNaziv;
 
   @override
   State<IriuSegment> createState() => _IriuSegmentState();
@@ -77,6 +79,25 @@ class _IriuSegmentState extends State<IriuSegment> {
   String? _lastIriuTruthSignature;
   PredmetIriuTruthSnapshot? _cachedTruthSnapshot;
   Map<int, IriuTruthRow> _cachedTruthRowsById = const {};
+  final GlobalKey _initialFocusKey = GlobalKey();
+  bool _initialFocusScheduled = false;
+
+  void _scheduleInitialFocus(List<IriuData> stavke) {
+    final target = widget.initialFocusInterniNaziv;
+    if (_initialFocusScheduled || target == null) return;
+    if (!stavke.any((row) => row.interniNaziv == target)) return;
+    _initialFocusScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final targetContext = _initialFocusKey.currentContext;
+      if (!mounted || targetContext == null) return;
+      Scrollable.ensureVisible(
+        targetContext,
+        alignment: 0.2,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   String _normalizedText(String value) => normalizeText(value);
 
@@ -698,6 +719,15 @@ class _IriuSegmentState extends State<IriuSegment> {
                           stream: widget.iriuRepo.watchIriu(widget.predmetId),
                           builder: (context, snap) {
                             final stavke = snap.data ?? [];
+                            _scheduleInitialFocus(stavke);
+                            final focusTargetMissing =
+                                widget.initialFocusInterniNaziv != null &&
+                                snap.hasData &&
+                                !stavke.any(
+                                  (row) =>
+                                      row.interniNaziv ==
+                                      widget.initialFocusInterniNaziv,
+                                );
                             final truthState = _resolveTruthState(stavke);
                             final truthRowsById = truthState.rowsById;
                             if (stavke.isEmpty) {
@@ -706,7 +736,9 @@ class _IriuSegmentState extends State<IriuSegment> {
                                   vertical: 16,
                                 ),
                                 child: Text(
-                                  'DODAJTE KATEGORIJE - iz kataloga ili ručnim unosom',
+                                  focusTargetMissing
+                                      ? 'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama. Dodajte ih iz kataloga ako su potrebne.'
+                                      : 'DODAJTE KATEGORIJE - iz kataloga ili ručnim unosom',
                                   style: TextStyle(
                                     color: Theme.of(
                                       context,
@@ -717,27 +749,42 @@ class _IriuSegmentState extends State<IriuSegment> {
                               );
                             }
                             return Column(
-                              children: stavke
-                                  .map(
-                                    (s) => IriuRowTile(
-                                      key: ValueKey(
-                                        '${s.id}:${s.interniNaziv}:${s.redosled}',
-                                      ),
-                                      stavka: s,
-                                      iriuRepo: widget.iriuRepo,
-                                      podesavanjaRepo: widget.podesavanjaRepo,
-                                      imaArtikalaStream: _imaArtikalaStreamFor(
-                                        s.interniNaziv,
-                                      ),
-                                      enabled: e,
-                                      truthRow: truthRowsById[s.id],
-                                      stockConsequence:
-                                          consequencesByIriuId[s.id],
-                                      isNarrowAndroid: isNarrowAndroid,
-                                      preporucenoLabel: iriuStatusPreporuceno,
+                              children: [
+                                if (focusTargetMissing)
+                                  const ListTile(
+                                    key: Key('iriu-parte-focus-unavailable'),
+                                    leading: Icon(Icons.info_outline),
+                                    title: Text(
+                                      'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama.',
                                     ),
-                                  )
-                                  .toList(),
+                                    subtitle: Text(
+                                      'Dodajte ih iz postojećeg kataloga ako su potrebne.',
+                                    ),
+                                  ),
+                                ...stavke.map(
+                                  (s) => IriuRowTile(
+                                    key:
+                                        s.interniNaziv ==
+                                            widget.initialFocusInterniNaziv
+                                        ? _initialFocusKey
+                                        : ValueKey(
+                                            '${s.id}:${s.interniNaziv}:${s.redosled}',
+                                          ),
+                                    stavka: s,
+                                    iriuRepo: widget.iriuRepo,
+                                    podesavanjaRepo: widget.podesavanjaRepo,
+                                    imaArtikalaStream: _imaArtikalaStreamFor(
+                                      s.interniNaziv,
+                                    ),
+                                    enabled: e,
+                                    truthRow: truthRowsById[s.id],
+                                    stockConsequence:
+                                        consequencesByIriuId[s.id],
+                                    isNarrowAndroid: isNarrowAndroid,
+                                    preporucenoLabel: iriuStatusPreporuceno,
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         );

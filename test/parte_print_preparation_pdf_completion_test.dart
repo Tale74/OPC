@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/core/utils/export_utils.dart';
 import 'package:opc_v4/features/predmeti/parte/application/parte_preparation_service.dart';
@@ -16,6 +17,7 @@ import 'package:opc_v4/features/predmeti/parte/domain/parte_models.dart';
 import 'package:opc_v4/features/predmeti/parte/domain/parte_composer.dart';
 import 'package:opc_v4/features/predmeti/parte/docx/parte_docx_exporter.dart';
 import 'package:opc_v4/features/predmeti/parte/pdf/parte_pdf_renderer.dart';
+import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 
 import 'test_bootstrap.dart';
 
@@ -439,6 +441,13 @@ void main() {
       expect(edited.previewConfirmedFingerprint, isNull);
       expect(edited.exportedSuccessfully, isFalse);
 
+      final iriu = IriuRepository(fixture.db);
+      await iriu.dodajStavku(
+        predmetId: fixture.predmet.id,
+        interniNaziv: IriuK.posmrtneParte,
+        nazivPrikaz: 'Sintetičke posmrtne parte',
+      );
+
       await fixture.service.deleteRetainedCompleted(
         preparation: edited,
         actor: fixture.actor,
@@ -450,8 +459,128 @@ void main() {
       );
       expect(await fixture.mediaStore.exists(imported.mediaKey), isFalse);
       expect(await external.exists(), isTrue);
+      final predmetAfterDelete = await (fixture.db.select(
+        fixture.db.predmeti,
+      )..where((row) => row.id.equals(fixture.predmet.id))).getSingle();
+      expect(predmetAfterDelete.id, fixture.predmet.id);
+      final iriuAfterDelete = await iriu.getIriu(fixture.predmet.id);
+      expect(
+        iriuAfterDelete.any((row) => row.interniNaziv == IriuK.posmrtneParte),
+        isTrue,
+      );
     },
   );
+
+  test(
+    'completed deletion preserves media referenced by another preparation',
+    () async {
+      final fixture = await _fixture();
+      addTearDown(fixture.dispose);
+      final imported = await fixture.service.replaceMedia(
+        preparation: fixture.preparation,
+        sourceBytes: Uint8List.fromList(
+          img.encodePng(img.Image(width: 900, height: 1200)),
+        ),
+        kind: ParteMediaKind.photo,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      final secondPredmetId = await fixture.db
+          .into(fixture.db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('PARTE-PDF-002'),
+              datumKreiranja: const Value('2026-07-11T11:00:00.000'),
+              ime: const Value('Drugo'),
+              prezime: const Value('Lice'),
+              pol: const Value('Z'),
+              partePotrebna: const Value(true),
+            ),
+          );
+      final second = await fixture.repository.initializeOrResume(
+        predmetId: secondPredmetId,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      await fixture.repository.updateMediaReference(
+        preparationId: second.id,
+        actor: fixture.actor,
+        entitlement: potpun,
+        setPhoto: true,
+        photoMediaKey: imported.mediaKey,
+      );
+      await (fixture.db.update(
+        fixture.db.partePripreme,
+      )..where((row) => row.id.equals(fixture.preparation.id))).write(
+        PartePripremeCompanion(
+          status: Value(PartePreparationStatus.completed.dbValue),
+        ),
+      );
+      final completed = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+
+      await fixture.service.deleteRetainedCompleted(
+        preparation: completed,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+
+      expect(
+        await fixture.repository.findForPredmet(fixture.predmet.id),
+        isNull,
+      );
+      expect(
+        await fixture.repository.findForPredmet(secondPredmetId),
+        isNotNull,
+      );
+      expect(await fixture.mediaStore.exists(imported.mediaKey), isTrue);
+    },
+  );
+
+  test('failed completed deletion restores staged owned media', () async {
+    final fixture = await _fixture();
+    addTearDown(fixture.dispose);
+    final imported = await fixture.service.replaceMedia(
+      preparation: fixture.preparation,
+      sourceBytes: Uint8List.fromList(
+        img.encodePng(img.Image(width: 900, height: 1200)),
+      ),
+      kind: ParteMediaKind.photo,
+      actor: fixture.actor,
+      entitlement: potpun,
+    );
+    await (fixture.db.update(
+      fixture.db.partePripreme,
+    )..where((row) => row.id.equals(fixture.preparation.id))).write(
+      PartePripremeCompanion(
+        status: Value(PartePreparationStatus.completed.dbValue),
+      ),
+    );
+    final completed = (await fixture.repository.findForPredmet(
+      fixture.predmet.id,
+    ))!;
+    final failingRepository = _FailingDeleteRepository(fixture.db);
+    final failingService = PartePreparationService(
+      repository: failingRepository,
+      mediaStore: fixture.mediaStore,
+    );
+
+    await expectLater(
+      failingService.deleteRetainedCompleted(
+        preparation: completed,
+        actor: fixture.actor,
+        entitlement: potpun,
+      ),
+      throwsStateError,
+    );
+
+    expect(
+      await fixture.repository.findForPredmet(fixture.predmet.id),
+      isNotNull,
+    );
+    expect(await fixture.mediaStore.exists(imported.mediaKey), isTrue);
+  });
 
   test('failed or stale preview/export state cannot complete', () async {
     final fixture = await _fixture();
@@ -577,4 +706,15 @@ Future<_Fixture> _fixture() async {
     service: service,
     preparation: preparation,
   );
+}
+
+class _FailingDeleteRepository extends PartePreparationRepository {
+  _FailingDeleteRepository(super.db);
+
+  @override
+  Future<void> deleteRetainedCompleted({
+    required int preparationId,
+    required KorisniciData actor,
+    required OpcEntitlementPolicy entitlement,
+  }) => throw StateError('Sintetički neuspeh DB brisanja.');
 }

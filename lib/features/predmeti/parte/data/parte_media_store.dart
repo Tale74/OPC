@@ -29,6 +29,35 @@ class ParteMediaException implements Exception {
   String toString() => message;
 }
 
+class ParteMediaDeletionBatch {
+  ParteMediaDeletionBatch._(this._entries, this._trashDirectory);
+
+  final List<({File original, File staged})> _entries;
+  final Directory? _trashDirectory;
+
+  Future<void> restore() async {
+    for (final entry in _entries.reversed) {
+      if (!await entry.staged.exists()) continue;
+      await entry.original.parent.create(recursive: true);
+      await entry.staged.rename(entry.original.path);
+    }
+    await _deleteEmptyTrashDirectory();
+  }
+
+  Future<void> purge() async {
+    final directory = _trashDirectory;
+    if (directory != null && await directory.exists()) {
+      await directory.delete(recursive: true);
+    }
+  }
+
+  Future<void> _deleteEmptyTrashDirectory() async {
+    final directory = _trashDirectory;
+    if (directory == null || !await directory.exists()) return;
+    if (await directory.list().isEmpty) await directory.delete();
+  }
+}
+
 /// Owns only normalized OPC-created temporary media copies.
 /// External originals are read by the picker and are never mutation targets.
 class ParteMediaStore {
@@ -156,6 +185,52 @@ class ParteMediaStore {
     if (mediaKey == null || mediaKey.trim().isEmpty) return;
     final file = await _resolveOwnedFile(mediaKey);
     if (await file.exists()) await file.delete();
+  }
+
+  /// Moves exclusively owned media out of the active store before the
+  /// preparation record is deleted. The caller can restore the files if the
+  /// database operation fails, or purge them after it succeeds.
+  Future<ParteMediaDeletionBatch> stageOwnedDeletion(
+    Iterable<String> mediaKeys,
+  ) async {
+    final uniqueKeys = mediaKeys
+        .map((key) => key.trim())
+        .where((key) => key.isNotEmpty)
+        .toSet();
+    if (uniqueKeys.isEmpty) {
+      return ParteMediaDeletionBatch._(const [], null);
+    }
+    final root = await _rootDirectory();
+    final trashDirectory = Directory(
+      p.join(
+        root.path,
+        '.delete_trash',
+        DateTime.now().microsecondsSinceEpoch.toString(),
+      ),
+    );
+    final entries = <({File original, File staged})>[];
+    try {
+      for (final key in uniqueKeys) {
+        final original = await _resolveOwnedFile(key);
+        if (!await original.exists()) continue;
+        await trashDirectory.create(recursive: true);
+        final staged = File(
+          p.join(trashDirectory.path, '${entries.length}_${p.basename(key)}'),
+        );
+        await original.rename(staged.path);
+        entries.add((original: original, staged: staged));
+      }
+      return ParteMediaDeletionBatch._(entries, trashDirectory);
+    } on Object {
+      final batch = ParteMediaDeletionBatch._(entries, trashDirectory);
+      try {
+        await batch.restore();
+      } on Object {
+        // The original failure remains authoritative. A later cleanup audit
+        // can recover the app-owned staging directory if restoration fails.
+      }
+      rethrow;
+    }
   }
 
   Future<bool> exists(String? mediaKey) async {

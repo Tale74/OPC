@@ -793,7 +793,9 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         content: Text(
           'Biće obrisani samo OPC priprema i njene app-owned kopije medija za '
           'PREDMET ${_predmet!.brojPredmeta} – $deceased.\n\n'
-          'PREDMET, spoljašnji originali i već izvezeni PDF/DOCX fajlovi ostaju sačuvani.',
+          'PREDMET i IRiU podaci ostaju netaknuti. Spoljašnji originali i već '
+          'izvezeni PDF/DOCX fajlovi ostaju sačuvani. Brisanje pripreme iz '
+          'OPC-a je nepovratno.',
         ),
         actions: [
           TextButton(
@@ -1507,17 +1509,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         const SizedBox(height: 8),
         _PartePreviewTechnicalGuide(profile: _printProfile),
         const SizedBox(height: 8),
-        InteractiveViewer(
-          minScale: 0.5,
-          maxScale: 4,
-          boundaryMargin: const EdgeInsets.all(48),
-          child: PartePlanPreview(
-            plan: plan,
-            mediaStore: _mediaStore,
-            selectedBlockId: _selectedBlockId,
-            onBlockSelected: (id) => setState(() => _selectedBlockId = id),
-            onBlockMoved: _busy ? null : _moveBlockByDrag,
-          ),
+        ParteEditorViewport(
+          plan: plan,
+          mediaStore: _mediaStore,
+          selectedBlockId: _selectedBlockId,
+          onBlockSelected: (id) => setState(() => _selectedBlockId = id),
+          onBlockMoved: _busy ? null : _moveBlockByDrag,
         ),
         const SizedBox(height: 12),
         for (final warning in plan.warnings)
@@ -1677,6 +1674,147 @@ class _PartePreviewTechnicalGuide extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Session-only viewport controls. The transform deliberately stays outside
+/// [ParteRenderPlan], so zoom and pan can never affect PDF/DOCX geometry.
+class ParteEditorViewport extends StatefulWidget {
+  const ParteEditorViewport({
+    super.key,
+    required this.plan,
+    required this.mediaStore,
+    this.selectedBlockId,
+    this.onBlockSelected,
+    this.onBlockMoved,
+  });
+
+  final ParteRenderPlan plan;
+  final ParteMediaStore mediaStore;
+  final String? selectedBlockId;
+  final ValueChanged<String>? onBlockSelected;
+  final Future<void> Function(String id, double dxMm, double dyMm)?
+  onBlockMoved;
+
+  @override
+  State<ParteEditorViewport> createState() => _ParteEditorViewportState();
+}
+
+class _ParteEditorViewportState extends State<ParteEditorViewport> {
+  static const double _minimumScale = 0.5;
+  static const double _maximumScale = 4;
+  static const double _scaleStep = 0.25;
+
+  final TransformationController _controller = TransformationController();
+  bool _moveViewport = false;
+
+  double get _scale =>
+      _controller.value.getMaxScaleOnAxis().clamp(_minimumScale, _maximumScale);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _setScale(double value) {
+    final next = value.clamp(_minimumScale, _maximumScale);
+    final translation = _controller.value.getTranslation();
+    _controller.value = Matrix4.diagonal3Values(next, next, 1)
+      ..setTranslationRaw(translation.x, translation.y, 0);
+    setState(() {});
+  }
+
+  void _fit() {
+    _controller.value = Matrix4.identity();
+    setState(() {});
+  }
+
+  void _center() {
+    _controller.value = Matrix4.diagonal3Values(_scale, _scale, 1);
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final percentage = (_scale * 100).round();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          key: const Key('parte-viewport-controls'),
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            IconButton.outlined(
+              key: const Key('parte-viewport-zoom-out'),
+              tooltip: 'Umanji prikaz',
+              onPressed: _scale <= _minimumScale
+                  ? null
+                  : () => _setScale(_scale - _scaleStep),
+              icon: const Icon(Icons.remove),
+            ),
+            SizedBox(
+              width: 62,
+              child: Text(
+                '$percentage%',
+                key: const Key('parte-viewport-zoom-value'),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            IconButton.outlined(
+              key: const Key('parte-viewport-zoom-in'),
+              tooltip: 'Uvećaj prikaz',
+              onPressed: _scale >= _maximumScale
+                  ? null
+                  : () => _setScale(_scale + _scaleStep),
+              icon: const Icon(Icons.add),
+            ),
+            OutlinedButton(
+              key: const Key('parte-viewport-fit'),
+              onPressed: _fit,
+              child: const Text('UKLOPI'),
+            ),
+            OutlinedButton(
+              key: const Key('parte-viewport-center'),
+              onPressed: _center,
+              child: const Text('CENTRIRAJ'),
+            ),
+            FilterChip(
+              key: const Key('parte-viewport-pan-mode'),
+              selected: _moveViewport,
+              avatar: const Icon(Icons.pan_tool_outlined, size: 18),
+              label: const Text('POMERI PRIKAZ'),
+              tooltip: _moveViewport
+                  ? 'Pomeranje prikaza je uključeno'
+                  : 'Uključi pomeranje i pinch zoom prikaza',
+              onSelected: (selected) => setState(() {
+                _moveViewport = selected;
+              }),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        InteractiveViewer(
+          key: const Key('parte-editor-interactive-viewer'),
+          transformationController: _controller,
+          minScale: _minimumScale,
+          maxScale: _maximumScale,
+          boundaryMargin: const EdgeInsets.all(48),
+          panEnabled: _moveViewport,
+          scaleEnabled: _moveViewport,
+          onInteractionUpdate: (_) => setState(() {}),
+          child: PartePlanPreview(
+            plan: widget.plan,
+            mediaStore: widget.mediaStore,
+            selectedBlockId: widget.selectedBlockId,
+            onBlockSelected: widget.onBlockSelected,
+            onBlockMoved: _moveViewport ? null : widget.onBlockMoved,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1852,6 +1990,7 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
     return Transform.translate(
       offset: _offset,
       child: GestureDetector(
+        key: ValueKey('parte-preview-block-${widget.block.id}'),
         behavior: HitTestBehavior.opaque,
         onTap: () => widget.onSelected?.call(widget.block.id),
         onPanUpdate: widget.onMoved == null

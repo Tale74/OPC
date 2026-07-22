@@ -899,6 +899,40 @@ EDITOR CHROME:
   never add help to CanonicalRenderPlan, PDF, DOCX, calibration PDF or template JSON
   keep visual guide lines as non-exported editor-only chrome
   preserve sufficient expansion padding so floating field labels are not clipped
+
+EDITOR VIEWPORT REFINEMENT (2026-07-22):
+  POINTER INPUT
+    -> HIT TEST
+    -> IF edit mode AND pointer starts on block:
+         MOVE SELECTED BLOCK
+         KEEP viewport transform unchanged
+    -> ELSE IF explicit POMERI PRIKAZ mode:
+         PAN OR PINCH-ZOOM VIEWPORT
+         KEEP all block coordinates unchanged
+  show discoverable minus / percent / plus / UKLOPI / CENTRIRAJ controls
+  keep viewport transform only in the current editor session
+  never persist viewport transform in preparation, template or render plan
+
+COMPLETED PREPARATION DELETION:
+  USER SELECTS COMPLETED PREPARATION IN MODUL PARTE
+    -> SHOW explicit irreversible confirmation
+    -> STATE PREDMET and IRiU/POSMRTNE_PARTE remain authoritative and untouched
+    -> CHECK each app-owned media key for references from another preparation
+    -> STAGE exclusively owned media outside active media store
+    -> DELETE only the selected persisted preparation row
+    -> IF database delete fails: RESTORE staged media and keep list item
+    -> IF delete succeeds: PURGE staged media and REFRESH module list
+  external PDF/DOCX outputs remain outside this deletion
+
+PARTE / IRIU NAVIGATION:
+  MODUL PARTE item
+    -> CURRENT PREDMET ID
+    -> EXISTING PredmetScreen route
+    -> ROBA I USLUGE
+    -> focus existing POSMRTNE_PARTE row
+  opening the route never creates or changes IRiU data
+  if POSMRTNE_PARTE is absent, explain that existing catalog flow is required
+  normal Back returns to the same MODUL PARTE stack; do not push a reverse module route
 ```
 
 # Historical runtime-corrected PARTE workflow (2026-07-12) — `SUPERSEDED` in format/margins/retention

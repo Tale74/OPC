@@ -650,3 +650,18 @@ Implementation/pseudocode aligned: yes.
 - Acceptance boundary: tested local printer offset and electronic render parity
   remain protected; Android runtime follows this final UI correction.
 - Report: `docs/tasks/OPC_TASK_PARTE_FINAL_TECHNICAL_TEXT_PLACEMENT_UI_REGRESSION_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055 — PARTE editor/lifecycle/IRiU refinement
+
+- Document: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`, `EDITOR VIEWPORT REFINEMENT`, `COMPLETED PREPARATION DELETION`, and `PARTE / IRIU NAVIGATION`.
+- Source: PARTE composer viewport, module screen, preparation service/repository,
+  app-owned media store, `PredmetScreen`, and `IriuSegment`.
+- Truth boundary: PREDMET and IRiU `POSMRTNE_PARTE` are authoritative; deleting
+  MODUL PARTE removes only one derivative preparation and exclusively owned media.
+- Interaction rule: block drag and viewport pan have explicit mutually exclusive
+  ownership; viewport state cannot enter canonical render or export state.
+- Navigation rule: reuse the existing same-PREDMET IRiU route and normal Back
+  stack; never duplicate IRiU UI or business logic.
+- Validation boundary: focused tests are prepared but Flutter validation/builds
+  await explicit owner approval.
+- Report: `docs/tasks/OPC_TASK_PARTE_EDITOR_INTERACTION_PREPARATION_DELETION_IRIU_NAVIGATION_REPORT.md`.

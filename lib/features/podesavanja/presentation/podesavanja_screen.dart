@@ -369,6 +369,7 @@ class _ModuliTab extends StatelessWidget {
                                   ),
                                   actor: session.korisnik!,
                                   entitlement: entitlementPolicy,
+                                  session: session,
                                 ),
                               ),
                             )
