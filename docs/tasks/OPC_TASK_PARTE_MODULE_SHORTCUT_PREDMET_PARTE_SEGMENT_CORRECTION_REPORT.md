@@ -2,7 +2,7 @@
 
 ## Status
 
-`IMPLEMENTATION PASS — AUTOMATED VALIDATION PASS — RUNTIME CONFIRMATION PENDING`
+`IMPLEMENTATION PASS — AUTOMATED VALIDATION AND RELEASE BUILDS PASS — RUNTIME CONFIRMATION PENDING`
 
 ## Git identity
 
@@ -75,9 +75,10 @@ It must never resolve to:
 - Manifest gate: PASS.
 - UTF-8 strict decode: PASS for every changed documentation file.
 - Added-line privacy scan: PASS; no private runtime path or artifact was added.
-- Release builds: intentionally not repeated by owner instruction. The parent
-  task's Windows and Android release builds were PASS before this shared
-  navigation-only correction.
+- Windows release build: PASS — `build/windows/x64/runner/Release/OPC.exe`.
+- Android release APK build: PASS —
+  `build/app/outputs/flutter-apk/app-release.apk` (`73.3 MB`).
+- Both builds were run manually by the owner after automated validation passed.
 - Runtime: confirmation of segment 6 opening remains pending in the next
   available application runtime.
 
