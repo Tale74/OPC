@@ -13,7 +13,8 @@ Documentation update commit:
 `6a6a56070e2afdd50884cdc6529ec7bbd80b5adb`
 (`docs(parte): close owner native runtime validation`)
 
-Final closure-report commit: recorded by Git after this report is committed.
+Closure-report commit:
+`e24298d96bb913e533680b1a6e5e1535617b419a`
 
 ## OPC MANIFEST CHECK — TASK START
 
@@ -152,8 +153,9 @@ The Logos pseudocode index remains aligned for the same reason.
 - `git diff --check`: `PASS`.
 - OPC manifest documentation gate against `805ad188...`: `PASS` for four
   changed task reports.
-- Local/upstream status before final report commit: local documentation branch
-  is one commit ahead; final identity is verified after push.
+- Local/upstream status after closure-report push: `PASS`; local and upstream
+  both resolved to `e24298d96bb913e533680b1a6e5e1535617b419a` before this
+  metadata-only verification update.
 - No merge to `main`: `CONFIRMED`.
 
 ## OPC MANIFEST COMPLIANCE — TASK END
