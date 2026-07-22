@@ -130,6 +130,21 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
   range `−100..+100 mm`; portable template JSON remains printer-independent.
 - Report: `docs/tasks/OPC_TASK_PARTE_MULTILINE_PDF_FORMAT_OFFSET_REGRESSION_REPORT.md`.
 
+### OPC-OD-PARTE-008 — OWNER WINDOWS/ANDROID RUNTIME CLOSURE
+
+- Tested source HEAD: `805ad18865fddb3181bf27e6cfc82d7cfffd5b53`.
+- Owner manual validation respected the successive gate: green analyze, green
+  complete test, Windows release build PASS, then Android release build PASS.
+- Windows runtime: `PRINUĐENI PASS`.
+- Android runtime: `FUNCTIONALLY SATISFACTORY`.
+- Follow-up: `REFINEMENT FINDINGS MATERIAL IN PREPARATION`.
+- The previous correction objective is closed; no refinement implementation is
+  authorized until the complete owner findings package is delivered and reviewed.
+- The old private evidence folder was intentionally deleted as stale; future
+  evidence at that location exists only after explicit owner notice.
+- Stop boundary: `DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
+- Report: `docs/tasks/OPC_TASK_PARTE_OWNER_WINDOWS_ANDROID_RUNTIME_DOCUMENTATION_CLOSURE_REPORT.md`.
+
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
 
 The owner-designated `opc_v4_release.sqlite` remains canonical regardless of a

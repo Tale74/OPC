@@ -10,13 +10,13 @@
 
 ## Status
 
-`IMPLEMENTATION PASS — FOCUSED ELECTRONIC VALIDATION PASS — MANUAL FULL SUITE AND BUILDS PENDING`
+`PARTE FINAL TECHNICAL-TEXT UI CORRECTION CLOSED – WINDOWS PRINUĐENI PASS – ANDROID FUNCTIONAL RUNTIME SATISFACTORY – FOLLOW-UP REFINEMENT FINDINGS PENDING`
 
 ## Git
 
 - Branch: `task/OPC-PARTE-MULTILINE-PDF-FORMAT-OFFSET-REGRESSION`
 - Base SHA: `de708deb81d85d789b2b088a0f706ef4da77bcbb`
-- Final SHA: recorded after commit
+- Final/tested SHA: `805ad18865fddb3181bf27e6cfc82d7cfffd5b53`
 
 ## Runtime evidence and root cause
 
@@ -55,24 +55,33 @@ No supplied personal artifact was copied into the repository.
 - Generated synthetic PDF text extraction contains all three lines of both
   blocks.
 - Rendered synthetic PDF was visually inspected; all six lines are visible.
-- `flutter analyze --no-pub`: `NOT CONFIRMED — TIMEOUT AFTER 5 MINUTES`; no
-  final analyzer output was produced, so this is not reported as PASS.
+- `flutter analyze --no-pub`: the Codex attempt timed out after 5 minutes and
+  was correctly not reported as PASS. The owner subsequently reran analyze
+  manually to final green completion: PASS.
 - OPC manifest gate against the base SHA: `PASS`.
 - `git diff --check`: PASS before documentation finalization.
-- Full Flutter suite: pending manual execution.
-- Windows release build: intentionally not run by Codex; pending manual command.
-- Android release build: intentionally not run by Codex; pending manual command.
+- Owner manual complete Flutter test: PASS / final green completion. Exact
+  totals and duration are not asserted without a retained reliable log.
+- Windows release build: PASS, manually run after both green gates.
+- Android release build: PASS, manually run after the Windows build.
 
 ## Privacy and repository hygiene
 
 Runtime files under the user's Downloads/Desktop paths and generated local
 smoke artifacts remain outside Git. Tests use synthetic content only.
 
-## Remaining acceptance
+## Owner Windows/Android runtime closure
 
-After manual full-suite and build PASS, repeat Windows export with the reported
-preparation and verify the complete `Ceremonija` and `Ožaloŧeni` content.
-Android runtime remains a separate owner/device gate.
+- Windows runtime: `PRINUĐENI PASS`.
+- Android runtime: `FUNCTIONALLY SATISFACTORY`.
+- Android follow-up: `REFINEMENT FINDINGS MATERIAL IN PREPARATION`.
+- The previous correction task is closed at its defined objective.
+- The former private evidence folder was intentionally removed because it held
+  stale, irrelevant findings. Future physical evidence may be recreated there
+  only after prior owner notice.
+- Future refinements are acknowledged but deliberately unspecified.
+
+`DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 

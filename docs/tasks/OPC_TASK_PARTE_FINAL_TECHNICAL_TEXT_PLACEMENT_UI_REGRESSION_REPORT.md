@@ -6,7 +6,9 @@ Branch: `task/OPC-PARTE-FINAL-TECHNICAL-TEXT-PLACEMENT-UI-REGRESSION`
 
 Base SHA: `19be7d2485ad0b3cf2ed02bc87c70fa078149dde`
 
-Final SHA: assigned by Git when this report and the verified correction are committed
+Implementation SHA: `de708deb81d85d789b2b088a0f706ef4da77bcbb`
+
+Owner-tested final correction HEAD: `805ad18865fddb3181bf27e6cfc82d7cfffd5b53`
 
 ## OPC MANIFEST CHECK — TASK START
 
@@ -92,13 +94,17 @@ Unchanged:
 - `flutter analyze --no-pub`: PASS — no issues, 186.9 s.
 - Complete `flutter test --no-pub`: PASS — 242 passed + 1 skipped, 0 failed,
   18:30.
-- Windows release build: OWNER MANUAL VALIDATION PENDING — intentionally not
-  started because the owner reported only 9% weekly usage remaining.
-- Android release build: OWNER MANUAL VALIDATION PENDING — intentionally not
-  started; it must follow a successful Windows build and must not run in
-  parallel.
-- Windows runtime visual smoke: PENDING.
-- Android runtime: PENDING — requires a connected device or emulator.
+- Owner manual `flutter analyze`: PASS / final green completion. Exact duration
+  and analyzer count are not asserted because no reliable retained log was
+  available during this documentation closure.
+- Owner manual complete `flutter test`: PASS / final green completion. Exact
+  test total and duration are not asserted here.
+- Windows release build: PASS, executed manually only after both green gates.
+- Android release build: PASS, executed manually after the Windows build.
+- Windows owner runtime: `PRINUĐENI PASS` — completed and accepted sufficiently
+  to proceed, without claiming that every UX/refinement issue is ideal.
+- Android owner runtime: `FUNCTIONALLY SATISFACTORY`.
+- Android follow-up: `REFINEMENT FINDINGS MATERIAL IN PREPARATION`.
 
 Owner manual build commands, after the complete test suite passes:
 
@@ -119,6 +125,26 @@ output, user database, printer profile file or personal data is added.
 per-template `+25/+4 mm` correction. This is not a global default and is not
 portable template data.
 
+## Owner Windows/Android runtime closure
+
+Closure recorded: 2026-07-22. The exact runtime execution date was not retained
+in repository evidence and is therefore not invented.
+
+- Tested branch lineage culminates in
+  `task/OPC-PARTE-MULTILINE-PDF-FORMAT-OFFSET-REGRESSION` at
+  `805ad18865fddb3181bf27e6cfc82d7cfffd5b53`.
+- Windows: `PRINUĐENI PASS`.
+- Android: `FUNCTIONALLY SATISFACTORY`.
+- Android follow-up: `REFINEMENT FINDINGS MATERIAL IN PREPARATION`.
+- The defined technical-text UI correction objective is closed.
+- The former private evidence folder was intentionally removed by the owner
+  because its findings were stale and irrelevant. It is not a missing-evidence
+  blocker. Any future evidence at that path is authoritative only after prior
+  owner notice.
+- No follow-up requirement is authorized or inferred from this closure.
+
+`DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
+
 ## OPC MANIFEST COMPLIANCE — TASK END
 
 Manifest compliance checked:
@@ -134,8 +160,8 @@ Database ownership preserved:
 - yes
 
 Windows/Android parity preserved:
-- yes — shared responsive source and narrow widget coverage pass; owner manual
-  release builds remain pending by explicit instruction
+- yes — owner manually completed both release builds after green validation and
+  executed runtime on both native platforms
 
 Existing JSON transfer preserved:
 - yes
@@ -150,4 +176,4 @@ Source changes within scope:
 - yes
 
 PASS / NOT PASS:
-- IMPLEMENTATION PASS — OWNER MANUAL WINDOWS/ANDROID BUILDS PENDING
+- `PARTE FINAL TECHNICAL-TEXT UI CORRECTION CLOSED – WINDOWS PRINUĐENI PASS – ANDROID FUNCTIONAL RUNTIME SATISFACTORY – FOLLOW-UP REFINEMENT FINDINGS PENDING`

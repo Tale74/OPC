@@ -6,7 +6,7 @@ Branch: `task/OPC-PARTE-ROOT-CAUSE-RENDER-PIPELINE-RUNTIME-ACCEPTANCE`
 
 Base SHA: `dd641e5002dd6c02102919cc968f15e6876944b4`
 
-Final SHA: pushed branch HEAD (assigned by Git after this report is staged)
+Final SHA for this branch: `19be7d2485ad0b3cf2ed02bc87c70fa078149dde`
 
 ## Scope and audit order
 
@@ -127,6 +127,31 @@ template JSON remains hardware-independent.
   machine-local `+25/+4 mm` profile; this is evidence for that printer/media
   path, not a portable or globally hardcoded default.
 
+## Owner Windows/Android runtime closure
+
+Later owner-directed corrections were committed at `de708deb` (technical-help
+placement) and `805ad188` (complete canonical multiline PDF rendering, exact
+format heading and extended local offset range). The owner-tested final HEAD is
+`805ad18865fddb3181bf27e6cfc82d7cfffd5b53`.
+
+After Codex reached the weekly usage limit, the owner manually completed the
+required successive sequence: final green `flutter analyze`, final green
+complete `flutter test`, Windows release build PASS, then Android release build
+PASS. Exact later totals, durations and artifact hashes are not asserted because
+no reliable retained local log was available to this documentation task.
+
+- Windows runtime: `PRINUĐENI PASS`.
+- Android runtime: `FUNCTIONALLY SATISFACTORY`.
+- Android follow-up: `REFINEMENT FINDINGS MATERIAL IN PREPARATION`.
+- The former private PARTE evidence folder was intentionally deleted by the
+  owner because it held stale, irrelevant findings. New evidence may be formed
+  at the same location only after prior owner notice.
+
+This closes the prior task's defined core objective without changing the
+historical root-cause findings or declaring every future refinement complete.
+
+`DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
+
 ## Privacy, manifest and repository hygiene
 
 No supplied personal PDF, DOCX, JSON or photograph is staged. Synthetic outputs
@@ -138,5 +163,4 @@ Manifest: four authoritative documentation updates, this task report, seven
 PARTE production files and three focused test files. Build artifacts stay
 ignored and are not committed.
 
-Current status: `PARTE ROOT-CAUSE PIPELINE CORRECTION PASS – PREVIEW/PDF/DOCX
-ELECTRONIC PARITY PROVEN – TESTED LETTER PHYSICAL PRINT PASS`.
+Current closure status: `PARTE FINAL TECHNICAL-TEXT UI CORRECTION CLOSED – WINDOWS PRINUĐENI PASS – ANDROID FUNCTIONAL RUNTIME SATISFACTORY – FOLLOW-UP REFINEMENT FINDINGS PENDING`.

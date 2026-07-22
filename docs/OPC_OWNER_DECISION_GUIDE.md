@@ -346,7 +346,7 @@ Zato je merodavan zaključak ovog dokumentacionog taska:
 
 ## 8. PARTE print-preparation and media
 
-**Status: `CURRENTLY IMPLEMENTED — REAL-DEVICE RUNTIME SMOKE PENDING`**
+**Status: `CURRENTLY IMPLEMENTED — OWNER WINDOWS/ANDROID RUNTIME EXECUTED — FOLLOW-UP REFINEMENT FINDINGS PENDING`**
 
 The historical audit findings and queue remain below for traceability. The owner-authorized task `OPC-PARTE-PRINT-PREPARATION-IMPLEMENTATION` resolved their implementation scope without modifying `OPC-OD-CER-011`: PREDMET remains authoritative and PARTE remains derivative.
 
@@ -499,6 +499,21 @@ workflow.
 - PDF is authoritative. DOCX is an additional editable positioned-block derivative and must pass a real Microsoft Word open/save/reopen smoke without repair.
 - Android API 29+ uses MediaStore `Downloads/KORICE`; API 28 and lower request only the legacy permission they require; a system document picker is the safe fallback.
 - Windows owner acceptance remains the gate before Android runtime. OPC Web remains a future option only.
+
+## PARTE owner native runtime closure (recorded 2026-07-22)
+
+- The owner manually completed final green analyze and complete test gates,
+  followed successively by successful Windows and Android release builds.
+- Windows runtime status is exactly `PRINUĐENI PASS`; this is sufficient to
+  close the prior objective but is not an unrestricted or perfect PASS.
+- Android runtime was executed and core functionality is
+  `FUNCTIONALLY SATISFACTORY`.
+- Further functional-area refinements are expected, but their scope is neither
+  authorized nor defined until the owner supplies the complete findings package.
+- The former private PARTE evidence folder was intentionally deleted because it
+  contained stale, irrelevant findings. It may be formed again only after prior
+  owner notice.
+- `DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
 
 ## Canonical database recovery decisions — 2026-07-16
 
