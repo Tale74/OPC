@@ -18,14 +18,14 @@ class ParteModuleScreen extends StatefulWidget {
     required this.actor,
     required this.entitlement,
     required this.session,
-    this.onOpenIriuParte,
+    this.onOpenPredmetParte,
   });
 
   final PredmetiRepository predmetiRepository;
   final KorisniciData actor;
   final OpcEntitlementPolicy entitlement;
   final SessionService session;
-  final Future<void> Function(int predmetId)? onOpenIriuParte;
+  final Future<void> Function(PredmetScreen destination)? onOpenPredmetParte;
 
   @override
   State<ParteModuleScreen> createState() => _ParteModuleScreenState();
@@ -97,22 +97,23 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
     if (mounted) await _refresh();
   }
 
-  Future<void> _openIriuParte(_PartePredmetItem item) async {
-    final override = widget.onOpenIriuParte;
+  Future<void> _openPredmetParte(_PartePredmetItem item) async {
+    final destination = PredmetScreen(
+      predmetId: item.predmet.id,
+      predmetiRepo: widget.predmetiRepository,
+      session: widget.session,
+      entitlementPolicy: widget.entitlement,
+      openParte: true,
+    );
+    final override = widget.onOpenPredmetParte;
     if (override != null) {
-      await override(item.predmet.id);
+      await override(destination);
       return;
     }
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => PredmetScreen(
-          predmetId: item.predmet.id,
-          predmetiRepo: widget.predmetiRepository,
-          session: widget.session,
-          entitlementPolicy: widget.entitlement,
-          openIriuParte: true,
-        ),
+        builder: (_) => destination,
       ),
     );
     if (mounted) await _refresh();
@@ -227,10 +228,12 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        key: ValueKey('parte-open-iriu-${item.predmet.id}'),
-                        tooltip: 'Otvori Posmrtne parte u Robi i uslugama',
-                        onPressed: () => _openIriuParte(item),
-                        icon: const Icon(Icons.inventory_2_outlined),
+                        key: ValueKey(
+                          'parte-open-predmet-parte-${item.predmet.id}',
+                        ),
+                        tooltip: 'Otvori segment PARTE u PREDMETU',
+                        onPressed: () => _openPredmetParte(item),
+                        icon: const Icon(Icons.article_outlined),
                       ),
                       if (item.isCompleted &&
                           !_locallyDeletedPreparationIds.contains(

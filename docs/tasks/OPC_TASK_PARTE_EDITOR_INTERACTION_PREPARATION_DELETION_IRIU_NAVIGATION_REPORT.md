@@ -8,6 +8,15 @@ Automated validation and both release builds pass. The new interaction,
 deletion and navigation flows still require runtime confirmation on Windows and
 Android before runtime acceptance can be claimed.
 
+## Runtime correction — shortcut destination superseded
+
+Owner runtime validation proved that the shortcut implemented by this task
+opened PREDMET segment 7 `Roba i usluge`, while the intended destination is
+PREDMET segment 6 `PARTE`. The IRiU navigation statements below remain as
+historical evidence of the implementation that was tested, but they are not
+current navigation authority. They are superseded by
+`OPC_TASK_PARTE_MODULE_SHORTCUT_PREDMET_PARTE_SEGMENT_CORRECTION_REPORT.md`.
+
 ## Git identity
 
 - Branch: `task/OPC-PARTE-EDITOR-GESTURES-PREPARATION-DELETION-IRIU-SHORTCUT`

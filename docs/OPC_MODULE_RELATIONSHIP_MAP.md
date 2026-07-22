@@ -484,7 +484,7 @@ The draft owns only technical derivative geometry and content overrides. It neve
 
 The second path cannot write PREDMET, draft block coordinates, templates or DOCX. Editor guides and snapping consume the render geometry but are never render-plan blocks and therefore cannot leak into electronic outputs.
 
-## PARTE editor, lifecycle and IRiU navigation refinement (2026-07-22)
+## PARTE editor, lifecycle and PREDMET PARTE navigation refinement (2026-07-22)
 
 `PREDMET / IRiU POSMRTNE_PARTE truth -> MODUL PARTE derivative preparation`
 
@@ -493,11 +493,11 @@ and its exclusively owned temporary media. It never deletes or changes PREDMET,
 the `POSMRTNE_PARTE` IRiU row, any other IRiU row, reusable templates, or external
 PDF/DOCX outputs. Shared media references are protected before physical cleanup.
 
-The module shortcut reuses the existing `PredmetScreen` and selects `Roba i
-usluge` for the same PREDMET, then focuses the existing `POSMRTNE_PARTE` row.
-It is navigation only: it neither duplicates IRiU UI nor synchronizes a second
-truth model. Standard Back returns to MODUL PARTE, so a reverse route is not
-added because it would duplicate the navigation stack.
+The module shortcut reuses the existing `PredmetScreen` and selects segment 6
+`PARTE` for the same PREDMET. It is navigation only and does not duplicate or
+modify PREDMET/IRiU truth. Segment 7 `Roba i usluge` is not its destination.
+Standard Back returns to MODUL PARTE, so a reverse route is not added because it
+would duplicate the navigation stack.
 
 Editor gesture ownership is explicit: edit mode assigns a one-pointer block drag
 to the block; `POMERI PRIKAZ` mode assigns pan/pinch to the session-only viewport.

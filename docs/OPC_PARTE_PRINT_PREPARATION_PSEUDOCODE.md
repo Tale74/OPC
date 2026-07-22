@@ -924,14 +924,13 @@ COMPLETED PREPARATION DELETION:
     -> IF delete succeeds: PURGE staged media and REFRESH module list
   external PDF/DOCX outputs remain outside this deletion
 
-PARTE / IRIU NAVIGATION:
+PARTE / PREDMET SEGMENT NAVIGATION:
   MODUL PARTE item
     -> CURRENT PREDMET ID
     -> EXISTING PredmetScreen route
-    -> ROBA I USLUGE
-    -> focus existing POSMRTNE_PARTE row
-  opening the route never creates or changes IRiU data
-  if POSMRTNE_PARTE is absent, explain that existing catalog flow is required
+    -> SEGMENT 6 PARTE
+  DO NOT redirect to SEGMENT 7 ROBA I USLUGE
+  opening the route never creates or changes PREDMET or IRiU data
   normal Back returns to the same MODUL PARTE stack; do not push a reverse module route
 ```
 

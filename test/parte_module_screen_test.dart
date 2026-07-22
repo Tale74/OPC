@@ -10,6 +10,7 @@ import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
+import 'package:opc_v4/features/predmeti/presentation/predmet_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/presentation/parte_module_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/presentation/parte_composer_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_print_profile_store.dart';
@@ -50,7 +51,7 @@ void main() {
     final eligible = await (db.select(
       db.predmeti,
     )..where((row) => row.brojPredmeta.equals('ELIGIBLE-001'))).getSingle();
-    int? openedIriuPredmetId;
+    PredmetScreen? openedParteDestination;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -58,8 +59,8 @@ void main() {
           predmetiRepository: PredmetiRepository(db),
           actor: actor,
           session: session,
-          onOpenIriuParte: (predmetId) async {
-            openedIriuPredmetId = predmetId;
+          onOpenPredmetParte: (destination) async {
+            openedParteDestination = destination;
           },
           entitlement: const OpcEntitlementPolicy.fromSource(
             OpcDemoTestEntitlementSource(packageLevel: OpcPackageLevel.potpun),
@@ -78,9 +79,13 @@ void main() {
     expect(find.textContaining('NO-PARTE-002'), findsNothing);
     expect(find.textContaining('CLOSED-003'), findsNothing);
 
-    await tester.tap(find.byKey(ValueKey('parte-open-iriu-${eligible.id}')));
+    await tester.tap(
+      find.byKey(ValueKey('parte-open-predmet-parte-${eligible.id}')),
+    );
     await tester.pump();
-    expect(openedIriuPredmetId, eligible.id);
+    expect(openedParteDestination, isNotNull);
+    expect(openedParteDestination!.predmetId, eligible.id);
+    expect(openedParteDestination!.openParte, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
     await tester.pump();

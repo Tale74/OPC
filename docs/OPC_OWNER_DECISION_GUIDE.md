@@ -519,7 +519,8 @@ workflow.
 
 The owner findings package authorizes only editor gesture ownership, explicit
 deletion of a completed derivative preparation, and same-PREDMET navigation to
-the existing IRiU `POSMRTNE_PARTE` row. PREDMET and IRiU remain authoritative.
+PREDMET segment 6 `PARTE`. The shortcut must not open segment 7 `Roba i usluge`.
+PREDMET and IRiU remain authoritative.
 Deleting a MODUL PARTE preparation must not delete or change `POSMRTNE_PARTE`
 or any other IRiU/PREDMET value. Viewport transform is session-only and never
 affects canonical render or export geometry. Flutter validation and builds are

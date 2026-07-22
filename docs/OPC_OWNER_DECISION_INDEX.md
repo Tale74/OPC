@@ -145,7 +145,7 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
 - Stop boundary: `DO NOT START PARTE FOLLOW-UP IMPLEMENTATION UNTIL OWNER FINDINGS PACKAGE IS DELIVERED AND REVIEWED.`
 - Report: `docs/tasks/OPC_TASK_PARTE_OWNER_WINDOWS_ANDROID_RUNTIME_DOCUMENTATION_CLOSURE_REPORT.md`.
 
-### OPC-OD-PARTE-009 — EDITOR GESTURES, DERIVATIVE DELETION AND IRIU SHORTCUT
+### OPC-OD-PARTE-009 — EDITOR GESTURES, DERIVATIVE DELETION AND PREDMET PARTE SHORTCUT
 
 - PREDMET and its IRiU `POSMRTNE_PARTE` row remain business truth; MODUL PARTE
   owns only the derivative technical preparation.
@@ -155,9 +155,10 @@ See `OPC_OWNER_DECISION_GUIDE.md` and `OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md
   from MODUL PARTE. The action preserves PREDMET, all IRiU data, reusable
   templates and external PDF/DOCX files, and removes only exclusively owned
   app media through recoverable staging.
-- The module shortcut reuses the existing same-PREDMET `Roba i usluge` route and
-  focuses `POSMRTNE_PARTE`; it does not duplicate data or business logic.
-- Implementation awaits owner-authorized Flutter validation and builds.
+- The module shortcut reuses the existing same-PREDMET route and opens PREDMET
+  segment 6 `PARTE`; it never redirects to segment 7 `Roba i usluge`.
+- Automated implementation validation and builds passed; runtime later exposed
+  and corrected the segment-7 navigation regression.
 - Report: `docs/tasks/OPC_TASK_PARTE_EDITOR_INTERACTION_PREPARATION_DELETION_IRIU_NAVIGATION_REPORT.md`.
 
 ## OPC-OD-CANONICAL-DB-MIGRATION-004 — LOCKED
