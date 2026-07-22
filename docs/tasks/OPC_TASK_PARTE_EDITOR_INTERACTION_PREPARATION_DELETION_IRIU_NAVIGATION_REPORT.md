@@ -12,7 +12,8 @@ Android before runtime acceptance can be claimed.
 
 - Branch: `task/OPC-PARTE-EDITOR-GESTURES-PREPARATION-DELETION-IRIU-SHORTCUT`
 - Base SHA: `ce4575f84a4f815098755d263ce352ba2eba71af`
-- Implementation HEAD: pending commit after owner-authorized validation
+- Implementation commit: `b309846c02ff7cd29b56c606c05818d03a58ec21`
+- Final branch SHA: pending documentation-verification commit
 - Merge to `main`: not performed
 
 ## OPC MANIFEST CHECK — TASK START
@@ -159,6 +160,10 @@ business rules were not changed.
 - Android release APK build: PASS —
   `build/app/outputs/flutter-apk/app-release.apk`, 73.3 MB (844.0 s)
 - `git diff --check`: final owner run PASS; line-ending notices only
+- OPC manifest gate against base `ce4575f84a4f815098755d263ce352ba2eba71af`:
+  PASS for this changed task report
+- Strict UTF-8 decode: PASS for all 17 changed/untracked task files before commit
+- Privacy scan of added diff lines: PASS; no private runtime evidence added
 
 Commands were executed strictly sequentially:
 
