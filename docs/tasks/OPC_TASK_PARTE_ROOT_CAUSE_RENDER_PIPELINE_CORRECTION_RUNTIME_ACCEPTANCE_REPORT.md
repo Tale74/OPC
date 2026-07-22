@@ -1,5 +1,17 @@
 # OPC task — PARTE root-cause render pipeline correction and runtime acceptance
 
+## OPC MANIFEST CHECK — TASK START
+
+Manifest read:
+- yes
+
+Manifest compliance checked:
+- PREDMET authority, derivative PARTE output, platform parity and private
+  evidence boundaries preserved
+
+PASS / NOT PASS:
+- PASS
+
 Date: 2026-07-19
 
 Branch: `task/OPC-PARTE-ROOT-CAUSE-RENDER-PIPELINE-RUNTIME-ACCEPTANCE`
@@ -164,3 +176,11 @@ PARTE production files and three focused test files. Build artifacts stay
 ignored and are not committed.
 
 Current closure status: `PARTE FINAL TECHNICAL-TEXT UI CORRECTION CLOSED – WINDOWS PRINUĐENI PASS – ANDROID FUNCTIONAL RUNTIME SATISFACTORY – FOLLOW-UP REFINEMENT FINDINGS PENDING`.
+
+## OPC MANIFEST COMPLIANCE — TASK END
+
+Manifest compliance checked:
+- yes
+
+PASS / NOT PASS:
+- PASS
