@@ -13,7 +13,8 @@ Android before runtime acceptance can be claimed.
 - Branch: `task/OPC-PARTE-EDITOR-GESTURES-PREPARATION-DELETION-IRIU-SHORTCUT`
 - Base SHA: `ce4575f84a4f815098755d263ce352ba2eba71af`
 - Implementation commit: `b309846c02ff7cd29b56c606c05818d03a58ec21`
-- Final branch SHA: pending documentation-verification commit
+- Final branch SHA: the documentation-verification commit containing this
+  report; exact remote SHA is recorded in the final task response
 - Merge to `main`: not performed
 
 ## OPC MANIFEST CHECK — TASK START
