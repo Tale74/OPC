@@ -2,7 +2,7 @@
 
 ## Status
 
-`IMPLEMENTATION PASS — AUTOMATED VALIDATION AND RELEASE BUILDS PASS — RUNTIME CONFIRMATION PENDING`
+`PARTE MODULE SHORTCUT CORRECTION PASS – AUTOMATED VALIDATION, RELEASE BUILDS AND OWNER RUNTIME ACCEPTANCE COMPLETE`
 
 ## Git identity
 
@@ -79,8 +79,9 @@ It must never resolve to:
 - Android release APK build: PASS —
   `build/app/outputs/flutter-apk/app-release.apk` (`73.3 MB`).
 - Both builds were run manually by the owner after automated validation passed.
-- Runtime: confirmation of segment 6 opening remains pending in the next
-  available application runtime.
+- Owner runtime acceptance: PASS — the MODUL PARTE shortcut opens the same
+  PREDMET, focuses segment 6 `PARTE`, and does not navigate to segment 7
+  `Roba i usluge` or IRiU `POSMRTNE_PARTE`.
 
 ## Documentation alignment
 
@@ -101,4 +102,4 @@ runtime-disproven IRiU destination is not mistaken for current authority.
 - MODUL PARTE remains a derivative technical workflow.
 - IRiU data is neither opened nor modified by the corrected shortcut.
 - No private runtime evidence is included.
-- Automated validation is PASS; only runtime navigation confirmation remains.
+- Automated validation, release builds and owner runtime acceptance are PASS.
