@@ -30,7 +30,7 @@ Git-tracked paths inspected include entitlement policy, settings UI/repository/t
 
 ### Local documentation findings
 
-Inspected folders: `PROJECT_DOCS`, `RESTORE_POINTS`, `BACKUPS`, and `SMOKE_LOGS` under `C:\Projekti\OPC\OPC v.1`.
+Inspected folders: `PROJECT_DOCS`, `RESTORE_POINTS`, `BACKUPS`, and `SMOKE_LOGS` under `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1`.
 
 | Finding | Classification | Migration action |
 |---|---|---|

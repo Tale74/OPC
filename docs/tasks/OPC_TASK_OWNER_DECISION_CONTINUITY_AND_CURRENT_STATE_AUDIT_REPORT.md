@@ -75,7 +75,7 @@ Previous branch reports inspected or represented in current branch:
 Local docs inspected:
 
 - `SOURCE\PROJECT_DOCS`
-- `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS`
 
 Code/project state inspected:
 

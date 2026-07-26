@@ -528,7 +528,7 @@ separately owner-gated after implementation review.
 
 ## Canonical database recovery decisions — 2026-07-16
 
-- `C:\Users\Steva\Documents\opc_v4_release.sqlite` is the current owner's sole canonical business database.
+- `<OWNER_USER_HOME>\Documents\opc_v4_release.sqlite` is the current owner's sole canonical business database.
 - Business authority does not follow the highest `user_version`; test/development databases never replace canonical data automatically.
 - Existing user databases from supported prior OPC versions are upgraded in place by application migrations, never replaced with prepared or empty databases.
 - Supported additive migrations must be idempotent after interrupted startup and validate existing object definitions instead of ignoring duplicate-object errors.

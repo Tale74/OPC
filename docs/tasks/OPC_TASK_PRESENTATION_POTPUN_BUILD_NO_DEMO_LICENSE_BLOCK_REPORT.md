@@ -77,10 +77,10 @@ Required gate before implementation: payment/legal access gate and platform pari
 
 ### Local non-Git documentation folders inspected
 
-- `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS`
-- `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS`
-- `C:\Projekti\OPC\OPC v.1\BACKUPS`
-- `C:\Projekti\OPC\OPC v.1\SMOKE_LOGS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SMOKE_LOGS`
 
 ## Local documentation findings
 
@@ -305,7 +305,7 @@ Result: PASS.
 
 Windows build output:
 
-- `C:\Projekti\OPC\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
 
 Android presentation APK build command:
 
@@ -317,7 +317,7 @@ Result: PASS.
 
 Android build output:
 
-- `C:\Projekti\OPC\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
 
 ## Output artifacts
 

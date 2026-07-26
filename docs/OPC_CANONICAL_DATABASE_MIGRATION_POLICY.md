@@ -12,7 +12,7 @@ business database.
 For the current owner Windows installation, the single canonical business
 database is:
 
-`C:\Users\Steva\Documents\opc_v4_release.sqlite`
+`<OWNER_USER_HOME>\Documents\opc_v4_release.sqlite`
 
 Its business data remains authoritative when its physical schema and
 `PRAGMA user_version` disagree. Schema version is a compatibility checkpoint,
@@ -100,7 +100,7 @@ the owner reviews the evidence package and explicitly authorizes that step.
 The current owner's canonical upgrade was explicitly authorized and completed
 on 2026-07-16 through a PRODUCTION build from migration-code commit
 `0368bd83a57efd03df8ef6e398555e35aec8bf85`. The verified offline backup is
-`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_PRE_CANONICAL_UPGRADE_20260716_212208.sqlite`.
+`<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\opc_v4_release_PRE_CANONICAL_UPGRADE_20260716_212208.sqlite`.
 The canonical database reached schema checkpoint 21 with integrity `ok`, all 19
 table counts/content fingerprints unchanged, and a successful double-start
 smoke. This execution record does not waive the same backup-and-explicit-

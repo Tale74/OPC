@@ -97,7 +97,7 @@ Private/export data was not opened.
 
 ## Local PROJECT_DOCS continuity summary
 
-`SOURCE\PROJECT_DOCS` contains 14 files. `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS` contains 11 files. The common core files have matching size and timestamp. `SOURCE\PROJECT_DOCS` also contains three newer task reports not present in the master folder:
+`SOURCE\PROJECT_DOCS` contains 14 files. `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS` contains 11 files. The common core files have matching size and timestamp. `SOURCE\PROJECT_DOCS` also contains three newer task reports not present in the master folder:
 
 - `OPC_RE_ENTRY_AUDIT_PROJECT_STATE_AND_NEXT_MACRO_STEPS_REPORT.md`
 - `OPC_TASK_044_PROJECT_STATE_STABILIZATION_AND_CROSS_PLATFORM_BASELINE_REPORT.md`
@@ -364,7 +364,7 @@ Recommended hierarchy until owner revises it:
 6. Local `SOURCE\PROJECT_DOCS` core set where not contradictory.
 7. `PROJECT_MAP_OPC_v1.json` and summary as audit map only.
 8. Restore point markers as history/evidence, not architecture specification.
-9. Old root docs and old `C:\Projekti\OPC\SOURCE` docs as historical only.
+9. Old root docs and old `<LOCAL_OPC_PROJECT_ROOT>\SOURCE` docs as historical only.
 10. Python-era docs as historical only.
 
 ## Inconsistencies and contradictions

@@ -109,7 +109,7 @@ Unchanged:
 Owner manual build commands, after the complete test suite passes:
 
 ```powershell
-Set-Location -LiteralPath 'C:\Projekti\OPC\OPC v.1\SOURCE'
+Set-Location -LiteralPath '<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE'
 C:\flutter\bin\flutter.bat build windows --release --no-pub
 C:\flutter\bin\flutter.bat build apk --release --no-pub
 ```

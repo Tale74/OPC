@@ -63,7 +63,7 @@ PREDMET, finance, stock consequences, or reminder scheduling.
 
 ## Source validation
 
-Commands were run from `C:\Projekti\OPC\OPC v.1\SOURCE` in the required order.
+Commands were run from `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE` in the required order.
 
 1. `flutter analyze`
    - Result: `PASS`
@@ -85,7 +85,7 @@ analyze/test cycle was required.
 - Result: `PASS`
 - Flutter build output: `Built build\windows\x64\runner\Release\OPC.exe`
 - Build-reported duration: 229.6 seconds
-- Executable path: `C:\Projekti\OPC\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
+- Executable path: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
 - Executable size: 89,088 bytes
 - Executable creation time: `2026-05-25 21:38:17 +02:00`
 - Executable last-write time: `2026-07-02 20:30:20 +02:00`
@@ -106,7 +106,7 @@ adjacent release data/libraries are required.
 - Final result: `PASS`
 - Flutter build output: `Built build\app\outputs\flutter-apk\app-release.apk (69.6MB)`
 - Gradle-reported duration: 250.1 seconds
-- APK path: `C:\Projekti\OPC\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
+- APK path: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
 - APK size: 72,963,856 bytes
 - APK creation time: `2026-05-25 21:30:05 +02:00`
 - APK last-write time: `2026-07-05 07:24:49 +02:00`

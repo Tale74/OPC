@@ -77,8 +77,8 @@ Final validation gate: analyzer fully clean and full suite PASS before either re
 
 - Command: `C:\flutter\bin\flutter.bat build windows --release`
 - Result: PASS (`Built build\windows\x64\runner\Release\OPC.exe`)
-- Runtime folder: `C:\Projekti\OPC\OPC v.1\SOURCE\build\windows\x64\runner\Release`
-- Executable: `C:\Projekti\OPC\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
+- Runtime folder: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\windows\x64\runner\Release`
+- Executable: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
 - Executable size: 89,088 bytes
 - Complete runtime folder: 43,892,782 bytes across 31 files
 - Build warnings: none reported
@@ -89,12 +89,12 @@ The complete Release folder, not only `OPC.exe`, is the Windows runtime artifact
 
 - Command: `C:\flutter\bin\flutter.bat build apk --release`
 - Result: PASS (`Built build\app\outputs\flutter-apk\app-release.apk`)
-- APK: `C:\Projekti\OPC\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
+- APK: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
 - APK size: 72,341,052 bytes (Flutter summary: 69.0 MB)
 - Build information: Material Icons font tree-shaken from 1,645,184 to 13,520 bytes; no correctness warning.
 - Signing note: current repository release configuration uses the debug signing config for runtime testing. The APK is not represented as a production/store-signed artifact.
 
-Two sandboxed Android attempts were allowed to run for 15 minutes and timed out; a longer verbose attempt exposed Android Lint/Gradle cache failure. Direct Gradle diagnostics confirmed sandbox denial on `C:\Users\Steva\.gradle\...gradle-8.14-all.zip.lck`. The unchanged build succeeded once explicitly allowed to access the user Gradle cache outside the sandbox. No lint task was disabled and no Android source/build configuration was changed.
+Two sandboxed Android attempts were allowed to run for 15 minutes and timed out; a longer verbose attempt exposed Android Lint/Gradle cache failure. Direct Gradle diagnostics confirmed sandbox denial on `<OWNER_USER_HOME>\.gradle\...gradle-8.14-all.zip.lck`. The unchanged build succeeded once explicitly allowed to access the user Gradle cache outside the sandbox. No lint task was disabled and no Android source/build configuration was changed.
 
 Build outputs are ignored/untracked and were not staged or committed.
 

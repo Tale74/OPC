@@ -282,7 +282,7 @@ rescheduling and notification delivery were not changed.
   personal fixture, runtime screenshot/media, generated PDF/DOCX or build output
   is included in the Git surface;
 - six Git-ignored `SOURCE/PROJECT_DOCS` authority copies were synchronized to
-  the local master `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS`; SHA-256 equality is
+  the local master `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS`; SHA-256 equality is
   confirmed for every synchronized file;
 - Git commit/push/SHA handoff: recorded below after execution;
 - no signing, secrets, IDE settings, flavors, machine paths or local build

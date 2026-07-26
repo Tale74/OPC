@@ -28,7 +28,7 @@ Manifest read: yes.
 
 Inspected Git paths include the manifest; entitlement policy; settings repository/table/UI; all STANJE ROBE application/data/UI files and tests; PREDMET list/screen/CEREMONIJA; PODSETNIK module surface; reminder model/repository/coordinator/gateway and tests; STATISTIKA UI/snapshot/aggregator and tests; six standard PDF exporters, shared logo helper and PDF reports/pseudocode; `main.dart`, `app.dart`, Windows runner; pseudocode index and relevant prior task reports.
 
-Inspected local non-Git folders: `PROJECT_DOCS`, `RESTORE_POINTS`, `BACKUPS`, and `SMOKE_LOGS` under `C:\Projekti\OPC\OPC v.1`.
+Inspected local non-Git folders: `PROJECT_DOCS`, `RESTORE_POINTS`, `BACKUPS`, and `SMOKE_LOGS` under `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1`.
 
 ### Local documentation findings
 

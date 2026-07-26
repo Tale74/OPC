@@ -87,7 +87,7 @@ Result: `+2: All tests passed!`
 
 Runner diagnosis recorded for future project work:
 
-- PowerShell profile `dart` and `flutter` functions point to missing `C:\Projekti\flutter_sdk`.
+- PowerShell profile `dart` and `flutter` functions point to missing `<LOCAL_PROJECTS_ROOT>\flutter_sdk`.
 - `C:\flutter\bin\dart.bat` and `C:\flutter\bin\flutter.bat` can hang and leave `cmd.exe` wrapper processes.
 - Plain `dart test` is not valid for Flutter tests that import `flutter_test`.
 - Sandbox blocks Flutter cache lock writes at `C:\flutter\bin\cache\lockfile`.

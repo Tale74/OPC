@@ -70,12 +70,12 @@ instruction to create the report branch from the specified base.
 | Backup/restore final/report commit | `f8cf1a8d8c583ce34012ff9c58e2b48fd2bed2d1` |
 | Protected restore commit | `73108a608abb5f945668df94214742775733f3e0` |
 | Backup archive filename | `OPC_v1_backup_20260704_0730_before_pdf_logo_max_layout.zip` |
-| Backup archive full path | `C:\Projekti\OPC\OPC v.1\BACKUPS\OPC_v1_backup_20260704_0730_before_pdf_logo_max_layout.zip` |
+| Backup archive full path | `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\OPC_v1_backup_20260704_0730_before_pdf_logo_max_layout.zip` |
 | Backup archive creation timestamp | `2026-07-04 07:32:36 +02:00` |
 | Backup archive last-write timestamp | `2026-07-04 07:42:51 +02:00` |
 | Backup archive size | `477,135,113 bytes` |
 | Restore marker filename | `RESTORE_POINT_20260704_0730_BEFORE_PDF_LOGO_MAX_LAYOUT.md` |
-| Restore marker full path | `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS\RESTORE_POINT_20260704_0730_BEFORE_PDF_LOGO_MAX_LAYOUT.md` |
+| Restore marker full path | `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS\RESTORE_POINT_20260704_0730_BEFORE_PDF_LOGO_MAX_LAYOUT.md` |
 | Restore marker creation timestamp | `2026-07-04 07:43:57 +02:00` |
 | Restore marker last-write timestamp | `2026-07-04 07:43:43 +02:00` |
 | Restore marker size | `3,449 bytes` |
@@ -119,7 +119,7 @@ were inspected:
 - `docs/tasks/OPC_TASK_BACKUP_RESTORE_BEFORE_PDF_LOGO_MAX_LAYOUT_REPORT.md` at
   commit `f8cf1a8`: records the archive, marker, protected commit, exclusions,
   restore instructions, manifest result, and no-behavior-change boundary.
-- `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS\OPC_v1_BACKUP_AND_RESTORE_POLICY.md`:
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS\OPC_v1_BACKUP_AND_RESTORE_POLICY.md`:
   requires separate milestone archives and human-readable markers, canonical
   timestamped naming, explicit generated/cache exclusions, restore metadata,
   and encoding checks; Git/IDE undo alone is insufficient protection.
@@ -130,12 +130,12 @@ artifact expectations above.
 
 ## Exact paths inspected
 
-- `C:\Projekti\OPC\OPC v.1\SOURCE`
-- `C:\Projekti\OPC\OPC v.1\SOURCE\docs`
-- `C:\Projekti\OPC\OPC v.1\SOURCE\docs\tasks`
-- `C:\Projekti\OPC\OPC v.1\BACKUPS`
-- `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS`
-- `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\docs`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE\docs\tasks`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS`
 - the exact archive, marker, reports, and policy documents named above
 
 All three canonical local protection folders exist. No artifact was created,

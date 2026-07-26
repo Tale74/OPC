@@ -32,7 +32,7 @@
 
 The single owner canonical business database is:
 
-`C:\Users\Steva\Documents\opc_v4_release.sqlite`
+`<OWNER_USER_HOME>\Documents\opc_v4_release.sqlite`
 
 Its records remain authoritative even when physical schema and
 `PRAGMA user_version` disagree. Test lanes, temporary copies and a newer schema
@@ -161,11 +161,11 @@ offline copy was therefore consistent.
 
 | Evidence | Value |
 | --- | --- |
-| Source | `C:\Users\Steva\Documents\opc_v4_release.sqlite` |
+| Source | `<OWNER_USER_HOME>\Documents\opc_v4_release.sqlite` |
 | Source size | 81,125,376 bytes |
 | Source modified | 2026-07-16 18:04:26 local |
 | Source SHA-256 | `277E23AF37A3B1A275148AE3D1A88B4FE47662B00CDAA3972FB91128C19B5361` |
-| Backup | `C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_PRE_SCHEMA_RECOVERY_20260716_183812.sqlite` |
+| Backup | `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\opc_v4_release_PRE_SCHEMA_RECOVERY_20260716_183812.sqlite` |
 | Backup size/hash | identical to source |
 | Integrity / checkpoint | `ok` / 19 |
 | Canonicalized structural signature | `A88B286520E194A31574445AA5C523E99A6B9E4ACA737BC0C7111E78BB81B2AA` |
@@ -173,7 +173,7 @@ offline copy was therefore consistent.
 
 Filtered project backup:
 
-`C:\Projekti\OPC\OPC v.1\BACKUPS\OPC_v1_backup_20260716_183812_pre_canonical_schema_recovery.zip`
+`<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\OPC_v1_backup_20260716_183812_pre_canonical_schema_recovery.zip`
 
 - SHA-256:
   `DE9F97BE777090B3CB5C372619057AD740DA1D09B444FEF3BC704C2B9575C339`
@@ -183,7 +183,7 @@ Filtered project backup:
 
 Copy:
 
-`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_MIGRATION_TEST_20260716_183812.sqlite`
+`<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\opc_v4_release_MIGRATION_TEST_20260716_183812.sqlite`
 
 The final validation copy was freshly restored from the pristine backup before
 the final run.
@@ -210,7 +210,7 @@ Source tracing proves:
 
 `BUILD_VARIANT` absent → `PRODUCTION` fallback → `opc_v4_release` →
 `driftDatabase(name: kDatabaseName)` → Windows Documents →
-`C:\Users\Steva\Documents\opc_v4_release.sqlite`.
+`<OWNER_USER_HOME>\Documents\opc_v4_release.sqlite`.
 
 After explicit owner approval, the smallest selector was implemented as
 `MIGRATION_TEST_DATABASE_PATH`. It is compile-time only and active exclusively
@@ -223,7 +223,7 @@ and there is no general database picker.
 
 Final GUI-smoke copy:
 
-`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_MIGRATION_TEST_GUI_SMOKE_FINAL_20260716_210633.sqlite`
+`<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\opc_v4_release_MIGRATION_TEST_GUI_SMOKE_FINAL_20260716_210633.sqlite`
 
 It was freshly copied from the pristine v19 backup and initially had size
 81,125,376 bytes and SHA-256
@@ -284,7 +284,7 @@ confirmed clean at exactly
 `0368bd83a57efd03df8ef6e398555e35aec8bf85`. The build command was exactly
 `flutter build windows --release`, with no `dart-define`. It completed with
 exit code 0, so the established fallback selected `PRODUCTION` and
-`C:\Users\Steva\Documents\opc_v4_release.sqlite`.
+`<OWNER_USER_HOME>\Documents\opc_v4_release.sqlite`.
 
 - Artifact: `build\windows\x64\runner\Release\OPC.exe`.
 - Artifact size/SHA-256: 89,088 bytes /
@@ -300,7 +300,7 @@ absent. At the owner's instruction, the canonical state modified at
 2026-07-16 21:22:08 local became the new pre-migration baseline. A plain
 byte-for-byte offline copy was made to:
 
-`C:\Projekti\OPC\OPC v.1\BACKUPS\opc_v4_release_PRE_CANONICAL_UPGRADE_20260716_212208.sqlite`
+`<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\opc_v4_release_PRE_CANONICAL_UPGRADE_20260716_212208.sqlite`
 
 | Check | Canonical source before migration | New offline backup |
 | --- | --- | --- |

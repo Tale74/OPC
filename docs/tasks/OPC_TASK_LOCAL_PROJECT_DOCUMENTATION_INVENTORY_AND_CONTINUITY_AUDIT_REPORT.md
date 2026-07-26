@@ -51,9 +51,9 @@ Required gate before implementation:
 
 Required roots were inspected:
 
-- `C:\Projekti\OPC\OPC v.1\SOURCE`
-- `C:\Projekti\OPC\OPC v.1`
-- `C:\Projekti\OPC`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE`
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1`
+- `<LOCAL_OPC_PROJECT_ROOT>`
 
 Commands run:
 
@@ -62,16 +62,16 @@ git status --short
 git ls-files
 git ls-files --others --exclude-standard
 git status --short --ignored
-Get-ChildItem -Path "C:\Projekti\OPC" -Recurse -File
+Get-ChildItem -Path "<LOCAL_OPC_PROJECT_ROOT>" -Recurse -File
 ```
 
-The first full recursive listing timed out because `C:\Projekti\OPC` contains build/cache/generated trees. Follow-up listings excluded `.git`, `.dart_tool`, `build`, `runtime_data`, Flutter ephemeral/plugin symlink trees, backup archives, and similar generated folders where needed.
+The first full recursive listing timed out because `<LOCAL_OPC_PROJECT_ROOT>` contains build/cache/generated trees. Follow-up listings excluded `.git`, `.dart_tool`, `build`, `runtime_data`, Flutter ephemeral/plugin symlink trees, backup archives, and similar generated folders where needed.
 
 Safe metadata counts from filtered listing:
 
-- `C:\Projekti\OPC\OPC v.1\SOURCE`: 57 documentation/config-like files before privacy filtering.
-- `C:\Projekti\OPC\OPC v.1`: 116 documentation/config-like files before privacy filtering.
-- `C:\Projekti\OPC`: 746 documentation/config-like files before stronger generated/build exclusions.
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SOURCE`: 57 documentation/config-like files before privacy filtering.
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1`: 116 documentation/config-like files before privacy filtering.
+- `<LOCAL_OPC_PROJECT_ROOT>`: 746 documentation/config-like files before stronger generated/build exclusions.
 
 ## Git-tracked documentation
 
@@ -156,14 +156,14 @@ Ignored local private import JSON inside repo: 5 files under `_IMPORT_TEST_INPUT
 
 Local docs outside the active Git repo but inside the requested project roots:
 
-- `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS`: 11 files.
-- `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS`: 48 restore point marker files.
-- `C:\Projekti\OPC\SOURCE`: 22 old-source root docs/config files.
-- `C:\Projekti\OPC\OPC Python`: 4 legacy Python-era/generated documentation files.
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS`: 11 files.
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS`: 48 restore point marker files.
+- `<LOCAL_OPC_PROJECT_ROOT>\SOURCE`: 22 old-source root docs/config files.
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC Python`: 4 legacy Python-era/generated documentation files.
 
-The `C:\Projekti\OPC\OPC v.1\PROJECT_DOCS` folder appears to be the historical master copy referenced by `SOURCE\PROJECT_DOCS\00_README_KAKO_KORISTITI.md`.
+The `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\PROJECT_DOCS` folder appears to be the historical master copy referenced by `SOURCE\PROJECT_DOCS\00_README_KAKO_KORISTITI.md`.
 
-The `C:\Projekti\OPC\SOURCE` folder appears to be an older source-tree copy with duplicated early OPC root docs and should not drive current decisions without owner confirmation.
+The `<LOCAL_OPC_PROJECT_ROOT>\SOURCE` folder appears to be an older source-tree copy with duplicated early OPC root docs and should not drive current decisions without owner confirmation.
 
 The `OPC Python` files are legacy product/user-facing artifacts and should not drive current Flutter architecture.
 
@@ -210,8 +210,8 @@ Historical or superseded unless revalidated:
 
 - root `OPC_*.md` files from April 2026;
 - root `RESTORE_POINT_*.txt` files from April 2026;
-- `C:\Projekti\OPC\SOURCE` duplicate/old source root docs;
-- `C:\Projekti\OPC\OPC Python` PDF/text artifacts;
+- `<LOCAL_OPC_PROJECT_ROOT>\SOURCE` duplicate/old source root docs;
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC Python` PDF/text artifacts;
 - individual `RESTORE_POINTS\RESTORE_POINT_*.md` markers, except as milestone evidence.
 
 These files are useful as history but must not override the manifest, `PRODUCT_DIRECTION.md`, `ARCHITECTURE_OVERVIEW.md`, or the newer `PROJECT_DOCS` locked rules without owner review.
@@ -267,7 +267,7 @@ Local:
 - `PROJECT_DOCS\PROJECT_MAP_OPC_v1_SUMMARY.md`
 - `PROJECT_DOCS\OPC_RE_ENTRY_AUDIT_PROJECT_STATE_AND_NEXT_MACRO_STEPS_REPORT.md`
 - `PROJECT_DOCS\OPC_TASK_044_PROJECT_STATE_STABILIZATION_AND_CROSS_PLATFORM_BASELINE_REPORT.md`
-- restore point markers under `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS`
+- restore point markers under `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS`
 
 Important local continuity points:
 
@@ -290,7 +290,7 @@ Risks if local docs are ignored:
 Risks if local docs are applied blindly:
 
 - Older `SaaS-ready` wording may conflict with the manifest's current Web Pristup model.
-- Old root docs and old `C:\Projekti\OPC\SOURCE` docs may duplicate or predate newer locked decisions.
+- Old root docs and old `<LOCAL_OPC_PROJECT_ROOT>\SOURCE` docs may duplicate or predate newer locked decisions.
 - Restore point markers prove history but are not themselves current architecture specifications.
 
 ## Recommended documents to add to repo
@@ -325,14 +325,14 @@ Keep local/private:
 - `BACKUPS\`
 - customer/export/generated outputs
 - private key/license issuer materials if present outside this inspected set
-- `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS` as local operational history unless selected markers are sanitized
-- `C:\Projekti\OPC\OPC Python` legacy artifacts unless the owner requests a historical migration appendix
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS` as local operational history unless selected markers are sanitized
+- `<LOCAL_OPC_PROJECT_ROOT>\OPC Python` legacy artifacts unless the owner requests a historical migration appendix
 
 Keep historical but not authoritative:
 
 - root `OPC_*.md` early docs;
 - root `RESTORE_POINT_*.txt` early markers;
-- old `C:\Projekti\OPC\SOURCE` duplicate tree docs.
+- old `<LOCAL_OPC_PROJECT_ROOT>\SOURCE` duplicate tree docs.
 
 ## What Logos must read before the next architecture task
 

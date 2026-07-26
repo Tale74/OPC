@@ -326,7 +326,7 @@ Gap handling rule: future grouped picker changes must verify that shared display
 
 Observed environment:
 
-- PowerShell `dart` and `flutter` commands are profile functions pointing to missing `C:\Projekti\flutter_sdk`.
+- PowerShell `dart` and `flutter` commands are profile functions pointing to missing `<LOCAL_PROJECTS_ROOT>\flutter_sdk`.
 - `C:\flutter\bin\dart.bat` and `C:\flutter\bin\flutter.bat` can hang and leave `cmd.exe` wrapper processes.
 - Direct Dart executable exists at `C:\flutter\bin\cache\dart-sdk\bin\dart.exe`.
 - `dart test` is not the correct runner for Flutter tests that import `flutter_test`, because `dart:ui` is unavailable in plain Dart test mode.

@@ -1,6 +1,6 @@
 # OPC — documentation privacy-history exposure assessment
 
-**Status:** ASSESSMENT COMPLETE – NO HISTORY REWRITE PERFORMED – CURRENT-TREE EXPANSION DECISION REQUIRED
+**Status:** CURRENT-TREE SANITIZATION COMPLETE – NO HISTORY REWRITE PERFORMED
 **Datum:** 26. jul 2026.
 **Branch:** `task/OPC-GATE-0-DOCUMENTATION-PROTECTION-MAP`
 
@@ -28,7 +28,7 @@ Odobrena sanitizacija izvršena je u:
 
 Data-ownership i canonical-database poslovno pravilo ostalo je nepromenjeno.
 
-Posle te korekcije još 19 current Git dokumenata odgovara privacy obrascu:
+Posle početne korekcije još 19 current Git dokumenata odgovaralo je privacy obrascu. Owner je zatim proširio autorizaciju i svi sledeći dokumenti su sadržinski neutralno sanitizovani stabilnim aliasima:
 
 ### Zadržani authority dokumenti
 
@@ -81,16 +81,19 @@ Posebno potvrđeni canonical-database exposure commits:
 - Istorijska izloženost ostaje javno dohvatljiva kroz starije commit objekte dok se eventualno ne odobri zasebna history-remediation operacija.
 - History rewrite bi promenio commit lineage, branch SHA-ove i kontinuitetne reference i zato nije preporučen bez proporcionalnog privacy/security razloga.
 
+Ponovljeni current-tree scan sada vraća:
+
+`0 current documentation files matching the approved private user/project-root patterns`
+
 ## 5. Technical recommendation
 
-1. Proširiti owner autorizaciju na current-tree sanitizaciju svih 19 preostalih dokumenata ili uklanjanje task reportova kada protection mapa postane PASS.
-2. Za dva zadržana authority dokumenta i evidence notes izvršiti sadržinski neutralnu zamenu privatnih putanja stabilnim aliasima.
-3. Za task reportove ne vršiti zasebnu redakciju ako će odmah biti bezbedno uklonjeni iz current tree-a; do tada ostaju javno izloženi.
-4. Ne raditi Git history rewrite.
-5. Posle current-tree cleanup-a ponoviti privacy scan i objaviti nulti current exposure rezultat.
+1. Zadržati stabilne aliase `<OWNER_USER_HOME>`, `<OWNER_LOCAL_USER>`, `<LOCAL_OPC_PROJECT_ROOT>` i `<LOCAL_PROJECTS_ROOT>` u javnim dokumentima.
+2. Ne vraćati privatne apsolutne putanje u task reportove, pseudocode ili primere.
+3. Ne raditi Git history rewrite.
+4. Posle svakog documentation cleanup-a ponoviti privacy scan i zahtevati nulti current exposure rezultat.
 
-## 6. Owner decision required
+## 6. Owner decision status
 
-Predložena odluka:
-
-> Proširujem autorizaciju sanitizacije na sve preostale current-tree dokumente navedene u odeljku 2, uz očuvanje poslovnog i dokaznog značenja. Git history rewrite i dalje nije odobren.
+- Current-tree expansion: OWNER APPROVED AND COMPLETED.
+- Business/evidence meaning: preserved through stable alias substitution.
+- Git history rewrite: NOT APPROVED.

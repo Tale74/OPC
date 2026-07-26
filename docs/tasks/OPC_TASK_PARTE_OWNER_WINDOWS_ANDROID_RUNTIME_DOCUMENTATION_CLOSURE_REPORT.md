@@ -75,7 +75,7 @@ Read completely or reviewed in relevant authoritative scope:
 - PARTE pseudocode and Logos index entry.
 
 The former private evidence directory
-`C:\Projekti\OPC\OPC v.1\SMOKE_LOGS\PARTE NALAZI` was intentionally deleted by
+`<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\SMOKE_LOGS\PARTE NALAZI` was intentionally deleted by
 the owner because it contained stale, irrelevant findings. Its absence is not a
 missing-evidence blocker. Future physical evidence may be created again at that
 location only after prior owner notice.

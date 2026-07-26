@@ -41,8 +41,8 @@ Required gate before implementation:
 - Base commit: `ca9771c505f2f892059e4eb6ab66bd11731a1e84`
 - Protected backup/restore baseline: `73108a608abb5f945668df94214742775733f3e0`
 - Original backup/restore execution commit: `f8cf1a8d8c583ce34012ff9c58e2b48fd2bed2d1`
-- Backup archive: `C:\Projekti\OPC\OPC v.1\BACKUPS\OPC_v1_backup_20260704_0730_before_pdf_logo_max_layout.zip`
-- Restore marker: `C:\Projekti\OPC\OPC v.1\RESTORE_POINTS\RESTORE_POINT_20260704_0730_BEFORE_PDF_LOGO_MAX_LAYOUT.md`
+- Backup archive: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\BACKUPS\OPC_v1_backup_20260704_0730_before_pdf_logo_max_layout.zip`
+- Restore marker: `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1\RESTORE_POINTS\RESTORE_POINT_20260704_0730_BEFORE_PDF_LOGO_MAX_LAYOUT.md`
 - Evidence report: `docs/tasks/OPC_TASK_BACKUP_RESTORE_EVIDENCE_CHECK_REPORT.md`
 - Final commit: `HEAD` — immutable hash is recorded in the Codex handoff because a commit cannot contain its own hash
 

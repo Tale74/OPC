@@ -158,7 +158,7 @@ as the primary architecture authority.
 ## Local documentation findings
 
 The audit inspected `PROJECT_DOCS`, `RESTORE_POINTS`, `BACKUPS`, and
-`SMOKE_LOGS` under `C:\Projekti\OPC\OPC v.1`.
+`SMOKE_LOGS` under `<LOCAL_OPC_PROJECT_ROOT>\OPC v.1`.
 
 | Local finding | Classification | Audit use |
 | --- | --- | --- |
