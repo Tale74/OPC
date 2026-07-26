@@ -276,3 +276,55 @@ meaning of the current NAPOMENA field
 administrator notification content-control requirement
 first implementation phase boundary
 ```
+
+## Orphan-reference technical closure
+
+```text
+SOURCE-CONFIRMED CURRENT DEFECT
+
+DELETE PREDMET:
+    current repository deletes PREDMET/dependent DB data
+    current flow does not cancel stored Android notification ids
+    reminder table relies on declared FK cascade
+    OPC connection does not enable/prove runtime foreign-key enforcement
+    result can be orphan SQLite config and/or pending OS notification
+
+SAFE FUTURE DELETE:
+    load PREDMET + reminder config + scheduled ids
+    cancel each stored platform id idempotently
+    IF cancellation fails:
+        keep PREDMET
+        report failure
+    ELSE:
+        explicitly delete reminder config
+        delete PREDMET through existing dependent-data lifecycle
+
+STARTUP / RESUME RECOVERY:
+    find reminder DB rows without PREDMET
+    cancel their stored ids
+    delete orphan rows
+    enumerate pending OPC ceremony notifications
+    parse only strict payload "predmet:<positive-local-id>"
+    cancel only payloads whose PREDMET does not exist
+    never use broad cancelAll
+    never guess or relink identity
+
+FULL BACKUP:
+    preserve logical enabled/delivery-time configuration
+    never transfer device-local scheduled ids
+    before restore cancel current-device OPC ceremony notifications
+    clear reminder rows
+    restore only configs linked to restored PREDMET
+    reschedule from restored PREDMET truth
+
+NOTIFICATION TAP:
+    validate current PREDMET existence before navigation
+    missing PREDMET -> dismiss/cancel, no reconstruction
+    acknowledgement remains technical and is not business completion
+```
+
+Technical closure:
+`docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
+
+This correction requires no new owner business decision and does not authorize
+implementation.

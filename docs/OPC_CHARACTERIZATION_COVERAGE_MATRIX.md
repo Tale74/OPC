@@ -22,7 +22,7 @@ What must not change: status/version/log semantics without characterization.
 Future upgrade risk: lifecycle drift affects JSON, review, Web/sync, documents.
 Characterization needed before change: full lifecycle matrix and parity evidence.
 Owner decision required: yes for lifecycle policy changes.
-Technical audit required: yes.
+Technical audit required: completed for orphan correction; broader business model and global foreign-key enforcement remain separate.
 Web readiness relevance: critical.
 Classification: `SOURCE-CONFIRMED / CHARACTERIZATION REQUIRED`.
 
@@ -552,19 +552,22 @@ Business behavior: PODSETNIK
 Module: PODSETNIK
 Module class: operational / add-on
 Related pseudocode ID: `OPC-PSEUDO-018`, `OPC-PSEUDO-026`
-Source files: not fully characterized in current public docs
-Existing tests: none found
+Source files: reminder repository/coordinator/gateway; PREDMET repository and list/detail screens; database schema/migrations; JSON full-backup flow
+Existing tests: `test/ceremony_reminder_system_test.dart`; `test/podsetnik_module_screen_test.dart`; migration recovery fixtures/tests
 Runtime evidence: none current
-Documentation evidence: legacy package/add-on rules; module contracts
-Current evidence level: POLICY EXISTS / IMPLEMENTATION NOT FOUND / NOT IMPLEMENTED
-Protected behavior: reminder UX must remain derivative/operational if implemented.
-What must not change: no hidden PREDMET truth or OS notification architecture without audit.
-Future upgrade risk: platform/runtime drift.
-Characterization needed before change: implementation status and notification architecture.
-Owner decision required: yes.
+Documentation evidence: module contracts; authoritative plan; PODSETNIK control-flow pseudocode; orphan root-cause audit
+Current evidence level: IMPLEMENTED REMINDER FOUNDATION / ROOT CAUSE CONFIRMED / INTEGRITY CORRECTION NOT IMPLEMENTED
+Protected behavior: reminder configuration and delivery remain derivative/operational; PREDMET remains sole truth.
+What must not change: no orphan SQLite/OS state, guessed relinking, notification-owned business completion or broad cancellation of unrelated notifications.
+Future upgrade risk: stale deleted-PREDMET identity, local-ID reassociation after restore, platform/runtime drift.
+Characterization needed before change: implementation design is complete for orphan correction; focused tests and Android/Windows runtime proof remain.
+Owner decision required: no for orphan integrity correction; yes only for later expanded business tracking model.
 Technical audit required: yes.
 Web readiness relevance: medium.
-Classification: `POLICY EXISTS / IMPLEMENTATION NOT FOUND`.
+Classification: `SOURCE-CONFIRMED ROOT CAUSE / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION AND RUNTIME PROOF REQUIRED`.
+
+Technical closure reference:
+`docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 
 ## CHARACTERIZATION-ID: OPC-CHAR-029
 

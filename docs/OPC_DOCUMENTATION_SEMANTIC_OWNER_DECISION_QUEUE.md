@@ -127,6 +127,14 @@ Ne postoji preostala owner odluka za ovaj tehnički mapping.
 
 ### `ODQ-PODSETNIK-001` — poslovni tracking model
 
+Orphan-reference integrity is not part of this owner queue and no longer waits
+for owner diagnosis. Technical closure:
+`docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
+
+Source confirms missing SQLite/OS deletion coordination and full-restore
+reconciliation. A future technical implementation may correct those defects
+without deciding the expanded business-tracking model below.
+
 Potrebno je zaključati:
 
 - šta je automatski izvedeno upozorenje, a šta trajna obaveza PREDMETA;

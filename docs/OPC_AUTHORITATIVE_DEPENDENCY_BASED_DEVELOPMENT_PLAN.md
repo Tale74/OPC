@@ -521,14 +521,33 @@ Svaka stavka koristi lifecycle iz odeljka 6.
 
 ### 10.1 PODSETNIK orphan korekcija
 
-Samo posle potvrđene dijagnoze:
+Root-cause dijagnoza je potvrđena code-first auditom:
+`docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
+
+Potvrđena su dva nezavisna lifecycle nedostatka:
+
+- reminder SQLite red se oslanja na deklarisani cascade bez uključenog/dokazanog
+  runtime foreign-key enforcement-a;
+- Android OS notification se ne otkazuje pre brisanja PREDMETA.
+
+Full-backup restore je dodatni trigger jer ne čisti, ne prenosi niti ponovo
+gradi reminder konfiguraciju.
+
+Buduća odobrena implementacija mora obuhvatiti:
 
 - atomic/compensating deletion lifecycle;
 - cancel pre gubitka notification IDs ili drugi dokazivo bezbedan red;
 - idempotent retry;
 - recovery za ranije orphan payload-e;
+- eksplicitno čišćenje orphan SQLite redova;
+- scoped pregled pending OPC payload-a, bez `cancelAll`;
+- full-backup prenos logičke konfiguracije bez device-local notification IDs;
+- restore cancel/clear/import/reschedule red;
 - nema gubitka validnog PREDMETA;
 - Windows/Android ekvivalentan business rezultat.
+
+Globalno uključivanje `PRAGMA foreign_keys = ON` ostaje zaseban širi integrity
+audit posle inventara svih relacija i postojećih orphan redova.
 
 ### 10.2 Windows multiple-instance zaštita
 
