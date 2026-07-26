@@ -183,34 +183,34 @@ Recommended next action: Add focused boundary tests and a common positive-range 
 ## RULE-ID: OPC-RULE-PREDMET-CHANGELOG-001
 
 Name: PREDMET version/change-log overview requirement
-Status: OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED
+Status: OWNER DECISION RECORDED / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION REQUIRED
 Domain: PREDMET review / version history
 Rule statement: PREDMET should have a document/versioning overview in `Pregled i potvrda`. The user-visible log shows significant lifecycle/import events and, where useful, changed business segments. It does not expose raw previous/new PREDMET values or every individual input action. Technical save/version checkpoints remain hidden and separate.
 Evidence classification: OWNER DECISION
 Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
-Current implementation state: Requirement and visibility granularity are recorded only. Current UI has no event list, and current snapshot rows are technical checkpoints containing broad PREDMET data.
+Current implementation state: Requirement and visibility granularity are recorded. Code-first lifecycle/retention audit defines separate privacy-safe checkpoints and local audit events, minimum event taxonomy, retention, anonymization/deletion behavior and legacy migration constraints. Current UI still has no event list and runtime implementation is not authorized.
 Windows/Android parity: Future overview must preserve equivalent business meaning on both platforms.
 JSON/PDF/UI relevance: Intended as PREDMET UI review behavior; JSON/PDF implications require later design.
 Future Web/sync relevance: Important for explaining version history and conflict choices.
 Risk if changed: Users may lack business context for confirming or replacing a PREDMET version.
-Open questions: Exact event taxonomy after technical design proof, retention through anonymization/deletion, snapshot migration/privacy, and implementation compatibility. Individual JSON transfer, replacement preservation and user-visible granularity are closed by owner decision.
-Recommended next action: Audit current lifecycle/version/log data before adding any model or UI.
+Open questions: None for business policy. Implementation must prove migration, recovery, privacy, version equivalence, event behavior and parity.
+Recommended next action: Keep implementation blocked until a separate authorized schema/repository/UI/test task applies `docs/OPC_PREDMET_LIFECYCLE_LOG_RETENTION_AND_EVENT_TAXONOMY_AUDIT.md`.
 
 ## RULE-ID: OPC-RULE-PREDMET-REVIEW-001
 
 Name: `Pregled i potvrda` is intended location for version/change-log overview
-Status: OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED
+Status: OWNER DECISION RECORDED / UI SOURCE AUDIT COMPLETE / IMPLEMENTATION REQUIRED
 Domain: PREDMET review UI
 Rule statement: The intended future location for the PREDMET version/change-log overview is `Pregled i potvrda` inside PREDMET, because that is where business state is reviewed and confirmed. The overview must not be hidden in a technical/debug-only screen.
 Evidence classification: OWNER DECISION
 Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
-Current implementation state: Location decision recorded only. Current `Pregled i potvrda` suitability still requires technical/UI audit.
+Current implementation state: Source audit confirms the existing segment already presents lifecycle status, version, saved state and actions and is suitable for a concise event overview. No event list is implemented.
 Windows/Android parity: Future UI must remain business-equivalent across Windows and Android.
 JSON/PDF/UI relevance: PREDMET review UI.
 Future Web/sync relevance: Future Web must preserve the same review meaning if implemented.
 Risk if changed: Version/change-log context could be separated from the confirmation workflow where it matters.
-Open questions: Layout, information density, and exact change-log source.
-Recommended next action: Audit current `Pregled i potvrda` structure before UI implementation.
+Open questions: No owner business question. Responsive layout and information density are implementation/test concerns.
+Recommended next action: Implement only under a separate authorized task using the defined local audit-event store and Android narrow/wide/Windows parity acceptance.
 
 ## RULE-ID: OPC-RULE-FIRMA-001
 

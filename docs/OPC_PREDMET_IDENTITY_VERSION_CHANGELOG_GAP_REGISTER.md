@@ -31,9 +31,16 @@ Area: `Pregled i potvrda` change-log overview.
 Current evidence: current review UI shows status, version, and saved/unsaved state; full change-log overview is not present.
 Risk if misunderstood: current UI could be overclaimed as complete audit trail.
 Blocked behavior changes: review change-log display, conflict authority, sync/audit interpretation.
-Classification: `IMPLEMENTATION GAP / OWNER DECISION EXISTS / TECHNICAL AUDIT REQUIRED`.
+Classification: `IMPLEMENTATION GAP / OWNER DECISION EXISTS / TECHNICAL DESIGN COMPLETE`.
 
 Owner visibility decision: future `Pregled i potvrda` shows significant lifecycle/import events and changed business segments without raw previous/new PREDMET values or per-keystroke history. Technical checkpoint remains hidden and separate.
+
+Technical closure reference:
+`docs/OPC_PREDMET_LIFECYCLE_LOG_RETENTION_AND_EVENT_TAXONOMY_AUDIT.md`.
+
+Source audit confirms the existing `Pregled i potvrda` segment is suitable.
+Remaining work is authorized implementation, migration/test proof and runtime
+parity, not a new owner decision.
 
 ## GAP-ID: OPC-PREDMET-LIV-GAP-004
 
@@ -42,11 +49,18 @@ Current evidence: replacement import deletes local `logIzmena` and inserts impor
 Owner decision: individual PREDMET JSON does not transfer `logIzmena`; replacement must preserve the local log and append a local replacement event with local actor/time authority.
 Risk if misunderstood: current runtime deletion may be mistaken for approved behavior, or foreign history may be imported as local audit authority.
 Blocked behavior changes: implementation of local import/replacement event logging, snapshot privacy/retention correction, tests and migration safety.
-Classification: `SOURCE-CONFIRMED CURRENT CONFLICT / OWNER DECISION / IMPLEMENTATION GAP / TECHNICAL AUDIT REQUIRED`.
+Classification: `SOURCE-CONFIRMED CURRENT CONFLICT / OWNER DECISION / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION GAP`.
 
 Technical audit closure reference: `docs/OPC_LOGIZMENA_TECHNICAL_AUDIT.md`.
 
 Additional finding: current `logIzmena` mixes raw business-state checkpoints with future user-facing audit responsibility. The checkpoint is required by current save/unsaved/version comparison behavior, while the log has no current event-list UI. Implementation remains blocked until checkpoint migration, privacy, event metadata and test strategy are proven.
+
+Lifecycle/retention closure reference:
+`docs/OPC_PREDMET_LIFECYCLE_LOG_RETENTION_AND_EVENT_TAXONOMY_AUDIT.md`.
+
+The closure defines separate stores, destination-local replacement retention,
+minimum events, anonymization/delete behavior and safe legacy coverage handling.
+No new owner business decision remains.
 
 ## GAP-ID: OPC-PREDMET-LIV-GAP-005
 

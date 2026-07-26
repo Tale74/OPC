@@ -185,3 +185,32 @@ Owner je nakon ovog audita prihvatio Codex preporuku:
 Status pitanja iz odeljka 12:
 
 `CLOSED — OWNER DECISION RECORDED — IMPLEMENTATION NOT AUTHORIZED`
+
+## 15. Code-first lifecycle/retention closure
+
+Follow-up audit:
+`docs/OPC_PREDMET_LIFECYCLE_LOG_RETENTION_AND_EVENT_TAXONOMY_AUDIT.md`.
+
+The follow-up source audit closes the remaining technical design questions:
+
+- technical checkpoints and local audit events require separate stores;
+- checkpoints retain hashes/coverage metadata, not raw PREDMET values;
+- minimum events are `CREATED`, `CLOSED_CONFIRMED`, `REOPENED`,
+  `MANUALLY_FINISHED`, `ANONYMIZED`, `IMPORT_NEW` and `IMPORT_REPLACE`;
+- `SCENARIO_CHANGED` and `ADVISER_REASSIGNED` apply only to the corresponding
+  explicit business actions;
+- audit/checkpoint rows remain while the PREDMET exists, including after
+  anonymization;
+- anonymization must remove/transform legacy raw snapshot PII;
+- hard deletion removes PREDMET, audit events and checkpoints together;
+- individual JSON excludes both responsibilities, while full backup preserves
+  them as part of the complete local database family;
+- legacy raw snapshots may be hashed only at proven
+  `legacy_predmet_row_only` coverage and must not create invented historical
+  segment changes or false business-version increments.
+
+No new owner business decision remains.
+
+Updated status:
+
+`TECHNICAL DESIGN COMPLETE — NO NEW OWNER DECISION — IMPLEMENTATION BLOCKED`

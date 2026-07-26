@@ -104,11 +104,26 @@ Code-first closure:
 
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 
-- retention poslovno vidljivih događaja;
-- ponašanje loga pri brisanju i anonimizaciji PREDMETA;
-- konačna event taxonomy potvrda posle tehničkog design proof-a.
+Status: `CLOSED — TECHNICAL DESIGN COMPLETE — IMPLEMENTATION BLOCKED`.
 
-Code-first audit je utvrdio da postojeći snapshot redovi nisu spreman korisnički audit-log: oni sadrže gotovo ceo PREDMET i služe save/version checkpoint mehanizmu. Njihova migracija, privacy zaštita i razdvajanje od audit event-a pripadaju Codex tehničkom domenu. Granulat korisničkog prikaza je zatvoren owner odlukom.
+Code-first closure:
+`docs/OPC_PREDMET_LIFECYCLE_LOG_RETENTION_AND_EVENT_TAXONOMY_AUDIT.md`.
+
+Potvrđeno je:
+
+- skriveni checkpoint i korisnički audit event moraju biti odvojeni;
+- event/checkpoint retencija traje dok postoji PREDMET, uključujući
+  anonimizovani PREDMET;
+- anonimizacija ne sme ostaviti legacy raw snapshot PII;
+- hard delete uklanja PREDMET i sve njegove event/checkpoint redove;
+- minimum taxonomy je `CREATED`, `CLOSED_CONFIRMED`, `REOPENED`,
+  `MANUALLY_FINISHED`, `ANONYMIZED`, `IMPORT_NEW`, `IMPORT_REPLACE`;
+- individualni JSON ne prenosi lokalni log/checkpoint, dok full backup čuva
+  kompletnu lokalnu DB porodicu;
+- legacy snapshot prelazi samo u dokazivu row-only coverage oznaku bez
+  izmišljene istorije i lažnog business-version inkrementa.
+
+Ne postoji preostala owner odluka za ovaj tehnički mapping.
 
 ### `ODQ-PODSETNIK-001` — poslovni tracking model
 
