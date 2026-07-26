@@ -70,13 +70,13 @@ Owner je zaključio:
 
 ### `ODQ-PREDMET-VERSION-002` — version/freshness konflikt
 
-- Koje polje je autoritet za freshness poređenje?
-- Kako se tretiraju ista, viša i niža verzija?
-- Da li zaštita ostaje warning + explicit keep/replace/cancel ili postoje slučajevi hard block-a?
+- Da li poslovna `verzija` nastaje samo potvrđenim zatvaranjem, dok ordinary save ostaje radni checkpoint?
 
-Do odluke ostaje važeće sadašnje eksplicitno `keep / replace / cancel`; automatsko zamenjivanje ili hard block nije odobren.
+Već zaključano: `verzija` je business-revision signal; viša/niža/ista verzija daje upozorenje/klasifikaciju, a `keep / replace / cancel` ostaje eksplicitna korisnička odluka bez silent overwrite-a.
 
 Source fact-check je uklonio missing/null/wrong-type `verzija` iz owner queue-a: typed deserialization odbija takav transfer pre DB mutacije. Eksplicitni `verzija >= 1` boundary ostaje tehnički validation/test dug.
+
+Code-first matrix audit je potvrdio da current close-only comparator ne obuhvata SCENARIO, IRiU ni kontakte. Ispravka aggregate coverage-a pripada Codex tehničkom domenu; owner odlučuje samo trenutak potvrde poslovne verzije.
 
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 
@@ -153,4 +153,4 @@ Već zaključano:
 
 ## 5. Trenutno tražena owner akcija
 
-`ODQ-PREDMET-HISTORY-VISIBILITY-003` je zatvoren. Preostale owner odluke ostaju vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana; Codex prvo razrešava tehnička pitanja iz source-a, testova i migracija.
+Neposredno sledeća owner obaveza je potvrda close-confirmed business-version granice iz `ODQ-PREDMET-VERSION-002`. Ostale odluke ostaju vremenski vezane za odgovarajuće etape; Codex prvo razrešava tehnička pitanja iz source-a, testova i migracija.

@@ -17,10 +17,12 @@ Classification: `TEST GAP / CHARACTERIZATION REQUIRED`.
 ## GAP-ID: OPC-PREDMET-LIV-GAP-002
 
 Area: business `verzija` increment matrix.
-Current evidence: close path conditionally increments based on confirmed-close snapshot comparison; save/reopen behavior is source-confirmed but not fully test-confirmed.
-Risk if misunderstood: `verzija` could be treated as export version or filename freshness.
-Blocked behavior changes: version comparison, conflict warnings, review version interpretation.
-Classification: `SOURCE-CONFIRMED / TEST GAP / TECHNICAL AUDIT REQUIRED`.
+Current evidence: close path conditionally increments based on a raw PREDMET-row snapshot comparison; ordinary save/reopen do not increment. SCENARIO is explicitly excluded, and IRiU/contact rows are outside the snapshot.
+Risk if misunderstood: changed PREDMET aggregate truth can retain the same `verzija`, while UI/PDF/JSON present it as business revision.
+Blocked behavior changes: canonical aggregate fingerprint, version comparison, conflict warnings, review interpretation and lifecycle/version coupling.
+Classification: `SOURCE-CONFIRMED / COVERAGE DEFECT / TEST GAP / OWNER BOUNDARY / TECHNICAL DESIGN REQUIRED`.
+
+Technical audit closure reference: `docs/OPC_PREDMET_BUSINESS_VERSION_MATRIX_AUDIT.md`.
 
 ## GAP-ID: OPC-PREDMET-LIV-GAP-003
 
