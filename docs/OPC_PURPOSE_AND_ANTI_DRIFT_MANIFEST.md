@@ -65,10 +65,11 @@ Valid databases of the same firm may be equal replicas and may replace one anoth
 ### 4.1 Canonical local database and migration policy — Owner Decision 2026-07-16
 
 A database becomes canonical only through explicit user/owner designation, not
-because it has a higher schema version. For the current owner Windows runtime,
-`C:\Users\Steva\Documents\opc_v4_release.sqlite` is the sole canonical
-business database. `opc_v4_windows_test.sqlite` and migration-test copies are
-validation lanes and must never replace or be merged into it automatically.
+because it has a higher schema version. The current owner Windows runtime has
+one explicitly designated canonical business database whose private local path
+is recorded only in the controlled local runtime record, never in public
+documentation. Test and migration-test copies are validation lanes and must
+never replace or be merged into it automatically.
 
 Every existing user's designated database remains that user's business truth
 and is upgraded in place through supported, idempotent application migrations.
