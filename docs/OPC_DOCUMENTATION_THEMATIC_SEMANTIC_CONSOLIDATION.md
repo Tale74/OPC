@@ -26,10 +26,10 @@ Svih **704** reda ima sledljivu dispoziciju:
 | `HISTORICAL_EVIDENCE_ONLY` | 101 | Naslovi i oznake nemaju samostalno normativno značenje. |
 | `CODEX_TECHNICAL_DISPOSITION` | 82 | Tehničko, arhitektonsko ili proceduralno pravilo u Codex authority domenu. |
 | `TECHNICAL_AUDIT_GOVERNED` | 3 | Rešava se dokaznim tehničkim auditom; owner zadržava izdavačku/distribucionu odluku. |
-| `CURRENT_AUTHORITY_PRESERVED` | 10 | Sadržaj je zaštićen u aktuelnom authority skupu. |
+| `CURRENT_AUTHORITY_PRESERVED` | 25 | Sadržaj je zaštićen u aktuelnom authority skupu, uključujući zatvorene SCENARIO i terminološke odluke. |
 | `CONFLICT_RESOLVED_BY_CURRENT_OWNER` | 27 | Legacy PAKETI/licensing politika je supersedovana aktuelnom owner odlukom. |
 | `DEFERRED_OUT_OF_SCOPE` | 19 | OPC Web/server/sync navodi ne pripadaju aktuelnom implementacionom scope-u. |
-| `OWNER_DECISION_REQUIRED` | 280 | Grupisano u sedam poslovnih klastera. |
+| `OWNER_DECISION_REQUIRED` | 265 | Grupisano u pet preostalih poslovnih klastera. |
 | `PROPOSED_BUSINESS_CHANGE` | 13 | Preporuke/pitanja nisu owner odluke. |
 | `INSUFFICIENT_CONTEXT_PROTECTED` | 169 | Fragment nema dovoljan kontekst za bezbedno uklanjanje izvora. |
 | **Ukupno** | **704** | Potpun kontrolni zbir. |
@@ -48,7 +48,7 @@ Ovo nije konflikt PREDMET authority principa, već konflikt lifecycle procedure:
 - još nije zaključano da li reconciliation automatski predlaže, obavezno potvrđuje ili samo označava redove za uklanjanje;
 - validni korisnički podaci ne smeju biti izgubljeni.
 
-Status: `OWNER DECISION REQUIRED`.
+Status: `CURRENT AUTHORITY PRESERVED` kroz `docs/OPC_GATE_0_SEMANTIC_OWNER_DECISION_RECORD_01.md`.
 
 ### 3.2. Legacy PAKETI/licensing nasuprot aktuelnom proizvodu
 
@@ -108,9 +108,7 @@ Status: poslovni smer je `CURRENT OWNER AUTHORITY`; document-by-document nasledn
 | `AUTH-ROLE-LIFECYCLE` | 27 | PIN/recovery/admin-selection/role lifecycle tvrdnje nisu objedinjene u current authority dokumentu. |
 | `PREDMET-LIFECYCLE-PODSETNIK` | 23 | Tracking item, potvrda, odlaganje, reopen/override/history, notification action i status coupling. |
 | `STANDARD-DOCUMENT-DERIVATIVES` | 17 | Legacy PDF/DOCX specifična pravila treba pojedinačno potvrditi ili supersedovati tokom standard document audita. |
-| `SCENARIO-IRiU-RECONCILIATION` | 10 | Tačan UX i data ugovor promene SCENARIO-a na nezavršenom PREDMETU. |
-| `TERMINOLOGY-PLATILAC-NARUCILAC` | 5 | Canonical korisnički termin i bezbedna DB/JSON/template cleanup/migration putanja. |
-| **Ukupno** | **280** | Owner odlučuje po klasterima, ne po 280 pojedinačnih redova. |
+| **Ukupno** | **265** | Owner odlučuje po klasterima, ne po pojedinačnim redovima. |
 
 ## 5. Tehničke i arhitektonske dispozicije
 
@@ -153,7 +151,7 @@ Za njih važi zaštitno pravilo: izvorna putanja ostaje `BLOCKED` dok current do
 
 - nijedna putanja nije obrisana;
 - nijedna od 61 putanje još nije automatski `PASS FOR REMOVAL`;
-- 704-redni evidence register omogućava sledeću owner odluku po sedam klastera;
+- 704-redni evidence register čuva zatvorene odluke i preostalih pet owner klastera;
 - tek posle odluka i section-level zaštite može se pripremiti precizni removal candidate manifest;
 - Git history rewrite ostaje zabranjen.
 

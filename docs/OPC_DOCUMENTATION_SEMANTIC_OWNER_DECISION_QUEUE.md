@@ -8,30 +8,36 @@
 
 Nije potrebno pregledati 704 pojedinačna reda. Codex ih je sve mapirao u evidence register. Owner treba da odlučuje samo o sledećim poslovnim klasterima, i to respektivno kada njihov razvojni gate dođe na red.
 
-## 2. Odluke koje neposredno blokiraju dokumentaciono uklanjanje
+## 2. Odluke zatvorene 26. jula 2026.
 
-### `ODQ-SCENARIO-001` — promena SCENARIO-a i IRiU reconciliation
+### `ODQ-SCENARIO-001` — promena SCENARIO-a i IRiU reconciliation — `CLOSED`
 
-Potrebno je zaključati:
+Owner je zaključio:
 
-- da li se pre primene novog SCENARIO-a prikazuje pregled redova koji ostaju, menjaju se ili postaju neprimenljivi;
-- da li uklanjanje neprimenljivih redova zahteva eksplicitnu potvrdu;
-- kako se čuvaju ručno uneti iznosi, napomene i druge validne korisničke vrednosti;
-- šta se dešava sa redom koji je već proizveo dokument, stock ili drugu posledicu;
-- potvrdu da završeni PREDMET nikada ne prolazi reconciliation.
+- promena SCENARIO-a je dozvoljena samo na `OTVORENOM` PREDMETU;
+- korisnik bira drugi postojeći SCENARIO, ne uređuje template u tom toku;
+- prikazuje se jedna poslovna potvrda `NASTAVI / ODUSTANI`, bez tehničkog pregleda;
+- OPC automatski uklanja neprimenljive IRiU redove i njihove korisničke vrednosti;
+- OPC automatski dodaje nove potrebne redove sa praznim korisničkim vrednostima;
+- OPC automatski poništava prethodne operativne posledice;
+- ako poništavanje trenutno ne uspe, novi SCENARIO ostaje primenjen, a problematični red postaje skriveni interni `RECONCILIATION_PENDING`, isključen iz prikaza i obračuna do automatskog razrešenja;
+- raniji eksterni PDF/DOCX fajlovi ostaju netaknuti, a svaki novi derivat koristi aktuelni PREDMET;
+- povratak na raniji SCENARIO ne vraća obrisane vrednosti;
+- korisnik ne rešava tehničke posledice promene — OPC je odgovoran za usklađivanje.
 
-Dok odluka nije zaključana, legacy pravilo „ne uklanjaj tiho“ i nova obaveza uklanjanja stale redova moraju oba ostati vidljiva kao konflikt koji čeka finalni lifecycle ugovor.
+Završeni PREDMET ostaje istorijski nepromenljiv. FIRMA template/default izmene ostaju prospektivne.
 
-### `ODQ-TERMINOLOGY-001` — `Platilac` / `naručilac`
+### `ODQ-TERMINOLOGY-001` — `PLATILAC` / `NARUČILAC` — `CLOSED`
 
-Potrebno je zaključati:
+Owner je zaključio:
 
-- canonical korisnički termin;
-- da li legacy `naru*` DB/JSON polja ostaju kompatibilni tehnički nazivi;
-- da li se radi migracija ili samo UI/document terminology cleanup;
-- kako se čitaju prethodno izvezeni JSON fajlovi i stari PREDMETI.
+- oba naziva predstavljaju isti poslovni pojam;
+- `NARUČILAC` je termin iz rane faze razvoja;
+- canonical korisnički termin je `PLATILAC`;
+- UI, novi PDF/DOCX i korisnička dokumentacija ne smeju prikazivati `NARUČILAC`;
+- legacy DB/JSON kompatibilnost i eventualno interno preimenovanje rešava Codex tehničkim auditom i migracijom bez gubitka starih PREDMETA.
 
-## 3. Odluke koje se donose u odgovarajućoj planiranoj etapi
+## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
 ### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope
 
@@ -121,9 +127,4 @@ Već zaključano:
 
 ## 5. Trenutno tražena owner akcija
 
-Za nastavak dokumentacionog Gate 0 potrebno je najpre odgovoriti na:
-
-1. `ODQ-SCENARIO-001`;
-2. `ODQ-TERMINOLOGY-001`.
-
-Ostale odluke mogu ostati vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana, ali njihovi izvorni dokumenti do tada ne mogu biti uklonjeni.
+Neposredna pitanja `ODQ-SCENARIO-001` i `ODQ-TERMINOLOGY-001` su zatvorena. Preostale odluke mogu ostati vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana, ali njihovi izvorni dokumenti do tada ne mogu biti uklonjeni.
