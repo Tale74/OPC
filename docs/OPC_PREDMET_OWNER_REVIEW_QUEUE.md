@@ -64,7 +64,6 @@ This is a consolidation pass, not a new source audit. It cites the characterizat
 | ODR-001 | Lifecycle policy changes | Lifecycle actions are source-confirmed with gaps. | Whether any lifecycle policy meaning should change. | Lifecycle affects PREDMET truth, JSON, review, Web/sync, and documents. | Status/version/log drift. | YES for lifecycle behavior changes. | `OPC_CHARACTERIZATION_COVERAGE_MATRIX.md` `OPC-CHAR-001` |
 | ODR-002 | PREDMET identity policy | `brojPredmeta` is current local conflict key; future-safe identity is firm-scoped. | Identity policy for any future guard or conflict change. | Prevents wrong-firm conflict or sync collision. | Global `brojPredmeta` assumption. | YES. | `OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md` `OPC-PREDMET-LIV-GAP-005` |
 | ODR-003 | Version conflict policy | `verzija` is business-version signal; export metadata is not authority. | Policy for warning/classification/hard-block behavior, if changed. | Import conflict choices need correct context. | Unsafe overwrite decisions or false freshness. | YES for comparator/hard-block changes. | `OPC_CHARACTERIZATION_COVERAGE_MATRIX.md` `OPC-CHAR-005` |
-| ODR-004 | Change-log/review overview content | Current review shows status/version/saved state, not a full change-log overview. Technical audit proves current snapshot rows are internal checkpoints containing broad PREDMET data. | Whether user review shows significant lifecycle/import events only or also changed business areas/fields. | Review may become conflict/audit authority. | Misleading, over-detailed or privacy-unsafe audit surface. | YES. | `OPC_LOGIZMENA_TECHNICAL_AUDIT.md` section 12 |
 | ODR-006 | Filename/export metadata authority | Filename, `exportDatum`, and `exportVerzija` are metadata, not authority. | Any future change to import warning authority or displayed metadata meaning. | Prevents metadata from becoming hidden identity/freshness truth. | Filename/date used as canonical authority. | YES for import warning changes. | `OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md` `OPC-PREDMET-LIV-GAP-006` |
 | ODR-007 | Future Web/sync identity | Web guardrails are policy-only; no implementation selected. | Owner-approved identity/conflict architecture before any implementation. | Preserves PREDMET truth and firm ownership. | Server-master or parallel-truth drift. | YES. | `OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md` `OPC-PREDMET-WEB-ID-009` |
 
@@ -171,7 +170,8 @@ Pseudocode docs unchanged; previous PREDMET pseudocode updates remain intact.
 - [ ] Owner decision required: lifecycle policy changes, if any.
 - [ ] Owner decision required: future firm-scoped PREDMET identity policy.
 - [ ] Owner decision required: version conflict warning/classification/hard-block policy, if any.
-- [ ] Owner decision required: change-log overview content and retention meaning.
+- [x] Owner decision closed: user-visible log shows significant lifecycle/import events and changed segments without raw old/new values.
+- [ ] Owner decision required later: retention behavior through anonymization/deletion after technical design proof.
 - [x] Owner decision closed: individual JSON does not transfer `logIzmena`; replacement preserves local log and appends a local replacement event.
 - [ ] Owner decision required: filename/export metadata authority if import warning behavior changes.
 - [ ] Owner decision required: future Web/sync identity and conflict architecture before implementation.

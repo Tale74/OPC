@@ -50,6 +50,16 @@ Owner je zaključio:
 
 Current replacement source briše lokalni log i ne beleži događaj zamene. Korekcija je budući tehnički/implementacioni dug, bez izmene aplikacije u Gate 0 dokumentacionom tasku.
 
+### `ODQ-PREDMET-HISTORY-VISIBILITY-003` — korisnički change-log — `CLOSED`
+
+Owner je zaključio:
+
+- korisnički change-log pripada `Pregled i potvrda`;
+- prikazuje značajne lifecycle/import događaje i, gde je korisno, promenjene poslovne segmente;
+- ne prikazuje stare/nove sirove vrednosti;
+- ne beleži svaki pojedinačni unos;
+- tehnički save/version checkpoint ostaje skriven i odvojen.
+
 ## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
 ### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope
@@ -68,14 +78,13 @@ Do odluke ostaje važeće sadašnje eksplicitno `keep / replace / cancel`; autom
 
 Source fact-check je uklonio missing/null/wrong-type `verzija` iz owner queue-a: typed deserialization odbija takav transfer pre DB mutacije. Eksplicitni `verzija >= 1` boundary ostaje tehnički validation/test dug.
 
-### `ODQ-PREDMET-HISTORY-003` — change-log i reopen/import history
+### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 
-- Da li korisnički pregled prikazuje samo značajne lifecycle/import događaje ili i promenjene poslovne oblasti/polja;
-- retention i prikaz poslovno vidljivih događaja;
-- da li `ZATVOREN → OTVOREN` uvek pravi novi verzijski trag;
-- sadržaj budućeg pregleda u `Pregled i potvrda`.
+- retention poslovno vidljivih događaja;
+- ponašanje loga pri brisanju i anonimizaciji PREDMETA;
+- konačna event taxonomy potvrda posle tehničkog design proof-a.
 
-Code-first audit je utvrdio da postojeći snapshot redovi nisu spreman korisnički audit-log: oni sadrže gotovo ceo PREDMET i služe save/version checkpoint mehanizmu. Njihova migracija, privacy zaštita i razdvajanje od audit event-a pripadaju Codex tehničkom domenu.
+Code-first audit je utvrdio da postojeći snapshot redovi nisu spreman korisnički audit-log: oni sadrže gotovo ceo PREDMET i služe save/version checkpoint mehanizmu. Njihova migracija, privacy zaštita i razdvajanje od audit event-a pripadaju Codex tehničkom domenu. Granulat korisničkog prikaza je zatvoren owner odlukom.
 
 ### `ODQ-PODSETNIK-001` — poslovni tracking model
 
@@ -139,8 +148,9 @@ Već zaključano:
 - ručni pravac statusa `ZAVRŠEN`;
 - PDF RAČUN FIRMA toggle bez poreske logike;
 - individualni PREDMET JSON ne prenosi `logIzmena`; import/replacement događaji beleže se lokalno;
+- korisnički change-log prikazuje značajne događaje i promenjene segmente bez sirovih starih/novih vrednosti;
 - Git history rewrite nije odobren.
 
 ## 5. Trenutno tražena owner akcija
 
-Neposredno sledeća owner obaveza je `ODQ-PREDMET-HISTORY-003`: odrediti granulat poslovno vidljivog change-log pregleda nakon završenog code-first audita. Ostale odluke mogu ostati vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana, ali njihovi izvorni dokumenti do tada ne mogu biti uklonjeni.
+`ODQ-PREDMET-HISTORY-VISIBILITY-003` je zatvoren. Preostale owner odluke ostaju vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana; Codex prvo razrešava tehnička pitanja iz source-a, testova i migracija.

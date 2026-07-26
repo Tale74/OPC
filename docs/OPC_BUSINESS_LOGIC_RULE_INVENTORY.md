@@ -185,15 +185,15 @@ Recommended next action: Add focused boundary tests and a common positive-range 
 Name: PREDMET version/change-log overview requirement
 Status: OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED
 Domain: PREDMET review / version history
-Rule statement: PREDMET should have a document/versioning overview that shows version history or change-log information relevant to business review and confirmation.
+Rule statement: PREDMET should have a document/versioning overview in `Pregled i potvrda`. The user-visible log shows significant lifecycle/import events and, where useful, changed business segments. It does not expose raw previous/new PREDMET values or every individual input action. Technical save/version checkpoints remain hidden and separate.
 Evidence classification: OWNER DECISION
 Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
-Current implementation state: Requirement recorded only. No change-log database model, UI, JSON schema, import behavior, or source behavior is implemented by this task.
+Current implementation state: Requirement and visibility granularity are recorded only. Current UI has no event list, and current snapshot rows are technical checkpoints containing broad PREDMET data.
 Windows/Android parity: Future overview must preserve equivalent business meaning on both platforms.
 JSON/PDF/UI relevance: Intended as PREDMET UI review behavior; JSON/PDF implications require later design.
 Future Web/sync relevance: Important for explaining version history and conflict choices.
 Risk if changed: Users may lack business context for confirming or replacing a PREDMET version.
-Open questions: Source of change-log data, exact non-import business events to include, snapshot retention/privacy, and migration requirements. Individual JSON log transfer and replacement log deletion are closed by owner decision.
+Open questions: Exact event taxonomy after technical design proof, retention through anonymization/deletion, snapshot migration/privacy, and implementation compatibility. Individual JSON transfer, replacement preservation and user-visible granularity are closed by owner decision.
 Recommended next action: Audit current lifecycle/version/log data before adding any model or UI.
 
 ## RULE-ID: OPC-RULE-PREDMET-REVIEW-001

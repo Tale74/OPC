@@ -172,3 +172,16 @@ Raw prethodne i nove vrednosti ne preporučuju se za UI ili audit event bez pose
 ## 13. Status
 
 `LOGIZMENA TECHNICAL AUDIT PASS — CHECKPOINT AND AUDIT RESPONSIBILITIES MUST BE SEPARATED — OWNER EVENT-VISIBILITY DECISION REQUIRED`
+
+## 14. Owner closure
+
+Owner je nakon ovog audita prihvatio Codex preporuku:
+
+- korisnički pregled prikazuje značajne lifecycle/import događaje;
+- događaj može navesti promenjene poslovne segmente;
+- ne prikazuju se sirove prethodne/nove vrednosti niti svaki pojedinačni unos;
+- tehnički checkpoint ostaje skriven i odvojen.
+
+Status pitanja iz odeljka 12:
+
+`CLOSED — OWNER DECISION RECORDED — IMPLEMENTATION NOT AUTHORIZED`

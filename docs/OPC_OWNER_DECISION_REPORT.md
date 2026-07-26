@@ -135,6 +135,20 @@ Current source does not yet satisfy the replacement rule: it deletes the existin
 
 Technical audit must also classify current snapshot entries in `staraVrednost` / `novaVrednost`, their privacy and retention implications, and the minimum event metadata needed without treating raw PREDMET snapshots as a second source of truth.
 
+## Addendum - User-Visible `logIzmena` Granularity
+
+Owner decision:
+
+- the future user-visible `logIzmena` belongs in `Pregled i potvrda`;
+- it displays significant lifecycle/import events;
+- where useful, an event may identify changed business segments;
+- it does not display raw previous/new PREDMET values;
+- it does not display every keystroke or individual input action;
+- the technical save/version checkpoint remains hidden and technically separate from the user-facing audit event;
+- neither checkpoint nor audit log becomes a parallel source of PREDMET business truth.
+
+Exact event taxonomy, segment-diff derivation, migration, retention implementation and Windows/Android presentation remain Codex technical-design and validation work under a future authorized task.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

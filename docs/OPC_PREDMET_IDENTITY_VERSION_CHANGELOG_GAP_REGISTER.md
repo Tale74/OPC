@@ -30,6 +30,8 @@ Risk if misunderstood: current UI could be overclaimed as complete audit trail.
 Blocked behavior changes: review change-log display, conflict authority, sync/audit interpretation.
 Classification: `IMPLEMENTATION GAP / OWNER DECISION EXISTS / TECHNICAL AUDIT REQUIRED`.
 
+Owner visibility decision: future `Pregled i potvrda` shows significant lifecycle/import events and changed business segments without raw previous/new PREDMET values or per-keystroke history. Technical checkpoint remains hidden and separate.
+
 ## GAP-ID: OPC-PREDMET-LIV-GAP-004
 
 Area: replacement import log retention.
