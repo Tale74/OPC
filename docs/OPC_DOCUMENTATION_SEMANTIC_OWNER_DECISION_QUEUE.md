@@ -92,6 +92,16 @@ Tehnički audit: `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`.
 
 Korekcija: povučeni su predlog novog source-FIRMA identity bloka, same-firm korisnička potvrda i dve pogrešno otvorene owner odluke. Dalji rad je tehnički audit/implementation proof, ne owner business pitanje.
 
+Local-user transfer audit: `docs/OPC_LOCAL_USER_IDENTITY_AND_PREDMET_TRANSFER_REBIND_AUDIT.md`.
+
+Code-first closure:
+
+- source-local `savetnikId`/creator/modifier brojevi nisu prenosivi autoritet;
+- novi individualni import vezuje lokalni ownership za aktivnog prijavljenog lokalnog korisnika;
+- replacement zadržava lokalnog savetnika/creator-a i beleži lokalnog replacement actor-a;
+- full backup ostaje zaseban transfer cele FIRMA/user/PREDMET porodice;
+- nema preostalog owner pitanja za ovaj tehnički mapping.
+
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 
 - retention poslovno vidljivih događaja;

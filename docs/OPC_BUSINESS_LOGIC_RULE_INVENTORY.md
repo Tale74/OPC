@@ -359,18 +359,18 @@ Recommended next action: Add focused finance rule tests in a future implementati
 ## RULE-ID: OPC-RULE-USER-001
 
 Name: Local users, administrators, and advisers
-Status: PARTIALLY IMPLEMENTED / TECHNICAL AUDIT REQUIRED
+Status: PARTIALLY IMPLEMENTED / CODE-FIRST TECHNICAL AUDIT COMPLETE / IMPLEMENTATION GAP
 Domain: Users / roles
 Rule statement: Current app has local users with `ADMINISTRATOR` and `SAVETNIK` roles, PIN login, first-admin creation, active/inactive status, and safeguards against removing the last active administrator.
 Evidence classification: SOURCE-CONFIRMED / TEST-CONFIRMED
 Evidence locations: `lib/core/database/tables/korisnici_table.dart`; `lib/features/auth/data/auth_repository.dart`; `lib/features/auth/domain/session_service.dart`; auth and STANJE ROBE tests
-Current implementation state: Local user/role behavior exists. Stable firm/license role architecture is not implemented.
+Current implementation state: Local user/role behavior exists. New PREDMET binds adviser/creator to the authenticated local user. Individual JSON incorrectly copies source-local user IDs without destination rebinding; permanent-deletion reference checks omit creator/last-modifier-only references.
 Windows/Android parity: Shared source.
 JSON/PDF/UI relevance: `savetnikId`, `createdByKorisnikId`, and `lastBusinessModifiedByKorisnikId` are PREDMET metadata and backup data.
 Future Web/sync relevance: Critical; local IDs are not enough for cross-device stable identity.
 Risk if changed: Loss of audit/history continuity.
-Open questions: Stable user identity and historical signatures.
-Recommended next action: Administrator/Savetnik stable ID audit.
+Open questions: None for current OPC v.1 business policy. Future Web/sync stable user identity remains separately deferred.
+Recommended next action: Separately authorized implementation/characterization for destination-local user rebinding and complete deletion-reference guards.
 
 ## RULE-ID: OPC-RULE-PACKAGE-001
 
