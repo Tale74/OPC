@@ -18,16 +18,16 @@ Reads from other modules: local user/session defaults, settings defaults, IRiU i
 May write to: PREDMET row, logs, lifecycle rows, related cleanup through repository flows.
 Must not write to: derivative outputs as independent truth.
 Outputs: source data for all modules and derivatives.
-Allowed side effects: create/save/close/reopen/finish/anonymize/delete according to current repository behavior.
+Allowed side effects: create/save/close/reopen/finish/anonymize/delete only through the characterized PREDMET lifecycle/dependent-data boundary.
 Forbidden side effects: redefining PREDMET meaning through Web, PDF, JSON, package, finance, or stock work.
 Truth boundary: only master business truth.
 Pseudocode sections: `OPC-PSEUDO-001`, `OPC-PSEUDO-002`, `OPC-PSEUDO-018`, `OPC-PSEUDO-019`.
-Characterization evidence needed: lifecycle/version/log coverage and runtime parity.
+Characterization evidence needed: referential/dependent-data technical design is complete; implementation/migration/runtime parity remain.
 Web readiness relevance: critical.
 Upgrade risk: all modules depend on it.
-Implementation blocked until: behavior change has characterization and owner-approved rule change.
-Evidence: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_MODULE_RELATIONSHIP_MAP.md`; `docs/OPC_PREDMET_WORKFLOW_ATLAS.md`.
-Classification: `DOCUMENTED POLICY / SOURCE-CONFIRMED`.
+Implementation blocked until: separate implementation authorization and migration/recovery proof; owner decision only when business policy changes.
+Evidence: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_MODULE_RELATIONSHIP_MAP.md`; `docs/OPC_PREDMET_WORKFLOW_ATLAS.md`; `docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
+Classification: `DOCUMENTED POLICY / SOURCE-CONFIRMED / REFERENTIAL DEFECTS CONFIRMED`.
 
 ## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-002
 
@@ -333,16 +333,16 @@ Reads from other modules: DB/repositories and backup payload.
 May write to: broad local data during restore.
 Must not write to: wrong firm database without guard; no behavior change in this task.
 Outputs: backup JSON and restore result.
-Allowed side effects: destructive restore only through authorized current flow.
+Allowed side effects: destructive restore only through an authorized exact-family clear/import/recovery flow.
 Forbidden side effects: hidden cross-firm restore or sync substitute.
 Truth boundary: recovery layer; not product center.
 Pseudocode sections: `OPC-PSEUDO-013`, `OPC-PSEUDO-019`, `OPC-PSEUDO-021`.
-Characterization evidence needed: PIB/MB guard and destructive restore behavior.
+Characterization evidence needed: destructive dependent-table behavior is characterized; PIB/MB guard, implementation/migration and restore rehearsal remain.
 Web readiness relevance: critical.
 Upgrade risk: data loss/wrong-firm restore.
 Implementation blocked until: repository identity guard audit.
-Evidence: `docs/OPC_MODULE_RELATIONSHIP_MAP.md`; `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md`.
-Classification: `DOCUMENTED POLICY / POLICY EXISTS / IMPLEMENTATION NOT FOUND`.
+Evidence: `docs/OPC_MODULE_RELATIONSHIP_MAP.md`; `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md`; `docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
+Classification: `DOCUMENTED POLICY / SOURCE-CONFIRMED RESTORE DEFECTS / IMPLEMENTATION BLOCKED`.
 
 ## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-017
 

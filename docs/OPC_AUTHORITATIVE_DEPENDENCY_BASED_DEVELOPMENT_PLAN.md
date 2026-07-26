@@ -549,6 +549,14 @@ Buduća odobrena implementacija mora obuhvatiti:
 Globalno uključivanje `PRAGMA foreign_keys = ON` ostaje zaseban širi integrity
 audit posle inventara svih relacija i postojećih orphan redova.
 
+Taj širi audit je završen:
+`docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
+
+Fixture dokaz potvrđuje FK-off runtime, orphan PARTE/reminder redove,
+anonymization privacy ostatke i full-restore dependent-data rizik. Zbog toga
+PODSETNIK orphan implementacija ne sme biti izolovan UI/repository patch.
+Najpre se primenjuje auditovani progressive lifecycle/referential refactor red.
+
 ### 10.2 Windows multiple-instance zaštita
 
 Samo posle architecture odluke:
@@ -717,19 +725,10 @@ Samo za lifecycle-eligible PREDMET:
 
 ## 15. Phase 5 — dovršavanje postojećih funkcija
 
-### 15.1 PODSETNIK model i notifications
+### 15.1 Kompletan signalni model
 
-Posle orphan i lifecycle korekcija:
-
-- active/due/missed/completed/cancelled model;
-- closed-app delivery;
-- restart/reboot recovery;
-- permission denied;
-- no duplicates;
-- tap vodi samo na postojeći PREDMET;
-- Windows i Android jednaka poslovna funkcija uz različit OS mehanizam gde je potrebno.
-
-### 15.2 Completion signali
+Pre povratka na poslovni PODSETNIK model mora se inventarisati i dokazati ceo
+skup signala:
 
 - narandžasto prazno;
 - žuto delimično;
@@ -737,8 +736,29 @@ Posle orphan i lifecycle korekcija:
 - ikona/tekst pored boje;
 - scenario-dependent relevantna polja;
 - N/A i opciona polja;
-- izračunato iz PREDMETA/IRiU;
+- lifecycle eligibility;
+- nedostajuća obavezna PREDMET/SCENARIO polja;
+- IRiU complete/exception stanje;
+- rok/due/missed kandidat;
+- izračunato iz PREDMETA/SCENARIO/IRiU;
 - nema paralelnog skladištenog truth statusa.
+
+Codex tehnički mapira izvore i zavisnosti. Owner potvrđuje koji signali imaju
+poslovno značenje za informisani podsetnik.
+
+### 15.2 Povratak na PODSETNIK model i notifications
+
+Tek posle orphan/lifecycle korekcija i owner-potvrđenog kompletnog signalnog
+modela:
+
+- informed reminder trigger mapa;
+- active/due/missed/completed/cancelled model;
+- closed-app delivery;
+- restart/reboot recovery;
+- permission denied;
+- no duplicates;
+- tap vodi samo na postojeći PREDMET;
+- Windows i Android jednaka poslovna funkcija uz različit OS mehanizam gde je potrebno.
 
 ### 15.3 Single-PREDMET JSON relokacija
 
@@ -1061,4 +1081,4 @@ Do potpunog Gate 0 closure-a status ostaje:
 
 ## 25. Jednolinijski dependency red
 
-**Gate 0 documentation/Git governance → full code/architecture review → PREDMET source-to-truth/dependency mapa → integrity, platform, performance, scenario, UI i migration evidence → Architecture/refactor/rewrite Decision Gate po Decision Authority Matrix-u → potvrđene integrity/performance korekcije → historical/completed PREDMET lifecycle odluka i uklanjanje automatskog ZAVRŠEN → korekcija sadašnjih scenario/IRiU grešaka → user-editable SCENARIO i PODEŠAVANJA → dovršavanje PODSETNIKA/signala/JSON/dokumenata/PDF/RAČUN/tema → MODUL DVE VALUTE → dokazani progressive refactor/partial rewrite → First Product-Line Gate: stabilni OPC v.1 Srbija → non-blocking Stage 2 cleanup kada opravdan → Second Product-Line Gate: OPC_v.1_Int → i18n/country/multicurrency profiles → signing i professional handover closure.**
+**Gate 0 documentation/Git governance → full code/architecture review → PREDMET source-to-truth/dependency mapa → integrity, platform, performance, scenario, UI i migration evidence → Architecture/refactor/rewrite Decision Gate po Decision Authority Matrix-u → potvrđene integrity/performance korekcije → historical/completed PREDMET lifecycle odluka i uklanjanje automatskog ZAVRŠEN → korekcija sadašnjih scenario/IRiU grešaka → user-editable SCENARIO i PODEŠAVANJA → kompletan signalni model → informed PODSETNIK → JSON/dokumenti/PDF/RAČUN/tema → MODUL DVE VALUTE → dokazani progressive refactor/partial rewrite → First Product-Line Gate: stabilni OPC v.1 Srbija → non-blocking Stage 2 cleanup kada opravdan → Second Product-Line Gate: OPC_v.1_Int → i18n/country/multicurrency profiles → signing i professional handover closure.**

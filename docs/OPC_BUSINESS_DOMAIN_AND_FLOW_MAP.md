@@ -38,6 +38,13 @@ This document is documentation only. It maps domains, ownership, dependencies, s
 - Korisnici owns local users/roles; future stable firm/license identities are unresolved.
 - JSON/PDF own transfer/rendering representations only, not master truth.
 
+Dependent-data lifecycle map:
+`docs/OPC_PREDMET_DEPENDENT_DATA_LIFECYCLE_MATRIX.md`.
+
+Current fixture evidence confirms that declared SQLite cascades are not
+runtime-enforced. PREDMET lifecycle therefore requires explicit orchestration
+until cleanup/migration proof permits foreign-key enforcement.
+
 ## 3. Domain Inputs
 
 | Domain | Inputs |
@@ -75,6 +82,18 @@ This document is documentation only. It maps domains, ownership, dependencies, s
 - PDF depends on PREDMET, IRIU, FirmaPodaci, and adviser/user data.
 - JSON depends on PREDMET, IRIU, contacts, and selected STANJE ROBE consequence state.
 - Future Web/sync depends on unresolved identity, replica, version, and data ownership rules.
+
+### PREDMET dependent-data integrity
+
+- contacts, IRiU, lifecycle decisions and log are direct PREDMET children;
+- PARTE preparation is a media-bearing technical derivative;
+- PODSETNIK configuration and OS schedule are operational derivatives;
+- stock consequence/effect lifecycle requires compensation, not blind cascade;
+- anonymization must remove PII from technical derivatives, not only PREDMET
+  columns;
+- replacement must invalidate/reschedule old-state derivatives;
+- full restore must clear/import an exact portable family and preserve
+  explicitly installation-local state only.
 
 ## 6. Domain Source Files / Modules
 

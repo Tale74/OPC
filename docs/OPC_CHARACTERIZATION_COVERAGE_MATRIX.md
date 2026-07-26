@@ -16,15 +16,18 @@ Source files: `predmeti_repository.dart`; `predmet_screen.dart`; `lista_predmeta
 Existing tests: `test/lista_predmeta_screen_smoke_test.dart`; partial related JSON/STANJE ROBE tests
 Runtime evidence: not fully current for all lifecycle actions
 Documentation evidence: PREDMET workflow atlas; module contracts; domain flow map
-Current evidence level: SOURCE-CONFIRMED / TEST GAP / RUNTIME GAP / CHARACTERIZATION REQUIRED
+Current evidence level: SOURCE-CONFIRMED / REFERENTIAL FIXTURE-CONFIRMED / TEST GAP / RUNTIME GAP
 Protected behavior: lifecycle actions must preserve PREDMET as master truth.
 What must not change: status/version/log semantics without characterization.
 Future upgrade risk: lifecycle drift affects JSON, review, Web/sync, documents.
-Characterization needed before change: full lifecycle matrix and parity evidence.
+Characterization needed before change: lifecycle/dependent-data matrix is complete; committed migration/recovery tests and runtime parity remain.
 Owner decision required: yes for lifecycle policy changes.
-Technical audit required: completed for orphan correction; broader business model and global foreign-key enforcement remain separate.
+Technical audit required: referential/dependent-data design complete; historical lifecycle business policy remains separate.
 Web readiness relevance: critical.
-Classification: `SOURCE-CONFIRMED / CHARACTERIZATION REQUIRED`.
+Classification: `SOURCE/FIXTURE-CONFIRMED DEFECTS / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION BLOCKED`.
+
+Technical closure:
+`docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
 
 ## CHARACTERIZATION-ID: OPC-CHAR-002
 
@@ -436,15 +439,18 @@ Source files: `json_export_import.dart`; backup docs
 Existing tests: partial JSON/stock safety tests
 Runtime evidence: not current
 Documentation evidence: backup public summary; stop-list; owner decisions
-Current evidence level: DOCUMENTED POLICY / POLICY EXISTS / IMPLEMENTATION NOT FOUND / TECHNICAL AUDIT REQUIRED
+Current evidence level: SOURCE-CHARACTERIZED / REFERENTIAL DEFECTS CONFIRMED / IDENTITY GUARD STILL REQUIRED
 Protected behavior: broad restore must be safe and explicit.
 What must not change: no wrong-firm destructive restore.
 Future upgrade risk: data loss.
-Characterization needed before change: PIB/MB guard and destructive restore flows.
+Characterization needed before change: destructive table lifecycle is characterized; PIB/MB guard, exact migration/recovery tests and restore rehearsal remain.
 Owner decision required: yes for exceptions.
-Technical audit required: yes.
+Technical audit required: referential/dependent-data audit complete; FIRMA identity guard remains separate.
 Web readiness relevance: critical.
-Classification: `TECHNICAL AUDIT REQUIRED / IMPLEMENTATION BLOCKED`.
+Classification: `SOURCE-CONFIRMED RESTORE DEFECTS / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION BLOCKED`.
+
+Technical closure:
+`docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
 
 ## CHARACTERIZATION-ID: OPC-CHAR-023
 
@@ -562,7 +568,7 @@ What must not change: no orphan SQLite/OS state, guessed relinking, notification
 Future upgrade risk: stale deleted-PREDMET identity, local-ID reassociation after restore, platform/runtime drift.
 Characterization needed before change: implementation design is complete for orphan correction; focused tests and Android/Windows runtime proof remain.
 Owner decision required: no for orphan integrity correction; yes only for later expanded business tracking model.
-Technical audit required: yes.
+Technical audit required: completed for orphan integrity; complete signal/business model remains later.
 Web readiness relevance: medium.
 Classification: `SOURCE-CONFIRMED ROOT CAUSE / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION AND RUNTIME PROOF REQUIRED`.
 
