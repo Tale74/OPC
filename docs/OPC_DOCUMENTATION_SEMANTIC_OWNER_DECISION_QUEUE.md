@@ -75,28 +75,22 @@ Owner je zaključio:
 
 ## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
-### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope — `POLICY CLOSED / TECHNICAL AUDIT COMPLETE`
+### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope — `CLOSED / TECHNICAL CORRECTION COMPLETE`
 
 Već zaključano owner odlukom i potvrđeno code-first auditom:
 
 - `brojPredmeta` je jedinstven samo unutar iste FIRMA;
 - budući bezbedni scope je `PIB + Matični broj + brojPredmeta`;
-- single-PREDMET JSON mora dobiti mali source-FIRMA identity blok;
+- lokalna baza i njeni administratorom odobreni korisnici već predstavljaju FIRMA granicu;
+- PREDMET pripada toj FIRMA kroz `savetnikId`/creator vezu sa lokalnim korisnikom;
+- single-PREDMET import mora tehnički razrešiti/rebindovati source-local korisničke ID-jeve na aktivnog lokalnog korisnika i ne sme ih tretirati kao prenosivi autoritet;
 - koliziju lokalnog generisanja rešava aplikacija atomski, bez prebacivanja tehničke posledice na korisnika;
 - mismatch PIB/MB blokira import/restore bez override-a;
 - `verzija`, lokalni `id`, filename i export metadata nisu identity ključevi.
 
 Tehnički audit: `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`.
 
-Preostale su samo dve poslovne odluke:
-
-#### `ODQ-PREDMET-IDENTITY-LEGACY-001`
-
-Tretman starog single-PREDMET JSON-a bez source-FIRMA identity bloka: blokada, uvoz samo kao novi PREDMET ili eksplicitna potvrda iste FIRMA pre normalnog conflict toka.
-
-#### `ODQ-FIRMA-IDENTITY-HISTORY-001`
-
-Da li promena PIB/MB predstavlja korekciju identiteta iste FIRMA ili prelazak na novu FIRMA/database family.
+Korekcija: povučeni su predlog novog source-FIRMA identity bloka, same-firm korisnička potvrda i dve pogrešno otvorene owner odluke. Dalji rad je tehnički audit/implementation proof, ne owner business pitanje.
 
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 

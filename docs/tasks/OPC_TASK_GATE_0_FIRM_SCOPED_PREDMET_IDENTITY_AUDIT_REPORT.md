@@ -4,6 +4,8 @@ Status: `DOCS-ONLY CODE-FIRST AUDIT`
 
 Date: 2026-07-26
 
+Correction status: `CORRECTED BY task/OPC-GATE-0-FIRM-IDENTITY-ADVISER-LINK-CORRECTION`
+
 Base branch: `task/OPC-GATE-0-CLOSE-CONFIRMED-BUSINESS-VERSION-OWNER-DECISION`
 
 Base SHA: `d7b906339b45309164e49fd26023f87881e63552`
@@ -35,12 +37,15 @@ Continuity indexes and decision queues updated by this task:
 ## Main Findings
 
 - current `brojPredmeta` generation has minute precision and no unique DB guard;
-- single-PREDMET JSON does not carry FIRMA identity;
+- the local database and its administrator-approved users already provide the current FIRMA ownership boundary;
+- PREDMET already links to that boundary through `savetnikId`/creator metadata;
+- single-PREDMET JSON carries source-local user IDs that are not portable authority in another database;
 - current conflict lookup uses only `brojPredmeta`;
 - full backup carries FIRMA data but does not compare PIB/MB before destructive replacement;
-- mutable singleton `FirmaPodaci` has no historical identity model;
 - targeted refactor/migration is sufficient; rewrite is not supported by this evidence;
-- two owner decisions remain: legacy transfer without FIRMA identity and PIB/MB correction versus identity transition.
+- no new owner decision is required;
+- the first recommendation for a new source-FIRMA block and same-firm owner attestation is withdrawn;
+- the corrected technical requirement is destination-local adviser/actor rebinding plus the separate full-backup PIB/MB preflight.
 
 ## Controls
 
@@ -58,4 +63,4 @@ The final Git completion response records:
 
 ## Result
 
-`FIRM-SCOPED PREDMET IDENTITY CODE-FIRST AUDIT COMPLETE — IMPLEMENTATION NOT AUTHORIZED`
+`FIRM-SCOPED PREDMET IDENTITY AUDIT CORRECTED — EXISTING PREDMET/USER/FIRMA LINK PRESERVED — IMPLEMENTATION NOT AUTHORIZED`
