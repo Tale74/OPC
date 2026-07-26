@@ -149,6 +149,22 @@ Owner decision:
 
 Exact event taxonomy, segment-diff derivation, migration, retention implementation and Windows/Android presentation remain Codex technical-design and validation work under a future authorized task.
 
+## Addendum - Close-Confirmed PREDMET Business Version
+
+Owner decision:
+
+- `verzija` identifies a user-confirmed PREDMET business state;
+- a new PREDMET starts at `v1`;
+- ordinary save is a working checkpoint and does not increment business `verzija`;
+- reopen alone does not increment business `verzija`;
+- confirmed close after a canonical PREDMET aggregate business change increments `verzija`;
+- confirmed close without aggregate business change does not increment `verzija`;
+- lifecycle/import events are recorded separately in local `logIzmena`;
+- replacement adopts the explicitly selected imported business `verzija`;
+- `exportVerzija` remains separate transfer metadata.
+
+Canonical aggregate coverage, checkpoint migration, SCENARIO/IRiU/contact projection, lifecycle-event taxonomy, tests and Windows/Android parity are Codex technical-design responsibilities constrained by PREDMET authority. Current source coverage defects are not approved behavior.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

@@ -198,3 +198,19 @@ Under the recommended model:
 ## 13. Status
 
 `PREDMET BUSINESS VERSION MATRIX AUDIT PASS — AGGREGATE COVERAGE DEFECTS CONFIRMED — CLOSE-CONFIRMED VERSION OWNER DECISION REQUIRED`
+
+## 14. Owner closure
+
+Owner je prihvatio close-confirmed model iz odeljka 12:
+
+- novi PREDMET počinje kao `v1`;
+- ordinary save je radni checkpoint;
+- reopen sam ne povećava verziju;
+- zatvaranje posle canonical aggregate promene povećava verziju;
+- zatvaranje bez aggregate promene ne povećava verziju;
+- lifecycle/import događaji ostaju odvojeni;
+- replacement preuzima izabranu uvoznu verziju.
+
+Status owner pitanja:
+
+`CLOSED — OWNER DECISION RECORDED — TECHNICAL COVERAGE DEFECTS REMAIN — IMPLEMENTATION NOT AUTHORIZED`

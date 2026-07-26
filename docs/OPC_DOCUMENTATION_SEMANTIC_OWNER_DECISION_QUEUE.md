@@ -60,6 +60,19 @@ Owner je zaključio:
 - ne beleži svaki pojedinačni unos;
 - tehnički save/version checkpoint ostaje skriven i odvojen.
 
+### `ODQ-PREDMET-VERSION-002` — close-confirmed business version — `CLOSED`
+
+Owner je zaključio:
+
+- novi PREDMET počinje kao `v1`;
+- ordinary save je radni checkpoint bez povećanja poslovne verzije;
+- reopen sam ne povećava verziju;
+- potvrđeno zatvaranje povećava verziju samo posle promene canonical PREDMET aggregate-a;
+- zatvaranje bez aggregate promene ne povećava verziju;
+- lifecycle/import događaji ostaju odvojeni lokalni log događaji;
+- replacement preuzima eksplicitno izabranu uvoznu verziju;
+- `exportVerzija` ostaje transfer metadata.
+
 ## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
 ### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope
@@ -67,16 +80,6 @@ Owner je zaključio:
 - Da li je `brojPredmeta` jedinstven unutar jedne FIRMA/database family?
 - Kako UI postupa pri koliziji: blokira, regeneriše ili traži kontrolisanu owner/user odluku?
 - Da li single-PREDMET JSON mora nositi FIRMA identity metadata?
-
-### `ODQ-PREDMET-VERSION-002` — version/freshness konflikt
-
-- Da li poslovna `verzija` nastaje samo potvrđenim zatvaranjem, dok ordinary save ostaje radni checkpoint?
-
-Već zaključano: `verzija` je business-revision signal; viša/niža/ista verzija daje upozorenje/klasifikaciju, a `keep / replace / cancel` ostaje eksplicitna korisnička odluka bez silent overwrite-a.
-
-Source fact-check je uklonio missing/null/wrong-type `verzija` iz owner queue-a: typed deserialization odbija takav transfer pre DB mutacije. Eksplicitni `verzija >= 1` boundary ostaje tehnički validation/test dug.
-
-Code-first matrix audit je potvrdio da current close-only comparator ne obuhvata SCENARIO, IRiU ni kontakte. Ispravka aggregate coverage-a pripada Codex tehničkom domenu; owner odlučuje samo trenutak potvrde poslovne verzije.
 
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 
@@ -149,8 +152,9 @@ Već zaključano:
 - PDF RAČUN FIRMA toggle bez poreske logike;
 - individualni PREDMET JSON ne prenosi `logIzmena`; import/replacement događaji beleže se lokalno;
 - korisnički change-log prikazuje značajne događaje i promenjene segmente bez sirovih starih/novih vrednosti;
+- business `verzija` nastaje potvrđenim zatvaranjem promenjenog canonical PREDMET aggregate-a, ne ordinary save-om;
 - Git history rewrite nije odobren.
 
 ## 5. Trenutno tražena owner akcija
 
-Neposredno sledeća owner obaveza je potvrda close-confirmed business-version granice iz `ODQ-PREDMET-VERSION-002`. Ostale odluke ostaju vremenski vezane za odgovarajuće etape; Codex prvo razrešava tehnička pitanja iz source-a, testova i migracija.
+`ODQ-PREDMET-VERSION-002` je zatvoren. Preostale owner odluke ostaju vremenski vezane za odgovarajuće etape; Codex prvo razrešava tehnička pitanja iz source-a, testova i migracija.

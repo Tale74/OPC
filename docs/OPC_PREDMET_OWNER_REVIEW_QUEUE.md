@@ -63,7 +63,6 @@ This is a consolidation pass, not a new source audit. It cites the characterizat
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | ODR-001 | Lifecycle policy changes | Lifecycle actions are source-confirmed with gaps. | Whether any lifecycle policy meaning should change. | Lifecycle affects PREDMET truth, JSON, review, Web/sync, and documents. | Status/version/log drift. | YES for lifecycle behavior changes. | `OPC_CHARACTERIZATION_COVERAGE_MATRIX.md` `OPC-CHAR-001` |
 | ODR-002 | PREDMET identity policy | `brojPredmeta` is current local conflict key; future-safe identity is firm-scoped. | Identity policy for any future guard or conflict change. | Prevents wrong-firm conflict or sync collision. | Global `brojPredmeta` assumption. | YES. | `OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md` `OPC-PREDMET-LIV-GAP-005` |
-| ODR-003 | Business-version confirmation boundary | `verzija` is business-version signal; current UI/source create revisions only through confirmed close. Audit proves aggregate coverage defects. | Confirm whether ordinary save is only a working checkpoint and confirmed close is the business-version boundary. | Canonical fingerprint and future conflict UI require stable version meaning. | Noisy save-based versions or unchanged version after confirmed business change. | YES. | `OPC_PREDMET_BUSINESS_VERSION_MATRIX_AUDIT.md` section 12 |
 | ODR-006 | Filename/export metadata authority | Filename, `exportDatum`, and `exportVerzija` are metadata, not authority. | Any future change to import warning authority or displayed metadata meaning. | Prevents metadata from becoming hidden identity/freshness truth. | Filename/date used as canonical authority. | YES for import warning changes. | `OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md` `OPC-PREDMET-LIV-GAP-006` |
 | ODR-007 | Future Web/sync identity | Web guardrails are policy-only; no implementation selected. | Owner-approved identity/conflict architecture before any implementation. | Preserves PREDMET truth and firm ownership. | Server-master or parallel-truth drift. | YES. | `OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md` `OPC-PREDMET-WEB-ID-009` |
 
@@ -169,7 +168,7 @@ Pseudocode docs unchanged; previous PREDMET pseudocode updates remain intact.
 
 - [ ] Owner decision required: lifecycle policy changes, if any.
 - [ ] Owner decision required: future firm-scoped PREDMET identity policy.
-- [ ] Owner decision required: version conflict warning/classification/hard-block policy, if any.
+- [x] Owner decision closed: business `verzija` is close-confirmed aggregate revision; ordinary save/reopen alone do not increment.
 - [x] Owner decision closed: user-visible log shows significant lifecycle/import events and changed segments without raw old/new values.
 - [ ] Owner decision required later: retention behavior through anonymization/deletion after technical design proof.
 - [x] Owner decision closed: individual JSON does not transfer `logIzmena`; replacement preserves local log and appends a local replacement event.

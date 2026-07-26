@@ -20,7 +20,8 @@ Area: business `verzija` increment matrix.
 Current evidence: close path conditionally increments based on a raw PREDMET-row snapshot comparison; ordinary save/reopen do not increment. SCENARIO is explicitly excluded, and IRiU/contact rows are outside the snapshot.
 Risk if misunderstood: changed PREDMET aggregate truth can retain the same `verzija`, while UI/PDF/JSON present it as business revision.
 Blocked behavior changes: canonical aggregate fingerprint, version comparison, conflict warnings, review interpretation and lifecycle/version coupling.
-Classification: `SOURCE-CONFIRMED / COVERAGE DEFECT / TEST GAP / OWNER BOUNDARY / TECHNICAL DESIGN REQUIRED`.
+Owner decision: business `verzija` is confirmed on close; ordinary save is a working checkpoint, reopen alone does not increment, and close increments only after canonical aggregate change.
+Classification: `SOURCE-CONFIRMED / COVERAGE DEFECT / TEST GAP / OWNER DECISION EXISTS / TECHNICAL DESIGN REQUIRED`.
 
 Technical audit closure reference: `docs/OPC_PREDMET_BUSINESS_VERSION_MATRIX_AUDIT.md`.
 

@@ -71,9 +71,9 @@ Recommended next action: Preserve distinction in future import/export docs.
 ## RULE-ID: OPC-RULE-VERSION-001
 
 Name: `verzija` is PREDMET business-version signal
-Status: OWNER DECISION / TECHNICAL AUDIT REQUIRED
+Status: OWNER DECISION / SOURCE CURRENT COVERAGE DEFECT / TECHNICAL DESIGN REQUIRED
 Domain: Versioning
-Rule statement: `verzija` is the relevant future version/revision signal for PREDMET business-state reasoning. It is not export time, filename identity, firm identity, global identity, or proof by itself that automatic overwrite is safe.
+Rule statement: `verzija` identifies a user-confirmed PREDMET business state. New PREDMET starts at `v1`; ordinary save is a working checkpoint; reopen alone does not increment; confirmed close increments only after canonical PREDMET aggregate business change. It is not export time, filename identity, firm identity, global identity, or proof by itself that automatic overwrite is safe.
 Evidence classification: OWNER DECISION / SOURCE-CONFIRMED / TEST GAP
 Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/utils/json_export_import.dart`; `lib/features/predmeti/pdf/predmet_pdf_snapshot_export.dart`
 Current implementation state: Defined on PREDMET with default 1; incremented on confirmed close when the raw PREDMET-row checkpoint changes; exported/imported with PREDMET; displayed in conflict dialog and PDFs. Current checkpoint excludes SCENARIO and all IRiU/contact rows, so business aggregate changes can retain the same version.
@@ -81,8 +81,8 @@ Windows/Android parity: Shared source.
 JSON/PDF/UI relevance: JSON, conflict UI, and PDF snapshot include it.
 Future Web/sync relevance: Critical candidate for conflict reasoning.
 Risk if changed: Wrong freshness/overwrite behavior.
-Open questions: Owner confirmation that close, not ordinary save, is the business-revision boundary. Aggregate field coverage, canonicalization and checkpoint migration are technical design work. Missing/null/wrong-type import is source-rejected.
-Recommended next action: Confirm close/save meaning, then design canonical PREDMET aggregate fingerprint and tests before implementation; preserve explicit import choice meanwhile.
+Open questions: None for close/save business meaning. Aggregate field coverage, canonicalization, checkpoint migration, lifecycle-event separation and tests are technical design work. Missing/null/wrong-type import is source-rejected.
+Recommended next action: Design canonical PREDMET aggregate fingerprint and full regression matrix before implementation; preserve explicit import choice meanwhile.
 
 ## RULE-ID: OPC-RULE-VERSION-002
 
