@@ -81,7 +81,7 @@ Windows/Android parity: Shared source.
 JSON/PDF/UI relevance: JSON, conflict UI, and PDF snapshot include it.
 Future Web/sync relevance: Critical candidate for conflict reasoning.
 Risk if changed: Wrong freshness/overwrite behavior.
-Open questions: Missing/malformed version policy, same-version behavior, higher/lower-version warnings, and whether business snapshots should be part of version authority.
+Open questions: Same-version behavior, higher/lower-version warnings, and whether business snapshots should be part of version authority. Missing/null/wrong-type import is source-rejected and is not an owner policy question.
 Recommended next action: Separate version semantics design before implementation; preserve explicit user choice meanwhile.
 
 ## RULE-ID: OPC-RULE-VERSION-002
@@ -153,7 +153,7 @@ Recommended next action: Use JSON content and owner-approved version design, not
 Name: Version conflict policy matrix
 Status: OWNER DECISION / IMPLEMENTATION REQUIRED
 Domain: Versioning / single-PREDMET JSON import
-Rule statement: Future same-PREDMET import conflict handling must classify imported higher, imported lower, same version, imported missing, imported malformed, and local missing/malformed `verzija` cases. The UI must show or warn about the relevant state, preserve explicit keep / replace / cancel choice unless a later owner decision authorizes a hard block, prevent silent overwrite, and must not use `exportDatum` as freshness authority.
+Rule statement: Future same-PREDMET import conflict handling may classify imported higher, imported lower and same valid integer `verzija`. The UI must preserve explicit keep / replace / cancel choice unless a later owner decision authorizes a hard block, prevent silent overwrite, and must not use `exportDatum` as freshness authority. Missing/null/wrong-type import is rejected before DB mutation and is not a conflict choice.
 Evidence classification: OWNER DECISION
 Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
 Current implementation state: Policy recorded only. Current inspected import behavior displays version metadata but has no approved comparator, warning matrix, automatic replacement, or hard block.
@@ -166,19 +166,19 @@ Recommended next action: Design and implement only under a separate JSON/version
 
 ## RULE-ID: OPC-RULE-VERSION-007
 
-Name: Missing/malformed version handling
-Status: OWNER DECISION / IMPLEMENTATION REQUIRED
+Name: Version import boundary validation
+Status: SOURCE-CONFIRMED / TECHNICAL VALIDATION GAP
 Domain: Versioning / JSON compatibility
-Rule statement: Missing or malformed imported `verzija`, and missing or malformed local `verzija`, must be treated as unknown or invalid version state. Future UI must warn or classify this state, preserve keep / replace / cancel unless a later owner decision authorizes a hard block, must not silently treat either side as newer, and must not fall back to `exportDatum` as authority.
-Evidence classification: OWNER DECISION
-Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
-Current implementation state: Policy recorded only. No source, schema, or import behavior changes were made by this rule entry.
+Rule statement: Official OPC export writes typed integer `verzija`. Missing, `null` or wrong-type imported `verzija` is rejected by typed deserialization before DB mutation and cannot become a successfully imported PREDMET. The single-PREDMET boundary does not explicitly enforce `verzija >= 1`; integer `0` or a negative value remains a technical validation/test gap.
+Evidence classification: OWNER CLARIFICATION / SOURCE-CONFIRMED / TEST GAP
+Evidence locations: `docs/OPC_PREDMET_VERSION_IMPORT_FACT_CHECK.md`; `lib/core/database/tables/predmeti_table.dart`; `lib/core/database/database.g.dart`; `lib/core/utils/json_export_import.dart`
+Current implementation state: Required integer type is enforced by deserialization; positive-range validation is not explicit.
 Windows/Android parity: Policy applies equally to Windows and Android.
 JSON/PDF/UI relevance: JSON import conflict and compatibility handling.
 Future Web/sync relevance: Critical for defensive conflict handling with older, damaged, or externally edited transfer files.
 Risk if changed: Unknown or invalid version data could be mistaken for authoritative business freshness.
-Open questions: Exact validation boundary and user-facing Serbian wording.
-Recommended next action: Add comparator/validation design and tests in a future implementation task.
+Open questions: None for business policy. Technical audit must confirm all supported legacy paths and the `>= 1` boundary.
+Recommended next action: Add focused boundary tests and a common positive-range guard only through a future authorized implementation task.
 
 ## RULE-ID: OPC-RULE-PREDMET-CHANGELOG-001
 

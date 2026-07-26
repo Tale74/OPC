@@ -48,11 +48,12 @@ Owner je zaključio:
 ### `ODQ-PREDMET-VERSION-002` — version/freshness konflikt
 
 - Koje polje je autoritet za freshness poređenje?
-- Kako se tretira missing/malformed verzija?
 - Kako se tretiraju ista, viša i niža verzija?
 - Da li zaštita ostaje warning + explicit keep/replace/cancel ili postoje slučajevi hard block-a?
 
 Do odluke ostaje važeće sadašnje eksplicitno `keep / replace / cancel`; automatsko zamenjivanje ili hard block nije odobren.
+
+Source fact-check je uklonio missing/null/wrong-type `verzija` iz owner queue-a: typed deserialization odbija takav transfer pre DB mutacije. Eksplicitni `verzija >= 1` boundary ostaje tehnički validation/test dug.
 
 ### `ODQ-PREDMET-HISTORY-003` — change-log i reopen/import history
 

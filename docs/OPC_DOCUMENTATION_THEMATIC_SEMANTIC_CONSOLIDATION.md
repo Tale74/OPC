@@ -25,11 +25,11 @@ Svih **704** reda ima sledljivu dispoziciju:
 | --- | ---: | --- |
 | `HISTORICAL_EVIDENCE_ONLY` | 101 | Naslovi i oznake nemaju samostalno normativno značenje. |
 | `CODEX_TECHNICAL_DISPOSITION` | 82 | Tehničko, arhitektonsko ili proceduralno pravilo u Codex authority domenu. |
-| `TECHNICAL_AUDIT_GOVERNED` | 3 | Rešava se dokaznim tehničkim auditom; owner zadržava izdavačku/distribucionu odluku. |
+| `TECHNICAL_AUDIT_GOVERNED` | 7 | Rešava se dokaznim tehničkim auditom; obuhvata signing i import-version boundary validation. |
 | `CURRENT_AUTHORITY_PRESERVED` | 25 | Sadržaj je zaštićen u aktuelnom authority skupu, uključujući zatvorene SCENARIO i terminološke odluke. |
 | `CONFLICT_RESOLVED_BY_CURRENT_OWNER` | 27 | Legacy PAKETI/licensing politika je supersedovana aktuelnom owner odlukom. |
 | `DEFERRED_OUT_OF_SCOPE` | 19 | OPC Web/server/sync navodi ne pripadaju aktuelnom implementacionom scope-u. |
-| `OWNER_DECISION_REQUIRED` | 265 | Grupisano u pet preostalih poslovnih klastera. |
+| `OWNER_DECISION_REQUIRED` | 261 | Grupisano u pet preostalih poslovnih klastera. |
 | `PROPOSED_BUSINESS_CHANGE` | 13 | Preporuke/pitanja nisu owner odluke. |
 | `INSUFFICIENT_CONTEXT_PROTECTED` | 169 | Fragment nema dovoljan kontekst za bezbedno uklanjanje izvora. |
 | **Ukupno** | **704** | Potpun kontrolni zbir. |
@@ -103,12 +103,12 @@ Status: poslovni smer je `CURRENT OWNER AUTHORITY`; document-by-document nasledn
 
 | Klaster | Redova | Zašto owner odluka ostaje potrebna |
 | --- | ---: | --- |
-| `PREDMET-IDENTITY-JSON` | 113 | `brojPredmeta` scope/uniqueness, version/freshness, konflikt politika, FIRMA metadata, change-log i import history. |
+| `PREDMET-IDENTITY-JSON` | 109 | Valid-version/freshness konflikt politika, FIRMA metadata, change-log i import history. Missing/null/wrong-type import je tehnički source-rejected slučaj. |
 | `IRiU-KATALOG-STOCK-BACKUP` | 85 | Full-backup stock politika, import/replace consequence reconciliation i legacy IRiU pravila bez jednog current naslednika. |
 | `AUTH-ROLE-LIFECYCLE` | 27 | PIN/recovery/admin-selection/role lifecycle tvrdnje nisu objedinjene u current authority dokumentu. |
 | `PREDMET-LIFECYCLE-PODSETNIK` | 23 | Tracking item, potvrda, odlaganje, reopen/override/history, notification action i status coupling. |
 | `STANDARD-DOCUMENT-DERIVATIVES` | 17 | Legacy PDF/DOCX specifična pravila treba pojedinačno potvrditi ili supersedovati tokom standard document audita. |
-| **Ukupno** | **265** | Owner odlučuje po klasterima, ne po pojedinačnim redovima. |
+| **Ukupno** | **261** | Owner odlučuje po klasterima, ne po pojedinačnim redovima. |
 
 ## 5. Tehničke i arhitektonske dispozicije
 

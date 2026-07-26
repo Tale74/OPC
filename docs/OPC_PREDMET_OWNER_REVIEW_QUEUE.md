@@ -118,7 +118,7 @@ This is a consolidation pass, not a new source audit. It cites the characterizat
 | Item ID | Area | What is not yet characterized | Why it matters | Related document section |
 | --- | --- | --- | --- | --- |
 | CR-001 | Full lifecycle matrix | Full create/save/close/reopen/finish/anonymize/delete behavior across tests/runtime. | PREDMET truth depends on lifecycle semantics. | `OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md` `OPC-PREDMET-LIV-GAP-001` |
-| CR-002 | JSON version/freshness warnings | Same/higher/lower/missing/malformed version behavior. | Conflict choices need accurate context. | `OPC_CHARACTERIZATION_GAP_REGISTER.md` `OPC-CHAR-GAP-010` |
+| CR-002 | JSON version/freshness warnings | Same/higher/lower valid-version behavior. Missing/null/wrong-type is source-rejected; `0`/negative is a technical range-validation gap. | Conflict choices need accurate context without treating invalid transfers as imported PREDMETI. | `OPC_CHARACTERIZATION_GAP_REGISTER.md` `OPC-CHAR-GAP-010` |
 | CR-003 | Filename/export metadata authority | How metadata is displayed/interpreted without becoming authority. | Prevents hidden identity/freshness drift. | `OPC_PREDMET_IDENTITY_VERSION_CHANGELOG_GAP_REGISTER.md` `OPC-PREDMET-LIV-GAP-006` |
 | CR-004 | Firm-scoped identity model | Firm identity/history and malformed/missing cases. | Future Web/sync and import/restore identity depend on it. | `OPC_CHARACTERIZATION_GAP_REGISTER.md` `OPC-CHAR-GAP-011` |
 | CR-005 | Version/change-log visibility | Increment coverage, log source, review suitability, retention, parity. | Future conflict reasoning needs reviewable history. | `OPC_CHARACTERIZATION_GAP_REGISTER.md` `OPC-CHAR-GAP-012` |

@@ -91,7 +91,7 @@ Owner decision: firm-scoped identity remains separate from versioning. Canonical
 
 Owner decision: filename `_vN` must not be treated as authoritative PREDMET `verzija` unless source/test evidence proves exact mapping and a later owner decision approves that interpretation.
 
-Open owner-decision queue: missing or malformed imported `verzija`, same-version conflict behavior, higher/lower version conflict behavior, and missing local/imported version behavior remain `OWNER DECISION REQUIRED`. Until resolved by a later task, current explicit keep / replace / cancel behavior is preserved and no automatic comparator or hard block is authorized.
+Source fact-check correction: a successfully imported PREDMET cannot have missing, `null` or wrong-type `verzija`; typed deserialization rejects that transfer before the DB transaction. This is not an owner business-decision case. Same-version and higher/lower valid-version conflict presentation remain future design topics. Current explicit keep / replace / cancel behavior remains preserved and no automatic comparator or hard block is authorized.
 
 ## Addendum - Version Conflict Policy And PREDMET Change-Log Requirement
 
@@ -108,9 +108,9 @@ Owner-approved version conflict policy matrix:
 | Imported `verzija` higher than local | Show both versions, warn that imported version is higher, preserve keep / replace / cancel, no silent overwrite, no automatic replacement. |
 | Imported `verzija` lower than local | Show both versions, warn that imported version is lower, preserve keep / replace / cancel unless later owner decision creates a hard block, no silent overwrite. |
 | Imported `verzija` same as local | Show equal-version state, preserve keep / replace / cancel, do not use `exportDatum` as authority; secondary metadata may be displayed only as metadata. |
-| Imported `verzija` missing | Classify as unknown, warn, preserve keep / replace / cancel unless later owner decision creates a hard block, do not silently treat as newer, do not use `exportDatum`. |
-| Imported `verzija` malformed | Classify as invalid/unknown, warn, preserve keep / replace / cancel unless later owner decision creates a hard block, do not treat as newer, do not use `exportDatum`. |
-| Local `verzija` missing or malformed | Classify local version as unknown, warn, preserve keep / replace / cancel, do not silently treat imported version as authoritative, do not use `exportDatum`. |
+| Imported `verzija` missing, `null` or wrong type | Reject transfer before DB mutation; no successfully imported PREDMET and no keep / replace / cancel conflict decision. |
+| Imported `verzija` integer `0` or negative | Technical validation gap: official OPC export does not normally produce it, but the single-PREDMET boundary lacks an explicit `>= 1` guard. |
+| Local `verzija` missing or wrong type | Non-null integer DB/model contract with default `1`; treat any contrary database state as corruption/technical recovery, not import business arbitration. |
 
 Owner decision: OPC is missing a PREDMET document/versioning overview that can show version history or change-log information relevant to business review and confirmation. This is an `OWNER DECISION / IMPLEMENTATION REQUIRED` item, not implemented by this report.
 
