@@ -220,23 +220,23 @@ Domain: Firma / database ownership
 Rule statement: The firm/user owns and controls the local OPC database. No server or other database is automatically master.
 Evidence classification: DOCUMENTED POLICY / SOURCE-CONFIRMED
 Evidence locations: manifest; `lib/core/database/tables/firma_podaci_table.dart`; `lib/features/podesavanja/data/podesavanja_repository.dart`
-Current implementation state: Local Drift/SQLite database and singleton `FirmaPodaci` exist. Stable history model is not implemented.
+Current implementation state: Local Drift/SQLite database and mutable singleton `FirmaPodaci(id = 1)` exist. PIB/MB are trimmed editable text fields without stable identity history or PREDMET-bound identity reference.
 Windows/Android parity: Shared database model.
 JSON/PDF/UI relevance: Firm data appears in settings, PDFs, and full backup.
 Future Web/sync relevance: Critical.
 Risk if changed: Server-master drift and unsafe restore/sync assumptions.
-Open questions: Firm identity history and immutable identity model.
-Recommended next action: Technical audit for `FirmaPodaci` history.
+Open questions: Whether a PIB/MB change is a correction of the same FIRMA or transition to a new FIRMA/database family.
+Recommended next action: Owner closes the identity-history meaning; targeted migration/test task remains separately blocked.
 
 ## RULE-ID: OPC-RULE-FIRMA-002
 
 Name: Firm-scoped PREDMET identity
-Status: OWNER DECISION / POLICY EXISTS / IMPLEMENTATION NOT FOUND
+Status: OWNER DECISION / POLICY EXISTS / TECHNICAL AUDIT COMPLETE / IMPLEMENTATION NOT FOUND
 Domain: Identity / conflict
 Rule statement: `brojPredmeta` is unique only within the same firm. Future-safe identity/conflict scope is `PIB + Matični broj + brojPredmeta`; `brojPredmeta` alone is not global identity.
-Evidence classification: OWNER DECISION / POLICY EXISTS / IMPLEMENTATION NOT FOUND
-Evidence locations: owner decision report; locked rules summary; import reports; `lib/core/utils/json_export_import.dart`
-Current implementation state: Current single-PREDMET conflict lookup uses trimmed `brojPredmeta` only. No firm-scoped conflict guard or unique constraint was found in inspected source.
+Evidence classification: OWNER DECISION / POLICY EXISTS / SOURCE-CONFIRMED GAP / TECHNICAL AUDIT COMPLETE
+Evidence locations: owner decision report; locked rules summary; `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`; `lib/core/utils/json_export_import.dart`; `lib/core/format/app_format.dart`
+Current implementation state: Current single-PREDMET conflict lookup uses trimmed `brojPredmeta` only; JSON contains no FIRMA identity; full-backup import performs no identity preflight; minute-level number generation has no unique guard.
 Windows/Android parity: Shared source; not implemented.
 JSON/PDF/UI relevance: JSON import/export and backup/restore.
 Future Web/sync relevance: Critical.
@@ -306,7 +306,7 @@ JSON/PDF/UI relevance: Full backup only, not single-PREDMET transfer.
 Future Web/sync relevance: Critical.
 Risk if changed: Destructive wrong-firm restore.
 Open questions: Guard source fields and history model.
-Recommended next action: Repository/firma identity guard design.
+Recommended next action: Close the two legacy/history owner decisions, then execute the separately authorized targeted identity migration and guard task.
 
 ## RULE-ID: OPC-RULE-STOCK-001
 

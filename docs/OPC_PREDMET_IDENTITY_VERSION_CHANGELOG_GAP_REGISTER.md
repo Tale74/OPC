@@ -51,10 +51,14 @@ Additional finding: current `logIzmena` mixes raw business-state checkpoints wit
 ## GAP-ID: OPC-PREDMET-LIV-GAP-005
 
 Area: firm-scoped PREDMET identity.
-Current evidence: current import conflict lookup uses `brojPredmeta`; owner policy says future-safe identity is firm-scoped and `brojPredmeta` alone is not global identity.
+Current evidence: code-first audit confirms that current import conflict lookup uses `brojPredmeta` only; single-PREDMET JSON carries no FIRMA identity; full-backup import has no PIB/MB preflight; `FirmaPodaci` is mutable without identity history; minute-level local number generation has no unique guard. Owner policy says future-safe identity is firm-scoped and `brojPredmeta` alone is not global identity.
 Risk if misunderstood: wrong-firm conflict, restore, or sync collision.
 Blocked behavior changes: identity guard, duplicate detection, sync identity, restore identity.
-Classification: `OWNER DECISION / TECHNICAL AUDIT REQUIRED / IMPLEMENTATION BLOCKED`.
+Classification: `OWNER POLICY EXISTS / TECHNICAL AUDIT COMPLETE / TWO OWNER DECISIONS REMAIN / IMPLEMENTATION BLOCKED`.
+
+Technical audit closure reference: `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`.
+
+Remaining decisions: legacy single-PREDMET JSON without FIRMA identity and PIB/MB correction versus transition to a new FIRMA/database family.
 
 ## GAP-ID: OPC-PREDMET-LIV-GAP-006
 

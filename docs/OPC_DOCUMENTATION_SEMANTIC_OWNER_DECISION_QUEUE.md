@@ -75,11 +75,28 @@ Owner je zaključio:
 
 ## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
-### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope
+### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope — `POLICY CLOSED / TECHNICAL AUDIT COMPLETE`
 
-- Da li je `brojPredmeta` jedinstven unutar jedne FIRMA/database family?
-- Kako UI postupa pri koliziji: blokira, regeneriše ili traži kontrolisanu owner/user odluku?
-- Da li single-PREDMET JSON mora nositi FIRMA identity metadata?
+Već zaključano owner odlukom i potvrđeno code-first auditom:
+
+- `brojPredmeta` je jedinstven samo unutar iste FIRMA;
+- budući bezbedni scope je `PIB + Matični broj + brojPredmeta`;
+- single-PREDMET JSON mora dobiti mali source-FIRMA identity blok;
+- koliziju lokalnog generisanja rešava aplikacija atomski, bez prebacivanja tehničke posledice na korisnika;
+- mismatch PIB/MB blokira import/restore bez override-a;
+- `verzija`, lokalni `id`, filename i export metadata nisu identity ključevi.
+
+Tehnički audit: `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`.
+
+Preostale su samo dve poslovne odluke:
+
+#### `ODQ-PREDMET-IDENTITY-LEGACY-001`
+
+Tretman starog single-PREDMET JSON-a bez source-FIRMA identity bloka: blokada, uvoz samo kao novi PREDMET ili eksplicitna potvrda iste FIRMA pre normalnog conflict toka.
+
+#### `ODQ-FIRMA-IDENTITY-HISTORY-001`
+
+Da li promena PIB/MB predstavlja korekciju identiteta iste FIRMA ili prelazak na novu FIRMA/database family.
 
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 
