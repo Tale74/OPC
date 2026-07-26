@@ -41,16 +41,16 @@ Recommended next action: Dedicated version model audit and tests before implemen
 Name: Same-brojPredmeta keep / replace / cancel
 Status: OWNER CLARIFICATION / SOURCE-CONFIRMED
 Domain: Single-PREDMET JSON import
-Rule statement: When a single-PREDMET JSON has the same non-empty trimmed `brojPredmeta` as exactly one local PREDMET, explicit keep / replace / cancel user choice is intentional business behavior, not a defect. It exists because real business truth may change when `Platilac` or other parties change their mind.
+Rule statement: When a single-PREDMET JSON has the same non-empty trimmed `brojPredmeta` as exactly one local PREDMET, explicit keep / replace / cancel user choice is intentional business behavior, not a defect. It exists because real business truth may change when `Platilac` or other parties change their mind. Individual PREDMET JSON does not transfer `logIzmena`; import and replacement are recorded as local audit events. Replacement preserves the existing local log and appends a replacement event.
 Evidence classification: OWNER CLARIFICATION / SOURCE-CONFIRMED
 Evidence locations: `lib/core/utils/json_export_import.dart`; `docs/tasks/OPC_TASK_BUSINESS_LOGIC_EXTRACTION_SINGLE_PREDMET_JSON_IMPORT_FRESHNESS_AND_OVERWRITE_GUARD_REPORT.md`
-Current implementation state: UI conflict dialog offers cancel, keep local, or replace imported. Multiple local matches block replacement.
+Current implementation state: UI conflict dialog offers cancel, keep local, or replace imported. Multiple local matches block replacement. New/replacement import event logging is not implemented; current replacement deletes the local `logIzmena`, contrary to the approved target rule.
 Windows/Android parity: Shared import code; Android layout differs only by dialog sizing/file-read adapter.
 JSON/PDF/UI relevance: Conflict UI displays local/imported metadata and deceased name.
 Future Web/sync relevance: Critical; automatic hard-blocking must not remove owner-approved user choice unless a future owner decision changes the rule.
 Risk if changed: User may be unable to select the correct business version after a legitimate case change.
-Open questions: Which future version warning or guard should accompany the choice.
-Recommended next action: Preserve user choice; design any future freshness warnings under separate owner-approved task.
+Open questions: Which future version warning or guard should accompany the choice. Current snapshot-log privacy/retention remains a technical audit item.
+Recommended next action: Preserve user choice and local log; design local import events and any future freshness warnings under a separate authorized task.
 
 ## RULE-ID: OPC-RULE-FILENAME-001
 
@@ -193,7 +193,7 @@ Windows/Android parity: Future overview must preserve equivalent business meanin
 JSON/PDF/UI relevance: Intended as PREDMET UI review behavior; JSON/PDF implications require later design.
 Future Web/sync relevance: Important for explaining version history and conflict choices.
 Risk if changed: Users may lack business context for confirming or replacing a PREDMET version.
-Open questions: Source of change-log data, exact business events to include, retention, and migration requirements.
+Open questions: Source of change-log data, exact non-import business events to include, snapshot retention/privacy, and migration requirements. Individual JSON log transfer and replacement log deletion are closed by owner decision.
 Recommended next action: Audit current lifecycle/version/log data before adding any model or UI.
 
 ## RULE-ID: OPC-RULE-PREDMET-REVIEW-001

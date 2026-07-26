@@ -118,6 +118,23 @@ Owner decision: the intended future location for the PREDMET version/change-log 
 
 Technical audit still required before implementation: verify whether current `verzija` increments for all business-relevant changes; whether it survives import/export/replace flows; which business changes create a new version; whether current logs/lifecycle records can support a future change-log overview; whether `Pregled i potvrda` has suitable structure; and whether Windows/Android parity can be preserved.
 
+## Addendum - Local `logIzmena` And Individual PREDMET JSON Import
+
+Owner decision:
+
+- `logIzmena` is a local audit record of the OPC installation;
+- individual PREDMET JSON does not transfer `logIzmena`;
+- full database backup/restore remains a separate operation and may retain the database log;
+- importing a new PREDMET records a local import event;
+- replacement import preserves the existing local `logIzmena` and records a local replacement event;
+- the local user who performs the import/replacement and the local timestamp are the event authority;
+- foreign `korisnikId` values and foreign log history are not imported through individual PREDMET JSON;
+- the log must not become a parallel PREDMET business truth.
+
+Current source does not yet satisfy the replacement rule: it deletes the existing local `logIzmena` and does not append a replacement event. This is an `OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED` gap. No application behavior is changed by this documentation addendum.
+
+Technical audit must also classify current snapshot entries in `staraVrednost` / `novaVrednost`, their privacy and retention implications, and the minimum event metadata needed without treating raw PREDMET snapshots as a second source of truth.
+
 ## Stop Boundary
 
 This report authorizes documentation continuity only. It does not authorize Web runner creation, backend/API work, sync, storage adapter work, database migrations, package restructuring, payment/subscription implementation, role implementation, or source-code changes.

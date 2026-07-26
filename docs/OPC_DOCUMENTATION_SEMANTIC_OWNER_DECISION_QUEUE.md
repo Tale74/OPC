@@ -37,6 +37,19 @@ Owner je zaključio:
 - UI, novi PDF/DOCX i korisnička dokumentacija ne smeju prikazivati `NARUČILAC`;
 - legacy DB/JSON kompatibilnost i eventualno interno preimenovanje rešava Codex tehničkim auditom i migracijom bez gubitka starih PREDMETA.
 
+### `ODQ-PREDMET-LOCAL-LOG-002` — individualni JSON i lokalni `logIzmena` — `CLOSED`
+
+Owner je zaključio:
+
+- `logIzmena` ostaje lokalna audit evidencija instalacije;
+- individualni PREDMET JSON ne prenosi tuđi `logIzmena`;
+- novi import i replacement beleže lokalni događaj sa lokalnim korisnikom i vremenom;
+- replacement čuva postojeći lokalni log i dodaje događaj zamene;
+- full database backup/restore ostaje odvojena operacija;
+- log ne sme postati paralelna poslovna istina PREDMETA.
+
+Current replacement source briše lokalni log i ne beleži događaj zamene. Korekcija je budući tehnički/implementacioni dug, bez izmene aplikacije u Gate 0 dokumentacionom tasku.
+
 ## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
 ### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope
@@ -60,8 +73,8 @@ Source fact-check je uklonio missing/null/wrong-type `verzija` iz owner queue-a:
 - Koji poslovni događaji ulaze u history;
 - retention i prikaz;
 - da li `ZATVOREN → OTVOREN` uvek pravi novi verzijski trag;
-- kako replacement import čuva prethodno stanje i actor/time/reason;
-- da li se history prenosi single-PREDMET JSON-om.
+- kako se postojeći snapshot zapisi bezbedno tretiraju;
+- sadržaj budućeg pregleda u `Pregled i potvrda`.
 
 ### `ODQ-PODSETNIK-001` — poslovni tracking model
 
@@ -124,6 +137,7 @@ Već zaključano:
 - PARTE media retention/deletion prema novijem closure authority-ju;
 - ručni pravac statusa `ZAVRŠEN`;
 - PDF RAČUN FIRMA toggle bez poreske logike;
+- individualni PREDMET JSON ne prenosi `logIzmena`; import/replacement događaji beleže se lokalno;
 - Git history rewrite nije odobren.
 
 ## 5. Trenutno tražena owner akcija

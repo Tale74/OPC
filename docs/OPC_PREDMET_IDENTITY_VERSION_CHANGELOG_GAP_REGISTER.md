@@ -34,9 +34,10 @@ Classification: `IMPLEMENTATION GAP / OWNER DECISION EXISTS / TECHNICAL AUDIT RE
 
 Area: replacement import log retention.
 Current evidence: replacement import deletes local `logIzmena` and inserts imported business state under the preserved local id.
-Risk if misunderstood: local pre-replacement audit history may be assumed retained when source deletes it.
-Blocked behavior changes: replacement retention, audit history, Web/sync conflict history.
-Classification: `SOURCE-CONFIRMED / OWNER REVIEW QUEUE`.
+Owner decision: individual PREDMET JSON does not transfer `logIzmena`; replacement must preserve the local log and append a local replacement event with local actor/time authority.
+Risk if misunderstood: current runtime deletion may be mistaken for approved behavior, or foreign history may be imported as local audit authority.
+Blocked behavior changes: implementation of local import/replacement event logging, snapshot privacy/retention correction, tests and migration safety.
+Classification: `SOURCE-CONFIRMED CURRENT CONFLICT / OWNER DECISION / IMPLEMENTATION GAP / TECHNICAL AUDIT REQUIRED`.
 
 ## GAP-ID: OPC-PREDMET-LIV-GAP-005
 
