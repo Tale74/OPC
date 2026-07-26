@@ -70,11 +70,12 @@ Source fact-check je uklonio missing/null/wrong-type `verzija` iz owner queue-a:
 
 ### `ODQ-PREDMET-HISTORY-003` — change-log i reopen/import history
 
-- Koji poslovni događaji ulaze u history;
-- retention i prikaz;
+- Da li korisnički pregled prikazuje samo značajne lifecycle/import događaje ili i promenjene poslovne oblasti/polja;
+- retention i prikaz poslovno vidljivih događaja;
 - da li `ZATVOREN → OTVOREN` uvek pravi novi verzijski trag;
-- kako se postojeći snapshot zapisi bezbedno tretiraju;
 - sadržaj budućeg pregleda u `Pregled i potvrda`.
+
+Code-first audit je utvrdio da postojeći snapshot redovi nisu spreman korisnički audit-log: oni sadrže gotovo ceo PREDMET i služe save/version checkpoint mehanizmu. Njihova migracija, privacy zaštita i razdvajanje od audit event-a pripadaju Codex tehničkom domenu.
 
 ### `ODQ-PODSETNIK-001` — poslovni tracking model
 
@@ -142,4 +143,4 @@ Već zaključano:
 
 ## 5. Trenutno tražena owner akcija
 
-Neposredna pitanja `ODQ-SCENARIO-001` i `ODQ-TERMINOLOGY-001` su zatvorena. Preostale odluke mogu ostati vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana, ali njihovi izvorni dokumenti do tada ne mogu biti uklonjeni.
+Neposredno sledeća owner obaveza je `ODQ-PREDMET-HISTORY-003`: odrediti granulat poslovno vidljivog change-log pregleda nakon završenog code-first audita. Ostale odluke mogu ostati vremenski vezane za odgovarajuće etape odobrenog zavisnosnog plana, ali njihovi izvorni dokumenti do tada ne mogu biti uklonjeni.

@@ -39,6 +39,10 @@ Risk if misunderstood: current runtime deletion may be mistaken for approved beh
 Blocked behavior changes: implementation of local import/replacement event logging, snapshot privacy/retention correction, tests and migration safety.
 Classification: `SOURCE-CONFIRMED CURRENT CONFLICT / OWNER DECISION / IMPLEMENTATION GAP / TECHNICAL AUDIT REQUIRED`.
 
+Technical audit closure reference: `docs/OPC_LOGIZMENA_TECHNICAL_AUDIT.md`.
+
+Additional finding: current `logIzmena` mixes raw business-state checkpoints with future user-facing audit responsibility. The checkpoint is required by current save/unsaved/version comparison behavior, while the log has no current event-list UI. Implementation remains blocked until checkpoint migration, privacy, event metadata and test strategy are proven.
+
 ## GAP-ID: OPC-PREDMET-LIV-GAP-005
 
 Area: firm-scoped PREDMET identity.
