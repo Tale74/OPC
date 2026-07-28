@@ -686,10 +686,17 @@ Pre user-configurable engine-a:
 - `JAVNO MESTO/NEDEFINISANO`;
 - `MESTO CEREMONIJE` za urnu;
 - stale/nepotrebni IRiU redovi;
+- incident iz 2026-07-17: scenario redovi su neautorizovano pomereni ispred
+  `SANDUK` i osnovnog IRiU bloka;
 - safe keep/remove/archive/merge;
 - očuvanje user cena, količina i napomena;
 - preview i potvrda kada je sadržaj ugrožen;
 - idempotent reconciliation.
+
+Za incident redosleda Phase 3 završava dokaz, karakterizaciju svih mutation
+putanja i zaštitu historical/locked PREDMET granice. Owner odluka zaključava da
+se source korekcija ne radi kao izolovan patch: implementira se u Phase 4
+zajedno sa korisnički konfigurabilnim SCENARIO UI ugovorom.
 
 ## 13. Migration, backup i restore pravila
 
@@ -735,6 +742,18 @@ Počinje tek posle Architecture Decision Gate-a i Phase 3 korekcija.
 - complete FIRMA default set;
 - validation kontradikcija;
 - Android narrow/wide/Windows parity.
+
+Obavezni incident acceptance uslov:
+
+- očuvati KATALOG mogućnost da user/Administrator definiše nove osnovne IRiU
+  kategorije;
+- ta mogućnost ne sme menjati postojeće SCENARIO odluke ili logiku;
+- `SANDUK` i kompletan primenljiv osnovni IRiU blok moraju prethoditi
+  scenario-dependent redovima;
+- ukloniti obrnuti test uveden 2026-07-17 i zameniti ga owner-approved
+  business-contract i mutation-path regresionim testovima;
+- ne menjati completed/locked PREDMET istinu; eligible nezavršen PREDMET koristi
+  samo kontrolisani SCENARIO/IRiU reconciliation.
 
 ### 14.3 Promena scenarija postojećeg PREDMETA
 

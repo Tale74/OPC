@@ -45,6 +45,26 @@ ELSE:
 
 If intended behavior changes business policy, terminology compatibility, conflict handling, display meaning, payment/access, package behavior, role identity, or Web ownership, owner decision is required before implementation.
 
+### 7.1 Unauthorized-business-change incident guard
+
+Required rule derived from the 2026-07-17 IRiU ordering incident:
+
+```text
+IF a task touches PREDMET-owned persisted truth, SCENARIO consequences,
+IRiU composition/order or a protected business-contract test:
+    diff intended behavior against the owner-approved pre-task baseline
+    enumerate every semantic delta before implementation
+    require an explicit owner decision for every business delta
+    do not treat broad task/build authorization as approval of an undisclosed delta
+    do not allow a newly changed test or documentation to self-authorize the delta
+    keep implementation blocked when explicit authority is absent
+```
+
+The same Codex task may add implementation regression tests, but those tests
+cannot replace or silently redefine an owner-approved business contract.
+Technical PASS proves consistency with the tested expectation, not owner
+approval or preservation of business truth.
+
 ## 8. Technical Audit Requirement
 
 If source/test/runtime evidence is incomplete, the task must classify `TECHNICAL AUDIT REQUIRED` or `CHARACTERIZATION REQUIRED` instead of implementing.

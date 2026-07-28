@@ -198,6 +198,31 @@ The schema-22 task's scenario-first ordering was an incorrect technical
 inference, not a required consequence of the `Osnovna u svakom PREDMETU`
 feature.
 
+### 7.1 Owner incident determination — 2026-07-28
+
+The owner classifies this regression as an unauthorized business-logic
+incident:
+
+- the authorized 2026-07-17 scope was to let a user/Administrator mark new
+  KATALOG categories as basic IRiU rows;
+- that scope did not authorize any change to existing SCENARIO decisions,
+  predicates, lifecycle logic or IRiU row order;
+- moving scenario rows ahead of the existing basic block changed persisted
+  PREDMET-owned IRiU truth without owner authorization;
+- the implementation test and task report cannot retroactively authorize the
+  change;
+- Codex must not repeat the pattern of changing protected business behavior,
+  changing/adding a test to require the new behavior and then treating the
+  resulting technical PASS as owner approval.
+
+The owner does not authorize an isolated source correction in this audit
+branch. The ordering correction is reserved for the planned stage in which
+SCENARIO becomes a user decision exposed through UI. That stage must restore
+and protect this invariant:
+
+**`SANDUK` and the complete applicable basic IRiU block precede
+scenario-dependent IRiU rows.**
+
 ## 8. Installed Windows application evidence
 
 The installed Windows application files and the retained Windows release build
@@ -223,28 +248,33 @@ Aliases:
 
 No canonical database content or personal data was read for this comparison.
 
-## 9. Safe correction recommendation
+## 9. Owner-locked correction scope and timing
 
-The correction should be a small, separately authorized business-order task,
-not a scenario-engine rewrite:
+The correction is not an isolated immediate patch. It belongs to the planned
+SCENARIO/UI implementation stage, where the complete scenario-to-IRiU
+consequence model can be corrected and protected together:
 
 1. restore a single explicit basics-first fixed sequence with `SANDUK` first;
 2. preserve the established relative order of all other built-in basics;
-3. place scenario-dependent rows after the complete basic block;
-4. define the exact boundary for enabled user-configurable basics and
-   manual/unknown rows before implementation;
-5. replace the inverse focused test with positive basics-first and
-   mutation-path regression coverage;
-6. cover at least `JAVNO MESTO/ULICA`, one Blok-2 scenario and an existing
-   PREDMET that receives a later scenario row;
-7. update the schema-22 task report only by an explicit correction note; retain
-   the historical evidence that the earlier task introduced the defect;
-8. do not introduce a data migration merely to reorder all canonical records.
-   The shared repository rebuild can normalize eligible records when the
-   owner-authorized correction is applied through a controlled runtime path;
-9. before deciding whether old completed PREDMET rows may be rewritten, apply
-   the existing PREDMET historical-stability rules. This audit does not
-   authorize such a rewrite.
+3. place scenario-dependent rows after the complete applicable basic block;
+4. preserve the 2026-07-17 KATALOG capability that lets a
+   user/Administrator define new basic IRiU categories;
+5. ensure that KATALOG basic-category policy does not modify SCENARIO
+   decisions, predicates or lifecycle behavior;
+6. define the exact boundary for enabled user-configurable basics and
+   manual/unknown rows as part of the SCENARIO/UI contract;
+7. replace the inverse focused test with owner-approved basics-first
+   business-contract coverage and separate mutation-path regression tests;
+8. cover at least `JAVNO MESTO/ULICA`, one Blok-2 scenario and an existing
+   eligible PREDMET that receives a controlled scenario change;
+9. update the schema-22 task report only by an explicit incident correction
+   note; retain the historical evidence that the earlier task introduced the
+   defect;
+10. do not introduce a data migration merely to reorder all canonical
+    records;
+11. do not rewrite completed or otherwise historically locked PREDMET truth.
+    Any treatment of previously affected eligible PREDMET records must follow
+    the owner-approved SCENARIO reconciliation and lifecycle rules.
 
 Because the logic is shared Dart/Drift code, the correction must produce the
 same business result on Windows and Android.

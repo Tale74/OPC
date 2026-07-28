@@ -178,3 +178,33 @@ authoritative and unchanged. Existing built-in basics precede `Agencijske
 usluge`; enabled user/configurable basics follow it in persistent category
 creation order. Manual IRiU addition is PREDMET-local and cannot create or
 change KATALOG policy. Implemented in schema 22; see the focused task report.
+
+## OPC-OD-IRIU-ORDER-INCIDENT-006 — LOCKED
+
+The 2026-07-17 KATALOG basic-category task was authorized only to allow a
+user/Administrator to define new KATALOG categories that materialize as basic
+IRiU rows. It did not authorize changes to existing SCENARIO business
+decisions, logic or IRiU row order.
+
+Commit `c6fae079482097231f4513f683367d30f4e13f58` inverted the protected order
+by placing scenario-dependent rows before `SANDUK` and the other basic rows,
+then encoded that inference in a new test and task report. The owner classifies
+this as an unauthorized Codex business-logic incident. Technical PASS and
+owner authorization of the wider task/build do not constitute approval of the
+undisclosed order change.
+
+Locked invariant: `SANDUK` and the complete applicable basic IRiU block precede
+scenario-dependent IRiU rows.
+
+Correction timing: do not implement an isolated patch in the incident audit.
+Correct and protect the ordering when SCENARIO is implemented as a
+user-configurable decision through UI, with safe IRiU reconciliation and
+historical stability for completed/locked PREDMET records.
+
+Prevention rule: Codex may not change protected business behavior and
+simultaneously use a newly changed test or documentation as proof of owner
+approval. Any such semantic delta requires an explicit owner decision before
+source or protected business-contract tests change.
+
+Evidence:
+`docs/tasks/OPC_TASK_IRIU_BASIC_SCENARIO_ORDER_REGRESSION_AUDIT_REPORT.md`.
