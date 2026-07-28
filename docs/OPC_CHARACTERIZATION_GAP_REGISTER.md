@@ -277,3 +277,73 @@ Owner decision required: yes.
 Technical audit required: yes.
 Web readiness relevance: primary.
 Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.
+
+## CHARACTERIZATION-GAP-ID: OPC-CHAR-GAP-017
+
+Gap name: Windows multiple-instance concurrent database behavior
+Affected module: Windows runner, SQLite, PREDMET lifecycle, import/export
+Affected upgrade family: platform/data integrity
+Evidence currently available: no source-visible single-instance guard; shared production DB lane
+Missing evidence: two-process write, same-PREDMET, migration and import/export collision results
+Why this matters: canonical user data can diverge or collide.
+Unsafe change to avoid: adding a UI-only guard without DB/failure-path proof.
+Behavior blocked until: dedicated runtime audit.
+Owner decision required: only for user-visible second-launch behavior.
+Technical audit required: yes.
+Classification: `SOURCE-CONFIRMED RISK / RUNTIME AUDIT REQUIRED`.
+
+## CHARACTERIZATION-GAP-ID: OPC-CHAR-GAP-018
+
+Gap name: Windows cold/warm startup phase baseline
+Affected module: main, app bootstrap, database beforeOpen, entitlement bootstrap
+Affected upgrade family: performance/platform
+Evidence currently available: source candidates only
+Missing evidence: process/window/DB/first-usable-screen timing
+Why this matters: source complexity does not identify the actual bottleneck.
+Unsafe change to avoid: removing migration/recovery safety for faster startup.
+Behavior blocked until: measured baseline and owner target.
+Owner decision required: runtime acceptance target.
+Technical audit required: yes.
+Classification: `MEASUREMENT REQUIRED`.
+
+## CHARACTERIZATION-GAP-ID: OPC-CHAR-GAP-019
+
+Gap name: Android PARTE latest-HEAD performance
+Affected module: PARTE editor/viewport/media
+Affected upgrade family: performance/presentation
+Evidence currently available: rebuild and media-read source candidates
+Missing evidence: current reproduction and profiler frames/rebuild/IO results
+Why this matters: complexity hypothesis is not yet a root-cause finding.
+Unsafe change to avoid: changing accepted editor or PDF/DOCX behavior.
+Behavior blocked until: device profiling.
+Owner decision required: runtime acceptance.
+Technical audit required: yes.
+Classification: `SOURCE CANDIDATES / PROFILING REQUIRED`.
+
+## CHARACTERIZATION-GAP-ID: OPC-CHAR-GAP-020
+
+Gap name: configurable SCENARIO persistence and IRiU reconciliation
+Affected module: PREDMET, SCENARIO, IRiU, PODEŠAVANJA, JSON
+Affected upgrade family: business-policy configuration
+Evidence currently available: one scenario ID, partial evaluator/truth seam and focused tests
+Missing evidence: full condition inventory, stale-row behavior, urn rules, snapshot/template/version model
+Why this matters: SCENARIO is PREDMET-owned business context.
+Unsafe change to avoid: editable defaults retroactively changing completed PREDMET truth.
+Behavior blocked until: complete scenario/IRiU audit and owner business decisions.
+Owner decision required: yes for business consequences.
+Technical audit required: yes.
+Classification: `PARTIAL FOUNDATION / IMPLEMENTATION BLOCKED`.
+
+## CHARACTERIZATION-GAP-ID: OPC-CHAR-GAP-021
+
+Gap name: complete Flutter suite runner completion
+Affected module: test infrastructure
+Affected upgrade family: validation
+Evidence currently available: analyze PASS; complete suite launched
+Missing evidence: final test exit/result; runner isolation
+Why this matters: builds cannot be authorized from an incomplete suite.
+Unsafe change to avoid: treating timeout or missing output as PASS/FAIL.
+Behavior blocked until: runner/test hang is isolated and suite returns final result.
+Owner decision required: no.
+Technical audit required: yes.
+Classification: `TEST GATE NOT COMPLETED`.

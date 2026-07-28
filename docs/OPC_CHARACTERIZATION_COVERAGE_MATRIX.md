@@ -29,6 +29,9 @@ Classification: `SOURCE/FIXTURE-CONFIRMED DEFECTS / TECHNICAL DESIGN COMPLETE / 
 Technical closure:
 `docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
 
+Architecture closure reference:
+`docs/OPC_PHASE_1_FULL_CODE_ARCHITECTURE_REVIEW.md`.
+
 ## CHARACTERIZATION-ID: OPC-CHAR-002
 
 Business behavior: `brojPredmeta` generation and identity boundary
@@ -634,3 +637,26 @@ Owner decision required: yes.
 Technical audit required: yes.
 Web readiness relevance: primary.
 Classification: `DOCUMENTED POLICY / IMPLEMENTATION BLOCKED`.
+
+## CHARACTERIZATION-ID: OPC-CHAR-032
+
+Business behavior: complete current-code architecture and module dependency
+Module: whole OPC v.1 source
+Module class: cross-cutting architecture
+Related pseudocode ID: all business-critical pseudocode families
+Source files: complete `lib/`, `windows/`, `android/`
+Existing tests: complete current `test/` inventory
+Runtime evidence: incomplete for platform performance/parity
+Documentation evidence: Phase 1 full review and Decision Gate evidence matrix
+Current evidence level: SOURCE REVIEW COMPLETE / RUNTIME-PROFILING GAP
+Protected behavior: PREDMET remains sole business truth and derivatives remain bounded.
+What must not change: no broad rewrite or module split without compatibility evidence.
+Future upgrade risk: fragmented lifecycle, scenario, JSON and presentation boundaries.
+Characterization needed before change: remaining Phase 1 runtime/profiling rows.
+Owner decision required: only where technical design changes business meaning.
+Technical audit required: remaining evidence matrix rows.
+Web readiness relevance: high.
+Classification: `SOURCE-CONFIRMED / ARCHITECTURE DECISION GATE NOT READY`.
+
+Technical closure reference:
+`docs/OPC_PHASE_1_FULL_CODE_ARCHITECTURE_REVIEW.md`.

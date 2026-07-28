@@ -465,6 +465,31 @@ Prvo se proverava da li se simptom još reprodukuje na aktuelnom HEAD-u. Ako ne,
 - Android narrow, Android wide i Windows UI/UX;
 - keyboard/mouse/touch/accessibility parity.
 
+### 8.9 Phase 1 execution checkpoint — 28. jul 2026.
+
+Full source/architecture review iz 8.1 je završen:
+`docs/OPC_PHASE_1_FULL_CODE_ARCHITECTURE_REVIEW.md`.
+
+Objedinjena evidence matrica:
+`docs/OPC_PHASE_1_ARCHITECTURE_DECISION_GATE_EVIDENCE_MATRIX.md`.
+
+Current tehnička preporuka je:
+
+`RETAIN CURRENT CODEBASE + PROGRESSIVE REFACTOR`.
+
+Full rewrite nije podržan dokazima. Partial rewrite ostaje evidence-gated
+opcija za scenario/configuration i JSON orchestration granicu; PARTE
+presentation samo ako profiling dokaže potrebu.
+
+Architecture Decision Gate još nije otvoren. Preostali dokazni red je:
+
+1. Windows multiple-instance/concurrent SQLite;
+2. Windows startup baseline;
+3. Android PARTE latest-HEAD reproduction/profiling;
+4. kompletan SCENARIO/IRiU audit;
+5. UI/UX, migration, parity i product-profile synthesis;
+6. pouzdan kompletan Flutter test rezultat.
+
 ## 9. Architecture / refactor / rewrite Decision Gate
 
 Ovaj gate dolazi posle minimalnih Phase 1 dokaza i pre velikog scenario/configuration ili modularnog implementacionog rada.
