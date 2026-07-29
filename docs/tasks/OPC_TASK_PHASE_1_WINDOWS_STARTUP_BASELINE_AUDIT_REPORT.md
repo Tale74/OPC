@@ -1,7 +1,7 @@
 # OPC task report — Phase 1 Windows startup baseline audit
 
 Status:
-`SOURCE AUDIT COMPLETE — QUANTITATIVE CURRENT-HEAD BASELINE NOT COMPLETED — IMPLEMENTATION AND BUILD NOT AUTHORIZED`
+`INSTALLED OWNER-VERSION RUNTIME BASELINE CONFIRMED — CURRENT-HEAD QUANTITATIVE BASELINE STILL PENDING — IMPLEMENTATION AND BUILD NOT AUTHORIZED`
 
 Audit date: 2026-07-29
 
@@ -15,8 +15,12 @@ Audit date: 2026-07-29
 
 ## Protected boundary
 
-- The canonical owner database was not opened, copied or modified.
-- The installed OPC application was not launched.
+- The initial source/harness phase did not open the canonical owner database.
+- After the first report commit, the owner explicitly requested direct
+  measurement of the installed OPC application. That authorized one normal
+  installed-runtime launch against its established canonical lane.
+- The installed application opened and changed the canonical database through
+  its normal startup path. Exact before/after evidence is recorded below.
 - Application source, tests, database schema, migrations, build configuration
   and runtime behavior were not changed.
 - No build was started because the required owner build approval was not given.
@@ -31,8 +35,8 @@ Audit date: 2026-07-29
 - CPU: Intel Core i5-2435M, 2 cores / 4 logical processors;
 - memory: 8 GB class.
 
-This is a relevant lower-performance owner machine, but no current-HEAD native
-timing is claimed from it in this task.
+This is the actual lower-performance owner machine on which the reported
+startup and exit symptoms occur.
 
 ## Existing artifact and historical evidence
 
@@ -45,7 +49,81 @@ a titled main window and stayed alive. It contains no process-to-window,
 process-to-usable-screen or database-open timings. It is historical startup
 smoke evidence, not the required current-HEAD performance baseline.
 
-Consequently, neither executable was used as current baseline evidence.
+Consequently, the installed executable is used only as the real
+owner-installed-version baseline. It is not represented as current-HEAD
+evidence.
+
+## Real installed-version runtime measurement
+
+The owner authorized and observed one normal launch of:
+
+`<PROGRAM_FILES>\OPC\OPC.exe`
+
+Results:
+
+- owner stopwatch, process launch → visible login screen: approximately
+  `8.0 s`;
+- independent automation, process launch → titled OPC native window:
+  `8.921 s`;
+- the Computer Use accessibility layer did not expose the login text during
+  polling, so it supplied no independent text-detection timestamp;
+- the owner visually confirmed that the measured destination was the login
+  screen;
+- no PIN was entered and no user logged in.
+
+The two independent observations agree that the actual installed startup to
+login is approximately eight to nine seconds on the reference machine.
+
+This is:
+
+`REAL INSTALLED OWNER-VERSION BASELINE — NOT CURRENT-HEAD BASELINE`
+
+### Canonical database before/after
+
+Before launch:
+
+- size: `80,187,392` bytes;
+- SHA-256:
+  `B746628B934C2B0EBAE10D994C648DB03BA922F06B7AF37F16AB317B5FD906A4`;
+- no SQLite sidecar file was present.
+
+After normal startup to login and normal application exit:
+
+- size: `80,195,584` bytes;
+- delta: `+8,192` bytes, exactly two `4,096`-byte SQLite pages;
+- SHA-256:
+  `C0F0F2A84F5DC0A0EF4F60AA557949F16219AA21C21628FB5179F51C652485C1`;
+- no SQLite sidecar file remained.
+
+Strict read-only post-exit SQLite checks used `mode=ro&immutable=1` and returned:
+
+- `PRAGMA integrity_check = ok`;
+- `PRAGMA user_version = 22`;
+- page size `4,096`;
+- page count `19,579`;
+- freelist count `0`;
+- journal mode `delete`.
+
+No restore or overwrite was attempted. The business database is structurally
+healthy, but the byte/size change proves that an unauthenticated startup is not
+read-only.
+
+This behavior is consistent with the source-confirmed unconditional
+`beforeOpen` seed/backfill/update pipeline. Without a pre-launch row-level
+snapshot, this task does not claim which exact rows or B-tree pages changed.
+
+The pre-login database change is not attributed to reminder-time
+reconciliation:
+
+- a new `SessionService` starts without an authenticated user;
+- `_StartRouter` keeps the application on `LoginScreen` until authentication;
+- `_refreshCeremonyRemindersAndDialog` starts from
+  `ListaPredmetaScreen`, which was never reached in this measurement;
+- `beforeOpen` ensures the reminder table/column definitions but contains no
+  per-PREDMET reminder-time rescheduling.
+
+PODSETNIK can update scheduling state after login/list startup, but source
+ordering excludes that path from this measured launch-to-login change.
 
 ## Startup dependency map
 
@@ -185,6 +263,38 @@ The result is:
 The harness must not be repeated. Its behavior is test-environment evidence,
 not evidence that OPC startup itself takes nine minutes.
 
+## Slow normal exit — owner runtime finding
+
+The owner also confirmed that normal application exit is visibly slow. This is
+consistent with the earlier grouped-build report, which recorded `12.8 s` for
+one normal close. The present run did not have a reliable click timestamp, so
+it does not invent a second numeric exit duration.
+
+Source evidence:
+
+- `lib/app.dart:63-77` awaits the Flutter confirmation dialog and then awaits
+  `windowManager.destroy()`;
+- `lib/app.dart:53-57` removes the window listener during widget disposal;
+- no production source call to `AppDatabase.close()` exists;
+- no explicit shutdown coordinator stops outstanding DB/reminder work and
+  closes owned resources before native-window destruction.
+
+This is a source-supported root-cause candidate, not a proven percentage
+attribution. Exit timing requires its own monotonic instrumentation.
+
+Future correction design should evaluate:
+
+1. reject duplicate close requests while shutdown is in progress;
+2. stop accepting new background work;
+3. await or cancel owned startup/reminder operations;
+4. explicitly close the single application-owned `AppDatabase`;
+5. dispose plugin/window listeners in a deterministic order;
+6. destroy the native window only after resource closure;
+7. record phase timings and preserve a bounded fail-safe exit.
+
+The correction must never force-kill OPC while a database transaction is
+active.
+
 ## Correction architecture boundary
 
 No correction is authorized by this audit. The smallest evidence-based future
@@ -240,13 +350,21 @@ optimization, schema changes, canonical migration or deployment.
 
 ## Final status
 
-- Source startup map: COMPLETE.
+- Source startup/exit map: COMPLETE.
 - Structural bottleneck candidates: IDENTIFIED AND RANKED.
+- Installed owner-version startup to login: CONFIRMED AT APPROXIMATELY
+  `8–9 s`.
+- Installed owner-version slow exit: OWNER CONFIRMED; historical `12.8 s`
+  evidence exists.
 - Current-HEAD native cold/warm timing: NOT COMPLETED.
-- Canonical database touched: NO.
+- Canonical database opened by installed runtime: YES, OWNER AUTHORIZED.
+- Canonical database byte/size changed during normal unauthenticated startup:
+  YES.
+- Post-exit SQLite integrity: `ok`.
+- Canonical restore/overwrite: NO.
 - Application/source/test/schema/build change: NO.
 - Flutter harness repeat allowed: NO.
 - Implementation authorized: NO.
 - Build authorized: NO.
 
-`WINDOWS STARTUP SOURCE AUDIT COMPLETE — CURRENT-HEAD QUANTITATIVE BASELINE AWAITS OWNER-AUTHORIZED ISOLATED WINDOWS_TEST MEASUREMENT — CANONICAL DATABASE PROTECTED`
+`WINDOWS INSTALLED-VERSION STARTUP BASELINE CONFIRMED AT APPROXIMATELY 8–9 SECONDS — SLOW EXIT CONFIRMED — STARTUP WRITES TO CANONICAL DATABASE — INTEGRITY OK — CURRENT-HEAD ISOLATED BASELINE AND CORRECTION REMAIN GATED`

@@ -517,7 +517,24 @@ Windows startup source-audit result:
   repeated;
 - a quantitative current-HEAD baseline remains gated by explicit owner
   authorization for isolated WINDOWS_TEST instrumentation and a release build;
-- canonical database, application source and runtime behavior remain unchanged.
+- the initial source/harness phase did not open the canonical database and did
+  not change application source or runtime behavior.
+
+Subsequent owner-authorized installed-runtime evidence:
+
+- the real installed owner version reaches the login screen in approximately
+  `8–9 s` on the reference machine;
+- startup to login, without authentication, changed the canonical SQLite file
+  by `+8,192` bytes and changed its SHA-256;
+- post-exit `PRAGMA integrity_check` is `ok`, schema checkpoint remains 22 and
+  no sidecar file remains;
+- no restore or overwrite was attempted;
+- the owner also confirms visibly slow normal exit, consistent with the prior
+  recorded `12.8 s` close;
+- production source does not explicitly close the application-owned
+  `AppDatabase` before awaiting native window destruction;
+- installed-version evidence does not replace the still-required current-HEAD
+  isolated measurement before correction acceptance.
 
 ## 9. Architecture / refactor / rewrite Decision Gate
 
