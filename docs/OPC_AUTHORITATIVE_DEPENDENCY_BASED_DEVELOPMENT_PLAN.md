@@ -470,6 +470,39 @@ acceptance korekcije odlažu do jednog ciljanog latest-HEAD profiler prolaza.
 - utvrditi current scenario ID/version/storage/JSON ponašanje;
 - karakterizovati postojeće baze.
 
+Source audit završen 29. jula 2026.:
+
+- postoji samo `default_funeral_ceremony_policy`; stvarna politika je skup
+  hard-coded condition family pravila, ne skup korisničkih scenarija;
+- `businessScenarioId` je PREDMET polje i deo je single-PREDMET JSON-a, ali
+  nema scenario definition/version snapshot-a, FIRMA template tabele ili
+  PODEŠAVANJA UI-a;
+- `snapshotZaSaveCommit` trenutno izostavlja `businessScenarioId`, a IRIU
+  promene nisu deo tog PREDMET-only snapshot-a;
+- IRIU red nema persisted provenance koji pouzdano razlikuje basic,
+  scenario-created, catalog i manual red iste kategorije;
+- incident scenario-first redosleda je potvrđen i ostaje neispravljen;
+- current lifecycle suppressuje zastarele redove i traži korisničke
+  `ZADRŽI/UKLONI` ili `DODAJ/NE DODAJ` odluke, što je superseded novijom
+  owner odlukom `ODQ-SCENARIO-001`;
+- `SAHRANA VAN SRBIJE`, `DOČEK` i `OPELO` imaju add-only UI triggere; pri
+  gašenju uslova redovi ostaju stored i truth sloj ih samo potiskuje;
+- UI uvek čuva `groblje`, a downstream builder ga već koristi kao
+  `MESTO CEREMONIJE`; za `SMESTAJ_URNE` ne postoji eksplicitno istoimeni
+  UI/business ugovor;
+- source i dva pre-regression backup-a koriste `NEDEFINISANA` kao
+  `uzrokSmrti` vrednost i normalizuju `ULICA`/`JAVNO MESTO`; ne postoji
+  dedicated kombinovani regression test niti dokumentovan expected rezultat
+  dovoljan da se `JAVNO MESTO/NEDEFINISANO` proglasi reprodukovanim.
+
+Arhitektonski zaključak:
+
+`RETAIN PREDMET/IRiU CORE + BOUNDED PARTIAL REWRITE OF THE SCENARIO/CONFIGURATION BOUNDARY`
+
+Pre automatskog reconciliation-a potrebni su versioned PREDMET scenario
+snapshot, FIRMA template/default persistence, IRiU row provenance i
+reconciliation-pending tehnički recovery. Izolovan delete patch nije bezbedan.
+
 ### 8.8 UI/UX, migration i product-profile readiness audit
 
 - historical schema 1–22;
@@ -745,22 +778,29 @@ Kasnija FIRMA scenario/KATALOG/default/business-policy promena ne menja istorijs
 
 ### 12.3 Korekcija sadašnjih scenario defects
 
-Pre user-configurable engine-a:
+Pre user-configurable UI-a završavaju se characterization, owner gates i
+scenario/configuration data ugovor. Source korekcije se zatim implementiraju u
+jednom kontrolisanom Phase 4 programu, jer automatsko brisanje nije bezbedno bez
+row provenance-a i PREDMET-owned scenario snapshot-a:
 
 - `JAVNO MESTO/NEDEFINISANO`;
 - `MESTO CEREMONIJE` za urnu;
 - stale/nepotrebni IRiU redovi;
 - incident iz 2026-07-17: scenario redovi su neautorizovano pomereni ispred
   `SANDUK` i osnovnog IRiU bloka;
-- safe keep/remove/archive/merge;
-- očuvanje user cena, količina i napomena;
-- preview i potvrda kada je sadržaj ugrožen;
+- jedna poslovna potvrda `NASTAVI/ODUSTANI`, bez tehničkog consequence preview-a;
+- automatsko uklanjanje neprimenljivih scenario-owned redova, uključujući
+  njihove korisničke vrednosti, bez neaktivne kopije i bez kasnijeg vraćanja;
+- automatsko kreiranje novih potrebnih redova sa praznim korisničkim
+  vrednostima;
+- automatsko poništavanje operativnih/STANJE ROBE posledica ili skriveni,
+  nefinansijski `RECONCILIATION_PENDING` recovery kada trenutno ne uspe;
 - idempotent reconciliation.
 
-Za incident redosleda Phase 3 završava dokaz, karakterizaciju svih mutation
-putanja i zaštitu historical/locked PREDMET granice. Owner odluka zaključava da
-se source korekcija ne radi kao izolovan patch: implementira se u Phase 4
-zajedno sa korisnički konfigurabilnim SCENARIO UI ugovorom.
+Phase 3 završava dokaz, karakterizaciju mutation putanja, schema/migration
+design i zaštitu historical/locked PREDMET granice. Source korekcije se ne rade
+kao izolovani patch-evi: implementiraju se u Phase 4 zajedno sa
+konfigurabilnim SCENARIO ugovorom.
 
 ## 13. Migration, backup i restore pravila
 
@@ -824,9 +864,15 @@ Obavezni incident acceptance uslov:
 Samo za lifecycle-eligible PREDMET:
 
 - eksplicitna akcija;
-- old/new diff;
-- IRiU consequence preview;
-- keep/remove/archive/merge odluka;
+- jedna potvrda da će OPC automatski uskladiti IRiU;
+- bez prikaza tehničkog old/new consequence diff-a korisniku;
+- automatsko uklanjanje svih neprimenljivih scenario-owned IRiU redova i
+  njihovih korisničkih vrednosti;
+- automatsko kreiranje novih potrebnih redova sa praznim vrednostima;
+- uklonjene vrednosti se ne arhiviraju i ne vraćaju pri povratku na raniji
+  SCENARIO;
+- operativne posledice se automatski poništavaju; neuspeh koristi skriveni
+  `RECONCILIATION_PENDING` recovery bez vraćanja korisniku tehničkog zadatka;
 - atomic transaction ili dokazivo bezbedan compensation plan;
 - provenance/audit;
 - nikada automatski za istorijski zaključan PREDMET.
