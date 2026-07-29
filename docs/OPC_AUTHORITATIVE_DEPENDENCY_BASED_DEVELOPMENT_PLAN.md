@@ -160,8 +160,12 @@ Posle audita i korekcije:
 
 Obavezne prethodne korekcije:
 
-- `JAVNO MESTO/NEDEFINISANO`;
-- nedostajući `MESTO CEREMONIJE` za smeštaj/polaganje urne;
+- uklanjanje zavisnosti od hard-coded rezultata za `JAVNO MESTO/NEDEFINISANO`
+  kroz odobreni korisnički podesiv SCENARIO ugovor; postojeće ponašanje se
+  karakterizuje samo radi bezbedne migracije, a ne kao zaseban owner fixture;
+- zasebno informativno PREDMET polje za groblje polaganja urne u postojećem
+  `TIP POLAGANJA URNE` toku; ovaj podatak nije `MESTO CEREMONIJE` odnosno
+  `groblje` same kremacije;
 - zastareli ili nepotrebni IRiU redovi posle promene uslova.
 
 ### 4.4 Platforme i podaci
@@ -462,8 +466,10 @@ acceptance korekcije odlažu do jednog ciljanog latest-HEAD profiler prolaza.
 ### 8.7 Scenario/IRiU audit
 
 - popisati sve hard-coded scenario family/uslove;
-- reprodukovati `JAVNO MESTO/NEDEFINISANO`;
-- mapirati urn placement i `MESTO CEREMONIJE`;
+- karakterizovati postojeće `JAVNO MESTO/NEDEFINISANO` ponašanje isključivo
+  radi migracione sigurnosti ka korisnički podesivom SCENARIO ugovoru;
+- mapirati postojeći `TIP POLAGANJA URNE` tok i zasebno informativno polje
+  groblja polaganja urne, različito od `MESTO CEREMONIJE`/`groblje` kremacije;
 - klasifikovati managed/manual IRiU redove;
 - reprodukovati stale-row ponašanje;
 - mapirati scenario → PREDMET → IRiU → dokumenti → completion signali;
@@ -494,6 +500,16 @@ Source audit završen 29. jula 2026.:
   `uzrokSmrti` vrednost i normalizuju `ULICA`/`JAVNO MESTO`; ne postoji
   dedicated kombinovani regression test niti dokumentovan expected rezultat
   dovoljan da se `JAVNO MESTO/NEDEFINISANO` proglasi reprodukovanim.
+
+Naknadna owner odluka od 29. jula 2026. zatvara oba poslovna gate-a:
+
+- poseban expected-result fixture za `JAVNO MESTO/NEDEFINISANO` više nije
+  implementaciona zavisnost, jer se scenario politika izmešta iz hard-code-a u
+  korisnički podesiv UI; current behavior ostaje characterization input samo za
+  bezbednu migraciju;
+- postojeći padajući meni `TIP POLAGANJA URNE` i njegova uslovna polja ostaju;
+  dodaje se zasebno informativno PREDMET polje za groblje polaganja urne, koje
+  može biti različito od `MESTO CEREMONIJE` odnosno `groblje` same kremacije.
 
 Arhitektonski zaključak:
 
@@ -783,8 +799,11 @@ scenario/configuration data ugovor. Source korekcije se zatim implementiraju u
 jednom kontrolisanom Phase 4 programu, jer automatsko brisanje nije bezbedno bez
 row provenance-a i PREDMET-owned scenario snapshot-a:
 
-- `JAVNO MESTO/NEDEFINISANO`;
-- `MESTO CEREMONIJE` za urnu;
+- migraciona characterization provera sadašnjeg
+  `JAVNO MESTO/NEDEFINISANO` ponašanja, bez zasebnog owner fixture-a ili
+  izolovane hard-code korekcije;
+- zasebno informativno groblje polaganja urne u postojećem
+  `TIP POLAGANJA URNE` toku, odvojeno od mesta/groblja kremacije;
 - stale/nepotrebni IRiU redovi;
 - incident iz 2026-07-17: scenario redovi su neautorizovano pomereni ispred
   `SANDUK` i osnovnog IRiU bloka;
