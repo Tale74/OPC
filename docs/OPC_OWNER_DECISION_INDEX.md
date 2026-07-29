@@ -208,3 +208,27 @@ source or protected business-contract tests change.
 
 Evidence:
 `docs/tasks/OPC_TASK_IRIU_BASIC_SCENARIO_ORDER_REGRESSION_AUDIT_REPORT.md`.
+
+## OPC-OD-WINDOWS-INSTALL-UPDATE-CANONICAL-DB-007 — LOCKED
+
+OPC v.1 Windows uses the existing Inno Setup lane as the preferred installer
+foundation. Manual copying of a release folder is not the target distribution
+model.
+
+Install, update and uninstall may change program files only. They must not
+change, replace, relocate, reset, delete or reinterpret the canonical user
+database. A verified SQLite-consistent pre-update backup is permitted, but
+rollback of application files must not overwrite newer canonical database
+state.
+
+Windows must acquire a stable OPC product-line named mutex before Flutter,
+plugins or SQLite initialize. A second launch must focus the existing instance
+where reliable, or report that OPC is already running and exit without opening
+the database.
+
+Installer/update must refuse program-file replacement while OPC is running.
+MSIX is not selected for OPC v.1 before a separate app-identity/storage audit.
+Executable and installer signing remain subject to the later signing gate.
+
+Evidence:
+`docs/tasks/OPC_TASK_PHASE_1_WINDOWS_MULTIPLE_INSTANCE_CONCURRENT_DB_AUDIT_REPORT.md`.

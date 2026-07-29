@@ -483,12 +483,23 @@ presentation samo ako profiling dokaže potrebu.
 
 Architecture Decision Gate još nije otvoren. Preostali dokazni red je:
 
-1. Windows multiple-instance/concurrent SQLite;
+1. Windows multiple-instance/concurrent SQLite — audit complete 29 July 2026;
 2. Windows startup baseline;
 3. Android PARTE latest-HEAD reproduction/profiling;
 4. kompletan SCENARIO/IRiU audit;
 5. UI/UX, migration, parity i product-profile synthesis;
 6. pouzdan kompletan Flutter test rezultat.
+
+Windows concurrency audit result:
+
+- no process-level guard exists before Flutter/SQLite initialization;
+- every production Windows process opens the same canonical database lane;
+- isolated synthetic probes confirmed blocking during concurrent open/write;
+- recommended correction is a named mutex before Dart/SQLite plus installer
+  running-app coordination;
+- installation/update/uninstall must never modify canonical database identity,
+  location or content;
+- implementation remains unauthorized until the relevant correction gate.
 
 ## 9. Architecture / refactor / rewrite Decision Gate
 

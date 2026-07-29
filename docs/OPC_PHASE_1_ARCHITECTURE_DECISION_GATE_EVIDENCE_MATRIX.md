@@ -10,7 +10,7 @@ Base SHA: `f546aac3dd848ccfa780f1c7edbbca85afd20c27`
 | PREDMET identity/version/log | SOURCE/OWNER/AUDIT COMPLETE WITH IMPLEMENTATION GAPS | identity, version and `logIzmena` Gate 0 reports | implementation design only after Architecture Gate | Not authorized |
 | PREDMET dependent-data lifecycle | FIXTURE-CONFIRMED DEFECTS / DESIGN COMPLETE | referential audit and lifecycle matrix | RI-1–RI-5 implementation and migration proof after Gate | Not authorized |
 | PODSETNIK referential/OS lifecycle | ROOT CAUSE CONFIRMED | orphan audit + referential audit | later implementation; informed model waits for signal inventory | Not authorized |
-| Windows multiple instance | SOURCE-CONFIRMED GUARD ABSENT | `windows/runner/main.cpp`; shared DB name | runtime reproduction, concurrent-write/migration/import matrix | Not authorized |
+| Windows multiple instance | AUDIT COMPLETE / RISK CONFIRMED | no native guard; shared production lane; isolated concurrent open/write blocking; source operation matrix | named-mutex and installer coordination implementation only after authorization | Not authorized |
 | Windows startup | SOURCE CANDIDATES ONLY | `main.dart`, `app.dart`, DB `beforeOpen` | cold/warm phase timings and owner target | Not authorized |
 | Android PARTE performance | SOURCE CANDIDATES ONLY | viewport rebuild and media-load paths | latest-HEAD reproduction and profiler evidence | Not authorized |
 | SCENARIO/IRiU | PARTIAL CORE_V2 / KNOWN BUSINESS DEFECTS | evaluator, truth rules and focused tests | full condition/storage/stale-row/urn audit | Not authorized |
