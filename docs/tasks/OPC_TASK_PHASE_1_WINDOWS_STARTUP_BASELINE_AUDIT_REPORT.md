@@ -295,6 +295,34 @@ Future correction design should evaluate:
 The correction must never force-kill OPC while a database transaction is
 active.
 
+## Android comparison — owner runtime finding
+
+The owner reports that the Android application opens and closes immediately,
+without a perceptible delay.
+
+This is relevant comparative evidence, but it is not yet a controlled
+same-fixture benchmark:
+
+- Windows and Android share the Flutter/business source, so the observation
+  argues against uniform whole-application slowness;
+- Windows additionally uses the native desktop runner, `window_manager`,
+  desktop plugin initialization and the Windows filesystem/SQLite path;
+- the reference Windows machine is a 2-core/4-thread, 8 GB hardware class;
+- the measured Windows canonical database is approximately 80 MB and contains
+  2,217 KATALOG rows;
+- Android database size, row counts, device hardware and exact installed commit
+  were not measured in this task;
+- Android visual close commonly backgrounds/removes the activity and does not
+  by itself prove full process termination or explicit SQLite closure.
+
+The refined working hypothesis is therefore:
+
+`WINDOWS-SPECIFIC STARTUP/SHUTDOWN PATH + HARDWARE CLASS + LOCAL DATABASE SCALE`
+
+This is a ranked hypothesis, not a proven root cause. A later controlled
+comparison should record Android device class, database scale, app version and
+cold-process versus warm/activity-resume behavior.
+
 ## Correction architecture boundary
 
 No correction is authorized by this audit. The smallest evidence-based future
@@ -356,6 +384,7 @@ optimization, schema changes, canonical migration or deployment.
   `8–9 s`.
 - Installed owner-version slow exit: OWNER CONFIRMED; historical `12.8 s`
   evidence exists.
+- Android open/close: OWNER REPORTS IMMEDIATE, WITHOUT PERCEPTIBLE DELAY.
 - Current-HEAD native cold/warm timing: NOT COMPLETED.
 - Canonical database opened by installed runtime: YES, OWNER AUTHORIZED.
 - Canonical database byte/size changed during normal unauthenticated startup:
