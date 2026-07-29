@@ -62,4 +62,3 @@ reviving pre-zero owner decisions as current business authority.
   and owner runtime acceptance separately.
 - Public incident records contain no private local path, credentials, personal
   data or canonical database content.
-

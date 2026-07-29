@@ -83,4 +83,3 @@ Future handover documentation must be:
 6. Recorded incidents are preserved in the current Incident/Anti-Drift
    Register to prevent recurrence.
 7. Documentation cleanup and Git/local authority alignment are authorized.
-
