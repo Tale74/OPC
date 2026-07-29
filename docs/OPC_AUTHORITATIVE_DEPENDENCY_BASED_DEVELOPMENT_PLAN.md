@@ -442,6 +442,23 @@ Owner hipoteza je da prijavljeno „seckanje” može poticati od komplikovanog 
 
 Prvo se proverava da li se simptom još reprodukuje na aktuelnom HEAD-u. Ako ne, zatvara se dokumentovanim runtime nalazom. Ako da, source review i profiling zajedno odlučuju između minimalne korekcije i progresivnog PARTE refactor-a. Audit ne menja owner-prihvaćen PDF/DOCX rezultat.
 
+Source audit završen 29. jula 2026. potvrđuje sledeće kandidate:
+
+- `ParteModuleScreen._load()` serijski traži PARTE pripremu za svaki PREDMET;
+- `InteractiveViewer.onInteractionUpdate` poziva široki `setState` pri svakom
+  pan/zoom update-u i ponovo gradi preview subtree;
+- media blok na rebuild-u kreira novi file-read future, a decode/effects/PNG
+  obrada se izvršava sinhrono;
+- veliki broj editor radnji upisuje draft i zatim pokreće kompletan
+  `buildPlan/_reload`, uključujući DB, media i controller obnovu;
+- sam block-drag tokom kretanja ostaje lokalni widget state i commit se vrši na
+  završetku, pa nije potvrđen kao glavni per-frame DB uzrok.
+
+Nalaz podržava ciljanu progresivnu refaktorizaciju presentation/render granice,
+ne full rewrite. Android uređaj nije bio povezan tokom audita; owner je potvrdio
+da ga može staviti na raspolaganje po preciznom zahtevu. Zato se izbor i
+acceptance korekcije odlažu do jednog ciljanog latest-HEAD profiler prolaza.
+
 ### 8.7 Scenario/IRiU audit
 
 - popisati sve hard-coded scenario family/uslove;
@@ -485,7 +502,8 @@ Architecture Decision Gate još nije otvoren. Preostali dokazni red je:
 
 1. Windows multiple-instance/concurrent SQLite — audit complete 29 July 2026;
 2. Windows startup baseline — source audit complete 29 July 2026; quantitative current-HEAD runtime baseline awaits owner-authorized isolated WINDOWS_TEST instrumentation/build;
-3. Android PARTE latest-HEAD reproduction/profiling;
+3. Android PARTE source audit — complete 29 July 2026; targeted latest-HEAD
+   reproduction/profiling awaits an owner-provided Android device;
 4. kompletan SCENARIO/IRiU audit;
 5. UI/UX, migration, parity i product-profile synthesis;
 6. pouzdan kompletan Flutter test rezultat.
