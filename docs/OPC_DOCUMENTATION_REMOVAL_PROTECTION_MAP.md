@@ -1,5 +1,9 @@
 # OPC — documentation removal protection map
 
+> Historical first-pass map. The current re-evaluation result is maintained in
+> `docs/OPC_GATE_0_PROTECTION_REEVALUATION_AND_CLOSURE_MAP.md`. This document
+> remains evidence for the original 54 PASS / 61 BLOCKED stop decision.
+
 **Status:** NOT PASS – BLOCKERS FOUND – NO DELETION PERFORMED
 **Datum:** 26. jul 2026.
 **Branch:** `task/OPC-GATE-0-DOCUMENTATION-PROTECTION-MAP`

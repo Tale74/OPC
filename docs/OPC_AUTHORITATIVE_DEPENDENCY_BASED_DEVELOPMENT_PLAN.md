@@ -332,6 +332,27 @@ Do aktivacije:
 - mora navesti exact base branch/SHA;
 - nova implementacija je zaustavljena.
 
+### 7.3 Gate 0 protection re-evaluation — 29. jul 2026.
+
+Section-by-section cross-map obuhvatio je svih 61 prvobitno blokiranih
+targeta, a semantic evidence register svih 704 izdvojenih tvrdnji. Ponovna
+evaluacija daje:
+
+- originalni PASS targeti: 54;
+- raniji blockeri podignuti na protection PASS: 36;
+- ukupni protection PASS: 90;
+- i dalje blokirane tačne putanje: 25;
+- insufficient-context tvrdnje na tim putanjama: 169;
+- fizičko uklanjanje: 0.
+
+Owner stop-pravilo važi globalno: dok postoji makar jedna putanja bez potpunog
+section-level autoritativnog naslednika, ne izvršava se delimično uklanjanje
+grupa 5, 6, 8 ili 9. Zato Gate 0 i dalje nije zatvoren, lokalni aktivni izvori
+se još ne konsoliduju fizičkim brisanjem, a `develop/opc-v1` se ne aktivira.
+
+Aktuelna tačna mapa:
+`docs/OPC_GATE_0_PROTECTION_REEVALUATION_AND_CLOSURE_MAP.md`.
+
 ## 8. Phase 1 — minimum evidence pre Architecture Decision Gate-a
 
 Phase 1 prvenstveno prikuplja dokaze. Ne autorizuje automatski korekcije.
@@ -555,7 +576,9 @@ Architecture Decision Gate još nije otvoren. Preostali dokazni red je:
    reproduction/profiling awaits an owner-provided Android device;
 4. kompletan SCENARIO/IRiU audit;
 5. UI/UX, migration, parity i product-profile synthesis;
-6. pouzdan kompletan Flutter test rezultat.
+6. pouzdan kompletan Flutter test rezultat — PASS za neizmenjeni application
+   tree na `e9ea4a9679f0a9f80521fc3aa362e78b7993d073`: 247 passed, 1 skipped,
+   0 failed; kasniji Phase 1 commitovi do ovog checkpoint-a su documentation-only.
 
 Windows concurrency audit result:
 
@@ -1181,17 +1204,16 @@ Nema unapred otvorene owner odluke. Nova owner odluka traži se samo ako protect
 
 1. `ZATVOREN`/`ZAVRŠEN` i historical-lock lifecycle, uključujući eventualni correction/reopen izuzetak.
 2. Tretman istorijski auto-završenih PREDMETA.
-3. Poslovna IRiU keep/remove/archive/merge pravila.
-4. Owner runtime acceptance za Codex-definisane Windows startup i Android PARTE tehničke targete.
+3. Owner runtime acceptance za Codex-definisane Windows startup i Android PARTE tehničke targete.
 
 ### Pre odgovarajućih funkcionalnih/product taskova
 
-5. PDF RAČUN toggle migration default za postojeće instalacije.
-6. Poslovni sadržaj i PDF/DOCX scope NALOGA CVEĆARI.
-7. Globalni trenutak aktivacije EUR režima i eventualna owner odluka o konverziji tada otvorenih PREDMETA.
-8. OPC Srbija app identity i update kanal.
-9. Multilingual product/business identity.
-10. Publisher i signing-key custody/transfer model.
+4. PDF RAČUN toggle migration default za postojeće instalacije.
+5. Poslovni sadržaj i PDF/DOCX scope NALOGA CVEĆARI.
+6. Globalni trenutak aktivacije EUR režima i eventualna owner odluka o konverziji tada otvorenih PREDMETA.
+7. OPC Srbija app identity i update kanal.
+8. Multilingual product/business identity.
+9. Publisher i signing-key custody/transfer model.
 
 Architecture option, persistence model, module topology, refactor/rewrite granice, technical versioning i release mehanizam pripadaju Codex tehničkoj odluci po Decision Authority Matrix-u. Svaki njihov business-impact izuzetak vraća se owneru.
 

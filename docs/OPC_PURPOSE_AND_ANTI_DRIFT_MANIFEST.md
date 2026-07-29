@@ -116,22 +116,27 @@ Protected terms include:
 
 ```text
 PREDMET
-narucilac
-firma
+PLATILAC
+FIRMA
 ADMINISTRATOR
 SAVETNIK
-osnovni
-srednji
-potpun
 ```
 
-New terms may only be used if marked:
+`NARUČILAC`/`narucilac` is a legacy name for the same business concept now
+canonically presented as `PLATILAC`. Legacy DB/JSON compatibility may retain an
+internal identifier, but new UI, PDF/DOCX and user documentation use
+`PLATILAC`.
+
+`Osnovni` / `Srednji` / `Potpuni` package terms are historical compatibility
+evidence, not active current-product policy. Section 2.1 governs them.
+
+Other new business terms may only be used if marked:
 
 ```text
 PROPOSED TERM - NOT IMPLEMENTED - OWNER DECISION REQUIRED
 ```
 
-Do not introduce `klijent` as a replacement for `narucilac`.
+Do not introduce `klijent` as a replacement for `PLATILAC`.
 
 ## 8. Mandatory Task-Start Manifest Invocation
 
@@ -206,7 +211,7 @@ Existing JSON transfer preserved:
 Terminology preserved:
 - yes / no
 
-Future Web Pristup not blocked:
+OPC Web remains outside current implementation scope:
 - yes / no
 
 Source changes within scope:

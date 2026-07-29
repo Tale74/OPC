@@ -20,7 +20,7 @@ Base SHA: `f546aac3dd848ccfa780f1c7edbbca85afd20c27`
 | Localization/country profiles | NOT IMPLEMENTED / READINESS CHARACTERIZED | fixed Serbian locale and embedded strings | post-Serbia product-line architecture | Not authorized |
 | Dual currency | NOT IMPLEMENTED / RSD-BOUND CURRENT OUTPUTS | fixed money/QR/document labels | later owner-approved MODUL DVE VALUTE design | Not authorized |
 | Signing/release identity | NOT READY | Android debug release signing; incomplete custody evidence | separate signing readiness audit | Not authorized |
-| Static validation | PASS | `flutter analyze --no-pub`, no issues | none for current source snapshot | Does not authorize implementation |
+| Static/full-suite validation | PASS FOR UNCHANGED APPLICATION TREE | at application source `e9ea4a9679f0a9f80521fc3aa362e78b7993d073`: `flutter analyze --no-pub` PASS; complete `flutter test --no-pub` PASS with 247 passed, 1 skipped, 0 failed; subsequent Phase 1 changes are documentation-only | rerun only after a source/test/configuration change, without an artificial short timeout | Does not authorize implementation |
 | Complete Flutter test suite | NOT COMPLETED | 15-minute run produced no final result; orphan tester remained | isolate runner/test hang and obtain final suite result | Build gate closed |
 
 ## Decision readiness
