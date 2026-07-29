@@ -1,6 +1,12 @@
 # OPC Current Development State
 
-Status: public baseline snapshot from prior audits and local project documentation.
+Status: functional and usable post-zero baseline.
+
+Current owner authority:
+`docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md`.
+
+Permanent incident evidence:
+`docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md`.
 
 This document is a continuity summary, not a new technical audit and not a build certification.
 

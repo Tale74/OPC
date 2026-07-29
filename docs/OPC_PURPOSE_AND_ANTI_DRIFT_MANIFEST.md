@@ -2,6 +2,11 @@
 
 This manifest is a mandatory project rule. Every OPC task must read it at task start and check compliance at task end.
 
+Current owner authority begins with
+`docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md`. Pre-zero documents
+are not current owner authority. Confirmed incidents remain permanent
+anti-drift evidence in `docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md`.
+
 Changed task reports are automatically checked by `scripts/validate_opc_manifest_gate.py` and the `OPC Manifest Gate` GitHub Actions workflow.
 
 ## 1. OPC Core Purpose
