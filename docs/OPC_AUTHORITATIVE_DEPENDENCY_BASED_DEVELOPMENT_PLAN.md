@@ -484,7 +484,7 @@ presentation samo ako profiling dokaže potrebu.
 Architecture Decision Gate još nije otvoren. Preostali dokazni red je:
 
 1. Windows multiple-instance/concurrent SQLite — audit complete 29 July 2026;
-2. Windows startup baseline;
+2. Windows startup baseline — source audit complete 29 July 2026; quantitative current-HEAD runtime baseline awaits owner-authorized isolated WINDOWS_TEST instrumentation/build;
 3. Android PARTE latest-HEAD reproduction/profiling;
 4. kompletan SCENARIO/IRiU audit;
 5. UI/UX, migration, parity i product-profile synthesis;
@@ -500,6 +500,24 @@ Windows concurrency audit result:
 - installation/update/uninstall must never modify canonical database identity,
   location or content;
 - implementation remains unauthorized until the relevant correction gate.
+
+Windows startup source-audit result:
+
+- the native shell can be visible before the first usable Flutter route;
+- `main.dart` awaits window-manager setup and global Serbian date-symbol
+  initialization before `runApp`;
+- first-login routing waits on the first database query;
+- every database open repeats schema recovery/validation, 74 sequential seed
+  attempts, an unconditional built-in policy update and a full KATALOG
+  stable-ID scan;
+- post-login work also starts automatic status, reminder, setup-readiness and
+  SAVETNIK operations;
+- one synthetic external harness did not reach its first SQLite phase within
+  nine minutes and produced no valid OPC performance metric; it must not be
+  repeated;
+- a quantitative current-HEAD baseline remains gated by explicit owner
+  authorization for isolated WINDOWS_TEST instrumentation and a release build;
+- canonical database, application source and runtime behavior remain unchanged.
 
 ## 9. Architecture / refactor / rewrite Decision Gate
 
