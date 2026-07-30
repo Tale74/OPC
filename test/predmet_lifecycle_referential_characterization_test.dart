@@ -34,7 +34,7 @@ void main() {
     );
 
     test(
-      'hard delete currently leaves reminder and PARTE rows as FK orphans',
+      'hard delete transaction explicitly removes reminder and PARTE rows',
       () async {
         final db = createTestDatabase();
         addTearDown(db.close);
@@ -53,15 +53,8 @@ void main() {
         await PredmetiRepository(db).obrisiPredmet(predmet.id);
 
         expect(await db.select(db.predmeti).get(), isEmpty);
-        expect(await _predmetOrphanCounts(db), {
-          ..._zeroOrphanInventory,
-          'ceremony_reminder_settings': 1,
-          'parte_pripreme': 1,
-        });
-        expect(await _foreignKeyViolationTables(db), {
-          'ceremony_reminder_settings',
-          'parte_pripreme',
-        });
+        expect(await _predmetOrphanCounts(db), _zeroOrphanInventory);
+        expect(await _foreignKeyViolationTables(db), isEmpty);
       },
     );
 

@@ -758,6 +758,29 @@ implementation authorization. Hard-delete coordination can proceed without a
 new business-policy answer. Replacement, anonymization and restore must stop at
 their recorded post-zero owner gates.
 
+#### RI-2 hard-delete slice result - 2026-07-30
+
+The first technically independent RI-2 slice is implemented:
+
+- both production UI delete paths use one application-level hard-delete
+  coordinator;
+- the coordinator inventories PARTE/reminder state before mutation;
+- exclusively owned PARTE media is staged through the existing recoverable
+  trash mechanism, while shared media is preserved;
+- only stored/scoped ceremony notification IDs are cancelled;
+- the existing STANJE ROBE compensation and one DB transaction explicitly
+  remove reminder, PARTE, log, contact, IRiU decision, IRiU, consequence and
+  PREDMET rows;
+- DB/cancellation failure restores staged media and re-establishes reminder
+  scheduling before surfacing failure;
+- successful commit purges staged app-owned media best-effort.
+
+No schema, migration, FK setting, JSON format, anonymization, replacement or
+restore behavior changed. This technical PASS does not close owner runtime
+acceptance.
+
+Remaining RI-2 slices stay closed at their post-zero owner gates.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 

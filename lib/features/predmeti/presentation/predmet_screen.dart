@@ -10,6 +10,7 @@ import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
+import '../application/predmet_hard_delete_coordinator.dart';
 import '../data/iriu_repository.dart';
 import '../data/kontakt_lica_repository.dart';
 import '../data/predmeti_repository.dart';
@@ -24,6 +25,7 @@ import '../parte/application/parte_preparation_service.dart';
 import '../parte/data/parte_media_store.dart';
 import '../parte/data/parte_preparation_repository.dart';
 import '../parte/domain/parte_models.dart';
+import '../reminders/ceremony_notification_gateway.dart';
 import 'segments/ceremonija_segment.dart';
 import 'segments/finansije_segment.dart';
 import 'segments/iriu_segment.dart';
@@ -870,7 +872,10 @@ class _PredmetScreenState extends State<PredmetScreen> {
   Future<void> _obrisiPredmet({bool popAfterDelete = true}) async {
     final ok = await _potvrdiBrisanje(context);
     if (ok != true || !mounted) return;
-    await widget.predmetiRepo.obrisiPredmet(widget.predmetId);
+    await PredmetHardDeleteCoordinator(
+      db: widget.predmetiRepo.db,
+      notificationGateway: AndroidCeremonyNotificationGateway(),
+    ).deletePredmet(widget.predmetId);
     if (!mounted) return;
     _showSnackBarSafely(
       const SnackBar(

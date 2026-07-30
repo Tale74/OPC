@@ -256,6 +256,20 @@ Deliver:
 
 `PRAGMA foreign_keys` remains off in RI-2.
 
+RI-2 hard-delete execution result (2026-07-30):
+
+- one application coordinator now owns DB/filesystem/notification ordering;
+- both production delete entry points route through it;
+- the DB transaction explicitly removes every declared PREDMET child;
+- exclusive PARTE media is staged and purged; shared media is retained;
+- cancellation is limited to stored OPC notification IDs;
+- failure tests prove DB preservation, media restoration and reminder
+  rescheduling;
+- FK enforcement remains off and no schema/migration was added.
+
+This closes only the hard-delete implementation slice. Anonymization,
+replacement and restore remain blocked by their recorded owner gates.
+
 ### RI-3 - isolated orphan recovery migration
 
 Only on synthetic and verified isolated copies:

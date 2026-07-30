@@ -17,6 +17,7 @@ import '../../setup/application/setup_readiness_service.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
+import '../application/predmet_hard_delete_coordinator.dart';
 import '../data/iriu_repository.dart';
 import '../data/predmeti_repository.dart';
 import '../reminders/ceremony_notification_gateway.dart';
@@ -588,7 +589,10 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       ),
     );
     if (ok != true || !mounted) return;
-    await widget.predmetiRepo.obrisiPredmet(p.id);
+    await PredmetHardDeleteCoordinator(
+      db: widget.predmetiRepo.db,
+      notificationGateway: AndroidCeremonyNotificationGateway(),
+    ).deletePredmet(p.id);
     if (!mounted) return;
     _showSnackBarSafely(
       SnackBar(

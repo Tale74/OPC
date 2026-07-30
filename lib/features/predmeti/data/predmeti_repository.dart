@@ -198,6 +198,13 @@ class PredmetiRepository {
 
   Future<void> obrisiPredmet(int id) => _db.transaction(() async {
     await StanjeRobeLifecycleService(db: _db).reconcileFullPredmetDelete(id);
+    await _db.customStatement(
+      'DELETE FROM ceremony_reminder_settings WHERE predmet_id = ?',
+      [id],
+    );
+    await (_db.delete(
+      _db.partePripreme,
+    )..where((p) => p.predmetId.equals(id))).go();
     await (_db.delete(
       _db.logIzmena,
     )..where((l) => l.predmetId.equals(id))).go();
