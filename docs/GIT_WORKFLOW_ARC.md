@@ -1,8 +1,20 @@
 # Git Workflow and ARC Continuity
 
-## Stable baseline
+## Approved operational baseline
 
-`main` is the stable baseline branch. It must remain buildable and reviewable. Direct functional work should not begin from a dirty working tree.
+Do not infer the operational source baseline from the repository default
+branch. Every task must use the exact branch and SHA named by the latest
+post-zero handover or completed integration task. `main` remains a
+stable/release branch unless a later explicit integration decision changes its
+role.
+
+The initial post-zero documentation baseline is:
+
+- branch: `task/OPC-ZERO-BASELINE-AUTHORITY-AND-INCIDENT-REGISTER`;
+- SHA: `0dde50fb073dbcad0af7d7ce1d9a53c8e5c61570`.
+
+Direct work must not begin from a dirty worktree or a divergent local/upstream
+baseline.
 
 Every task starts with:
 
@@ -50,7 +62,8 @@ Use one branch per future task:
 task/OPC-XXX-short-description
 ```
 
-Branch from the current approved `main`. Keep unrelated work out of the branch.
+Branch from the exact current approved operational baseline recorded in the
+handover. Do not assume `main`. Keep unrelated work out of the branch.
 
 ## Commit discipline
 

@@ -83,3 +83,36 @@ Future handover documentation must be:
 6. Recorded incidents are preserved in the current Incident/Anti-Drift
    Register to prevent recurrence.
 7. Documentation cleanup and Git/local authority alignment are authorized.
+
+## 7. Post-zero continuity confirmation - 2026-07-30
+
+The owner confirmed the following continuing boundaries after establishment of
+the zero baseline:
+
+- `PREDMET` remains the single business truth; derivatives cannot become
+  parallel authority.
+- Windows and Android remain equal, standalone local applications.
+- The designated canonical database is not deleted, replaced or used for
+  experiments.
+- Data work requires backup-first handling, isolated migration copies,
+  readable-backup proof and rollback/restore evidence.
+- Historical package/licensing code must not restrict the current native
+  product.
+- OPC Web is not current implementation scope.
+- OPC v.1 Serbia must be completed and stabilized before `OPC_v.1_Int`.
+- A future localized version includes Serbian in both Latin and Cyrillic
+  scripts.
+- The approved dependency plan and its originating draft remain prospective
+  upgrade-program evidence.
+- Git history is preserved without history rewrite.
+
+The owner also reconfirmed the incident discipline:
+
+- the unauthorized IRiU ordering change is not owner-approved merely because a
+  diff, changed test or technical PASS exists;
+- a hypothesis is not a confirmed root cause;
+- accepted behavior is not changed under the label of refactoring;
+- technical PASS and owner runtime acceptance are recorded separately.
+
+The active Git documentation classification is maintained in
+`docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md`.

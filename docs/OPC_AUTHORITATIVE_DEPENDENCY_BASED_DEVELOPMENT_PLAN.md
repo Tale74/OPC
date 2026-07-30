@@ -1,6 +1,6 @@
 # OPC — authoritative dependency-based development plan
 
-**Status:** OWNER APPROVED – AUTHORITATIVE ACTIVATION PENDING GATE 0 CLOSURE
+**Status:** `POST-ZERO PROSPECTIVE UPGRADE PROGRAM`
 **Autoritativnost:** Tale je 26. jula 2026. odobrio sadržaj, Decision Authority Matrix i dependency red. Dokument je obavezni kontrolni naslednik plan-draft ciklusa, ali još ne autorizuje aplikacionu implementaciju dok documentation protection, removal, Git/lokalna sinhronizacija i Gate 0 closure ne dobiju PASS.
 **Approved candidate branch:** `task/OPC-GATE-0-FINAL-PLAN-OWNER-APPROVAL`
 **Approved candidate SHA:** `8fb5aed98568e8e7becf7f17792e5066e3dfefdd`
@@ -10,6 +10,30 @@
 **Ugrađeni review nalazi:** F-01–F-12 iz `docs/OPC_AUTHORITATIVE_DEVELOPMENT_PLAN_OWNER_REVIEW_FINDINGS.md`
 **Ugrađene naknadne owner odluke:** potpuni code/architecture review; PREDMET-core dependency zaštita; tehnička/owner decision matrica; OPC v.1 / OPC_v.1_Int razdvajanje; MODUL DVE VALUTE.
 **ARC–T.A.R.S.:** Definiši, ugradi, potvrdi, zapamti.
+
+## Post-zero interpretation rule - 2026-07-30
+
+The zero baseline at
+`docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md` supersedes this
+plan's pre-zero authority and Gate 0 status statements.
+
+This document remains the owner-carried-forward prospective dependency
+program. It does not revive pre-zero owner decisions as current authority and
+does not authorize application implementation by itself.
+
+Historical statements below about active `SOURCE/PROJECT_DOCS`, an external
+`PROJECT_DOCS`, unresolved pre-zero document protection, or plan activation
+pending the former Gate 0 describe the pre-zero state only. The current
+classification is
+`docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md`.
+
+Current implementation tasks still require an exact post-zero scope,
+applicable technical evidence, post-zero owner approval for business-policy
+changes, and the validation/runtime/Git gates defined by current workflow.
+
+The effective post-zero status of this document is:
+
+`POST-ZERO PROSPECTIVE UPGRADE PROGRAM`
 
 ## 1. Svrha plana
 

@@ -4,14 +4,17 @@ Status: public continuity baseline.
 
 | Area | Current source of truth | Supporting sources | Status / caution |
 | --- | --- | --- | --- |
-| Core purpose | `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md` | `README.md`, `docs/PRODUCT_DIRECTION.md` | MASTER / CURRENT. |
-| Owner decisions | `docs/OPC_OWNER_DECISION_REPORT.md` | Latest task reports under `docs/tasks/` | MASTER / CURRENT for confirmed decisions; open queues remain unresolved. |
-| Terminology | `docs/OPC_CANONICAL_TERMINOLOGY_GLOSSARY.md` | Manifest, source code evidence, local `PROJECT_DOCS` | MASTER / CURRENT with fact-check queue. |
+| Post-zero owner authority | `docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md` | Later explicitly owner-confirmed Git records | MASTER / CURRENT. Pre-zero owner decisions are not current authority. |
+| Incident and anti-drift evidence | `docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md` | Linked historical reports and Git history | PERMANENT EVIDENCE; does not revive pre-zero policy. |
+| Documentation classification | `docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md` | Git tree and history | MASTER / CURRENT classification of active, technical, historical and future-scope documents. |
+| Core purpose | `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md` | Post-zero authority, `README.md`, `docs/PRODUCT_DIRECTION.md` | CURRENT GOVERNANCE, subordinate to post-zero owner authority. |
+| Pre-zero owner decisions | None | `docs/OPC_OWNER_DECISION_*.md`, pre-zero task reports | HISTORICAL EVIDENCE ONLY unless explicitly reconfirmed post-zero. |
+| Terminology | `docs/OPC_CANONICAL_TERMINOLOGY_GLOSSARY.md` | Manifest and source-code evidence | TECHNICAL/CONTINUITY BASELINE; business-policy changes require post-zero owner confirmation. |
 | Source-of-truth hierarchy | This document | `docs/GIT_WORKFLOW_ARC.md`, task reports | MASTER / CURRENT. |
 | Stop boundaries | `docs/OPC_IMPLEMENTATION_STOP_LIST.md` | Manifest special gates | MASTER / CURRENT. |
-| Locked rules | `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md` | Manifest, owner report, local locked rules docs | PUBLIC-SAFE SUMMARY; local raw docs remain supporting evidence only. |
-| Backup/restore policy | `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md` | Owner report, local backup/restore policy, JSON transfer evidence | PUBLIC-SAFE SUMMARY; identity guard remains technical-audit item. |
-| Business logic extraction queue | `docs/OPC_BUSINESS_LOGIC_EXTRACTION_QUEUE.md` | Local locked rules, terminology lineage, current development state | ACTIVE QUEUE; not an implementation spec. |
+| Locked-rule summary | `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md` | Manifest, current source/tests and Git history | PRE-ZERO/TECHNICAL EVIDENCE; not current owner authority. |
+| Backup/restore policy | `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md` | Post-zero canonical-data boundary, current source/tests and Git history | TECHNICAL/RECOVERY EVIDENCE; identity guard remains a technical-audit item. |
+| Business logic extraction queue | `docs/OPC_BUSINESS_LOGIC_EXTRACTION_QUEUE.md` | Current source/tests, terminology lineage and current development state | TECHNICAL EVIDENCE QUEUE; not an implementation spec or current policy. |
 | Business logic rule inventory | `docs/OPC_BUSINESS_LOGIC_RULE_INVENTORY.md` | Full product baseline audit, prior task reports, source/test evidence | CURRENT AUDIT BASELINE; not an implementation spec. |
 | Full business policy and logic snapshot | `docs/OPC_FULL_BUSINESS_POLICY_AND_LOGIC_SNAPSHOT.md` | Rule inventory, public reports, source/test inspection | CURRENT PUBLIC BUSINESS ATLAS; not an implementation spec. |
 | Business domain and flow map | `docs/OPC_BUSINESS_DOMAIN_AND_FLOW_MAP.md` | Full snapshot, source/test inspection | CURRENT PUBLIC DOMAIN/FLOW MAP; text diagrams only, not implementation design. |
@@ -28,17 +31,20 @@ Status: public continuity baseline.
 | Characterization evidence foundation | `docs/OPC_CHARACTERIZATION_EVIDENCE_FOUNDATION.md` | Coverage matrix, gap register, before-change rules, pseudocode learning layer | CURRENT PUBLIC CHARACTERIZATION BASELINE; evidence classification only, not implementation authorization. |
 | Characterization coverage and gaps | `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`, `docs/OPC_CHARACTERIZATION_GAP_REGISTER.md`, `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md` | Module contracts, grouped safe upgrade plan, current tests, source/docs evidence | CURRENT PUBLIC CHARACTERIZATION CONTROL SET; gaps are blockers/evidence buckets, not roadmap or priority order. |
 | PREDMET lifecycle identity version characterization | `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_CHARACTERIZATION.md` | PREDMET lifecycle coverage matrix, identity/version/change-log gap register, Web/sync identity risk register, source/test evidence | CURRENT PUBLIC PREDMET CHARACTERIZATION; docs-only evidence baseline, not implementation authorization. |
-| Current development state | `docs/OPC_CURRENT_DEVELOPMENT_STATE.md` | Local `PROJECT_MAP_OPC_v1.json`, prior reports | PUBLIC BASELINE; not a replacement for a full technical audit. |
+| Current development state | `docs/OPC_CURRENT_DEVELOPMENT_STATE.md` | Current source/tests, post-zero reports and Git history | PUBLIC BASELINE; not a replacement for a full technical audit. |
 | Git workflow | `docs/GIT_WORKFLOW_ARC.md` | GitHub branch/commit/report handoffs | MASTER / CURRENT. |
 | Task report format | `docs/templates/OPC_TASK_TEMPLATE.md` | Manifest gate script | MASTER / CURRENT. |
 | Public task reports | `docs/tasks/*.md` | Git history | AUDIT EVIDENCE; latest report wins only inside its scope. |
-| Local project docs in `SOURCE/PROJECT_DOCS` | Not public master yet | See main task report inventory | SUPPORTING / NEEDS OWNER REVIEW before promotion. |
-| Control copy `../PROJECT_DOCS` | Not public master | Local filesystem only | BACKUP / CONTROL COPY; do not promote directly without owner review. |
-| Promoted local-doc summaries | `docs/OPC_PROJECT_DOCS_PUBLIC_PROMOTION_MAP.md`, `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md`, `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md` | `SOURCE/PROJECT_DOCS`, `../PROJECT_DOCS` | PUBLIC-SAFE SUMMARY; raw local docs remain local/control evidence. |
-| Terminology lineage | `docs/OPC_TERMINOLOGY_LINEAGE_REPORT.md` | Source/UI/PDF evidence and public/local docs | CURRENT EVIDENCE REPORT; implementation cleanup remains blocked. |
+| Removed parallel project docs | None | Git history, protected backups where applicable | `SOURCE/PROJECT_DOCS` and the external parallel `PROJECT_DOCS` are absent and are not live dependencies or authority. |
+| Promoted pre-zero summaries | Inventory-classified Git documents | Current source/tests and Git history | PRE-ZERO OR TECHNICAL EVIDENCE ONLY; no raw local source remains active. |
+| Terminology lineage | `docs/OPC_TERMINOLOGY_LINEAGE_REPORT.md` | Source/UI/PDF evidence, Git documents and history | PRE-ZERO TECHNICAL EVIDENCE; implementation cleanup remains separately gated. |
 | Source code under `lib/`, `test/`, platform folders | Runtime implementation evidence | Generated DB files, tests, build configs | Technical source of implementation truth, but not changed by this docs baseline. |
 | Private databases, exports, backups, credentials | Private runtime data | None in public repo | PRIVATE / DO NOT PROMOTE. |
 
 ## Hierarchy Rule
 
-For future OPC tasks, public repository docs in `docs/` define the active continuity baseline. Local `PROJECT_DOCS` may provide historical context and implementation memory, but owner review is required before any local document is promoted as public master text.
+For future OPC tasks, `SOURCE/docs` is the single active local Git working copy
+of GitHub documentation. Authority follows the post-zero inventory and the
+first matching classification rule. Source/tests prove implemented behavior;
+only post-zero owner records approve business policy. Removed local
+`PROJECT_DOCS` folders are not consulted.
