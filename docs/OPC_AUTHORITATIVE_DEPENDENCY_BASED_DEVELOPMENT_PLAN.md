@@ -652,6 +652,20 @@ Subsequent owner-authorized installed-runtime evidence:
 
 ## 9. Architecture / refactor / rewrite Decision Gate
 
+### Post-zero technical gate result - 2026-07-30
+
+The post-zero synthesis at
+`docs/OPC_POST_ZERO_ARCHITECTURE_DECISION_GATE_SYNTHESIS.md` closes the
+whole-codebase technical architecture choice:
+
+`RETAIN + PROGRESSIVE REFACTOR + BOUNDED SUBSYSTEM CHANGE ONLY WHERE PROVEN`.
+
+Full rewrite is rejected by current evidence. Windows startup/shutdown timing
+and Android PARTE profiling are safely deferred for this whole-codebase choice
+but remain mandatory before code changes in their affected performance areas.
+Business-policy and lifecycle meaning changes still require a post-zero owner
+gate. This result does not authorize implementation.
+
 Ovaj gate dolazi posle minimalnih Phase 1 dokaza i pre velikog scenario/configuration ili modularnog implementacionog rada.
 
 ### 9.1 Opcije koje se porede

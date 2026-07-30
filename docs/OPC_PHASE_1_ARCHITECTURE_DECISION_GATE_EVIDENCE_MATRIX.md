@@ -1,6 +1,12 @@
 # OPC — Phase 1 Architecture Decision Gate evidence matrix
 
-Status: `ACTIVE PHASE 1 CONTROL MATRIX — DECISION GATE NOT YET OPEN`
+Status: `POST-ZERO TECHNICAL ARCHITECTURE DECISION PASS - IMPLEMENTATION NOT AUTHORIZED`
+
+Post-zero controlling synthesis:
+`docs/OPC_POST_ZERO_ARCHITECTURE_DECISION_GATE_SYNTHESIS.md`.
+
+Pre-zero owner statements in this matrix are historical/prospective evidence
+only.
 
 Base SHA: `f546aac3dd848ccfa780f1c7edbbca85afd20c27`
 
@@ -14,18 +20,18 @@ Base SHA: `f546aac3dd848ccfa780f1c7edbbca85afd20c27`
 | Windows startup | INSTALLED OWNER BASELINE CONFIRMED / CURRENT-HEAD BASELINE PENDING | installed owner version reaches login in approximately 8–9 s; startup changed canonical DB by +8,192 bytes while integrity remained `ok`; Android owner runtime is perceptually immediate; source maps Windows/pre-`runApp`, DB scale and repeated recovery/validation candidates | owner-authorized current-HEAD isolated WINDOWS_TEST instrumentation/build, cold/warm phase timings and owner target; later controlled Android comparison | Not authorized |
 | Windows exit | OWNER SLOW-EXIT CONFIRMED / SOURCE CANDIDATE IDENTIFIED | historical normal-close timing 12.8 s; current owner finding; `windowManager.destroy()` awaited without explicit production `AppDatabase.close()` or shutdown coordinator | instrument DB/background/plugin/window shutdown phases before correction | Not authorized |
 | Android PARTE performance | SOURCE AUDIT COMPLETE / LIVE PROFILING PENDING | sequential N+1 preparation queries; whole-viewport rebuild on each pan/zoom update; fresh media reads and synchronous image effects on the UI isolate; edit persistence followed by full plan reload | targeted latest-HEAD profiler run on an owner-provided Android device, with narrow/wide and media/no-media fixtures, before selecting or accepting a correction | Not authorized |
-| SCENARIO/IRiU | COMPLETE SOURCE AUDIT / OWNER BUSINESS GATES CLOSED / BOUNDED PARTIAL BOUNDARY REWRITE JUSTIFIED | one scenario ID over hard-coded condition families; confirmed ordering incident; owner-locked automatic reconciliation conflicts with current suppress/dialog behavior; no row provenance; no FIRMA template storage; urn-place semantic gap | `JAVNO MESTO/NEDEFINISANO` is not a separate owner fixture or isolated correction gate after the approved move from hard-coded rules to user-configurable scenarios; current behavior is characterized only for migration safety. `TIP POLAGANJA URNE` keeps its existing conditional fields and gains a distinct informational PREDMET field for the cemetery of urn placement, separate from cremation `MESTO CEREMONIJE`/`groblje`. Implementation only in a new Projects chat after Architecture Gate. | Not authorized |
+| SCENARIO/IRiU | COMPLETE SOURCE AUDIT / POST-ZERO BUSINESS GATES REMAIN SEPARATE | one scenario ID over hard-coded condition families; confirmed ordering incident; no row provenance; no FIRMA template storage; current suppress/dialog behavior | bounded scenario/configuration boundary is technically justified; lifecycle, reconciliation, user-facing meaning and any new PREDMET business field require a post-zero owner gate before implementation | Not authorized |
 | JSON/backup/restore | TESTED FOUNDATION / HIGH COUPLING / RESTORE RISK | transfer core, large orchestration file, migration tests | supported-version and product-profile synthesis; reliable full suite | Not authorized |
 | UI/UX parity | SOURCE RESPONSIVE BRANCHES / RUNTIME GAP | shared Flutter tree and platform branches | fixed Android narrow/wide and Windows scenario matrix | Not authorized |
 | Localization/country profiles | NOT IMPLEMENTED / READINESS CHARACTERIZED | fixed Serbian locale and embedded strings | post-Serbia product-line architecture | Not authorized |
 | Dual currency | NOT IMPLEMENTED / RSD-BOUND CURRENT OUTPUTS | fixed money/QR/document labels | later owner-approved MODUL DVE VALUTE design | Not authorized |
 | Signing/release identity | NOT READY | Android debug release signing; incomplete custody evidence | separate signing readiness audit | Not authorized |
 | Static/full-suite validation | PASS FOR UNCHANGED APPLICATION TREE | at application source `e9ea4a9679f0a9f80521fc3aa362e78b7993d073`: `flutter analyze --no-pub` PASS; complete `flutter test --no-pub` PASS with 247 passed, 1 skipped, 0 failed; subsequent Phase 1 changes are documentation-only | rerun only after a source/test/configuration change, without an artificial short timeout | Does not authorize implementation |
-| Complete Flutter test suite | NOT COMPLETED | 15-minute run produced no final result; orphan tester remained | isolate runner/test hang and obtain final suite result | Build gate closed |
+| Redundant later Flutter attempt | NO NEW RESULT / DOES NOT INVALIDATE PASS | a later attempt stopped without a final result on the identical application tree | do not repeat for documentation-only changes; any future application change reopens the successive gate | Does not authorize implementation |
 
-## Decision readiness
+## Post-zero decision result
 
-Current provisional technical direction:
+Technical direction:
 
 `RETAIN + PROGRESSIVE REFACTOR`.
 
@@ -37,9 +43,11 @@ Permitted partial-rewrite candidates for later comparison:
 
 Full rewrite is not supported by current evidence.
 
-The Architecture Decision Gate opens only after every row required by Phase 1
-has either:
+The whole-codebase technical Architecture Decision Gate is closed by the
+post-zero synthesis. Deferred measurement rows remain mandatory sub-gates
+before their affected implementation areas:
 
-- a complete evidence result; or
-- an explicit, documented owner-approved deferral that cannot change the
-  architecture decision.
+- current-HEAD Windows timing before startup/shutdown performance work;
+- latest-HEAD Android profiling before PARTE performance work or partial
+  rewrite;
+- post-zero business gates before lifecycle/SCENARIO meaning changes.
