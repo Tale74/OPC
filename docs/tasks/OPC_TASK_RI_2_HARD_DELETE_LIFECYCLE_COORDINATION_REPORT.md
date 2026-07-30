@@ -1,6 +1,6 @@
 # OPC task report - RI-2 hard-delete lifecycle coordination
 
-**Status:** `TECHNICAL IMPLEMENTATION PASS - OWNER RUNTIME ACCEPTANCE SEPARATE`
+**Status:** `TECHNICAL PASS - OWNER RUNTIME ACCEPTANCE DEFERRED / OWED`
 **Date:** 2026-07-30
 
 ## OPC MANIFEST CHECK — TASK START
@@ -136,11 +136,27 @@ as owner approval of a business change.
 - .NET UTF-8/no-BOM validation: PASS for all changed text files;
 - technical PASS and owner Windows/Android runtime acceptance: separate.
 
-## 7. Next dependency
+## 7. Post-zero owner runtime decision
 
-After technical/Git closure, owner Windows and Android runtime acceptance should
-confirm actual hard delete with a disposable synthetic PREDMET containing PARTE
-media and (on Android) a scheduled reminder.
+On 2026-07-30 the owner explicitly deferred the Windows/Android hard-delete
+runtime acceptance because the required build and runtime time is not currently
+available.
+
+Recorded status:
+
+- technical implementation: PASS;
+- owner runtime acceptance: `DEFERRED / OWED`;
+- execution point: together with the next authorized runtime cycle;
+- this deferral is not a runtime PASS and supplies no new business-policy
+  authority;
+- the owed check remains a disposable synthetic PREDMET with PARTE media and,
+  on Android, a scheduled reminder, using an isolated test installation/data
+  lane rather than canonical production data.
+
+## 8. Next dependency
+
+At the next authorized runtime cycle, include the deferred Windows and Android
+hard-delete acceptance before that cycle is closed.
 
 No further RI-2 behavior is automatically authorized. Anonymization,
 replacement and restore must remain stopped at their recorded post-zero owner

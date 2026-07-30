@@ -781,6 +781,11 @@ acceptance.
 
 Remaining RI-2 slices stay closed at their post-zero owner gates.
 
+Owner runtime acceptance for this hard-delete slice is explicitly
+`DEFERRED / OWED` and must be included with the next authorized Windows/Android
+runtime cycle. Deferral is not runtime PASS and does not authorize another RI-2
+business-policy slice.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 
