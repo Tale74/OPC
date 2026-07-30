@@ -121,8 +121,19 @@ transfer decisions:
 4. destination-versus-backup behavior for installation security settings and
    auth audit.
 
-RI-1 does not depend on these answers. No pre-zero answer was treated as
+RI-1 did not depend on these answers. No pre-zero answer was treated as
 current owner authority.
+
+On 2026-07-30 the owner closed gates 3 and 4 by selecting:
+
+- **3A:** full backup carries logical reminder enablement/delivery times but
+  never device notification IDs; restore generates new local IDs where
+  possible;
+- **4A:** users/PIN hashes remain portable, while destination
+  `security_settings` and existing `auth_audit_log` remain installation-local;
+  successful restore appends a local audit event.
+
+Gates 1 and 2 remain open for anonymization and individual replacement.
 
 ## 6. Next dependency
 

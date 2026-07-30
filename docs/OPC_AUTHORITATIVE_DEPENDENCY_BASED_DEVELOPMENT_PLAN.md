@@ -786,6 +786,27 @@ Owner runtime acceptance for this hard-delete slice is explicitly
 runtime cycle. Deferral is not runtime PASS and does not authorize another RI-2
 business-policy slice.
 
+#### RI-2 full-restore slice result - 2026-07-30
+
+The owner selected post-zero policies 3A and 4A. Full backup schema 8 now
+transfers reminder enablement/delivery times without device notification IDs.
+Restore scoped-cancels destination IDs, explicitly clears PREDMET child state,
+imports the database transactionally, removes old app-owned PARTE media and
+rebuilds reminder schedules with new local IDs where possible.
+
+Users/PIN hashes remain portable. Destination-installation
+`security_settings` and existing `auth_audit_log` remain local; restore appends
+one local `full_backup_restore` audit event. Legacy schema-7 backups remain
+readable and clear stale destination reminder state. Isolated failure proof
+rolls back the database, restores staged media and re-establishes old reminders.
+
+Anonymization and individual replacement remain closed at owner gates 1 and 2.
+FK enablement, orphan recovery, migration and canonical/live data remain
+outside this slice. Focused technical tests pass. Final cumulative analyze,
+complete test suite and Windows/Android release builds are `DEFERRED / OWED`
+to the owner-provided manual PowerShell runtime cycle and are not recorded as
+PASS.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 

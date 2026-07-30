@@ -12,15 +12,21 @@ import '../database/database.dart';
 import '../constants/iriu_constants.dart';
 import '../format/app_filename_format.dart';
 import '../json_transfer/predmet_json_transfer_core.dart';
+import '../../features/auth/data/auth_security_repository.dart';
+import '../../features/predmeti/application/full_backup_restore_coordinator.dart';
 import '../../features/predmeti/data/predmeti_repository.dart';
+import '../../features/predmeti/parte/data/parte_media_store.dart';
 import '../../features/predmeti/parte/domain/parte_models.dart';
+import '../../features/predmeti/reminders/ceremony_notification_gateway.dart';
+import '../../features/predmeti/reminders/ceremony_reminder_model.dart';
 import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
 
 const int _kSchemaVersion = 6;
-const int _kBackupSchemaVersion = 7;
-const int _kMaxSupportedSchemaVersion = 7;
+const int _kBackupSchemaVersion = 8;
+const int _kMaxSupportedPredmetSchemaVersion = 7;
+const int _kMaxSupportedBackupSchemaVersion = 8;
 const int _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer = 7;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
@@ -330,19 +336,35 @@ class _StanjeRobeConsequenceTransferItem {
 }
 
 class _BackupImportResult {
-  const _BackupImportResult(this.status);
+  const _BackupImportResult(this.status, {this.reminderSchedulingFailures = 0});
 
   final _BackupImportStatus status;
+  final int reminderSchedulingFailures;
 
   String get message {
-    switch (status) {
-      case _BackupImportStatus.stockCompleteRestored:
-        return 'Baza uspešno uvezena sa podržanim prenosom STANJA ROBE.';
-      case _BackupImportStatus.nonStockImportedWithoutStockRestore:
-        return 'Baza uspešno uvezena. Izabrana kopija ne sadrži '
-            'podržan prenos STANJA ROBE, pa stanje robe nije obnovljeno.';
-    }
+    final baseMessage = switch (status) {
+      _BackupImportStatus.stockCompleteRestored =>
+        'Baza uspešno uvezena sa podržanim prenosom STANJA ROBE.',
+      _BackupImportStatus.nonStockImportedWithoutStockRestore =>
+        'Baza uspešno uvezena. Izabrana kopija ne sadrži '
+            'podržan prenos STANJA ROBE, pa stanje robe nije obnovljeno.',
+    };
+    if (reminderSchedulingFailures == 0) return baseMessage;
+    return '$baseMessage $reminderSchedulingFailures PREDMET(A) zahteva '
+        'ručnu proveru lokalnih podsetnika.';
   }
+}
+
+class _BackupReminderSetting {
+  const _BackupReminderSetting({
+    required this.predmetId,
+    required this.enabled,
+    required this.deliveryTimes,
+  });
+
+  final int predmetId;
+  final bool enabled;
+  final List<String> deliveryTimes;
 }
 
 class _StockBackupPayload {
@@ -538,6 +560,11 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
       .select(db.stanjeRobeAppliedEffects)
       .get();
   final stanjeRobePosledice = await db.select(db.stanjeRobePosledice).get();
+  final reminderSettings = await db.customSelect('''
+      SELECT predmet_id, enabled, delivery_times
+      FROM ceremony_reminder_settings
+      ORDER BY predmet_id
+    ''').get();
   final stanjeRobeAppliedEffectsZaExport =
       _referencijalnoValidniAppliedEffectsZaBackup(
         appliedEffects: stanjeRobeAppliedEffects,
@@ -574,6 +601,15 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
         .map((e) => e.toJson())
         .toList(),
     'stanjeRobePosledice': stanjeRobePosledice.map((p) => p.toJson()).toList(),
+    'ceremonyReminderSettings': reminderSettings
+        .map(
+          (row) => <String, dynamic>{
+            'predmetId': row.read<int>('predmet_id'),
+            'enabled': row.read<int>('enabled') == 1,
+            'deliveryTimes': jsonDecode(row.read<String>('delivery_times')),
+          },
+        )
+        .toList(),
   };
   return const JsonEncoder.withIndent(
     '  ',
@@ -841,6 +877,7 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
   Map<String, dynamic> json,
 ) async {
   final stockPayload = await _procitajStanjeRobeBackupPayload(db, json);
+  final reminderPayload = _procitajBackupReminderSettings(json);
 
   await db.transaction(() async {
     await db.delete(db.stanjeRobePosledice).go();
@@ -848,6 +885,10 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.stanjeRobeStavke).go();
     await db.customStatement('DELETE FROM iriu_lifecycle_decisions');
     await db.delete(db.logIzmena).go();
+    await db.customStatement('DELETE FROM ceremony_reminder_settings');
+    await db.delete(db.partePripreme).go();
+    await db.delete(db.kontaktLica).go();
+    await db.delete(db.iriu).go();
     await db.delete(db.predmeti).go();
     await db.delete(db.korisnici).go();
     await db.delete(db.firmaPodaci).go();
@@ -855,7 +896,6 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.iriuKatalogConfig).go();
     await db.delete(db.appPodesavanja).go();
     await db.delete(db.predlosciDokumenata).go();
-    await db.delete(db.partePripreme).go();
     await db.delete(db.partePredlosci).go();
 
     for (final k in _requiredMapList(json, 'korisnici')) {
@@ -1025,6 +1065,21 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
           );
     }
 
+    for (final reminder in reminderPayload) {
+      await db.customStatement(
+        'INSERT INTO ceremony_reminder_settings '
+        '(predmet_id, enabled, delivery_times, scheduled_notification_ids, '
+        'updated_at) VALUES (?, ?, ?, ?, ?)',
+        [
+          reminder.predmetId,
+          reminder.enabled ? 1 : 0,
+          jsonEncode(reminder.deliveryTimes),
+          '[]',
+          DateTime.now().toIso8601String(),
+        ],
+      );
+    }
+
     for (final i in _requiredMapList(json, 'iriu')) {
       final normalizedIriu = _normalizujBackupPrazanTekst(
         i,
@@ -1140,13 +1195,94 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             );
       }
     }
+    await db.backfillMissingKatalogStableArticleIds();
+    await db.canonicalizeSeedCatalogStableArticleIds();
+    await AuthSecurityRepository(db).writeAuthAuditEvent(
+      eventType: 'full_backup_restore',
+      actorType: 'SYSTEM',
+      result: 'SUCCESS',
+      details: 'Full backup restored; installation security state preserved.',
+      installContext: 'local_installation',
+    );
   });
-  await db.backfillMissingKatalogStableArticleIds();
-  await db.canonicalizeSeedCatalogStableArticleIds();
   return _BackupImportResult(
     stockPayload.supported
         ? _BackupImportStatus.stockCompleteRestored
         : _BackupImportStatus.nonStockImportedWithoutStockRestore,
+  );
+}
+
+List<_BackupReminderSetting> _procitajBackupReminderSettings(
+  Map<String, dynamic> json,
+) {
+  final schemaVersion = json['schemaVersion'];
+  final raw = json['ceremonyReminderSettings'];
+  if (raw == null && (schemaVersion is! int || schemaVersion < 8)) {
+    return const [];
+  }
+  if (raw is! List) {
+    throw const _ImportBlokiranException(
+      'Neispravan backup: nedostaje podrzana sekcija lokalnih podsetnika.',
+    );
+  }
+
+  final predmetIds = _requiredMapList(
+    json,
+    'predmeti',
+  ).map((row) => row['id']).whereType<int>().toSet();
+  final seen = <int>{};
+  final result = <_BackupReminderSetting>[];
+  for (final item in raw) {
+    if (item is! Map) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: sekcija lokalnih podsetnika ima nevazeci red.',
+      );
+    }
+    final row = item.cast<String, dynamic>();
+    final predmetId = row['predmetId'];
+    final enabled = row['enabled'];
+    final deliveryTimes = row['deliveryTimes'];
+    if (predmetId is! int ||
+        enabled is! bool ||
+        deliveryTimes is! List ||
+        deliveryTimes.any((value) => value is! String) ||
+        !predmetIds.contains(predmetId) ||
+        !seen.add(predmetId) ||
+        row.containsKey('scheduledNotificationIds')) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: sekcija lokalnih podsetnika nije bezbedna.',
+      );
+    }
+    final normalized = CeremonyReminderConfig(
+      enabled: enabled,
+      deliveryTimes: deliveryTimes.cast<String>(),
+    ).normalizedDeliveryTimes;
+    result.add(
+      _BackupReminderSetting(
+        predmetId: predmetId,
+        enabled: enabled,
+        deliveryTimes: normalized,
+      ),
+    );
+  }
+  return result;
+}
+
+Future<_BackupImportResult> _uvoziBackupSaLifecycleKoordinacijom({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
+}) async {
+  final outcome = await FullBackupRestoreCoordinator(
+    db: db,
+    notificationGateway:
+        notificationGateway ?? AndroidCeremonyNotificationGateway(),
+    mediaStore: mediaStore,
+  ).restore(databaseRestore: () => _uvoziBackupUBazu(db, json));
+  return _BackupImportResult(
+    outcome.result.status,
+    reminderSchedulingFailures: outcome.reminderSchedulingFailures,
   );
 }
 
@@ -1579,7 +1715,10 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
 
 void _zahtevajPodrzanuJsonSchemaVerziju(Map<String, dynamic> json) {
   final schemaVersion = json['schemaVersion'];
-  if (schemaVersion is! int || schemaVersion <= _kMaxSupportedSchemaVersion) {
+  final maxSupported = json['format'] == _kBackupTransferFormat
+      ? _kMaxSupportedBackupSchemaVersion
+      : _kMaxSupportedPredmetSchemaVersion;
+  if (schemaVersion is! int || schemaVersion <= maxSupported) {
     return;
   }
 
@@ -2046,8 +2185,20 @@ Future<String> serializeBackupJsonForTest({required AppDatabase db}) {
 Future<void> importBackupJsonMapForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
+  bool coordinateExternalState = false,
 }) async {
   _zahtevajPodrzanuJsonSchemaVerziju(json);
+  if (coordinateExternalState) {
+    await _uvoziBackupSaLifecycleKoordinacijom(
+      db: db,
+      json: json,
+      notificationGateway: notificationGateway,
+      mediaStore: mediaStore,
+    );
+    return;
+  }
   await _uvoziBackupUBazu(db, json);
 }
 
@@ -2254,7 +2405,10 @@ Future<void> uvoziIzFajla({
         ),
       );
       if (potvrda != true) return;
-      final importResult = await _uvoziBackupUBazu(db, json);
+      final importResult = await _uvoziBackupSaLifecycleKoordinacijom(
+        db: db,
+        json: json,
+      );
       if (!ctx.mounted) return;
       _prikaziSnackBar(ctx, importResult.message);
     } else {

@@ -116,3 +116,21 @@ The owner also reconfirmed the incident discipline:
 
 The active Git documentation classification is maintained in
 `docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md`.
+
+## 8. RI-2 full-restore owner decisions - 2026-07-30
+
+The owner selected the following post-zero policies:
+
+- **3A - logical reminder portability:** a full backup carries reminder
+  enablement and delivery times. Device-local notification IDs never travel
+  with the backup. Restore cancels and clears destination reminder state, then
+  creates new local notification IDs where scheduling is possible.
+- **4A - installation-local security/audit:** users and their PIN hashes remain
+  part of the full backup. `security_settings`, including recovery material,
+  and existing `auth_audit_log` remain owned by the destination installation.
+  A successful restore appends a new destination-local auth audit event.
+
+These decisions authorize only the RI-2 full-restore lifecycle slice. They do
+not answer the separate anonymization or individual-replacement owner gates,
+enable foreign keys, authorize migration/orphan repair, or open canonical
+production data.

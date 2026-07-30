@@ -182,7 +182,7 @@ void main() {
     );
 
     test(
-      'full restore currently re-associates a stale reminder by reused local id',
+      'full restore clears stale reminder before reusing a local predmet id',
       () async {
         final sourceDb = createTestDatabase();
         final targetDb = createTestDatabase();
@@ -212,13 +212,14 @@ void main() {
         expect(restored.brojPredmeta, 'RI1-RESTORED-001/2026');
         expect(restored.ime, 'Backup');
         expect(
-          await _singleText(
-            targetDb,
-            'SELECT scheduled_notification_ids AS value '
-            'FROM ceremony_reminder_settings WHERE predmet_id = ?',
-            source.id,
-          ),
-          '[44001]',
+          await targetDb
+              .customSelect(
+                'SELECT 1 FROM ceremony_reminder_settings '
+                'WHERE predmet_id = ?',
+                variables: [Variable.withInt(source.id)],
+              )
+              .getSingleOrNull(),
+          null,
         );
         expect(await _foreignKeyViolationTables(targetDb), isEmpty);
       },

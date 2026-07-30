@@ -270,6 +270,24 @@ RI-2 hard-delete execution result (2026-07-30):
 This closes only the hard-delete implementation slice. Anonymization,
 replacement and restore remain blocked by their recorded owner gates.
 
+RI-2 full-restore execution result (2026-07-30):
+
+- backup schema 8 transfers only logical ceremony reminder configuration;
+- stored device notification IDs are never exported or imported;
+- destination reminders are scoped-cancelled before DB restore and rebuilt
+  from restored PREDMET truth with newly generated local IDs;
+- all destination PREDMET child families are explicitly cleared before local
+  IDs can be reused;
+- app-owned PARTE media is recoverably staged and purged after commit;
+- destination `security_settings` and prior `auth_audit_log` survive, while a
+  local `full_backup_restore` success event is appended transactionally;
+- legacy schema-7 backups remain readable and clear stale reminder state;
+- DB failure rolls back rows, restores staged media and re-establishes the old
+  reminder schedule.
+
+This closes only owner gates 3A/4A and their restore implementation slice.
+Anonymization and individual replacement remain blocked by gates 1 and 2.
+
 ### RI-3 - isolated orphan recovery migration
 
 Only on synthetic and verified isolated copies:
@@ -374,9 +392,17 @@ source or technical PASS:
    and auth audit remain from the destination installation, be restored from
    the backup family, or follow another explicit rule?
 
-RI-1 can proceed without these decisions. A later RI-2/RI-5 implementation
-must stop at the affected boundary until the relevant answer is recorded
-post-zero.
+Post-zero owner decisions recorded on 2026-07-30 close gates 3 and 4:
+
+- **3A:** transfer reminder enablement and delivery times, discard all
+  device-local notification IDs, and generate new destination-local IDs where
+  scheduling is possible;
+- **4A:** transfer users/PIN hashes, preserve destination-installation
+  `security_settings` and existing `auth_audit_log`, and append a local
+  successful-restore audit event.
+
+Gates 1 and 2 remain open. Their anonymization and individual-replacement
+implementation slices must still stop at those boundaries.
 
 ## 10. Acceptance and completion
 
