@@ -224,6 +224,22 @@ Deliver:
 RI-1 tests lock observed current behavior as evidence. They do not approve that
 behavior as future business policy.
 
+RI-1 execution result (2026-07-30):
+
+- committed isolated characterization:
+  `test/predmet_lifecycle_referential_characterization_test.dart`;
+- seven PREDMET dependencies and metadata-only orphan counters are locked;
+- hard delete is proven to leave PARTE/reminder FK orphans;
+- anonymization is proven to retain synthetic derivative PII;
+- replacement is proven to retain stale local PARTE/reminder state;
+- full restore is proven able to silently re-associate a stale reminder by
+  reused local ID with a clean `foreign_key_check`;
+- no production behavior, schema, migration, FK setting, canonical data or
+  business policy changed.
+
+The remaining delivery sequence is unchanged. RI-2 requires separate exact
+implementation authorization.
+
 ### RI-2 - explicit lifecycle coordination while FK remains off
 
 Only after RI-1 PASS and exact implementation authorization.

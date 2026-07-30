@@ -731,6 +731,33 @@ coordination, RI-3 recovery, RI-4 FK enforcement and RI-5 restore/parity proof
 remain separately gated. Business/privacy/transfer choices identified by the
 design require post-zero owner authority before their affected implementation.
 
+#### RI-1 execution result - 2026-07-30
+
+RI-1 committed characterization and inventory is implemented in
+`test/predmet_lifecycle_referential_characterization_test.dart`.
+
+The isolated in-memory evidence locks:
+
+- `foreign_keys=0` as current behavior;
+- all seven declared PREDMET dependencies through `foreign_key_list`;
+- metadata-only orphan counts for every dependent table;
+- hard-delete PARTE/reminder FK orphans;
+- derivative PII retained after current anonymization;
+- stale PARTE/reminder state retained across individual replacement;
+- stale reminder re-association by reused local ID during full restore, even
+  when `foreign_key_check` is clean.
+
+This is characterization, not approval of current behavior. Production source,
+schema, migration, FK enforcement, JSON format and canonical data are unchanged.
+Existing committed stock-compensation, PARTE media rollback, reminder and
+historical migration fixtures remain the supporting seam evidence; RI-1 does not
+duplicate those broad suites.
+
+Next dependency is RI-2 explicit lifecycle coordination, only after exact
+implementation authorization. Hard-delete coordination can proceed without a
+new business-policy answer. Replacement, anonymization and restore must stop at
+their recorded post-zero owner gates.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 
