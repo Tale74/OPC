@@ -808,6 +808,17 @@ analyze with no issues, complete tests 258 passed/1 skipped/0 failed, Windows
 release build PASS and Android APK release build PASS. Owner Windows/Android
 runtime acceptance remains separately `DEFERRED / OWED`.
 
+Owner Windows hard-delete runtime acceptance subsequently passed: the deleted
+synthetic PREDMET remained absent after restart, the application stayed stable,
+and unrelated PREDMET/PARTE state remained intact. Android hard delete and
+Windows/Android full restore remain owed.
+
+The same Windows session identified two separately source-confirmed PARTE UI
+defects (mojibake/internal `mourners` warning text and initial-versus-fitted
+font-size display mismatch) plus an unmeasured performance impression. These
+findings do not reopen hard-delete PASS. UI correction requires a separate
+notified task; performance requires targeted measurement before diagnosis.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 

@@ -134,3 +134,16 @@ These decisions authorize only the RI-2 full-restore lifecycle slice. They do
 not answer the separate anonymization or individual-replacement owner gates,
 enable foreign keys, authorize migration/orphan repair, or open canonical
 production data.
+
+## 9. PARTE user-facing terminology confirmation - 2026-07-30
+
+The owner confirmed during Windows runtime acceptance that user-facing PARTE
+validation and warning text:
+
+- must never expose internal block IDs such as `mourners`;
+- must use the Serbian business label, including `Ožalošćeni`;
+- must remain valid Serbian Unicode text without mojibake.
+
+This is an active post-zero UI/terminology boundary. Recording the observed
+defect does not itself authorize an application-code correction outside a
+separate notified task branch.

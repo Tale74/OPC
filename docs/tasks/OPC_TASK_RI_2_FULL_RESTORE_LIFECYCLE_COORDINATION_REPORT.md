@@ -163,12 +163,47 @@ This closes the cumulative static/test/build gate as technical `PASS`.
 Windows/Android owner runtime acceptance for hard delete and full restore
 remains `DEFERRED / OWED`; it is not inferred from successful builds.
 
-## 7. Next dependency
+## 7. Owner Windows hard-delete runtime result - 2026-07-30
 
-The next dependency must be selected from the approved plan after the
-owner runtime results are recorded. This task does not automatically authorize
-anonymization, individual replacement, RI-3 data repair, FK enforcement,
-canonical data access or international scope.
+The owner executed the Windows hard-delete acceptance against the built task
+result and confirmed:
+
+- deleted synthetic PREDMET disappears from the list;
+- the application remains stable;
+- restart does not restore the deleted PREDMET;
+- other existing PREDMETI and their PARTE remain intact.
+
+Windows hard-delete owner runtime acceptance is therefore `PASS`.
+
+The same runtime session produced three separate PARTE observations. They do
+not invalidate hard-delete PASS and are not silently folded into its scope:
+
+1. **PARTE preparation performance:** the owner perceived preparation as
+   slower than before. This is an observation only. No timing, comparison
+   baseline or profiler evidence currently proves a regression or cause.
+2. **Warning mojibake/internal terminology:** screenshot evidence shows
+   `Obavezni blok mourners nema sadrÅ¾aj za izvoz.` Source confirms both
+   defects in `parte_composer.dart`: a mojibake string literal and direct
+   interpolation of the internal block ID. Owner confirms that user-facing
+   text must use the Serbian business label `Ožalošćeni`, never `mourners`.
+3. **Displayed font-size mismatch:** screenshot evidence and source confirm
+   that the editor field displays draft `initialFontSize`, while the preview
+   renders the fitted `ParteRenderBlock.fontSize`. Preview block selection also
+   changes only the selected ID without synchronizing the controller. The
+   displayed value therefore need not represent the actual rendered size.
+
+The screenshots were visually reviewed but are not copied into Git because
+they contain runtime photographs and user-visible data. The two source-confirmed
+UI defects require a separate owner-notified application task. Performance
+requires targeted timing/profiling before any cause or correction is chosen.
+
+## 8. Remaining runtime and next dependency
+
+Android hard-delete and Windows/Android full-restore owner runtime acceptance
+remain `DEFERRED / OWED`. The next dependency must be selected from the
+approved plan after those results are recorded. This task does not
+automatically authorize anonymization, individual replacement, RI-3 data
+repair, FK enforcement, canonical data access or international scope.
 
 ## OPC MANIFEST COMPLIANCE - TASK END
 
