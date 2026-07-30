@@ -147,3 +147,21 @@ validation and warning text:
 This is an active post-zero UI/terminology boundary. Recording the observed
 defect does not itself authorize an application-code correction outside a
 separate notified task branch.
+
+## 10. PARTE empty-block policy - 2026-07-30
+
+The owner confirmed during Android runtime review:
+
+- every individual PARTE content block is optional at preparation/render
+  level;
+- when a block has no content, neither the block nor its content is displayed;
+- an empty individual block does not block preview confirmation, PDF/DOCX
+  preparation or completion;
+- this explicitly includes the `Ožalošćeni` heading/content family because a
+  family may request that no names be listed.
+
+This post-zero decision supersedes the current source behavior that treats a
+fixed set of text blocks as required. It does not authorize inventing fallback
+content, displaying an empty frame, or weakening unrelated overflow, media,
+geometry, integrity or export-safety checks. Implementation requires a separate
+notified application task and updated characterization/acceptance evidence.

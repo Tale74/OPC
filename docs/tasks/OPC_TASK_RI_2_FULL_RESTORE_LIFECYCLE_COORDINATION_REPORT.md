@@ -197,13 +197,47 @@ they contain runtime photographs and user-visible data. The two source-confirmed
 UI defects require a separate owner-notified application task. Performance
 requires targeted timing/profiling before any cause or correction is chosen.
 
-## 8. Remaining runtime and next dependency
+## 8. Owner Android hard-delete runtime result - 2026-07-30
 
-Android hard-delete and Windows/Android full-restore owner runtime acceptance
-remain `DEFERRED / OWED`. The next dependency must be selected from the
-approved plan after those results are recorded. This task does not
-automatically authorize anonymization, individual replacement, RI-3 data
-repair, FK enforcement, canonical data access or international scope.
+The owner confirmed on Android:
+
+- deleted synthetic PREDMET disappears from the list;
+- the application remains stable;
+- restart does not restore the deleted PREDMET;
+- other existing PREDMETI and their PARTE remain intact.
+
+This is `PASS` for the Android UI/database persistence and isolation portion of
+hard delete. The report did not state whether a previously scheduled reminder
+for the deleted PREDMET was observed not to arrive. Scoped Android notification
+cancellation therefore remains an explicit owed acceptance point; it is not
+inferred from disappearance of the database row.
+
+Android independently reproduced the same mojibake/internal-`mourners` warning
+and initial-versus-rendered font-size mismatch seen on Windows. This confirms
+cross-platform visibility of the already source-confirmed defects; it does not
+create a second hypothesized cause.
+
+The owner also established a new global PARTE policy: every individual content
+block may be empty; an empty block is omitted from display/export and must not
+block preparation confirmation or completion. This includes both the
+`Ožalošćeni` heading and content because the family may request no listed names.
+Source confirms the current conflict:
+
+- composition initially skips every empty text block;
+- `ParteRenderPlan.requiredTextBlockIds` then classifies seven missing blocks
+  as blockers;
+- export validation repeats the fixed required-block constraint.
+
+The policy decision is recorded as post-zero owner authority. No test/source
+was changed to claim implementation or PASS.
+
+## 9. Remaining runtime and next dependency
+
+Android scoped reminder cancellation and Windows/Android full-restore owner
+runtime acceptance remain `DEFERRED / OWED`. The next dependency must be
+selected from the approved plan after those results are recorded. This task
+does not automatically authorize anonymization, individual replacement, RI-3
+data repair, FK enforcement, canonical data access or international scope.
 
 ## OPC MANIFEST COMPLIANCE - TASK END
 

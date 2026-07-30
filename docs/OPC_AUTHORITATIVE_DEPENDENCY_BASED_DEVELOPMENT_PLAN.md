@@ -813,11 +813,23 @@ synthetic PREDMET remained absent after restart, the application stayed stable,
 and unrelated PREDMET/PARTE state remained intact. Android hard delete and
 Windows/Android full restore remain owed.
 
+Android subsequently passed the hard-delete UI/database persistence and
+isolation checks with the same stable/restart/unrelated-data outcome. The owner
+did not report the scheduled-reminder non-arrival observation, so scoped Android
+notification cancellation remains owed rather than inferred.
+
 The same Windows session identified two separately source-confirmed PARTE UI
 defects (mojibake/internal `mourners` warning text and initial-versus-fitted
 font-size display mismatch) plus an unmeasured performance impression. These
 findings do not reopen hard-delete PASS. UI correction requires a separate
 notified task; performance requires targeted measurement before diagnosis.
+
+Android reproduced both UI defects. The owner additionally established the
+global PARTE empty-block rule: any individual content block without content is
+omitted and does not block preparation/confirmation/export. Current
+`requiredTextBlockIds` composition and export validation conflict with that
+post-zero rule. Correct it only in a separate notified task with focused
+empty-block, output and Windows/Android parity evidence.
 
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
