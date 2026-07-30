@@ -5,6 +5,13 @@ Status: `AUTHORITATIVE TECHNICAL AUDIT MAP — IMPLEMENTATION NOT AUTHORIZED`
 Audit reference:
 `docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`
 
+Post-zero controlling design:
+`docs/OPC_POST_ZERO_PREDMET_LIFECYCLE_REFERENTIAL_DESIGN.md`.
+
+Pre-zero owner-policy statements in this matrix are historical/prospective
+evidence only. The post-zero design identifies the business/privacy/transfer
+choices that must be reconfirmed before affected implementation.
+
 ## 1. Dependency classes
 
 | Dependency | Authority class | Physical FK declared | Current hard delete | Required future behavior |

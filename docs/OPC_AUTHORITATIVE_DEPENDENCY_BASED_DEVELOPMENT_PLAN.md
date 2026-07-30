@@ -720,6 +720,17 @@ Svaka stavka koristi lifecycle iz odeljka 6.
 
 ### 10.1 PODSETNIK orphan korekcija
 
+#### Post-zero RI-1 through RI-5 design result - 2026-07-30
+
+The controlling post-zero lifecycle/referential design is
+`docs/OPC_POST_ZERO_PREDMET_LIFECYCLE_REFERENTIAL_DESIGN.md`.
+
+It confirms the first executable stage as committed RI-1 characterization and
+dependency/orphan inventory with no production behavior change. RI-2
+coordination, RI-3 recovery, RI-4 FK enforcement and RI-5 restore/parity proof
+remain separately gated. Business/privacy/transfer choices identified by the
+design require post-zero owner authority before their affected implementation.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 
