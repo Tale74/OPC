@@ -824,12 +824,15 @@ font-size display mismatch) plus an unmeasured performance impression. These
 findings do not reopen hard-delete PASS. UI correction requires a separate
 notified task; performance requires targeted measurement before diagnosis.
 
-Android reproduced both UI defects. The owner additionally established the
-global PARTE empty-block rule: any individual content block without content is
-omitted and does not block preparation/confirmation/export. Current
-`requiredTextBlockIds` composition and export validation conflict with that
-post-zero rule. Correct it only in a separate notified task with focused
-empty-block, output and Windows/Android parity evidence.
+Android reproduced both UI defects. The owner additionally established and
+clarified the global PARTE empty-content rule: defined blocks remain mandatory
+in template/draft structure, while each block's content may be empty. Empty
+content is omitted and does not block preparation/confirmation/export. Current
+`requiredTextBlockIds` composition and export validation incorrectly infer
+missing required structure from content-bearing render output. Correct that
+structure-versus-content conflation only in a separate notified task with
+focused empty-content, structural-integrity, output and Windows/Android parity
+evidence.
 
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.

@@ -152,16 +152,20 @@ separate notified task branch.
 
 The owner confirmed during Android runtime review:
 
-- every individual PARTE content block is optional at preparation/render
-  level;
-- when a block has no content, neither the block nor its content is displayed;
-- an empty individual block does not block preview confirmation, PDF/DOCX
-  preparation or completion;
+- the defined PARTE blocks remain mandatory structural elements of the
+  template/draft;
+- the content of every individual block is optional;
+- when a mandatory structural block has no content, neither its frame nor
+  content is displayed or exported;
+- empty content does not block preview confirmation, PDF/DOCX preparation or
+  completion;
 - this explicitly includes the `Ožalošćeni` heading/content family because a
   family may request that no names be listed.
 
-This post-zero decision supersedes the current source behavior that treats a
-fixed set of text blocks as required. It does not authorize inventing fallback
-content, displaying an empty frame, or weakening unrelated overflow, media,
-geometry, integrity or export-safety checks. Implementation requires a separate
-notified application task and updated characterization/acceptance evidence.
+This post-zero decision preserves the required block structure but supersedes
+the current source behavior that equates missing rendered content with a
+missing required structural block. It does not authorize removing required
+block definitions, inventing fallback content, displaying an empty frame, or
+weakening unrelated overflow, media, geometry, integrity or export-safety
+checks. Implementation requires a separate notified application task and
+updated characterization/acceptance evidence.

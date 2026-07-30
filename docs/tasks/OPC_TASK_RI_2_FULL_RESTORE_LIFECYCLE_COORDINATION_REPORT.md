@@ -217,16 +217,19 @@ and initial-versus-rendered font-size mismatch seen on Windows. This confirms
 cross-platform visibility of the already source-confirmed defects; it does not
 create a second hypothesized cause.
 
-The owner also established a new global PARTE policy: every individual content
-block may be empty; an empty block is omitted from display/export and must not
-block preparation confirmation or completion. This includes both the
-`Ožalošćeni` heading and content because the family may request no listed names.
-Source confirms the current conflict:
+The owner also established a new global PARTE policy and then clarified its
+structural boundary: the defined blocks remain mandatory in the template/draft,
+but every individual block's content may be empty. A mandatory block with empty
+content is omitted from display/export and must not block preparation
+confirmation or completion. This includes both the `Ožalošćeni` heading and
+content because the family may request no listed names. Source confirms the
+current conflict:
 
 - composition initially skips every empty text block;
-- `ParteRenderPlan.requiredTextBlockIds` then classifies seven missing blocks
-  as blockers;
-- export validation repeats the fixed required-block constraint.
+- `ParteRenderPlan.requiredTextBlockIds` then tests required structure against
+  the content-bearing render output and classifies seven empty rendered blocks
+  as structurally missing blockers;
+- export validation repeats the same structure-versus-content conflation.
 
 The policy decision is recorded as post-zero owner authority. No test/source
 was changed to claim implementation or PASS.
