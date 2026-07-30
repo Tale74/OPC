@@ -242,6 +242,39 @@ selected from the approved plan after those results are recorded. This task
 does not automatically authorize anonymization, individual replacement, RI-3
 data repair, FK enforcement, canonical data access or international scope.
 
+## 10. Owner Android full-restore result - 2026-07-30
+
+Android full restore is `FAIL`.
+
+The application displayed a reminder-section safety error and stopped before
+destination mutation. The owner supplied the exact generated backup for
+read-only diagnosis. The file passed strict .NET UTF-8/no-BOM validation.
+Privacy-safe metadata inspection proved:
+
+- format `OPC_BACKUP`, schema version 8;
+- 46 transferred PREDMET rows;
+- 9 logical reminder rows;
+- 2 reminder rows reference no transferred PREDMET;
+- 0 non-object rows, invalid IDs, invalid enabled values, invalid delivery-time
+  containers/items, duplicate PREDMET reminder rows or forbidden
+  `scheduledNotificationIds` keys;
+- no transferred `securitySettings` or `authAuditLog` sections, consistent
+  with owner policy 4A.
+
+Root cause is confirmed:
+
+1. schema-8 export reads every FK-off `ceremony_reminder_settings` row without
+   restricting it to exported PREDMET IDs;
+2. the source database contained two pre-existing orphan reminder rows;
+3. schema-8 import rejects any reminder whose parent is absent;
+4. the application therefore rejected a backup produced by its own exporter.
+
+The fail-safe validation preserved destination data, but full-restore usability
+failed. This is recorded as `INC-003`. Correction requires a separate
+owner-notified application branch and must cover both future export filtering
+and compatibility for already-produced schema-8 backups. Until correction and
+Android retest pass, full-restore runtime acceptance is `FAIL`, not merely owed.
+
 ## OPC MANIFEST COMPLIANCE - TASK END
 
 Manifest compliance checked:

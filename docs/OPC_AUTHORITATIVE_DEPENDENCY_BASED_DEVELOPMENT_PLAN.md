@@ -834,6 +834,21 @@ structure-versus-content conflation only in a separate notified task with
 focused empty-content, structural-integrity, output and Windows/Android parity
 evidence.
 
+Android full-restore runtime subsequently failed before destination mutation.
+Read-only inspection of the exact owner-supplied schema-8 backup confirmed 2
+orphan reminder rows among 9 reminder rows; all other reminder validator
+conditions were valid. The schema-8 exporter included every FK-off reminder
+row, while the importer rejected rows without a transferred PREDMET. This
+confirmed self-produced-backup compatibility defect is `INC-003`.
+
+Before full-restore acceptance can close, a separate notified correction must:
+
+- restrict future exported reminder settings to transferred PREDMET ownership;
+- define safe compatibility for existing schema-8 files carrying orphan
+  reminder derivatives without reassociating them;
+- preserve valid 3A logical settings and 4A installation-local security/audit;
+- prove isolated round-trip/rollback and repeat Android owner runtime.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 

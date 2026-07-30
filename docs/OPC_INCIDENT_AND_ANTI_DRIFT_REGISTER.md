@@ -52,6 +52,37 @@ reviving pre-zero owner decisions as current business authority.
 - Historical evidence remains in Git history under
   `docs/tasks/OPC_TASK_WINDOWS_ADMIN_PERSISTENCE_INCIDENT_AUDIT_REPORT.md`.
 
+## INC-003 — schema-8 backup rejects exported orphan reminder rows
+
+- Detected: 2026-07-30 during owner Android full-restore acceptance.
+- Introduced compatibility boundary:
+  `1adbb05260e245dbac7c72dfb6cb0db133e0110e`.
+- Runtime result: Android full restore `FAIL`; import stopped before destination
+  mutation with a reminder-section safety error.
+- Confirmed backup metadata:
+  - format `OPC_BACKUP`, schema 8;
+  - 46 PREDMET rows and 9 logical reminder rows;
+  - 2 reminder rows reference no exported PREDMET;
+  - 0 invalid row/type/time/duplicate/device-ID-key findings.
+- Confirmed root cause:
+  - schema-8 export selects every row from FK-off
+    `ceremony_reminder_settings`, including pre-existing orphans;
+  - schema-8 import correctly requires every reminder to reference a transferred
+    PREDMET and therefore rejects the same application-produced backup.
+- Protected boundary: PREDMET remains authoritative. An orphan derivative must
+  not make a valid PREDMET backup unrestorable and must not be silently attached
+  to a reused local ID.
+- Current safety result: destination data was not changed because validation
+  stopped before the restore transaction.
+- Required correction evidence:
+  - exporter includes only reminder rows owned by exported PREDMETI;
+  - importer has an explicit compatibility rule for already-produced schema-8
+    backups containing orphan reminder rows;
+  - valid logical settings survive, orphan/device-local state does not;
+  - isolated round-trip and owner Android restore retest pass.
+- No private backup content, identifiers, local path or screenshot is retained
+  in Git.
+
 ## Permanent anti-drift rules
 
 - A task report, test or technical PASS does not authorize a business change.
