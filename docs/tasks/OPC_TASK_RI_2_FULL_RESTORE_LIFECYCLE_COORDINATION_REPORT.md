@@ -1,7 +1,7 @@
 # OPC task report - RI-2 full-restore lifecycle coordination
 
-**Status:** `FOCUSED TECHNICAL PASS - CUMULATIVE GATES AND OWNER RUNTIME
-ACCEPTANCE DEFERRED / OWED`
+**Status:** `CUMULATIVE TECHNICAL PASS - OWNER RUNTIME ACCEPTANCE DEFERRED /
+OWED`
 **Date:** 2026-07-30
 
 ## OPC MANIFEST CHECK - TASK START
@@ -132,24 +132,41 @@ attempt is classified as PASS or application failure.
 The Incident/Anti-Drift Register remains controlling. Technical PASS is not
 owner approval of any unrecorded business behavior.
 
-## 6. Deferred cumulative gates
+## 6. Owner-provided cumulative technical gate - 2026-07-30
 
-At the owner's request, Codex did not run:
+The owner manually executed the agreed PowerShell gate from the task branch at
+final/report SHA `a1ec31fcd4b2113740a9e118a29c94a556f4243c`.
 
-- final `flutter analyze --no-pub`;
-- complete `flutter test --no-pub`;
-- Windows release build;
-- Android APK release build;
-- Windows/Android owner runtime acceptance.
+Git evidence:
 
-Every item is `DEFERRED / OWED`, not PASS. The owner will execute them manually
-in PowerShell with the next cumulative runtime cycle and will provide the
-results together with the already owed RI-2 hard-delete runtime acceptance.
+- branch:
+  `task/OPC-RI-2-FULL-RESTORE-LIFECYCLE-COORDINATION`;
+- local HEAD:
+  `a1ec31fcd4b2113740a9e118a29c94a556f4243c`;
+- upstream:
+  `a1ec31fcd4b2113740a9e118a29c94a556f4243c`;
+- worktree output contained no changed-file entry.
+
+Owner-provided command results:
+
+- `flutter analyze --no-pub`: `PASS`, no issues, 47.8 s;
+- complete `flutter test --no-pub`: `PASS`, 258 passed, 1 skipped,
+  0 failed, 16:55;
+- Windows release build: `PASS`, 152.4 s;
+- Windows artifact: `build/windows/x64/runner/Release/OPC.exe`,
+  89,088 bytes;
+- Android APK release build: `PASS`, 711.1 s;
+- Android artifact: `build/app/outputs/flutter-apk/app-release.apk`,
+  77,025,022 bytes (reported by Flutter as 73.5 MB).
+
+This closes the cumulative static/test/build gate as technical `PASS`.
+Windows/Android owner runtime acceptance for hard delete and full restore
+remains `DEFERRED / OWED`; it is not inferred from successful builds.
 
 ## 7. Next dependency
 
 The next dependency must be selected from the approved plan after the
-cumulative results are recorded. This task does not automatically authorize
+owner runtime results are recorded. This task does not automatically authorize
 anonymization, individual replacement, RI-3 data repair, FK enforcement,
 canonical data access or international scope.
 

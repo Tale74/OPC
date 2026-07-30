@@ -802,10 +802,11 @@ rolls back the database, restores staged media and re-establishes old reminders.
 
 Anonymization and individual replacement remain closed at owner gates 1 and 2.
 FK enablement, orphan recovery, migration and canonical/live data remain
-outside this slice. Focused technical tests pass. Final cumulative analyze,
-complete test suite and Windows/Android release builds are `DEFERRED / OWED`
-to the owner-provided manual PowerShell runtime cycle and are not recorded as
-PASS.
+outside this slice. Focused technical tests pass. The owner-provided cumulative
+PowerShell gate at `a1ec31fcd4b2113740a9e118a29c94a556f4243c` also passes:
+analyze with no issues, complete tests 258 passed/1 skipped/0 failed, Windows
+release build PASS and Android APK release build PASS. Owner Windows/Android
+runtime acceptance remains separately `DEFERRED / OWED`.
 
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
