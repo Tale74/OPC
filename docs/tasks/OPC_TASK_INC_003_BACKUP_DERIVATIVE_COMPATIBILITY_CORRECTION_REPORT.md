@@ -136,10 +136,11 @@ Validation:
 - exact supplied-backup preflight: PASS;
 - `flutter analyze --no-pub`: PASS, no issues;
 - complete `flutter test --no-pub`: PASS, `264 passed / 1 skipped / 0 failed`;
-- Windows release build: not run by owner decision;
-- Android release build: not run by owner decision.
+- Windows release build: PASS on final SHA; `build\\windows\\x64\\runner\\Release\\OPC.exe` present;
+- Android release build: PASS on final SHA; `build\\app\\outputs\\flutter-apk\\app-release.apk` present.
 
-Build status is not runtime acceptance and is not represented as PASS.
+The owner-provided build PASS is technical artifact evidence only; it is not
+runtime acceptance. The Windows and Android runtime checks remain separate.
 
 ## 7. Independent controls
 
@@ -167,9 +168,9 @@ PASS does not predeclare runtime PASS. The runtime check must confirm:
   trigger presentation;
 - restart remains stable.
 
-Windows/Android builds were intentionally omitted in this task. No additional
-PARTE, performance, mojibake/font-size, empty-content, RI-3, anonymization or
-replacement scope is opened by this correction.
+Windows and Android release artifacts have now been built successfully. No
+additional PARTE, performance, mojibake/font-size, empty-content, RI-3,
+anonymization or replacement scope is opened by this correction.
 
 ## 9. Completion boundary
 

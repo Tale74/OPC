@@ -101,7 +101,9 @@ reviving pre-zero owner decisions as current business authority.
   - 3 future platform delivery slots were correctly rebuilt under policy 3A;
     future scheduling is not a claim that a trigger is active now;
   - focused, failure/rollback, reused-ID, schema-7 and 4A evidence passes;
-  - final analyze and complete tests pass; build was not run by owner decision.
+  - final analyze and complete tests pass;
+  - owner-provided Windows and Android release builds pass on the final
+    correction SHA; artifact presence was verified in the expected output paths.
 - Status: technical correction PASS. Android owner full-restore runtime retest is
   still required and remains separate from technical PASS.
 - No private backup content, identifiers, local path or screenshot is retained

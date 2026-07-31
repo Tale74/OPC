@@ -874,8 +874,8 @@ relinking or canonical database mutation.
   triggers 0 at the recorded preflight moment; 3 future platform slots rebuilt;
   referential check clean.
 - Focused and related regressions pass; final analyze is clean and complete
-  tests pass 264 with 1 skipped. Windows/Android builds were not run by owner
-  decision and are not claimed as PASS.
+  tests pass 264 with 1 skipped. Owner-provided Windows and Android release
+  builds pass on the final correction SHA; runtime acceptance remains separate.
 
 Technical correction PASS does not close Android runtime acceptance. The owner
 Android full-restore retest remains owed.
