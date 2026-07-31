@@ -143,10 +143,15 @@ Related pseudocode sections: `OPC-PSEUDO-012`, `OPC-PSEUDO-013`, `OPC-PSEUDO-004
 Business meaning: single-PREDMET JSON and full backup import/export behavior.
 Module: JSON transfer / backup restore
 Truth boundary: transfer/recovery layer; not product center and not identity authority.
-Why Logos must know it: import/replace can rewrite local business state.
-Risk if misunderstood: filename/export date or backup becomes master truth.
+Why Logos must know it: import/replace can rewrite local business state; INC-003
+requires reminder and history derivatives to follow the exact transferred
+PREDMET ownership set without destination-ID reassociation.
+Risk if misunderstood: filename/export date or backup becomes master truth, or
+an orphan derivative is silently attached to a reused local ID.
 Read before: identity owner decisions.
-Read after: JSON regression tests.
+Read after: `lib/features/predmeti/application/full_backup_restore_coordinator.dart`,
+`test/full_backup_restore_lifecycle_coordination_test.dart`, JSON regression
+tests and `docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md`.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-013
 
@@ -368,6 +373,11 @@ Related pseudocode sections: `OPC-PSEUDO-033`
 Business meaning: Windows in-app reminders and Android local notifications derive from the same PREDMET ceremony term and local frequency configuration.
 Reminder content: exact `vrstaCeremonije`, PREMINULO LICE `ime + prezime`, `datumCeremonije`, `vremeCeremonije`, and the preparation instruction are required PREDMET business identity.
 Formula starts directly with `vrstaCeremonije`; literal `CEREMONIJA` is not prefixed.
+Current-trigger and platform-scheduling semantics are separate:
+`activeCeremonyReminderSlot` answers whether a configured slot is active now,
+while `buildCeremonyReminderOccurrences` may prepare future -2/-1/0 delivery
+slots earlier. Full restore rebuilds only transferred, PREDMET-owned logical
+configs and must not turn future scheduling into an active-trigger claim.
 
 ## INDEX-ID: OPC-PSEUDO-INDEX-032
 

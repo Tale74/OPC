@@ -41,6 +41,11 @@ class CeremonyReminderOccurrence {
   final int notificationId;
 }
 
+/// Builds future platform delivery slots for the ceremony's -2/-1/0 days.
+///
+/// A non-empty result means that device notifications can be prepared ahead
+/// of time. It does not mean that the reminder date-trigger is active now;
+/// [activeCeremonyReminderSlot] answers that separate question.
 List<CeremonyReminderOccurrence> buildCeremonyReminderOccurrences({
   required int predmetId,
   required DateTime ceremonyAt,

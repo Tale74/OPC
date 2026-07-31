@@ -569,8 +569,8 @@ Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED / OWNER DECISION`.
 ## PSEUDO-ID: OPC-PSEUDO-013
 
 Business area: Full backup/restore
-Source files: `lib/core/utils/json_export_import.dart`; `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md`
-Related modules: backup/restore, database ownership, FirmaPodaci, STANJE ROBE
+Source files: `lib/core/utils/json_export_import.dart`; `lib/features/predmeti/application/full_backup_restore_coordinator.dart`; `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md`
+Related modules: backup/restore, database ownership, FirmaPodaci, STANJE ROBE, PODSETNIK, PARTE
 Business purpose: export/import broader local database state, distinct from single-PREDMET transfer.
 Inputs: broad database tables, backup format, stock backup payload, user confirmation.
 Decision points: backup format, schema support, destructive confirmation, stock backup compatibility.
@@ -580,6 +580,10 @@ Pseudocode:
 EXPORT full backup:
     collect broad database sections
     include PREDMET, IRiU, contacts, users, firm, catalog, settings, documents, logs
+    capture the exported PREDMET id set
+    include reminder configuration and change-history rows only when their
+        predmetId belongs to that captured set
+    never export device-local scheduled notification ids
     include STANJE ROBE backup sections when supported
     write format OPC_BACKUP
 
@@ -587,18 +591,31 @@ IMPORT full backup:
     require supported JSON schema
     show destructive import confirmation
     IF user confirms:
-        restore database sections
+        stage app-owned PARTE media
+        scoped-cancel destination reminder ids, including ids in orphan rows
+        fully validate schema-8 reminder and history rows
+        skip only structurally valid rows whose PREDMET is absent from backup
+        never validate ownership through destination ids or relink an orphan
+        restore database sections transactionally
+        preserve destination security settings and existing audit history
+        append exactly one local full_backup_restore audit event
+        rebuild future platform delivery slots from restored PREDMET truth and
+            restored logical reminder configuration
         IF supported stock backup payload exists:
             restore stock sections
         ELSE:
             import without stock restore and report that limitation
+        IF restore fails before commit:
+            restore staged media and configured old reminder schedules
+        IF post-commit scheduling fails:
+            keep restored database committed and report manual reminder check
 ```
 
 Outputs: backup JSON or restored local database.
 Side effects: broad local data replacement.
 What this must not change: must not silently reinterpret single-PREDMET transfer as full backup; must not bypass future firm identity guard.
 Evidence: source-confirmed backup flow and policy summary.
-Tests: JSON regression tests cover selected backup stock/toggle behavior.
+Tests: `test/full_backup_restore_lifecycle_coordination_test.dart` and JSON regression tests cover ownership, compatibility, failure/rollback, 3A/4A and selected stock/toggle behavior.
 Known gaps: PIB/MB mismatch guard is policy but not proven implemented.
 Bug/nedoslednost candidates: destructive restore safety and firm identity validation.
 Safe upgrade notes: repository identity audit before restore guard implementation.
@@ -1339,20 +1356,28 @@ configuration per local predmet_id:
     scheduledNotificationIds = local cancellation state
 
 WHEN ceremony date/time or reminder configuration changes,
-OR app starts/resumes:
+OR app starts/resumes,
+OR full restore rebuilds transferred logical reminder configuration:
     read PREDMET.datumCeremonije + vremeCeremonije
     cancel every stored local notification id for that PREDMET
     IF enabled and ceremony is future:
-        generate times from 2 days before through ceremony time
-        advance by frequencyHours
+        generate platform delivery slots on the ceremony's -2/-1/0 days
+        use normalized configured delivery clock times
         skip every time <= now
-        include ceremony time
+        do not schedule after ceremony time
         schedule Android local notifications with deterministic local ids
         store replacement ids
 
 WHEN app is active inside the 2-day window:
-    derive current frequency slot
+    derive the latest configured delivery slot that is not after now or the
+        ceremony time
     show one in-app reminder dialog per slot/session on Windows or Android
+
+IMPORTANT DISTINCTION:
+    future platform delivery slots may be prepared before the 2-day window
+    this does not mean that a reminder trigger is active now
+    current trigger truth comes from activeCeremonyReminderSlot
+    scheduling truth comes from buildCeremonyReminderOccurrences
 
 notification content:
     use formula:

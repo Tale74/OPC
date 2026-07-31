@@ -336,10 +336,17 @@ class _StanjeRobeConsequenceTransferItem {
 }
 
 class _BackupImportResult {
-  const _BackupImportResult(this.status, {this.reminderSchedulingFailures = 0});
+  const _BackupImportResult(
+    this.status, {
+    this.reminderSchedulingFailures = 0,
+    this.skippedOrphanReminderSettings = 0,
+    this.skippedOrphanLogEntries = 0,
+  });
 
   final _BackupImportStatus status;
   final int reminderSchedulingFailures;
+  final int skippedOrphanReminderSettings;
+  final int skippedOrphanLogEntries;
 
   String get message {
     final baseMessage = switch (status) {
@@ -349,9 +356,20 @@ class _BackupImportResult {
         'Baza uspešno uvezena. Izabrana kopija ne sadrži '
             'podržan prenos STANJA ROBE, pa stanje robe nije obnovljeno.',
     };
-    if (reminderSchedulingFailures == 0) return baseMessage;
-    return '$baseMessage $reminderSchedulingFailures PREDMET(A) zahteva '
-        'ručnu proveru lokalnih podsetnika.';
+    final warnings = <String>[
+      if (skippedOrphanReminderSettings > 0)
+        'Neka zastarela podešavanja podsetnika nisu preneta '
+            '(broj: $skippedOrphanReminderSettings).',
+      if (skippedOrphanLogEntries > 0)
+        'Neki zastareli zapisi istorije nisu preneti '
+            '(broj: $skippedOrphanLogEntries).',
+      if (reminderSchedulingFailures > 0)
+        'Neke lokalne podsetnike treba ručno proveriti '
+            '(broj: $reminderSchedulingFailures).',
+    ];
+    return warnings.isEmpty
+        ? baseMessage
+        : '$baseMessage ${warnings.join(' ')}';
   }
 }
 
@@ -365,6 +383,16 @@ class _BackupReminderSetting {
   final int predmetId;
   final bool enabled;
   final List<String> deliveryTimes;
+}
+
+class _BackupReminderPayload {
+  const _BackupReminderPayload({
+    required this.settings,
+    required this.skippedOrphans,
+  });
+
+  final List<_BackupReminderSetting> settings;
+  final int skippedOrphans;
 }
 
 class _StockBackupPayload {
@@ -565,6 +593,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
       FROM ceremony_reminder_settings
       ORDER BY predmet_id
     ''').get();
+  final exportedPredmetIds = predmeti.map((item) => item.id).toSet();
   final stanjeRobeAppliedEffectsZaExport =
       _referencijalnoValidniAppliedEffectsZaBackup(
         appliedEffects: stanjeRobeAppliedEffects,
@@ -595,13 +624,19 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'appPodesavanja': apPod.toJson(),
     'predlosciDokumenata': predlosci.map((p) => p.toJson()).toList(),
     'partePredlosci': partePredlosci.map((p) => p.toJson()).toList(),
-    'logIzmena': log.map((l) => l.toJson()).toList(),
+    'logIzmena': log
+        .where((item) => exportedPredmetIds.contains(item.predmetId))
+        .map((item) => item.toJson())
+        .toList(),
     'stanjeRobeStavke': stanjeRobeStavke.map((s) => s.toJson()).toList(),
     'stanjeRobeAppliedEffects': stanjeRobeAppliedEffectsZaExport
         .map((e) => e.toJson())
         .toList(),
     'stanjeRobePosledice': stanjeRobePosledice.map((p) => p.toJson()).toList(),
     'ceremonyReminderSettings': reminderSettings
+        .where(
+          (row) => exportedPredmetIds.contains(row.read<int>('predmet_id')),
+        )
         .map(
           (row) => <String, dynamic>{
             'predmetId': row.read<int>('predmet_id'),
@@ -878,6 +913,11 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
 ) async {
   final stockPayload = await _procitajStanjeRobeBackupPayload(db, json);
   final reminderPayload = _procitajBackupReminderSettings(json);
+  final backupPredmetIds = _requiredMapList(
+    json,
+    'predmeti',
+  ).map((row) => row['id']).whereType<int>().toSet();
+  var skippedOrphanLogEntries = 0;
 
   await db.transaction(() async {
     await db.delete(db.stanjeRobePosledice).go();
@@ -1065,7 +1105,7 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
           );
     }
 
-    for (final reminder in reminderPayload) {
+    for (final reminder in reminderPayload.settings) {
       await db.customStatement(
         'INSERT INTO ceremony_reminder_settings '
         '(predmet_id, enabled, delivery_times, scheduled_notification_ids, '
@@ -1155,14 +1195,19 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
         'datumVreme',
         'polje',
       ]);
+      final parsedLog = _procitajBackupRed(
+        'logIzmena',
+        normalizedLog,
+        (row) => LogIzmenaData.fromJson(row),
+      );
+      if (!backupPredmetIds.contains(parsedLog.predmetId)) {
+        skippedOrphanLogEntries++;
+        continue;
+      }
       await db
           .into(db.logIzmena)
           .insert(
-            _procitajBackupRed(
-              'logIzmena',
-              normalizedLog,
-              (row) => LogIzmenaData.fromJson(row),
-            ).toCompanion(true),
+            parsedLog.toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
     }
@@ -1209,16 +1254,18 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     stockPayload.supported
         ? _BackupImportStatus.stockCompleteRestored
         : _BackupImportStatus.nonStockImportedWithoutStockRestore,
+    skippedOrphanReminderSettings: reminderPayload.skippedOrphans,
+    skippedOrphanLogEntries: skippedOrphanLogEntries,
   );
 }
 
-List<_BackupReminderSetting> _procitajBackupReminderSettings(
+_BackupReminderPayload _procitajBackupReminderSettings(
   Map<String, dynamic> json,
 ) {
   final schemaVersion = json['schemaVersion'];
   final raw = json['ceremonyReminderSettings'];
   if (raw == null && (schemaVersion is! int || schemaVersion < 8)) {
-    return const [];
+    return const _BackupReminderPayload(settings: [], skippedOrphans: 0);
   }
   if (raw is! List) {
     throw const _ImportBlokiranException(
@@ -1232,6 +1279,7 @@ List<_BackupReminderSetting> _procitajBackupReminderSettings(
   ).map((row) => row['id']).whereType<int>().toSet();
   final seen = <int>{};
   final result = <_BackupReminderSetting>[];
+  var skippedOrphans = 0;
   for (final item in raw) {
     if (item is! Map) {
       throw const _ImportBlokiranException(
@@ -1246,7 +1294,6 @@ List<_BackupReminderSetting> _procitajBackupReminderSettings(
         enabled is! bool ||
         deliveryTimes is! List ||
         deliveryTimes.any((value) => value is! String) ||
-        !predmetIds.contains(predmetId) ||
         !seen.add(predmetId) ||
         row.containsKey('scheduledNotificationIds')) {
       throw const _ImportBlokiranException(
@@ -1257,6 +1304,10 @@ List<_BackupReminderSetting> _procitajBackupReminderSettings(
       enabled: enabled,
       deliveryTimes: deliveryTimes.cast<String>(),
     ).normalizedDeliveryTimes;
+    if (!predmetIds.contains(predmetId)) {
+      skippedOrphans++;
+      continue;
+    }
     result.add(
       _BackupReminderSetting(
         predmetId: predmetId,
@@ -1265,7 +1316,10 @@ List<_BackupReminderSetting> _procitajBackupReminderSettings(
       ),
     );
   }
-  return result;
+  return _BackupReminderPayload(
+    settings: result,
+    skippedOrphans: skippedOrphans,
+  );
 }
 
 Future<_BackupImportResult> _uvoziBackupSaLifecycleKoordinacijom({
@@ -1283,6 +1337,8 @@ Future<_BackupImportResult> _uvoziBackupSaLifecycleKoordinacijom({
   return _BackupImportResult(
     outcome.result.status,
     reminderSchedulingFailures: outcome.reminderSchedulingFailures,
+    skippedOrphanReminderSettings: outcome.result.skippedOrphanReminderSettings,
+    skippedOrphanLogEntries: outcome.result.skippedOrphanLogEntries,
   );
 }
 
@@ -2182,7 +2238,7 @@ Future<String> serializeBackupJsonForTest({required AppDatabase db}) {
 }
 
 @visibleForTesting
-Future<void> importBackupJsonMapForTest({
+Future<String?> importBackupJsonMapForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
   CeremonyNotificationGateway? notificationGateway,
@@ -2191,15 +2247,16 @@ Future<void> importBackupJsonMapForTest({
 }) async {
   _zahtevajPodrzanuJsonSchemaVerziju(json);
   if (coordinateExternalState) {
-    await _uvoziBackupSaLifecycleKoordinacijom(
+    final result = await _uvoziBackupSaLifecycleKoordinacijom(
       db: db,
       json: json,
       notificationGateway: notificationGateway,
       mediaStore: mediaStore,
     );
-    return;
+    return result.message;
   }
   await _uvoziBackupUBazu(db, json);
+  return null;
 }
 
 /// Legacy entrypoint za izvoz jednog PREDMETA kao JSON transfera.

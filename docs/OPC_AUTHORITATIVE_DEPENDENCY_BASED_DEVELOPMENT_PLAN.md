@@ -849,6 +849,37 @@ Before full-restore acceptance can close, a separate notified correction must:
 - preserve valid 3A logical settings and 4A installation-local security/audit;
 - prove isolated round-trip/rollback and repeat Android owner runtime.
 
+#### INC-003 bounded full-restore compatibility correction - 2026-07-31
+
+The notified correction is technically implemented on a separate task branch.
+It does not perform RI-3 recovery, live cleanup, FK enablement, migration,
+relinking or canonical database mutation.
+
+- Export uses the exact captured exported-PREDMET set to include only owned
+  reminder settings and change-history rows.
+- Schema-8 import fully validates each reminder/history row, then skips only a
+  structurally valid row whose PREDMET is absent from the backup. Destination
+  IDs never validate ownership, preventing reassociation through reused IDs.
+- Restore inventories and scoped-cancels all destination notification IDs,
+  including IDs in an orphan reminder row. Rollback compensates only configured
+  reminders owned by an existing old PREDMET.
+- Policy 3A remains exact: logical enabled/delivery-time configuration is
+  transferred, device IDs are not, and future platform slots are rebuilt with
+  new local IDs. A future prepared platform slot is not an active trigger now;
+  the current trigger remains `activeCeremonyReminderSlot`.
+- Policy 4A remains exact: users/PIN hashes transfer, destination security and
+  existing audit remain local, and one local restore audit event is appended.
+- Supplied-backup isolated evidence: 46 PREDMETI; reminder rows 9 total, 7
+  owned, 2 skipped; change-history rows 230 total, 224 owned, 6 skipped; active
+  triggers 0 at the recorded preflight moment; 3 future platform slots rebuilt;
+  referential check clean.
+- Focused and related regressions pass; final analyze is clean and complete
+  tests pass 264 with 1 skipped. Windows/Android builds were not run by owner
+  decision and are not claimed as PASS.
+
+Technical correction PASS does not close Android runtime acceptance. The owner
+Android full-restore retest remains owed.
+
 Root-cause dijagnoza je potvrđena code-first auditom:
 `docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
 
@@ -857,6 +888,11 @@ Potvrđena su dva nezavisna lifecycle nedostatka:
 - reminder SQLite red se oslanja na deklarisani cascade bez uključenog/dokazanog
   runtime foreign-key enforcement-a;
 - Android OS notification se ne otkazuje pre brisanja PREDMETA.
+
+Historical diagnosis below is superseded by the RI-2 implementation and
+INC-003 correction above: full restore now clears/transfers/rebuilds reminder
+configuration under policy 3A. It remains preserved only as chronology, not as
+current source state.
 
 Full-backup restore je dodatni trigger jer ne čisti, ne prenosi niti ponovo
 gradi reminder konfiguraciju.

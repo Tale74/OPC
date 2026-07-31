@@ -1,8 +1,13 @@
 # OPC task report - RI-2 full-restore lifecycle coordination
 
-**Status:** `CUMULATIVE TECHNICAL PASS - OWNER RUNTIME ACCEPTANCE DEFERRED /
-OWED`
+**Status:** `HISTORICAL RI-2 IMPLEMENTATION PASS - ANDROID RUNTIME LATER FAILED
+UNDER INC-003 - CORRECTION REPORT SUPERSEDES CURRENT HANDOFF`
 **Date:** 2026-07-30
+
+Current continuation: Android full restore later failed before mutation on an
+application-produced schema-8 backup. The bounded correction and current
+technical/runtime status are recorded in
+`docs/tasks/OPC_TASK_INC_003_BACKUP_DERIVATIVE_COMPATIBILITY_CORRECTION_REPORT.md`.
 
 ## OPC MANIFEST CHECK - TASK START
 

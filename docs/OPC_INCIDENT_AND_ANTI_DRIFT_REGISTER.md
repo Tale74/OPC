@@ -64,6 +64,13 @@ reviving pre-zero owner decisions as current business authority.
   - 46 PREDMET rows and 9 logical reminder rows;
   - 2 reminder rows reference no exported PREDMET;
   - 0 invalid row/type/time/duplicate/device-ID-key findings.
+- Additional isolated-preflight finding:
+  - after reminder compatibility was corrected, referential validation exposed
+    6 of 230 `logIzmena` rows without a PREDMET carried by the same backup;
+  - this is a second transfer-ownership manifestation inside INC-003, not a
+    confirmed live-database repair or migration requirement;
+  - the supplied backup contains 224 PREDMET-owned log rows that remain
+    transferable.
 - Confirmed root cause:
   - schema-8 export selects every row from FK-off
     `ceremony_reminder_settings`, including pre-existing orphans;
@@ -74,12 +81,29 @@ reviving pre-zero owner decisions as current business authority.
   to a reused local ID.
 - Current safety result: destination data was not changed because validation
   stopped before the restore transaction.
-- Required correction evidence:
-  - exporter includes only reminder rows owned by exported PREDMETI;
-  - importer has an explicit compatibility rule for already-produced schema-8
-    backups containing orphan reminder rows;
-  - valid logical settings survive, orphan/device-local state does not;
-  - isolated round-trip and owner Android restore retest pass.
+- Implemented bounded correction:
+  - export filters reminder and change-history derivatives against the exact
+    captured set of exported PREDMET IDs;
+  - import fully validates each row before skipping only a row whose parent is
+    absent from the backup; malformed rows remain blocking;
+  - destination IDs cannot validate or reattach a backup orphan through local
+    ID reuse;
+  - destination platform IDs, including IDs held by an orphan row, are
+    scoped-cancelled; rollback compensation rebuilds only configured reminders
+    owned by an existing old PREDMET;
+  - there is no live cleanup, relinking, FK enablement, migration or canonical
+    database mutation.
+- Correction evidence on 2026-07-31:
+  - supplied-backup isolated preflight: 46 PREDMETI; reminders 9 total, 7
+    PREDMET-owned, 2 skipped; history 230 total, 224 PREDMET-owned, 6 skipped;
+    referential check clean;
+  - active reminder trigger at the recorded preflight moment: 0;
+  - 3 future platform delivery slots were correctly rebuilt under policy 3A;
+    future scheduling is not a claim that a trigger is active now;
+  - focused, failure/rollback, reused-ID, schema-7 and 4A evidence passes;
+  - final analyze and complete tests pass; build was not run by owner decision.
+- Status: technical correction PASS. Android owner full-restore runtime retest is
+  still required and remains separate from technical PASS.
 - No private backup content, identifiers, local path or screenshot is retained
   in Git.
 

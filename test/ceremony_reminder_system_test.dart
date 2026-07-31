@@ -72,6 +72,26 @@ void main() {
       );
     });
 
+    test('future platform scheduling is separate from the current trigger', () {
+      final distantCeremony = DateTime(2026, 8, 31, 12);
+      final now = DateTime(2026, 7, 30, 18, 49);
+
+      final futurePlatformSlots = buildCeremonyReminderOccurrences(
+        predmetId: 7,
+        ceremonyAt: distantCeremony,
+        config: const CeremonyReminderConfig(),
+        now: now,
+      );
+      final currentTrigger = activeCeremonyReminderSlot(
+        ceremonyAt: distantCeremony,
+        config: const CeremonyReminderConfig(),
+        now: now,
+      );
+
+      expect(futurePlatformSlots, isNotEmpty);
+      expect(currentTrigger, null);
+    });
+
     test('disabled reminders produce no occurrences', () {
       expect(
         buildCeremonyReminderOccurrences(
