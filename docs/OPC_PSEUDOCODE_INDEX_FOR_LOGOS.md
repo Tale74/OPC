@@ -639,7 +639,7 @@ Implementation/pseudocode aligned: yes.
 - Document: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`, section “Canonical render pipeline correction (2026-07-19)”.
 - Source: PARTE composer/models, preview, PDF renderer, DOCX exporter, preparation repository and template dialog.
 - Pipeline: `PreparationState -> CanonicalRenderPlan -> PreviewAdapter/PdfAdapter/DocxAdapter`; adapters consume and never reinterpret resolved business/layout state.
-- Required-block rule: name, years, ceremony and both mourners blocks cannot be empty, failed, duplicated or silently absent from an export.
+- Required-block rule: name, years, ceremony and both mourners blocks remain mandatory in the structural draft/template contract; empty content is omitted from the render/export plan and does not block preparation or export. Duplicated, failed or structurally absent blocks remain blockers.
 - Typography rule: complete one-line name, maximum `74 pt`, bounded canonical fit and source-level en-dash normalization.
 - Template rule: dialog selected, preparation active and persisted default are separate identities and actions.
 - Calibration rule: machine-local correction translates the PDF layer only; physical print remains owner evidence.
@@ -660,6 +660,22 @@ Implementation/pseudocode aligned: yes.
 - Acceptance boundary: tested local printer offset and electronic render parity
   remain protected; Android runtime follows this final UI correction.
 - Report: `docs/tasks/OPC_TASK_PARTE_FINAL_TECHNICAL_TEXT_PLACEMENT_UI_REGRESSION_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055A - Phase 3 PREDMET completion-state characterization
+
+- Source: `lib/features/predmeti/data/predmeti_repository.dart`,
+  `lib/features/predmeti/presentation/predmet_screen.dart`.
+- Test: `test/predmet_completion_state_characterization_test.dart`.
+- Current source behavior: opening a PREDMET refreshes automatic status; an
+  open PREDMET whose ceremony date is before today becomes `ZAVRŠEN` when no
+  active PARTE preparation blocks the transition. Missing or future ceremony
+  dates do not transition. Existing `ZAVRŠEN` and `ANONIMIZOVAN` rows are not
+  changed by the bulk refresh.
+- Boundary: this is characterization of current behavior, not approval of
+  automatic completion as future business policy. The Phase 3 plan requires
+  lifecycle owner decisions and historical-state treatment before changing
+  this behavior. No status, reminder, PREDMET or IRiU production behavior was
+  changed by the characterization task.
 
 ## OPC-PSEUDO-INDEX-055 — PARTE editor/lifecycle/PREDMET PARTE navigation refinement
 

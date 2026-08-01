@@ -854,8 +854,9 @@ PreparationState
   -> CanonicalRenderPlan
        contains resolved lines, rectangle, font, scale, fit status,
        visibility/export eligibility and media source ratio
-       validates unique IDs, required blocks and unresolved overflow
-       rejects export when any required block is missing, empty or failed
+       validates unique IDs, required structural blocks and unresolved overflow
+       omits empty text content from render/export output
+       rejects export when a required structural block is missing, duplicated or failed
   -> PreviewAdapter (screen-only guides and selection may surround the page)
   -> PdfAdapter (authoritative physical geometry)
   -> DocxAdapter (secondary editable Word derivative)
@@ -869,6 +870,12 @@ NAME FIT:
   keep one line and preserve the complete name
   use bounded horizontal compression, then lower the font within saved limits
   unresolved fit is a blocker, never silent omission
+
+EMPTY CONTENT:
+  required text block IDs belong to the structural draft/template contract
+  empty text content produces no render/export block and does not block preparation
+  the Ožalošćeni heading is omitted when the Ožalošćeni content is empty
+  malformed, duplicated or failed structural blocks remain export blockers
 
 DOCX:
   put all page-relative anchors in one zero-flow document paragraph

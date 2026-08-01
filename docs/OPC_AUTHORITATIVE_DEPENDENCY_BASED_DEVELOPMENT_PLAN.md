@@ -1495,6 +1495,12 @@ change is authorized until that evidence proves a cause. OPC Web,
 `OPC_v.1_Int`, RI-3 recovery, migrations and reminder-policy reinterpretation
 remain deferred.
 
+Phase 3 lifecycle characterization has now been completed without production
+behavior change. The current automatic `ZAVRŠEN` transition is documented in
+`test/predmet_completion_state_characterization_test.dart` and
+`OPC-PSEUDO-INDEX-055A`. Any status/scenario correction still requires the
+applicable owner lifecycle gate and historical-state treatment.
+
 ## 25. Jednolinijski dependency red
 
 

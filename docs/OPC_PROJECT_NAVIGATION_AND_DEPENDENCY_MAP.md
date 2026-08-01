@@ -101,6 +101,27 @@ Required invariants:
 - accepted PDF/DOCX behavior and layout remain unchanged unless a focused test
   proves the correction requires it.
 
+### Phase 3 — PREDMET completion-state characterization
+
+Source route: `lib/features/predmeti/data/predmeti_repository.dart` →
+`lib/features/predmeti/presentation/predmet_screen.dart` →
+`test/predmet_completion_state_characterization_test.dart`.
+
+The current source automatically transitions an open PREDMET with a past
+ceremony date to `ZAVRŠEN` when no active PARTE preparation blocks it. Missing
+and future ceremony dates do not transition; existing `ZAVRŠEN` and
+`ANONIMIZOVAN` rows are excluded from bulk refresh. This is characterized
+behavior only. The plan requires the lifecycle owner gate and historical-state
+treatment before changing it. Do not infer implementation authorization from
+the characterization PASS.
+
+Keep the lifecycle pseudocode and map synchronized:
+
+- `docs/OPC_PSEUDOCODE_INDEX_FOR_LOGOS.md` (`OPC-PSEUDO-INDEX-055A`);
+- `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md` §12;
+- `docs/OPC_OWNER_DECISION_GUIDE.md` §4;
+- `docs/OPC_OWNER_DECISIONS_STATUSI_CEREMONIJA_PSEUDOCODE.md` §4.
+
 ### Gate 2 — IRiU/KATALOG performance
 
 Source route: `iriu_segment.dart` / `iriu_row_tile.dart` →
@@ -145,4 +166,3 @@ Stop at the gate and verify the source, tests and current documentation. Ask the
 owner only for a real business-policy choice, such as a change in PREDMET truth,
 IRiU ordering, reminder portability, document meaning or platform parity. Do
 not ask the owner to interpret a technical fact that the source can establish.
-

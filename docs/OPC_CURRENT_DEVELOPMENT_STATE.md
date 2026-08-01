@@ -70,3 +70,14 @@ IRiU/KATALOG opening remains an owner-observed slowdown without a measured
 cause. Source shows sequential lightweight category queries and lazy photo
 reads; no performance code or schema/index change is authorized until a timing
 trace separates repository load, dialog first frame and photo decode.
+
+## Current Phase 3 characterization update - 2026-08-01
+
+The next plan dependency is now characterized on
+`task/OPC-PHASE3-LIFECYCLE-COMPLETION-CHARACTERIZATION`. The current source
+automatically transitions an open PREDMET with a past ceremony date to
+`ZAVRŠEN` when no active PARTE preparation blocks it; missing/future dates do
+not transition and existing `ZAVRŠEN`/`ANONIMIZOVAN` rows are excluded from the
+bulk refresh. This is source/test evidence only. No production status or
+scenario behavior was changed; the applicable owner lifecycle gate remains
+before implementation.
