@@ -792,3 +792,6 @@ Implementation/pseudocode aligned: yes.
   reconciliation or PODSETNIK signal is implied.
 - Gate: a partial `published` default scenario is forbidden because it could
   be interpreted as an empty consequence set and cause stale-row drift.
+- Rejected candidate: an ordered `ScenarioRule` extension is not accepted
+  until snapshot serialization and hash versioning preserve every rule; a
+  domain-only field would be silently lost on transfer.

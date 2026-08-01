@@ -214,6 +214,13 @@ an additional owner-approved rule-composition decision. Therefore no
 immutable published default scenario representation was invented and no
 repository/JSON wiring was added in this slice.
 
+The follow-up ordered-rule candidate was also rejected before commit. The
+existing snapshot serializer/hash still carries only the legacy
+condition/consequence shape; accepting a domain-only `rules` field would lose
+it during round-trip. A future rule-set slice must version the serializer/hash,
+preserve golden schema-1 snapshots and test multi-rule transfer before any
+published default or repository materialization is introduced.
+
 ## Minimum safe domain contract
 
 The implementation must introduce additive, versioned data rather than

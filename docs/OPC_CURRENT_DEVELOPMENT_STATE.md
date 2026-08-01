@@ -188,3 +188,10 @@ SANDUK ordering anchor. This is read-only characterization: the existing
 deterministic multi-rule scenario representation proves exact parity. No
 published default row is seeded and no PODSETNIK work is started from this
 evidence alone.
+
+An attempted pure ordered-rule extension was rejected during watchdog review:
+the existing scenario snapshot serializer still carries only the legacy
+condition/consequence shape, so accepting a new `rules` field would silently
+drop it during round-trip and create parallel truth. The rule-set slice remains
+uncommitted until a versioned serializer/hash contract and golden v1/v2 tests
+exist.
