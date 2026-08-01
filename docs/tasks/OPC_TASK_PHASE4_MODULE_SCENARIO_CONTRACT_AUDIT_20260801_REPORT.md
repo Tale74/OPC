@@ -6,6 +6,8 @@
 
 **Final implementation SHA:** `89228d95026e389eb3d13684d8089aa4da2bf629`
 
+**Characterization evidence SHA:** `7d7eee1d87fc6cf382819a5d649d5e03d3c532bc`
+
 The final implementation SHA is the pushed commit that contains the schema
 23 persistence boundary and its migration evidence. The report-closure commit
 contains documentation only.
