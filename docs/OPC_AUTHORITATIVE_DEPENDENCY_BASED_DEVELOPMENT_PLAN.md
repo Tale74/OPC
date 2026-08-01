@@ -1531,6 +1531,13 @@ Implementation remains the controlled ODQ-SCENARIO-001 Phase 4 dependency:
 provenance/snapshot, eligible-`OTVOREN` confirmation, STANJE ROBE compensation,
 retry/rollback and locked-PREDMET protection are required before source change.
 
+The follow-up contract audit confirms that current MODULI are only a static
+navigation/entitlement layer and that `businessScenarioId` alone cannot carry
+the required module/default/version/provenance contract. The audit and owner
+gates are recorded in
+`docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
+
+
 ## 25. Jednolinijski dependency red
 
 

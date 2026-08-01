@@ -120,3 +120,18 @@ their UI configuration, but the selected scenario and applied consequence
 snapshot remain PREDMET-owned. Existing hard-coded scenarios are to become
 module defaults first and then UI-upgradeable; a module-default edit must not
 silently rewrite an existing PREDMET.
+
+## Current Phase 4 MODULI/SCENARIO contract audit - 2026-08-01
+
+The source audit confirms that current MODULI are only static navigation and
+entitlement vocabulary. There is no persisted module registry, scenario
+template/version store, criteria DSL, consequence definition, IRiU provenance
+or reconciliation recovery state. `predmeti.businessScenarioId` is only a
+single hard-coded reference and JSON currently transfers only that ID.
+
+The owner-requested direction is therefore recorded as a contract dependency,
+not implemented behind the existing hard-coded field: module defaults and
+UI-defined criteria/consequences must produce a versioned PREDMET-owned
+scenario snapshot, with provenance and safe stale-row reconciliation. The
+audit and open business gates are recorded in
+`docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.

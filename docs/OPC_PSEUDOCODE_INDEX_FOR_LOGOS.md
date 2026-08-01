@@ -711,6 +711,27 @@ Implementation/pseudocode aligned: yes.
   the segment-7 regression and the focused correction requires fresh validation.
 - Report: `docs/tasks/OPC_TASK_PARTE_EDITOR_INTERACTION_PREPARATION_DELETION_IRIU_NAVIGATION_REPORT.md`.
 
+## OPC-PSEUDO-INDEX-055D - Phase 4 MODULI/SCENARIO contract audit
+
+- Source route: static `ModuliScreen`/settings module tab,
+  `OpcModule.businessPolicyScenario`, `predmeti.businessScenarioId`,
+  `BusinessPolicyEvaluator` and `IriuTruthRules`.
+- Current fact: MODULI are presentation/entitlement vocabulary; the source has
+  no persisted module registry, scenario version store, criteria DSL,
+  consequence definition or IRiU provenance.
+- Authority rule: module definitions/defaults are configuration; selected
+  scenario and applied snapshot are PREDMET authority. A PREDMET is not valid
+  without a scenario snapshot.
+- Future evaluation rule: declarative criteria may read only whitelisted,
+  normalized PREDMET facts. Scenario consequences may target stable IRiU/KATALOG
+  identities but may not own PREDMET facts, prices or stock truth.
+- Reconciliation rule: explicit eligible-PREDMET confirmation removes stale
+  scenario-owned rows/values, creates new empty rows, compensates operational
+  effects and protects completed/locked PREDMETI.
+- Boundary: this is a contract audit, not a schema/UI implementation. The
+  owner decision gates and migration order are in
+  `docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
+
 ## OPC-PSEUDO-INDEX-055C - Phase 3 SCENARIO/IRiU mutation characterization
 
 - Source: `lib/features/predmeti/presentation/segments/iriu_segment.dart`,

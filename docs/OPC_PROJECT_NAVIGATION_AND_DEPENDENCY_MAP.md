@@ -178,6 +178,24 @@ consequence snapshot remain PREDMET-owned. Existing hard-coded scenarios are
 first migrated as module defaults and then exposed as UI-upgradeable defaults;
 editing a module default must never silently rewrite an existing PREDMET.
 
+### Phase 4 — MODULI/SCENARIO contract and UI-defined defaults
+
+Current source route: static `ModuliScreen`/settings module tab → entitlement
+enum → one `predmeti.businessScenarioId` → hard-coded evaluator/rules. No
+persisted module or scenario-definition domain exists yet.
+
+Required future route: MODULI scenario definitions/defaults → versioned criteria
+and consequence contract → explicit eligible-PREDMET assignment/snapshot →
+IRiU provenance-aware reconciliation → STANJE ROBE/derivative consequences.
+The selected scenario snapshot remains PREDMET authority; module-default edits
+are prospective and never silently rewrite existing PREDMETI.
+
+The contract audit, migration dependency and owner decision gates are recorded
+in `docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
+Do not add UI or schema by merely wrapping the current hard-coded evaluator:
+criteria grammar, module scope, versioning, provenance, rollback and transfer
+parity must be decided first.
+
 ### Gate 3 — validation and owner runtime
 
 - Run focused tests after each correction.
