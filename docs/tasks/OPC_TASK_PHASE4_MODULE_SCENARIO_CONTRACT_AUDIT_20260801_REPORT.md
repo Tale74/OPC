@@ -4,6 +4,12 @@
 
 **Base SHA:** `95603aeb44764216c9b7c5226e7a8e5a65a8790e`
 
+**Final implementation SHA:** `89228d95026e389eb3d13684d8089aa4da2bf629`
+
+The final implementation SHA is the pushed commit that contains the schema
+23 persistence boundary and its migration evidence. The report-closure commit
+contains documentation only.
+
 **Scope:** source/documentation audit plus bounded domain and additive
 persistence-contract slices for the owner-requested move from hard-coded
 scenarios to module-owned, UI-defined scenarios. Schema 23 migration tables
