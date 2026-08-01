@@ -750,6 +750,10 @@ Implementation/pseudocode aligned: yes.
   PREDMET criteria and resolves OSNOVNI plus scenario package categories from
   KATALOG identities. It is not persistence or UI and does not replace the
   current runtime evaluator yet.
+- Persistence contract implementation: `scenario_persistence_contract.dart`
+  serializes a selected scenario definition and OSNOVNI PAKET into a
+  PREDMET-owned immutable snapshot, verifies a canonical content hash, and
+  records STAVKA origin. It is not yet a Drift/JSON migration.
 
 ## OPC-PSEUDO-INDEX-055C - Phase 3 SCENARIO/IRiU mutation characterization
 

@@ -98,9 +98,36 @@ Full suite command:
 C:\\flutter\\bin\\flutter.bat test --no-pub
 ```
 
-Result: **283 passed, 0 failed, 1 skipped**. The single skipped test is the
+Result: **287 passed, 0 failed, 1 skipped**. The single skipped test is the
 pre-existing documented skip. The suite completed without a failure after
-the scenario contract and `PRIVATNA BOLNICA` source correction.
+the scenario contract, persistence contract and `PRIVATNA BOLNICA` source
+correction.
+
+## Second bounded contract slice
+
+`lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`
+now defines the non-UI persistence boundary: a PREDMET-owned immutable
+scenario assignment snapshot, canonical content hash, self-contained scenario
+definition/package data and STAVKA provenance (`OSNOVNI_PAKET`,
+`SCENARIO_PAKET`, `RUČNA STAVKA`, `LEGACY`). The contract rejects unsupported
+schema versions, tampered snapshots and incomplete scenario-owned provenance.
+It is deliberately not wired to Drift, JSON import/restore or reconciliation.
+
+Focused persistence command:
+
+```text
+C:\flutter\bin\flutter.bat test --no-pub test/scenario_package_contract_test.dart test/scenario_persistence_contract_test.dart test/business_policy_iriu_critical_scenarios_test.dart
+```
+
+Result: **17 passed, 0 failed**.
+
+Focused persistence analyze:
+
+```text
+C:\flutter\bin\flutter.bat analyze --no-pub lib/features/predmeti/core_v2/scenario/scenario_contract.dart lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart test/scenario_package_contract_test.dart test/scenario_persistence_contract_test.dart
+```
+
+Result: **PASS — no issues found**.
 
 ## Current source facts
 

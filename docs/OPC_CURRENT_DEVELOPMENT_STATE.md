@@ -160,3 +160,11 @@ whitelisted PREDMET facts, AND/OR matching, KATALOG category references and
 OSNOVNI/scenario package resolution. It is not yet wired to persistence or
 SCENARIO UI. The hard-coded MESTO SMRTI gap `PRIVATNA BOLNICA` is corrected and
 shares the current STAN/DOM ZA STARE consequence family.
+
+The next bounded contract slice is implemented in
+`lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`.
+It defines a PREDMET-owned immutable scenario assignment snapshot with
+canonical content hash, plus STAVKA provenance for OSNOVNI PAKET, SCENARIO
+PAKET, RUČNA STAVKA and legacy rows. It is pure validation/transfer contract:
+Drift schema, JSON import/restore and reconciliation remain gated until the
+contract is migrated with fixtures and rollback evidence.

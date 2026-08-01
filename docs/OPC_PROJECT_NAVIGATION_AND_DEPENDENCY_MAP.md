@@ -243,6 +243,13 @@ tests in `test/scenario_package_contract_test.dart`. It is an evaluator/domain
 boundary only; persistence, migration and SCENARIO UI remain the next gated
 steps.
 
+The first persistence contract slice is
+`lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`
+with tests in `test/scenario_persistence_contract_test.dart`. It carries the
+selected scenario definition, OSNOVNI PAKET, immutable version and canonical
+hash, and identifies STAVKA provenance. It is not yet wired to Drift or JSON;
+that migration requires fixtures, transfer parity and rollback evidence.
+
 ## 7. When uncertain
 
 Stop at the gate and verify the source, tests and current documentation. Ask the
