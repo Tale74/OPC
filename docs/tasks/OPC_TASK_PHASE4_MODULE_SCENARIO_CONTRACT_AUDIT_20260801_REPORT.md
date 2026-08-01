@@ -30,6 +30,31 @@ silently included in this audit.
   made UI-upgradeable. Editing a module default must never silently rewrite an
   existing PREDMET.
 
+## Package boundary clarified by the owner
+
+The SCENARIO module owns two user-facing package layers:
+
+1. **OSNOVNI PAKET ROBE I USLUGA** — the firm's user-defined base set for new
+   PREDMETI;
+2. **SCENARIO PAKET** — the additional or changed set selected by the active
+   scenario criteria.
+
+The UI calls every materialized line simply **STAVKA**. It does not expose
+`IRIU`, `scenario-owned` or other technical provenance terms.
+
+KATALOG remains the master dictionary of standard categories, articles,
+stable IDs, labels, prices and photographs. SCENARIO selects KATALOG entries
+into the OSNOVNI PAKET or a scenario package; it does not redefine the same
+article/category. The existing KATALOG policy switch
+`osnovnaUSvakomPredmetu` is therefore a candidate for migration into the
+OSNOVNI PAKET and removal from the KATALOG policy UI, not deletion of KATALOG
+definitions.
+
+Existing PREDMET rows remain untouched during this migration. Their future
+provenance must distinguish OSNOVNI PAKET, SCENARIO PAKET and RUČNA STAVKA;
+manual one-PREDMET additions remain valid exceptions and are never removed by
+scenario reconciliation.
+
 ## Current source facts
 
 1. `ModuliScreen` and the settings module tab are static presentation routes;

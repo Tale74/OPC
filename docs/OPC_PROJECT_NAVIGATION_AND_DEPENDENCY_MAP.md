@@ -196,6 +196,14 @@ Do not add UI or schema by merely wrapping the current hard-coded evaluator:
 criteria grammar, module scope, versioning, provenance, rollback and transfer
 parity must be decided first.
 
+Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
+USLUGA** and the additional package selected by each scenario. KATALOG remains
+the standard category/article dictionary. The former KATALOG switch
+`osnovnaUSvakomPredmetu` is package policy and should move to SCENARIO; the
+KATALOG definitions themselves remain. In the UI each materialized line is
+simply **STAVKA**. RUČNA STAVKA remains a PREDMET-local exception outside
+scenario cleanup.
+
 ### Gate 3 — validation and owner runtime
 
 - Run focused tests after each correction.

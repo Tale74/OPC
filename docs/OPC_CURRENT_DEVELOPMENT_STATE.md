@@ -135,3 +135,12 @@ UI-defined criteria/consequences must produce a versioned PREDMET-owned
 scenario snapshot, with provenance and safe stale-row reconciliation. The
 audit and open business gates are recorded in
 `docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
+
+The owner further clarified the package model: SCENARIO provides an
+**OSNOVNI PAKET ROBE I USLUGA** defined by the user and a scenario-specific
+package that extends or changes it. Every materialized line is simply a
+**STAVKA** in the UI. KATALOG remains the master dictionary of standard
+categories/articles; the existing `osnovnaUSvakomPredmetu` policy belongs in
+SCENARIO package management and should be migrated out of KATALOG settings,
+without deleting KATALOG definitions. Manual one-PREDMET additions remain
+valid and are not scenario-cleanup targets.

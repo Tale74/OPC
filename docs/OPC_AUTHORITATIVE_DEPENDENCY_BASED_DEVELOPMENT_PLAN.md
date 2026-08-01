@@ -1537,6 +1537,14 @@ the required module/default/version/provenance contract. The audit and owner
 gates are recorded in
 `docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
 
+The owner has now fixed the package boundary: SCENARIO defines the user-owned
+OSNOVNI PAKET ROBE I USLUGA and each scenario's additional package. KATALOG
+remains the master dictionary of standard categories/articles; the former
+`osnovnaUSvakomPredmetu` switch is package policy to be moved from KATALOG
+settings into SCENARIO, without deleting catalog definitions. RUČNA STAVKA
+remains a valid one-PREDMET exception and is outside automatic scenario
+cleanup. UI terminology is simply STAVKA; `IRIU` remains internal.
+
 
 ## 25. Jednolinijski dependency red
 

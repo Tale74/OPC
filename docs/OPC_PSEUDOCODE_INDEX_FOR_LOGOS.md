@@ -732,6 +732,16 @@ Implementation/pseudocode aligned: yes.
   owner decision gates and migration order are in
   `docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
 
+### Package rule extension
+
+- SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I USLUGA** and the
+  scenario-specific additions/changes.
+- KATALOG remains the master definition source for standard categories and
+  articles; `osnovnaUSvakomPredmetu` is package policy and belongs in SCENARIO,
+  not in KATALOG settings.
+- UI calls every materialized line **STAVKA**. A RUČNA STAVKA is a valid local
+  PREDMET exception and is never removed by scenario reconciliation.
+
 ## OPC-PSEUDO-INDEX-055C - Phase 3 SCENARIO/IRiU mutation characterization
 
 - Source: `lib/features/predmeti/presentation/segments/iriu_segment.dart`,
