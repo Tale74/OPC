@@ -50,3 +50,23 @@ This document is a continuity summary, not a new technical audit and not a build
 ## Current Prohibitions
 
 This baseline does not authorize source changes, Web runner, backend/API, sync, browser storage adapter, migrations, payment/subscription work, role implementation, or package restructuring.
+
+## Current post-zero stabilization update - 2026-08-01
+
+The current stabilization branch is `task/OPC-POSTZERO-STABILIZATION-AND-PERFORMANCE`.
+Gate 1 is technically complete at commit
+`7485ad94e5cc15dfe637f2cab207c2f3bd9aca34`: PARTE structural required-block
+validation is separated from content presence, empty text is omitted without
+blocking preparation or export, the Ožalošćeni warning uses a user-facing label,
+and the font-size field follows the fitted render value. Focused domain,
+PDF/DOCX, widget, restore and lifecycle tests pass; analyze is clean.
+
+The owner has reported a scoped Android full-restore runtime PASS after the
+INC-003 correction (no unsafe reminder-section error, PREDMETI/PARTE loaded,
+observed completed data/history intact). Other data and security coverage was
+not tested. This is not acceptance of the current Gate-1 tip.
+
+IRiU/KATALOG opening remains an owner-observed slowdown without a measured
+cause. Source shows sequential lightweight category queries and lazy photo
+reads; no performance code or schema/index change is authorized until a timing
+trace separates repository load, dialog first frame and photo decode.

@@ -104,8 +104,12 @@ reviving pre-zero owner decisions as current business authority.
   - final analyze and complete tests pass;
   - owner-provided Windows and Android release builds pass on the final
     correction SHA; artifact presence was verified in the expected output paths.
-- Status: technical correction PASS. Android owner full-restore runtime retest is
-  still required and remains separate from technical PASS.
+- Status at correction close: technical correction PASS. The owner subsequently
+  reported a scoped Android full-restore runtime PASS: the unsafe reminder
+  section error did not recur, PREDMETI/PARTE loaded, and observed completed
+  PREDMET data/history remained intact. Other data/security coverage was not
+  tested. This runtime evidence is separate from technical PASS and does not
+  pre-accept the later PARTE Gate-1 tip.
 - No private backup content, identifiers, local path or screenshot is retained
   in Git.
 

@@ -1477,6 +1477,25 @@ Do potpunog Gate 0 closure-a status ostaje:
 
 `OWNER APPROVED – AUTHORITATIVE ACTIVATION PENDING GATE 0 CLOSURE`
 
+## Current post-zero sequencing update - 2026-08-01
+
+The current authorized dependency is the bounded PARTE correction on
+`task/OPC-POSTZERO-STABILIZATION-AND-PERFORMANCE`, not a rewrite or a new
+business-policy task. Its Gate 1 implementation is technically PASS with
+focused evidence and remains separate from owner Windows/Android runtime
+acceptance.
+
+The owner has reported a scoped Android full-restore PASS after the INC-003
+correction; the earlier FAIL is preserved as incident history and the result
+does not waive current-tip runtime or security/data coverage.
+
+The observed IRIU/KATALOG slowdown is still an unmeasured performance finding.
+The next dependency is a reproducible timing trace. No query/index/startup
+change is authorized until that evidence proves a cause. OPC Web,
+`OPC_v.1_Int`, RI-3 recovery, migrations and reminder-policy reinterpretation
+remain deferred.
+
 ## 25. Jednolinijski dependency red
+
 
 **Gate 0 documentation/Git governance → full code/architecture review → PREDMET source-to-truth/dependency mapa → integrity, platform, performance, scenario, UI i migration evidence → Architecture/refactor/rewrite Decision Gate po Decision Authority Matrix-u → potvrđene integrity/performance korekcije → historical/completed PREDMET lifecycle odluka i uklanjanje automatskog ZAVRŠEN → korekcija sadašnjih scenario/IRiU grešaka → user-editable SCENARIO i PODEŠAVANJA → kompletan signalni model → informed PODSETNIK → JSON/dokumenti/PDF/RAČUN/tema → MODUL DVE VALUTE → dokazani progressive refactor/partial rewrite → First Product-Line Gate: stabilni OPC v.1 Srbija → non-blocking Stage 2 cleanup kada opravdan → Second Product-Line Gate: OPC_v.1_Int → i18n/country/multicurrency profiles → signing i professional handover closure.**
