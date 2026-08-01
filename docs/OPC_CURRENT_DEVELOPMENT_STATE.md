@@ -47,6 +47,15 @@ This document is a continuity summary, not a new technical audit and not a build
 | Logos knowledge transfer | Logos now has a PREDMET-centered product/module/source learning package. | Use `docs/OPC_LOGOS_KNOWLEDGE_BASE.md`, `docs/OPC_MODULE_RELATIONSHIP_MAP.md`, `docs/OPC_SOURCE_LEARNING_INDEX_FOR_LOGOS.md`, and `docs/OPC_CHILD_ILLNESS_AND_SAFE_UPGRADE_CANDIDATE_REGISTER.md` before orchestrating future OPC upgrade tasks; treat recommendations as findings only, not strategy. |
 | Logos pseudocode learning layer | Business-critical source behavior is now translated into public pseudocode for Logos learning. | Use `docs/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md`, `docs/OPC_PSEUDOCODE_INDEX_FOR_LOGOS.md`, and `docs/OPC_SAFE_UPGRADE_FROM_PSEUDOCODE_NOTES.md` to understand source behavior before planning characterization tests or safe upgrades; pseudocode is not source replacement. |
 
+## Current SCENARIO package application clarification - 2026-08-01
+
+SCENARIO defines the OSNOVNI PAKET and scenario packages, but applies them only
+to the active PREDMET through the ROBA I USLUGE workflow. It does not globally
+rewrite PREDMETI from the module settings screen. The UI presents every line as
+STAVKA; RUČNA STAVKA remains a local exception. `PRIVATNA BOLNICA` is now a
+supported MESTO SMRTI value with the current STAN/DOM ZA STARE consequence
+family.
+
 ## Current Prohibitions
 
 This baseline does not authorize source changes, Web runner, backend/API, sync, browser storage adapter, migrations, payment/subscription work, role implementation, or package restructuring.
@@ -144,3 +153,10 @@ categories/articles; the existing `osnovnaUSvakomPredmetu` policy belongs in
 SCENARIO package management and should be migrated out of KATALOG settings,
 without deleting KATALOG definitions. Manual one-PREDMET additions remain
 valid and are not scenario-cleanup targets.
+
+The first pure contract slice is now implemented in
+`lib/features/predmeti/core_v2/scenario/scenario_contract.dart`: criteria over
+whitelisted PREDMET facts, AND/OR matching, KATALOG category references and
+OSNOVNI/scenario package resolution. It is not yet wired to persistence or
+SCENARIO UI. The hard-coded MESTO SMRTI gap `PRIVATNA BOLNICA` is corrected and
+shares the current STAN/DOM ZA STARE consequence family.

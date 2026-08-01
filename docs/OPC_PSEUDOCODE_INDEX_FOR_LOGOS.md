@@ -741,6 +741,15 @@ Implementation/pseudocode aligned: yes.
   not in KATALOG settings.
 - UI calls every materialized line **STAVKA**. A RUČNA STAVKA is a valid local
   PREDMET exception and is never removed by scenario reconciliation.
+- SCENARIO configuration is applied only for the active PREDMET through the
+  ROBA I USLUGE workflow; changing configuration does not globally mutate
+  existing PREDMETI.
+- `PRIVATNA BOLNICA` is a supported MESTO SMRTI value and currently shares the
+  STAN/DOM ZA STARE consequence family.
+- Pure contract implementation: `scenario_contract.dart` matches whitelisted
+  PREDMET criteria and resolves OSNOVNI plus scenario package categories from
+  KATALOG identities. It is not persistence or UI and does not replace the
+  current runtime evaluator yet.
 
 ## OPC-PSEUDO-INDEX-055C - Phase 3 SCENARIO/IRiU mutation characterization
 

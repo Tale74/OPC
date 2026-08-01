@@ -126,6 +126,7 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     'STAN',
     'DOM ZA STARE',
     'BOLNICA',
+    IriuTruthRules.mestoSmrtiPrivatnaBolnica,
     IriuTruthRules.mestoSmrtiUlicaJavnoMesto,
     'DRUGO',
   ];

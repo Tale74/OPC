@@ -26,6 +26,7 @@ class IriuManagedPolicy {
 /// poslovnu istinu koju budući lane-ovi treba da čitaju.
 abstract final class IriuTruthRules {
   static const String mestoSmrtiUlicaJavnoMesto = 'ULICA / JAVNO MESTO';
+  static const String mestoSmrtiPrivatnaBolnica = 'PRIVATNA BOLNICA';
 
   static const Set<String> mestoSmrtiManagedCategories = <String>{
     IriuK.hladnjaca,
@@ -171,13 +172,15 @@ abstract final class IriuTruthRules {
       case IriuK.prevozDoHladnjace:
       case IriuK.prevozDoGroblja:
       case IriuK.transportnaVreca:
-        return autoManagedMestoSmrtiCategories(predmet: predmet)
-            .contains(row.interniNaziv);
+        return autoManagedMestoSmrtiCategories(
+          predmet: predmet,
+        ).contains(row.interniNaziv);
       case IriuK.limeniUlozak:
       case IriuK.lemovanje:
       case IriuK.prevozSprovoda:
-        return autoManagedBlok2Categories(predmet: predmet)
-            .contains(row.interniNaziv);
+        return autoManagedBlok2Categories(
+          predmet: predmet,
+        ).contains(row.interniNaziv);
       case IriuK.medjunarodniPrevoz:
       case IriuK.medjunarodnaDocumentacija:
       case IriuK.balsamovanje:
@@ -269,6 +272,7 @@ abstract final class IriuTruthRules {
     return const <String>{
       'STAN',
       'DOM ZA STARE',
+      mestoSmrtiPrivatnaBolnica,
       mestoSmrtiUlicaJavnoMesto,
       'DRUGO',
     }.contains(mestoSmrti);

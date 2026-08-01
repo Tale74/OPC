@@ -229,6 +229,20 @@ notes. Finish only with commit, push, `HEAD == origin` and a clean worktree.
 - No automatic IRiU ordering or accepted-behavior change disguised as refactor.
 - No conclusion that a technical diff, test or PASS is owner approval.
 
+## SCENARIO package application note
+
+SCENARIO does not apply packages globally from its settings screen. It defines
+the available packages; current PREDMET choices are evaluated and applied
+through the **ROBA I USLUGE** workflow. The missing `PRIVATNA BOLNICA` MESTO
+SMRTI value is mapped to the same current consequence family as `STAN` and
+`DOM ZA STARE`.
+
+The first pure contract slice is
+`lib/features/predmeti/core_v2/scenario/scenario_contract.dart` with focused
+tests in `test/scenario_package_contract_test.dart`. It is an evaluator/domain
+boundary only; persistence, migration and SCENARIO UI remain the next gated
+steps.
+
 ## 7. When uncertain
 
 Stop at the gate and verify the source, tests and current documentation. Ask the

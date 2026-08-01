@@ -4,9 +4,10 @@
 
 **Base SHA:** `95603aeb44764216c9b7c5226e7a8e5a65a8790e`
 
-**Scope:** source and documentation audit for the owner-requested move from
-hard-coded scenarios to module-owned, UI-defined scenarios. No production
-source, schema, migration, database, JSON, UI or runtime behavior was changed.
+**Scope:** source and documentation audit plus the first bounded contract
+implementation slice for the owner-requested move from hard-coded scenarios to
+module-owned, UI-defined scenarios. No schema, migration, database, JSON,
+scenario-management UI or runtime artifact was changed.
 
 ## OPC MANIFEST CHECK — TASK START
 
@@ -54,6 +55,52 @@ Existing PREDMET rows remain untouched during this migration. Their future
 provenance must distinguish OSNOVNI PAKET, SCENARIO PAKET and RUČNA STAVKA;
 manual one-PREDMET additions remain valid exceptions and are never removed by
 scenario reconciliation.
+
+SCENARIO is configuration only. It defines package membership and criteria;
+the selected scenario is evaluated and applied for the concrete PREDMET during
+the ROBA I USLUGE/IRiU work flow. It must not silently rewrite every PREDMET
+when the module configuration changes.
+
+The current hard-coded gap `PRIVATNA BOLNICA` is corrected in the same bounded
+source step: the MESTO SMRTI selector exposes it, and its current package is
+the same as `STAN` and `DOM ZA STARE`. A focused business-policy regression
+test protects this equivalence while the broader scenario engine remains under
+the contract migration.
+
+The first pure domain slice is now present in
+`lib/features/predmeti/core_v2/scenario/scenario_contract.dart`. It models
+whitelisted PREDMET criteria, AND/OR conditions, KATALOG category references,
+required/recommended/suppressed actions, OSNOVNI PAKET and scenario-package
+resolution. It is deliberately not wired to persistence or UI yet, so the
+functional runtime path remains unchanged.
+
+## Bounded implementation evidence
+
+Focused command:
+
+```text
+C:\flutter\bin\flutter.bat test --no-pub test/scenario_package_contract_test.dart test/business_policy_iriu_critical_scenarios_test.dart
+```
+
+Result: **13 passed, 0 failed**.
+
+Targeted static command:
+
+```text
+C:\flutter\bin\flutter.bat analyze --no-pub lib/features/predmeti/core_v2/scenario/scenario_contract.dart lib/features/predmeti/core_v2/rules/iriu_truth_rules.dart lib/features/predmeti/presentation/segments/preminulo_lice_segment.dart test/scenario_package_contract_test.dart test/business_policy_iriu_critical_scenarios_test.dart
+```
+
+Result: **PASS — no issues found**.
+
+Full suite command:
+
+```text
+C:\\flutter\\bin\\flutter.bat test --no-pub
+```
+
+Result: **283 passed, 0 failed, 1 skipped**. The single skipped test is the
+pre-existing documented skip. The suite completed without a failure after
+the scenario contract and `PRIVATNA BOLNICA` source correction.
 
 ## Current source facts
 
@@ -124,7 +171,7 @@ reinterpreting `businessScenarioId`:
 8. Add JSON/backup/restore parity tests; runtime/build remain cumulative owner
    acceptance, not technical proof.
 
-## Owner decisions still required before production source change
+## Owner decisions recorded for the next production slice
 
 Recommended defaults are shown first:
 
@@ -144,9 +191,11 @@ Recommended defaults are shown first:
 6. **Scope/import:** module definitions are firm/device configuration, while a
    PREDMET transfer carries its self-contained selected snapshot and provenance.
 
-Until these six choices are confirmed, production UI/schema implementation is
-blocked by a real business-contract gap. This audit intentionally leaves the
-functional baseline unchanged.
+These choices are now the recorded owner boundary for the next production
+slice. Additive schema and migration design may proceed, but production UI
+materialization remains gated on migration fixtures, provenance tests and
+rollback evidence. This audit intentionally leaves the functional baseline
+unchanged apart from the explicitly tested `PRIVATNA BOLNICA` correction.
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 

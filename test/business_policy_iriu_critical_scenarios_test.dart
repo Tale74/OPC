@@ -4,11 +4,42 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/features/predmeti/core_v2/services/blok2_iriu_lifecycle_service.dart';
+import 'package:opc_v4/features/predmeti/core_v2/rules/iriu_truth_rules.dart';
 
 import 'test_bootstrap.dart';
 
 void main() {
   group('Business policy / IRIU critical scenarios', () {
+    test(
+      'private hospital follows the STAN/DOM ZA STARE MESTO SMRTI package',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final privateHospital = await _insertPredmet(
+          db,
+          mestoSmrti: IriuTruthRules.mestoSmrtiPrivatnaBolnica,
+          uzrokSmrti: 'PRIRODNA',
+          tipGroblja: 'GRADSKO',
+          grobnoMesto: 'NOVO',
+          tipGrobnogMesta: 'GROB',
+        );
+        final stan = privateHospital.copyWith(mestoSmrti: 'STAN');
+        final domZaStare = privateHospital.copyWith(mestoSmrti: 'DOM ZA STARE');
+
+        expect(
+          IriuTruthRules.autoManagedMestoSmrtiCategories(
+            predmet: privateHospital,
+          ),
+          IriuTruthRules.autoManagedMestoSmrtiCategories(predmet: stan),
+        );
+        expect(
+          IriuTruthRules.autoManagedMestoSmrtiCategories(
+            predmet: privateHospital,
+          ),
+          IriuTruthRules.autoManagedMestoSmrtiCategories(predmet: domZaStare),
+        );
+      },
+    );
     test(
       'dom za stare prirodna smrt gradsko postojece grobnica requires limeni ulozak and lemovanje',
       () async {
@@ -117,77 +148,71 @@ void main() {
       },
     );
 
-    test(
-      'grobnica to grob transition requires removal confirmation',
-      () async {
-        final db = createTestDatabase();
-        addTearDown(db.close);
+    test('grobnica to grob transition requires removal confirmation', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
 
-        final previous = await _insertPredmet(
+      final previous = await _insertPredmet(
+        db,
+        mestoSmrti: 'DOM ZA STARE',
+        uzrokSmrti: 'PRIRODNA',
+        tipGroblja: 'GRADSKO',
+        grobnoMesto: 'POSTOJECE',
+        tipGrobnogMesta: 'GROBNICA',
+      );
+      final current = previous.copyWith(tipGrobnogMesta: 'GROB');
+      final storedRows = [
+        await _insertIriuRow(
           db,
-          mestoSmrti: 'DOM ZA STARE',
-          uzrokSmrti: 'PRIRODNA',
-          tipGroblja: 'GRADSKO',
-          grobnoMesto: 'POSTOJECE',
-          tipGrobnogMesta: 'GROBNICA',
-        );
-        final current = previous.copyWith(tipGrobnogMesta: 'GROB');
-        final storedRows = [
-          await _insertIriuRow(
-            db,
-            predmetId: previous.id,
-            interniNaziv: IriuK.limeniUlozak,
-            redosled: 0,
-          ),
-          await _insertIriuRow(
-            db,
-            predmetId: previous.id,
-            interniNaziv: IriuK.lemovanje,
-            redosled: 1,
-          ),
-        ];
-
-        final plan = const Blok2IriuLifecycleService().planForConditionChange(
-          previousPredmet: previous,
-          currentPredmet: current,
-          storedRows: storedRows,
-          dismissedCategories: const <String>{},
-        );
-
-        expect(plan.categoriesToInsert, isEmpty);
-        expect(plan.additionsRequiringConfirmation, isEmpty);
-        _expectLimeniUlozakAndLemovanje(_conflictInternalNames(plan));
-      },
-    );
-
-    test(
-      'grob to grobnica transition requires add confirmation',
-      () async {
-        final db = createTestDatabase();
-        addTearDown(db.close);
-
-        final previous = await _insertPredmet(
+          predmetId: previous.id,
+          interniNaziv: IriuK.limeniUlozak,
+          redosled: 0,
+        ),
+        await _insertIriuRow(
           db,
-          mestoSmrti: 'DOM ZA STARE',
-          uzrokSmrti: 'PRIRODNA',
-          tipGroblja: 'GRADSKO',
-          grobnoMesto: 'POSTOJECE',
-          tipGrobnogMesta: 'GROB',
-        );
-        final current = previous.copyWith(tipGrobnogMesta: 'GROBNICA');
+          predmetId: previous.id,
+          interniNaziv: IriuK.lemovanje,
+          redosled: 1,
+        ),
+      ];
 
-        final plan = const Blok2IriuLifecycleService().planForConditionChange(
-          previousPredmet: previous,
-          currentPredmet: current,
-          storedRows: const <IriuData>[],
-          dismissedCategories: const <String>{},
-        );
+      final plan = const Blok2IriuLifecycleService().planForConditionChange(
+        previousPredmet: previous,
+        currentPredmet: current,
+        storedRows: storedRows,
+        dismissedCategories: const <String>{},
+      );
 
-        expect(plan.categoriesToInsert, isEmpty);
-        expect(plan.conflicts, isEmpty);
-        _expectLimeniUlozakAndLemovanje(plan.additionsRequiringConfirmation);
-      },
-    );
+      expect(plan.categoriesToInsert, isEmpty);
+      expect(plan.additionsRequiringConfirmation, isEmpty);
+      _expectLimeniUlozakAndLemovanje(_conflictInternalNames(plan));
+    });
+
+    test('grob to grobnica transition requires add confirmation', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+
+      final previous = await _insertPredmet(
+        db,
+        mestoSmrti: 'DOM ZA STARE',
+        uzrokSmrti: 'PRIRODNA',
+        tipGroblja: 'GRADSKO',
+        grobnoMesto: 'POSTOJECE',
+        tipGrobnogMesta: 'GROB',
+      );
+      final current = previous.copyWith(tipGrobnogMesta: 'GROBNICA');
+
+      final plan = const Blok2IriuLifecycleService().planForConditionChange(
+        previousPredmet: previous,
+        currentPredmet: current,
+        storedRows: const <IriuData>[],
+        dismissedCategories: const <String>{},
+      );
+
+      expect(plan.categoriesToInsert, isEmpty);
+      expect(plan.conflicts, isEmpty);
+      _expectLimeniUlozakAndLemovanje(plan.additionsRequiringConfirmation);
+    });
 
     test(
       'dismissed blok 2 categories are not silently re-added on transition',
@@ -242,7 +267,9 @@ Future<PredmetiData> _insertPredmet(
   required String tipGrobnogMesta,
   String vrstaCeremonije = 'SAHRANA',
 }) async {
-  final id = await db.into(db.predmeti).insert(
+  final id = await db
+      .into(db.predmeti)
+      .insert(
         PredmetiCompanion.insert(
           brojPredmeta: const Value('IRIU-CRITICAL-001/2026'),
           datumKreiranja: const Value('2026-05-17T09:00:00.000'),
@@ -264,7 +291,9 @@ Future<IriuData> _insertIriuRow(
   required String interniNaziv,
   required int redosled,
 }) async {
-  final id = await db.into(db.iriu).insert(
+  final id = await db
+      .into(db.iriu)
+      .insert(
         IriuCompanion(
           predmetId: Value(predmetId),
           interniNaziv: Value(interniNaziv),
