@@ -1,6 +1,9 @@
 # OPC task report - Phase 3 lifecycle/completion characterization
 
-**Status:** `TECHNICAL CHARACTERIZATION PASS; PRODUCTION CHANGE NOT AUTHORIZED`
+> Superseded by `OPC_TASK_EXPLICIT_ZAVRSEN_IMMUTABLE_COMPLETION_20260801_REPORT.md`
+> after the owner approved the explicit `OTVOREN → ZATVOREN → ZAVRŠEN` lifecycle.
+
+**Status:** `SUPERSEDED CHARACTERIZATION RECORD`
 
 **Date:** 2026-08-01
 
@@ -15,8 +18,9 @@
 - Backup SHA-256:
   `7aebf100602b0d4513864ea08c434219157e667cbe4c134d4bd6c3d64c72a82e`.
 
-This task is test/documentation-only. No canonical database, live backup,
-migration or production source behavior was changed.
+This was the pre-owner-gate characterization record. It is retained as
+historical evidence; the owner-approved implementation is recorded in the
+superseding report named above.
 
 ## 2. Plan dependency addressed
 
@@ -35,9 +39,9 @@ future business decision.
 - An active unfinished PARTE preparation blocks the automatic transition; this
   remains covered by the existing PARTE domain characterization suite.
 
-The characterization does not approve or remove automatic completion. Any
-production change requires the Phase 3 lifecycle owner gate, historical-state
-treatment and a separate notified implementation task.
+The characterization did not approve or remove automatic completion at that
+time. The subsequent owner decision and implementation are recorded in the
+superseding report.
 
 ## 4. Evidence and documentation synchronization
 

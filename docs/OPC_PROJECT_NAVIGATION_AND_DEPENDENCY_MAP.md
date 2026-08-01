@@ -101,19 +101,23 @@ Required invariants:
 - accepted PDF/DOCX behavior and layout remain unchanged unless a focused test
   proves the correction requires it.
 
-### Phase 3 — PREDMET completion-state characterization
+### Phase 3 — PREDMET explicit completion lifecycle
 
 Source route: `lib/features/predmeti/data/predmeti_repository.dart` →
 `lib/features/predmeti/presentation/predmet_screen.dart` →
 `test/predmet_completion_state_characterization_test.dart`.
 
-The current source automatically transitions an open PREDMET with a past
-ceremony date to `ZAVRŠEN` when no active PARTE preparation blocks it. Missing
-and future ceremony dates do not transition; existing `ZAVRŠEN` and
-`ANONIMIZOVAN` rows are excluded from bulk refresh. This is characterized
-behavior only. The plan requires the lifecycle owner gate and historical-state
-treatment before changing it. Do not infer implementation authorization from
-the characterization PASS.
+Automatic completion is retired: opening a PREDMET and starting the list no
+longer write `ZAVRŠEN` from the ceremony date. The owner-approved lifecycle is
+`OTVOREN → ZATVOREN → ZAVRŠEN`; only an explicit action from `ZATVOREN` may set
+`ZAVRŠEN`. That action records a lifecycle audit event and makes the PREDMET
+immutable for direct edits and reopening. Existing/imported `ZAVRŠEN` and
+`ANONIMIZOVAN` rows remain compatible, and GDPR anonymization remains a
+separate controlled operation.
+
+Ceremony date, reminder state, PARTE preparation and derivative outputs never
+infer completion. The implementation report and focused tests record the
+owner gate; Windows/Android runtime acceptance remains separate.
 
 Keep the lifecycle pseudocode and map synchronized:
 

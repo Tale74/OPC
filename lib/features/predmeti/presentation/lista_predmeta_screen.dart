@@ -123,7 +123,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     if (_startupSideEffectsRunning) return;
     _startupSideEffectsRunning = true;
     try {
-      await widget.predmetiRepo.osveziAutomatskeStatuse();
       if (!mounted) return;
       await _refreshCeremonyRemindersAndDialog(requestPermission: true);
       if (!mounted) return;

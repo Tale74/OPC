@@ -661,21 +661,23 @@ Implementation/pseudocode aligned: yes.
   remain protected; Android runtime follows this final UI correction.
 - Report: `docs/tasks/OPC_TASK_PARTE_FINAL_TECHNICAL_TEXT_PLACEMENT_UI_REGRESSION_REPORT.md`.
 
-## OPC-PSEUDO-INDEX-055A - Phase 3 PREDMET completion-state characterization
+## OPC-PSEUDO-INDEX-055A - Phase 3 PREDMET completion lifecycle
 
 - Source: `lib/features/predmeti/data/predmeti_repository.dart`,
   `lib/features/predmeti/presentation/predmet_screen.dart`.
 - Test: `test/predmet_completion_state_characterization_test.dart`.
-- Current source behavior: opening a PREDMET refreshes automatic status; an
-  open PREDMET whose ceremony date is before today becomes `ZAVRŠEN` when no
-  active PARTE preparation blocks the transition. Missing or future ceremony
-  dates do not transition. Existing `ZAVRŠEN` and `ANONIMIZOVAN` rows are not
-  changed by the bulk refresh.
-- Boundary: this is characterization of current behavior, not approval of
-  automatic completion as future business policy. The Phase 3 plan requires
-  lifecycle owner decisions and historical-state treatment before changing
-  this behavior. No status, reminder, PREDMET or IRiU production behavior was
-  changed by the characterization task.
+- Current source behavior: automatic status refresh is retired and has no
+  write effect. Opening a PREDMET or starting the list no longer changes its
+  status based on the ceremony date.
+- Explicit lifecycle rule: `OTVOREN` may first become `ZATVOREN`; only an
+  explicit user action from `ZATVOREN` may set `ZAVRŠEN`. The completion action
+  writes one lifecycle audit event and leaves the PREDMET immutable for direct
+  edits or reopening. Existing/imported `ZAVRŠEN` and `ANONIMIZOVAN` rows remain
+  compatible; GDPR anonymization is a separate controlled lifecycle operation.
+- Boundary: ceremony date is not a completion trigger. Reminder eligibility,
+  PARTE preparation state and derivative outputs must not infer completion.
+  Technical PASS and the explicit owner decision remain separate from runtime
+  acceptance.
 
 ## OPC-PSEUDO-INDEX-055 — PARTE editor/lifecycle/PREDMET PARTE navigation refinement
 

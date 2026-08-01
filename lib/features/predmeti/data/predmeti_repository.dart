@@ -18,6 +18,21 @@ class PartePreparationBlockException implements Exception {
       'PREDMET ima započetu PARTE pripremu koja nije završena.';
 }
 
+class PredmetImmutableLifecycleException implements Exception {
+  const PredmetImmutableLifecycleException();
+
+  @override
+  String toString() =>
+      'PREDMET je u završenom lifecycle statusu i ne može se menjati.';
+}
+
+class PredmetCompletionStateException implements Exception {
+  const PredmetCompletionStateException();
+
+  @override
+  String toString() => 'PREDMET mora prvo biti označen kao ZATVOREN.';
+}
+
 class PredmetiRepository {
   const PredmetiRepository(this._db);
 
@@ -90,17 +105,6 @@ class PredmetiRepository {
 
   bool mozeAnonimizacija(PredmetiData predmet, {DateTime? now}) {
     return predmet.status == 'ZAVRŠEN';
-  }
-
-  bool _trebaAutomatskiZavrsiti(PredmetiData predmet) {
-    if (predmet.status == 'ZAVRŠEN' || predmet.status == 'ANONIMIZOVAN') {
-      return false;
-    }
-    final datum = _parseDatumCeremonije(predmet.datumCeremonije);
-    if (datum == null) return false;
-    final danas = DateTime.now();
-    final danasDate = DateTime(danas.year, danas.month, danas.day);
-    return datum.isBefore(danasDate);
   }
 
   Future<void> _upisiLogIzmene({
@@ -225,6 +229,9 @@ class PredmetiRepository {
   }) => _db.transaction(() async {
     final predmet = await getPredmet(id);
     if (predmet.status == 'ZATVOREN') return;
+    if (predmet.status == 'ZAVRŠEN' || predmet.status == 'ANONIMIZOVAN') {
+      throw const PredmetImmutableLifecycleException();
+    }
     await _zahtevajDaParteNeBlokira(id);
     final trenutniSnapshot = snapshotZaSaveCommit(predmet);
     final poslednjiPotvrdjeniSnapshot =
@@ -295,6 +302,9 @@ class PredmetiRepository {
   Future<void> otvoriPredmet(int id, {required int korisnikId}) =>
       _db.transaction(() async {
         final predmet = await getPredmet(id);
+        if (predmet.status == 'ZAVRŠEN' || predmet.status == 'ANONIMIZOVAN') {
+          throw const PredmetImmutableLifecycleException();
+        }
         final trenutniSnapshot = snapshotZaSaveCommit(predmet);
         final poslednjiPotvrdjeniSnapshot =
             await procitajPoslednjiConfirmedCloseSnapshot(id);
@@ -342,39 +352,45 @@ class PredmetiRepository {
         );
       });
 
-  Future<bool> osveziAutomatskiStatusPredmeta(int id) async {
-    final predmet = await getPredmet(id);
-    if (!_trebaAutomatskiZavrsiti(predmet)) return false;
-    if (await imaAktivnuNezavrsenuPartePripremu(id)) return false;
-    await azurirajPredmet(
-      id,
-      const PredmetiCompanion(status: Value('ZAVRŠEN')),
-    );
-    return true;
-  }
+  /// Automatsko označavanje kao ZAVRŠEN je povučeno.
+  ///
+  /// Metod ostaje radi kompatibilnosti sa starijim klijentima i uvek je bez
+  /// efekta. Jedini dozvoljeni prelaz u ZAVRŠEN je [zavrsiPredmet].
+  Future<bool> osveziAutomatskiStatusPredmeta(int id) async => false;
 
-  Future<int> osveziAutomatskeStatuse() async {
-    final kandidati =
-        await (_db.select(_db.predmeti)..where(
-              (p) =>
-                  p.status.equals('ZAVRŠEN').not() &
-                  p.status.equals('ANONIMIZOVAN').not() &
-                  p.datumCeremonije.isNotValue(''),
-            ))
-            .get();
-    int promenjeno = 0;
-    for (final predmet in kandidati) {
-      if (_trebaAutomatskiZavrsiti(predmet) &&
-          !await imaAktivnuNezavrsenuPartePripremu(predmet.id)) {
-        await azurirajPredmet(
-          predmet.id,
-          const PredmetiCompanion(status: Value('ZAVRŠEN')),
+  /// Automatsko označavanje kao ZAVRŠEN je povučeno; nema masovne promene.
+  Future<int> osveziAutomatskeStatuse() async => 0;
+
+  /// Eksplicitno označava zatvoren PREDMET kao ZAVRŠEN i time ga zaključava
+  /// za poslovne izmene. Ponovni prelaz ili otvaranje nisu dozvoljeni; GDPR
+  /// anonimizacija ostaje zasebna lifecycle operacija.
+  Future<void> zavrsiPredmet(int id, {required int korisnikId}) =>
+      _db.transaction(() async {
+        final predmet = await getPredmet(id);
+        if (predmet.status == 'ZAVRŠEN') return;
+        if (predmet.status == 'ANONIMIZOVAN') {
+          throw const PredmetImmutableLifecycleException();
+        }
+        if (predmet.status != 'ZATVOREN') {
+          throw const PredmetCompletionStateException();
+        }
+        await _zahtevajDaParteNeBlokira(id);
+        final sada = DateTime.now().toIso8601String();
+        await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
+          PredmetiCompanion(
+            status: const Value('ZAVRŠEN'),
+            lastBusinessModifiedByKorisnikId: Value(korisnikId),
+            lastBusinessModifiedAt: Value(sada),
+          ),
         );
-        promenjeno++;
-      }
-    }
-    return promenjeno;
-  }
+        await _upisiLogIzmene(
+          predmetId: id,
+          korisnikId: korisnikId,
+          polje: 'radni_ciklus',
+          staraVrednost: 'v${predmet.verzija}:${predmet.status}',
+          novaVrednost: 'v${predmet.verzija}:ZAVRŠEN',
+        );
+      });
 
   /// Rediguje zaštićene identifikacione i kontakt podatke.
   /// Imena ostaju vidljiva u OPC v1.
@@ -388,7 +404,7 @@ class PredmetiRepository {
         email: Value(redactedValue),
       ),
     );
-    await azurirajPredmet(
+    await _azurirajPredmet(
       id,
       const PredmetiCompanion(
         status: Value('ANONIMIZOVAN'),
@@ -417,6 +433,7 @@ class PredmetiRepository {
         jkpPlTelefon1: Value(redactedValue),
         jkpPlEmail: Value(redactedValue),
       ),
+      allowLockedLifecycle: true,
     );
   }
 
@@ -483,6 +500,9 @@ class PredmetiRepository {
     String? fallbackSnapshot,
   }) => _db.transaction(() async {
     final trenutno = await getPredmet(id);
+    if (trenutno.status == 'ZAVRŠEN' || trenutno.status == 'ANONIMIZOVAN') {
+      throw const PredmetImmutableLifecycleException();
+    }
     final trenutniSnapshot = snapshotZaSaveCommit(trenutno);
     final poslednjiSaveSnapshot = await procitajPoslednjiSaveCommitSnapshot(id);
     final poslednjiSnapshot = poslednjiSaveSnapshot ?? fallbackSnapshot;
@@ -521,15 +541,32 @@ class PredmetiRepository {
   });
 
   Future<void> azurirajPredmet(int id, PredmetiCompanion companion) =>
-      _db.transaction(() async {
-        final trenutno = await getPredmet(id);
-        final sledece = trenutno.copyWithCompanion(companion);
-        if (sledece == trenutno) return;
+      _azurirajPredmet(id, companion);
 
-        await (_db.update(
-          _db.predmeti,
-        )..where((p) => p.id.equals(id))).write(companion);
-      });
+  Future<void> _azurirajPredmet(
+    int id,
+    PredmetiCompanion companion, {
+    bool allowLockedLifecycle = false,
+  }) => _db.transaction(() async {
+    final trenutno = await getPredmet(id);
+    if (!allowLockedLifecycle &&
+        (trenutno.status == 'ZAVRŠEN' || trenutno.status == 'ANONIMIZOVAN')) {
+      throw const PredmetImmutableLifecycleException();
+    }
+    if (!allowLockedLifecycle &&
+        companion.status.present &&
+        companion.status.value == 'ZAVRŠEN') {
+      throw StateError(
+        'ZAVRŠEN se postavlja samo eksplicitnom lifecycle akcijom.',
+      );
+    }
+    final sledece = trenutno.copyWithCompanion(companion);
+    if (sledece == trenutno) return;
+
+    await (_db.update(
+      _db.predmeti,
+    )..where((p) => p.id.equals(id))).write(companion);
+  });
 
   Future<int> uveziPredmetSaPovezanimPodacima({
     required PredmetiData predmet,

@@ -201,7 +201,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
         // Persisted cleanup-pending remains visible and retryable.
       }
     }
-    await widget.predmetiRepo.osveziAutomatskiStatusPredmeta(widget.predmetId);
     final results = await Future.wait([
       widget.predmetiRepo.getPredmet(widget.predmetId),
       _podesavanjaRepo.getAppPodesavanja(),
@@ -698,6 +697,47 @@ class _PredmetScreenState extends State<PredmetScreen> {
     return true;
   }
 
+  Future<bool> _zavrsi() async {
+    if (!_zatvoren) return false;
+    if (!mounted) return false;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => _buildHeightFitDialog(
+        context: dialogContext,
+        title: const Text('Označi predmet kao ZAVRŠEN'),
+        content: const Text(
+          'Predmet će biti označen kao ZAVRŠEN i trajno zaključan za izmene.\n'
+          'Posle ove potvrde više nije moguće otvoriti predmet za izmenu.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ODUSTANI'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('OZNAČI KAO ZAVRŠEN'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return false;
+    await widget.predmetiRepo.zavrsiPredmet(
+      widget.predmetId,
+      korisnikId: widget.session.korisnik!.id,
+    );
+    await _ucitaj();
+    if (!mounted) return false;
+    _showSnackBarSafely(
+      const SnackBar(
+        content: Text('Predmet je označen kao ZAVRŠEN i zaključan za izmene.'),
+        backgroundColor: Colors.blueGrey,
+        duration: Duration(seconds: 3),
+      ),
+    );
+    return true;
+  }
+
   Future<String?> _potvrdiIzlazakIzOtvorenogPredmeta() {
     return showDialog<String>(
       context: context,
@@ -1043,7 +1083,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
               color: Colors.blueGrey.shade700,
             ),
             content: Text(
-              'Predmet je automatski prešao u status ZAVRŠEN i zaključan je za izmene.',
+              'Predmet je označen kao ZAVRŠEN i zaključan je za izmene.',
               style: TextStyle(
                 color: Colors.blueGrey.shade900,
                 fontWeight: FontWeight.w500,
@@ -1134,18 +1174,40 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     ),
                   ],
                 ),
-              ] else
-                OutlinedButton.icon(
-                  onPressed: _otkljucajZaIzmenu,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('IZMENI'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0,
+              ] else if (_zatvoren)
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _otkljucajZaIzmenu,
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('IZMENI'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: _zavrsi,
+                        icon: const Icon(Icons.done_all),
+                        label: const Text('ZAVRŠI'),
+                        style: buttonStyle.copyWith(
+                          backgroundColor: WidgetStateProperty.all(
+                            Colors.blueGrey,
+                          ),
+                          foregroundColor: WidgetStateProperty.all(
+                            Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
@@ -1443,6 +1505,16 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     icon: const Icon(Icons.edit_outlined),
                     label: const Text('IZMENI'),
                   ),
+                if (_zatvoren)
+                  FilledButton.icon(
+                    onPressed: _zavrsi,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.blueGrey,
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: const Icon(Icons.done_all),
+                    label: const Text('OZNAČI KAO ZAVRŠEN'),
+                  ),
               ],
             ),
           ],
@@ -1575,10 +1647,20 @@ class _PredmetScreenState extends State<PredmetScreen> {
                   if (v == 'save') _sacuvajPredmet();
                   if (v == 'close') _zatvori();
                   if (v == 'edit') _otkljucajZaIzmenu();
+                  if (v == 'finish') _zavrsi();
                   if (v == 'anon') _anonimizuj();
                   if (v == 'delete') _obrisiPredmet();
                 },
                 itemBuilder: (_) => [
+                  if (_zatvoren)
+                    const PopupMenuItem(
+                      value: 'finish',
+                      child: ListTile(
+                        leading: Icon(Icons.done_all),
+                        title: Text('Označi kao ZAVRŠEN'),
+                        dense: true,
+                      ),
+                    ),
                   if (!_anonimizovan)
                     PopupMenuItem(
                       value: 'anon',
