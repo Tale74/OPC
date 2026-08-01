@@ -47,6 +47,9 @@ performance cause.
 
 Focused result: `2/2 PASS`.
 
+The complete suite was then run with `flutter test --no-pub`: `275 PASS`,
+`1 expected SKIP`, `0 FAIL` (no build was run).
+
 One representative synthetic in-memory run printed diagnostic values:
 
 - global lightweight cold: `116 ms`;
