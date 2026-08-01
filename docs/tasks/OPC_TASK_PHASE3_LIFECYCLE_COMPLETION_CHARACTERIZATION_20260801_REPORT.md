@@ -7,6 +7,16 @@
 
 **Date:** 2026-08-01
 
+## OPC MANIFEST CHECK — TASK START
+
+Manifest read: YES — `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`
+
+## OPC MANIFEST COMPLIANCE — TASK END
+
+Manifest compliance checked: YES
+
+PASS / NOT PASS: PASS (superseded historical characterization)
+
 ## 1. Git and protection
 
 - Branch: `task/OPC-PHASE3-LIFECYCLE-COMPLETION-CHARACTERIZATION`.

@@ -4,6 +4,16 @@
 
 **Date:** 2026-08-01
 
+## OPC MANIFEST CHECK — TASK START
+
+Manifest read: YES — `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`
+
+## OPC MANIFEST COMPLIANCE — TASK END
+
+Manifest compliance checked: YES
+
+PASS / NOT PASS: PASS
+
 ## Owner decision and scope
 
 The owner confirmed the lifecycle rule:

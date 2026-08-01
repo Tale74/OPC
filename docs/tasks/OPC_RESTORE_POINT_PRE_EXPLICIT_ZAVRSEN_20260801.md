@@ -1,5 +1,9 @@
 # OPC restore point - before explicit ZAVRŠEN correction
 
+## OPC MANIFEST CHECK — TASK START
+
+Manifest read: YES — `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`
+
 - Branch: `task/OPC-PHASE3-LIFECYCLE-COMPLETION-CHARACTERIZATION`
 - Pre-change SHA: `df9ed68229401a4cd6829a31ab1e1f5a957f2d50`
 - Protected backup:
@@ -10,3 +14,9 @@
 Purpose: recover the exact pre-change source tree if the explicit completion
 correction is rejected by focused tests or owner review. No canonical/live
 database is included or modified by this restore point.
+
+## OPC MANIFEST COMPLIANCE — TASK END
+
+Manifest compliance checked: YES
+
+PASS / NOT PASS: PASS
