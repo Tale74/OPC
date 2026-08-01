@@ -81,3 +81,14 @@ completion trigger. `ZAVRŠEN` is immutable for direct edits and reopening;
 GDPR anonymization remains a separate controlled operation. Focused repository
 tests cover no-auto behavior, explicit completion, idempotency and immutable
 guards. Runtime/build acceptance remains deferred to the cumulative owner gate.
+
+## Current Gate 2A KATALOG characterization update - 2026-08-01
+
+The next dependency is now characterized on
+`task/OPC-GATE2-IRIU-KATALOG-PERFORMANCE-EVIDENCE`. The lightweight repository
+path preserves visible category/article order, stable article IDs, prices,
+`hasPhoto`, scoped category selection and separate photo-byte lookup. A local
+synthetic in-memory run printed cold/warm repository timings only as diagnostic
+evidence; it does not identify the owner-observed slowdown or authorize a
+batch query, cache, index or schema change. Owner Windows/Android measurement
+must separate repository wait, first dialog frame, photo read and image decode.

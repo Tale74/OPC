@@ -1495,6 +1495,14 @@ change is authorized until that evidence proves a cause. OPC Web,
 `OPC_v.1_Int`, RI-3 recovery, migrations and reminder-policy reinterpretation
 remain deferred.
 
+Gate 2A repository characterization is now recorded on
+`task/OPC-GATE2-IRIU-KATALOG-PERFORMANCE-EVIDENCE`: lightweight category and
+article ordering, identity, price, `hasPhoto`, scoped loading and separate
+photo-byte lookup are covered without production behavior change. Synthetic
+cold/warm timings are diagnostic only. Owner Windows/Android timing must still
+separate repository wait, first dialog frame, photo read and image decode
+before any batch query, cache, index or schema correction is considered.
+
 Phase 3 lifecycle correction is now owner-approved: automatic `ZAVRŠEN`
 transition is retired, and the only business transition is the explicit
 `OTVOREN → ZATVOREN → ZAVRŠEN` action. The final state is immutable for direct

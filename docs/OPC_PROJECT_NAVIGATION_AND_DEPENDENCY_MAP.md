@@ -131,9 +131,17 @@ Keep the lifecycle pseudocode and map synchronized:
 Source route: `iriu_segment.dart` / `iriu_row_tile.dart` →
 `podesavanja_repository.dart` → `katalog_artikli` table and photo policy.
 
-First measure the query wait, dialog first frame, photo read and image decode
-separately. The current source shows sequential catalog-summary loading and
-per-article photo reads; this is a hypothesis until measured.
+Gate 2A characterization is recorded in
+`test/katalog_picker_repository_characterization_test.dart`. It preserves
+visible category/article order, stable IDs, prices, `hasPhoto`, scoped loading
+and separate photo-byte lookup. The synthetic in-memory run is diagnostic only
+(cold/warm repository timings are printed without a threshold); it is not a
+Windows/Android performance result.
+
+The owner runtime measurement must separate repository await, dialog first
+frame, photo read and image decode. The current source shows sequential
+catalog-summary loading and per-article photo reads; this remains a hypothesis
+until those boundaries are measured on the target fixtures.
 
 Only then choose the smallest safe correction, such as one batched summary
 query, bounded cache, deferred photo loading or an index proven by query plan.

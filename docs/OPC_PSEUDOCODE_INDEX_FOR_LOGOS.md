@@ -679,6 +679,23 @@ Implementation/pseudocode aligned: yes.
   Technical PASS and the explicit owner decision remain separate from runtime
   acceptance.
 
+## OPC-PSEUDO-INDEX-055B - Gate 2A IRiU/KATALOG picker characterization
+
+- Source: `lib/features/podesavanja/data/podesavanja_repository.dart`,
+  `lib/features/predmeti/presentation/segments/iriu_segment.dart`,
+  `lib/features/predmeti/presentation/segments/iriu_row_tile.dart`.
+- Test: `test/katalog_picker_repository_characterization_test.dart`.
+- Current contract: the lightweight picker returns visible categories in
+  configured order and article summaries in stable ID/order sequence, with
+  price, stable article identity and `hasPhoto`; scoped loading excludes
+  unrelated categories. Photo bytes are a separate lazy repository read.
+- Measurement boundary: synthetic cold/warm Stopwatch output is diagnostic
+  only. Owner Windows/Android timing must separately measure repository wait,
+  first dialog frame, photo read and image decode before any batch query, cache
+  or index change is authorized.
+- Truth boundary: KATALOG supplies article knowledge; PREDMET and IRiU remain
+  authoritative for business rows, ordering and selected snapshots.
+
 ## OPC-PSEUDO-INDEX-055 — PARTE editor/lifecycle/PREDMET PARTE navigation refinement
 
 - Document: `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`, `EDITOR VIEWPORT REFINEMENT`, `COMPLETED PREPARATION DELETION`, and `PARTE / PREDMET SEGMENT NAVIGATION`.
