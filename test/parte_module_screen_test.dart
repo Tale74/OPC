@@ -237,6 +237,95 @@ void main() {
     expect(find.byKey(const Key('parte-viewport-controls')), findsOneWidget);
   });
 
+  testWidgets('composer font field follows fitted size after text save', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(520, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final actorId = await db
+        .into(db.korisnici)
+        .insert(
+          KorisniciCompanion.insert(
+            imePrezime: 'Synthetic adviser',
+            uloga: 'SAVETNIK',
+            pinHash: 'synthetic-hash',
+            datumKreiranja: '2026-07-17T10:00:00.000',
+          ),
+        );
+    final actor = await (db.select(
+      db.korisnici,
+    )..where((row) => row.id.equals(actorId))).getSingle();
+    await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('FONT-006'),
+            datumKreiranja: const Value('2026-07-12T10:00:00.000'),
+            ime: const Value('VeryLongNameThatMustBeFittedToThePartePrintArea'),
+            prezime: const Value(
+              'VeryLongSurnameThatMustBeFittedToThePartePrintArea',
+            ),
+            partePotrebna: const Value(true),
+            status: const Value('OTVOREN'),
+          ),
+        );
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((row) => row.brojPredmeta.equals('FONT-006'))).getSingle();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ParteComposerScreen(
+          predmetId: predmet.id,
+          predmetiRepository: PredmetiRepository(db),
+          actor: actor,
+          printProfileStore: _MemoryPrintProfileStore(),
+          entitlement: const OpcEntitlementPolicy.fromSource(
+            OpcDemoTestEntitlementSource(packageLevel: OpcPackageLevel.potpun),
+          ),
+        ),
+      ),
+    );
+    for (var attempt = 0; attempt < 40; attempt++) {
+      await tester.pump(const Duration(milliseconds: 250));
+      if (find.text('TEKSTUALNI BLOKOVI').evaluate().isNotEmpty) break;
+    }
+    await tester.tap(find.text('TEKSTUALNI BLOKOVI'));
+    await tester.pump();
+    final nameField = find.byKey(const ValueKey('parte-text-name'));
+    expect(nameField, findsOneWidget);
+    await tester.enterText(
+      nameField,
+      'VeryLongNameThatMustBeFittedToThePartePrintArea VeryLongSurnameThatMustBeFittedToThePartePrintArea',
+    );
+      await tester.tap(find.byKey(const Key('parte-save-text')));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('PREGLED PRIPREME'),
+        600,
+        scrollable: find.byType(Scrollable).first,
+      );
+      final previewFinder = find.byType(PartePlanPreview);
+      expect(previewFinder, findsOneWidget);
+    final preview = tester.widget<PartePlanPreview>(previewFinder);
+    final fittedNameSize = preview.plan.blocks
+        .firstWhere((block) => block.id == 'name')
+        .fontSize;
+    final displayedSize = double.parse(
+      tester
+          .widget<TextField>(find.byKey(const Key('parte-font-size-state')))
+          .controller!
+          .text,
+    );
+    expect(fittedNameSize, lessThan(68));
+    expect(displayedSize, fittedNameSize);
+  });
+
   testWidgets(
     'completed preparation deletion is explicit and preserves PREDMET and IRiU',
     (tester) async {

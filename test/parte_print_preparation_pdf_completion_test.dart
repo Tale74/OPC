@@ -65,6 +65,57 @@ void main() {
     },
   );
 
+  test(
+    'empty text blocks are omitted from PDF and DOCX without blocking',
+    () async {
+      final fixture = await _fixture();
+      addTearDown(fixture.dispose);
+      final base = ParteDraft.decode(fixture.preparation.draftJson);
+      final emptyDraft = base.copyWith(
+        textByBlock: {for (final id in base.textByBlock.keys) id: ''},
+      );
+      await fixture.repository.updateDraft(
+        preparationId: fixture.preparation.id,
+        draft: emptyDraft,
+        actor: fixture.actor,
+        entitlement: potpun,
+      );
+      await fixture.repository.updateAcknowledgements(
+        preparationId: fixture.preparation.id,
+        actor: fixture.actor,
+        entitlement: potpun,
+        noPhotoAccepted: true,
+      );
+      final preparation = (await fixture.repository.findForPredmet(
+        fixture.predmet.id,
+      ))!;
+      final plan = await fixture.service.buildPlan(preparation: preparation);
+      expect(plan.canGeneratePdf, isTrue);
+      expect(
+        plan.blocks.where((block) => block.kind == ParteBlockKind.text),
+        isEmpty,
+      );
+
+      final painted = <String>[];
+      final pdf = await PartePdfRenderer(mediaStore: fixture.mediaStore).build(
+        plan: plan,
+        lineObserver: (blockId, lineIndex, text) => painted.add(blockId),
+      );
+      expect(String.fromCharCodes(pdf.take(4)), '%PDF');
+      expect(painted, isEmpty);
+
+      final docx = await ParteDocxExporter(
+        mediaStore: fixture.mediaStore,
+      ).build(plan: plan);
+      final document = utf8.decode(
+        ZipDecoder().decodeBytes(docx).findFile('word/document.xml')!.content
+            as List<int>,
+      );
+      expect(document, isNot(contains('parte_mournersHeading')));
+      expect(document, isNot(contains('parte_mourners')));
+    },
+  );
+
   test('PDF paints every canonical line of multiline text blocks', () async {
     final fixture = await _fixture();
     addTearDown(fixture.dispose);

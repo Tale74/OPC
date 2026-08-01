@@ -396,8 +396,88 @@ void main() {
         ),
       );
       expect(plan.canGeneratePdf, isFalse);
-      expect(plan.blockers.join(' '), contains('mourners'));
+      expect(plan.blockers.join(' '), contains('Ožalošćeni'));
+      expect(plan.blockers.join(' '), isNot(contains('mourners')));
       expect(draft.textByBlock['mourners'], longText);
+    });
+
+    test(
+      'empty text content is omitted without blocking preparation',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final predmet = await _insertPredmet(db);
+        final base = const ParteInitialComposer()
+            .compose(predmet: predmet)
+            .draft;
+        final emptyText = <String, String>{...base.textByBlock};
+        for (final block in base.blocks.where(
+          (block) => block.kind == ParteBlockKind.text,
+        )) {
+          emptyText[block.id] = '';
+        }
+        final draft = base.copyWith(textByBlock: emptyText);
+        final plan = const ParteComposer().compose(
+          ParteCompositionInput(
+            draft: draft,
+            template: ParteTemplate.builtInStandard,
+            photoMediaKey: null,
+            customSymbolMediaKey: null,
+            noPhotoAccepted: true,
+            noCustomSymbolAccepted: true,
+            lowResolutionPhoto: false,
+            lowResolutionAccepted: false,
+            grammarRequiresReview: false,
+            grammarVerified: true,
+          ),
+        );
+
+        expect(
+          plan.canConfirmPreview,
+          isTrue,
+          reason: plan.blockers.join(' | '),
+        );
+        expect(plan.canGeneratePdf, isTrue, reason: plan.blockers.join(' | '));
+        expect(
+          plan.blocks.where((block) => block.kind == ParteBlockKind.text),
+          isEmpty,
+        );
+        expect(
+          plan.blocks.any((block) => block.id == 'mournersHeading'),
+          isFalse,
+        );
+        expect(plan.validateForExport, returnsNormally);
+      },
+    );
+
+    test('missing structural text block remains a Serbian blocker', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final predmet = await _insertPredmet(db);
+      final base = const ParteInitialComposer().compose(predmet: predmet).draft;
+      final draft = base.copyWith(
+        blocks: base.blocks
+            .where((block) => block.id != 'mourners')
+            .toList(growable: false),
+      );
+      final plan = const ParteComposer().compose(
+        ParteCompositionInput(
+          draft: draft,
+          template: ParteTemplate.builtInStandard,
+          photoMediaKey: null,
+          customSymbolMediaKey: null,
+          noPhotoAccepted: true,
+          noCustomSymbolAccepted: true,
+          lowResolutionPhoto: false,
+          lowResolutionAccepted: false,
+          grammarRequiresReview: false,
+          grammarVerified: true,
+        ),
+      );
+
+      expect(plan.canGeneratePdf, isFalse);
+      expect(plan.blockers.join(' '), contains('Ožalošćeni'));
+      expect(plan.blockers.join(' '), isNot(contains('mourners')));
     });
 
     test(

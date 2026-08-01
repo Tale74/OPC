@@ -176,7 +176,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         (block) => block.id == _selectedBlockId,
         orElse: () => draft!.blocks.first,
       );
-      _fontSizeController.text = selected.initialFontSize.toStringAsFixed(1);
+      _fontSizeController.text = _displayFontSize(
+        selected,
+        plan,
+      ).toStringAsFixed(1);
     }
     setState(() {
       _preparation = preparation;
@@ -209,6 +212,16 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     for (final entry in draft.textByBlock.entries) {
       _textControllers[entry.key] = TextEditingController(text: entry.value);
     }
+  }
+
+  double _displayFontSize(ParteBlockSpec block, [ParteRenderPlan? plan]) {
+    final renderedPlan = plan ?? _plan;
+    final rendered = renderedPlan?.blocks
+        .where(
+          (item) => item.id == block.id && item.kind == ParteBlockKind.text,
+        )
+        .firstOrNull;
+    return rendered?.fontSize ?? block.initialFontSize;
   }
 
   Future<void> _run(Future<void> Function() action) async {
@@ -988,6 +1001,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           children: [
             for (final id in textIds) ...[
               TextField(
+                key: ValueKey('parte-text-$id'),
                 controller: _textControllers[id],
                 minLines: id == 'mourners' || id == 'ceremony' ? 2 : 1,
                 maxLines: id == 'mourners' || id == 'ceremony' ? 5 : 3,
@@ -1000,6 +1014,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               const SizedBox(height: 8),
             ],
             FilledButton.icon(
+              key: const Key('parte-save-text'),
               onPressed: _busy ? null : _saveText,
               icon: const Icon(Icons.save_outlined),
               label: const Text('SAČUVAJ PRIVREMENI TEKST'),
@@ -1142,9 +1157,9 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             final block = _draft!.blocks.firstWhere((item) => item.id == next);
             setState(() {
               _selectedBlockId = next;
-              _fontSizeController.text = block.initialFontSize.toStringAsFixed(
-                1,
-              );
+              _fontSizeController.text = _displayFontSize(
+                block,
+              ).toStringAsFixed(1);
             });
           },
         ),

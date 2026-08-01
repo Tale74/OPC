@@ -104,6 +104,7 @@ class ParteRenderPlan {
     required this.warnings,
     required this.blockers,
     required this.fingerprint,
+    this.structuralBlockIds = const <String>{},
   }) : printableZoneWidthMm = printableZoneWidthMm ?? widthMm,
        printableZoneHeightMm = printableZoneHeightMm ?? heightMm;
 
@@ -120,6 +121,7 @@ class ParteRenderPlan {
   final List<String> warnings;
   final List<String> blockers;
   final String fingerprint;
+  final Set<String> structuralBlockIds;
 
   bool get canConfirmPreview => blockers.isEmpty;
   bool get canGeneratePdf => blockers.isEmpty;
@@ -134,31 +136,46 @@ class ParteRenderPlan {
     'mourners',
   };
 
+  static String displayBlockLabel(String id) => switch (id) {
+    'intro' => 'uvodni tekst',
+    'name' => 'ime i prezime',
+    'years' => 'godine',
+    'death' => 'tekst o smrti',
+    'ceremony' => 'ceremonija',
+    'mournersHeading' => 'naslov bloka Ožalošćeni',
+    'mourners' => 'Ožalošćeni',
+    _ => 'tekstualni blok',
+  };
+
   void validateForExport() {
     if (blockers.isNotEmpty) {
-      throw StateError('PARTE render plan ima nereÅ¡ene blokere.');
+      throw StateError('PARTE render plan ima nerešene blokere.');
     }
     final ids = <String>{};
     for (final block in blocks) {
       if (!ids.add(block.id)) {
-        throw StateError('PARTE render plan sadrÅ¾i dupli blok ${block.id}.');
+        throw StateError(
+          'PARTE render plan sadrži dupli blok: ${displayBlockLabel(block.id)}.',
+        );
       }
       if (!block.visible || !block.exportEligible) continue;
       if (block.kind == ParteBlockKind.text &&
           (block.resolvedText.trim().isEmpty ||
               block.fitStatus == ParteFitStatus.failed)) {
-        throw StateError('PARTE blok ${block.id} nije spreman za izvoz.');
+        throw StateError(
+          'PARTE blok ${displayBlockLabel(block.id)} nije spreman za izvoz.',
+        );
       }
     }
-    final missing = requiredTextBlockIds.difference(ids);
+    final missing = requiredTextBlockIds.difference(structuralBlockIds);
     if (missing.isNotEmpty) {
       throw StateError(
-        'PARTE izvoz nema obavezne blokove: ${missing.join(', ')}.',
+        'PARTE izvoz nema obavezne blokove: ${missing.map(displayBlockLabel).join(', ')}.',
       );
     }
-    final years = blocks.where((block) => block.id == 'years').single;
-    if (years.resolvedText.contains('\u2014')) {
-      throw StateError('PARTE raspon godina sadrÅ¾i em-dash.');
+    final years = blocks.where((block) => block.id == 'years').firstOrNull;
+    if (years != null && years.resolvedText.contains('\u2014')) {
+      throw StateError('PARTE raspon godina sadrži em-dash.');
     }
   }
 }
@@ -258,6 +275,11 @@ class ParteComposer {
         (!isNoSymbol && !isCustom && standardSymbol != null) ||
         (isCustom && hasCustomSymbol);
     final blocks = <ParteRenderBlock>[];
+    final structuralBlockIds = draft.blocks.map((block) => block.id).toSet();
+    final mournersContent = _canonicalText(
+      'mourners',
+      draft.textByBlock['mourners']?.trim() ?? '',
+    );
     final sorted = [...draft.blocks]
       ..sort((a, b) => a.layer.compareTo(b.layer));
     for (final spec in sorted) {
@@ -272,7 +294,9 @@ class ParteComposer {
         usableHeight: draft.printableZoneHeightMm,
       );
       if (!_sameRect(spec.rect, clamped)) {
-        blockers.add('Blok ${spec.id} izlazi iz upotrebljive površine.');
+        blockers.add(
+          'Blok ${ParteRenderPlan.displayBlockLabel(spec.id)} izlazi iz upotrebljive površine.',
+        );
         continue;
       }
       if (spec.kind == ParteBlockKind.photo) {
@@ -297,6 +321,7 @@ class ParteComposer {
         }
         continue;
       }
+      if (spec.id == 'mournersHeading' && mournersContent.isEmpty) continue;
       if (spec.kind == ParteBlockKind.symbol) {
         if (hasRenderedSymbol) {
           blocks.add(
@@ -328,7 +353,7 @@ class ParteComposer {
           : _fitText(content, adjustedSpec);
       if (!fit.fits) {
         blockers.add(
-          'Sadržaj bloka ${spec.id} ne može da stane bez skraćivanja.',
+          'Sadržaj bloka ${ParteRenderPlan.displayBlockLabel(spec.id)} ne može da stane bez skraćivanja.',
         );
       }
       blocks.add(
@@ -350,12 +375,13 @@ class ParteComposer {
       );
     }
 
-    final presentIds = blocks.map((block) => block.id).toSet();
     final missingRequired = ParteRenderPlan.requiredTextBlockIds.difference(
-      presentIds,
+      structuralBlockIds,
     );
     for (final id in missingRequired) {
-      blockers.add('Obavezni blok $id nema sadrÅ¾aj za izvoz.');
+      blockers.add(
+        'Nedostaje obavezni blok: ${ParteRenderPlan.displayBlockLabel(id)}.',
+      );
     }
 
     final fingerprintSource = <String, Object?>{
@@ -368,6 +394,7 @@ class ParteComposer {
       'printableZoneWidthMm': draft.printableZoneWidthMm,
       'printableZoneHeightMm': draft.printableZoneHeightMm,
       'blocks': blocks.map((block) => block.toFingerprintJson()).toList(),
+      'structuralBlockIds': structuralBlockIds.toList()..sort(),
       'warnings': warnings,
       'blockers': blockers,
       'noPhotoAccepted': input.noPhotoAccepted,
@@ -387,6 +414,7 @@ class ParteComposer {
       blocks: List.unmodifiable(blocks),
       warnings: List.unmodifiable(warnings),
       blockers: List.unmodifiable(blockers.toSet()),
+      structuralBlockIds: Set.unmodifiable(structuralBlockIds),
       fingerprint: parteCanonicalFingerprint(fingerprintSource),
     );
   }
