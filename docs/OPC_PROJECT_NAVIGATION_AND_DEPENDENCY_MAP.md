@@ -147,6 +147,37 @@ Only then choose the smallest safe correction, such as one batched summary
 query, bounded cache, deferred photo loading or an index proven by query plan.
 Do not alter IRiU business ordering, PREDMET authority or article identity.
 
+### Phase 3 — SCENARIO/IRiU mutation characterization
+
+Source route: `iriu_segment.dart` lifecycle triggers →
+`iriu_repository.dart` sync/add/delete paths → `core_v2` truth and lifecycle
+services → STANJE ROBE consequences.
+
+The characterization report and isolated tests are recorded in
+`docs/tasks/OPC_TASK_PHASE3_SCENARIO_IRIU_MUTATION_CHARACTERIZATION_20260801_REPORT.md`
+and `test/phase3_scenario_iriu_mutation_characterization_test.dart`.
+
+Current evidence: required scenario rows are safely auto-created and repeated
+syncs do not duplicate them; manual dismissal is remembered; explicit user
+insertion remains possible. When a condition becomes non-applicable, current
+code leaves the managed row stored while derived truth marks it inactive. That
+stale state is a confirmed defect under the owner-approved ODQ-SCENARIO-001
+direction, not an accepted retention policy.
+
+The next implementation dependency is a controlled reconciliation contract:
+scenario-owned provenance/snapshot, one business confirmation for an eligible
+`OTVOREN` PREDMET, removal of stale rows and values, operational compensation,
+and retry/rollback evidence. Do not patch deletion in isolation and do not
+rewrite completed/locked PREDMET truth. Preserve INC-001 ordering evidence
+until the Phase 4 owner gate.
+
+Authority extension: SCENARIO is part of PREDMET authority; a PREDMET has no
+valid state without its scenario snapshot. MODULI own scenario definitions,
+defaults and UI configuration, while the selected scenario and applied IRiU
+consequence snapshot remain PREDMET-owned. Existing hard-coded scenarios are
+first migrated as module defaults and then exposed as UI-upgradeable defaults;
+editing a module default must never silently rewrite an existing PREDMET.
+
 ### Gate 3 — validation and owner runtime
 
 - Run focused tests after each correction.

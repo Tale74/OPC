@@ -1511,6 +1511,26 @@ not infer completion. Focused evidence is recorded in
 `test/predmet_completion_state_characterization_test.dart` and the task
 implementation report; Windows/Android runtime acceptance remains separate.
 
+Phase 3 SCENARIO/IRiU mutation characterization is now recorded on
+`task/OPC-PHASE3-SCENARIO-IRIU-MUTATION-CHARACTERIZATION`. The owner clarified
+the governing rule: each scenario owns its IRiU consequence set; changing a
+scenario criterion must create newly applicable consequences, remove all
+no-longer-applicable scenario-owned rows and values, and inform the user. No
+stale scenario consequence may remain. The existing per-row suppress/keep
+behavior is therefore compatibility evidence, not the target contract.
+
+The owner further clarified the authority boundary: SCENARIO is part of
+PREDMET authority, so no valid PREDMET exists without a scenario snapshot.
+SCENARIO definitions/defaults belong to MODULI for UI configuration, while the
+selected scenario and applied consequence snapshot remain PREDMET-owned.
+Existing hard-coded scenarios must first be exposed as module defaults and
+then become UI-upgradeable; changing a module default never silently rewrites
+an existing PREDMET.
+
+Implementation remains the controlled ODQ-SCENARIO-001 Phase 4 dependency:
+provenance/snapshot, eligible-`OTVOREN` confirmation, STANJE ROBE compensation,
+retry/rollback and locked-PREDMET protection are required before source change.
+
 ## 25. Jednolinijski dependency red
 
 

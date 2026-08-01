@@ -92,3 +92,31 @@ synthetic in-memory run printed cold/warm repository timings only as diagnostic
 evidence; it does not identify the owner-observed slowdown or authorize a
 batch query, cache, index or schema change. Owner Windows/Android measurement
 must separate repository wait, first dialog frame, photo read and image decode.
+
+## Current Phase 3 SCENARIO/IRiU mutation characterization update - 2026-08-01
+
+The owner clarified the scenario rule: every scenario owns an IRiU consequence
+set. When a scenario criterion changes, the application must inform the user,
+create newly applicable consequences and remove every no-longer-applicable
+scenario-owned row and value. Stale scenario consequences are not acceptable.
+
+The characterization branch
+`task/OPC-PHASE3-SCENARIO-IRIU-MUTATION-CHARACTERIZATION` records 4 focused
+isolated-database tests: MESTO SMRTI and BLOK 2 sync idempotency, dismissal
+memory, manual-row preservation and the current stale-row retention gap. No
+production source or ordering behavior changed. The existing per-row
+`ZADRŽI/UKLONI` UI is compatibility evidence only; it does not satisfy the
+owner rule because `ZADRŽI` can leave a stale scenario row.
+
+The next dependency is the controlled ODQ-SCENARIO-001 reconciliation program:
+scenario-owned provenance/snapshot, one confirmation for eligible `OTVOREN`
+PREDMETI, stale-row/value removal, STANJE ROBE compensation, retry/rollback and
+locked-PREDMET protection. INC-001 scenario-first ordering remains preserved as
+incident evidence until its separate owner-gated correction.
+
+The owner also clarified that SCENARIO remains part of PREDMET authority: no
+PREDMET exists without a scenario. MODULI own scenario definitions/defaults and
+their UI configuration, but the selected scenario and applied consequence
+snapshot remain PREDMET-owned. Existing hard-coded scenarios are to become
+module defaults first and then UI-upgradeable; a module-default edit must not
+silently rewrite an existing PREDMET.

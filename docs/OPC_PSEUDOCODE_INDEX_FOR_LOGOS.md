@@ -710,3 +710,25 @@ Implementation/pseudocode aligned: yes.
 - Validation boundary: prior automated validation/builds passed; runtime exposed
   the segment-7 regression and the focused correction requires fresh validation.
 - Report: `docs/tasks/OPC_TASK_PARTE_EDITOR_INTERACTION_PREPARATION_DELETION_IRIU_NAVIGATION_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055C - Phase 3 SCENARIO/IRiU mutation characterization
+
+- Source: `lib/features/predmeti/presentation/segments/iriu_segment.dart`,
+  `lib/features/predmeti/data/iriu_repository.dart`,
+  `lib/features/predmeti/core_v2/services/*iriu_lifecycle_service.dart`.
+- Test: `test/phase3_scenario_iriu_mutation_characterization_test.dart`.
+- Current behavior: opening a PREDMET can sync missing MESTO SMRTI and BLOK 2
+  rows; repeated sync is idempotent, manual dismissal suppresses automatic
+  re-addition, and explicit insertion remains user-owned.
+- Confirmed gap: when a condition becomes non-applicable, current storage keeps
+  the managed row while truth evaluation marks it inactive. This is stale
+  data, not an owner-approved retention policy.
+- Future rule: ODQ-SCENARIO-001 removes no-longer-applicable scenario-owned
+  rows and their values for eligible `OTVOREN` PREDMETI after one business
+  confirmation, with operational compensation and recovery. Completed/locked
+  PREDMET truth is never rewritten.
+- Boundary: this characterization does not change ordering, provenance,
+  reconciliation, schema or STANJE ROBE behavior. INC-001 scenario-first
+  ordering remains preserved as incident evidence until the controlled Phase 4
+  contract is implemented.
+- Report: `docs/tasks/OPC_TASK_PHASE3_SCENARIO_IRIU_MUTATION_CHARACTERIZATION_20260801_REPORT.md`.
