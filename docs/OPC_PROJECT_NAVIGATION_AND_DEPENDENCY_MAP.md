@@ -1,0 +1,148 @@
+# OPC project navigation and dependency map
+
+Status: post-zero working map for the stabilization program.
+
+This document is a navigation aid. It is not a new business authority. PREDMET
+remains the only business truth; this map points to the source, tests and
+authoritative documents that must be read before a change.
+
+## 1. Start here after opening the repository
+
+1. Confirm branch, `HEAD`, upstream equality and a clean worktree.
+2. Read the current owner authority and anti-drift documents:
+   - `OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md`
+   - `OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md`
+   - `OPC_CURRENT_DEVELOPMENT_STATE.md`
+   - `OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`
+   - `OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`
+   - the newest applicable file in `docs/tasks/`.
+3. Read this map, then follow the route for the affected subsystem below.
+4. Source and tests decide technical facts. Owner decisions decide business
+   policy. A test PASS never supplies owner approval.
+
+## 2. Authority and evidence stack
+
+```mermaid
+flowchart TD
+  A[Post-zero owner authority] --> B[Authoritative dependency plan]
+  B --> C[Source and database schema]
+  C --> D[Focused characterization tests]
+  D --> E[Technical PASS]
+  E --> F[Windows/Android owner runtime acceptance]
+  F --> G[Task report and Git handoff]
+  I[Incident and anti-drift register] --> C
+  I --> D
+```
+
+The order is a control sequence, not a permission to skip a gate.
+
+## 3. Repository map
+
+| Area | Location | Role and boundary |
+| --- | --- | --- |
+| Application entry and platform wiring | `lib/app.dart`, `windows/`, `android/` | Startup, platform lanes and dependency injection. Do not change platform behavior while fixing a domain/UI defect unless the evidence requires it. |
+| Authoritative local database | `lib/core/database/database.dart`, `lib/core/database/tables/` | Drift/SQLite schema, seed/recovery and local truth. Never use the canonical/live database for experiments. |
+| PREDMET lifecycle | `lib/features/predmeti/data/`, `application/`, `presentation/` | Master business object and lifecycle. Changes require dependency and rollback review. |
+| PARTE | `lib/features/predmeti/parte/`, `lib/features/predmeti/presentation/segments/parte_segment.dart` | Draft, render plan, preparation, PDF/DOCX handoff. Structural blocks and optional content must remain distinct. |
+| IRiU | `lib/features/predmeti/presentation/segments/iriu_segment.dart`, `iriu_row_tile.dart`, `lib/features/predmeti/data/iriu_repository.dart` | Operational rows derived from PREDMET/SCENARIO rules. Preserve basic-before-scenario ordering and explicit user actions. |
+| KATALOG | `lib/features/podesavanja/data/podesavanja_repository.dart`, `katalog_tab.dart`, `lib/core/database/tables/katalog_artikli_table.dart`, `assets/katalog_foto/` | Knowledge/catalog input. It may supply an article but never rewrites historical PREDMET truth. |
+| Restore/JSON | `lib/core/utils/json_export_import.dart`, `lib/core/json_transfer/` | Transfer/backup derivatives and compatibility guards. Use isolated copies and backup-first procedure. |
+| Reminders | `lib/features/predmeti/reminders/`, `full_backup_restore_coordinator.dart` | Device-local notification lifecycle. Device IDs are never portable. Do not reopen policy without an owner decision. |
+| Settings and company data | `lib/features/podesavanja/` | Firma, catalog, templates and local configuration. Keep separate from PREDMET authority. |
+| Stock consequences | `lib/features/stanje_robe/` | Derived operational state linked to IRiU/KATALOG. Preserve stable article IDs and lifecycle cleanup. |
+| Tests | `test/` | Characterization, lifecycle, restore, PARTE, IRiU and UI evidence. Prefer focused tests before the final full suite. |
+| Operational scripts | `scripts/` | Manifest and UTF-8/BOM validation. Use the .NET validator for encoding checks. |
+| Public documentation | `docs/` | Git working copy of authoritative documentation. Reports preserve evidence and owner/runtime separation. |
+
+## 4. Business and data flow
+
+```mermaid
+flowchart LR
+  P[PREDMET / local SQLite] --> C[ceremony and lifecycle]
+  P --> I[IRiU rows]
+  K[KATALOG knowledge] --> I
+  S[SCENARIO policy] --> I
+  I --> R[derived stock consequences]
+  P --> PA[PARTE draft/render plan]
+  PA --> O[PDF/DOCX outputs]
+  P --> J[JSON/full-backup derivatives]
+  P --> N[device-local reminders]
+```
+
+Derivatives never become parallel business authority. Historical PREDMET data
+must not be rewritten by a later catalog or scenario change.
+
+## 5. Broad stabilization task route
+
+The current broad task is intentionally sequential on a separate task branch.
+
+### Gate 0 — protection and scope
+
+- Capture branch/HEAD/upstream/clean-tree evidence.
+- Create a source backup in protected `BACKUPS` and a restore-point manifest in
+  protected `RESTORE_POINTS` before app-code edits.
+- Record owner runtime findings and unresolved security scope.
+- Do not change application behavior in this gate.
+
+### Gate 1 — PARTE correctness and user-facing text
+
+Source route: `parte/domain/parte_composer.dart` →
+`parte/data/parte_preparation_repository.dart` →
+`parte/presentation/parte_composer_screen.dart`.
+
+Required invariants:
+
+- required structure remains present, but empty content is omitted and never
+  blocks preparation;
+- internal IDs such as `mourners` never appear in user messages;
+- all changed strings are valid UTF-8 without BOM, mojibake or U+FFFD;
+- the selected block's displayed size is the fitted/rendered size, not a stale
+  draft default;
+- accepted PDF/DOCX behavior and layout remain unchanged unless a focused test
+  proves the correction requires it.
+
+### Gate 2 — IRiU/KATALOG performance
+
+Source route: `iriu_segment.dart` / `iriu_row_tile.dart` →
+`podesavanja_repository.dart` → `katalog_artikli` table and photo policy.
+
+First measure the query wait, dialog first frame, photo read and image decode
+separately. The current source shows sequential catalog-summary loading and
+per-article photo reads; this is a hypothesis until measured.
+
+Only then choose the smallest safe correction, such as one batched summary
+query, bounded cache, deferred photo loading or an index proven by query plan.
+Do not alter IRiU business ordering, PREDMET authority or article identity.
+
+### Gate 3 — validation and owner runtime
+
+- Run focused tests after each correction.
+- Run final analyze, complete tests and both release builds once the tree is
+  stable. Do not use artificial short timeouts.
+- Perform cumulative Windows and Android runtime checks.
+- Keep technical PASS, owner runtime acceptance and security acceptance as
+  separate statements.
+
+### Gate 4 — Git closure
+
+The report must contain scope, base/result/final SHAs, backup/restore-point
+references, test/build evidence, runtime findings, known residuals and rollback
+notes. Finish only with commit, push, `HEAD == origin` and a clean worktree.
+
+## 6. Non-negotiable boundaries
+
+- No canonical database deletion, replacement or experiment.
+- No Git history rewrite.
+- No Web implementation scope.
+- No OPC_v.1_Int opening before OPC v.1 Serbia is stable.
+- No broad RI-3 recovery, anonymization or replacement work inside this task.
+- No automatic IRiU ordering or accepted-behavior change disguised as refactor.
+- No conclusion that a technical diff, test or PASS is owner approval.
+
+## 7. When uncertain
+
+Stop at the gate and verify the source, tests and current documentation. Ask the
+owner only for a real business-policy choice, such as a change in PREDMET truth,
+IRiU ordering, reminder portability, document meaning or platform parity. Do
+not ask the owner to interpret a technical fact that the source can establish.
+
