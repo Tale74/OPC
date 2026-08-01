@@ -20,6 +20,7 @@ lifecycle operation.
 
 - Branch: `task/OPC-PHASE3-LIFECYCLE-COMPLETION-CHARACTERIZATION`
 - Pre-change source/documentation SHA: `df9ed68229401a4cd6829a31ab1e1f5a957f2d50`
+- Implementation commit: `8b60fc7`
 - Protected backup:
   `C:\Projekti\OPC\OPC v.1\BACKUPS\OPC_v1_PRE_EXPLICIT_ZAVRSEN_20260801_1600.zip`
 - Backup SHA-256:
@@ -41,9 +42,9 @@ lifecycle operation.
 
 ## Focused evidence
 
-- `test/predmet_completion_state_characterization_test.dart`: 4/4 PASS.
-- Restore/lifecycle/JSON regression suite: 48/48 PASS.
-- PARTE/domain and Lista UI regression suite: 34/34 PASS.
+- `test/predmet_completion_state_characterization_test.dart`: 5/5 PASS.
+- Combined restore/lifecycle/JSON/PARTE/UI regression run: 82/82 PASS.
+- `flutter analyze --no-pub`: PASS, no issues.
 - Build was intentionally deferred to the cumulative Windows/Android runtime
   gate requested by the owner.
 
