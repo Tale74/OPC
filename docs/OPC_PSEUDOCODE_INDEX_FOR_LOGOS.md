@@ -777,3 +777,18 @@ Implementation/pseudocode aligned: yes.
   ordering remains preserved as incident evidence until the controlled Phase 4
   contract is implemented.
 - Report: `docs/tasks/OPC_TASK_PHASE3_SCENARIO_IRIU_MUTATION_CHARACTERIZATION_20260801_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055D - Current default SCENARIO characterization gate
+
+- Source: `lib/features/predmeti/core_v2/rules/iriu_truth_rules.dart`,
+  `lib/features/predmeti/core_v2/services/predmet_iriu_truth_service.dart`,
+  and the current MESTO SMRTI/BLOK 2 lifecycle lanes.
+- Test: `test/scenario_default_policy_characterization_test.dart`.
+- Rule: preserve the existing hard-coded evaluator and `businessScenarioId`
+  until a deterministic ordered rule-set can express all independent condition
+  families and lifecycle side effects with exact output parity.
+- Evidence: MESTO SMRTI, BLOK 2, international/doček/opelo/biohazard and the
+  SANDUK ordering anchor are characterized; no schema seed, JSON wiring,
+  reconciliation or PODSETNIK signal is implied.
+- Gate: a partial `published` default scenario is forbidden because it could
+  be interpreted as an empty consequence set and cause stale-row drift.

@@ -10,6 +10,10 @@ The final implementation SHA is the pushed commit that contains the schema
 23 persistence boundary and its migration evidence. The report-closure commit
 contains documentation only.
 
+No new application mutation begins without the protected rollback evidence in
+`docs/tasks/OPC_RESTORE_POINT_PHASE4_DEFAULT_MIGRATION_20260801.md` and its
+corresponding `BACKUPS/` archive.
+
 **Scope:** source/documentation audit plus bounded domain and additive
 persistence-contract slices for the owner-requested move from hard-coded
 scenarios to module-owned, UI-defined scenarios. Schema 23 migration tables
@@ -171,6 +175,43 @@ Result: **PASS — no issues found**.
    scenario version/snapshot or IRiU provenance. Existing backup/restore lanes
    likewise need an explicit compatibility contract before schema change.
 
+## Default policy characterization gate
+
+Before repository or JSON materialization, the currently shipped default
+policy was characterized as an exact output matrix in
+`test/scenario_default_policy_characterization_test.dart`. The evidence locks
+the existing hard-coded behavior for:
+
+- `MESTO SMRTI`: `STAN`, `DOM ZA STARE`, `PRIVATNA BOLNICA`, `ULICA` and
+  `JAVNO MESTO` share the six-row package; `BOLNICA` has only
+  `PREVOZ_DO_GROBLJA`; `DRUGO` follows the six-row package; an empty value
+  has no automatic rows;
+- `BLOK 2`: `GROBNICA` and the `ZARAZNA` cause override produce `LIMENI
+  ULOZAK` and `LEMOVANJE`; `NASILNA` and `NEDEFINISANA` are the same cause
+  overrides; cremation suppresses both, and a local cemetery recommends
+  `PREVOZ_SPROVODA`;
+- stored-row truth additionally preserves international transport/documents/
+  embalming, doček, opelo, BIOHAZARD and the protected `SANDUK` ordering
+  anchor.
+
+Focused command:
+
+```text
+C:\flutter\bin\flutter.bat test --no-pub test/scenario_default_policy_characterization_test.dart
+```
+
+Result: **4 passed, 0 failed**.
+
+This is characterization evidence only. The current behavior is distributed
+across `IriuTruthRules`, `BusinessPolicyEvaluator`, the MESTO SMRTI and BLOK 2
+lifecycle services, and the catalog seed policy. The present
+`ScenarioDefinition` DSL models criteria and category consequences, but does
+not yet express the complete composition/order and lifecycle side effects
+(dismissal memory, condition-change conflict and stale-row handling) without
+an additional owner-approved rule-composition decision. Therefore no
+immutable published default scenario representation was invented and no
+repository/JSON wiring was added in this slice.
+
 ## Minimum safe domain contract
 
 The implementation must introduce additive, versioned data rather than
@@ -210,7 +251,9 @@ reinterpreting `businessScenarioId`:
    for schema 23 tables and the recovery fixture; JSON/repository parity is
    still open.**
 3. Migrate the current hard-coded default into an immutable published module
-   scenario version without changing current outputs.
+   scenario version without changing current outputs. **CHARACTERIZED; the
+   representation remains owner-gated because the current DSL cannot yet
+   encode the full hard-coded composition and lifecycle side effects.**
 4. Add pure evaluator tests for criteria/consequence DSL parity.
 5. Add PREDMET assignment/snapshot and IRiU provenance.
 6. Implement one-confirmation reconciliation (remove stale, create new,

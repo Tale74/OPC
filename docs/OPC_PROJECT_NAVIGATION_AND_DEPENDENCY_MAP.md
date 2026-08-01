@@ -251,6 +251,12 @@ hash, and identifies STAVKA provenance. It is not yet wired to Drift or JSON;
 schema 23 now provides the additive tables, while repository materialization,
 JSON transfer parity and rollback/reconciliation behavior remain gated.
 
+Default-policy characterization:
+`test/scenario_default_policy_characterization_test.dart` locks the current
+hard-coded MESTO SMRTI/BLOK 2/operational outputs before any default migration.
+It is evidence only; do not seed a partial published scenario or change runtime
+authority until independent rule composition and lifecycle parity are proven.
+
 ## 7. When uncertain
 
 Stop at the gate and verify the source, tests and current documentation. Ask the

@@ -178,3 +178,13 @@ The additive persistence migration is now present at schema 23. It creates
 `predmet_scenario_snapshots` and `iriu_provenance` without seed rows or
 changes to existing PREDMET/IRiU data. Repository materialization, JSON parity,
 reconciliation and SCENARIO UI remain gated next steps.
+
+Before any default migration, the current hard-coded policy is protected by
+`test/scenario_default_policy_characterization_test.dart`. The matrix covers
+MESTO SMRTI (including `PRIVATNA BOLNICA` and `DRUGO`), BLOK 2 cause and
+ceremony branches, international/doček/opelo/biohazard flags and the current
+SANDUK ordering anchor. This is read-only characterization: the existing
+`businessScenarioId` and hard-coded evaluator remain authoritative until a
+deterministic multi-rule scenario representation proves exact parity. No
+published default row is seeded and no PODSETNIK work is started from this
+evidence alone.
