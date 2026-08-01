@@ -47,7 +47,7 @@ DRIFT beforeOpen:
     validate complete required target schema
 
 ONLY AFTER onUpgrade and beforeOpen succeed:
-    Drift advances user_version to 22
+    Drift advances user_version to 23
 
 schema 21 -> 22:
   ensure additive iriu_katalog_config.osnovna_u_svakom_predmetu
@@ -55,6 +55,13 @@ schema 21 -> 22:
   idempotently restore known built-in basics and AGENCIJSKE_USLUGE to DA
   idempotently seed three new FIKSNA categories with NE
   do not update existing iriu rows
+
+schema 22 -> 23:
+  create scenario_modules, scenario_definitions,
+    predmet_scenario_snapshots and iriu_provenance additively
+  preserve all existing PREDMET and IRiU rows
+  do not seed a module, scenario or provenance row
+  rerun the same table creation safely after an interrupted DDL step
 
 ON interrupted open:
     keep committed valid DDL

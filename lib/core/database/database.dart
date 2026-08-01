@@ -13,6 +13,7 @@ import 'schema_recovery.dart';
 import 'tables/app_podesavanja_table.dart';
 import 'tables/firma_podaci_table.dart';
 import 'tables/iriu_katalog_config_table.dart';
+import 'tables/iriu_provenance_table.dart';
 import 'tables/iriu_table.dart';
 import 'tables/katalog_artikli_table.dart';
 import 'tables/kontakt_lica_table.dart';
@@ -22,6 +23,9 @@ import 'tables/parte_predlosci_table.dart';
 import 'tables/parte_pripreme_table.dart';
 import 'tables/predlosci_dokumenata_table.dart';
 import 'tables/predmeti_table.dart';
+import 'tables/predmet_scenario_snapshots_table.dart';
+import 'tables/scenario_definitions_table.dart';
+import 'tables/scenario_modules_table.dart';
 import 'tables/stanje_robe_applied_effects_table.dart';
 import 'tables/stanje_robe_posledice_table.dart';
 import 'tables/stanje_robe_stavke_table.dart';
@@ -36,6 +40,7 @@ part 'database.g.dart';
     Predmeti,
     KontaktLica,
     Iriu,
+    IriuProvenance,
     IriuKatalogConfig,
     KatalogArtikli,
     StanjeRobeStavke,
@@ -45,6 +50,9 @@ part 'database.g.dart';
     PartePredlosci,
     PartePripreme,
     LogIzmena,
+    ScenarioModules,
+    ScenarioDefinitions,
+    PredmetScenarioSnapshots,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -60,7 +68,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -177,6 +185,12 @@ class AppDatabase extends _$AppDatabase {
         );
         await _seedIriuKatalog();
         await _backfillBuiltInIriuBasicPolicy();
+      }
+      if (from < 23) {
+        await _ensureTable(m, scenarioModules);
+        await _ensureTable(m, scenarioDefinitions);
+        await _ensureTable(m, predmetScenarioSnapshots);
+        await _ensureTable(m, iriuProvenance);
       }
     },
     beforeOpen: (details) async {
@@ -339,6 +353,10 @@ class AppDatabase extends _$AppDatabase {
       iriuKatalogConfig,
       iriuKatalogConfig.osnovnaUSvakomPredmetu,
     );
+    await _ensureTable(migrator, scenarioModules);
+    await _ensureTable(migrator, scenarioDefinitions);
+    await _ensureTable(migrator, predmetScenarioSnapshots);
+    await _ensureTable(migrator, iriuProvenance);
   }
 
   Future<void> _validateRequiredSchema() async {

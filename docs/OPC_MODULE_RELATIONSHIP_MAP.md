@@ -510,9 +510,9 @@ Module name: Canonical database migration and startup recovery
 Module type: shared persistence/infrastructure
 Business purpose: preserve each user's existing OPC business database while upgrading supported historical or partially migrated schemas in place.
 Reads from PREDMET: schema metadata and existing rows; reports never expose row content.
-Applies rules: explicit canonical designation, backup-first rollout, supported `user_version` 1–22, idempotent additive recovery, malformed-schema stop.
+Applies rules: explicit canonical designation, backup-first rollout, supported `user_version` 1–23, idempotent additive recovery, malformed-schema stop.
 Writes back to PREDMET or related tables: additive schema changes and established deterministic backfills only; no table replacement or arbitrary business-row rewrite.
-Outputs: validated schema 22 or precise `OpcSchemaMismatch`.
+Outputs: validated schema 23 or precise `OpcSchemaMismatch`.
 
 ### KATALOG → future PREDMET IRiU policy
 

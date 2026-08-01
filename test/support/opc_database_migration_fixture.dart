@@ -163,6 +163,12 @@ final class OpcDatabaseMigrationFixture {
       db.execute('DROP INDEX IF EXISTS $index');
     }
 
+    if (version < 23) {
+      db.execute('DROP TABLE IF EXISTS iriu_provenance');
+      db.execute('DROP TABLE IF EXISTS predmet_scenario_snapshots');
+      db.execute('DROP TABLE IF EXISTS scenario_definitions');
+      db.execute('DROP TABLE IF EXISTS scenario_modules');
+    }
     if (version < 22) {
       db.execute('''
         DELETE FROM iriu_katalog_config

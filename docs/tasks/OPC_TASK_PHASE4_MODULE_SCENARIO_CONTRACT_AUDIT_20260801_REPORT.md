@@ -4,10 +4,11 @@
 
 **Base SHA:** `95603aeb44764216c9b7c5226e7a8e5a65a8790e`
 
-**Scope:** source and documentation audit plus the first bounded contract
-implementation slice for the owner-requested move from hard-coded scenarios to
-module-owned, UI-defined scenarios. No schema, migration, database, JSON,
-scenario-management UI or runtime artifact was changed.
+**Scope:** source/documentation audit plus bounded domain and additive
+persistence-contract slices for the owner-requested move from hard-coded
+scenarios to module-owned, UI-defined scenarios. Schema 23 migration tables
+were added without seed rows or runtime/UI materialization; JSON,
+reconciliation and scenario-management UI remain unchanged.
 
 ## OPC MANIFEST CHECK — TASK START
 
@@ -95,10 +96,10 @@ Result: **PASS — no issues found**.
 Full suite command:
 
 ```text
-C:\\flutter\\bin\\flutter.bat test --no-pub
+C:\flutter\bin\flutter.bat test --no-pub
 ```
 
-Result: **287 passed, 0 failed, 1 skipped**. The single skipped test is the
+Result: **288 passed, 0 failed, 1 skipped**. The single skipped test is the
 pre-existing documented skip. The suite completed without a failure after
 the scenario contract, persistence contract and `PRIVATNA BOLNICA` source
 correction.
@@ -106,12 +107,22 @@ correction.
 ## Second bounded contract slice
 
 `lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`
-now defines the non-UI persistence boundary: a PREDMET-owned immutable
+defines the non-UI persistence boundary: a PREDMET-owned immutable
 scenario assignment snapshot, canonical content hash, self-contained scenario
 definition/package data and STAVKA provenance (`OSNOVNI_PAKET`,
 `SCENARIO_PAKET`, `RUČNA STAVKA`, `LEGACY`). The contract rejects unsupported
 schema versions, tampered snapshots and incomplete scenario-owned provenance.
-It is deliberately not wired to Drift, JSON import/restore or reconciliation.
+Schema 23 now stores the additive table boundary; it is not yet wired to
+repository materialization, JSON import/restore or reconciliation.
+
+Schema migration evidence:
+
+```text
+C:\flutter\bin\flutter.bat test --no-pub test/canonical_database_migration_recovery_test.dart
+```
+
+Result: **39 passed, 0 failed**. Targeted schema 23 fresh-create, 22-to-23
+upgrade and future-version rejection tests also passed.
 
 Focused persistence command:
 
@@ -136,17 +147,20 @@ Result: **PASS — no issues found**.
 2. `OpcModule.businessPolicyScenario` is an entitlement enum. Native access is
    currently unrestricted by package policy; entitlement is not a domain
    scenario owner.
-3. `AppDatabase` is schema version 22. The only persisted global module switch
-   found is the STANJE ROBE operational flag.
-4. `predmeti.businessScenarioId` is the only scenario persistence. The current
-   registry contains one ID, and unknown/empty IDs resolve to the default.
+3. `AppDatabase` is schema version 23. Additive tables now exist for module
+   definitions, versioned scenarios, PREDMET snapshots and IRiU provenance;
+   no rows are seeded and no repository/UI consumes them yet.
+4. `predmeti.businessScenarioId` remains the only active scenario reference
+   in runtime logic. The current registry contains one ID, and unknown/empty
+   IDs resolve to the default.
 5. `BusinessPolicyEvaluator` resolves that ID but applies hard-coded rules.
    The rules read PREDMET facts (`mestoSmrti`, `uzrokSmrti`, ceremony,
    cemetery/grave, international/reception and opelo) and produce IRiU and
    operational consequences.
-6. `iriu` rows have no provenance. The database cannot currently distinguish a
-   basic, catalog, scenario-managed or manual row, so safe stale removal is not
-   implementable by an isolated delete.
+6. Existing `iriu` rows have no backfilled provenance. The new
+   `iriu_provenance` table can distinguish future basic, catalog,
+   scenario-managed or manual rows, but safe stale removal is not implemented
+   by this migration.
 7. Single-PREDMET JSON transfers only `businessScenarioId`; they do not carry a
    scenario version/snapshot or IRiU provenance. Existing backup/restore lanes
    likewise need an explicit compatibility contract before schema change.
@@ -186,7 +200,9 @@ reinterpreting `businessScenarioId`:
 ## Required dependency order
 
 1. Owner confirms module scope and scenario/default ownership.
-2. Additive schema/data-contract design and migration fixtures.
+2. Additive schema/data-contract design and migration fixtures. **COMPLETED
+   for schema 23 tables and the recovery fixture; JSON/repository parity is
+   still open.**
 3. Migrate the current hard-coded default into an immutable published module
    scenario version without changing current outputs.
 4. Add pure evaluator tests for criteria/consequence DSL parity.

@@ -333,7 +333,7 @@ Only RI-5 can open a later live-canonical/runtime acceptance gate.
 
 Minimum fixture axes:
 
-- current schema 22, supported older checkpoints and interrupted migrations;
+- current schema 23, supported older checkpoints and interrupted migrations;
 - no children / every child family / mixed valid and orphan rows;
 - no media / exclusive media / shared media / missing media;
 - no reminder IDs / valid IDs / stale IDs / malformed unrelated payload;

@@ -19,7 +19,7 @@ void main() {
       final db = createTestDatabase();
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 22);
+      expect(db.schemaVersion, 23);
       for (final internalName in IriuK.podesiveOsnovneSeedKategorije) {
         final rows = await (db.select(
           db.iriuKatalogConfig,
@@ -157,41 +157,43 @@ void main() {
       );
     });
 
-    test('scenario rows precede built-in basics, agency and user basics',
-        () async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
-      final katalogRepo = PodesavanjaRepository(db);
-      final predmetiRepo = PredmetiRepository(db);
-      final iriuRepo = IriuRepository(db);
-      await katalogRepo.dodajKorisnickaKategoriju(
-        interniNaziv: 'KORISNIK_ORDER',
-        nazivPrikaz: 'Order basic',
-        tip: 'FIKSNA',
-        osnovnaUSvakomPredmetu: true,
-      );
-      final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: 1);
-      await predmetiRepo.inicijalizujIriu(predmetId);
+    test(
+      'scenario rows precede built-in basics, agency and user basics',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final katalogRepo = PodesavanjaRepository(db);
+        final predmetiRepo = PredmetiRepository(db);
+        final iriuRepo = IriuRepository(db);
+        await katalogRepo.dodajKorisnickaKategoriju(
+          interniNaziv: 'KORISNIK_ORDER',
+          nazivPrikaz: 'Order basic',
+          tip: 'FIKSNA',
+          osnovnaUSvakomPredmetu: true,
+        );
+        final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: 1);
+        await predmetiRepo.inicijalizujIriu(predmetId);
 
-      await iriuRepo.dodajStavku(
-        predmetId: predmetId,
-        interniNaziv: IriuK.iznosenje,
-        nazivPrikaz: IriuK.naziviPrikaz[IriuK.iznosenje]!,
-        redosled: await iriuRepo.sledeciredosled(predmetId),
-      );
+        await iriuRepo.dodajStavku(
+          predmetId: predmetId,
+          interniNaziv: IriuK.iznosenje,
+          nazivPrikaz: IriuK.naziviPrikaz[IriuK.iznosenje]!,
+          redosled: await iriuRepo.sledeciredosled(predmetId),
+        );
 
-      final names = await _internalNames(db, predmetId);
-      expect(names.first, IriuK.iznosenje);
-      expect(
-        names.indexOf(IriuK.agencijskeUsluge),
-        greaterThan(names.indexOf(IriuK.cituljaP)),
-      );
-      expect(
-        names.indexOf('KORISNIK_ORDER'),
-        greaterThan(names.indexOf(IriuK.agencijskeUsluge)),
-      );
-      expect(names.toSet(), hasLength(names.length));
-    });
+        final names = await _internalNames(db, predmetId);
+        expect(names.first, IriuK.iznosenje);
+        expect(
+          names.indexOf(IriuK.agencijskeUsluge),
+          greaterThan(names.indexOf(IriuK.cituljaP)),
+        );
+        expect(
+          names.indexOf('KORISNIK_ORDER'),
+          greaterThan(names.indexOf(IriuK.agencijskeUsluge)),
+        );
+        expect(names.toSet(), hasLength(names.length));
+      },
+    );
   });
 
   test('KATALOG owns the policy control and manual IRiU does not', () async {
@@ -205,10 +207,7 @@ void main() {
     expect(katalogSource, contains('Osnovna u svakom PREDMETU'));
     expect(katalogSource, contains('bool _osnovnaUSvakomPredmetu = false'));
     expect(iriuSource, isNot(contains('Osnovna u svakom PREDMETU')));
-    expect(
-      iriuSource,
-      isNot(contains('dodajKorisnickaKategoriju(')),
-    );
+    expect(iriuSource, isNot(contains('dodajKorisnickaKategoriju(')));
   });
 }
 

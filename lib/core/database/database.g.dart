@@ -9316,6 +9316,526 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
   }
 }
 
+class $IriuProvenanceTable extends IriuProvenance
+    with TableInfo<$IriuProvenanceTable, IriuProvenanceData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IriuProvenanceTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _iriuIdMeta = const VerificationMeta('iriuId');
+  @override
+  late final GeneratedColumn<int> iriuId = GeneratedColumn<int>(
+    'iriu_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES iriu (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _originMeta = const VerificationMeta('origin');
+  @override
+  late final GeneratedColumn<String> origin = GeneratedColumn<String>(
+    'origin',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _moduleIdMeta = const VerificationMeta(
+    'moduleId',
+  );
+  @override
+  late final GeneratedColumn<String> moduleId = GeneratedColumn<String>(
+    'module_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scenarioIdMeta = const VerificationMeta(
+    'scenarioId',
+  );
+  @override
+  late final GeneratedColumn<String> scenarioId = GeneratedColumn<String>(
+    'scenario_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scenarioVersionMeta = const VerificationMeta(
+    'scenarioVersion',
+  );
+  @override
+  late final GeneratedColumn<int> scenarioVersion = GeneratedColumn<int>(
+    'scenario_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ruleIdMeta = const VerificationMeta('ruleId');
+  @override
+  late final GeneratedColumn<String> ruleId = GeneratedColumn<String>(
+    'rule_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _operationIdMeta = const VerificationMeta(
+    'operationId',
+  );
+  @override
+  late final GeneratedColumn<String> operationId = GeneratedColumn<String>(
+    'operation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    iriuId,
+    origin,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    ruleId,
+    operationId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'iriu_provenance';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IriuProvenanceData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('iriu_id')) {
+      context.handle(
+        _iriuIdMeta,
+        iriuId.isAcceptableOrUnknown(data['iriu_id']!, _iriuIdMeta),
+      );
+    }
+    if (data.containsKey('origin')) {
+      context.handle(
+        _originMeta,
+        origin.isAcceptableOrUnknown(data['origin']!, _originMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_originMeta);
+    }
+    if (data.containsKey('module_id')) {
+      context.handle(
+        _moduleIdMeta,
+        moduleId.isAcceptableOrUnknown(data['module_id']!, _moduleIdMeta),
+      );
+    }
+    if (data.containsKey('scenario_id')) {
+      context.handle(
+        _scenarioIdMeta,
+        scenarioId.isAcceptableOrUnknown(data['scenario_id']!, _scenarioIdMeta),
+      );
+    }
+    if (data.containsKey('scenario_version')) {
+      context.handle(
+        _scenarioVersionMeta,
+        scenarioVersion.isAcceptableOrUnknown(
+          data['scenario_version']!,
+          _scenarioVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('rule_id')) {
+      context.handle(
+        _ruleIdMeta,
+        ruleId.isAcceptableOrUnknown(data['rule_id']!, _ruleIdMeta),
+      );
+    }
+    if (data.containsKey('operation_id')) {
+      context.handle(
+        _operationIdMeta,
+        operationId.isAcceptableOrUnknown(
+          data['operation_id']!,
+          _operationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {iriuId};
+  @override
+  IriuProvenanceData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IriuProvenanceData(
+      iriuId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}iriu_id'],
+      )!,
+      origin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origin'],
+      )!,
+      moduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}module_id'],
+      ),
+      scenarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scenario_id'],
+      ),
+      scenarioVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}scenario_version'],
+      ),
+      ruleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rule_id'],
+      ),
+      operationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operation_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IriuProvenanceTable createAlias(String alias) {
+    return $IriuProvenanceTable(attachedDatabase, alias);
+  }
+}
+
+class IriuProvenanceData extends DataClass
+    implements Insertable<IriuProvenanceData> {
+  final int iriuId;
+  final String origin;
+  final String? moduleId;
+  final String? scenarioId;
+  final int? scenarioVersion;
+  final String? ruleId;
+  final String? operationId;
+  final String createdAt;
+  const IriuProvenanceData({
+    required this.iriuId,
+    required this.origin,
+    this.moduleId,
+    this.scenarioId,
+    this.scenarioVersion,
+    this.ruleId,
+    this.operationId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['iriu_id'] = Variable<int>(iriuId);
+    map['origin'] = Variable<String>(origin);
+    if (!nullToAbsent || moduleId != null) {
+      map['module_id'] = Variable<String>(moduleId);
+    }
+    if (!nullToAbsent || scenarioId != null) {
+      map['scenario_id'] = Variable<String>(scenarioId);
+    }
+    if (!nullToAbsent || scenarioVersion != null) {
+      map['scenario_version'] = Variable<int>(scenarioVersion);
+    }
+    if (!nullToAbsent || ruleId != null) {
+      map['rule_id'] = Variable<String>(ruleId);
+    }
+    if (!nullToAbsent || operationId != null) {
+      map['operation_id'] = Variable<String>(operationId);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  IriuProvenanceCompanion toCompanion(bool nullToAbsent) {
+    return IriuProvenanceCompanion(
+      iriuId: Value(iriuId),
+      origin: Value(origin),
+      moduleId: moduleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moduleId),
+      scenarioId: scenarioId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scenarioId),
+      scenarioVersion: scenarioVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scenarioVersion),
+      ruleId: ruleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ruleId),
+      operationId: operationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operationId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory IriuProvenanceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IriuProvenanceData(
+      iriuId: serializer.fromJson<int>(json['iriuId']),
+      origin: serializer.fromJson<String>(json['origin']),
+      moduleId: serializer.fromJson<String?>(json['moduleId']),
+      scenarioId: serializer.fromJson<String?>(json['scenarioId']),
+      scenarioVersion: serializer.fromJson<int?>(json['scenarioVersion']),
+      ruleId: serializer.fromJson<String?>(json['ruleId']),
+      operationId: serializer.fromJson<String?>(json['operationId']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'iriuId': serializer.toJson<int>(iriuId),
+      'origin': serializer.toJson<String>(origin),
+      'moduleId': serializer.toJson<String?>(moduleId),
+      'scenarioId': serializer.toJson<String?>(scenarioId),
+      'scenarioVersion': serializer.toJson<int?>(scenarioVersion),
+      'ruleId': serializer.toJson<String?>(ruleId),
+      'operationId': serializer.toJson<String?>(operationId),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  IriuProvenanceData copyWith({
+    int? iriuId,
+    String? origin,
+    Value<String?> moduleId = const Value.absent(),
+    Value<String?> scenarioId = const Value.absent(),
+    Value<int?> scenarioVersion = const Value.absent(),
+    Value<String?> ruleId = const Value.absent(),
+    Value<String?> operationId = const Value.absent(),
+    String? createdAt,
+  }) => IriuProvenanceData(
+    iriuId: iriuId ?? this.iriuId,
+    origin: origin ?? this.origin,
+    moduleId: moduleId.present ? moduleId.value : this.moduleId,
+    scenarioId: scenarioId.present ? scenarioId.value : this.scenarioId,
+    scenarioVersion: scenarioVersion.present
+        ? scenarioVersion.value
+        : this.scenarioVersion,
+    ruleId: ruleId.present ? ruleId.value : this.ruleId,
+    operationId: operationId.present ? operationId.value : this.operationId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  IriuProvenanceData copyWithCompanion(IriuProvenanceCompanion data) {
+    return IriuProvenanceData(
+      iriuId: data.iriuId.present ? data.iriuId.value : this.iriuId,
+      origin: data.origin.present ? data.origin.value : this.origin,
+      moduleId: data.moduleId.present ? data.moduleId.value : this.moduleId,
+      scenarioId: data.scenarioId.present
+          ? data.scenarioId.value
+          : this.scenarioId,
+      scenarioVersion: data.scenarioVersion.present
+          ? data.scenarioVersion.value
+          : this.scenarioVersion,
+      ruleId: data.ruleId.present ? data.ruleId.value : this.ruleId,
+      operationId: data.operationId.present
+          ? data.operationId.value
+          : this.operationId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IriuProvenanceData(')
+          ..write('iriuId: $iriuId, ')
+          ..write('origin: $origin, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('operationId: $operationId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    iriuId,
+    origin,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    ruleId,
+    operationId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IriuProvenanceData &&
+          other.iriuId == this.iriuId &&
+          other.origin == this.origin &&
+          other.moduleId == this.moduleId &&
+          other.scenarioId == this.scenarioId &&
+          other.scenarioVersion == this.scenarioVersion &&
+          other.ruleId == this.ruleId &&
+          other.operationId == this.operationId &&
+          other.createdAt == this.createdAt);
+}
+
+class IriuProvenanceCompanion extends UpdateCompanion<IriuProvenanceData> {
+  final Value<int> iriuId;
+  final Value<String> origin;
+  final Value<String?> moduleId;
+  final Value<String?> scenarioId;
+  final Value<int?> scenarioVersion;
+  final Value<String?> ruleId;
+  final Value<String?> operationId;
+  final Value<String> createdAt;
+  const IriuProvenanceCompanion({
+    this.iriuId = const Value.absent(),
+    this.origin = const Value.absent(),
+    this.moduleId = const Value.absent(),
+    this.scenarioId = const Value.absent(),
+    this.scenarioVersion = const Value.absent(),
+    this.ruleId = const Value.absent(),
+    this.operationId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  IriuProvenanceCompanion.insert({
+    this.iriuId = const Value.absent(),
+    required String origin,
+    this.moduleId = const Value.absent(),
+    this.scenarioId = const Value.absent(),
+    this.scenarioVersion = const Value.absent(),
+    this.ruleId = const Value.absent(),
+    this.operationId = const Value.absent(),
+    required String createdAt,
+  }) : origin = Value(origin),
+       createdAt = Value(createdAt);
+  static Insertable<IriuProvenanceData> custom({
+    Expression<int>? iriuId,
+    Expression<String>? origin,
+    Expression<String>? moduleId,
+    Expression<String>? scenarioId,
+    Expression<int>? scenarioVersion,
+    Expression<String>? ruleId,
+    Expression<String>? operationId,
+    Expression<String>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (iriuId != null) 'iriu_id': iriuId,
+      if (origin != null) 'origin': origin,
+      if (moduleId != null) 'module_id': moduleId,
+      if (scenarioId != null) 'scenario_id': scenarioId,
+      if (scenarioVersion != null) 'scenario_version': scenarioVersion,
+      if (ruleId != null) 'rule_id': ruleId,
+      if (operationId != null) 'operation_id': operationId,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  IriuProvenanceCompanion copyWith({
+    Value<int>? iriuId,
+    Value<String>? origin,
+    Value<String?>? moduleId,
+    Value<String?>? scenarioId,
+    Value<int?>? scenarioVersion,
+    Value<String?>? ruleId,
+    Value<String?>? operationId,
+    Value<String>? createdAt,
+  }) {
+    return IriuProvenanceCompanion(
+      iriuId: iriuId ?? this.iriuId,
+      origin: origin ?? this.origin,
+      moduleId: moduleId ?? this.moduleId,
+      scenarioId: scenarioId ?? this.scenarioId,
+      scenarioVersion: scenarioVersion ?? this.scenarioVersion,
+      ruleId: ruleId ?? this.ruleId,
+      operationId: operationId ?? this.operationId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (iriuId.present) {
+      map['iriu_id'] = Variable<int>(iriuId.value);
+    }
+    if (origin.present) {
+      map['origin'] = Variable<String>(origin.value);
+    }
+    if (moduleId.present) {
+      map['module_id'] = Variable<String>(moduleId.value);
+    }
+    if (scenarioId.present) {
+      map['scenario_id'] = Variable<String>(scenarioId.value);
+    }
+    if (scenarioVersion.present) {
+      map['scenario_version'] = Variable<int>(scenarioVersion.value);
+    }
+    if (ruleId.present) {
+      map['rule_id'] = Variable<String>(ruleId.value);
+    }
+    if (operationId.present) {
+      map['operation_id'] = Variable<String>(operationId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IriuProvenanceCompanion(')
+          ..write('iriuId: $iriuId, ')
+          ..write('origin: $origin, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('operationId: $operationId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $IriuKatalogConfigTable extends IriuKatalogConfig
     with TableInfo<$IriuKatalogConfigTable, IriuKatalogConfigData> {
   @override
@@ -15292,6 +15812,1634 @@ class LogIzmenaCompanion extends UpdateCompanion<LogIzmenaData> {
   }
 }
 
+class $ScenarioModulesTable extends ScenarioModules
+    with TableInfo<$ScenarioModulesTable, ScenarioModule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScenarioModulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nazivMeta = const VerificationMeta('naziv');
+  @override
+  late final GeneratedColumn<String> naziv = GeneratedColumn<String>(
+    'naziv',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('AKTIVAN'),
+  );
+  static const VerificationMeta _schemaVersionMeta = const VerificationMeta(
+    'schemaVersion',
+  );
+  @override
+  late final GeneratedColumn<int> schemaVersion = GeneratedColumn<int>(
+    'schema_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _osnovniPaketJsonMeta = const VerificationMeta(
+    'osnovniPaketJson',
+  );
+  @override
+  late final GeneratedColumn<String> osnovniPaketJson = GeneratedColumn<String>(
+    'osnovni_paket_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    naziv,
+    status,
+    schemaVersion,
+    osnovniPaketJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'scenario_modules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScenarioModule> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('naziv')) {
+      context.handle(
+        _nazivMeta,
+        naziv.isAcceptableOrUnknown(data['naziv']!, _nazivMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('schema_version')) {
+      context.handle(
+        _schemaVersionMeta,
+        schemaVersion.isAcceptableOrUnknown(
+          data['schema_version']!,
+          _schemaVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('osnovni_paket_json')) {
+      context.handle(
+        _osnovniPaketJsonMeta,
+        osnovniPaketJson.isAcceptableOrUnknown(
+          data['osnovni_paket_json']!,
+          _osnovniPaketJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ScenarioModule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScenarioModule(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      naziv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}naziv'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      schemaVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}schema_version'],
+      )!,
+      osnovniPaketJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}osnovni_paket_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScenarioModulesTable createAlias(String alias) {
+    return $ScenarioModulesTable(attachedDatabase, alias);
+  }
+}
+
+class ScenarioModule extends DataClass implements Insertable<ScenarioModule> {
+  final String id;
+  final String naziv;
+  final String status;
+  final int schemaVersion;
+  final String osnovniPaketJson;
+  final String createdAt;
+  final String updatedAt;
+  const ScenarioModule({
+    required this.id,
+    required this.naziv,
+    required this.status,
+    required this.schemaVersion,
+    required this.osnovniPaketJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['naziv'] = Variable<String>(naziv);
+    map['status'] = Variable<String>(status);
+    map['schema_version'] = Variable<int>(schemaVersion);
+    map['osnovni_paket_json'] = Variable<String>(osnovniPaketJson);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  ScenarioModulesCompanion toCompanion(bool nullToAbsent) {
+    return ScenarioModulesCompanion(
+      id: Value(id),
+      naziv: Value(naziv),
+      status: Value(status),
+      schemaVersion: Value(schemaVersion),
+      osnovniPaketJson: Value(osnovniPaketJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScenarioModule.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScenarioModule(
+      id: serializer.fromJson<String>(json['id']),
+      naziv: serializer.fromJson<String>(json['naziv']),
+      status: serializer.fromJson<String>(json['status']),
+      schemaVersion: serializer.fromJson<int>(json['schemaVersion']),
+      osnovniPaketJson: serializer.fromJson<String>(json['osnovniPaketJson']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'naziv': serializer.toJson<String>(naziv),
+      'status': serializer.toJson<String>(status),
+      'schemaVersion': serializer.toJson<int>(schemaVersion),
+      'osnovniPaketJson': serializer.toJson<String>(osnovniPaketJson),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  ScenarioModule copyWith({
+    String? id,
+    String? naziv,
+    String? status,
+    int? schemaVersion,
+    String? osnovniPaketJson,
+    String? createdAt,
+    String? updatedAt,
+  }) => ScenarioModule(
+    id: id ?? this.id,
+    naziv: naziv ?? this.naziv,
+    status: status ?? this.status,
+    schemaVersion: schemaVersion ?? this.schemaVersion,
+    osnovniPaketJson: osnovniPaketJson ?? this.osnovniPaketJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScenarioModule copyWithCompanion(ScenarioModulesCompanion data) {
+    return ScenarioModule(
+      id: data.id.present ? data.id.value : this.id,
+      naziv: data.naziv.present ? data.naziv.value : this.naziv,
+      status: data.status.present ? data.status.value : this.status,
+      schemaVersion: data.schemaVersion.present
+          ? data.schemaVersion.value
+          : this.schemaVersion,
+      osnovniPaketJson: data.osnovniPaketJson.present
+          ? data.osnovniPaketJson.value
+          : this.osnovniPaketJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioModule(')
+          ..write('id: $id, ')
+          ..write('naziv: $naziv, ')
+          ..write('status: $status, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('osnovniPaketJson: $osnovniPaketJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    naziv,
+    status,
+    schemaVersion,
+    osnovniPaketJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScenarioModule &&
+          other.id == this.id &&
+          other.naziv == this.naziv &&
+          other.status == this.status &&
+          other.schemaVersion == this.schemaVersion &&
+          other.osnovniPaketJson == this.osnovniPaketJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScenarioModulesCompanion extends UpdateCompanion<ScenarioModule> {
+  final Value<String> id;
+  final Value<String> naziv;
+  final Value<String> status;
+  final Value<int> schemaVersion;
+  final Value<String> osnovniPaketJson;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const ScenarioModulesCompanion({
+    this.id = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.status = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.osnovniPaketJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScenarioModulesCompanion.insert({
+    required String id,
+    this.naziv = const Value.absent(),
+    this.status = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.osnovniPaketJson = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScenarioModule> custom({
+    Expression<String>? id,
+    Expression<String>? naziv,
+    Expression<String>? status,
+    Expression<int>? schemaVersion,
+    Expression<String>? osnovniPaketJson,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (naziv != null) 'naziv': naziv,
+      if (status != null) 'status': status,
+      if (schemaVersion != null) 'schema_version': schemaVersion,
+      if (osnovniPaketJson != null) 'osnovni_paket_json': osnovniPaketJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScenarioModulesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? naziv,
+    Value<String>? status,
+    Value<int>? schemaVersion,
+    Value<String>? osnovniPaketJson,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScenarioModulesCompanion(
+      id: id ?? this.id,
+      naziv: naziv ?? this.naziv,
+      status: status ?? this.status,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      osnovniPaketJson: osnovniPaketJson ?? this.osnovniPaketJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (naziv.present) {
+      map['naziv'] = Variable<String>(naziv.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (schemaVersion.present) {
+      map['schema_version'] = Variable<int>(schemaVersion.value);
+    }
+    if (osnovniPaketJson.present) {
+      map['osnovni_paket_json'] = Variable<String>(osnovniPaketJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioModulesCompanion(')
+          ..write('id: $id, ')
+          ..write('naziv: $naziv, ')
+          ..write('status: $status, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('osnovniPaketJson: $osnovniPaketJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ScenarioDefinitionsTable extends ScenarioDefinitions
+    with TableInfo<$ScenarioDefinitionsTable, ScenarioDefinitionRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScenarioDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _moduleIdMeta = const VerificationMeta(
+    'moduleId',
+  );
+  @override
+  late final GeneratedColumn<String> moduleId = GeneratedColumn<String>(
+    'module_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES scenario_modules (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('DRAFT'),
+  );
+  static const VerificationMeta _nazivMeta = const VerificationMeta('naziv');
+  @override
+  late final GeneratedColumn<String> naziv = GeneratedColumn<String>(
+    'naziv',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _conditionJsonMeta = const VerificationMeta(
+    'conditionJson',
+  );
+  @override
+  late final GeneratedColumn<String> conditionJson = GeneratedColumn<String>(
+    'condition_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _consequencesJsonMeta = const VerificationMeta(
+    'consequencesJson',
+  );
+  @override
+  late final GeneratedColumn<String> consequencesJson = GeneratedColumn<String>(
+    'consequences_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _jePodrazumevaniMeta = const VerificationMeta(
+    'jePodrazumevani',
+  );
+  @override
+  late final GeneratedColumn<bool> jePodrazumevani = GeneratedColumn<bool>(
+    'je_podrazumevani',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("je_podrazumevani" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    moduleId,
+    version,
+    status,
+    naziv,
+    conditionJson,
+    consequencesJson,
+    jePodrazumevani,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'scenario_definitions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScenarioDefinitionRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('module_id')) {
+      context.handle(
+        _moduleIdMeta,
+        moduleId.isAcceptableOrUnknown(data['module_id']!, _moduleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moduleIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('naziv')) {
+      context.handle(
+        _nazivMeta,
+        naziv.isAcceptableOrUnknown(data['naziv']!, _nazivMeta),
+      );
+    }
+    if (data.containsKey('condition_json')) {
+      context.handle(
+        _conditionJsonMeta,
+        conditionJson.isAcceptableOrUnknown(
+          data['condition_json']!,
+          _conditionJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('consequences_json')) {
+      context.handle(
+        _consequencesJsonMeta,
+        consequencesJson.isAcceptableOrUnknown(
+          data['consequences_json']!,
+          _consequencesJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('je_podrazumevani')) {
+      context.handle(
+        _jePodrazumevaniMeta,
+        jePodrazumevani.isAcceptableOrUnknown(
+          data['je_podrazumevani']!,
+          _jePodrazumevaniMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id, version};
+  @override
+  ScenarioDefinitionRecord map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScenarioDefinitionRecord(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      moduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}module_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      naziv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}naziv'],
+      )!,
+      conditionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}condition_json'],
+      )!,
+      consequencesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}consequences_json'],
+      )!,
+      jePodrazumevani: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}je_podrazumevani'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScenarioDefinitionsTable createAlias(String alias) {
+    return $ScenarioDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class ScenarioDefinitionRecord extends DataClass
+    implements Insertable<ScenarioDefinitionRecord> {
+  final String id;
+  final String moduleId;
+  final int version;
+  final String status;
+  final String naziv;
+  final String conditionJson;
+  final String consequencesJson;
+  final bool jePodrazumevani;
+  final String createdAt;
+  final String updatedAt;
+  const ScenarioDefinitionRecord({
+    required this.id,
+    required this.moduleId,
+    required this.version,
+    required this.status,
+    required this.naziv,
+    required this.conditionJson,
+    required this.consequencesJson,
+    required this.jePodrazumevani,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['module_id'] = Variable<String>(moduleId);
+    map['version'] = Variable<int>(version);
+    map['status'] = Variable<String>(status);
+    map['naziv'] = Variable<String>(naziv);
+    map['condition_json'] = Variable<String>(conditionJson);
+    map['consequences_json'] = Variable<String>(consequencesJson);
+    map['je_podrazumevani'] = Variable<bool>(jePodrazumevani);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  ScenarioDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return ScenarioDefinitionsCompanion(
+      id: Value(id),
+      moduleId: Value(moduleId),
+      version: Value(version),
+      status: Value(status),
+      naziv: Value(naziv),
+      conditionJson: Value(conditionJson),
+      consequencesJson: Value(consequencesJson),
+      jePodrazumevani: Value(jePodrazumevani),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScenarioDefinitionRecord.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScenarioDefinitionRecord(
+      id: serializer.fromJson<String>(json['id']),
+      moduleId: serializer.fromJson<String>(json['moduleId']),
+      version: serializer.fromJson<int>(json['version']),
+      status: serializer.fromJson<String>(json['status']),
+      naziv: serializer.fromJson<String>(json['naziv']),
+      conditionJson: serializer.fromJson<String>(json['conditionJson']),
+      consequencesJson: serializer.fromJson<String>(json['consequencesJson']),
+      jePodrazumevani: serializer.fromJson<bool>(json['jePodrazumevani']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'moduleId': serializer.toJson<String>(moduleId),
+      'version': serializer.toJson<int>(version),
+      'status': serializer.toJson<String>(status),
+      'naziv': serializer.toJson<String>(naziv),
+      'conditionJson': serializer.toJson<String>(conditionJson),
+      'consequencesJson': serializer.toJson<String>(consequencesJson),
+      'jePodrazumevani': serializer.toJson<bool>(jePodrazumevani),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  ScenarioDefinitionRecord copyWith({
+    String? id,
+    String? moduleId,
+    int? version,
+    String? status,
+    String? naziv,
+    String? conditionJson,
+    String? consequencesJson,
+    bool? jePodrazumevani,
+    String? createdAt,
+    String? updatedAt,
+  }) => ScenarioDefinitionRecord(
+    id: id ?? this.id,
+    moduleId: moduleId ?? this.moduleId,
+    version: version ?? this.version,
+    status: status ?? this.status,
+    naziv: naziv ?? this.naziv,
+    conditionJson: conditionJson ?? this.conditionJson,
+    consequencesJson: consequencesJson ?? this.consequencesJson,
+    jePodrazumevani: jePodrazumevani ?? this.jePodrazumevani,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScenarioDefinitionRecord copyWithCompanion(
+    ScenarioDefinitionsCompanion data,
+  ) {
+    return ScenarioDefinitionRecord(
+      id: data.id.present ? data.id.value : this.id,
+      moduleId: data.moduleId.present ? data.moduleId.value : this.moduleId,
+      version: data.version.present ? data.version.value : this.version,
+      status: data.status.present ? data.status.value : this.status,
+      naziv: data.naziv.present ? data.naziv.value : this.naziv,
+      conditionJson: data.conditionJson.present
+          ? data.conditionJson.value
+          : this.conditionJson,
+      consequencesJson: data.consequencesJson.present
+          ? data.consequencesJson.value
+          : this.consequencesJson,
+      jePodrazumevani: data.jePodrazumevani.present
+          ? data.jePodrazumevani.value
+          : this.jePodrazumevani,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioDefinitionRecord(')
+          ..write('id: $id, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('version: $version, ')
+          ..write('status: $status, ')
+          ..write('naziv: $naziv, ')
+          ..write('conditionJson: $conditionJson, ')
+          ..write('consequencesJson: $consequencesJson, ')
+          ..write('jePodrazumevani: $jePodrazumevani, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    moduleId,
+    version,
+    status,
+    naziv,
+    conditionJson,
+    consequencesJson,
+    jePodrazumevani,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScenarioDefinitionRecord &&
+          other.id == this.id &&
+          other.moduleId == this.moduleId &&
+          other.version == this.version &&
+          other.status == this.status &&
+          other.naziv == this.naziv &&
+          other.conditionJson == this.conditionJson &&
+          other.consequencesJson == this.consequencesJson &&
+          other.jePodrazumevani == this.jePodrazumevani &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScenarioDefinitionsCompanion
+    extends UpdateCompanion<ScenarioDefinitionRecord> {
+  final Value<String> id;
+  final Value<String> moduleId;
+  final Value<int> version;
+  final Value<String> status;
+  final Value<String> naziv;
+  final Value<String> conditionJson;
+  final Value<String> consequencesJson;
+  final Value<bool> jePodrazumevani;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const ScenarioDefinitionsCompanion({
+    this.id = const Value.absent(),
+    this.moduleId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.status = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.conditionJson = const Value.absent(),
+    this.consequencesJson = const Value.absent(),
+    this.jePodrazumevani = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScenarioDefinitionsCompanion.insert({
+    required String id,
+    required String moduleId,
+    required int version,
+    this.status = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.conditionJson = const Value.absent(),
+    this.consequencesJson = const Value.absent(),
+    this.jePodrazumevani = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       moduleId = Value(moduleId),
+       version = Value(version),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScenarioDefinitionRecord> custom({
+    Expression<String>? id,
+    Expression<String>? moduleId,
+    Expression<int>? version,
+    Expression<String>? status,
+    Expression<String>? naziv,
+    Expression<String>? conditionJson,
+    Expression<String>? consequencesJson,
+    Expression<bool>? jePodrazumevani,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (moduleId != null) 'module_id': moduleId,
+      if (version != null) 'version': version,
+      if (status != null) 'status': status,
+      if (naziv != null) 'naziv': naziv,
+      if (conditionJson != null) 'condition_json': conditionJson,
+      if (consequencesJson != null) 'consequences_json': consequencesJson,
+      if (jePodrazumevani != null) 'je_podrazumevani': jePodrazumevani,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScenarioDefinitionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? moduleId,
+    Value<int>? version,
+    Value<String>? status,
+    Value<String>? naziv,
+    Value<String>? conditionJson,
+    Value<String>? consequencesJson,
+    Value<bool>? jePodrazumevani,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScenarioDefinitionsCompanion(
+      id: id ?? this.id,
+      moduleId: moduleId ?? this.moduleId,
+      version: version ?? this.version,
+      status: status ?? this.status,
+      naziv: naziv ?? this.naziv,
+      conditionJson: conditionJson ?? this.conditionJson,
+      consequencesJson: consequencesJson ?? this.consequencesJson,
+      jePodrazumevani: jePodrazumevani ?? this.jePodrazumevani,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (moduleId.present) {
+      map['module_id'] = Variable<String>(moduleId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (naziv.present) {
+      map['naziv'] = Variable<String>(naziv.value);
+    }
+    if (conditionJson.present) {
+      map['condition_json'] = Variable<String>(conditionJson.value);
+    }
+    if (consequencesJson.present) {
+      map['consequences_json'] = Variable<String>(consequencesJson.value);
+    }
+    if (jePodrazumevani.present) {
+      map['je_podrazumevani'] = Variable<bool>(jePodrazumevani.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioDefinitionsCompanion(')
+          ..write('id: $id, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('version: $version, ')
+          ..write('status: $status, ')
+          ..write('naziv: $naziv, ')
+          ..write('conditionJson: $conditionJson, ')
+          ..write('consequencesJson: $consequencesJson, ')
+          ..write('jePodrazumevani: $jePodrazumevani, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PredmetScenarioSnapshotsTable extends PredmetScenarioSnapshots
+    with TableInfo<$PredmetScenarioSnapshotsTable, PredmetScenarioSnapshot> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PredmetScenarioSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _moduleIdMeta = const VerificationMeta(
+    'moduleId',
+  );
+  @override
+  late final GeneratedColumn<String> moduleId = GeneratedColumn<String>(
+    'module_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scenarioIdMeta = const VerificationMeta(
+    'scenarioId',
+  );
+  @override
+  late final GeneratedColumn<String> scenarioId = GeneratedColumn<String>(
+    'scenario_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scenarioVersionMeta = const VerificationMeta(
+    'scenarioVersion',
+  );
+  @override
+  late final GeneratedColumn<int> scenarioVersion = GeneratedColumn<int>(
+    'scenario_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotHashMeta = const VerificationMeta(
+    'snapshotHash',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotHash = GeneratedColumn<String>(
+    'snapshot_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _assignedAtMeta = const VerificationMeta(
+    'assignedAt',
+  );
+  @override
+  late final GeneratedColumn<String> assignedAt = GeneratedColumn<String>(
+    'assigned_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _assignedByKorisnikIdMeta =
+      const VerificationMeta('assignedByKorisnikId');
+  @override
+  late final GeneratedColumn<int> assignedByKorisnikId = GeneratedColumn<int>(
+    'assigned_by_korisnik_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    predmetId,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    snapshotJson,
+    snapshotHash,
+    assignedAt,
+    assignedByKorisnikId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'predmet_scenario_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PredmetScenarioSnapshot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    }
+    if (data.containsKey('module_id')) {
+      context.handle(
+        _moduleIdMeta,
+        moduleId.isAcceptableOrUnknown(data['module_id']!, _moduleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moduleIdMeta);
+    }
+    if (data.containsKey('scenario_id')) {
+      context.handle(
+        _scenarioIdMeta,
+        scenarioId.isAcceptableOrUnknown(data['scenario_id']!, _scenarioIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scenarioIdMeta);
+    }
+    if (data.containsKey('scenario_version')) {
+      context.handle(
+        _scenarioVersionMeta,
+        scenarioVersion.isAcceptableOrUnknown(
+          data['scenario_version']!,
+          _scenarioVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scenarioVersionMeta);
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotJsonMeta);
+    }
+    if (data.containsKey('snapshot_hash')) {
+      context.handle(
+        _snapshotHashMeta,
+        snapshotHash.isAcceptableOrUnknown(
+          data['snapshot_hash']!,
+          _snapshotHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotHashMeta);
+    }
+    if (data.containsKey('assigned_at')) {
+      context.handle(
+        _assignedAtMeta,
+        assignedAt.isAcceptableOrUnknown(data['assigned_at']!, _assignedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_assignedAtMeta);
+    }
+    if (data.containsKey('assigned_by_korisnik_id')) {
+      context.handle(
+        _assignedByKorisnikIdMeta,
+        assignedByKorisnikId.isAcceptableOrUnknown(
+          data['assigned_by_korisnik_id']!,
+          _assignedByKorisnikIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {predmetId};
+  @override
+  PredmetScenarioSnapshot map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PredmetScenarioSnapshot(
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      moduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}module_id'],
+      )!,
+      scenarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scenario_id'],
+      )!,
+      scenarioVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}scenario_version'],
+      )!,
+      snapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_json'],
+      )!,
+      snapshotHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_hash'],
+      )!,
+      assignedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assigned_at'],
+      )!,
+      assignedByKorisnikId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}assigned_by_korisnik_id'],
+      ),
+    );
+  }
+
+  @override
+  $PredmetScenarioSnapshotsTable createAlias(String alias) {
+    return $PredmetScenarioSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class PredmetScenarioSnapshot extends DataClass
+    implements Insertable<PredmetScenarioSnapshot> {
+  final int predmetId;
+  final String moduleId;
+  final String scenarioId;
+  final int scenarioVersion;
+  final String snapshotJson;
+  final String snapshotHash;
+  final String assignedAt;
+  final int? assignedByKorisnikId;
+  const PredmetScenarioSnapshot({
+    required this.predmetId,
+    required this.moduleId,
+    required this.scenarioId,
+    required this.scenarioVersion,
+    required this.snapshotJson,
+    required this.snapshotHash,
+    required this.assignedAt,
+    this.assignedByKorisnikId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['module_id'] = Variable<String>(moduleId);
+    map['scenario_id'] = Variable<String>(scenarioId);
+    map['scenario_version'] = Variable<int>(scenarioVersion);
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    map['snapshot_hash'] = Variable<String>(snapshotHash);
+    map['assigned_at'] = Variable<String>(assignedAt);
+    if (!nullToAbsent || assignedByKorisnikId != null) {
+      map['assigned_by_korisnik_id'] = Variable<int>(assignedByKorisnikId);
+    }
+    return map;
+  }
+
+  PredmetScenarioSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return PredmetScenarioSnapshotsCompanion(
+      predmetId: Value(predmetId),
+      moduleId: Value(moduleId),
+      scenarioId: Value(scenarioId),
+      scenarioVersion: Value(scenarioVersion),
+      snapshotJson: Value(snapshotJson),
+      snapshotHash: Value(snapshotHash),
+      assignedAt: Value(assignedAt),
+      assignedByKorisnikId: assignedByKorisnikId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedByKorisnikId),
+    );
+  }
+
+  factory PredmetScenarioSnapshot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PredmetScenarioSnapshot(
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      moduleId: serializer.fromJson<String>(json['moduleId']),
+      scenarioId: serializer.fromJson<String>(json['scenarioId']),
+      scenarioVersion: serializer.fromJson<int>(json['scenarioVersion']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+      snapshotHash: serializer.fromJson<String>(json['snapshotHash']),
+      assignedAt: serializer.fromJson<String>(json['assignedAt']),
+      assignedByKorisnikId: serializer.fromJson<int?>(
+        json['assignedByKorisnikId'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'predmetId': serializer.toJson<int>(predmetId),
+      'moduleId': serializer.toJson<String>(moduleId),
+      'scenarioId': serializer.toJson<String>(scenarioId),
+      'scenarioVersion': serializer.toJson<int>(scenarioVersion),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+      'snapshotHash': serializer.toJson<String>(snapshotHash),
+      'assignedAt': serializer.toJson<String>(assignedAt),
+      'assignedByKorisnikId': serializer.toJson<int?>(assignedByKorisnikId),
+    };
+  }
+
+  PredmetScenarioSnapshot copyWith({
+    int? predmetId,
+    String? moduleId,
+    String? scenarioId,
+    int? scenarioVersion,
+    String? snapshotJson,
+    String? snapshotHash,
+    String? assignedAt,
+    Value<int?> assignedByKorisnikId = const Value.absent(),
+  }) => PredmetScenarioSnapshot(
+    predmetId: predmetId ?? this.predmetId,
+    moduleId: moduleId ?? this.moduleId,
+    scenarioId: scenarioId ?? this.scenarioId,
+    scenarioVersion: scenarioVersion ?? this.scenarioVersion,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+    snapshotHash: snapshotHash ?? this.snapshotHash,
+    assignedAt: assignedAt ?? this.assignedAt,
+    assignedByKorisnikId: assignedByKorisnikId.present
+        ? assignedByKorisnikId.value
+        : this.assignedByKorisnikId,
+  );
+  PredmetScenarioSnapshot copyWithCompanion(
+    PredmetScenarioSnapshotsCompanion data,
+  ) {
+    return PredmetScenarioSnapshot(
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      moduleId: data.moduleId.present ? data.moduleId.value : this.moduleId,
+      scenarioId: data.scenarioId.present
+          ? data.scenarioId.value
+          : this.scenarioId,
+      scenarioVersion: data.scenarioVersion.present
+          ? data.scenarioVersion.value
+          : this.scenarioVersion,
+      snapshotJson: data.snapshotJson.present
+          ? data.snapshotJson.value
+          : this.snapshotJson,
+      snapshotHash: data.snapshotHash.present
+          ? data.snapshotHash.value
+          : this.snapshotHash,
+      assignedAt: data.assignedAt.present
+          ? data.assignedAt.value
+          : this.assignedAt,
+      assignedByKorisnikId: data.assignedByKorisnikId.present
+          ? data.assignedByKorisnikId.value
+          : this.assignedByKorisnikId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PredmetScenarioSnapshot(')
+          ..write('predmetId: $predmetId, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('snapshotHash: $snapshotHash, ')
+          ..write('assignedAt: $assignedAt, ')
+          ..write('assignedByKorisnikId: $assignedByKorisnikId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    predmetId,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    snapshotJson,
+    snapshotHash,
+    assignedAt,
+    assignedByKorisnikId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PredmetScenarioSnapshot &&
+          other.predmetId == this.predmetId &&
+          other.moduleId == this.moduleId &&
+          other.scenarioId == this.scenarioId &&
+          other.scenarioVersion == this.scenarioVersion &&
+          other.snapshotJson == this.snapshotJson &&
+          other.snapshotHash == this.snapshotHash &&
+          other.assignedAt == this.assignedAt &&
+          other.assignedByKorisnikId == this.assignedByKorisnikId);
+}
+
+class PredmetScenarioSnapshotsCompanion
+    extends UpdateCompanion<PredmetScenarioSnapshot> {
+  final Value<int> predmetId;
+  final Value<String> moduleId;
+  final Value<String> scenarioId;
+  final Value<int> scenarioVersion;
+  final Value<String> snapshotJson;
+  final Value<String> snapshotHash;
+  final Value<String> assignedAt;
+  final Value<int?> assignedByKorisnikId;
+  const PredmetScenarioSnapshotsCompanion({
+    this.predmetId = const Value.absent(),
+    this.moduleId = const Value.absent(),
+    this.scenarioId = const Value.absent(),
+    this.scenarioVersion = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.snapshotHash = const Value.absent(),
+    this.assignedAt = const Value.absent(),
+    this.assignedByKorisnikId = const Value.absent(),
+  });
+  PredmetScenarioSnapshotsCompanion.insert({
+    this.predmetId = const Value.absent(),
+    required String moduleId,
+    required String scenarioId,
+    required int scenarioVersion,
+    required String snapshotJson,
+    required String snapshotHash,
+    required String assignedAt,
+    this.assignedByKorisnikId = const Value.absent(),
+  }) : moduleId = Value(moduleId),
+       scenarioId = Value(scenarioId),
+       scenarioVersion = Value(scenarioVersion),
+       snapshotJson = Value(snapshotJson),
+       snapshotHash = Value(snapshotHash),
+       assignedAt = Value(assignedAt);
+  static Insertable<PredmetScenarioSnapshot> custom({
+    Expression<int>? predmetId,
+    Expression<String>? moduleId,
+    Expression<String>? scenarioId,
+    Expression<int>? scenarioVersion,
+    Expression<String>? snapshotJson,
+    Expression<String>? snapshotHash,
+    Expression<String>? assignedAt,
+    Expression<int>? assignedByKorisnikId,
+  }) {
+    return RawValuesInsertable({
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (moduleId != null) 'module_id': moduleId,
+      if (scenarioId != null) 'scenario_id': scenarioId,
+      if (scenarioVersion != null) 'scenario_version': scenarioVersion,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (snapshotHash != null) 'snapshot_hash': snapshotHash,
+      if (assignedAt != null) 'assigned_at': assignedAt,
+      if (assignedByKorisnikId != null)
+        'assigned_by_korisnik_id': assignedByKorisnikId,
+    });
+  }
+
+  PredmetScenarioSnapshotsCompanion copyWith({
+    Value<int>? predmetId,
+    Value<String>? moduleId,
+    Value<String>? scenarioId,
+    Value<int>? scenarioVersion,
+    Value<String>? snapshotJson,
+    Value<String>? snapshotHash,
+    Value<String>? assignedAt,
+    Value<int?>? assignedByKorisnikId,
+  }) {
+    return PredmetScenarioSnapshotsCompanion(
+      predmetId: predmetId ?? this.predmetId,
+      moduleId: moduleId ?? this.moduleId,
+      scenarioId: scenarioId ?? this.scenarioId,
+      scenarioVersion: scenarioVersion ?? this.scenarioVersion,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      snapshotHash: snapshotHash ?? this.snapshotHash,
+      assignedAt: assignedAt ?? this.assignedAt,
+      assignedByKorisnikId: assignedByKorisnikId ?? this.assignedByKorisnikId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (moduleId.present) {
+      map['module_id'] = Variable<String>(moduleId.value);
+    }
+    if (scenarioId.present) {
+      map['scenario_id'] = Variable<String>(scenarioId.value);
+    }
+    if (scenarioVersion.present) {
+      map['scenario_version'] = Variable<int>(scenarioVersion.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (snapshotHash.present) {
+      map['snapshot_hash'] = Variable<String>(snapshotHash.value);
+    }
+    if (assignedAt.present) {
+      map['assigned_at'] = Variable<String>(assignedAt.value);
+    }
+    if (assignedByKorisnikId.present) {
+      map['assigned_by_korisnik_id'] = Variable<int>(
+        assignedByKorisnikId.value,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PredmetScenarioSnapshotsCompanion(')
+          ..write('predmetId: $predmetId, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('snapshotHash: $snapshotHash, ')
+          ..write('assignedAt: $assignedAt, ')
+          ..write('assignedByKorisnikId: $assignedByKorisnikId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -15301,6 +17449,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PredmetiTable predmeti = $PredmetiTable(this);
   late final $KontaktLicaTable kontaktLica = $KontaktLicaTable(this);
   late final $IriuTable iriu = $IriuTable(this);
+  late final $IriuProvenanceTable iriuProvenance = $IriuProvenanceTable(this);
   late final $IriuKatalogConfigTable iriuKatalogConfig =
       $IriuKatalogConfigTable(this);
   late final $KatalogArtikliTable katalogArtikli = $KatalogArtikliTable(this);
@@ -15316,6 +17465,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PartePredlosciTable partePredlosci = $PartePredlosciTable(this);
   late final $PartePripremeTable partePripreme = $PartePripremeTable(this);
   late final $LogIzmenaTable logIzmena = $LogIzmenaTable(this);
+  late final $ScenarioModulesTable scenarioModules = $ScenarioModulesTable(
+    this,
+  );
+  late final $ScenarioDefinitionsTable scenarioDefinitions =
+      $ScenarioDefinitionsTable(this);
+  late final $PredmetScenarioSnapshotsTable predmetScenarioSnapshots =
+      $PredmetScenarioSnapshotsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15327,6 +17483,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     predmeti,
     kontaktLica,
     iriu,
+    iriuProvenance,
     iriuKatalogConfig,
     katalogArtikli,
     stanjeRobeStavke,
@@ -15336,6 +17493,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     partePredlosci,
     partePripreme,
     logIzmena,
+    scenarioModules,
+    scenarioDefinitions,
+    predmetScenarioSnapshots,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -15352,6 +17512,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('iriu', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'iriu',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('iriu_provenance', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -15380,6 +17547,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('log_izmena', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'scenario_modules',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('scenario_definitions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('predmet_scenario_snapshots', kind: UpdateKind.delete),
+      ],
     ),
   ]);
 }
@@ -16596,6 +18779,34 @@ final class $$PredmetiTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $PredmetScenarioSnapshotsTable,
+    List<PredmetScenarioSnapshot>
+  >
+  _predmetScenarioSnapshotsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.predmetScenarioSnapshots,
+        aliasName: $_aliasNameGenerator(
+          db.predmeti.id,
+          db.predmetScenarioSnapshots.predmetId,
+        ),
+      );
+
+  $$PredmetScenarioSnapshotsTableProcessedTableManager
+  get predmetScenarioSnapshotsRefs {
+    final manager = $$PredmetScenarioSnapshotsTableTableManager(
+      $_db,
+      $_db.predmetScenarioSnapshots,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _predmetScenarioSnapshotsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$PredmetiTableFilterComposer
@@ -17379,6 +19590,33 @@ class $$PredmetiTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> predmetScenarioSnapshotsRefs(
+    Expression<bool> Function($$PredmetScenarioSnapshotsTableFilterComposer f)
+    f,
+  ) {
+    final $$PredmetScenarioSnapshotsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.predmetScenarioSnapshots,
+          getReferencedColumn: (t) => t.predmetId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PredmetScenarioSnapshotsTableFilterComposer(
+                $db: $db,
+                $table: $db.predmetScenarioSnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -18731,6 +20969,33 @@ class $$PredmetiTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> predmetScenarioSnapshotsRefs<T extends Object>(
+    Expression<T> Function($$PredmetScenarioSnapshotsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PredmetScenarioSnapshotsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.predmetScenarioSnapshots,
+          getReferencedColumn: (t) => t.predmetId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PredmetScenarioSnapshotsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.predmetScenarioSnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$PredmetiTableTableManager
@@ -18752,6 +21017,7 @@ class $$PredmetiTableTableManager
             bool stanjeRobePoslediceRefs,
             bool partePripremeRefs,
             bool logIzmenaRefs,
+            bool predmetScenarioSnapshotsRefs,
           })
         > {
   $$PredmetiTableTableManager(_$AppDatabase db, $PredmetiTable table)
@@ -19312,6 +21578,7 @@ class $$PredmetiTableTableManager
                 stanjeRobePoslediceRefs = false,
                 partePripremeRefs = false,
                 logIzmenaRefs = false,
+                predmetScenarioSnapshotsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -19321,6 +21588,8 @@ class $$PredmetiTableTableManager
                     if (stanjeRobePoslediceRefs) db.stanjeRobePosledice,
                     if (partePripremeRefs) db.partePripreme,
                     if (logIzmenaRefs) db.logIzmena,
+                    if (predmetScenarioSnapshotsRefs)
+                      db.predmetScenarioSnapshots,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -19426,6 +21695,27 @@ class $$PredmetiTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (predmetScenarioSnapshotsRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          PredmetScenarioSnapshot
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._predmetScenarioSnapshotsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).predmetScenarioSnapshotsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -19452,6 +21742,7 @@ typedef $$PredmetiTableProcessedTableManager =
         bool stanjeRobePoslediceRefs,
         bool partePripremeRefs,
         bool logIzmenaRefs,
+        bool predmetScenarioSnapshotsRefs,
       })
     >;
 typedef $$KontaktLicaTableCreateCompanionBuilder =
@@ -19872,6 +22163,24 @@ final class $$IriuTableReferences
     );
   }
 
+  static MultiTypedResultKey<$IriuProvenanceTable, List<IriuProvenanceData>>
+  _iriuProvenanceRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.iriuProvenance,
+    aliasName: $_aliasNameGenerator(db.iriu.id, db.iriuProvenance.iriuId),
+  );
+
+  $$IriuProvenanceTableProcessedTableManager get iriuProvenanceRefs {
+    final manager = $$IriuProvenanceTableTableManager(
+      $_db,
+      $_db.iriuProvenance,
+    ).filter((f) => f.iriuId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_iriuProvenanceRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<
     $StanjeRobePoslediceTable,
     List<StanjeRobePoslediceData>
@@ -19969,6 +22278,31 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
           ),
     );
     return composer;
+  }
+
+  Expression<bool> iriuProvenanceRefs(
+    Expression<bool> Function($$IriuProvenanceTableFilterComposer f) f,
+  ) {
+    final $$IriuProvenanceTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.iriuProvenance,
+      getReferencedColumn: (t) => t.iriuId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuProvenanceTableFilterComposer(
+            $db: $db,
+            $table: $db.iriuProvenance,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> stanjeRobePoslediceRefs(
@@ -20131,6 +22465,31 @@ class $$IriuTableAnnotationComposer
     return composer;
   }
 
+  Expression<T> iriuProvenanceRefs<T extends Object>(
+    Expression<T> Function($$IriuProvenanceTableAnnotationComposer a) f,
+  ) {
+    final $$IriuProvenanceTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.iriuProvenance,
+      getReferencedColumn: (t) => t.iriuId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuProvenanceTableAnnotationComposer(
+            $db: $db,
+            $table: $db.iriuProvenance,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> stanjeRobePoslediceRefs<T extends Object>(
     Expression<T> Function($$StanjeRobePoslediceTableAnnotationComposer a) f,
   ) {
@@ -20171,7 +22530,11 @@ class $$IriuTableTableManager
           $$IriuTableUpdateCompanionBuilder,
           (IriuData, $$IriuTableReferences),
           IriuData,
-          PrefetchHooks Function({bool predmetId, bool stanjeRobePoslediceRefs})
+          PrefetchHooks Function({
+            bool predmetId,
+            bool iriuProvenanceRefs,
+            bool stanjeRobePoslediceRefs,
+          })
         > {
   $$IriuTableTableManager(_$AppDatabase db, $IriuTable table)
     : super(
@@ -20235,10 +22598,15 @@ class $$IriuTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({predmetId = false, stanjeRobePoslediceRefs = false}) {
+              ({
+                predmetId = false,
+                iriuProvenanceRefs = false,
+                stanjeRobePoslediceRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (iriuProvenanceRefs) db.iriuProvenance,
                     if (stanjeRobePoslediceRefs) db.stanjeRobePosledice,
                   ],
                   addJoins:
@@ -20275,6 +22643,26 @@ class $$IriuTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (iriuProvenanceRefs)
+                        await $_getPrefetchedData<
+                          IriuData,
+                          $IriuTable,
+                          IriuProvenanceData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$IriuTableReferences
+                              ._iriuProvenanceRefsTable(db),
+                          managerFromTypedResult: (p0) => $$IriuTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).iriuProvenanceRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.iriuId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (stanjeRobePoslediceRefs)
                         await $_getPrefetchedData<
                           IriuData,
@@ -20315,7 +22703,398 @@ typedef $$IriuTableProcessedTableManager =
       $$IriuTableUpdateCompanionBuilder,
       (IriuData, $$IriuTableReferences),
       IriuData,
-      PrefetchHooks Function({bool predmetId, bool stanjeRobePoslediceRefs})
+      PrefetchHooks Function({
+        bool predmetId,
+        bool iriuProvenanceRefs,
+        bool stanjeRobePoslediceRefs,
+      })
+    >;
+typedef $$IriuProvenanceTableCreateCompanionBuilder =
+    IriuProvenanceCompanion Function({
+      Value<int> iriuId,
+      required String origin,
+      Value<String?> moduleId,
+      Value<String?> scenarioId,
+      Value<int?> scenarioVersion,
+      Value<String?> ruleId,
+      Value<String?> operationId,
+      required String createdAt,
+    });
+typedef $$IriuProvenanceTableUpdateCompanionBuilder =
+    IriuProvenanceCompanion Function({
+      Value<int> iriuId,
+      Value<String> origin,
+      Value<String?> moduleId,
+      Value<String?> scenarioId,
+      Value<int?> scenarioVersion,
+      Value<String?> ruleId,
+      Value<String?> operationId,
+      Value<String> createdAt,
+    });
+
+final class $$IriuProvenanceTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $IriuProvenanceTable,
+          IriuProvenanceData
+        > {
+  $$IriuProvenanceTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $IriuTable _iriuIdTable(_$AppDatabase db) => db.iriu.createAlias(
+    $_aliasNameGenerator(db.iriuProvenance.iriuId, db.iriu.id),
+  );
+
+  $$IriuTableProcessedTableManager get iriuId {
+    final $_column = $_itemColumn<int>('iriu_id')!;
+
+    final manager = $$IriuTableTableManager(
+      $_db,
+      $_db.iriu,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_iriuIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$IriuProvenanceTableFilterComposer
+    extends Composer<_$AppDatabase, $IriuProvenanceTable> {
+  $$IriuProvenanceTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get origin => $composableBuilder(
+    column: $table.origin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operationId => $composableBuilder(
+    column: $table.operationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$IriuTableFilterComposer get iriuId {
+    final $$IriuTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.iriuId,
+      referencedTable: $db.iriu,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuTableFilterComposer(
+            $db: $db,
+            $table: $db.iriu,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IriuProvenanceTableOrderingComposer
+    extends Composer<_$AppDatabase, $IriuProvenanceTable> {
+  $$IriuProvenanceTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get origin => $composableBuilder(
+    column: $table.origin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get operationId => $composableBuilder(
+    column: $table.operationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$IriuTableOrderingComposer get iriuId {
+    final $$IriuTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.iriuId,
+      referencedTable: $db.iriu,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuTableOrderingComposer(
+            $db: $db,
+            $table: $db.iriu,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IriuProvenanceTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IriuProvenanceTable> {
+  $$IriuProvenanceTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get origin =>
+      $composableBuilder(column: $table.origin, builder: (column) => column);
+
+  GeneratedColumn<String> get moduleId =>
+      $composableBuilder(column: $table.moduleId, builder: (column) => column);
+
+  GeneratedColumn<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ruleId =>
+      $composableBuilder(column: $table.ruleId, builder: (column) => column);
+
+  GeneratedColumn<String> get operationId => $composableBuilder(
+    column: $table.operationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$IriuTableAnnotationComposer get iriuId {
+    final $$IriuTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.iriuId,
+      referencedTable: $db.iriu,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuTableAnnotationComposer(
+            $db: $db,
+            $table: $db.iriu,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IriuProvenanceTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IriuProvenanceTable,
+          IriuProvenanceData,
+          $$IriuProvenanceTableFilterComposer,
+          $$IriuProvenanceTableOrderingComposer,
+          $$IriuProvenanceTableAnnotationComposer,
+          $$IriuProvenanceTableCreateCompanionBuilder,
+          $$IriuProvenanceTableUpdateCompanionBuilder,
+          (IriuProvenanceData, $$IriuProvenanceTableReferences),
+          IriuProvenanceData,
+          PrefetchHooks Function({bool iriuId})
+        > {
+  $$IriuProvenanceTableTableManager(
+    _$AppDatabase db,
+    $IriuProvenanceTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IriuProvenanceTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IriuProvenanceTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IriuProvenanceTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> iriuId = const Value.absent(),
+                Value<String> origin = const Value.absent(),
+                Value<String?> moduleId = const Value.absent(),
+                Value<String?> scenarioId = const Value.absent(),
+                Value<int?> scenarioVersion = const Value.absent(),
+                Value<String?> ruleId = const Value.absent(),
+                Value<String?> operationId = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+              }) => IriuProvenanceCompanion(
+                iriuId: iriuId,
+                origin: origin,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                ruleId: ruleId,
+                operationId: operationId,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> iriuId = const Value.absent(),
+                required String origin,
+                Value<String?> moduleId = const Value.absent(),
+                Value<String?> scenarioId = const Value.absent(),
+                Value<int?> scenarioVersion = const Value.absent(),
+                Value<String?> ruleId = const Value.absent(),
+                Value<String?> operationId = const Value.absent(),
+                required String createdAt,
+              }) => IriuProvenanceCompanion.insert(
+                iriuId: iriuId,
+                origin: origin,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                ruleId: ruleId,
+                operationId: operationId,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IriuProvenanceTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({iriuId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (iriuId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.iriuId,
+                                referencedTable: $$IriuProvenanceTableReferences
+                                    ._iriuIdTable(db),
+                                referencedColumn:
+                                    $$IriuProvenanceTableReferences
+                                        ._iriuIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$IriuProvenanceTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IriuProvenanceTable,
+      IriuProvenanceData,
+      $$IriuProvenanceTableFilterComposer,
+      $$IriuProvenanceTableOrderingComposer,
+      $$IriuProvenanceTableAnnotationComposer,
+      $$IriuProvenanceTableCreateCompanionBuilder,
+      $$IriuProvenanceTableUpdateCompanionBuilder,
+      (IriuProvenanceData, $$IriuProvenanceTableReferences),
+      IriuProvenanceData,
+      PrefetchHooks Function({bool iriuId})
     >;
 typedef $$IriuKatalogConfigTableCreateCompanionBuilder =
     IriuKatalogConfigCompanion Function({
@@ -23647,6 +26426,1217 @@ typedef $$LogIzmenaTableProcessedTableManager =
       LogIzmenaData,
       PrefetchHooks Function({bool predmetId})
     >;
+typedef $$ScenarioModulesTableCreateCompanionBuilder =
+    ScenarioModulesCompanion Function({
+      required String id,
+      Value<String> naziv,
+      Value<String> status,
+      Value<int> schemaVersion,
+      Value<String> osnovniPaketJson,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScenarioModulesTableUpdateCompanionBuilder =
+    ScenarioModulesCompanion Function({
+      Value<String> id,
+      Value<String> naziv,
+      Value<String> status,
+      Value<int> schemaVersion,
+      Value<String> osnovniPaketJson,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScenarioModulesTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ScenarioModulesTable, ScenarioModule> {
+  $$ScenarioModulesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<
+    $ScenarioDefinitionsTable,
+    List<ScenarioDefinitionRecord>
+  >
+  _scenarioDefinitionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.scenarioDefinitions,
+        aliasName: $_aliasNameGenerator(
+          db.scenarioModules.id,
+          db.scenarioDefinitions.moduleId,
+        ),
+      );
+
+  $$ScenarioDefinitionsTableProcessedTableManager get scenarioDefinitionsRefs {
+    final manager = $$ScenarioDefinitionsTableTableManager(
+      $_db,
+      $_db.scenarioDefinitions,
+    ).filter((f) => f.moduleId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _scenarioDefinitionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ScenarioModulesTableFilterComposer
+    extends Composer<_$AppDatabase, $ScenarioModulesTable> {
+  $$ScenarioModulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get osnovniPaketJson => $composableBuilder(
+    column: $table.osnovniPaketJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> scenarioDefinitionsRefs(
+    Expression<bool> Function($$ScenarioDefinitionsTableFilterComposer f) f,
+  ) {
+    final $$ScenarioDefinitionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.scenarioDefinitions,
+      getReferencedColumn: (t) => t.moduleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioDefinitionsTableFilterComposer(
+            $db: $db,
+            $table: $db.scenarioDefinitions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ScenarioModulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScenarioModulesTable> {
+  $$ScenarioModulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get osnovniPaketJson => $composableBuilder(
+    column: $table.osnovniPaketJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ScenarioModulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScenarioModulesTable> {
+  $$ScenarioModulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get naziv =>
+      $composableBuilder(column: $table.naziv, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get osnovniPaketJson => $composableBuilder(
+    column: $table.osnovniPaketJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> scenarioDefinitionsRefs<T extends Object>(
+    Expression<T> Function($$ScenarioDefinitionsTableAnnotationComposer a) f,
+  ) {
+    final $$ScenarioDefinitionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scenarioDefinitions,
+          getReferencedColumn: (t) => t.moduleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScenarioDefinitionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scenarioDefinitions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ScenarioModulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScenarioModulesTable,
+          ScenarioModule,
+          $$ScenarioModulesTableFilterComposer,
+          $$ScenarioModulesTableOrderingComposer,
+          $$ScenarioModulesTableAnnotationComposer,
+          $$ScenarioModulesTableCreateCompanionBuilder,
+          $$ScenarioModulesTableUpdateCompanionBuilder,
+          (ScenarioModule, $$ScenarioModulesTableReferences),
+          ScenarioModule,
+          PrefetchHooks Function({bool scenarioDefinitionsRefs})
+        > {
+  $$ScenarioModulesTableTableManager(
+    _$AppDatabase db,
+    $ScenarioModulesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScenarioModulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScenarioModulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ScenarioModulesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<String> osnovniPaketJson = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioModulesCompanion(
+                id: id,
+                naziv: naziv,
+                status: status,
+                schemaVersion: schemaVersion,
+                osnovniPaketJson: osnovniPaketJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String> naziv = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<String> osnovniPaketJson = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioModulesCompanion.insert(
+                id: id,
+                naziv: naziv,
+                status: status,
+                schemaVersion: schemaVersion,
+                osnovniPaketJson: osnovniPaketJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScenarioModulesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({scenarioDefinitionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (scenarioDefinitionsRefs) db.scenarioDefinitions,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (scenarioDefinitionsRefs)
+                    await $_getPrefetchedData<
+                      ScenarioModule,
+                      $ScenarioModulesTable,
+                      ScenarioDefinitionRecord
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ScenarioModulesTableReferences
+                          ._scenarioDefinitionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ScenarioModulesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).scenarioDefinitionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.moduleId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ScenarioModulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScenarioModulesTable,
+      ScenarioModule,
+      $$ScenarioModulesTableFilterComposer,
+      $$ScenarioModulesTableOrderingComposer,
+      $$ScenarioModulesTableAnnotationComposer,
+      $$ScenarioModulesTableCreateCompanionBuilder,
+      $$ScenarioModulesTableUpdateCompanionBuilder,
+      (ScenarioModule, $$ScenarioModulesTableReferences),
+      ScenarioModule,
+      PrefetchHooks Function({bool scenarioDefinitionsRefs})
+    >;
+typedef $$ScenarioDefinitionsTableCreateCompanionBuilder =
+    ScenarioDefinitionsCompanion Function({
+      required String id,
+      required String moduleId,
+      required int version,
+      Value<String> status,
+      Value<String> naziv,
+      Value<String> conditionJson,
+      Value<String> consequencesJson,
+      Value<bool> jePodrazumevani,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScenarioDefinitionsTableUpdateCompanionBuilder =
+    ScenarioDefinitionsCompanion Function({
+      Value<String> id,
+      Value<String> moduleId,
+      Value<int> version,
+      Value<String> status,
+      Value<String> naziv,
+      Value<String> conditionJson,
+      Value<String> consequencesJson,
+      Value<bool> jePodrazumevani,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScenarioDefinitionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ScenarioDefinitionsTable,
+          ScenarioDefinitionRecord
+        > {
+  $$ScenarioDefinitionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ScenarioModulesTable _moduleIdTable(_$AppDatabase db) =>
+      db.scenarioModules.createAlias(
+        $_aliasNameGenerator(
+          db.scenarioDefinitions.moduleId,
+          db.scenarioModules.id,
+        ),
+      );
+
+  $$ScenarioModulesTableProcessedTableManager get moduleId {
+    final $_column = $_itemColumn<String>('module_id')!;
+
+    final manager = $$ScenarioModulesTableTableManager(
+      $_db,
+      $_db.scenarioModules,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_moduleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ScenarioDefinitionsTableFilterComposer
+    extends Composer<_$AppDatabase, $ScenarioDefinitionsTable> {
+  $$ScenarioDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conditionJson => $composableBuilder(
+    column: $table.conditionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get consequencesJson => $composableBuilder(
+    column: $table.consequencesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get jePodrazumevani => $composableBuilder(
+    column: $table.jePodrazumevani,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ScenarioModulesTableFilterComposer get moduleId {
+    final $$ScenarioModulesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.moduleId,
+      referencedTable: $db.scenarioModules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioModulesTableFilterComposer(
+            $db: $db,
+            $table: $db.scenarioModules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScenarioDefinitionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScenarioDefinitionsTable> {
+  $$ScenarioDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conditionJson => $composableBuilder(
+    column: $table.conditionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get consequencesJson => $composableBuilder(
+    column: $table.consequencesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get jePodrazumevani => $composableBuilder(
+    column: $table.jePodrazumevani,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ScenarioModulesTableOrderingComposer get moduleId {
+    final $$ScenarioModulesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.moduleId,
+      referencedTable: $db.scenarioModules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioModulesTableOrderingComposer(
+            $db: $db,
+            $table: $db.scenarioModules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScenarioDefinitionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScenarioDefinitionsTable> {
+  $$ScenarioDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get naziv =>
+      $composableBuilder(column: $table.naziv, builder: (column) => column);
+
+  GeneratedColumn<String> get conditionJson => $composableBuilder(
+    column: $table.conditionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get consequencesJson => $composableBuilder(
+    column: $table.consequencesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get jePodrazumevani => $composableBuilder(
+    column: $table.jePodrazumevani,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ScenarioModulesTableAnnotationComposer get moduleId {
+    final $$ScenarioModulesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.moduleId,
+      referencedTable: $db.scenarioModules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioModulesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.scenarioModules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScenarioDefinitionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScenarioDefinitionsTable,
+          ScenarioDefinitionRecord,
+          $$ScenarioDefinitionsTableFilterComposer,
+          $$ScenarioDefinitionsTableOrderingComposer,
+          $$ScenarioDefinitionsTableAnnotationComposer,
+          $$ScenarioDefinitionsTableCreateCompanionBuilder,
+          $$ScenarioDefinitionsTableUpdateCompanionBuilder,
+          (ScenarioDefinitionRecord, $$ScenarioDefinitionsTableReferences),
+          ScenarioDefinitionRecord,
+          PrefetchHooks Function({bool moduleId})
+        > {
+  $$ScenarioDefinitionsTableTableManager(
+    _$AppDatabase db,
+    $ScenarioDefinitionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScenarioDefinitionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScenarioDefinitionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ScenarioDefinitionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> moduleId = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<String> conditionJson = const Value.absent(),
+                Value<String> consequencesJson = const Value.absent(),
+                Value<bool> jePodrazumevani = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioDefinitionsCompanion(
+                id: id,
+                moduleId: moduleId,
+                version: version,
+                status: status,
+                naziv: naziv,
+                conditionJson: conditionJson,
+                consequencesJson: consequencesJson,
+                jePodrazumevani: jePodrazumevani,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String moduleId,
+                required int version,
+                Value<String> status = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<String> conditionJson = const Value.absent(),
+                Value<String> consequencesJson = const Value.absent(),
+                Value<bool> jePodrazumevani = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioDefinitionsCompanion.insert(
+                id: id,
+                moduleId: moduleId,
+                version: version,
+                status: status,
+                naziv: naziv,
+                conditionJson: conditionJson,
+                consequencesJson: consequencesJson,
+                jePodrazumevani: jePodrazumevani,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScenarioDefinitionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({moduleId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (moduleId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.moduleId,
+                                referencedTable:
+                                    $$ScenarioDefinitionsTableReferences
+                                        ._moduleIdTable(db),
+                                referencedColumn:
+                                    $$ScenarioDefinitionsTableReferences
+                                        ._moduleIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ScenarioDefinitionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScenarioDefinitionsTable,
+      ScenarioDefinitionRecord,
+      $$ScenarioDefinitionsTableFilterComposer,
+      $$ScenarioDefinitionsTableOrderingComposer,
+      $$ScenarioDefinitionsTableAnnotationComposer,
+      $$ScenarioDefinitionsTableCreateCompanionBuilder,
+      $$ScenarioDefinitionsTableUpdateCompanionBuilder,
+      (ScenarioDefinitionRecord, $$ScenarioDefinitionsTableReferences),
+      ScenarioDefinitionRecord,
+      PrefetchHooks Function({bool moduleId})
+    >;
+typedef $$PredmetScenarioSnapshotsTableCreateCompanionBuilder =
+    PredmetScenarioSnapshotsCompanion Function({
+      Value<int> predmetId,
+      required String moduleId,
+      required String scenarioId,
+      required int scenarioVersion,
+      required String snapshotJson,
+      required String snapshotHash,
+      required String assignedAt,
+      Value<int?> assignedByKorisnikId,
+    });
+typedef $$PredmetScenarioSnapshotsTableUpdateCompanionBuilder =
+    PredmetScenarioSnapshotsCompanion Function({
+      Value<int> predmetId,
+      Value<String> moduleId,
+      Value<String> scenarioId,
+      Value<int> scenarioVersion,
+      Value<String> snapshotJson,
+      Value<String> snapshotHash,
+      Value<String> assignedAt,
+      Value<int?> assignedByKorisnikId,
+    });
+
+final class $$PredmetScenarioSnapshotsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PredmetScenarioSnapshotsTable,
+          PredmetScenarioSnapshot
+        > {
+  $$PredmetScenarioSnapshotsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(
+          db.predmetScenarioSnapshots.predmetId,
+          db.predmeti.id,
+        ),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $PredmetScenarioSnapshotsTable> {
+  $$PredmetScenarioSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotHash => $composableBuilder(
+    column: $table.snapshotHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get assignedByKorisnikId => $composableBuilder(
+    column: $table.assignedByKorisnikId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PredmetScenarioSnapshotsTable> {
+  $$PredmetScenarioSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotHash => $composableBuilder(
+    column: $table.snapshotHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get assignedByKorisnikId => $composableBuilder(
+    column: $table.assignedByKorisnikId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PredmetScenarioSnapshotsTable> {
+  $$PredmetScenarioSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get moduleId =>
+      $composableBuilder(column: $table.moduleId, builder: (column) => column);
+
+  GeneratedColumn<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotHash => $composableBuilder(
+    column: $table.snapshotHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get assignedByKorisnikId => $composableBuilder(
+    column: $table.assignedByKorisnikId,
+    builder: (column) => column,
+  );
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PredmetScenarioSnapshotsTable,
+          PredmetScenarioSnapshot,
+          $$PredmetScenarioSnapshotsTableFilterComposer,
+          $$PredmetScenarioSnapshotsTableOrderingComposer,
+          $$PredmetScenarioSnapshotsTableAnnotationComposer,
+          $$PredmetScenarioSnapshotsTableCreateCompanionBuilder,
+          $$PredmetScenarioSnapshotsTableUpdateCompanionBuilder,
+          (PredmetScenarioSnapshot, $$PredmetScenarioSnapshotsTableReferences),
+          PredmetScenarioSnapshot,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$PredmetScenarioSnapshotsTableTableManager(
+    _$AppDatabase db,
+    $PredmetScenarioSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PredmetScenarioSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PredmetScenarioSnapshotsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PredmetScenarioSnapshotsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> predmetId = const Value.absent(),
+                Value<String> moduleId = const Value.absent(),
+                Value<String> scenarioId = const Value.absent(),
+                Value<int> scenarioVersion = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<String> snapshotHash = const Value.absent(),
+                Value<String> assignedAt = const Value.absent(),
+                Value<int?> assignedByKorisnikId = const Value.absent(),
+              }) => PredmetScenarioSnapshotsCompanion(
+                predmetId: predmetId,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                snapshotJson: snapshotJson,
+                snapshotHash: snapshotHash,
+                assignedAt: assignedAt,
+                assignedByKorisnikId: assignedByKorisnikId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> predmetId = const Value.absent(),
+                required String moduleId,
+                required String scenarioId,
+                required int scenarioVersion,
+                required String snapshotJson,
+                required String snapshotHash,
+                required String assignedAt,
+                Value<int?> assignedByKorisnikId = const Value.absent(),
+              }) => PredmetScenarioSnapshotsCompanion.insert(
+                predmetId: predmetId,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                snapshotJson: snapshotJson,
+                snapshotHash: snapshotHash,
+                assignedAt: assignedAt,
+                assignedByKorisnikId: assignedByKorisnikId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PredmetScenarioSnapshotsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable:
+                                    $$PredmetScenarioSnapshotsTableReferences
+                                        ._predmetIdTable(db),
+                                referencedColumn:
+                                    $$PredmetScenarioSnapshotsTableReferences
+                                        ._predmetIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PredmetScenarioSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PredmetScenarioSnapshotsTable,
+      PredmetScenarioSnapshot,
+      $$PredmetScenarioSnapshotsTableFilterComposer,
+      $$PredmetScenarioSnapshotsTableOrderingComposer,
+      $$PredmetScenarioSnapshotsTableAnnotationComposer,
+      $$PredmetScenarioSnapshotsTableCreateCompanionBuilder,
+      $$PredmetScenarioSnapshotsTableUpdateCompanionBuilder,
+      (PredmetScenarioSnapshot, $$PredmetScenarioSnapshotsTableReferences),
+      PredmetScenarioSnapshot,
+      PrefetchHooks Function({bool predmetId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -23662,6 +27652,8 @@ class $AppDatabaseManager {
   $$KontaktLicaTableTableManager get kontaktLica =>
       $$KontaktLicaTableTableManager(_db, _db.kontaktLica);
   $$IriuTableTableManager get iriu => $$IriuTableTableManager(_db, _db.iriu);
+  $$IriuProvenanceTableTableManager get iriuProvenance =>
+      $$IriuProvenanceTableTableManager(_db, _db.iriuProvenance);
   $$IriuKatalogConfigTableTableManager get iriuKatalogConfig =>
       $$IriuKatalogConfigTableTableManager(_db, _db.iriuKatalogConfig);
   $$KatalogArtikliTableTableManager get katalogArtikli =>
@@ -23683,4 +27675,13 @@ class $AppDatabaseManager {
       $$PartePripremeTableTableManager(_db, _db.partePripreme);
   $$LogIzmenaTableTableManager get logIzmena =>
       $$LogIzmenaTableTableManager(_db, _db.logIzmena);
+  $$ScenarioModulesTableTableManager get scenarioModules =>
+      $$ScenarioModulesTableTableManager(_db, _db.scenarioModules);
+  $$ScenarioDefinitionsTableTableManager get scenarioDefinitions =>
+      $$ScenarioDefinitionsTableTableManager(_db, _db.scenarioDefinitions);
+  $$PredmetScenarioSnapshotsTableTableManager get predmetScenarioSnapshots =>
+      $$PredmetScenarioSnapshotsTableTableManager(
+        _db,
+        _db.predmetScenarioSnapshots,
+      );
 }

@@ -129,7 +129,7 @@ Do nove owner odluke:
 | Lokalni “Master PROJECT_DOCS” naspram Git source-of-truth mape | CLASSIFIED, NOT DELETED | Git docs vode current continuity; lokalni dokumenti ostaju supporting dok owner ne odobri promociju. |
 | Istorijska odluka da Git ne postoji/ne treba da postoji | SUPERSEDED BY ACTUAL GIT FLOW | Sačuvati kao istoriju, ne primenjivati na novi rad. |
 | Package/licensing-era pravila naspram odluke o napuštanju PAKETA | SUPERSEDED FOR CURRENT PRODUCT | Stage 1 politika važi; Stage 2 ostaje kasniji cleanup. |
-| Schema 21 closure zapis naspram current schema 22 | DOCUMENTATION CLARIFICATION REQUIRED, NO MISSING CURRENT MIGRATION PROVEN | Pre nove migracije precizirati historical/current formulaciju. |
+| Schema 21 closure zapis naspram current schema 23 | RESOLVED BY ADDITIVE SCENARIO PERSISTENCE MIGRATION | Schema 23 adds only SCENARIO definition/snapshot/provenance tables; live canonical rollout still requires owner authorization. |
 
 ### 3.3 Semantic parity pravilo
 

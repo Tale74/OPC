@@ -240,15 +240,16 @@ SMRTI value is mapped to the same current consequence family as `STAN` and
 The first pure contract slice is
 `lib/features/predmeti/core_v2/scenario/scenario_contract.dart` with focused
 tests in `test/scenario_package_contract_test.dart`. It is an evaluator/domain
-boundary only; persistence, migration and SCENARIO UI remain the next gated
-steps.
+boundary only; repository materialization, JSON transfer and SCENARIO UI remain
+the next gated steps.
 
 The first persistence contract slice is
 `lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`
 with tests in `test/scenario_persistence_contract_test.dart`. It carries the
 selected scenario definition, OSNOVNI PAKET, immutable version and canonical
 hash, and identifies STAVKA provenance. It is not yet wired to Drift or JSON;
-that migration requires fixtures, transfer parity and rollback evidence.
+schema 23 now provides the additive tables, while repository materialization,
+JSON transfer parity and rollback/reconciliation behavior remain gated.
 
 ## 7. When uncertain
 

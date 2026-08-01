@@ -622,12 +622,12 @@ Implementation/pseudocode aligned: yes.
 - Business rule: an explicitly designated user database remains canonical regardless of a stale checkpoint; test databases never gain business authority from a higher schema version.
 - Migration rule: Drift owns sequencing, while bounded idempotent primitives validate existing columns/tables/indexes and create only supported missing objects.
 - Safety rule: malformed, unknown or newer schemas stop; user databases are never deleted, replaced, merged with test lanes or manually version-stamped.
-- Evidence: populated schema 1–21 fixtures, confirmed v19 partial states, malformed-state tests, interruption/retry test and gated owner-copy migration test.
+- Evidence: populated schema 1–23 fixtures, confirmed v19 partial states, malformed-state tests, interruption/retry test and gated owner-copy migration test.
 - Read with: `docs/OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md` and the current task report.
 
 ## OPC-PSEUDO-INDEX-052 — KATALOG basic categories and future IRiU materialization
 
-- Document: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`, section “KATALOG basic-category policy (schema 22)”.
+- Document: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`, section “KATALOG basic-category policy (schema 22)”; SCENARIO persistence is additive schema 23.
 - Source: KATALOG presentation/repository, `iriu_katalog_config`, `PredmetiRepository.inicijalizujIriu`, `IriuOrderingService`, and the existing truth/finance services.
 - Business rule: default `NE`; policy changes affect future PREDMETI only; scenario rows are unchanged; `Agencijske usluge` precedes enabled user basics.
 - Identity/order: deduplicate by stable `interni_naziv`; user-basic order follows persistent category creation order, not rename or toggle time.
@@ -753,7 +753,8 @@ Implementation/pseudocode aligned: yes.
 - Persistence contract implementation: `scenario_persistence_contract.dart`
   serializes a selected scenario definition and OSNOVNI PAKET into a
   PREDMET-owned immutable snapshot, verifies a canonical content hash, and
-  records STAVKA origin. It is not yet a Drift/JSON migration.
+  records STAVKA origin. Schema 23 now stores the additive persistence
+  boundary; JSON/repository/reconciliation wiring remains gated.
 
 ## OPC-PSEUDO-INDEX-055C - Phase 3 SCENARIO/IRiU mutation characterization
 

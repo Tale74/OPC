@@ -45,12 +45,14 @@ Before the first launch of a migration-capable build:
 ## Supported checkpoints
 
 The current migration implementation accepts existing `user_version` values
-1 through 22 and targets schema 22. Versions 1–13 have insufficient surviving
+1 through 23 and targets schema 23. Versions 1–13 have insufficient surviving
 distribution evidence, but remain supported as the safer compatibility
 classification. Versions 14–16 are documented historical stock-schema
-transitions. Version 17 is the public repository baseline. Versions 18–21 are
+transitions. Version 17 is the public repository baseline. Versions 18–22 are
 represented by later source commits and runtime/build reports; v19 is the
-confirmed owner incident checkpoint.
+confirmed owner incident checkpoint. Schema 23 adds only the SCENARIO module,
+definition, PREDMET snapshot and STAVKA provenance tables; it does not seed or
+rewrite existing business rows.
 
 Version 0 with existing user tables is rejected as unknown. A version newer
 than the application is rejected without downgrade.

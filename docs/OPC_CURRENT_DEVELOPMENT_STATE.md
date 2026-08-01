@@ -58,7 +58,10 @@ family.
 
 ## Current Prohibitions
 
-This baseline does not authorize source changes, Web runner, backend/API, sync, browser storage adapter, migrations, payment/subscription work, role implementation, or package restructuring.
+This baseline does not authorize live canonical data migration, Web runner,
+backend/API, sync, browser storage adapter, payment/subscription work, role
+implementation, or package restructuring. Additive migration code still
+requires isolated fixture and owner-runtime gates before live use.
 
 ## Current post-zero stabilization update - 2026-08-01
 
@@ -132,11 +135,12 @@ silently rewrite an existing PREDMET.
 
 ## Current Phase 4 MODULI/SCENARIO contract audit - 2026-08-01
 
-The source audit confirms that current MODULI are only static navigation and
-entitlement vocabulary. There is no persisted module registry, scenario
-template/version store, criteria DSL, consequence definition, IRiU provenance
-or reconciliation recovery state. `predmeti.businessScenarioId` is only a
-single hard-coded reference and JSON currently transfers only that ID.
+The source audit confirmed that current MODULI are only static navigation and
+entitlement vocabulary. Schema 23 now provides additive persistence tables for
+module definitions, scenario versions, PREDMET snapshots and IRiU provenance,
+but there is still no repository, materialization service, criteria migration,
+reconciliation recovery state or SCENARIO UI. `predmeti.businessScenarioId`
+remains the legacy hard-coded reference and JSON still transfers only that ID.
 
 The owner-requested direction is therefore recorded as a contract dependency,
 not implemented behind the existing hard-coded field: module defaults and
@@ -165,6 +169,12 @@ The next bounded contract slice is implemented in
 `lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`.
 It defines a PREDMET-owned immutable scenario assignment snapshot with
 canonical content hash, plus STAVKA provenance for OSNOVNI PAKET, SCENARIO
-PAKET, RUČNA STAVKA and legacy rows. It is pure validation/transfer contract:
-Drift schema, JSON import/restore and reconciliation remain gated until the
-contract is migrated with fixtures and rollback evidence.
+PAKET, RUČNA STAVKA and legacy rows. It remains the validation/transfer
+contract for schema 23; the Drift tables are additive, while JSON import/
+restore, repository materialization and reconciliation remain gated.
+
+The additive persistence migration is now present at schema 23. It creates
+`scenario_modules`, `scenario_definitions`,
+`predmet_scenario_snapshots` and `iriu_provenance` without seed rows or
+changes to existing PREDMET/IRiU data. Repository materialization, JSON parity,
+reconciliation and SCENARIO UI remain gated next steps.
