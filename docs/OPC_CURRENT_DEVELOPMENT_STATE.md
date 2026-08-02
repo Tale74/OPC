@@ -258,6 +258,28 @@ reassociation, manual STAVKA transfer scope, and signing/encryption policy.
 Phase 6 is recorded in
 `docs/tasks/OPC_TASK_PHASE6_SCENARIO_TRANSFER_ENVELOPE_20260802_REPORT.md`.
 
+## Current Phase 9/10 SCENARIO slices — 2026-08-02
+
+Phase 9 added the first user-facing SCENARIO editor to the operational
+`PREDMETI → MODULI` route. It persists the user-defined OSNOVNI PAKET and
+scenario definitions through the additive schema-23 tables. MODULI is an
+operational screen reached from the PREDMET list; SCENARIO is not placed in
+the hidden PODEŠAVANJA section. Phase 9 does not yet apply a definition to a
+PREDMET or materialize STAVKE.
+
+Phase 10 adds only the pure
+`scenario_reconciliation_contract.dart` planner. Given a PREDMET, selected
+scenario/version, OSNOVNI PAKET and existing STAVKE provenance, it computes
+deterministic additions, stale scenario-owned removals and provenance updates.
+Missing provenance, RUČNA STAVKA, LEGACY and rows owned by another module are
+protected by construction. The planner has no database writes, no JSON/full
+backup wiring and no runtime trigger; user notice is represented as a plan
+flag for the separately gated application task.
+
+Phase 10 focused tests pass 4/4 and full `flutter analyze --no-pub` is clean.
+Windows/Android build and runtime acceptance remain deferred to the cumulative
+runtime gate.
+
 ## Current Phase 7 scenario carrier/parity audit — 2026-08-02
 
 The read-only carrier/parity audit is complete on

@@ -1578,12 +1578,26 @@ gates of those tasks, not parallel business authority.
 ## Phase 9 SCENARIO UI v1 — bounded implementation slice
 
 The carrier sequence is intentionally paused while the basic user-facing
-SCENARIO module is made understandable and usable. PODEŠAVANJA → MODULI now
-owns the editable OSNOVNI PAKET and scenario definitions. The screen refers
-only to KATALOG category IDs and stores one canonical scenario representation
-through the existing persistence contract.
+SCENARIO module is made understandable and usable. The operational
+`PREDMETI → MODULI` screen now owns the editable OSNOVNI PAKET and scenario
+definitions. The screen refers only to KATALOG category IDs and stores one
+canonical scenario representation through the existing persistence contract.
 
 This phase does not apply a definition to a PREDMET, remove or add existing
 STAVKE, alter JSON/full-backup roots, or change runtime behavior. The next
 dependency is PREDMET-side explicit selection/application with user notice and
 safe scenario-owned stale-row removal; RUČNA and LEGACY rows remain protected.
+
+## Phase 10 SCENARIO reconciliation planning — pure boundary
+
+Phase 10 adds `ScenarioReconciliationPlanner`, a read-only contract that
+resolves the selected scenario package for one PREDMET and produces a
+deterministic add/remove/provenance-update plan. Only rows whose provenance is
+OSNOVNI_PAKET or SCENARIO_PAKET for the selected module are eligible for
+automatic reconciliation. RUČNA, LEGACY, unknown-provenance and other-module
+rows are protected. A non-empty plan carries a user-notice flag.
+
+This slice performs no Drift/JSON/full-backup write and no runtime trigger. The
+next separately gated task may implement the application transaction only
+after proving eligible-PREDMET confirmation, STANJE ROBE compensation,
+retry/rollback and unchanged locked-PREDMET behavior.

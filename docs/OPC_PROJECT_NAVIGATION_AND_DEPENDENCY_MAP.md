@@ -238,6 +238,30 @@ destination resolution. It does not wire root schema 8, repository import,
 reassociation, or runtime. Full-backup aggregate adaptation remains the next
 separate dependency.
 
+Phase 9 adds the first SCENARIO editor at the operational
+`PREDMETI → MODULI` route. The screen persists OSNOVNI PAKET and definitions
+through `ScenarioModuleRepository`; it is not part of PODEŠAVANJA and does not
+apply definitions to existing PREDMETI. Evidence is recorded in
+`docs/tasks/OPC_TASK_PHASE9_SCENARIO_UI_V1_20260802_REPORT.md`.
+
+Phase 10 adds the pure reconciliation boundary at
+`core_v2/scenario/scenario_reconciliation_contract.dart`. The dependency flow
+is now:
+
+```text
+PREDMET facts + selected scenario snapshot + OSNOVNI PAKET + STAVKA provenance
+  → ScenarioPackageResolver
+  → ScenarioReconciliationPlanner
+  → deterministic add/remove/provenance-update plan + notice flag
+  → (future separately gated repository transaction)
+```
+
+Only OSNOVNI_PAKET/SCENARIO_PAKET rows of the selected module are eligible for
+automatic reconciliation. RUČNA, LEGACY, unknown-provenance and other-module
+rows remain outside the plan. No runtime or carrier wiring is included in this
+slice; the next dependency is an explicit eligible-PREDMET application
+transaction with user notice, stock compensation and rollback evidence.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch

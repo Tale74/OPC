@@ -612,7 +612,40 @@ FUTURE_PODSETNIK MUST_NOT:
   reinterpret PREDMET.napomena as structured IRIU completion history
 ```
 
-## 18. Unresolved owner queue
+## 18. SCENARIO consequence reconciliation boundary (Phase 10)
+
+```text
+INPUT:
+  PREDMET facts
+  selected SCENARIO id/version and immutable snapshot
+  SCENARIO OSNOVNI_PAKET categories
+  existing STAVKE + optional provenance rows
+
+RESOLVE:
+  package = ScenarioPackageResolver(scenario, PREDMET, OSNOVNI_PAKET)
+  desired = base categories not suppressed
+           + active scenario consequences not suppressed
+
+CLASSIFY:
+  managed = provenance.origin in {OSNOVNI_PAKET, SCENARIO_PAKET}
+            AND provenance.module_id == selected module
+  protected = RUČNA_STAVKA, LEGACY, missing provenance,
+              or another module
+
+PLAN:
+  add each desired category absent from managed rows
+  remove each managed category not in desired
+  update provenance when desired ownership/version/rule identity changed
+  keep protected rows untouched
+  require user notice if any add/remove/update exists
+
+GUARDRAIL:
+  planner is pure and read-only
+  no database write, carrier write or runtime trigger occurs here
+  application requires a separate transaction, stock compensation and rollback
+```
+
+## 19. Unresolved owner queue
 
 ```text
 OWNER_PASS_REQUIRED:
