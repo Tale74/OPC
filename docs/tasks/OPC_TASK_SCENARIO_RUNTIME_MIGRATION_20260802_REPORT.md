@@ -34,6 +34,7 @@
 ## Safety
 
 - Base SHA: `97d6b99a07f754f7c5ee42c0f851720c91bfca6e`
+- Result SHA (pre-push): `8a43bc5a4d14ff4c61adeaceef3e69e23f9e3aed`
 - Pre-task backup:
   `C:\Projekti\OPC\OPC v.1\BACKUPS\OPC_v1_PRE_PHASE12_PREDMET_SCENARIO_APPLY_20260802.zip`
 - Backup SHA256:
