@@ -354,3 +354,17 @@ STAVKE, and does not change JSON/full-backup carriers. Existing PREDMET and IRIU
 behavior is therefore unchanged. The next separate task is the explicit
 PREDMET-side selection/application and safe stale-row reconciliation. Backup and
 restore marker: `docs/tasks/OPC_RESTORE_POINT_PHASE9_SCENARIO_UI_20260802.md`.
+
+## Current SCENARIO runtime migration — 2026-08-02
+
+The active SCENARIO path is now data-driven. Initial scenarios are loaded once
+from `assets/scenario_defaults.json` into the existing SCENARIO module tables;
+later edits are preserved. `ScenarioRuleEngine` evaluates all active rules,
+and `IriuRepository.syncScenarioRows` materializes the OSNOVNI PAKET and
+matching consequences. It removes only stale rows owned by SCENARIO and
+preserves RUČNA/LEGACY/other-module rows. The IRIU segment now calls this
+single synchronization path on open and when scenario criteria change; the
+former hardcoded lifecycle triggers are no longer invoked.
+
+Focused SCENARIO runtime tests pass. No build or runtime acceptance was done;
+those remain part of the cumulative runtime gate.

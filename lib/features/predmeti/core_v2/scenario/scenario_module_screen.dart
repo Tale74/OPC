@@ -30,9 +30,9 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   void initState() {
     super.initState();
     _repository = ScenarioModuleRepository(widget.podesavanjaRepository.db);
-    _moduleFuture = _repository.ensureModule();
+    _moduleFuture = _repository.ensureModuleAndDefaults();
     _katalogFuture = widget.podesavanjaRepository.getKatalogVidljive();
-    _definitionsFuture = _repository.getDefinitions();
+    _definitionsFuture = _moduleFuture.then((_) => _repository.getDefinitions());
   }
 
   Future<void> _izmeniPaket(

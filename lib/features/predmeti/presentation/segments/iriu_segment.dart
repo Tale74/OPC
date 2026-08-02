@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/app_config.dart';
-import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
@@ -13,24 +12,11 @@ import '../../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../../stanje_robe/data/stanje_robe_posledice_repository.dart';
 import '../../core_v2/models/iriu_truth_models.dart';
-import '../../core_v2/services/blok2_iriu_lifecycle_service.dart';
 import '../../core_v2/rules/iriu_truth_rules.dart';
-import '../../core_v2/services/mesto_smrti_iriu_lifecycle_service.dart';
 import '../../core_v2/services/predmet_iriu_truth_service.dart';
+import '../../core_v2/scenario/scenario_module_repository.dart';
 import '../../data/iriu_repository.dart';
 import 'iriu_row_tile.dart';
-
-bool shouldAutoAddLimeniUlozak(PredmetiData predmet) {
-  return IriuTruthRules.autoManagedBlok2Categories(
-    predmet: predmet,
-  ).contains(IriuK.limeniUlozak);
-}
-
-bool shouldAutoAddLemovanje(PredmetiData predmet) {
-  return IriuTruthRules.autoManagedBlok2Categories(
-    predmet: predmet,
-  ).contains(IriuK.lemovanje);
-}
 
 const String iriuStatusPreporuceno = 'PREPORUČENO';
 const double _iriuNarrowLayoutBreakpoint = 640;
@@ -69,8 +55,6 @@ class IriuSegment extends StatefulWidget {
 
 class _IriuSegmentState extends State<IriuSegment> {
   static const _predmetIriuTruthService = PredmetIriuTruthService();
-  static const _mestoSmrtiLifecycleService = MestoSmrtiIriuLifecycleService();
-  static const _blok2LifecycleService = Blok2IriuLifecycleService();
   Timer? _napomenaDebounce;
   late final TextEditingController _napomenaCtrl;
   late final StanjeRobePoslediceRepository _stockConsequencesRepo;
@@ -81,6 +65,7 @@ class _IriuSegmentState extends State<IriuSegment> {
   Map<int, IriuTruthRow> _cachedTruthRowsById = const {};
   final GlobalKey _initialFocusKey = GlobalKey();
   bool _initialFocusScheduled = false;
+  late final ScenarioModuleRepository _scenarioRepository;
 
   void _scheduleInitialFocus(List<IriuData> stavke) {
     final target = widget.initialFocusInterniNaziv;
@@ -268,9 +253,9 @@ class _IriuSegmentState extends State<IriuSegment> {
   void initState() {
     super.initState();
     _stockConsequencesRepo = StanjeRobePoslediceRepository(widget.iriuRepo.db);
+    _scenarioRepository = ScenarioModuleRepository(widget.iriuRepo.db);
     _napomenaCtrl = TextEditingController(text: widget.initialNapomena ?? '');
-    unawaited(_runMestoSmrtiLifecycleSync(widget.predmetData));
-    unawaited(_runBlok2LifecycleSync(widget.predmetData));
+    unawaited(_runScenarioSync(widget.predmetData));
   }
 
   @override
@@ -295,240 +280,35 @@ class _IriuSegmentState extends State<IriuSegment> {
       current: cur,
     );
 
-    if (promenjeniMestoSmrtiUslovi) {
-      unawaited(
-        _resolveConditionChangeConflicts(
-          previousPredmet: old,
-          currentPredmet: cur,
-        ),
-      );
-    }
-    if (promenjeniBlok2Uslovi) {
-      unawaited(
-        _resolveBlok2ConditionChangeConflicts(
-          previousPredmet: old,
-          currentPredmet: cur,
-        ),
-      );
-    }
-    if (!old.sahranaVanSrbije && cur.sahranaVanSrbije) _autoInsertVanSrbije();
-    if (!old.docekPosmrtnihOstataka && cur.docekPosmrtnihOstataka) {
-      _predloziStavke([IriuK.cargoTroskovi]);
-    }
-    if (old.tipGrobnogMesta != cur.tipGrobnogMesta) {
-      _onTipGrobnogMestaChanged(cur);
-    }
-    if (old.opelo != cur.opelo && cur.opelo == 'DA') {
-      _predloziStavke([IriuK.kompletZaOpelo]);
+    if (promenjeniMestoSmrtiUslovi ||
+        promenjeniBlok2Uslovi ||
+        old.sahranaVanSrbije != cur.sahranaVanSrbije ||
+        old.docekPosmrtnihOstataka != cur.docekPosmrtnihOstataka ||
+        old.opelo != cur.opelo) {
+      unawaited(_runScenarioSync(cur));
     }
   }
 
-  Future<void> _resolveConditionChangeConflicts({
-    required PredmetiData previousPredmet,
-    required PredmetiData currentPredmet,
-  }) async {
-    final storedRows = await widget.iriuRepo.getIriu(widget.predmetId);
-    if (!mounted) return;
-    final dismissedCategories = await widget.iriuRepo
-        .getDismissedMestoSmrtiCategories(widget.predmetId);
-    final plan = _mestoSmrtiLifecycleService.planForConditionChange(
-      previousPredmet: previousPredmet,
-      currentPredmet: currentPredmet,
-      storedRows: storedRows,
-      dismissedCategories: dismissedCategories,
-    );
-
-    for (final conflict in plan.conflicts) {
-      if (!mounted) return;
-      final decision = await _showConditionConflictDialog(conflict.row);
-      if (!mounted) return;
-      if (decision == _ConditionConflictDecision.remove &&
-          conflict.row.manualDeletionAllowed) {
-        await widget.iriuRepo.obrisiStavkuSaLifecycleMemorijom(
-          predmetId: widget.predmetId,
-          row: conflict.row.storedRow,
-          rememberManualDeletion: false,
-        );
-      }
-    }
-
-    await widget.iriuRepo.syncMestoSmrtiManagedRows(
+  Future<void> _runScenarioSync(PredmetiData predmet) async {
+    final module = await _scenarioRepository.ensureModuleAndDefaults();
+    final scenarios = await _scenarioRepository.getActiveDefinitions();
+    final result = await widget.iriuRepo.syncScenarioRows(
       predmetId: widget.predmetId,
-      predmet: currentPredmet,
-      lifecycleService: _mestoSmrtiLifecycleService,
+      predmet: predmet,
+      scenarios: scenarios,
+      osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
     );
-  }
-
-  Future<_ConditionConflictDecision?> _showConditionConflictDialog(
-    IriuTruthRow row,
-  ) {
-    final naziv = normalizeText(row.storedRow.nazivPrikaz).isNotEmpty
-        ? normalizeText(row.storedRow.nazivPrikaz)
-        : resolveDisplayLabel(
-            internalName: row.storedRow.interniNaziv,
-            fallbackDisplayLabels: IriuK.naziviPrikaz,
-          );
-    return showDialog<_ConditionConflictDecision>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Uslov se promenio'),
-        content: Text(
-          'Stavka "$naziv" više ne odgovara trenutnim uslovima predmeta.\n\n'
-          'Možete da je zadržite kao red koji se ne prikazuje i odlučite kasnije, '
-          'ili da je sada uklonite.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx, _ConditionConflictDecision.keep),
-            child: const Text('ZADRŽI'),
-          ),
-          FilledButton(
-            onPressed: row.manualDeletionAllowed
-                ? () => Navigator.pop(ctx, _ConditionConflictDecision.remove)
-                : null,
-            child: const Text('UKLONI'),
-          ),
-        ],
+    if (!mounted || !result.changed) return;
+    final added = result.addedCategories.length;
+    final removed = result.removedCategories.length;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Ponuda je usklađena: +$added / −$removed STAVKI.'),
       ),
     );
   }
 
-  Future<void> _runMestoSmrtiLifecycleSync(PredmetiData predmet) {
-    return widget.iriuRepo.syncMestoSmrtiManagedRows(
-      predmetId: widget.predmetId,
-      predmet: predmet.copyWith(
-        mestoSmrti: IriuTruthRules.normalizeMestoSmrti(predmet.mestoSmrti),
-      ),
-      lifecycleService: _mestoSmrtiLifecycleService,
-    );
-  }
-
-  Future<void> _resolveBlok2ConditionChangeConflicts({
-    required PredmetiData previousPredmet,
-    required PredmetiData currentPredmet,
-  }) async {
-    final storedRows = await widget.iriuRepo.getIriu(widget.predmetId);
-    if (!mounted) return;
-    final dismissedCategories = await widget.iriuRepo
-        .getDismissedBlok2Categories(widget.predmetId);
-    final plan = _blok2LifecycleService.planForConditionChange(
-      previousPredmet: previousPredmet,
-      currentPredmet: currentPredmet,
-      storedRows: storedRows,
-      dismissedCategories: dismissedCategories,
-    );
-
-    for (final conflict in plan.conflicts) {
-      if (!mounted) return;
-      final decision = await _showConditionConflictDialog(conflict.row);
-      if (!mounted) return;
-      if (decision == _ConditionConflictDecision.remove &&
-          conflict.row.manualDeletionAllowed) {
-        await widget.iriuRepo.obrisiStavkuSaLifecycleMemorijom(
-          predmetId: widget.predmetId,
-          row: conflict.row.storedRow,
-          rememberManualDeletion: false,
-        );
-      }
-    }
-
-    for (final internalName in plan.additionsRequiringConfirmation) {
-      if (!mounted) return;
-      final decision = await _showConditionAdditionDialog(internalName);
-      if (!mounted) return;
-      if (decision == _ConditionAdditionDecision.add) {
-        await _dodajUpravljanuBlok2Stavku(internalName);
-      } else {
-        await widget.iriuRepo.rememberBlok2ManagedDismissal(
-          predmetId: widget.predmetId,
-          interniNaziv: internalName,
-        );
-      }
-    }
-  }
-
-  Future<void> _runBlok2LifecycleSync(PredmetiData predmet) {
-    return widget.iriuRepo.syncBlok2ManagedRows(
-      predmetId: widget.predmetId,
-      predmet: predmet.copyWith(
-        mestoSmrti: IriuTruthRules.normalizeMestoSmrti(predmet.mestoSmrti),
-      ),
-      lifecycleService: _blok2LifecycleService,
-    );
-  }
-
-  Future<_ConditionAdditionDecision?> _showConditionAdditionDialog(
-    String internalName,
-  ) {
-    final label = resolveDisplayLabel(
-      internalName: internalName,
-      fallbackDisplayLabels: IriuK.naziviPrikaz,
-    );
-    return showDialog<_ConditionAdditionDecision>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('POTVRDA IRiU DODAVANJA'),
-        content: Text(
-          'Promena uslova predmeta sada zahteva stavku "$label". '
-          'Možete da je dodate u IRiU ili da je ne dodate sada.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(_ConditionAdditionDecision.skip),
-            child: const Text('NE DODAJ'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(_ConditionAdditionDecision.add),
-            child: const Text('DODAJ'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _dodajUpravljanuBlok2Stavku(String internalName) async {
-    final red = await widget.iriuRepo.redosledPosleKategorije(
-      widget.predmetId,
-      internalName,
-    );
-    await widget.iriuRepo.dodajStavku(
-      predmetId: widget.predmetId,
-      interniNaziv: internalName,
-      nazivPrikaz: resolveDisplayLabel(
-        internalName: internalName,
-        fallbackDisplayLabels: IriuK.naziviPrikaz,
-      ),
-      redosled: red,
-    );
-  }
-
-  /// Opšti helper - predlaže listu stavki po internom nazivu (idempotentno).
-  Future<void> _predloziStavke(List<String> intNazivi) async {
-    for (final n in intNazivi) {
-      final red = await widget.iriuRepo.sledeciredosled(widget.predmetId);
-      await widget.iriuRepo.predloziAkoNema(
-        predmetId: widget.predmetId,
-        interniNaziv: n,
-        nazivPrikaz: resolveDisplayLabel(
-          internalName: n,
-          fallbackDisplayLabels: IriuK.naziviPrikaz,
-        ),
-        redosled: red,
-      );
-    }
-  }
-
-  Future<void> _autoInsertVanSrbije() => _predloziStavke([
-    IriuK.medjunarodniPrevoz,
-    IriuK.medjunarodnaDocumentacija,
-    IriuK.balsamovanje,
-  ]);
-
-  Future<void> _onTipGrobnogMestaChanged(PredmetiData _) async {}
-
+  // ignore: unused_element
   // Dodaj iz kataloga
 
   Future<void> _dodajIzKataloga() async {
@@ -907,10 +687,6 @@ class _IriuSegmentState extends State<IriuSegment> {
     );
   }
 }
-
-enum _ConditionConflictDecision { keep, remove }
-
-enum _ConditionAdditionDecision { skip, add }
 
 // Katalog picker dijalog
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
@@ -6,6 +8,29 @@ import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_reposi
 import 'test_bootstrap.dart';
 
 void main() {
+  test('SCENARIO module seeds defaults as editable data', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final repository = ScenarioModuleRepository(
+      db,
+      loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
+    );
+
+    await repository.ensureModuleAndDefaults();
+    final definitions = await repository.getDefinitions();
+
+    expect(definitions, isNotEmpty);
+    expect(
+      definitions.where((item) => item.jePodrazumevani).map((item) => item.id),
+      containsAll([
+        'MESTO_SMRTI_BLOK',
+        'MESTO_SMRTI_BOLNICA',
+        'OPREMA_PREMA_USLOVU',
+        'LOKALNO_GROBLJE',
+      ]),
+    );
+  });
+
   test('SCENARIO module persists the base package and a user rule', () async {
     final db = createTestDatabase();
     addTearDown(db.close);

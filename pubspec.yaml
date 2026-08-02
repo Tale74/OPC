@@ -64,6 +64,7 @@ flutter:
 
   assets:
     - assets/simboli/
+    - assets/scenario_defaults.json
 
   fonts:
     - family: NotoSans

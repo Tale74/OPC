@@ -6,6 +6,8 @@ import '../core_v2/rules/iriu_truth_rules.dart';
 import '../core_v2/services/blok2_iriu_lifecycle_service.dart';
 import '../core_v2/services/iriu_ordering_service.dart';
 import '../core_v2/services/mesto_smrti_iriu_lifecycle_service.dart';
+import '../core_v2/scenario/scenario_contract.dart';
+import '../core_v2/scenario/scenario_rule_engine.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
@@ -36,6 +38,91 @@ class IriuRepository {
             ..where((i) => i.predmetId.equals(predmetId))
             ..orderBy([(i) => OrderingTerm.asc(i.redosled)]))
           .watch();
+
+  /// Sinhronizuje samo stavke koje je kreirao SCENARIO modul.
+  /// Ručne, legacy i stavke drugih modula se nikada ne uklanjaju.
+  Future<ScenarioSyncResult> syncScenarioRows({
+    required int predmetId,
+    required PredmetiData predmet,
+    required List<ScenarioDefinition> scenarios,
+    required Set<String> osnovniPaket,
+  }) async {
+    final evaluation = const ScenarioRuleEngine().evaluate(
+      scenarios: scenarios,
+      predmet: predmet,
+      osnovniPaket: osnovniPaket,
+    );
+    final rows = await getIriu(predmetId);
+    final provenance = await (_db.select(_db.iriuProvenance)).get();
+    final provenanceByIriuId = {
+      for (final item in provenance) item.iriuId: item,
+    };
+    final scenarioRows = rows
+        .where((row) {
+          final item = provenanceByIriuId[row.id];
+          return item?.moduleId == 'scenario' &&
+              (item?.origin == 'OSNOVNI_PAKET' ||
+                  item?.origin == 'SCENARIO_PAKET');
+        })
+        .toList(growable: false);
+    final existingNames = rows.map((row) => row.interniNaziv).toSet();
+    final desired = evaluation.effectiveCategories;
+    final removals = scenarioRows
+        .where((row) => !desired.contains(row.interniNaziv))
+        .toList(growable: false);
+    final additions = desired.difference(existingNames).toList()..sort();
+
+    for (final row in removals) {
+      await obrisiStavkuSaLifecycleMemorijom(
+        predmetId: predmetId,
+        row: row,
+        rememberManualDeletion: false,
+      );
+    }
+    for (final internalName in additions) {
+      final id = await _insertStavka(
+        predmetId: predmetId,
+        interniNaziv: internalName,
+        nazivPrikaz: IriuK.naziviPrikaz[internalName] ?? internalName,
+        redosled: await sledeciredosled(predmetId),
+      );
+      final isBase = evaluation.baseCategories.contains(internalName);
+      final consequence = evaluation.scenarioCategories.firstWhere(
+        (item) => item.katalogCategoryInternalName == internalName,
+        orElse: () => const ScenarioConsequence(
+          katalogCategoryInternalName: '',
+          action: ScenarioConsequenceAction.recommended,
+        ),
+      );
+      await _db
+          .into(_db.iriuProvenance)
+          .insertOnConflictUpdate(
+            IriuProvenanceCompanion.insert(
+              iriuId: Value(id),
+              origin: isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET',
+              moduleId: const Value('scenario'),
+              scenarioId: Value(
+                isBase || evaluation.matchedScenarioIds.isEmpty
+                    ? null
+                    : evaluation.matchedScenarioIds.first,
+              ),
+              scenarioVersion: Value(isBase ? null : 1),
+              ruleId: Value(
+                isBase ? null : consequence.katalogCategoryInternalName,
+              ),
+              createdAt: DateTime.now().toUtc().toIso8601String(),
+            ),
+          );
+    }
+    if (removals.isNotEmpty || additions.isNotEmpty) {
+      await _rebuildBusinessOrdering(predmetId);
+    }
+    return ScenarioSyncResult(
+      matchedScenarioIds: evaluation.matchedScenarioIds,
+      addedCategories: additions,
+      removedCategories: removals.map((row) => row.interniNaziv).toList(),
+    );
+  }
 
   Future<List<IriuData>> getIriu(int predmetId) =>
       (_db.select(_db.iriu)
@@ -85,8 +172,9 @@ class IriuRepository {
     String kom = '1',
     double iznos = 0.0,
     int redosled = 0,
-  }) =>
-      _db.into(_db.iriu).insert(
+  }) => _db
+      .into(_db.iriu)
+      .insert(
         IriuCompanion(
           predmetId: Value(predmetId),
           katalogStableArticleId: Value(katalogStableArticleId),
@@ -109,8 +197,9 @@ class IriuRepository {
     required String? katalogStableArticleId,
     String? interniNaziv,
   }) async {
-    final nextStableArticleId =
-        _normalizeNullableStableArticleId(katalogStableArticleId);
+    final nextStableArticleId = _normalizeNullableStableArticleId(
+      katalogStableArticleId,
+    );
     final nextInterniNaziv = interniNaziv?.trim();
     final normalizedInterniNaziv =
         nextInterniNaziv == null || nextInterniNaziv.isEmpty
@@ -120,13 +209,14 @@ class IriuRepository {
     await _db.transaction(() async {
       if (nextStableArticleId != null &&
           _isCoveredStockCategory(row.interniNaziv)) {
-        final current = await (_db.select(_db.iriu)
-              ..where((i) => i.id.equals(row.id)))
-            .getSingleOrNull();
+        final current = await (_db.select(
+          _db.iriu,
+        )..where((i) => i.id.equals(row.id))).getSingleOrNull();
 
         if (current != null && _isCoveredStockCategory(current.interniNaziv)) {
-          final previousStableArticleId =
-              _normalizeNullableStableArticleId(current.katalogStableArticleId);
+          final previousStableArticleId = _normalizeNullableStableArticleId(
+            current.katalogStableArticleId,
+          );
           final lifecycleService = _stanjeRobeLifecycleService();
 
           if (previousStableArticleId == null) {
@@ -166,8 +256,9 @@ class IriuRepository {
   }
 
   Future<void> obrisiStavku(int id) async {
-    final row = await (_db.select(_db.iriu)..where((i) => i.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.iriu,
+    )..where((i) => i.id.equals(id))).getSingleOrNull();
     await (_db.delete(_db.iriu)..where((i) => i.id.equals(id))).go();
     if (row != null) {
       await _rebuildBusinessOrdering(row.predmetId);
@@ -200,14 +291,14 @@ class IriuRepository {
     required String selectedNazivSnapshot,
     required double selectedIznosSnapshot,
   }) async {
-    final stableArticleId =
-        _normalizeNullableStableArticleId(katalogStableArticleId);
+    final stableArticleId = _normalizeNullableStableArticleId(
+      katalogStableArticleId,
+    );
     if (stableArticleId == null || !_isCoveredStockCategory(interniNaziv)) {
       return;
     }
 
-    await _stanjeRobeLifecycleService()
-        .applySelectionEffectForCoveredCategory(
+    await _stanjeRobeLifecycleService().applySelectionEffectForCoveredCategory(
       predmetId: predmetId,
       iriuId: iriuId,
       kategorija: interniNaziv,
@@ -227,10 +318,10 @@ class IriuRepository {
 
     await _stanjeRobeLifecycleService()
         .restoreSelectionEffectForCoveredCategory(
-      predmetId: row.predmetId,
-      iriuId: row.id,
-      kategorija: row.interniNaziv,
-    );
+          predmetId: row.predmetId,
+          iriuId: row.id,
+          kategorija: row.interniNaziv,
+        );
   }
 
   bool _isCoveredStockCategory(String interniNaziv) {
@@ -246,13 +337,13 @@ class IriuRepository {
 
   /// Proverava da li stavka sa datim internim nazivom već postoji na predmetu.
   Future<bool> stavkaPostoji(int predmetId, String interniNaziv) async {
-    final res = await (_db.select(_db.iriu)
-          ..where(
-            (i) =>
-                i.predmetId.equals(predmetId) &
-                i.interniNaziv.equals(interniNaziv),
-          ))
-        .get();
+    final res =
+        await (_db.select(_db.iriu)..where(
+              (i) =>
+                  i.predmetId.equals(predmetId) &
+                  i.interniNaziv.equals(interniNaziv),
+            ))
+            .get();
     return res.isNotEmpty;
   }
 
@@ -276,12 +367,11 @@ class IriuRepository {
 
   /// Briše stavku po internom nazivu (za uklanjanje auto-predloženih).
   Future<void> obrisiPoNazivu(int predmetId, String interniNaziv) async {
-    await (_db.delete(_db.iriu)
-          ..where(
-            (i) =>
-                i.predmetId.equals(predmetId) &
-                i.interniNaziv.equals(interniNaziv),
-          ))
+    await (_db.delete(_db.iriu)..where(
+          (i) =>
+              i.predmetId.equals(predmetId) &
+              i.interniNaziv.equals(interniNaziv),
+        ))
         .go();
     await _rebuildBusinessOrdering(predmetId);
   }
@@ -296,7 +386,9 @@ class IriuRepository {
   /// Ubacuje novi red odmah ispod poslednjeg reda iste kategorije.
   /// Ako kategorija ne postoji — dodaje na kraj.
   Future<int> redosledPosleKategorije(
-      int predmetId, String interniNaziv) async {
+    int predmetId,
+    String interniNaziv,
+  ) async {
     final items = await getIriu(predmetId);
     if (items.isEmpty) return 0;
 
@@ -305,20 +397,20 @@ class IriuRepository {
       return items.map((i) => i.redosled).reduce((a, b) => a > b ? a : b) + 1;
     }
 
-    final katMax =
-        same.map((i) => i.redosled).reduce((a, b) => a > b ? a : b);
+    final katMax = same.map((i) => i.redosled).reduce((a, b) => a > b ? a : b);
 
     // Pomeri sve redove iza katMax za +1
     for (final row in items.where((i) => i.redosled > katMax)) {
       await azurirajStavku(
-          row.id, IriuCompanion(redosled: Value(row.redosled + 1)));
+        row.id,
+        IriuCompanion(redosled: Value(row.redosled + 1)),
+      );
     }
     return katMax + 1;
   }
 
   /// Sve IRIU stavke — za izveštaje.
-  Future<List<IriuData>> getSveIriu() =>
-      _db.select(_db.iriu).get();
+  Future<List<IriuData>> getSveIriu() => _db.select(_db.iriu).get();
 
   Future<Set<String>> getDismissedMestoSmrtiCategories(int predmetId) async {
     return _getDismissedCategories(
@@ -338,22 +430,22 @@ class IriuRepository {
     required int predmetId,
     required String scopeKey,
   }) async {
-    final result = await _db.customSelect(
-      '''
+    final result = await _db
+        .customSelect(
+          '''
         SELECT interni_naziv
         FROM iriu_lifecycle_decisions
         WHERE predmet_id = ? AND scope_key = ? AND decision_key = ?
       ''',
-      variables: [
-        Variable<int>(predmetId),
-        Variable<String>(scopeKey),
-        const Variable<String>(_manualDeletionDecisionKey),
-      ],
-      readsFrom: {},
-    ).get();
-    return result
-        .map((row) => row.read<String>('interni_naziv'))
-        .toSet();
+          variables: [
+            Variable<int>(predmetId),
+            Variable<String>(scopeKey),
+            const Variable<String>(_manualDeletionDecisionKey),
+          ],
+          readsFrom: {},
+        )
+        .get();
+    return result.map((row) => row.read<String>('interni_naziv')).toSet();
   }
 
   Future<void> syncMestoSmrtiManagedRows({
@@ -362,8 +454,9 @@ class IriuRepository {
     required MestoSmrtiIriuLifecycleService lifecycleService,
   }) async {
     final storedRows = await getIriu(predmetId);
-    final dismissedCategories =
-        await getDismissedMestoSmrtiCategories(predmetId);
+    final dismissedCategories = await getDismissedMestoSmrtiCategories(
+      predmetId,
+    );
     final plan = lifecycleService.planForCurrentState(
       predmet: predmet,
       storedRows: storedRows,
@@ -484,12 +577,7 @@ class IriuRepository {
         DELETE FROM iriu_lifecycle_decisions
         WHERE predmet_id = ? AND interni_naziv = ? AND scope_key = ? AND decision_key = ?
       ''',
-      [
-        predmetId,
-        interniNaziv,
-        scopeKey,
-        _manualDeletionDecisionKey,
-      ],
+      [predmetId, interniNaziv, scopeKey, _manualDeletionDecisionKey],
     );
   }
 
@@ -502,4 +590,19 @@ class IriuRepository {
     }
     return null;
   }
+}
+
+class ScenarioSyncResult {
+  const ScenarioSyncResult({
+    required this.matchedScenarioIds,
+    required this.addedCategories,
+    required this.removedCategories,
+  });
+
+  final List<String> matchedScenarioIds;
+  final List<String> addedCategories;
+  final List<String> removedCategories;
+
+  bool get changed =>
+      addedCategories.isNotEmpty || removedCategories.isNotEmpty;
 }

@@ -692,3 +692,33 @@ OWNER_PASS_REQUIRED:
 
 DO_NOT_IMPLEMENT before owner decisions are complete
 ```
+
+## 21. SCENARIO runtime migration (implemented vertical slice)
+
+```text
+SCENARIO_DEFAULTS = editable data asset
+  seed only when SCENARIO module has no definitions
+  never overwrite later user changes
+
+SCENARIO_MODULE:
+  OSNOVNI_PAKET = user-selected KATALOG categories
+  ACTIVE_RULES = definitions marked as podrazumevani and not inactive
+  each rule contains condition tree + consequence STAVKE
+
+WHEN IRIU opens or a scenario criterion changes:
+  load ACTIVE_RULES from SCENARIO module
+  evaluate all matching rules against current PREDMET
+  desired = OSNOVNI_PAKET + matching consequence categories
+  remove suppressed categories
+
+RECONCILE through existing IriuRepository:
+  add missing desired categories and record provenance as SCENARIO module
+  remove only rows owned by SCENARIO module whose category is stale
+  preserve RUČNA, LEGACY, unknown and other-module rows
+  keep existing PREDMET → IRIU → STANJE ROBE bridge unchanged
+  show user notice when additions or stale removals occurred
+
+NO_SCENARIO_RUNTIME_RULES:
+  IRIU segment does not invoke the former hardcoded lifecycle triggers
+  defaults are data, not active business policy in Dart code
+```

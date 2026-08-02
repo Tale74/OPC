@@ -1,0 +1,58 @@
+[
+  {
+    "id": "MESTO_SMRTI_BLOK",
+    "version": 1,
+    "naziv": "Mesto smrti – osnovni postupak",
+    "jePodrazumevani": true,
+    "condition": {"kind":"all","children":[{"kind":"criterion","field":"mestoSmrti","operator":"inSet","values":["STAN","DOM ZA STARE","PRIVATNA BOLNICA","ULICA / JAVNO MESTO","DRUGO"]}]},
+    "consequences": ["HLADNJACA","SPREMANJE_POKOJNIKA","IZNOSENJE","PREVOZ_DO_HLADNJACE","TRANSPORTNA_VRECA","PREVOZ_DO_GROBLJA"]
+  },
+  {
+    "id": "MESTO_SMRTI_BOLNICA",
+    "version": 1,
+    "naziv": "Bolnica",
+    "jePodrazumevani": true,
+    "condition": {"kind":"criterion","field":"mestoSmrti","operator":"equals","values":["BOLNICA"]},
+    "consequences": ["PREVOZ_DO_GROBLJA"]
+  },
+  {
+    "id": "OPREMA_PREMA_USLOVU",
+    "version": 1,
+    "naziv": "Oprema prema uslovu",
+    "jePodrazumevani": true,
+    "condition": {"kind":"all","children":[{"kind":"criterion","field":"vrstaCeremonije","operator":"notInSet","values":["KREMACIJA","KREMACIJA_EKSPRES"]},{"kind":"any","children":[{"kind":"criterion","field":"uzrokSmrti","operator":"inSet","values":["NASILNA","ZARAZNA","NEDEFINISANA"]},{"kind":"criterion","field":"tipGrobnogMesta","operator":"equals","values":["GROBNICA"]}]}]},
+    "consequences": ["LIMENI_ULOZAK","LEMOVANJE"]
+  },
+  {
+    "id": "LOKALNO_GROBLJE",
+    "version": 1,
+    "naziv": "Lokalno groblje",
+    "jePodrazumevani": true,
+    "condition": {"kind":"criterion","field":"tipGroblja","operator":"equals","values":["LOKALNO"]},
+    "consequences": ["PREVOZ_SPROVODA"]
+  },
+  {
+    "id": "SAHRANA_VAN_SRBIJE",
+    "version": 1,
+    "naziv": "Sahrana van Srbije",
+    "jePodrazumevani": true,
+    "condition": {"kind":"criterion","field":"sahranaVanSrbije","operator":"isTrue","values":[]},
+    "consequences": ["MEDJUNARODNI_PREVOZ","MEDJUNARODNA_DOKUMENTACIJA","BALSAMOVANJE"]
+  },
+  {
+    "id": "DOCEK_POSMRTNIH_OSTATAKA",
+    "version": 1,
+    "naziv": "Doček posmrtnih ostataka",
+    "jePodrazumevani": true,
+    "condition": {"kind":"criterion","field":"docekPosmrtnihOstataka","operator":"isTrue","values":[]},
+    "consequences": ["CARGO_TROSKOVI"]
+  },
+  {
+    "id": "OPELO",
+    "version": 1,
+    "naziv": "Opelo",
+    "jePodrazumevani": true,
+    "condition": {"kind":"criterion","field":"opelo","operator":"equals","values":["DA"]},
+    "consequences": ["KOMPLET_ZA_OPELO"]
+  }
+]

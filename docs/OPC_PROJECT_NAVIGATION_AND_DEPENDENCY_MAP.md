@@ -366,3 +366,18 @@ ScenarioModuleScreen
 Boundary: this screen defines future choices only. It does not rewrite
 PREDMET, IRIU or backup data. PREDMET application and stale-row reconciliation
 are the next separately gated dependency.
+
+## Phase 12 — SCENARIO runtime migration
+
+```text
+assets/scenario_defaults.json
+  → ScenarioModuleRepository.ensureModuleAndDefaults()
+  → scenario_modules / scenario_definitions
+  → ScenarioRuleEngine (all active rules)
+  → IriuRepository.syncScenarioRows()
+  → IRIU rows with SCENARIO provenance
+```
+
+Runtime applies only SCENARIO-owned additions and stale removals. RUČNA,
+LEGACY, unknown and other-module rows remain protected. The existing
+PREDMET → IRIU → STANJE ROBE path is unchanged.
