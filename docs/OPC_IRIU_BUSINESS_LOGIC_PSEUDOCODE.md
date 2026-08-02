@@ -648,7 +648,32 @@ GUARDRAIL:
   STANJE ROBE reacts only when its own operational toggle is enabled
 ```
 
-## 19. Unresolved owner queue
+## 19. PREDMET-side SCENARIO application gate (Phase 11)
+
+```text
+PREPARE_SCENARIO_APPLICATION:
+  require PREDMET.status == OTVOREN
+  require assignment.module_id == reconciliation.module_id
+  require assignment.scenario_id == reconciliation.scenario_id
+  require assignment.scenario_version == reconciliation.scenario_version
+
+  IF current_snapshot_hash == assignment.snapshot_hash
+     AND reconciliation has no changes:
+       return NO_OP
+  ELSE:
+       return PLAN_REQUIRING_EXPLICIT_USER_CONFIRMATION
+
+DO_NOT_WRITE here:
+  PREDMET snapshot
+  IRIU rows
+  PARTE, PODSETNIK or STANJE ROBE state
+
+FUTURE_COMMIT_OWNER:
+  PREDMET transaction commits snapshot and IRIU consequences
+  existing PREDMET → IRIU integration remains the only downstream path
+```
+
+## 20. Unresolved owner queue
 
 ```text
 OWNER_PASS_REQUIRED:

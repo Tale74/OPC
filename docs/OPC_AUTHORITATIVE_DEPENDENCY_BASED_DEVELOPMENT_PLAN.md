@@ -1605,3 +1605,15 @@ next separately gated task may implement the PREDMET application transaction
 only after proving eligible-PREDMET confirmation, retry/rollback and unchanged
 locked-PREDMET behavior. It must preserve the existing PREDMET → IRIU flow
 without introducing direct SCENARIO → STANJE ROBE coupling.
+
+## Phase 11 PREDMET-side SCENARIO application gate
+
+Phase 11 adds a pure gate before any repository transaction. It accepts only
+an `OTVOREN` PREDMET, verifies that the selected assignment and reconciliation
+plan carry the same module/scenario/version identity, requires explicit user
+confirmation for a new or changed assignment, and returns a no-op for an
+unchanged snapshot with no consequence changes.
+
+The gate writes no module state. The future commit belongs to PREDMET and must
+preserve the existing PREDMET → IRIU path without direct SCENARIO coupling to
+PARTE, PODSETNIK or STANJE ROBE.

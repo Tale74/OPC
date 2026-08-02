@@ -265,6 +265,20 @@ the existing PREDMET → IRIU path and must not call STANJE ROBE directly.
 STANJE ROBE remains an independent module whose own toggle controls its
 existing IRIU-backed lifecycle.
 
+Phase 11 adds the pure PREDMET-side application gate at
+`core_v2/scenario/predmet_scenario_application_contract.dart`:
+
+```text
+PREDMET status + selected snapshot + reconciliation plan
+  → verify OTVOREN and matching module/scenario/version
+  → require explicit confirmation for a new/changed assignment
+  → return no-op for the same snapshot with no consequence changes
+  → (future PREDMET-owned transaction)
+```
+
+No module is written by this gate. The future transaction must commit through
+PREDMET and retain the existing IRIU relationship.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch

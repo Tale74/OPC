@@ -283,6 +283,18 @@ Phase 10 focused tests pass 4/4 and full `flutter analyze --no-pub` is clean.
 Windows/Android build and runtime acceptance remain deferred to the cumulative
 runtime gate.
 
+## Current Phase 11 PREDMET-side SCENARIO application contract — 2026-08-02
+
+Phase 11 adds a pure PREDMET-side application gate. Only an `OTVOREN` PREDMET
+can receive an assignment; the assignment identity must match the
+reconciliation plan; and a new/changed assignment requires explicit user
+confirmation. Same snapshot plus no consequence changes is a no-op.
+
+This is preparation only: no snapshot, IRIU, PARTE, PODSETNIK, STANJE ROBE or
+carrier write is performed. The eventual write belongs to PREDMET and must
+preserve the existing PREDMET → IRIU path without direct SCENARIO coupling to
+other modules.
+
 ## Current Phase 7 scenario carrier/parity audit — 2026-08-02
 
 The read-only carrier/parity audit is complete on
