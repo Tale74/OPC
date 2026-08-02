@@ -208,6 +208,15 @@ Phase 5 invariant hardening is recorded in
 It closes only the schema-1 constructor/normalization boundary and preserves
 the golden payload/hash; it does not open any runtime data path.
 
+Phase 6 adds the pure, versioned scenario transfer envelope recorded in
+`docs/tasks/OPC_TASK_PHASE6_SCENARIO_TRANSFER_ENVELOPE_20260802_REPORT.md`.
+The envelope preserves the schema-1 snapshot/hash verbatim, carries explicit
+provenance coverage and deterministic provenance ownership, and rejects unknown
+or future fields, duplicate IDs, malformed nested data and hash tampering. It
+does not choose a single-PREDMET or full-backup carrier and is not wired to JSON,
+Drift, repository, runtime, reconciliation, UI or PODSETNIK. The next dependency
+is an owner-gated carrier/schema/parity design with atomic destination validation.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch

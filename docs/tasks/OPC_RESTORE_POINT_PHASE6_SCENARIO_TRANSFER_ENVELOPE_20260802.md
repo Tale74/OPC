@@ -35,6 +35,7 @@ Phase 5 report and project map were read before source work.
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
-Manifest compliance checked: pending task closure.
+Manifest compliance checked: YES. Focused, combined and full tests, analyze,
+UTF-8/no-BOM and diff gates passed; no runtime/build path was opened.
 
-PASS / NOT PASS: pending task closure.
+PASS / NOT PASS: PASS.

@@ -834,3 +834,25 @@ Implementation/pseudocode aligned: yes.
   Drift, stale reconciliation, runtime, SCENARIO UI or PODSETNIK.
 - Next gate: versioned transfer envelope with explicit legacy compatibility and
   Windows/Android parity tests before any materialization.
+
+## OPC-PSEUDO-INDEX-055H - Phase 6 scenario transfer envelope
+
+```text
+INPUT: schema-1 ScenarioAssignmentSnapshot plus explicit provenance coverage
+       and zero or more STAVKA provenance records.
+GUARD: envelope kind and envelopeVersion are exact; hashAlgorithm=SHA-256 and
+       hashScope=PAYLOAD_CANONICAL_JSON; payload keys are strict; nested
+       snapshot schema/hash are validated verbatim; provenance IDs are unique,
+       sorted and ownership-compatible with the snapshot; UNAVAILABLE coverage
+       carries no rows; COMPLETE is explicit even when the list is empty.
+OUTPUT: deterministic envelope map and contentHash, or fail closed before any
+        destination mutation.
+LEGACY: schema-1 raw snapshots enter only through an explicit adapter; no silent
+        upgrade. jsonDecode cannot detect duplicate raw JSON keys; a future
+        carrier must add a raw-parser duplicate-key gate if required.
+BOUNDARY: no carrier choice, root JSON/backup schema bump, ID remapping,
+          conflict policy, signing/encryption, repository, Drift, runtime,
+          reconciliation, UI or PODSETNIK behavior.
+```
+
+Evidence: `docs/tasks/OPC_TASK_PHASE6_SCENARIO_TRANSFER_ENVELOPE_20260802_REPORT.md`.

@@ -232,3 +232,28 @@ This slice changed no Drift tables, JSON/backup lanes, repository, runtime
 materialization, reconciliation, UI or PODSETNIK behavior. The next dependency
 is the separately gated versioned scenario/JSON/backup envelope and parity
 contract.
+
+## Current Phase 6 scenario transfer envelope — 2026-08-02
+
+The pure transfer-envelope contract is technically complete on
+`task/OPC-PHASE6-SCENARIO-TRANSFER-ENVELOPE`. It frames the proven schema-1
+`ScenarioAssignmentSnapshot` verbatim, carries explicitly versioned and
+deterministically ordered STAVKA provenance, distinguishes `UNAVAILABLE` from
+`COMPLETE` provenance coverage, validates scenario ownership, and protects the
+canonical payload with declared SHA-256 metadata and a fixed envelope hash.
+Unknown/future fields and versions, duplicate provenance IDs, contradictory
+ownership, malformed nested data and tampered hashes fail closed. A legacy
+schema-1 snapshot can be adapted only through the explicit adapter; there is no
+implicit upgrade. JSON decoding documents the duplicate-key limitation of
+`jsonDecode`, with a raw-parser gate reserved for a future carrier.
+
+Focused envelope tests pass 12/12, the combined scenario contract set passes
+43/43, and full analyze is clean. This is platform-neutral contract evidence,
+not Windows/Android runtime acceptance. No existing JSON/full-backup path,
+repository, Drift, runtime materialization, reconciliation, UI or PODSETNIK
+behavior changed. Future integration remains owner-gated for carrier placement,
+root schema bumps and legacy parity, destination PREDMET conflict/ID
+reassociation, manual STAVKA transfer scope, and signing/encryption policy.
+
+Phase 6 is recorded in
+`docs/tasks/OPC_TASK_PHASE6_SCENARIO_TRANSFER_ENVELOPE_20260802_REPORT.md`.
