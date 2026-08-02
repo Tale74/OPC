@@ -44,12 +44,16 @@ class ScenarioAssignmentSnapshot {
     required this.moduleId,
     required this.scenarioId,
     required this.scenarioVersion,
-    required this.scenario,
+    required ScenarioDefinition scenario,
     required Set<String> osnovniPaket,
     required this.assignedAt,
     required this.snapshotHash,
-    this.assignedByKorisnikId,
-  }) : osnovniPaket = Set<String>.unmodifiable(osnovniPaket);
+    int? assignedByKorisnikId,
+  }) : scenario = _freezeScenario(scenario),
+       osnovniPaket = Set<String>.unmodifiable(osnovniPaket),
+       assignedByKorisnikId = assignedByKorisnikId == null
+           ? null
+           : _requiredPositiveInt(assignedByKorisnikId, 'assignedByKorisnikId');
 
   factory ScenarioAssignmentSnapshot.create({
     required String moduleId,
@@ -60,6 +64,11 @@ class ScenarioAssignmentSnapshot {
     required String assignedAt,
     int? assignedByKorisnikId,
   }) {
+    if (scenario.id != scenarioId) {
+      throw const ScenarioPersistenceValidationException(
+        'Scenario snapshot ID does not match its definition.',
+      );
+    }
     final draft = ScenarioAssignmentSnapshot(
       moduleId: _requiredText(moduleId, 'moduleId'),
       scenarioId: _requiredText(scenarioId, 'scenarioId'),
@@ -68,7 +77,9 @@ class ScenarioAssignmentSnapshot {
       osnovniPaket: _validatedCategories(osnovniPaket, 'osnovniPaket'),
       assignedAt: _requiredText(assignedAt, 'assignedAt'),
       snapshotHash: '',
-      assignedByKorisnikId: assignedByKorisnikId,
+      assignedByKorisnikId: assignedByKorisnikId == null
+          ? null
+          : _requiredPositiveInt(assignedByKorisnikId, 'assignedByKorisnikId'),
     );
     return ScenarioAssignmentSnapshot(
       moduleId: draft.moduleId,
@@ -84,6 +95,17 @@ class ScenarioAssignmentSnapshot {
 
   factory ScenarioAssignmentSnapshot.fromJsonMap(Map<String, dynamic> json) {
     _assertSchema(json);
+    _assertAllowedKeys(json, const {
+      'schemaVersion',
+      'moduleId',
+      'scenarioId',
+      'scenarioVersion',
+      'scenario',
+      'osnovniPaket',
+      'assignedAt',
+      'assignedByKorisnikId',
+      'snapshotHash',
+    }, 'scenario snapshot');
     final snapshot = ScenarioAssignmentSnapshot(
       moduleId: _requiredTextValue(json, 'moduleId'),
       scenarioId: _requiredTextValue(json, 'scenarioId'),
@@ -92,7 +114,10 @@ class ScenarioAssignmentSnapshot {
       osnovniPaket: _requiredStringSet(json, 'osnovniPaket'),
       assignedAt: _requiredTextValue(json, 'assignedAt'),
       snapshotHash: _requiredTextValue(json, 'snapshotHash'),
-      assignedByKorisnikId: _optionalIntValue(json, 'assignedByKorisnikId'),
+      assignedByKorisnikId: _optionalPositiveIntValue(
+        json,
+        'assignedByKorisnikId',
+      ),
     );
     if (snapshot.scenario.id != snapshot.scenarioId) {
       throw const ScenarioPersistenceValidationException(
@@ -152,16 +177,7 @@ class ScenarioIriuProvenance {
         'iriuId must be positive.',
       );
     }
-    final scenarioOwned = origin == ScenarioIriuOriginKind.scenarioPaket;
-    if (scenarioOwned &&
-        (moduleId == null ||
-            scenarioId == null ||
-            scenarioVersion == null ||
-            ruleId == null)) {
-      throw const ScenarioPersistenceValidationException(
-        'SCENARIO_PAKET provenance requires scenario identity and ruleId.',
-      );
-    }
+    _validateProvenanceIdentity();
     if (scenarioVersion != null && scenarioVersion! <= 0) {
       throw const ScenarioPersistenceValidationException(
         'scenarioVersion must be positive.',
@@ -169,8 +185,65 @@ class ScenarioIriuProvenance {
     }
   }
 
+  void _validateProvenanceIdentity() {
+    final hasScenarioIdentity =
+        moduleId != null ||
+        scenarioId != null ||
+        scenarioVersion != null ||
+        ruleId != null;
+    switch (origin) {
+      case ScenarioIriuOriginKind.scenarioPaket:
+        if (moduleId == null ||
+            scenarioId == null ||
+            scenarioVersion == null ||
+            ruleId == null) {
+          throw const ScenarioPersistenceValidationException(
+            'SCENARIO_PAKET provenance requires scenario identity and ruleId.',
+          );
+        }
+      case ScenarioIriuOriginKind.osnovniPaket:
+        if (moduleId == null ||
+            scenarioId != null ||
+            scenarioVersion != null ||
+            ruleId != null) {
+          throw const ScenarioPersistenceValidationException(
+            'OSNOVNI_PAKET provenance requires moduleId and no scenario rule identity.',
+          );
+        }
+      case ScenarioIriuOriginKind.legacy:
+      case ScenarioIriuOriginKind.rucnaStavka:
+        if (hasScenarioIdentity) {
+          throw const ScenarioPersistenceValidationException(
+            'This STAVKA provenance origin must not carry scenario identity.',
+          );
+        }
+    }
+    for (final entry in <String, String?>{
+      'moduleId': moduleId,
+      'scenarioId': scenarioId,
+      'ruleId': ruleId,
+      'operationId': operationId,
+    }.entries) {
+      if (entry.value != null && entry.value!.trim().isEmpty) {
+        throw ScenarioPersistenceValidationException(
+          '${entry.key} must not be empty.',
+        );
+      }
+    }
+  }
+
   factory ScenarioIriuProvenance.fromJsonMap(Map<String, dynamic> json) {
     _assertSchema(json);
+    _assertAllowedKeys(json, const {
+      'schemaVersion',
+      'iriuId',
+      'origin',
+      'moduleId',
+      'scenarioId',
+      'scenarioVersion',
+      'ruleId',
+      'operationId',
+    }, 'STAVKA provenance');
     return ScenarioIriuProvenance(
       iriuId: _requiredPositiveIntValue(json, 'iriuId'),
       origin: ScenarioIriuOriginKindWire.fromWireName(
@@ -221,6 +294,12 @@ Map<String, dynamic> _scenarioToJson(ScenarioDefinition scenario) => {
 };
 
 ScenarioDefinition _scenarioFromJson(Map<String, dynamic> json) {
+  _assertAllowedKeys(json, const {
+    'id',
+    'name',
+    'condition',
+    'consequences',
+  }, 'scenario definition');
   return ScenarioDefinition(
     id: _requiredTextValue(json, 'id'),
     name: _requiredTextValue(json, 'name'),
@@ -248,8 +327,8 @@ Map<String, dynamic> _conditionToJson(ScenarioCondition condition) {
       final criterion = condition.criterion!;
       return {
         'kind': 'CRITERION',
-        'field': criterion.field.name,
-        'operator': criterion.operator.name,
+        'field': _criterionFieldWireName(criterion.field),
+        'operator': _criterionOperatorWireName(criterion.operator),
         'values': criterion.values,
       };
   }
@@ -259,6 +338,7 @@ ScenarioCondition _conditionFromJson(Map<String, dynamic> json) {
   final kind = _requiredTextValue(json, 'kind');
   switch (kind) {
     case 'ALL':
+      _assertAllowedKeys(json, const {'kind', 'children'}, 'ALL condition');
       return ScenarioCondition.all(
         _requiredMapList(
           json,
@@ -266,6 +346,7 @@ ScenarioCondition _conditionFromJson(Map<String, dynamic> json) {
         ).map(_conditionFromJson).toList(growable: false),
       );
     case 'ANY':
+      _assertAllowedKeys(json, const {'kind', 'children'}, 'ANY condition');
       return ScenarioCondition.any(
         _requiredMapList(
           json,
@@ -273,10 +354,16 @@ ScenarioCondition _conditionFromJson(Map<String, dynamic> json) {
         ).map(_conditionFromJson).toList(growable: false),
       );
     case 'CRITERION':
+      _assertAllowedKeys(json, const {
+        'kind',
+        'field',
+        'operator',
+        'values',
+      }, 'criterion condition');
       final fieldName = _requiredTextValue(json, 'field');
       final operatorName = _requiredTextValue(json, 'operator');
-      final field = ScenarioCriterionField.values.byName(fieldName);
-      final operator = ScenarioCriterionOperator.values.byName(operatorName);
+      final field = _criterionFieldFromWire(fieldName);
+      final operator = _criterionOperatorFromWire(operatorName);
       return ScenarioCondition.criterion(
         ScenarioCriterion(
           field: field,
@@ -293,19 +380,22 @@ ScenarioCondition _conditionFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _consequenceToJson(ScenarioConsequence consequence) => {
   'katalogCategoryInternalName': consequence.katalogCategoryInternalName,
-  'action': consequence.action.name,
+  'action': _consequenceActionWireName(consequence.action),
   'order': consequence.order,
 };
 
 ScenarioConsequence _consequenceFromJson(Map<String, dynamic> json) {
+  _assertAllowedKeys(json, const {
+    'katalogCategoryInternalName',
+    'action',
+    'order',
+  }, 'scenario consequence');
   return ScenarioConsequence(
     katalogCategoryInternalName: _requiredTextValue(
       json,
       'katalogCategoryInternalName',
     ),
-    action: ScenarioConsequenceAction.values.byName(
-      _requiredTextValue(json, 'action'),
-    ),
+    action: _consequenceActionFromWire(_requiredTextValue(json, 'action')),
     order: _requiredIntValue(json, 'order'),
   );
 }
@@ -331,6 +421,184 @@ Object? _canonicalize(Object? value) {
   }
   if (value is Iterable) return value.map(_canonicalize).toList();
   return value;
+}
+
+String _criterionFieldWireName(ScenarioCriterionField field) {
+  switch (field) {
+    case ScenarioCriterionField.mestoSmrti:
+      return 'mestoSmrti';
+    case ScenarioCriterionField.uzrokSmrti:
+      return 'uzrokSmrti';
+    case ScenarioCriterionField.vrstaCeremonije:
+      return 'vrstaCeremonije';
+    case ScenarioCriterionField.tipGroblja:
+      return 'tipGroblja';
+    case ScenarioCriterionField.grobnoMesto:
+      return 'grobnoMesto';
+    case ScenarioCriterionField.tipGrobnogMesta:
+      return 'tipGrobnogMesta';
+    case ScenarioCriterionField.sahranaVanSrbije:
+      return 'sahranaVanSrbije';
+    case ScenarioCriterionField.docekPosmrtnihOstataka:
+      return 'docekPosmrtnihOstataka';
+    case ScenarioCriterionField.opelo:
+      return 'opelo';
+  }
+}
+
+ScenarioCriterionField _criterionFieldFromWire(String value) {
+  switch (value) {
+    case 'mestoSmrti':
+      return ScenarioCriterionField.mestoSmrti;
+    case 'uzrokSmrti':
+      return ScenarioCriterionField.uzrokSmrti;
+    case 'vrstaCeremonije':
+      return ScenarioCriterionField.vrstaCeremonije;
+    case 'tipGroblja':
+      return ScenarioCriterionField.tipGroblja;
+    case 'grobnoMesto':
+      return ScenarioCriterionField.grobnoMesto;
+    case 'tipGrobnogMesta':
+      return ScenarioCriterionField.tipGrobnogMesta;
+    case 'sahranaVanSrbije':
+      return ScenarioCriterionField.sahranaVanSrbije;
+    case 'docekPosmrtnihOstataka':
+      return ScenarioCriterionField.docekPosmrtnihOstataka;
+    case 'opelo':
+      return ScenarioCriterionField.opelo;
+    default:
+      throw const ScenarioPersistenceValidationException(
+        'Unknown scenario condition field.',
+      );
+  }
+}
+
+String _criterionOperatorWireName(ScenarioCriterionOperator operator) {
+  switch (operator) {
+    case ScenarioCriterionOperator.equals:
+      return 'equals';
+    case ScenarioCriterionOperator.notEquals:
+      return 'notEquals';
+    case ScenarioCriterionOperator.inSet:
+      return 'inSet';
+    case ScenarioCriterionOperator.notInSet:
+      return 'notInSet';
+    case ScenarioCriterionOperator.isTrue:
+      return 'isTrue';
+    case ScenarioCriterionOperator.isFalse:
+      return 'isFalse';
+  }
+}
+
+ScenarioCriterionOperator _criterionOperatorFromWire(String value) {
+  switch (value) {
+    case 'equals':
+      return ScenarioCriterionOperator.equals;
+    case 'notEquals':
+      return ScenarioCriterionOperator.notEquals;
+    case 'inSet':
+      return ScenarioCriterionOperator.inSet;
+    case 'notInSet':
+      return ScenarioCriterionOperator.notInSet;
+    case 'isTrue':
+      return ScenarioCriterionOperator.isTrue;
+    case 'isFalse':
+      return ScenarioCriterionOperator.isFalse;
+    default:
+      throw const ScenarioPersistenceValidationException(
+        'Unknown scenario condition operator.',
+      );
+  }
+}
+
+ScenarioConsequenceAction _consequenceActionFromWire(String value) {
+  switch (value) {
+    case 'required':
+      return ScenarioConsequenceAction.required;
+    case 'recommended':
+      return ScenarioConsequenceAction.recommended;
+    case 'suppressed':
+      return ScenarioConsequenceAction.suppressed;
+    default:
+      throw const ScenarioPersistenceValidationException(
+        'Unknown scenario consequence action.',
+      );
+  }
+}
+
+String _consequenceActionWireName(ScenarioConsequenceAction action) {
+  switch (action) {
+    case ScenarioConsequenceAction.required:
+      return 'required';
+    case ScenarioConsequenceAction.recommended:
+      return 'recommended';
+    case ScenarioConsequenceAction.suppressed:
+      return 'suppressed';
+  }
+}
+
+void _assertAllowedKeys(
+  Map<String, dynamic> json,
+  Set<String> allowed,
+  String description,
+) {
+  final unknown = json.keys.where((key) => !allowed.contains(key)).toList()
+    ..sort();
+  if (unknown.isNotEmpty) {
+    throw ScenarioPersistenceValidationException(
+      'Unknown field(s) in $description: ${unknown.join(', ')}.',
+    );
+  }
+}
+
+ScenarioDefinition _freezeScenario(ScenarioDefinition scenario) =>
+    ScenarioDefinition(
+      id: _requiredText(scenario.id, 'scenario.id'),
+      name: _requiredText(scenario.name, 'scenario.name'),
+      condition: _freezeCondition(scenario.condition),
+      consequences: List<ScenarioConsequence>.unmodifiable(
+        scenario.consequences
+            .map(
+              (consequence) => ScenarioConsequence(
+                katalogCategoryInternalName:
+                    consequence.katalogCategoryInternalName,
+                action: consequence.action,
+                order: consequence.order,
+              ),
+            )
+            .toList(growable: false),
+      ),
+    );
+
+ScenarioCondition _freezeCondition(ScenarioCondition condition) {
+  switch (condition.kind) {
+    case ScenarioConditionKind.all:
+      return ScenarioCondition.all(
+        List<ScenarioCondition>.unmodifiable(
+          condition.children.map(_freezeCondition).toList(growable: false),
+        ),
+      );
+    case ScenarioConditionKind.any:
+      return ScenarioCondition.any(
+        List<ScenarioCondition>.unmodifiable(
+          condition.children.map(_freezeCondition).toList(growable: false),
+        ),
+      );
+    case ScenarioConditionKind.criterion:
+      final criterion = condition.criterion;
+      if (criterion == null) {
+        throw const ScenarioPersistenceValidationException(
+          'Criterion condition must contain a criterion.',
+        );
+      }
+      return ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: criterion.field,
+          operator: criterion.operator,
+          values: List<String>.unmodifiable(criterion.values),
+        ),
+      );
+  }
 }
 
 String _requiredText(String value, String key) {
@@ -384,6 +652,11 @@ int? _optionalIntValue(Map<String, dynamic> json, String key) {
     throw ScenarioPersistenceValidationException('$key must be an integer.');
   }
   return value;
+}
+
+int? _optionalPositiveIntValue(Map<String, dynamic> json, String key) {
+  final value = _optionalIntValue(json, key);
+  return value == null ? null : _requiredPositiveInt(value, key);
 }
 
 String? _optionalTextValue(Map<String, dynamic> json, String key) {

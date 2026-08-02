@@ -195,3 +195,11 @@ condition/consequence shape, so accepting a new `rules` field would silently
 drop it during round-trip and create parallel truth. The rule-set slice remains
 uncommitted until a versioned serializer/hash contract and golden v1/v2 tests
 exist.
+
+The next safe slice hardened the existing persistence contract at schema v1:
+scenario graphs are deep-frozen before hashing, v1 wire names are explicit,
+unknown root/nested fields and unknown enum values are rejected through the
+contract exception, assigned user IDs are positive, and provenance origin
+identity is validated. Golden v1 payload/hash and malformed-input tests pass.
+This is not a v2 migrator and does not add `createdAt`, rule-set fields, Drift
+materialization, repository/JSON wiring or runtime behavior.

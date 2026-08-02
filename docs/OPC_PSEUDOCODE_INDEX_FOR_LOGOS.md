@@ -795,3 +795,13 @@ Implementation/pseudocode aligned: yes.
 - Rejected candidate: an ordered `ScenarioRule` extension is not accepted
   until snapshot serialization and hash versioning preserve every rule; a
   domain-only field would be silently lost on transfer.
+
+## OPC-PSEUDO-INDEX-055E - Scenario persistence schema-1 hardening
+
+- Source: `lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`.
+- Test: `test/scenario_persistence_contract_test.dart`.
+- Rule: freeze the assigned scenario graph before hashing; preserve the schema-1
+  payload/hash; reject unknown fields and enum values; validate positive IDs and
+  origin-specific provenance identity.
+- Boundary: no v2 migration, `createdAt` materialization, repository/JSON
+  runtime wiring or reminder signal is implied.

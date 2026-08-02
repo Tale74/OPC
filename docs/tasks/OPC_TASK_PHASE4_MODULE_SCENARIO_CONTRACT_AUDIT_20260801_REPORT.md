@@ -221,6 +221,27 @@ it during round-trip. A future rule-set slice must version the serializer/hash,
 preserve golden schema-1 snapshots and test multi-rule transfer before any
 published default or repository materialization is introduced.
 
+## Schema-1 persistence hardening evidence
+
+The existing schema-1 contract was hardened without changing its payload
+version or runtime authority: snapshot scenario graphs are deep-frozen before
+hashing; explicit legacy wire names are used; unknown root/nested keys and
+unknown enum values fail with `ScenarioPersistenceValidationException`;
+`assignedByKorisnikId` must be positive; and provenance origin identity follows
+the documented LEGACY/OSNOVNI_PAKET/SCENARIO_PAKET/RUCNA_STAVKA matrix.
+
+Focused command:
+
+```text
+C:\flutter\bin\flutter.bat test --no-pub test/scenario_persistence_contract_test.dart
+```
+
+Result: **16 passed, 0 failed**.
+
+Focused analyze result: **No issues found**. This remains schema-1 hardening
+only. `createdAt` alignment with future Drift materialization, v2 envelope/
+hash migration, repository/JSON wiring and runtime behavior remain gated.
+
 ## Minimum safe domain contract
 
 The implementation must introduce additive, versioned data rather than
