@@ -1550,3 +1550,27 @@ cleanup. UI terminology is simply STAVKA; `IRIU` remains internal.
 
 
 **Gate 0 documentation/Git governance → full code/architecture review → PREDMET source-to-truth/dependency mapa → integrity, platform, performance, scenario, UI i migration evidence → Architecture/refactor/rewrite Decision Gate po Decision Authority Matrix-u → potvrđene integrity/performance korekcije → historical/completed PREDMET lifecycle odluka i uklanjanje automatskog ZAVRŠEN → korekcija sadašnjih scenario/IRiU grešaka → user-editable SCENARIO i PODEŠAVANJA → kompletan signalni model → informed PODSETNIK → JSON/dokumenti/PDF/RAČUN/tema → MODUL DVE VALUTE → dokazani progressive refactor/partial rewrite → First Product-Line Gate: stabilni OPC v.1 Srbija → non-blocking Stage 2 cleanup kada opravdan → Second Product-Line Gate: OPC_v.1_Int → i18n/country/multicurrency profiles → signing i professional handover closure.**
+
+## Post-zero carrier decisions accepted — 2026-08-02
+
+The owner accepted the following bounded decisions for the prospective SCENARIO
+carrier program. They do not authorize runtime wiring until the corresponding
+pure contracts and parity gates pass:
+
+1. SCENARIO data is supported by both Single-PREDMET JSON and Full backup.
+2. The scenario snapshot and provenance for all STAVKE travel; RUČNA STAVKA and
+   LEGACY remain outside automatic scenario cleanup.
+3. A matching Single-PREDMET import requires an explicit user choice between
+   importing as a new PREDMET and replacing the existing one.
+4. COMPLETE means complete provenance coverage; UNAVAILABLE never permits
+   automatic removal of existing STAVKE. A catalog-only backup with no PREDMET
+   has no scenario assignment to transfer and remains importable.
+5. Single-PREDMET schema 7 becomes 8 and Full backup schema 8 becomes 9; older
+   clients reject newer roots instead of silently dropping SCENARIO data, while
+   existing older payloads remain supported.
+
+The approved dependency sequence is pure Single-PREDMET adapter, pure Full
+backup aggregate adapter, parity fixtures, then separately authorized carrier
+root/schema wiring with atomic preflight and rollback evidence. Local source IDs,
+destination reassociation and repository transaction behavior remain technical
+gates of those tasks, not parallel business authority.

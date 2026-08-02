@@ -877,3 +877,22 @@ BOUNDARY: this phase changes no code/schema/repository/Drift/runtime/UI/
 ```
 
 Evidence: `docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055J - Phase 8 Single-PREDMET adapter
+
+```text
+INPUT: proven ScenarioTransferEnvelope and the canonical ordered source IRIU
+       list used by the future Single-PREDMET carrier.
+MAP: source-local iriuId -> iriuTransferIndex; never copy source IDs as target
+     foreign keys. Preserve assignment snapshot/hash and all provenance origin.
+GUARD: source IDs unique/positive; indexes unique/in-range; ownership matches
+       assignment; COMPLETE identifies every transferred row; UNAVAILABLE has
+       no references; nested and carrier hashes/versions are exact.
+RESOLVE: accept an explicit destination IRIU ID list only after preflight;
+         rebuild provenance with destination IDs and revalidate the envelope.
+BOUNDARY: adapter is not reassociation authority and does not write database;
+          no root JSON schema, repository, Drift, runtime, reconciliation, UI or
+          PODSETNIK behavior changes.
+```
+
+Evidence: `docs/tasks/OPC_TASK_PHASE8_SINGLE_PREDMET_CARRIER_ADAPTER_20260802_REPORT.md`.

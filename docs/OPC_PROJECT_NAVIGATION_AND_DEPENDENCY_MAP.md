@@ -231,6 +231,13 @@ the Phase 7 report. The next dependency is a pure carrier-adapter contract with
 explicit local-identity mapping and preflight tests; existing JSON/full-backup
 runtime paths remain untouched until that contract is proven.
 
+Phase 8 proves the Single-PREDMET adapter boundary in
+`docs/tasks/OPC_TASK_PHASE8_SINGLE_PREDMET_CARRIER_ADAPTER_20260802_REPORT.md`.
+It uses transfer indexes rather than source database IDs and requires explicit
+destination resolution. It does not wire root schema 8, repository import,
+reassociation, or runtime. Full-backup aggregate adaptation remains the next
+separate dependency.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch

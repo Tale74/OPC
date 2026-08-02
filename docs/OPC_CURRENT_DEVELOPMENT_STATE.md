@@ -284,3 +284,20 @@ UNAVAILABLE coverage is fail-safe; and roots advance single 7→8/full 8→9 wit
 old clients rejecting newer roots. The next step is a bounded carrier-contract
 implementation task, not broad runtime wiring. Evidence is in
 `docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.
+
+## Current Phase 8 Single-PREDMET carrier adapter — 2026-08-02
+
+The pure Single-PREDMET adapter contract is implemented on
+`task/OPC-PHASE8-SINGLE-PREDMET-CARRIER-ADAPTER`. It converts source-local IRIU
+IDs into transfer-index references and resolves them only through an explicit
+destination list. It preserves the schema-1 snapshot/hash, validates provenance
+ownership, rejects duplicate/out-of-range references, requires COMPLETE
+coverage for every transferred row, and keeps UNAVAILABLE fail-safe.
+
+No existing JSON export/import path or root schema was changed. The adapter is
+not a reassociation authority: a future carrier must provide canonical ordered
+IRiU rows and validate row identity/content before a transaction. Focused
+adapter tests pass 13/13 and the combined persistence/envelope/adapter set
+passes 44/44; full-suite closure is recorded in the Phase 8 report.
+
+Evidence: `docs/tasks/OPC_TASK_PHASE8_SINGLE_PREDMET_CARRIER_ADAPTER_20260802_REPORT.md`.
