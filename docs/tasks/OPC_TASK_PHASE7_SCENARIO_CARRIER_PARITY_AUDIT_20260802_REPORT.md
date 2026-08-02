@@ -73,23 +73,28 @@ for all approved PREDMET/IRIU/snapshot/provenance writes. Any failure rolls back
 all writes and produces structured evidence. Existing normalizer defaults must
 not run before the envelope conflict gate.
 
-## Owner decision queue — implementation blocked until answered
+## Owner decision gate — five decisions accepted
 
-1. Carrier placement and exact root block names; root schema bump and old-client
-   behavior for single JSON and full backup.
-2. Whether the single-PREDMET carrier, full-backup carrier or both transfer the
-   snapshot, OSNOVNI/SCENARIO provenance, RUČNA STAVKA and LEGACY rows.
-3. Stable row identity and destination PREDMET conflict/reassociation policy;
-   source `iriuId` and `assignedByKorisnikId` must not be reused as destination
-   foreign keys without explicit approval.
-4. Whether a snapshot is sufficient when the destination lacks the referenced
-   module registry, and what unknown module/scenario behavior is allowed.
-5. Meaning of `COMPLETE` coverage and behavior of `UNAVAILABLE` for future
-   reconciliation/stale-row protection.
-6. Atomic preflight, rollback, backup compatibility and dry-run evidence policy.
-7. Signing/encryption/privacy and publisher custody policy.
-8. Confirmation that reminder delivery IDs remain device-local and that PARTE
-   and other derivatives stay outside this carrier scope.
+The owner accepted the five decisions presented after this audit:
+
+1. SCENARIO data is supported by both Single-PREDMET JSON and Full backup.
+2. The snapshot and provenance for all STAVKE are transferred; RUČNA STAVKA
+   and LEGACY remain outside automatic scenario cleanup.
+3. A matching Single-PREDMET import requires an explicit user choice between
+   importing as a new PREDMET and replacing the existing one.
+4. `COMPLETE` means complete provenance coverage; `UNAVAILABLE` never permits
+   automatic removal of existing STAVKE. A catalog-only backup with no PREDMET
+   has no scenario assignment to transfer and remains importable.
+5. Single-PREDMET schema 7 becomes 8 and Full backup schema 8 becomes 9;
+   older clients reject newer roots instead of silently dropping SCENARIO data,
+   while existing older payloads remain supported.
+
+These decisions close the business gate for the next bounded carrier-contract
+task. Remaining constraints are technical or explicitly deferred scope:
+complete preflight before any transaction, destination-safe local identity
+mapping, snapshot preservation when a local module is absent, rollback evidence,
+and no signing/encryption, PARTE/derivative or notification-ID transfer until a
+separate decision is recorded. No additional owner question is inferred here.
 
 ## Boundary and validation
 
@@ -101,8 +106,9 @@ tree remains validated by full analyze and full test (319 passed, 1 skipped).
 
 ## OPC MANIFEST COMPLIANCE — TASK END
 
-Manifest compliance checked: YES. Source inventory, parity matrix, owner-gated
-decision queue, UTF-8/no-BOM and diff gates are recorded; implementation remains
-blocked pending owner decisions.
+Manifest compliance checked: YES. Source inventory, parity matrix, accepted
+five-decision gate, UTF-8/no-BOM and diff gates are recorded; carrier
+implementation remains a separate bounded task.
 
-PASS / NOT PASS: PASS — READ-ONLY AUDIT COMPLETE, NO CARRIER WIRING AUTHORIZED.
+PASS / NOT PASS: PASS — READ-ONLY AUDIT COMPLETE, NEXT CARRIER CONTRACT TASK
+AUTHORIZED WITHIN THE RECORDED BOUNDARIES.

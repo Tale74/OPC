@@ -277,5 +277,10 @@ signing/privacy and carrier placement remain owner-gated.
 
 No application code, JSON/backup schema, repository, Drift, migration,
 materialization, reconciliation, UI, PODSETNIK or runtime behavior changed.
-The next step is an owner decision gate, not carrier implementation. Evidence is
-in `docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.
+The owner has now accepted the five carrier decisions: both carriers support
+SCENARIO transfer; snapshot and all STAVKA provenance travel; matching
+Single-PREDMET import requires an explicit new/replace choice; COMPLETE versus
+UNAVAILABLE coverage is fail-safe; and roots advance single 7→8/full 8→9 with
+old clients rejecting newer roots. The next step is a bounded carrier-contract
+implementation task, not broad runtime wiring. Evidence is in
+`docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.

@@ -226,6 +226,11 @@ versions, stable row identity/reassociation, snapshot/module availability,
 manual/LEGACY transfer scope, coverage semantics, atomic rollback,
 signing/privacy and Windows/Android semantic parity.
 
+The owner subsequently accepted the five bounded carrier decisions recorded in
+the Phase 7 report. The next dependency is a pure carrier-adapter contract with
+explicit local-identity mapping and preflight tests; existing JSON/full-backup
+runtime paths remain untouched until that contract is proven.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch
