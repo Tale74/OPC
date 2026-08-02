@@ -257,3 +257,25 @@ reassociation, manual STAVKA transfer scope, and signing/encryption policy.
 
 Phase 6 is recorded in
 `docs/tasks/OPC_TASK_PHASE6_SCENARIO_TRANSFER_ENVELOPE_20260802_REPORT.md`.
+
+## Current Phase 7 scenario carrier/parity audit — 2026-08-02
+
+The read-only carrier/parity audit is complete on
+`task/OPC-PHASE7-SCENARIO-CARRIER-PARITY-AUDIT`. Existing single-PREDMET JSON
+(root schema 6/7) and full-backup JSON (schema 8) remain separate carriers;
+neither currently knows the scenario envelope. Existing parsers tolerate
+unknown root keys, so a future envelope block requires an explicit root schema
+bump and old-client fail-closed behavior rather than silent data loss.
+
+The audit confirms that single-PREDMET import regenerates local PREDMET/IRIU
+identity, while full backup preserves explicit database IDs. Envelope provenance
+therefore cannot reuse source `iriuId` or `assignedByKorisnikId` without an
+owner-approved stable identity/reassociation policy. `UNAVAILABLE` coverage
+must not become implicit complete-empty provenance. Atomic preflight, destination
+conflict policy, module availability, manual/LEGACY transfer scope,
+signing/privacy and carrier placement remain owner-gated.
+
+No application code, JSON/backup schema, repository, Drift, migration,
+materialization, reconciliation, UI, PODSETNIK or runtime behavior changed.
+The next step is an owner decision gate, not carrier implementation. Evidence is
+in `docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.

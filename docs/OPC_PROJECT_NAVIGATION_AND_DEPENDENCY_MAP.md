@@ -217,6 +217,15 @@ does not choose a single-PREDMET or full-backup carrier and is not wired to JSON
 Drift, repository, runtime, reconciliation, UI or PODSETNIK. The next dependency
 is an owner-gated carrier/schema/parity design with atomic destination validation.
 
+Phase 7 read-only audit evidence is recorded in
+`docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.
+The single-PREDMET carrier and full-backup carrier remain separate: their root
+schemas, identity behavior, aggregate scope and legacy compatibility differ.
+No carrier wiring is authorized until owner decisions cover root block/schema
+versions, stable row identity/reassociation, snapshot/module availability,
+manual/LEGACY transfer scope, coverage semantics, atomic rollback,
+signing/privacy and Windows/Android semantic parity.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch

@@ -856,3 +856,24 @@ BOUNDARY: no carrier choice, root JSON/backup schema bump, ID remapping,
 ```
 
 Evidence: `docs/tasks/OPC_TASK_PHASE6_SCENARIO_TRANSFER_ENVELOPE_20260802_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055I - Phase 7 carrier/parity decision gate
+
+```text
+OBSERVE: single-PREDMET JSON and full-backup JSON are distinct carriers with
+         different root schemas, identity retention and aggregate scope.
+GUARD: do not add an envelope block until owner selects carrier(s), root schema
+       bump/legacy behavior, stable row identity and destination conflict policy.
+PREflight: parse strict root/envelope, validate all hashes/coverage/ownership,
+           build an in-memory transfer plan, then open one transaction only after
+           destination FK/user/module scope and reassociation are approved.
+ROLLBACK: any write failure rolls back all related PREDMET/IRIU/snapshot/
+          provenance changes; no partial stale cleanup or silent normalizer
+          default is allowed.
+PARITY: Windows and Android must produce identical business payload semantics;
+        OS-specific file/notification mechanisms remain outside the carrier.
+BOUNDARY: this phase changes no code/schema/repository/Drift/runtime/UI/
+          reconciliation/PODSETNIK behavior. It ends at the owner decision gate.
+```
+
+Evidence: `docs/tasks/OPC_TASK_PHASE7_SCENARIO_CARRIER_PARITY_AUDIT_20260802_REPORT.md`.
