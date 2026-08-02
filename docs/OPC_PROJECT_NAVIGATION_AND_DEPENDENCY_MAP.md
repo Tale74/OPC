@@ -196,6 +196,12 @@ Do not add UI or schema by merely wrapping the current hard-coded evaluator:
 criteria grammar, module scope, versioning, provenance, rollback and transfer
 parity must be decided first.
 
+The latest technical sanity-check is recorded in
+`docs/tasks/OPC_TASK_SANITY_CHECK_AUTOREVIEW_20260802_REPORT.md`. It confirms
+schema 23, `flutter analyze` PASS and the complete test-suite PASS, while
+keeping repository/JSON materialization, reconciliation and SCENARIO UI behind
+their dependency gates.
+
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains
 the standard category/article dictionary. The former KATALOG switch

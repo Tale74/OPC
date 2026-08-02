@@ -172,9 +172,10 @@ Result: **PASS — no issues found**.
    cemetery/grave, international/reception and opelo) and produce IRiU and
    operational consequences.
 6. Existing `iriu` rows have no backfilled provenance. The new
-   `iriu_provenance` table can distinguish future basic, catalog,
-   scenario-managed or manual rows, but safe stale removal is not implemented
-   by this migration.
+   `iriu_provenance` table can distinguish future `OSNOVNI_PAKET`,
+   `SCENARIO_PAKET`, `RUČNA_STAVKA` and legacy rows; KATALOG-origin data is
+   currently represented through the applicable package origin, not a separate
+   provenance enum. Safe stale removal is not implemented by this migration.
 7. Single-PREDMET JSON transfers only `businessScenarioId`; they do not carry a
    scenario version/snapshot or IRiU provenance. Existing backup/restore lanes
    likewise need an explicit compatibility contract before schema change.

@@ -333,7 +333,7 @@ ADD_MANUALLY:
 
 OWNER_REVIEW_REQUIRED = Windows_Android_manual_add_parity
 
-## KATALOG basic-category policy (schema 22)
+## KATALOG basic-category policy (legacy schema-22 behavior; current DB schema 23)
 
 ```text
 KATALOG create/edit eligible category:

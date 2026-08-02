@@ -517,7 +517,8 @@ Outputs: validated schema 23 or precise `OpcSchemaMismatch`.
 ### KATALOG → future PREDMET IRiU policy
 
 KATALOG persists category identity, type, visibility, stable creation order and
-the schema-22 basic-category flag. New-PREDMET initialization snapshots enabled
+the legacy schema-22 basic-category flag (carried by the current schema 23).
+New-PREDMET initialization snapshots enabled
 eligible categories after built-in basics and `Agencijske usluge`; it never
 reconciles existing PREDMETI. Scenario lifecycle services remain independent
 and authoritative. Manual IRiU addition writes only the current PREDMET child

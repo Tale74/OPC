@@ -627,7 +627,7 @@ Implementation/pseudocode aligned: yes.
 
 ## OPC-PSEUDO-INDEX-052 — KATALOG basic categories and future IRiU materialization
 
-- Document: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`, section “KATALOG basic-category policy (schema 22)”; SCENARIO persistence is additive schema 23.
+- Document: `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md`, section “KATALOG basic-category policy (legacy schema-22 behavior; current DB schema 23)”; SCENARIO persistence is additive schema 23.
 - Source: KATALOG presentation/repository, `iriu_katalog_config`, `PredmetiRepository.inicijalizujIriu`, `IriuOrderingService`, and the existing truth/finance services.
 - Business rule: default `NE`; policy changes affect future PREDMETI only; scenario rows are unchanged; `Agencijske usluge` precedes enabled user basics.
 - Identity/order: deduplicate by stable `interni_naziv`; user-basic order follows persistent category creation order, not rename or toggle time.
@@ -805,3 +805,15 @@ Implementation/pseudocode aligned: yes.
   origin-specific provenance identity.
 - Boundary: no v2 migration, `createdAt` materialization, repository/JSON
   runtime wiring or reminder signal is implied.
+
+## OPC-PSEUDO-INDEX-055F - Current stability and anti-drift review
+
+- Review: `docs/tasks/OPC_TASK_SANITY_CHECK_AUTOREVIEW_20260802_REPORT.md`.
+- Evidence: schema 23 source, `flutter analyze` clean, complete suite 304
+  passed with 1 skipped, and focused scenario/persistence/JSON suites passed.
+- Rule: this is technical evidence only. It does not authorize scenario
+  materialization, stale-row reconciliation, JSON/backup changes or PODSETNIK
+  signal/UI work.
+- Next route: close persistence invariants, version transfer envelope,
+  repository materialization, reconciliation and platform parity before the
+  owner-gated SCENARIO UI and subsequent PODSETNIK model.
