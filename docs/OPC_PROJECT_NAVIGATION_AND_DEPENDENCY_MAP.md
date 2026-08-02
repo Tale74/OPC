@@ -305,3 +305,23 @@ Stop at the gate and verify the source, tests and current documentation. Ask the
 owner only for a real business-policy choice, such as a change in PREDMET truth,
 IRiU ordering, reminder portability, document meaning or platform parity. Do
 not ask the owner to interpret a technical fact that the source can establish.
+
+## Phase 9 — SCENARIO UI v1
+
+`PREDMETI → MODULI → SCENARIO`
+
+```text
+SCENARIO ekran
+  ├─ OSNOVNI PAKET → KATALOG category IDs
+  └─ SCENARIJI
+       ├─ uslov (podatak + poređenje + vrednost/i)
+       └─ dodatne STAVKE → KATALOG category IDs
+
+ScenarioModuleScreen
+  → ScenarioModuleRepository
+  → scenario_modules / scenario_definitions
+```
+
+Boundary: this screen defines future choices only. It does not rewrite
+PREDMET, IRIU or backup data. PREDMET application and stale-row reconciliation
+are the next separately gated dependency.

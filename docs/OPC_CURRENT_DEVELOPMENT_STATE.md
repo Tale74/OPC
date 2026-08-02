@@ -301,3 +301,19 @@ adapter tests pass 13/13 and the combined persistence/envelope/adapter set
 passes 44/44; full-suite closure is recorded in the Phase 8 report.
 
 Evidence: `docs/tasks/OPC_TASK_PHASE8_SINGLE_PREDMET_CARRIER_ADAPTER_20260802_REPORT.md`.
+
+## Current Phase 9 SCENARIO UI v1 — 2026-08-02
+
+The next step was deliberately narrowed to the user-facing SCENARIO module.
+`ScenarioModuleScreen` is reachable from the operational MODULI screen opened
+from the PREDMET list. It stores the
+OSNOVNI PAKET and editable scenario definitions (one or more values for one
+criterion and additional KATALOG STAVKE) in the already-present local tables.
+The repository owns one wire representation through the existing persistence
+contract; no second UI-only format was introduced.
+
+This slice does not apply definitions to existing PREDMETI, does not reconcile
+STAVKE, and does not change JSON/full-backup carriers. Existing PREDMET and IRIU
+behavior is therefore unchanged. The next separate task is the explicit
+PREDMET-side selection/application and safe stale-row reconciliation. Backup and
+restore marker: `docs/tasks/OPC_RESTORE_POINT_PHASE9_SCENARIO_UI_20260802.md`.

@@ -9,6 +9,7 @@ import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
 import '../../stanje_robe/data/stanje_robe_repository.dart';
 import '../../stanje_robe/presentation/stanje_robe_admin_screen.dart';
 import '../data/predmeti_repository.dart';
+import '../core_v2/scenario/scenario_module_screen.dart';
 import '../parte/presentation/parte_module_screen.dart';
 
 /// One operational catalog reached from the PREDMET overview.
@@ -46,6 +47,22 @@ class ModuliScreen extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 720),
             child: Column(
               children: [
+                _ModuleCard(
+                  key: const Key('moduli-scenario-card'),
+                  icon: Icons.alt_route_outlined,
+                  title: 'SCENARIO',
+                  subtitle:
+                      'Uslovi, osnovni paket i dodatne STAVKE za buduće PREDMETE.',
+                  onTap: () => Navigator.push<void>(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => ScenarioModuleScreen(
+                        podesavanjaRepository: podesavanjaRepository,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 _ModuleCard(
                   icon: Icons.notifications_outlined,
                   title: 'PODSETNIK',

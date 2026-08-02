@@ -896,3 +896,19 @@ BOUNDARY: adapter is not reassociation authority and does not write database;
 ```
 
 Evidence: `docs/tasks/OPC_TASK_PHASE8_SINGLE_PREDMET_CARRIER_ADAPTER_20260802_REPORT.md`.
+
+## OPC-PSEUDO-INDEX-055K — Phase 9 SCENARIO UI v1
+
+```text
+OPEN: PREDMETI → MODULI → SCENARIO.
+DEFINE: choose KATALOG category IDs for OSNOVNI PAKET.
+DEFINE: create/edit a scenario with one criterion and additional STAVKE.
+SAVE: persist one canonical ScenarioDefinition representation in the existing
+      scenario tables; do not create a UI-only parallel truth.
+BOUNDARY: settings define future choices only; no existing PREDMET/IRIU row is
+          rewritten and no JSON/full-backup carrier is changed.
+NEXT: explicit PREDMET selection/application, user notice and safe removal of
+      stale scenario-owned STAVKE; RUČNA/LEGACY rows remain protected.
+```
+
+Evidence: `docs/tasks/OPC_RESTORE_POINT_PHASE9_SCENARIO_UI_20260802.md`.

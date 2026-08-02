@@ -1574,3 +1574,16 @@ backup aggregate adapter, parity fixtures, then separately authorized carrier
 root/schema wiring with atomic preflight and rollback evidence. Local source IDs,
 destination reassociation and repository transaction behavior remain technical
 gates of those tasks, not parallel business authority.
+
+## Phase 9 SCENARIO UI v1 — bounded implementation slice
+
+The carrier sequence is intentionally paused while the basic user-facing
+SCENARIO module is made understandable and usable. PODEŠAVANJA → MODULI now
+owns the editable OSNOVNI PAKET and scenario definitions. The screen refers
+only to KATALOG category IDs and stores one canonical scenario representation
+through the existing persistence contract.
+
+This phase does not apply a definition to a PREDMET, remove or add existing
+STAVKE, alter JSON/full-backup roots, or change runtime behavior. The next
+dependency is PREDMET-side explicit selection/application with user notice and
+safe scenario-owned stale-row removal; RUČNA and LEGACY rows remain protected.

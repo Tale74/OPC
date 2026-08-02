@@ -291,6 +291,14 @@ class ScenarioPersistenceValidationException implements Exception {
   String toString() => 'ScenarioPersistenceValidationException: $message';
 }
 
+/// Public bridge for the UI/repository layer. The wire shape stays owned by
+/// this contract so UI code cannot invent a second scenario representation.
+Map<String, dynamic> scenarioDefinitionToJsonMap(ScenarioDefinition scenario) =>
+    _scenarioToJson(scenario);
+
+ScenarioDefinition scenarioDefinitionFromJsonMap(Map<String, dynamic> json) =>
+    _scenarioFromJson(json);
+
 Map<String, dynamic> _scenarioToJson(ScenarioDefinition scenario) => {
   'id': scenario.id,
   'name': scenario.name,
