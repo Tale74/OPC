@@ -125,6 +125,100 @@ void main() {
       );
     });
 
+    test('create canonicalizes whitespace before hashing and round-trip', () {
+      final snapshot = ScenarioAssignmentSnapshot.create(
+        moduleId: ' scenario ',
+        scenarioId: 'hospital-gradsko',
+        scenarioVersion: 1,
+        scenario: const ScenarioDefinition(
+          id: 'hospital-gradsko',
+          name: ' Bolnica i gradsko groblje ',
+          condition: ScenarioCondition.all([
+            ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.mestoSmrti,
+                operator: ScenarioCriterionOperator.equals,
+                values: [' BOLNICA '],
+              ),
+            ),
+          ]),
+          consequences: [
+            ScenarioConsequence(
+              katalogCategoryInternalName: ' PREVOZ_DO_GROBLJA ',
+              action: ScenarioConsequenceAction.required,
+              order: 10,
+            ),
+          ],
+        ),
+        osnovniPaket: {' SANDUK '},
+        assignedAt: '2026-08-01T10:00:00.000Z',
+      );
+
+      final decoded = ScenarioAssignmentSnapshot.fromJsonMap(
+        snapshot.toJsonMap(),
+      );
+
+      expect(snapshot.moduleId, 'scenario');
+      expect(snapshot.scenario.name, 'Bolnica i gradsko groblje');
+      expect(
+        snapshot.scenario.condition.children.single.criterion!.values,
+        ['BOLNICA'],
+      );
+      expect(
+        snapshot.scenario.consequences.single.katalogCategoryInternalName,
+        'PREVOZ_DO_GROBLJA',
+      );
+      expect(snapshot.osnovniPaket, {'SANDUK'});
+      expect(decoded.snapshotHash, snapshot.snapshotHash);
+      expect(decoded.toJsonMap(), snapshot.toJsonMap());
+    });
+
+    test('create rejects empty criterion and consequence values', () {
+      expect(
+        () => ScenarioAssignmentSnapshot.create(
+          moduleId: 'scenario',
+          scenarioId: 'hospital-gradsko',
+          scenarioVersion: 1,
+          scenario: const ScenarioDefinition(
+            id: 'hospital-gradsko',
+            name: 'Bolnica',
+            condition: ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.mestoSmrti,
+                operator: ScenarioCriterionOperator.equals,
+                values: ['   '],
+              ),
+            ),
+            consequences: [],
+          ),
+          osnovniPaket: {'SANDUK'},
+          assignedAt: '2026-08-01T10:00:00.000Z',
+        ),
+        throwsA(isA<ScenarioPersistenceValidationException>()),
+      );
+      expect(
+        () => ScenarioAssignmentSnapshot.create(
+          moduleId: 'scenario',
+          scenarioId: 'hospital-gradsko',
+          scenarioVersion: 1,
+          scenario: const ScenarioDefinition(
+            id: 'hospital-gradsko',
+            name: 'Bolnica',
+            condition: ScenarioCondition.all([]),
+            consequences: [
+              ScenarioConsequence(
+                katalogCategoryInternalName: '   ',
+                action: ScenarioConsequenceAction.required,
+              ),
+            ],
+          ),
+          osnovniPaket: {'SANDUK'},
+          assignedAt: '2026-08-01T10:00:00.000Z',
+        ),
+        throwsA(isA<ScenarioPersistenceValidationException>()),
+      );
+    });
+
     test('tampering with selected package is rejected by the hash guard', () {
       final snapshot = ScenarioAssignmentSnapshot.create(
         moduleId: 'scenario',
@@ -243,19 +337,6 @@ void main() {
           osnovniPaket: {'SANDUK'},
           assignedAt: '2026-08-01T10:00:00.000Z',
           assignedByKorisnikId: 0,
-        ),
-        throwsA(isA<ScenarioPersistenceValidationException>()),
-      );
-      expect(
-        () => ScenarioAssignmentSnapshot(
-          moduleId: 'scenario',
-          scenarioId: 'hospital-gradsko',
-          scenarioVersion: 1,
-          scenario: _scenario(),
-          osnovniPaket: {'SANDUK'},
-          assignedAt: '2026-08-01T10:00:00.000Z',
-          snapshotHash: 'legacy-hash',
-          assignedByKorisnikId: -1,
         ),
         throwsA(isA<ScenarioPersistenceValidationException>()),
       );
@@ -432,6 +513,22 @@ void main() {
         );
       },
     );
+
+    test('provenance canonicalizes optional identity values', () {
+      final provenance = ScenarioIriuProvenance(
+        iriuId: 54,
+        origin: ScenarioIriuOriginKind.osnovniPaket,
+        moduleId: ' scenario ',
+        operationId: ' operation-1 ',
+      );
+
+      expect(provenance.moduleId, 'scenario');
+      expect(provenance.operationId, 'operation-1');
+      expect(
+        ScenarioIriuProvenance.fromJsonMap(provenance.toJsonMap()).toJsonMap(),
+        provenance.toJsonMap(),
+      );
+    });
 
     test('assignedByKorisnikId must be positive when present', () {
       expect(

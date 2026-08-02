@@ -181,8 +181,9 @@ editing a module default must never silently rewrite an existing PREDMET.
 ### Phase 4 — MODULI/SCENARIO contract and UI-defined defaults
 
 Current source route: static `ModuliScreen`/settings module tab → entitlement
-enum → one `predmeti.businessScenarioId` → hard-coded evaluator/rules. No
-persisted module or scenario-definition domain exists yet.
+enum → one `predmeti.businessScenarioId` → hard-coded evaluator/rules. The
+schema-23 module/snapshot tables are additive only; no runtime repository,
+materialization or scenario-definition UI consumes them yet.
 
 Required future route: MODULI scenario definitions/defaults → versioned criteria
 and consequence contract → explicit eligible-PREDMET assignment/snapshot →
@@ -201,6 +202,11 @@ The latest technical sanity-check is recorded in
 schema 23, `flutter analyze` PASS and the complete test-suite PASS, while
 keeping repository/JSON materialization, reconciliation and SCENARIO UI behind
 their dependency gates.
+
+Phase 5 invariant hardening is recorded in
+`docs/tasks/OPC_TASK_PHASE5_SCENARIO_PERSISTENCE_INVARIANTS_20260802_REPORT.md`.
+It closes only the schema-1 constructor/normalization boundary and preserves
+the golden payload/hash; it does not open any runtime data path.
 
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains

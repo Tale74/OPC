@@ -802,18 +802,35 @@ Implementation/pseudocode aligned: yes.
 - Test: `test/scenario_persistence_contract_test.dart`.
 - Rule: freeze the assigned scenario graph before hashing; preserve the schema-1
   payload/hash; reject unknown fields and enum values; validate positive IDs and
-  origin-specific provenance identity.
+  origin-specific provenance identity; construct snapshots only through
+  validated factories; canonicalize consequence, criterion and provenance text.
 - Boundary: no v2 migration, `createdAt` materialization, repository/JSON
   runtime wiring or reminder signal is implied.
 
 ## OPC-PSEUDO-INDEX-055F - Current stability and anti-drift review
 
 - Review: `docs/tasks/OPC_TASK_SANITY_CHECK_AUTOREVIEW_20260802_REPORT.md`.
-- Evidence: schema 23 source, `flutter analyze` clean, complete suite 304
+- Evidence: schema 23 source, `flutter analyze` clean, complete suite 307
   passed with 1 skipped, and focused scenario/persistence/JSON suites passed.
 - Rule: this is technical evidence only. It does not authorize scenario
   materialization, stale-row reconciliation, JSON/backup changes or PODSETNIK
   signal/UI work.
-- Next route: close persistence invariants, version transfer envelope,
-  repository materialization, reconciliation and platform parity before the
+- Next route: version transfer envelope, repository materialization,
+  reconciliation and platform parity before the
   owner-gated SCENARIO UI and subsequent PODSETNIK model.
+
+## OPC-PSEUDO-INDEX-055G - Phase 5 schema-1 invariant closure
+
+- Source: `lib/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart`.
+- Test: `test/scenario_persistence_contract_test.dart`.
+- Rule: the snapshot constructor is private; `create` and `fromJsonMap` are the
+  only public construction paths. Consequence categories, criterion values,
+  package IDs and optional provenance identities are trimmed and non-empty at
+  the contract boundary before hashing or serialization.
+- Evidence: schema-1 golden payload/hash unchanged; persistence 19/19,
+  combined scenario 30/30, full analyze clean and complete suite 307 passed
+  with 1 skipped.
+- Boundary: no change to wire names, schema version, JSON/backup/repository,
+  Drift, stale reconciliation, runtime, SCENARIO UI or PODSETNIK.
+- Next gate: versioned transfer envelope with explicit legacy compatibility and
+  Windows/Android parity tests before any materialization.

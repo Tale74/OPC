@@ -39,8 +39,10 @@ extension ScenarioIriuOriginKindWire on ScenarioIriuOriginKind {
 ///
 /// This is a pure persistence/transfer contract. It is intentionally not
 /// connected to Drift or JSON import yet; the snapshot must be proven first.
+/// Callers must use [create] or [fromJsonMap]; the validating constructor is
+/// private so future repository code cannot bypass the invariant boundary.
 class ScenarioAssignmentSnapshot {
-  ScenarioAssignmentSnapshot({
+  ScenarioAssignmentSnapshot._({
     required this.moduleId,
     required this.scenarioId,
     required this.scenarioVersion,
@@ -69,7 +71,7 @@ class ScenarioAssignmentSnapshot {
         'Scenario snapshot ID does not match its definition.',
       );
     }
-    final draft = ScenarioAssignmentSnapshot(
+    final draft = ScenarioAssignmentSnapshot._(
       moduleId: _requiredText(moduleId, 'moduleId'),
       scenarioId: _requiredText(scenarioId, 'scenarioId'),
       scenarioVersion: _requiredPositiveInt(scenarioVersion, 'scenarioVersion'),
@@ -81,7 +83,7 @@ class ScenarioAssignmentSnapshot {
           ? null
           : _requiredPositiveInt(assignedByKorisnikId, 'assignedByKorisnikId'),
     );
-    return ScenarioAssignmentSnapshot(
+    return ScenarioAssignmentSnapshot._(
       moduleId: draft.moduleId,
       scenarioId: draft.scenarioId,
       scenarioVersion: draft.scenarioVersion,
@@ -106,7 +108,7 @@ class ScenarioAssignmentSnapshot {
       'assignedByKorisnikId',
       'snapshotHash',
     }, 'scenario snapshot');
-    final snapshot = ScenarioAssignmentSnapshot(
+    final snapshot = ScenarioAssignmentSnapshot._(
       moduleId: _requiredTextValue(json, 'moduleId'),
       scenarioId: _requiredTextValue(json, 'scenarioId'),
       scenarioVersion: _requiredPositiveIntValue(json, 'scenarioVersion'),
@@ -166,12 +168,15 @@ class ScenarioIriuProvenance {
   ScenarioIriuProvenance({
     required this.iriuId,
     required this.origin,
-    this.moduleId,
-    this.scenarioId,
+    String? moduleId,
+    String? scenarioId,
     this.scenarioVersion,
-    this.ruleId,
-    this.operationId,
-  }) {
+    String? ruleId,
+    String? operationId,
+  }) : moduleId = _optionalText(moduleId, 'moduleId'),
+       scenarioId = _optionalText(scenarioId, 'scenarioId'),
+       ruleId = _optionalText(ruleId, 'ruleId'),
+       operationId = _optionalText(operationId, 'operationId') {
     if (iriuId <= 0) {
       throw const ScenarioPersistenceValidationException(
         'iriuId must be positive.',
@@ -560,8 +565,10 @@ ScenarioDefinition _freezeScenario(ScenarioDefinition scenario) =>
         scenario.consequences
             .map(
               (consequence) => ScenarioConsequence(
-                katalogCategoryInternalName:
-                    consequence.katalogCategoryInternalName,
+                katalogCategoryInternalName: _requiredText(
+                  consequence.katalogCategoryInternalName,
+                  'scenario.consequences.katalogCategoryInternalName',
+                ),
                 action: consequence.action,
                 order: consequence.order,
               ),
@@ -595,7 +602,16 @@ ScenarioCondition _freezeCondition(ScenarioCondition condition) {
         ScenarioCriterion(
           field: criterion.field,
           operator: criterion.operator,
-          values: List<String>.unmodifiable(criterion.values),
+          values: List<String>.unmodifiable(
+            criterion.values
+                .map(
+                  (value) => _requiredText(
+                    value,
+                    'scenario.condition.criterion.values',
+                  ),
+                )
+                .toList(growable: false),
+          ),
         ),
       );
   }
@@ -607,6 +623,10 @@ String _requiredText(String value, String key) {
     throw ScenarioPersistenceValidationException('$key must not be empty.');
   }
   return normalized;
+}
+
+String? _optionalText(String? value, String key) {
+  return value == null ? null : _requiredText(value, key);
 }
 
 int _requiredPositiveInt(int value, String key) {

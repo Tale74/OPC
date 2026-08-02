@@ -215,3 +215,20 @@ contract exception, assigned user IDs are positive, and provenance origin
 identity is validated. Golden v1 payload/hash and malformed-input tests pass.
 This is not a v2 migrator and does not add `createdAt`, rule-set fields, Drift
 materialization, repository/JSON wiring or runtime behavior.
+
+## Current Phase 5 scenario persistence invariant hardening — 2026-08-02
+
+The bounded schema-1 contract hardening is technically complete on
+`task/OPC-PHASE5-SCENARIO-PERSISTENCE-INVARIANTS`. The public snapshot
+constructor is now closed behind `create`/`fromJsonMap`; scenario consequences
+and criterion values are canonicalized before hashing; optional provenance
+identities are canonicalized at the boundary; and empty values are rejected.
+The schema-1 wire shape, canonical hash algorithm and golden payload/hash are
+unchanged. Focused persistence tests pass 19/19, the combined scenario set
+passes 30/30, full analyze is clean, and the full suite passes 307 tests with
+1 skipped and 0 failures.
+
+This slice changed no Drift tables, JSON/backup lanes, repository, runtime
+materialization, reconciliation, UI or PODSETNIK behavior. The next dependency
+is the separately gated versioned scenario/JSON/backup envelope and parity
+contract.
