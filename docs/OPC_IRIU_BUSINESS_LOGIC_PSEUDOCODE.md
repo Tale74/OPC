@@ -642,7 +642,10 @@ PLAN:
 GUARDRAIL:
   planner is pure and read-only
   no database write, carrier write or runtime trigger occurs here
-  application requires a separate transaction, stock compensation and rollback
+  application requires a separate PREDMET transaction and rollback
+  SCENARIO never calls STANJE ROBE directly
+  existing PREDMET → IRIU → STANJE ROBE flow remains unchanged
+  STANJE ROBE reacts only when its own operational toggle is enabled
 ```
 
 ## 19. Unresolved owner queue

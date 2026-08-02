@@ -134,8 +134,11 @@ owner rule because `ZADRŽI` can leave a stale scenario row.
 
 The next dependency is the controlled ODQ-SCENARIO-001 reconciliation program:
 scenario-owned provenance/snapshot, one confirmation for eligible `OTVOREN`
-PREDMETI, stale-row/value removal, STANJE ROBE compensation, retry/rollback and
-locked-PREDMET protection. INC-001 scenario-first ordering remains preserved as
+PREDMETI, stale-row/value removal, retry/rollback and locked-PREDMET
+protection. The existing `PREDMET → IRIU → STANJE ROBE` contract remains an
+independent invariant: STANJE ROBE reads only its existing IRIU-backed flow
+when its own operational toggle is enabled; SCENARIO must not call or mutate
+the STANJE ROBE module. INC-001 scenario-first ordering remains preserved as
 incident evidence until its separate owner-gated correction.
 
 The owner also clarified that SCENARIO remains part of PREDMET authority: no

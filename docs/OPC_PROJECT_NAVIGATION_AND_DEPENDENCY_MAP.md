@@ -260,7 +260,10 @@ Only OSNOVNI_PAKET/SCENARIO_PAKET rows of the selected module are eligible for
 automatic reconciliation. RUČNA, LEGACY, unknown-provenance and other-module
 rows remain outside the plan. No runtime or carrier wiring is included in this
 slice; the next dependency is an explicit eligible-PREDMET application
-transaction with user notice, stock compensation and rollback evidence.
+transaction with user notice and rollback evidence. That transaction must use
+the existing PREDMET → IRIU path and must not call STANJE ROBE directly.
+STANJE ROBE remains an independent module whose own toggle controls its
+existing IRIU-backed lifecycle.
 
 Package boundary: SCENARIO owns the user-defined **OSNOVNI PAKET ROBE I
 USLUGA** and the additional package selected by each scenario. KATALOG remains

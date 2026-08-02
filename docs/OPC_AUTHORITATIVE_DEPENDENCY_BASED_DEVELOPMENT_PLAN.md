@@ -1528,8 +1528,11 @@ then become UI-upgradeable; changing a module default never silently rewrites
 an existing PREDMET.
 
 Implementation remains the controlled ODQ-SCENARIO-001 Phase 4 dependency:
-provenance/snapshot, eligible-`OTVOREN` confirmation, STANJE ROBE compensation,
-retry/rollback and locked-PREDMET protection are required before source change.
+provenance/snapshot, eligible-`OTVOREN` confirmation, retry/rollback and
+locked-PREDMET protection are required before source change. The existing
+`PREDMET → IRIU → STANJE ROBE` flow is preserved as an independent module
+invariant; SCENARIO does not call or mutate STANJE ROBE, and STANJE ROBE keeps
+its own operational-toggle boundary.
 
 The follow-up contract audit confirms that current MODULI are only a static
 navigation/entitlement layer and that `businessScenarioId` alone cannot carry
@@ -1598,6 +1601,7 @@ automatic reconciliation. RUČNA, LEGACY, unknown-provenance and other-module
 rows are protected. A non-empty plan carries a user-notice flag.
 
 This slice performs no Drift/JSON/full-backup write and no runtime trigger. The
-next separately gated task may implement the application transaction only
-after proving eligible-PREDMET confirmation, STANJE ROBE compensation,
-retry/rollback and unchanged locked-PREDMET behavior.
+next separately gated task may implement the PREDMET application transaction
+only after proving eligible-PREDMET confirmation, retry/rollback and unchanged
+locked-PREDMET behavior. It must preserve the existing PREDMET → IRIU flow
+without introducing direct SCENARIO → STANJE ROBE coupling.
