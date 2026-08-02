@@ -26,6 +26,7 @@ to `ModuliScreen`, opened by the MODULI action in the PREDMET list.
 ## Safety evidence
 
 - Base SHA: `6cb90b8b1d4b5f7f7337cebc3a760294e0fbc723`
+- Result/final SHA: `f8beff1eb467f6de71c80a6d517eb1d5a4688c1e`
 - Task branch: `task/OPC-PHASE9-SCENARIO-UI-V1`
 - Backup: `C:\Projekti\OPC\OPC v.1\BACKUPS\OPC_v1_PRE_PHASE9_SCENARIO_UI_20260802.zip`
 - Backup SHA-256: `CB1F6BDFCADC1FBFEDE70AF2DE0AA4D4062C7518E5041A8A75CBDEE2590570C2`
