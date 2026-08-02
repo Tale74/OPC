@@ -2,6 +2,7 @@
 
 **Task branch:** `task/OPC-PHASE5-SCENARIO-PERSISTENCE-INVARIANTS`
 **Base SHA:** `6985b8afc3ce65905f0d39fd489361aa3d2fa751`
+**Implementation SHA:** `848908c42be43a0d58befac81efc68aca0c9ad7f`
 **Application source baseline:** `e9ea4a9679f0a9f80521fc3aa362e78b7993d073`
 **Scope:** bounded schema-1 persistence contract hardening only.
 
