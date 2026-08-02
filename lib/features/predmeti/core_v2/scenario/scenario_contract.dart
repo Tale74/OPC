@@ -108,16 +108,39 @@ class ScenarioCondition {
 
 enum ScenarioConsequenceAction { required, recommended, suppressed }
 
+enum ScenarioItemProvider { firma, drugaSluzba, samoNapomena, vanPaketaFirme }
+
+enum ScenarioConditionChangeBehavior { obavestiIPrepustiOdluku }
+
 class ScenarioConsequence {
   const ScenarioConsequence({
     required this.katalogCategoryInternalName,
     required this.action,
     this.order = 0,
+    this.section = 2,
+    this.provider = ScenarioItemProvider.firma,
+    this.warning = '',
+    this.reason = '',
+    this.financiallyIncluded = true,
+    this.conditionChangeBehavior =
+        ScenarioConditionChangeBehavior.obavestiIPrepustiOdluku,
   });
 
   final String katalogCategoryInternalName;
   final ScenarioConsequenceAction action;
   final int order;
+  final int section;
+  final ScenarioItemProvider provider;
+  final String warning;
+  final String reason;
+  final bool financiallyIncluded;
+  final ScenarioConditionChangeBehavior conditionChangeBehavior;
+
+  String get businessStatus => switch (action) {
+    ScenarioConsequenceAction.required => 'AKTIVNO',
+    ScenarioConsequenceAction.recommended => 'PREPORUČENO',
+    ScenarioConsequenceAction.suppressed => 'NE PRIKAZUJE SE',
+  };
 }
 
 class ScenarioDefinition {
@@ -126,12 +149,14 @@ class ScenarioDefinition {
     required this.name,
     required this.condition,
     required this.consequences,
+    this.description = '',
   });
 
   final String id;
   final String name;
   final ScenarioCondition condition;
   final List<ScenarioConsequence> consequences;
+  final String description;
 }
 
 class ScenarioPackageResolution {

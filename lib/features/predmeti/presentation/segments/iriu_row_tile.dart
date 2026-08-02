@@ -354,6 +354,8 @@ class _IriuRowTileState extends State<IriuRowTile> {
     final prikaziPreporuceno =
         truthRow?.recommended == true && !imaValidanIznos;
     final prikaziBiohazard = truthRow?.biohazard == true;
+    final poslovnoUpozorenje = truthRow?.warning.trim() ?? '';
+    final provider = truthRow?.provider ?? 'firma';
     final stockConsequence = widget.stockConsequence;
     final prikaziStanjeRobeUpozorenje = stockConsequence != null;
     final suppressedFill = cs.surfaceContainerHighest.withValues(alpha: 0.4);
@@ -689,6 +691,14 @@ class _IriuRowTileState extends State<IriuRowTile> {
           foregroundColor: cs.onErrorContainer,
           compact: isNarrowAndroid,
         ),
+      if (provider == 'drugaSluzba')
+        statusChip(
+          label: 'OBEZBEĐUJE DRUGA SLUŽBA',
+          backgroundColor: cs.secondaryContainer,
+          borderColor: cs.secondary,
+          foregroundColor: cs.onSecondaryContainer,
+          compact: isNarrowAndroid,
+        ),
       if (prikaziStanjeRobeUpozorenje)
         statusChip(
           label: 'NIJE NA STANJU',
@@ -793,6 +803,29 @@ class _IriuRowTileState extends State<IriuRowTile> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           row,
+          if (poslovnoUpozorenje.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.health_and_safety_outlined,
+                  size: 18,
+                  color: cs.error,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    poslovnoUpozorenje,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (prikaziStanjeRobeUpozorenje) ...[
             const SizedBox(height: 8),
             Row(

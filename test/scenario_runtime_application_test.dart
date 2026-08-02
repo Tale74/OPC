@@ -11,7 +11,7 @@ import 'test_bootstrap.dart';
 
 void main() {
   test(
-    'SCENARIO engine applies rules and removes its stale rows only',
+    'SCENARIO engine waits for the user before removing a stale row',
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
@@ -71,10 +71,22 @@ void main() {
         scenarios: const [],
         osnovniPaket: const {IriuK.sanduk},
       );
-      expect(second.removedCategories, contains(IriuK.hladnjaca));
+      expect(second.removedCategories, isEmpty);
+      expect(
+        second.pendingUserDecisionRows.map((row) => row.interniNaziv),
+        contains(IriuK.hladnjaca),
+      );
       expect(
         (await iRiu.getIriu(predmetId)).map((row) => row.interniNaziv),
-        containsAll(['RUCNO_TEST', IriuK.sanduk]),
+        containsAll(['RUCNO_TEST', IriuK.sanduk, IriuK.hladnjaca]),
+      );
+      final pending = second.pendingUserDecisionRows.singleWhere(
+        (row) => row.interniNaziv == IriuK.hladnjaca,
+      );
+      await iRiu.resolveScenarioConditionChange(
+        predmetId: predmetId,
+        row: pending,
+        keepRow: false,
       );
       expect(
         (await iRiu.getIriu(

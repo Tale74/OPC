@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 import '../database/database.dart';
+import '../json_transfer/iriu_json_compat.dart';
 import '../constants/iriu_constants.dart';
 import '../format/app_filename_format.dart';
 import '../json_transfer/predmet_json_transfer_core.dart';
@@ -1133,7 +1134,7 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             _procitajBackupRed(
               'iriu',
               normalizedIriu,
-              (row) => IriuData.fromJson(row),
+              (row) => iriuDataFromCompatibleJson(row),
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
@@ -1794,7 +1795,10 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     json,
   );
   final iriuList = ((json['iriu'] as List?) ?? const <dynamic>[])
-      .map((item) => IriuData.fromJson((item as Map).cast<String, dynamic>()))
+      .map(
+        (item) =>
+            iriuDataFromCompatibleJson((item as Map).cast<String, dynamic>()),
+      )
       .toList(growable: false);
   final klList = ((json['kontaktLica'] as List?) ?? const <dynamic>[])
       .map(

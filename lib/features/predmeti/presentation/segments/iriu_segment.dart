@@ -299,6 +299,36 @@ class _IriuSegmentState extends State<IriuSegment> {
       osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
     );
     if (!mounted || !result.changed) return;
+    for (final row in result.pendingUserDecisionRows) {
+      if (!mounted) return;
+      final keep = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('PROMENJENE OKOLNOSTI'),
+          content: Text(
+            '${row.nazivPrikaz} više ne pripada rezultatu prema trenutnim '
+            'okolnostima PREDMETA. Red nije uklonjen. Šta želite da uradite?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('ZADRŽI RED'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('UKLONI RED'),
+            ),
+          ],
+        ),
+      );
+      await widget.iriuRepo.resolveScenarioConditionChange(
+        predmetId: widget.predmetId,
+        row: row,
+        keepRow: keep ?? true,
+      );
+    }
+    if (!mounted) return;
     final added = result.addedCategories.length;
     final removed = result.removedCategories.length;
     ScaffoldMessenger.of(context).showSnackBar(

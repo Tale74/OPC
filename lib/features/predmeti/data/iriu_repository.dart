@@ -8,6 +8,7 @@ import '../core_v2/services/iriu_ordering_service.dart';
 import '../core_v2/services/mesto_smrti_iriu_lifecycle_service.dart';
 import '../core_v2/scenario/scenario_contract.dart';
 import '../core_v2/scenario/scenario_rule_engine.dart';
+import '../core_v2/scenario/scenario_module_repository.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
@@ -20,6 +21,7 @@ class IriuRepository {
   static const String _mestoSmrtiScopeKey = 'MESTO_SMRTI_BLOCK';
   static const String _blok2ScopeKey = 'BLOK2';
   static const String _manualDeletionDecisionKey = 'MANUAL_DELETE';
+  static const String _scenarioScopeKey = 'SCENARIO';
 
   AppDatabase get db => _db;
 
@@ -67,24 +69,62 @@ class IriuRepository {
         .toList(growable: false);
     final existingNames = rows.map((row) => row.interniNaziv).toSet();
     final desired = evaluation.effectiveCategories;
+    final dismissed = await _getDismissedCategories(
+      predmetId: predmetId,
+      scopeKey: _scenarioScopeKey,
+    );
+    for (final category in dismissed.difference(desired)) {
+      await _clearDismissal(
+        predmetId: predmetId,
+        interniNaziv: category,
+        scopeKey: _scenarioScopeKey,
+      );
+    }
     final removals = scenarioRows
         .where((row) => !desired.contains(row.interniNaziv))
-        .toList(growable: false);
-    final additions = desired.difference(existingNames).toList()..sort();
+        .toList();
+    for (final row in rows.where(
+      (row) =>
+          evaluation.baseCategories.contains(row.interniNaziv) &&
+          provenanceByIriuId[row.id] == null,
+    )) {
+      scenarioRows.add(row);
+      await _db
+          .into(_db.iriuProvenance)
+          .insertOnConflictUpdate(
+            IriuProvenanceCompanion.insert(
+              iriuId: Value(row.id),
+              origin: 'OSNOVNI_PAKET',
+              moduleId: const Value('scenario'),
+              createdAt: DateTime.now().toUtc().toIso8601String(),
+            ),
+          );
+    }
+    final additions =
+        desired.difference(existingNames).difference(dismissed).toList()
+          ..sort();
 
     for (final row in removals) {
-      await obrisiStavkuSaLifecycleMemorijom(
-        predmetId: predmetId,
-        row: row,
-        rememberManualDeletion: false,
+      await azurirajStavku(
+        row.id,
+        const IriuCompanion(cekaOdlukuKorisnika: Value(true)),
       );
     }
     for (final internalName in additions) {
+      final decision = evaluation.decisions[internalName]!;
       final id = await _insertStavka(
         predmetId: predmetId,
         interniNaziv: internalName,
         nazivPrikaz: IriuK.naziviPrikaz[internalName] ?? internalName,
         redosled: await sledeciredosled(predmetId),
+        poslovniStatus: decision.businessStatus,
+        obezbedjuje: decision.provider.name,
+        poslovnoUpozorenje: decision.warning,
+        poslovniRazlog: decision.reason,
+        poslovnaCelina: decision.section,
+        poslovniRedosled: decision.order,
+        finansijskiUkljuceno: decision.financiallyIncluded,
+        scenarioUpravlja: true,
       );
       final isBase = evaluation.baseCategories.contains(internalName);
       final consequence = evaluation.scenarioCategories.firstWhere(
@@ -104,7 +144,7 @@ class IriuRepository {
               scenarioId: Value(
                 isBase || evaluation.matchedScenarioIds.isEmpty
                     ? null
-                    : evaluation.matchedScenarioIds.first,
+                    : evaluation.sourceScenarioIds[internalName],
               ),
               scenarioVersion: Value(isBase ? null : 1),
               ruleId: Value(
@@ -114,14 +154,61 @@ class IriuRepository {
             ),
           );
     }
+    for (final row in scenarioRows.where(
+      (row) => desired.contains(row.interniNaziv),
+    )) {
+      final decision = evaluation.decisions[row.interniNaziv]!;
+      await azurirajStavku(
+        row.id,
+        IriuCompanion(
+          poslovniStatus: Value(decision.businessStatus),
+          obezbedjuje: Value(decision.provider.name),
+          poslovnoUpozorenje: Value(decision.warning),
+          poslovniRazlog: Value(decision.reason),
+          poslovnaCelina: Value(decision.section),
+          poslovniRedosled: Value(decision.order),
+          finansijskiUkljuceno: Value(decision.financiallyIncluded),
+          scenarioUpravlja: const Value(true),
+          cekaOdlukuKorisnika: const Value(false),
+        ),
+      );
+    }
     if (removals.isNotEmpty || additions.isNotEmpty) {
       await _rebuildBusinessOrdering(predmetId);
     }
     return ScenarioSyncResult(
       matchedScenarioIds: evaluation.matchedScenarioIds,
       addedCategories: additions,
-      removedCategories: removals.map((row) => row.interniNaziv).toList(),
+      removedCategories: const <String>[],
+      pendingUserDecisionRows: removals,
     );
+  }
+
+  /// Konačna odluka korisnika za red čiji uslov više nije ispunjen.
+  Future<void> resolveScenarioConditionChange({
+    required int predmetId,
+    required IriuData row,
+    required bool keepRow,
+  }) async {
+    if (keepRow) {
+      await azurirajStavku(
+        row.id,
+        const IriuCompanion(
+          scenarioUpravlja: Value(false),
+          cekaOdlukuKorisnika: Value(false),
+        ),
+      );
+      await (_db.delete(
+        _db.iriuProvenance,
+      )..where((item) => item.iriuId.equals(row.id))).go();
+    } else {
+      await obrisiStavkuSaLifecycleMemorijom(
+        predmetId: predmetId,
+        row: row,
+        rememberManualDeletion: false,
+      );
+    }
+    await _rebuildBusinessOrdering(predmetId);
   }
 
   Future<List<IriuData>> getIriu(int predmetId) =>
@@ -172,6 +259,14 @@ class IriuRepository {
     String kom = '1',
     double iznos = 0.0,
     int redosled = 0,
+    String poslovniStatus = 'AKTIVNO',
+    String obezbedjuje = 'FIRMA',
+    String poslovnoUpozorenje = '',
+    String poslovniRazlog = '',
+    int poslovnaCelina = 6,
+    int poslovniRedosled = 0,
+    bool finansijskiUkljuceno = true,
+    bool scenarioUpravlja = false,
   }) => _db
       .into(_db.iriu)
       .insert(
@@ -183,6 +278,14 @@ class IriuRepository {
           kom: Value(kom),
           iznos: Value(iznos),
           redosled: Value(redosled),
+          poslovniStatus: Value(poslovniStatus),
+          obezbedjuje: Value(obezbedjuje),
+          poslovnoUpozorenje: Value(poslovnoUpozorenje),
+          poslovniRazlog: Value(poslovniRazlog),
+          poslovnaCelina: Value(poslovnaCelina),
+          poslovniRedosled: Value(poslovniRedosled),
+          finansijskiUkljuceno: Value(finansijskiUkljuceno),
+          scenarioUpravlja: Value(scenarioUpravlja),
         ),
       );
 
@@ -270,10 +373,20 @@ class IriuRepository {
     required IriuData row,
     bool rememberManualDeletion = true,
   }) async {
+    final scenarioProvenance = await (_db.select(
+      _db.iriuProvenance,
+    )..where((item) => item.iriuId.equals(row.id))).getSingleOrNull();
     await _db.transaction(() async {
       await _restoreStockEffectForDeletedCatalogSelection(row);
       await (_db.delete(_db.iriu)..where((i) => i.id.equals(row.id))).go();
       if (rememberManualDeletion) {
+        if (scenarioProvenance?.moduleId == ScenarioModuleRepository.moduleId) {
+          await _rememberDismissal(
+            predmetId: predmetId,
+            interniNaziv: row.interniNaziv,
+            scopeKey: _scenarioScopeKey,
+          );
+        }
         await _rememberManagedManualDeletionIfNeeded(
           predmetId: predmetId,
           interniNaziv: row.interniNaziv,
@@ -551,6 +664,38 @@ class IriuRepository {
     );
   }
 
+  Future<void> _rememberDismissal({
+    required int predmetId,
+    required String interniNaziv,
+    required String scopeKey,
+  }) => _db.customStatement(
+    '''
+        INSERT OR IGNORE INTO iriu_lifecycle_decisions (
+          predmet_id, interni_naziv, scope_key, decision_key, created_at
+        ) VALUES (?, ?, ?, ?, ?)
+        ''',
+    [
+      predmetId,
+      interniNaziv,
+      scopeKey,
+      _manualDeletionDecisionKey,
+      DateTime.now().toIso8601String(),
+    ],
+  );
+
+  Future<void> _clearDismissal({
+    required int predmetId,
+    required String interniNaziv,
+    required String scopeKey,
+  }) => _db.customStatement(
+    '''
+        DELETE FROM iriu_lifecycle_decisions
+        WHERE predmet_id = ? AND interni_naziv = ? AND scope_key = ?
+          AND decision_key = ?
+        ''',
+    [predmetId, interniNaziv, scopeKey, _manualDeletionDecisionKey],
+  );
+
   Future<void> rememberBlok2ManagedDismissal({
     required int predmetId,
     required String interniNaziv,
@@ -570,6 +715,11 @@ class IriuRepository {
   }) async {
     final scopeKey = _scopeKeyForManagedCategory(interniNaziv);
     if (scopeKey == null) {
+      await _clearDismissal(
+        predmetId: predmetId,
+        interniNaziv: interniNaziv,
+        scopeKey: _scenarioScopeKey,
+      );
       return;
     }
     await _db.customStatement(
@@ -578,6 +728,11 @@ class IriuRepository {
         WHERE predmet_id = ? AND interni_naziv = ? AND scope_key = ? AND decision_key = ?
       ''',
       [predmetId, interniNaziv, scopeKey, _manualDeletionDecisionKey],
+    );
+    await _clearDismissal(
+      predmetId: predmetId,
+      interniNaziv: interniNaziv,
+      scopeKey: _scenarioScopeKey,
     );
   }
 
@@ -597,12 +752,16 @@ class ScenarioSyncResult {
     required this.matchedScenarioIds,
     required this.addedCategories,
     required this.removedCategories,
+    this.pendingUserDecisionRows = const <IriuData>[],
   });
 
   final List<String> matchedScenarioIds;
   final List<String> addedCategories;
   final List<String> removedCategories;
+  final List<IriuData> pendingUserDecisionRows;
 
   bool get changed =>
-      addedCategories.isNotEmpty || removedCategories.isNotEmpty;
+      addedCategories.isNotEmpty ||
+      removedCategories.isNotEmpty ||
+      pendingUserDecisionRows.isNotEmpty;
 }

@@ -8851,6 +8851,121 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _poslovniStatusMeta = const VerificationMeta(
+    'poslovniStatus',
+  );
+  @override
+  late final GeneratedColumn<String> poslovniStatus = GeneratedColumn<String>(
+    'poslovni_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('AKTIVNO'),
+  );
+  static const VerificationMeta _obezbedjujeMeta = const VerificationMeta(
+    'obezbedjuje',
+  );
+  @override
+  late final GeneratedColumn<String> obezbedjuje = GeneratedColumn<String>(
+    'obezbedjuje',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('FIRMA'),
+  );
+  static const VerificationMeta _poslovnoUpozorenjeMeta =
+      const VerificationMeta('poslovnoUpozorenje');
+  @override
+  late final GeneratedColumn<String> poslovnoUpozorenje =
+      GeneratedColumn<String>(
+        'poslovno_upozorenje',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _poslovniRazlogMeta = const VerificationMeta(
+    'poslovniRazlog',
+  );
+  @override
+  late final GeneratedColumn<String> poslovniRazlog = GeneratedColumn<String>(
+    'poslovni_razlog',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _poslovnaCelinaMeta = const VerificationMeta(
+    'poslovnaCelina',
+  );
+  @override
+  late final GeneratedColumn<int> poslovnaCelina = GeneratedColumn<int>(
+    'poslovna_celina',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(6),
+  );
+  static const VerificationMeta _poslovniRedosledMeta = const VerificationMeta(
+    'poslovniRedosled',
+  );
+  @override
+  late final GeneratedColumn<int> poslovniRedosled = GeneratedColumn<int>(
+    'poslovni_redosled',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _finansijskiUkljucenoMeta =
+      const VerificationMeta('finansijskiUkljuceno');
+  @override
+  late final GeneratedColumn<bool> finansijskiUkljuceno = GeneratedColumn<bool>(
+    'finansijski_ukljuceno',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("finansijski_ukljuceno" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _scenarioUpravljaMeta = const VerificationMeta(
+    'scenarioUpravlja',
+  );
+  @override
+  late final GeneratedColumn<bool> scenarioUpravlja = GeneratedColumn<bool>(
+    'scenario_upravlja',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("scenario_upravlja" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _cekaOdlukuKorisnikaMeta =
+      const VerificationMeta('cekaOdlukuKorisnika');
+  @override
+  late final GeneratedColumn<bool> cekaOdlukuKorisnika = GeneratedColumn<bool>(
+    'ceka_odluku_korisnika',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ceka_odluku_korisnika" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -8862,6 +8977,15 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     iznos,
     cekiran,
     redosled,
+    poslovniStatus,
+    obezbedjuje,
+    poslovnoUpozorenje,
+    poslovniRazlog,
+    poslovnaCelina,
+    poslovniRedosled,
+    finansijskiUkljuceno,
+    scenarioUpravlja,
+    cekaOdlukuKorisnika,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8939,6 +9063,87 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         redosled.isAcceptableOrUnknown(data['redosled']!, _redosledMeta),
       );
     }
+    if (data.containsKey('poslovni_status')) {
+      context.handle(
+        _poslovniStatusMeta,
+        poslovniStatus.isAcceptableOrUnknown(
+          data['poslovni_status']!,
+          _poslovniStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('obezbedjuje')) {
+      context.handle(
+        _obezbedjujeMeta,
+        obezbedjuje.isAcceptableOrUnknown(
+          data['obezbedjuje']!,
+          _obezbedjujeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovno_upozorenje')) {
+      context.handle(
+        _poslovnoUpozorenjeMeta,
+        poslovnoUpozorenje.isAcceptableOrUnknown(
+          data['poslovno_upozorenje']!,
+          _poslovnoUpozorenjeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovni_razlog')) {
+      context.handle(
+        _poslovniRazlogMeta,
+        poslovniRazlog.isAcceptableOrUnknown(
+          data['poslovni_razlog']!,
+          _poslovniRazlogMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovna_celina')) {
+      context.handle(
+        _poslovnaCelinaMeta,
+        poslovnaCelina.isAcceptableOrUnknown(
+          data['poslovna_celina']!,
+          _poslovnaCelinaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovni_redosled')) {
+      context.handle(
+        _poslovniRedosledMeta,
+        poslovniRedosled.isAcceptableOrUnknown(
+          data['poslovni_redosled']!,
+          _poslovniRedosledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('finansijski_ukljuceno')) {
+      context.handle(
+        _finansijskiUkljucenoMeta,
+        finansijskiUkljuceno.isAcceptableOrUnknown(
+          data['finansijski_ukljuceno']!,
+          _finansijskiUkljucenoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scenario_upravlja')) {
+      context.handle(
+        _scenarioUpravljaMeta,
+        scenarioUpravlja.isAcceptableOrUnknown(
+          data['scenario_upravlja']!,
+          _scenarioUpravljaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ceka_odluku_korisnika')) {
+      context.handle(
+        _cekaOdlukuKorisnikaMeta,
+        cekaOdlukuKorisnika.isAcceptableOrUnknown(
+          data['ceka_odluku_korisnika']!,
+          _cekaOdlukuKorisnikaMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -8984,6 +9189,42 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         DriftSqlType.int,
         data['${effectivePrefix}redosled'],
       )!,
+      poslovniStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}poslovni_status'],
+      )!,
+      obezbedjuje: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}obezbedjuje'],
+      )!,
+      poslovnoUpozorenje: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}poslovno_upozorenje'],
+      )!,
+      poslovniRazlog: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}poslovni_razlog'],
+      )!,
+      poslovnaCelina: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poslovna_celina'],
+      )!,
+      poslovniRedosled: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poslovni_redosled'],
+      )!,
+      finansijskiUkljuceno: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}finansijski_ukljuceno'],
+      )!,
+      scenarioUpravlja: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}scenario_upravlja'],
+      )!,
+      cekaOdlukuKorisnika: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ceka_odluku_korisnika'],
+      )!,
     );
   }
 
@@ -9012,6 +9253,18 @@ class IriuData extends DataClass implements Insertable<IriuData> {
   final double iznos;
   final bool cekiran;
   final int redosled;
+
+  /// Materijalizovani, objašnjivi rezultat jedinog SCENARIO evaluatora.
+  /// PREDMET ostaje izvor činjenica; ova polja su izvedeni rezultat za red.
+  final String poslovniStatus;
+  final String obezbedjuje;
+  final String poslovnoUpozorenje;
+  final String poslovniRazlog;
+  final int poslovnaCelina;
+  final int poslovniRedosled;
+  final bool finansijskiUkljuceno;
+  final bool scenarioUpravlja;
+  final bool cekaOdlukuKorisnika;
   const IriuData({
     required this.id,
     required this.predmetId,
@@ -9022,6 +9275,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     required this.iznos,
     required this.cekiran,
     required this.redosled,
+    required this.poslovniStatus,
+    required this.obezbedjuje,
+    required this.poslovnoUpozorenje,
+    required this.poslovniRazlog,
+    required this.poslovnaCelina,
+    required this.poslovniRedosled,
+    required this.finansijskiUkljuceno,
+    required this.scenarioUpravlja,
+    required this.cekaOdlukuKorisnika,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9039,6 +9301,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     map['iznos'] = Variable<double>(iznos);
     map['cekiran'] = Variable<bool>(cekiran);
     map['redosled'] = Variable<int>(redosled);
+    map['poslovni_status'] = Variable<String>(poslovniStatus);
+    map['obezbedjuje'] = Variable<String>(obezbedjuje);
+    map['poslovno_upozorenje'] = Variable<String>(poslovnoUpozorenje);
+    map['poslovni_razlog'] = Variable<String>(poslovniRazlog);
+    map['poslovna_celina'] = Variable<int>(poslovnaCelina);
+    map['poslovni_redosled'] = Variable<int>(poslovniRedosled);
+    map['finansijski_ukljuceno'] = Variable<bool>(finansijskiUkljuceno);
+    map['scenario_upravlja'] = Variable<bool>(scenarioUpravlja);
+    map['ceka_odluku_korisnika'] = Variable<bool>(cekaOdlukuKorisnika);
     return map;
   }
 
@@ -9055,6 +9326,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       iznos: Value(iznos),
       cekiran: Value(cekiran),
       redosled: Value(redosled),
+      poslovniStatus: Value(poslovniStatus),
+      obezbedjuje: Value(obezbedjuje),
+      poslovnoUpozorenje: Value(poslovnoUpozorenje),
+      poslovniRazlog: Value(poslovniRazlog),
+      poslovnaCelina: Value(poslovnaCelina),
+      poslovniRedosled: Value(poslovniRedosled),
+      finansijskiUkljuceno: Value(finansijskiUkljuceno),
+      scenarioUpravlja: Value(scenarioUpravlja),
+      cekaOdlukuKorisnika: Value(cekaOdlukuKorisnika),
     );
   }
 
@@ -9075,6 +9355,21 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       iznos: serializer.fromJson<double>(json['iznos']),
       cekiran: serializer.fromJson<bool>(json['cekiran']),
       redosled: serializer.fromJson<int>(json['redosled']),
+      poslovniStatus: serializer.fromJson<String>(json['poslovniStatus']),
+      obezbedjuje: serializer.fromJson<String>(json['obezbedjuje']),
+      poslovnoUpozorenje: serializer.fromJson<String>(
+        json['poslovnoUpozorenje'],
+      ),
+      poslovniRazlog: serializer.fromJson<String>(json['poslovniRazlog']),
+      poslovnaCelina: serializer.fromJson<int>(json['poslovnaCelina']),
+      poslovniRedosled: serializer.fromJson<int>(json['poslovniRedosled']),
+      finansijskiUkljuceno: serializer.fromJson<bool>(
+        json['finansijskiUkljuceno'],
+      ),
+      scenarioUpravlja: serializer.fromJson<bool>(json['scenarioUpravlja']),
+      cekaOdlukuKorisnika: serializer.fromJson<bool>(
+        json['cekaOdlukuKorisnika'],
+      ),
     );
   }
   @override
@@ -9092,6 +9387,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       'iznos': serializer.toJson<double>(iznos),
       'cekiran': serializer.toJson<bool>(cekiran),
       'redosled': serializer.toJson<int>(redosled),
+      'poslovniStatus': serializer.toJson<String>(poslovniStatus),
+      'obezbedjuje': serializer.toJson<String>(obezbedjuje),
+      'poslovnoUpozorenje': serializer.toJson<String>(poslovnoUpozorenje),
+      'poslovniRazlog': serializer.toJson<String>(poslovniRazlog),
+      'poslovnaCelina': serializer.toJson<int>(poslovnaCelina),
+      'poslovniRedosled': serializer.toJson<int>(poslovniRedosled),
+      'finansijskiUkljuceno': serializer.toJson<bool>(finansijskiUkljuceno),
+      'scenarioUpravlja': serializer.toJson<bool>(scenarioUpravlja),
+      'cekaOdlukuKorisnika': serializer.toJson<bool>(cekaOdlukuKorisnika),
     };
   }
 
@@ -9105,6 +9409,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     double? iznos,
     bool? cekiran,
     int? redosled,
+    String? poslovniStatus,
+    String? obezbedjuje,
+    String? poslovnoUpozorenje,
+    String? poslovniRazlog,
+    int? poslovnaCelina,
+    int? poslovniRedosled,
+    bool? finansijskiUkljuceno,
+    bool? scenarioUpravlja,
+    bool? cekaOdlukuKorisnika,
   }) => IriuData(
     id: id ?? this.id,
     predmetId: predmetId ?? this.predmetId,
@@ -9117,6 +9430,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     iznos: iznos ?? this.iznos,
     cekiran: cekiran ?? this.cekiran,
     redosled: redosled ?? this.redosled,
+    poslovniStatus: poslovniStatus ?? this.poslovniStatus,
+    obezbedjuje: obezbedjuje ?? this.obezbedjuje,
+    poslovnoUpozorenje: poslovnoUpozorenje ?? this.poslovnoUpozorenje,
+    poslovniRazlog: poslovniRazlog ?? this.poslovniRazlog,
+    poslovnaCelina: poslovnaCelina ?? this.poslovnaCelina,
+    poslovniRedosled: poslovniRedosled ?? this.poslovniRedosled,
+    finansijskiUkljuceno: finansijskiUkljuceno ?? this.finansijskiUkljuceno,
+    scenarioUpravlja: scenarioUpravlja ?? this.scenarioUpravlja,
+    cekaOdlukuKorisnika: cekaOdlukuKorisnika ?? this.cekaOdlukuKorisnika,
   );
   IriuData copyWithCompanion(IriuCompanion data) {
     return IriuData(
@@ -9135,6 +9457,33 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       iznos: data.iznos.present ? data.iznos.value : this.iznos,
       cekiran: data.cekiran.present ? data.cekiran.value : this.cekiran,
       redosled: data.redosled.present ? data.redosled.value : this.redosled,
+      poslovniStatus: data.poslovniStatus.present
+          ? data.poslovniStatus.value
+          : this.poslovniStatus,
+      obezbedjuje: data.obezbedjuje.present
+          ? data.obezbedjuje.value
+          : this.obezbedjuje,
+      poslovnoUpozorenje: data.poslovnoUpozorenje.present
+          ? data.poslovnoUpozorenje.value
+          : this.poslovnoUpozorenje,
+      poslovniRazlog: data.poslovniRazlog.present
+          ? data.poslovniRazlog.value
+          : this.poslovniRazlog,
+      poslovnaCelina: data.poslovnaCelina.present
+          ? data.poslovnaCelina.value
+          : this.poslovnaCelina,
+      poslovniRedosled: data.poslovniRedosled.present
+          ? data.poslovniRedosled.value
+          : this.poslovniRedosled,
+      finansijskiUkljuceno: data.finansijskiUkljuceno.present
+          ? data.finansijskiUkljuceno.value
+          : this.finansijskiUkljuceno,
+      scenarioUpravlja: data.scenarioUpravlja.present
+          ? data.scenarioUpravlja.value
+          : this.scenarioUpravlja,
+      cekaOdlukuKorisnika: data.cekaOdlukuKorisnika.present
+          ? data.cekaOdlukuKorisnika.value
+          : this.cekaOdlukuKorisnika,
     );
   }
 
@@ -9149,7 +9498,16 @@ class IriuData extends DataClass implements Insertable<IriuData> {
           ..write('kom: $kom, ')
           ..write('iznos: $iznos, ')
           ..write('cekiran: $cekiran, ')
-          ..write('redosled: $redosled')
+          ..write('redosled: $redosled, ')
+          ..write('poslovniStatus: $poslovniStatus, ')
+          ..write('obezbedjuje: $obezbedjuje, ')
+          ..write('poslovnoUpozorenje: $poslovnoUpozorenje, ')
+          ..write('poslovniRazlog: $poslovniRazlog, ')
+          ..write('poslovnaCelina: $poslovnaCelina, ')
+          ..write('poslovniRedosled: $poslovniRedosled, ')
+          ..write('finansijskiUkljuceno: $finansijskiUkljuceno, ')
+          ..write('scenarioUpravlja: $scenarioUpravlja, ')
+          ..write('cekaOdlukuKorisnika: $cekaOdlukuKorisnika')
           ..write(')'))
         .toString();
   }
@@ -9165,6 +9523,15 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     iznos,
     cekiran,
     redosled,
+    poslovniStatus,
+    obezbedjuje,
+    poslovnoUpozorenje,
+    poslovniRazlog,
+    poslovnaCelina,
+    poslovniRedosled,
+    finansijskiUkljuceno,
+    scenarioUpravlja,
+    cekaOdlukuKorisnika,
   );
   @override
   bool operator ==(Object other) =>
@@ -9178,7 +9545,16 @@ class IriuData extends DataClass implements Insertable<IriuData> {
           other.kom == this.kom &&
           other.iznos == this.iznos &&
           other.cekiran == this.cekiran &&
-          other.redosled == this.redosled);
+          other.redosled == this.redosled &&
+          other.poslovniStatus == this.poslovniStatus &&
+          other.obezbedjuje == this.obezbedjuje &&
+          other.poslovnoUpozorenje == this.poslovnoUpozorenje &&
+          other.poslovniRazlog == this.poslovniRazlog &&
+          other.poslovnaCelina == this.poslovnaCelina &&
+          other.poslovniRedosled == this.poslovniRedosled &&
+          other.finansijskiUkljuceno == this.finansijskiUkljuceno &&
+          other.scenarioUpravlja == this.scenarioUpravlja &&
+          other.cekaOdlukuKorisnika == this.cekaOdlukuKorisnika);
 }
 
 class IriuCompanion extends UpdateCompanion<IriuData> {
@@ -9191,6 +9567,15 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
   final Value<double> iznos;
   final Value<bool> cekiran;
   final Value<int> redosled;
+  final Value<String> poslovniStatus;
+  final Value<String> obezbedjuje;
+  final Value<String> poslovnoUpozorenje;
+  final Value<String> poslovniRazlog;
+  final Value<int> poslovnaCelina;
+  final Value<int> poslovniRedosled;
+  final Value<bool> finansijskiUkljuceno;
+  final Value<bool> scenarioUpravlja;
+  final Value<bool> cekaOdlukuKorisnika;
   const IriuCompanion({
     this.id = const Value.absent(),
     this.predmetId = const Value.absent(),
@@ -9201,6 +9586,15 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     this.iznos = const Value.absent(),
     this.cekiran = const Value.absent(),
     this.redosled = const Value.absent(),
+    this.poslovniStatus = const Value.absent(),
+    this.obezbedjuje = const Value.absent(),
+    this.poslovnoUpozorenje = const Value.absent(),
+    this.poslovniRazlog = const Value.absent(),
+    this.poslovnaCelina = const Value.absent(),
+    this.poslovniRedosled = const Value.absent(),
+    this.finansijskiUkljuceno = const Value.absent(),
+    this.scenarioUpravlja = const Value.absent(),
+    this.cekaOdlukuKorisnika = const Value.absent(),
   });
   IriuCompanion.insert({
     this.id = const Value.absent(),
@@ -9212,6 +9606,15 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     this.iznos = const Value.absent(),
     this.cekiran = const Value.absent(),
     this.redosled = const Value.absent(),
+    this.poslovniStatus = const Value.absent(),
+    this.obezbedjuje = const Value.absent(),
+    this.poslovnoUpozorenje = const Value.absent(),
+    this.poslovniRazlog = const Value.absent(),
+    this.poslovnaCelina = const Value.absent(),
+    this.poslovniRedosled = const Value.absent(),
+    this.finansijskiUkljuceno = const Value.absent(),
+    this.scenarioUpravlja = const Value.absent(),
+    this.cekaOdlukuKorisnika = const Value.absent(),
   }) : predmetId = Value(predmetId),
        interniNaziv = Value(interniNaziv);
   static Insertable<IriuData> custom({
@@ -9224,6 +9627,15 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     Expression<double>? iznos,
     Expression<bool>? cekiran,
     Expression<int>? redosled,
+    Expression<String>? poslovniStatus,
+    Expression<String>? obezbedjuje,
+    Expression<String>? poslovnoUpozorenje,
+    Expression<String>? poslovniRazlog,
+    Expression<int>? poslovnaCelina,
+    Expression<int>? poslovniRedosled,
+    Expression<bool>? finansijskiUkljuceno,
+    Expression<bool>? scenarioUpravlja,
+    Expression<bool>? cekaOdlukuKorisnika,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -9236,6 +9648,17 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
       if (iznos != null) 'iznos': iznos,
       if (cekiran != null) 'cekiran': cekiran,
       if (redosled != null) 'redosled': redosled,
+      if (poslovniStatus != null) 'poslovni_status': poslovniStatus,
+      if (obezbedjuje != null) 'obezbedjuje': obezbedjuje,
+      if (poslovnoUpozorenje != null) 'poslovno_upozorenje': poslovnoUpozorenje,
+      if (poslovniRazlog != null) 'poslovni_razlog': poslovniRazlog,
+      if (poslovnaCelina != null) 'poslovna_celina': poslovnaCelina,
+      if (poslovniRedosled != null) 'poslovni_redosled': poslovniRedosled,
+      if (finansijskiUkljuceno != null)
+        'finansijski_ukljuceno': finansijskiUkljuceno,
+      if (scenarioUpravlja != null) 'scenario_upravlja': scenarioUpravlja,
+      if (cekaOdlukuKorisnika != null)
+        'ceka_odluku_korisnika': cekaOdlukuKorisnika,
     });
   }
 
@@ -9249,6 +9672,15 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     Value<double>? iznos,
     Value<bool>? cekiran,
     Value<int>? redosled,
+    Value<String>? poslovniStatus,
+    Value<String>? obezbedjuje,
+    Value<String>? poslovnoUpozorenje,
+    Value<String>? poslovniRazlog,
+    Value<int>? poslovnaCelina,
+    Value<int>? poslovniRedosled,
+    Value<bool>? finansijskiUkljuceno,
+    Value<bool>? scenarioUpravlja,
+    Value<bool>? cekaOdlukuKorisnika,
   }) {
     return IriuCompanion(
       id: id ?? this.id,
@@ -9261,6 +9693,15 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
       iznos: iznos ?? this.iznos,
       cekiran: cekiran ?? this.cekiran,
       redosled: redosled ?? this.redosled,
+      poslovniStatus: poslovniStatus ?? this.poslovniStatus,
+      obezbedjuje: obezbedjuje ?? this.obezbedjuje,
+      poslovnoUpozorenje: poslovnoUpozorenje ?? this.poslovnoUpozorenje,
+      poslovniRazlog: poslovniRazlog ?? this.poslovniRazlog,
+      poslovnaCelina: poslovnaCelina ?? this.poslovnaCelina,
+      poslovniRedosled: poslovniRedosled ?? this.poslovniRedosled,
+      finansijskiUkljuceno: finansijskiUkljuceno ?? this.finansijskiUkljuceno,
+      scenarioUpravlja: scenarioUpravlja ?? this.scenarioUpravlja,
+      cekaOdlukuKorisnika: cekaOdlukuKorisnika ?? this.cekaOdlukuKorisnika,
     );
   }
 
@@ -9296,6 +9737,33 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     if (redosled.present) {
       map['redosled'] = Variable<int>(redosled.value);
     }
+    if (poslovniStatus.present) {
+      map['poslovni_status'] = Variable<String>(poslovniStatus.value);
+    }
+    if (obezbedjuje.present) {
+      map['obezbedjuje'] = Variable<String>(obezbedjuje.value);
+    }
+    if (poslovnoUpozorenje.present) {
+      map['poslovno_upozorenje'] = Variable<String>(poslovnoUpozorenje.value);
+    }
+    if (poslovniRazlog.present) {
+      map['poslovni_razlog'] = Variable<String>(poslovniRazlog.value);
+    }
+    if (poslovnaCelina.present) {
+      map['poslovna_celina'] = Variable<int>(poslovnaCelina.value);
+    }
+    if (poslovniRedosled.present) {
+      map['poslovni_redosled'] = Variable<int>(poslovniRedosled.value);
+    }
+    if (finansijskiUkljuceno.present) {
+      map['finansijski_ukljuceno'] = Variable<bool>(finansijskiUkljuceno.value);
+    }
+    if (scenarioUpravlja.present) {
+      map['scenario_upravlja'] = Variable<bool>(scenarioUpravlja.value);
+    }
+    if (cekaOdlukuKorisnika.present) {
+      map['ceka_odluku_korisnika'] = Variable<bool>(cekaOdlukuKorisnika.value);
+    }
     return map;
   }
 
@@ -9310,7 +9778,16 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
           ..write('kom: $kom, ')
           ..write('iznos: $iznos, ')
           ..write('cekiran: $cekiran, ')
-          ..write('redosled: $redosled')
+          ..write('redosled: $redosled, ')
+          ..write('poslovniStatus: $poslovniStatus, ')
+          ..write('obezbedjuje: $obezbedjuje, ')
+          ..write('poslovnoUpozorenje: $poslovnoUpozorenje, ')
+          ..write('poslovniRazlog: $poslovniRazlog, ')
+          ..write('poslovnaCelina: $poslovnaCelina, ')
+          ..write('poslovniRedosled: $poslovniRedosled, ')
+          ..write('finansijskiUkljuceno: $finansijskiUkljuceno, ')
+          ..write('scenarioUpravlja: $scenarioUpravlja, ')
+          ..write('cekaOdlukuKorisnika: $cekaOdlukuKorisnika')
           ..write(')'))
         .toString();
   }
@@ -22128,6 +22605,15 @@ typedef $$IriuTableCreateCompanionBuilder =
       Value<double> iznos,
       Value<bool> cekiran,
       Value<int> redosled,
+      Value<String> poslovniStatus,
+      Value<String> obezbedjuje,
+      Value<String> poslovnoUpozorenje,
+      Value<String> poslovniRazlog,
+      Value<int> poslovnaCelina,
+      Value<int> poslovniRedosled,
+      Value<bool> finansijskiUkljuceno,
+      Value<bool> scenarioUpravlja,
+      Value<bool> cekaOdlukuKorisnika,
     });
 typedef $$IriuTableUpdateCompanionBuilder =
     IriuCompanion Function({
@@ -22140,6 +22626,15 @@ typedef $$IriuTableUpdateCompanionBuilder =
       Value<double> iznos,
       Value<bool> cekiran,
       Value<int> redosled,
+      Value<String> poslovniStatus,
+      Value<String> obezbedjuje,
+      Value<String> poslovnoUpozorenje,
+      Value<String> poslovniRazlog,
+      Value<int> poslovnaCelina,
+      Value<int> poslovniRedosled,
+      Value<bool> finansijskiUkljuceno,
+      Value<bool> scenarioUpravlja,
+      Value<bool> cekaOdlukuKorisnika,
     });
 
 final class $$IriuTableReferences
@@ -22254,6 +22749,51 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
 
   ColumnFilters<int> get redosled => $composableBuilder(
     column: $table.redosled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poslovniStatus => $composableBuilder(
+    column: $table.poslovniStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get obezbedjuje => $composableBuilder(
+    column: $table.obezbedjuje,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poslovnoUpozorenje => $composableBuilder(
+    column: $table.poslovnoUpozorenje,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poslovniRazlog => $composableBuilder(
+    column: $table.poslovniRazlog,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get poslovnaCelina => $composableBuilder(
+    column: $table.poslovnaCelina,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get poslovniRedosled => $composableBuilder(
+    column: $table.poslovniRedosled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get finansijskiUkljuceno => $composableBuilder(
+    column: $table.finansijskiUkljuceno,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get scenarioUpravlja => $composableBuilder(
+    column: $table.scenarioUpravlja,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get cekaOdlukuKorisnika => $composableBuilder(
+    column: $table.cekaOdlukuKorisnika,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -22379,6 +22919,51 @@ class $$IriuTableOrderingComposer extends Composer<_$AppDatabase, $IriuTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get poslovniStatus => $composableBuilder(
+    column: $table.poslovniStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get obezbedjuje => $composableBuilder(
+    column: $table.obezbedjuje,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get poslovnoUpozorenje => $composableBuilder(
+    column: $table.poslovnoUpozorenje,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get poslovniRazlog => $composableBuilder(
+    column: $table.poslovniRazlog,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get poslovnaCelina => $composableBuilder(
+    column: $table.poslovnaCelina,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get poslovniRedosled => $composableBuilder(
+    column: $table.poslovniRedosled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get finansijskiUkljuceno => $composableBuilder(
+    column: $table.finansijskiUkljuceno,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get scenarioUpravlja => $composableBuilder(
+    column: $table.scenarioUpravlja,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get cekaOdlukuKorisnika => $composableBuilder(
+    column: $table.cekaOdlukuKorisnika,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$PredmetiTableOrderingComposer get predmetId {
     final $$PredmetiTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -22441,6 +23026,51 @@ class $$IriuTableAnnotationComposer
 
   GeneratedColumn<int> get redosled =>
       $composableBuilder(column: $table.redosled, builder: (column) => column);
+
+  GeneratedColumn<String> get poslovniStatus => $composableBuilder(
+    column: $table.poslovniStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get obezbedjuje => $composableBuilder(
+    column: $table.obezbedjuje,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get poslovnoUpozorenje => $composableBuilder(
+    column: $table.poslovnoUpozorenje,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get poslovniRazlog => $composableBuilder(
+    column: $table.poslovniRazlog,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get poslovnaCelina => $composableBuilder(
+    column: $table.poslovnaCelina,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get poslovniRedosled => $composableBuilder(
+    column: $table.poslovniRedosled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get finansijskiUkljuceno => $composableBuilder(
+    column: $table.finansijskiUkljuceno,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get scenarioUpravlja => $composableBuilder(
+    column: $table.scenarioUpravlja,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get cekaOdlukuKorisnika => $composableBuilder(
+    column: $table.cekaOdlukuKorisnika,
+    builder: (column) => column,
+  );
 
   $$PredmetiTableAnnotationComposer get predmetId {
     final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
@@ -22558,6 +23188,15 @@ class $$IriuTableTableManager
                 Value<double> iznos = const Value.absent(),
                 Value<bool> cekiran = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
+                Value<String> poslovniStatus = const Value.absent(),
+                Value<String> obezbedjuje = const Value.absent(),
+                Value<String> poslovnoUpozorenje = const Value.absent(),
+                Value<String> poslovniRazlog = const Value.absent(),
+                Value<int> poslovnaCelina = const Value.absent(),
+                Value<int> poslovniRedosled = const Value.absent(),
+                Value<bool> finansijskiUkljuceno = const Value.absent(),
+                Value<bool> scenarioUpravlja = const Value.absent(),
+                Value<bool> cekaOdlukuKorisnika = const Value.absent(),
               }) => IriuCompanion(
                 id: id,
                 predmetId: predmetId,
@@ -22568,6 +23207,15 @@ class $$IriuTableTableManager
                 iznos: iznos,
                 cekiran: cekiran,
                 redosled: redosled,
+                poslovniStatus: poslovniStatus,
+                obezbedjuje: obezbedjuje,
+                poslovnoUpozorenje: poslovnoUpozorenje,
+                poslovniRazlog: poslovniRazlog,
+                poslovnaCelina: poslovnaCelina,
+                poslovniRedosled: poslovniRedosled,
+                finansijskiUkljuceno: finansijskiUkljuceno,
+                scenarioUpravlja: scenarioUpravlja,
+                cekaOdlukuKorisnika: cekaOdlukuKorisnika,
               ),
           createCompanionCallback:
               ({
@@ -22580,6 +23228,15 @@ class $$IriuTableTableManager
                 Value<double> iznos = const Value.absent(),
                 Value<bool> cekiran = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
+                Value<String> poslovniStatus = const Value.absent(),
+                Value<String> obezbedjuje = const Value.absent(),
+                Value<String> poslovnoUpozorenje = const Value.absent(),
+                Value<String> poslovniRazlog = const Value.absent(),
+                Value<int> poslovnaCelina = const Value.absent(),
+                Value<int> poslovniRedosled = const Value.absent(),
+                Value<bool> finansijskiUkljuceno = const Value.absent(),
+                Value<bool> scenarioUpravlja = const Value.absent(),
+                Value<bool> cekaOdlukuKorisnika = const Value.absent(),
               }) => IriuCompanion.insert(
                 id: id,
                 predmetId: predmetId,
@@ -22590,6 +23247,15 @@ class $$IriuTableTableManager
                 iznos: iznos,
                 cekiran: cekiran,
                 redosled: redosled,
+                poslovniStatus: poslovniStatus,
+                obezbedjuje: obezbedjuje,
+                poslovnoUpozorenje: poslovnoUpozorenje,
+                poslovniRazlog: poslovniRazlog,
+                poslovnaCelina: poslovnaCelina,
+                poslovniRedosled: poslovniRedosled,
+                finansijskiUkljuceno: finansijskiUkljuceno,
+                scenarioUpravlja: scenarioUpravlja,
+                cekaOdlukuKorisnika: cekaOdlukuKorisnika,
               ),
           withReferenceMapper: (p0) => p0
               .map(

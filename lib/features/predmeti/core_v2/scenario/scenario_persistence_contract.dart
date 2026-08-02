@@ -302,6 +302,8 @@ ScenarioDefinition scenarioDefinitionFromJsonMap(Map<String, dynamic> json) =>
 Map<String, dynamic> _scenarioToJson(ScenarioDefinition scenario) => {
   'id': scenario.id,
   'name': scenario.name,
+  if (scenario.description.trim().isNotEmpty)
+    'description': scenario.description.trim(),
   'condition': _conditionToJson(scenario.condition),
   'consequences': scenario.consequences.map(_consequenceToJson).toList(),
 };
@@ -310,12 +312,14 @@ ScenarioDefinition _scenarioFromJson(Map<String, dynamic> json) {
   _assertAllowedKeys(json, const {
     'id',
     'name',
+    'description',
     'condition',
     'consequences',
   }, 'scenario definition');
   return ScenarioDefinition(
     id: _requiredTextValue(json, 'id'),
     name: _requiredTextValue(json, 'name'),
+    description: (json['description'] as String? ?? '').trim(),
     condition: _conditionFromJson(_requiredMap(json, 'condition')),
     consequences: _requiredMapList(
       json,
@@ -395,6 +399,16 @@ Map<String, dynamic> _consequenceToJson(ScenarioConsequence consequence) => {
   'katalogCategoryInternalName': consequence.katalogCategoryInternalName,
   'action': _consequenceActionWireName(consequence.action),
   'order': consequence.order,
+  if (consequence.section != 2) 'section': consequence.section,
+  if (consequence.provider != ScenarioItemProvider.firma)
+    'provider': consequence.provider.name,
+  if (consequence.warning.trim().isNotEmpty)
+    'warning': consequence.warning.trim(),
+  if (consequence.reason.trim().isNotEmpty) 'reason': consequence.reason.trim(),
+  if (!consequence.financiallyIncluded) 'financiallyIncluded': false,
+  if (consequence.conditionChangeBehavior !=
+      ScenarioConditionChangeBehavior.obavestiIPrepustiOdluku)
+    'conditionChangeBehavior': consequence.conditionChangeBehavior.name,
 };
 
 ScenarioConsequence _consequenceFromJson(Map<String, dynamic> json) {
@@ -402,6 +416,12 @@ ScenarioConsequence _consequenceFromJson(Map<String, dynamic> json) {
     'katalogCategoryInternalName',
     'action',
     'order',
+    'section',
+    'provider',
+    'warning',
+    'reason',
+    'financiallyIncluded',
+    'conditionChangeBehavior',
   }, 'scenario consequence');
   return ScenarioConsequence(
     katalogCategoryInternalName: _requiredTextValue(
@@ -410,6 +430,19 @@ ScenarioConsequence _consequenceFromJson(Map<String, dynamic> json) {
     ),
     action: _consequenceActionFromWire(_requiredTextValue(json, 'action')),
     order: _requiredIntValue(json, 'order'),
+    section: (json['section'] as int?) ?? 2,
+    provider: ScenarioItemProvider.values.firstWhere(
+      (value) => value.name == (json['provider'] as String? ?? 'firma'),
+    ),
+    warning: (json['warning'] as String? ?? '').trim(),
+    reason: (json['reason'] as String? ?? '').trim(),
+    financiallyIncluded: json['financiallyIncluded'] as bool? ?? true,
+    conditionChangeBehavior: ScenarioConditionChangeBehavior.values.firstWhere(
+      (value) =>
+          value.name ==
+          (json['conditionChangeBehavior'] as String? ??
+              'obavestiIPrepustiOdluku'),
+    ),
   );
 }
 
@@ -568,6 +601,7 @@ ScenarioDefinition _freezeScenario(ScenarioDefinition scenario) =>
     ScenarioDefinition(
       id: _requiredText(scenario.id, 'scenario.id'),
       name: _requiredText(scenario.name, 'scenario.name'),
+      description: scenario.description.trim(),
       condition: _freezeCondition(scenario.condition),
       consequences: List<ScenarioConsequence>.unmodifiable(
         scenario.consequences
@@ -579,6 +613,12 @@ ScenarioDefinition _freezeScenario(ScenarioDefinition scenario) =>
                 ),
                 action: consequence.action,
                 order: consequence.order,
+                section: consequence.section,
+                provider: consequence.provider,
+                warning: consequence.warning,
+                reason: consequence.reason,
+                financiallyIncluded: consequence.financiallyIncluded,
+                conditionChangeBehavior: consequence.conditionChangeBehavior,
               ),
             )
             .toList(growable: false),

@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/json_transfer/iriu_json_compat.dart';
 import 'package:opc_v4/core/json_transfer/predmet_json_transfer_core.dart';
 import 'package:opc_v4/core/utils/json_export_import.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
@@ -28,8 +29,8 @@ void main() {
         exportVerzija: 4,
       );
 
-      final json = jsonDecode(jsonEncode(predmet.toJson()))
-          as Map<String, dynamic>;
+      final json =
+          jsonDecode(jsonEncode(predmet.toJson())) as Map<String, dynamic>;
 
       expect(json['brojPredmeta'], 'JSON-001/2026');
       expect(json['businessScenarioId'], 'default_funeral_ceremony_policy');
@@ -39,59 +40,53 @@ void main() {
       expect(json['prezime'], 'Petrovic');
     });
 
-    test(
-      'single-PREDMET import preserves unknown katalogStableArticleId '
-      'without catalog relinking',
-      () async {
-        final db = createTestDatabase();
-        addTearDown(db.close);
+    test('single-PREDMET import preserves unknown katalogStableArticleId '
+        'without catalog relinking', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
 
-        final template = await _insertPredmet(
-          db,
-          brojPredmeta: 'LOCAL-TEMPLATE/2026',
-        );
-        final importedPredmet = template.copyWith(
-          id: 999,
-          brojPredmeta: 'IMPORTED-001/2026',
-          ime: 'Import',
-          prezime: 'Predmet',
-          exportVerzija: 7,
-          sourceIdentity: 'imported_test_source',
-        );
-        const unknownStableId = 'unknown-stable-article-id';
-        final importedIriu = _iriuFromJson(
-          predmetId: importedPredmet.id,
-          stableId: unknownStableId,
-          interniNaziv: 'SANDUK',
-          nazivPrikaz: 'Uvozni sanduk',
-        );
+      final template = await _insertPredmet(
+        db,
+        brojPredmeta: 'LOCAL-TEMPLATE/2026',
+      );
+      final importedPredmet = template.copyWith(
+        id: 999,
+        brojPredmeta: 'IMPORTED-001/2026',
+        ime: 'Import',
+        prezime: 'Predmet',
+        exportVerzija: 7,
+        sourceIdentity: 'imported_test_source',
+      );
+      const unknownStableId = 'unknown-stable-article-id';
+      final importedIriu = _iriuFromJson(
+        predmetId: importedPredmet.id,
+        stableId: unknownStableId,
+        interniNaziv: 'SANDUK',
+        nazivPrikaz: 'Uvozni sanduk',
+      );
 
-        final newId = await PredmetiRepository(db)
-            .uveziPredmetSaPovezanimPodacima(
-          predmet: importedPredmet,
-          iriu: [importedIriu],
-          kontaktLica: const [],
-        );
+      final newId = await PredmetiRepository(db)
+          .uveziPredmetSaPovezanimPodacima(
+            predmet: importedPredmet,
+            iriu: [importedIriu],
+            kontaktLica: const [],
+          );
 
-        final savedPredmet = await _getPredmet(db, newId);
-        final savedIriu = await _getIriuForPredmet(db, newId);
-        final unknownCatalogRows = await (db.select(db.katalogArtikli)
-              ..where((k) => k.stableArticleId.equals(unknownStableId)))
-            .get();
+      final savedPredmet = await _getPredmet(db, newId);
+      final savedIriu = await _getIriuForPredmet(db, newId);
+      final unknownCatalogRows = await (db.select(
+        db.katalogArtikli,
+      )..where((k) => k.stableArticleId.equals(unknownStableId))).get();
 
-        expect(savedPredmet.id, isNot(importedPredmet.id));
-        expect(savedPredmet.brojPredmeta, 'IMPORTED-001/2026');
-        expect(savedPredmet.exportVerzija, 7);
-        expect(savedPredmet.sourceIdentity, 'imported_test_source');
-        expect(savedIriu, hasLength(1));
-        expect(
-          savedIriu.single.katalogStableArticleId,
-          unknownStableId,
-        );
-        expect(savedIriu.single.predmetId, newId);
-        expect(unknownCatalogRows, isEmpty);
-      },
-    );
+      expect(savedPredmet.id, isNot(importedPredmet.id));
+      expect(savedPredmet.brojPredmeta, 'IMPORTED-001/2026');
+      expect(savedPredmet.exportVerzija, 7);
+      expect(savedPredmet.sourceIdentity, 'imported_test_source');
+      expect(savedIriu, hasLength(1));
+      expect(savedIriu.single.katalogStableArticleId, unknownStableId);
+      expect(savedIriu.single.predmetId, newId);
+      expect(unknownCatalogRows, isEmpty);
+    });
 
     test(
       'replacement import keeps local PREDMET id and imported business state',
@@ -112,7 +107,9 @@ void main() {
           interniNaziv: 'SANDUK',
           nazivPrikaz: 'Lokalni sanduk',
         );
-        await db.into(db.kontaktLica).insert(
+        await db
+            .into(db.kontaktLica)
+            .insert(
               KontaktLicaCompanion.insert(
                 predmetId: local.id,
                 blok: 'NARU_OPREMA',
@@ -160,7 +157,10 @@ void main() {
         expect(savedPredmet.sourceIdentity, 'replacement_source');
         expect(savedIriu, hasLength(1));
         expect(savedIriu.single.interniNaziv, 'OBELEZJE');
-        expect(savedIriu.single.katalogStableArticleId, 'replacement-stable-id');
+        expect(
+          savedIriu.single.katalogStableArticleId,
+          'replacement-stable-id',
+        );
         expect(savedIriu.single.predmetId, local.id);
         expect(savedContacts, hasLength(1));
         expect(savedContacts.single.imePrezime, 'Uvozni kontakt');
@@ -187,12 +187,14 @@ void main() {
           nazivPrikaz: 'Stari JSON sanduk',
         );
 
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: sourcePredmet.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
 
         expect(json.containsKey('stanjeRobeConsequenceTransfer'), isFalse);
         expect(json.containsKey('stanjeRobeOperativnoOmoguceno'), isFalse);
@@ -202,8 +204,10 @@ void main() {
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
         final importedPredmeti = await targetDb.select(targetDb.predmeti).get();
-        final importedIriu =
-            await _getIriuForPredmet(targetDb, importedPredmeti.single.id);
+        final importedIriu = await _getIriuForPredmet(
+          targetDb,
+          importedPredmeti.single.id,
+        );
 
         expect(importedPredmeti, hasLength(1));
         expect(importedPredmeti.single.brojPredmeta, 'OLD-JSON-001/2026');
@@ -223,12 +227,14 @@ void main() {
         brojPredmeta: 'DOCEK-DATUM-001/2026',
         docekDatum: '19.07.2026.',
       );
-      final json = jsonDecode(
-        await serializePredmetJsonForTest(
-          db: sourceDb,
-          predmetId: sourcePredmet.id,
-        ),
-      ) as Map<String, dynamic>;
+      final json =
+          jsonDecode(
+                await serializePredmetJsonForTest(
+                  db: sourceDb,
+                  predmetId: sourcePredmet.id,
+                ),
+              )
+              as Map<String, dynamic>;
 
       expect(
         (json['predmet'] as Map<String, dynamic>)['docekDatum'],
@@ -265,12 +271,14 @@ void main() {
           nazivPrikaz: 'Legacy sanduk',
         );
 
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: sourcePredmet.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
         json.remove('exportVerzija');
         final predmetMap = json['predmet'] as Map<String, dynamic>;
         predmetMap['id'] = 99999;
@@ -286,26 +294,37 @@ void main() {
         );
         final candidateNormalized =
             PredmetJsonTransferCore.normalizePredmetImportMap(
-          predmet: candidateDocument.predmet,
-          root: json,
-        );
+              predmet: candidateDocument.predmet,
+              root: json,
+            );
 
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
         final importedPredmeti = await targetDb.select(targetDb.predmeti).get();
         final importedPredmet = importedPredmeti.single;
-        final importedIriu =
-            await _getIriuForPredmet(targetDb, importedPredmet.id);
+        final importedIriu = await _getIriuForPredmet(
+          targetDb,
+          importedPredmet.id,
+        );
 
         expect(candidateDocument.brojPredmeta, 'LEGACY-METADATA-001/2026');
         expect(candidateNormalized['id'], 99999);
-        expect(candidateNormalized['brojPredmeta'], importedPredmet.brojPredmeta);
-        expect(candidateNormalized['exportVerzija'], importedPredmet.exportVerzija);
+        expect(
+          candidateNormalized['brojPredmeta'],
+          importedPredmet.brojPredmeta,
+        );
+        expect(
+          candidateNormalized['exportVerzija'],
+          importedPredmet.exportVerzija,
+        );
         expect(
           candidateNormalized['businessScenarioId'],
           importedPredmet.businessScenarioId,
         );
-        expect(candidateNormalized['sourceIdentity'], importedPredmet.sourceIdentity);
+        expect(
+          candidateNormalized['sourceIdentity'],
+          importedPredmet.sourceIdentity,
+        );
         expect(
           candidateNormalized['createdByKorisnikId'],
           importedPredmet.createdByKorisnikId,
@@ -319,8 +338,10 @@ void main() {
           importedPredmet.lastBusinessModifiedAt,
         );
         expect(importedPredmet.id, isNot(99999));
-        expect(importedIriu.single.katalogStableArticleId,
-            'legacy-metadata-stable');
+        expect(
+          importedIriu.single.katalogStableArticleId,
+          'legacy-metadata-stable',
+        );
       },
     );
 
@@ -347,7 +368,9 @@ void main() {
           nazivPrikaz: 'Kandidat sanduk',
           iznos: 1200,
         );
-        await db.into(db.kontaktLica).insert(
+        await db
+            .into(db.kontaktLica)
+            .insert(
               KontaktLicaCompanion.insert(
                 predmetId: predmet.id,
                 blok: 'NARU_OPREMA',
@@ -359,15 +382,17 @@ void main() {
           db: db,
           predmetId: predmet.id,
         );
-        final runtimeMap = jsonDecode(runtimeJsonString) as Map<String, dynamic>;
-        final candidateDocument =
-            PredmetJsonTransferCore.decode(runtimeJsonString);
-        final candidateMap = jsonDecode(
-          PredmetJsonTransferCore.encode(candidateDocument),
-        ) as Map<String, dynamic>;
-        final encodedFromRuntimeMap = jsonDecode(
-          PredmetJsonTransferCore.encodeMap(runtimeMap),
-        ) as Map<String, dynamic>;
+        final runtimeMap =
+            jsonDecode(runtimeJsonString) as Map<String, dynamic>;
+        final candidateDocument = PredmetJsonTransferCore.decode(
+          runtimeJsonString,
+        );
+        final candidateMap =
+            jsonDecode(PredmetJsonTransferCore.encode(candidateDocument))
+                as Map<String, dynamic>;
+        final encodedFromRuntimeMap =
+            jsonDecode(PredmetJsonTransferCore.encodeMap(runtimeMap))
+                as Map<String, dynamic>;
 
         expect(candidateDocument.brojPredmeta, 'CANDIDATE-001/2026');
         expect(candidateDocument.isCurrentPredmetFormat, isTrue);
@@ -393,21 +418,16 @@ void main() {
 
         await _insertPredmet(sourceDb, brojPredmeta: 'LEGACY-FULL-001/2026');
         final json = await _backupJsonFromDb(sourceDb);
-        final appPodesavanja =
-            json['appPodesavanja'] as Map<String, dynamic>;
+        final appPodesavanja = json['appPodesavanja'] as Map<String, dynamic>;
         appPodesavanja.remove('stanjeRobeOperativnoOmoguceno');
 
         await importBackupJsonMapForTest(db: targetDb, json: json);
 
-        final importedAppPodesavanja =
-            await _getAppPodesavanja(targetDb);
+        final importedAppPodesavanja = await _getAppPodesavanja(targetDb);
         final importedPredmeti = await targetDb.select(targetDb.predmeti).get();
 
         expect(importedPredmeti.single.brojPredmeta, 'LEGACY-FULL-001/2026');
-        expect(
-          importedAppPodesavanja.stanjeRobeOperativnoOmoguceno,
-          isFalse,
-        );
+        expect(importedAppPodesavanja.stanjeRobeOperativnoOmoguceno, isFalse);
       },
     );
 
@@ -424,8 +444,7 @@ void main() {
         await importBackupJsonMapForTest(db: targetDb, json: enabledJson);
 
         expect(
-          (await _getAppPodesavanja(targetDb))
-              .stanjeRobeOperativnoOmoguceno,
+          (await _getAppPodesavanja(targetDb)).stanjeRobeOperativnoOmoguceno,
           isTrue,
         );
 
@@ -434,32 +453,27 @@ void main() {
         await importBackupJsonMapForTest(db: targetDb, json: disabledJson);
 
         expect(
-          (await _getAppPodesavanja(targetDb))
-              .stanjeRobeOperativnoOmoguceno,
+          (await _getAppPodesavanja(targetDb)).stanjeRobeOperativnoOmoguceno,
           isFalse,
         );
       },
     );
 
-    test(
-      'full backup rejects invalid operational toggle value',
-      () async {
-        final sourceDb = createTestDatabase();
-        final targetDb = createTestDatabase();
-        addTearDown(sourceDb.close);
-        addTearDown(targetDb.close);
+    test('full backup rejects invalid operational toggle value', () async {
+      final sourceDb = createTestDatabase();
+      final targetDb = createTestDatabase();
+      addTearDown(sourceDb.close);
+      addTearDown(targetDb.close);
 
-        final json = await _backupJsonFromDb(sourceDb);
-        final appPodesavanja =
-            json['appPodesavanja'] as Map<String, dynamic>;
-        appPodesavanja['stanjeRobeOperativnoOmoguceno'] = 'false';
+      final json = await _backupJsonFromDb(sourceDb);
+      final appPodesavanja = json['appPodesavanja'] as Map<String, dynamic>;
+      appPodesavanja['stanjeRobeOperativnoOmoguceno'] = 'false';
 
-        await expectLater(
-          importBackupJsonMapForTest(db: targetDb, json: json),
-          throwsA(anything),
-        );
-      },
-    );
+      await expectLater(
+        importBackupJsonMapForTest(db: targetDb, json: json),
+        throwsA(anything),
+      );
+    });
 
     test(
       'export with unresolved consequence emits safe transfer block',
@@ -489,9 +503,14 @@ void main() {
           iznos: 1200,
         );
 
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(db: db, predmetId: predmet.id),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: predmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
         final block =
             json['stanjeRobeConsequenceTransfer'] as Map<String, dynamic>;
         final items = block['items'] as List<dynamic>;
@@ -548,15 +567,17 @@ void main() {
           db: db,
           predmetId: predmet.id,
         );
-        final runtimeMap = jsonDecode(runtimeJsonString) as Map<String, dynamic>;
-        final candidateDocument =
-            PredmetJsonTransferCore.decode(runtimeJsonString);
-        final candidateMap = jsonDecode(
-          PredmetJsonTransferCore.encode(candidateDocument),
-        ) as Map<String, dynamic>;
-        final encodedFromRuntimeMap = jsonDecode(
-          PredmetJsonTransferCore.encodeMap(runtimeMap),
-        ) as Map<String, dynamic>;
+        final runtimeMap =
+            jsonDecode(runtimeJsonString) as Map<String, dynamic>;
+        final candidateDocument = PredmetJsonTransferCore.decode(
+          runtimeJsonString,
+        );
+        final candidateMap =
+            jsonDecode(PredmetJsonTransferCore.encode(candidateDocument))
+                as Map<String, dynamic>;
+        final encodedFromRuntimeMap =
+            jsonDecode(PredmetJsonTransferCore.encodeMap(runtimeMap))
+                as Map<String, dynamic>;
         final candidateBlock =
             candidateMap['stanjeRobeConsequenceTransfer']
                 as Map<String, dynamic>;
@@ -570,8 +591,10 @@ void main() {
         expect(candidateMap['schemaVersion'], 7);
         _expectNoSinglePredmetStockOwnershipPayload(candidateMap);
         expect(candidateItem['iriuTransferIndex'], 0);
-        expect(candidateItem['katalogStableArticleId'],
-            'candidate-stock-stable-001');
+        expect(
+          candidateItem['katalogStableArticleId'],
+          'candidate-stock-stable-001',
+        );
         for (final field in forbiddenStanjeRobeConsequenceTransferItemFields) {
           expect(candidateItem.containsKey(field), isFalse);
         }
@@ -610,16 +633,15 @@ void main() {
           isFalse,
         );
 
-        await (db.update(db.stanjeRobeStavke)
-              ..where(
-                (s) => s.stableArticleId.equals('availability-helper-stable'),
-              ))
+        await (db.update(db.stanjeRobeStavke)..where(
+              (s) => s.stableArticleId.equals('availability-helper-stable'),
+            ))
             .write(
-          const StanjeRobeStavkeCompanion(
-            trenutnaKolicina: Value(1),
-            aktivna: Value(false),
-          ),
-        );
+              const StanjeRobeStavkeCompanion(
+                trenutnaKolicina: Value(1),
+                aktivna: Value(false),
+              ),
+            );
 
         expect(
           await service.hasSufficientStockForCoveredSelection(
@@ -629,15 +651,10 @@ void main() {
           isFalse,
         );
 
-        await (db.update(db.stanjeRobeStavke)
-              ..where(
-                (s) => s.stableArticleId.equals('availability-helper-stable'),
-              ))
-            .write(
-          const StanjeRobeStavkeCompanion(
-            aktivna: Value(true),
-          ),
-        );
+        await (db.update(db.stanjeRobeStavke)..where(
+              (s) => s.stableArticleId.equals('availability-helper-stable'),
+            ))
+            .write(const StanjeRobeStavkeCompanion(aktivna: Value(true)));
 
         expect(
           await service.hasSufficientStockForCoveredSelection(
@@ -677,20 +694,24 @@ void main() {
           kategorija: 'SANDUK',
           naziv: 'Sanduk sa posledicom',
         );
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: sourcePredmet.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
 
         await _insertStock(targetDb, stableId: 'stock-stable-002', quantity: 5);
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
-        final importedPredmet = (await targetDb.select(targetDb.predmeti).get())
-            .single;
-        final consequences =
-            await _getActiveConsequences(targetDb, importedPredmet.id);
+        final importedPredmet =
+            (await targetDb.select(targetDb.predmeti).get()).single;
+        final consequences = await _getActiveConsequences(
+          targetDb,
+          importedPredmet.id,
+        );
         final stock = await _getStock(targetDb, 'stock-stable-002');
         final effects = await _getAppliedEffects(targetDb);
 
@@ -729,27 +750,33 @@ void main() {
           kategorija: 'OBELEZJE',
           naziv: 'Nepoznato obelezje',
         );
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: sourcePredmet.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
 
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
-        final importedPredmet = (await targetDb.select(targetDb.predmeti).get())
-            .single;
-        final consequences =
-            await _getActiveConsequences(targetDb, importedPredmet.id);
-        final catalogRows = await (targetDb.select(targetDb.katalogArtikli)
-              ..where(
-                (k) => k.stableArticleId.equals('unknown-stock-stable'),
-              ))
-            .get();
+        final importedPredmet =
+            (await targetDb.select(targetDb.predmeti).get()).single;
+        final consequences = await _getActiveConsequences(
+          targetDb,
+          importedPredmet.id,
+        );
+        final catalogRows =
+            await (targetDb.select(targetDb.katalogArtikli)..where(
+                  (k) => k.stableArticleId.equals('unknown-stock-stable'),
+                ))
+                .get();
 
-        expect(consequences.single.katalogStableArticleId,
-            'unknown-stock-stable');
+        expect(
+          consequences.single.katalogStableArticleId,
+          'unknown-stock-stable',
+        );
         expect(catalogRows, isEmpty);
       },
     );
@@ -781,20 +808,24 @@ void main() {
           kategorija: 'POKROV_GARNITURA',
           naziv: 'Pokrov garnitura',
         );
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: sourcePredmet.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
 
         await _insertStock(targetDb, stableId: 'stock-stable-004', quantity: 2);
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
-        final importedPredmet = (await targetDb.select(targetDb.predmeti).get())
-            .single;
-        final consequences =
-            await _getActiveConsequences(targetDb, importedPredmet.id);
+        final importedPredmet =
+            (await targetDb.select(targetDb.predmeti).get()).single;
+        final consequences = await _getActiveConsequences(
+          targetDb,
+          importedPredmet.id,
+        );
         final stock = await _getStock(targetDb, 'stock-stable-004');
 
         expect(consequences.single.status, 'UNRESOLVED');
@@ -829,20 +860,24 @@ void main() {
           kategorija: 'SANDUK',
           naziv: 'Nedostupan sanduk',
         );
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: sourcePredmet.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
 
         await _insertStock(targetDb, stableId: 'stock-stable-005', quantity: 0);
         await importPredmetJsonMapForTest(db: targetDb, json: json);
 
-        final importedPredmet = (await targetDb.select(targetDb.predmeti).get())
-            .single;
-        final consequences =
-            await _getActiveConsequences(targetDb, importedPredmet.id);
+        final importedPredmet =
+            (await targetDb.select(targetDb.predmeti).get()).single;
+        final consequences = await _getActiveConsequences(
+          targetDb,
+          importedPredmet.id,
+        );
         final effects = await _getAppliedEffects(targetDb);
 
         expect(consequences, hasLength(1));
@@ -897,12 +932,14 @@ void main() {
           kategorija: 'OBELEZJE',
           naziv: 'Uvozno obelezje',
         );
-        final json = jsonDecode(
-          await serializePredmetJsonForTest(
-            db: sourceDb,
-            predmetId: incoming.id,
-          ),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: incoming.id,
+                  ),
+                )
+                as Map<String, dynamic>;
 
         await importPredmetJsonMapForTest(
           db: targetDb,
@@ -920,54 +957,58 @@ void main() {
       },
     );
 
-    test('forbidden consequence inventory fields reject in candidate and runtime',
-        () async {
-      final sourceDb = createTestDatabase();
-      final targetDb = createTestDatabase();
-      addTearDown(sourceDb.close);
-      addTearDown(targetDb.close);
+    test(
+      'forbidden consequence inventory fields reject in candidate and runtime',
+      () async {
+        final sourceDb = createTestDatabase();
+        final targetDb = createTestDatabase();
+        addTearDown(sourceDb.close);
+        addTearDown(targetDb.close);
 
-      final sourcePredmet = await _insertPredmet(
-        sourceDb,
-        brojPredmeta: 'STOCK-JSON-008/2026',
-      );
-      final sourceIriuId = await _insertIriu(
-        sourceDb,
-        predmetId: sourcePredmet.id,
-        stableId: 'stock-stable-008',
-        interniNaziv: 'SANDUK',
-        nazivPrikaz: 'Sanduk',
-      );
-      await _insertUnresolvedConsequence(
-        sourceDb,
-        predmetId: sourcePredmet.id,
-        iriuId: sourceIriuId,
-        stableId: 'stock-stable-008',
-        kategorija: 'SANDUK',
-        naziv: 'Sanduk',
-      );
-      final json = jsonDecode(
-        await serializePredmetJsonForTest(
-          db: sourceDb,
+        final sourcePredmet = await _insertPredmet(
+          sourceDb,
+          brojPredmeta: 'STOCK-JSON-008/2026',
+        );
+        final sourceIriuId = await _insertIriu(
+          sourceDb,
           predmetId: sourcePredmet.id,
-        ),
-      ) as Map<String, dynamic>;
-      final block =
-          json['stanjeRobeConsequenceTransfer'] as Map<String, dynamic>;
-      final item = (block['items'] as List<dynamic>).single
-          as Map<String, dynamic>;
-      item['trenutnaKolicina'] = 10;
+          stableId: 'stock-stable-008',
+          interniNaziv: 'SANDUK',
+          nazivPrikaz: 'Sanduk',
+        );
+        await _insertUnresolvedConsequence(
+          sourceDb,
+          predmetId: sourcePredmet.id,
+          iriuId: sourceIriuId,
+          stableId: 'stock-stable-008',
+          kategorija: 'SANDUK',
+          naziv: 'Sanduk',
+        );
+        final json =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: sourcePredmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final block =
+            json['stanjeRobeConsequenceTransfer'] as Map<String, dynamic>;
+        final item =
+            (block['items'] as List<dynamic>).single as Map<String, dynamic>;
+        item['trenutnaKolicina'] = 10;
 
-      expect(
-        () => PredmetJsonTransferCore.decode(jsonEncode(json)),
-        throwsA(isA<PredmetJsonTransferValidationException>()),
-      );
-      await expectLater(
-        importPredmetJsonMapForTest(db: targetDb, json: json),
-        throwsA(anything),
-      );
-      expect(await targetDb.select(targetDb.predmeti).get(), isEmpty);
-    });
+        expect(
+          () => PredmetJsonTransferCore.decode(jsonEncode(json)),
+          throwsA(isA<PredmetJsonTransferValidationException>()),
+        );
+        await expectLater(
+          importPredmetJsonMapForTest(db: targetDb, json: json),
+          throwsA(anything),
+        );
+        expect(await targetDb.select(targetDb.predmeti).get(), isEmpty);
+      },
+    );
 
     test('invalid iriuTransferIndex blocks import', () async {
       final sourceDb = createTestDatabase();
@@ -994,16 +1035,18 @@ void main() {
         kategorija: 'SANDUK',
         naziv: 'Sanduk',
       );
-      final json = jsonDecode(
-        await serializePredmetJsonForTest(
-          db: sourceDb,
-          predmetId: sourcePredmet.id,
-        ),
-      ) as Map<String, dynamic>;
+      final json =
+          jsonDecode(
+                await serializePredmetJsonForTest(
+                  db: sourceDb,
+                  predmetId: sourcePredmet.id,
+                ),
+              )
+              as Map<String, dynamic>;
       final block =
           json['stanjeRobeConsequenceTransfer'] as Map<String, dynamic>;
-      final item = (block['items'] as List<dynamic>).single
-          as Map<String, dynamic>;
+      final item =
+          (block['items'] as List<dynamic>).single as Map<String, dynamic>;
       item['iriuTransferIndex'] = 99;
 
       expect(
@@ -1042,12 +1085,14 @@ void main() {
         kategorija: 'SANDUK',
         naziv: 'Sanduk',
       );
-      final json = jsonDecode(
-        await serializePredmetJsonForTest(
-          db: sourceDb,
-          predmetId: sourcePredmet.id,
-        ),
-      ) as Map<String, dynamic>;
+      final json =
+          jsonDecode(
+                await serializePredmetJsonForTest(
+                  db: sourceDb,
+                  predmetId: sourcePredmet.id,
+                ),
+              )
+              as Map<String, dynamic>;
       final block =
           json['stanjeRobeConsequenceTransfer'] as Map<String, dynamic>;
       block['schemaVersion'] = 2;
@@ -1075,7 +1120,9 @@ Future<PredmetiData> _insertPredmet(
   int exportVerzija = 0,
   String docekDatum = '',
 }) async {
-  final id = await db.into(db.predmeti).insert(
+  final id = await db
+      .into(db.predmeti)
+      .insert(
         PredmetiCompanion.insert(
           brojPredmeta: Value(brojPredmeta),
           datumKreiranja: const Value('2026-05-17T08:00:00.000'),
@@ -1098,7 +1145,9 @@ Future<int> _insertIriu(
   required String nazivPrikaz,
   double iznos = 0.0,
 }) {
-  return db.into(db.iriu).insert(
+  return db
+      .into(db.iriu)
+      .insert(
         IriuCompanion.insert(
           predmetId: predmetId,
           katalogStableArticleId: Value(stableId),
@@ -1139,7 +1188,9 @@ Future<void> _insertStock(
   required String stableId,
   required double quantity,
 }) {
-  return db.into(db.stanjeRobeStavke).insert(
+  return db
+      .into(db.stanjeRobeStavke)
+      .insert(
         StanjeRobeStavkeCompanion.insert(
           stableArticleId: stableId,
           trenutnaKolicina: Value(quantity),
@@ -1151,13 +1202,10 @@ Future<void> _insertStock(
       );
 }
 
-Future<StanjeRobeStavkeData> _getStock(
-  AppDatabase db,
-  String stableId,
-) {
-  return (db.select(db.stanjeRobeStavke)
-        ..where((s) => s.stableArticleId.equals(stableId)))
-      .getSingle();
+Future<StanjeRobeStavkeData> _getStock(AppDatabase db, String stableId) {
+  return (db.select(
+    db.stanjeRobeStavke,
+  )..where((s) => s.stableArticleId.equals(stableId))).getSingle();
 }
 
 Future<List<StanjeRobeAppliedEffect>> _getAppliedEffects(AppDatabase db) {
@@ -1168,8 +1216,9 @@ Future<List<StanjeRobePoslediceData>> _getActiveConsequences(
   AppDatabase db,
   int predmetId,
 ) {
-  return StanjeRobePoslediceRepository(db)
-      .listActiveUnresolvedForPredmet(predmetId);
+  return StanjeRobePoslediceRepository(
+    db,
+  ).listActiveUnresolvedForPredmet(predmetId);
 }
 
 IriuData _iriuFromJson({
@@ -1178,7 +1227,7 @@ IriuData _iriuFromJson({
   required String interniNaziv,
   required String nazivPrikaz,
 }) {
-  return IriuData.fromJson(<String, dynamic>{
+  return iriuDataFromCompatibleJson(<String, dynamic>{
     'id': 8000,
     'predmetId': predmetId,
     'katalogStableArticleId': stableId,
@@ -1212,17 +1261,18 @@ Future<PredmetiData> _getPredmet(AppDatabase db, int id) {
 }
 
 Future<List<IriuData>> _getIriuForPredmet(AppDatabase db, int predmetId) {
-  return (db.select(db.iriu)..where((i) => i.predmetId.equals(predmetId)))
-      .get();
+  return (db.select(
+    db.iriu,
+  )..where((i) => i.predmetId.equals(predmetId))).get();
 }
 
 Future<List<KontaktLicaData>> _getContactsForPredmet(
   AppDatabase db,
   int predmetId,
 ) {
-  return (db.select(db.kontaktLica)
-        ..where((k) => k.predmetId.equals(predmetId)))
-      .get();
+  return (db.select(
+    db.kontaktLica,
+  )..where((k) => k.predmetId.equals(predmetId))).get();
 }
 
 Future<Map<String, dynamic>> _backupJsonFromDb(AppDatabase db) async {
@@ -1231,15 +1281,14 @@ Future<Map<String, dynamic>> _backupJsonFromDb(AppDatabase db) async {
 }
 
 Future<AppPodesavanjaData> _getAppPodesavanja(AppDatabase db) {
-  return (db.select(db.appPodesavanja)..where((p) => p.id.equals(1)))
-      .getSingle();
+  return (db.select(
+    db.appPodesavanja,
+  )..where((p) => p.id.equals(1))).getSingle();
 }
 
 Future<void> _setOperationalToggle(AppDatabase db, bool enabled) {
   return (db.update(db.appPodesavanja)..where((p) => p.id.equals(1))).write(
-    AppPodesavanjaCompanion(
-      stanjeRobeOperativnoOmoguceno: Value(enabled),
-    ),
+    AppPodesavanjaCompanion(stanjeRobeOperativnoOmoguceno: Value(enabled)),
   );
 }
 

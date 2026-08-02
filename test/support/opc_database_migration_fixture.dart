@@ -163,6 +163,21 @@ final class OpcDatabaseMigrationFixture {
       db.execute('DROP INDEX IF EXISTS $index');
     }
 
+    if (version < 24) {
+      for (final column in const [
+        'poslovni_status',
+        'obezbedjuje',
+        'poslovno_upozorenje',
+        'poslovni_razlog',
+        'poslovna_celina',
+        'poslovni_redosled',
+        'finansijski_ukljuceno',
+        'scenario_upravlja',
+        'ceka_odluku_korisnika',
+      ]) {
+        _dropColumn(db, 'iriu', column);
+      }
+    }
     if (version < 23) {
       db.execute('DROP TABLE IF EXISTS iriu_provenance');
       db.execute('DROP TABLE IF EXISTS predmet_scenario_snapshots');

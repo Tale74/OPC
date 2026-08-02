@@ -15,16 +15,17 @@ class ScenarioRuleEngine {
   }) {
     final matched = <ScenarioDefinition>[];
     final consequences = <String, ScenarioConsequence>{};
+    final sourceScenarioIds = <String, String>{};
     for (final scenario in scenarios) {
       if (!scenario.condition.matches(predmet)) continue;
       matched.add(scenario);
       for (final consequence in scenario.consequences) {
-        final previous = consequences[consequence.katalogCategoryInternalName];
-        // Opoziv ima prednost nad ponudom iz drugog pravila.
-        if (previous == null ||
-            consequence.action == ScenarioConsequenceAction.suppressed) {
-          consequences[consequence.katalogCategoryInternalName] = consequence;
-        }
+        final key = consequence.katalogCategoryInternalName;
+        final previous = consequences[key];
+        consequences[key] = previous == null
+            ? consequence
+            : _mergeConsequences(previous, consequence);
+        sourceScenarioIds[key] = scenario.id;
       }
     }
     final suppressed = consequences.values
@@ -34,7 +35,10 @@ class ScenarioRuleEngine {
     final scenarioCategories =
         consequences.values
             .where(
-              (item) => !suppressed.contains(item.katalogCategoryInternalName),
+              (item) =>
+                  !suppressed.contains(item.katalogCategoryInternalName) &&
+                  item.provider != ScenarioItemProvider.samoNapomena &&
+                  item.provider != ScenarioItemProvider.vanPaketaFirme,
             )
             .toList(growable: false)
           ..sort((a, b) => a.order.compareTo(b.order));
@@ -42,6 +46,18 @@ class ScenarioRuleEngine {
       ...osnovniPaket,
       ...scenarioCategories.map((item) => item.katalogCategoryInternalName),
     }..removeAll(suppressed);
+    final decisions = <String, ScenarioConsequence>{};
+    var baseOrder = 0;
+    for (final category in osnovniPaket) {
+      decisions[category] = ScenarioConsequence(
+        katalogCategoryInternalName: category,
+        action: ScenarioConsequenceAction.required,
+        order: baseOrder++,
+        section: 1,
+        reason: 'Stavka pripada OSNOVNOM PAKETU.',
+      );
+    }
+    decisions.addAll(consequences);
     return ScenarioRuleEvaluation(
       matchedScenarioIds: matched
           .map((item) => item.id)
@@ -50,6 +66,39 @@ class ScenarioRuleEngine {
       scenarioCategories: List.unmodifiable(scenarioCategories),
       suppressedCategories: Set.unmodifiable(suppressed),
       effectiveCategories: Set.unmodifiable(effective),
+      decisions: Map.unmodifiable(decisions),
+      sourceScenarioIds: Map.unmodifiable(sourceScenarioIds),
+    );
+  }
+
+  ScenarioConsequence _mergeConsequences(
+    ScenarioConsequence first,
+    ScenarioConsequence second,
+  ) {
+    final action =
+        first.action == ScenarioConsequenceAction.suppressed ||
+            second.action == ScenarioConsequenceAction.suppressed
+        ? ScenarioConsequenceAction.suppressed
+        : first.action == ScenarioConsequenceAction.required ||
+              second.action == ScenarioConsequenceAction.required
+        ? ScenarioConsequenceAction.required
+        : ScenarioConsequenceAction.recommended;
+    return ScenarioConsequence(
+      katalogCategoryInternalName: first.katalogCategoryInternalName,
+      action: action,
+      order: first.order < second.order ? first.order : second.order,
+      section: first.section < second.section ? first.section : second.section,
+      provider: second.provider,
+      warning: [
+        first.warning,
+        second.warning,
+      ].where((value) => value.trim().isNotEmpty).toSet().join(' '),
+      reason: [
+        first.reason,
+        second.reason,
+      ].where((value) => value.trim().isNotEmpty).toSet().join(' '),
+      financiallyIncluded:
+          first.financiallyIncluded && second.financiallyIncluded,
     );
   }
 }
@@ -61,6 +110,8 @@ class ScenarioRuleEvaluation {
     required this.scenarioCategories,
     required this.suppressedCategories,
     required this.effectiveCategories,
+    required this.decisions,
+    required this.sourceScenarioIds,
   });
 
   final List<String> matchedScenarioIds;
@@ -68,4 +119,6 @@ class ScenarioRuleEvaluation {
   final List<ScenarioConsequence> scenarioCategories;
   final Set<String> suppressedCategories;
   final Set<String> effectiveCategories;
+  final Map<String, ScenarioConsequence> decisions;
+  final Map<String, String> sourceScenarioIds;
 }

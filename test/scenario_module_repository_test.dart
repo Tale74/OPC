@@ -20,13 +20,36 @@ void main() {
     final definitions = await repository.getDefinitions();
 
     expect(definitions, isNotEmpty);
+    final module = await repository.ensureModule();
+    expect(repository.readOsnovniPaket(module), hasLength(9));
+    expect(
+      repository.readOsnovniPaket(module),
+      containsAll([
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+        'PESKIR_ZA_KRST',
+        'POSMRTNE_PARTE',
+        'CRNINA',
+        'AGENCIJSKE_USLUGE',
+        'CVECE',
+        'CITULJA_POLITIKA',
+      ]),
+    );
     expect(
       definitions.where((item) => item.jePodrazumevani).map((item) => item.id),
       containsAll([
-        'MESTO_SMRTI_BLOK',
-        'MESTO_SMRTI_BOLNICA',
-        'OPREMA_PREMA_USLOVU',
+        'STAN',
+        'DOM_ZA_STARE',
+        'ULICA_JAVNO_MESTO',
+        'BOLNICA',
+        'LIMENI_ULOZAK',
+        'LEMOVANJE',
         'LOKALNO_GROBLJE',
+        'OPELO',
+        'BIOHAZARD',
+        'SAHRANA_VAN_SRBIJE',
+        'DOCEK_POSMRTNIH_OSTATAKA',
       ]),
     );
   });

@@ -38,6 +38,18 @@ class IriuOrderingService {
     final currentRows = List<IriuData>.from(rows)
       ..sort((a, b) => a.redosled.compareTo(b.redosled));
 
+    if (currentRows.any((row) => row.scenarioUpravlja)) {
+      final managed = currentRows.where((row) => row.scenarioUpravlja).toList()
+        ..sort((a, b) {
+          final section = a.poslovnaCelina.compareTo(b.poslovnaCelina);
+          return section != 0
+              ? section
+              : a.poslovniRedosled.compareTo(b.poslovniRedosled);
+        });
+      final manual = currentRows.where((row) => !row.scenarioUpravlja).toList();
+      return List<IriuData>.unmodifiable([...managed, ...manual]);
+    }
+
     final rowsByCategory = <String, List<IriuData>>{};
     for (final row in currentRows) {
       rowsByCategory.putIfAbsent(row.interniNaziv, () => <IriuData>[]).add(row);

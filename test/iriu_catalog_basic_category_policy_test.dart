@@ -19,7 +19,7 @@ void main() {
       final db = createTestDatabase();
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 23);
+      expect(db.schemaVersion, 24);
       for (final internalName in IriuK.podesiveOsnovneSeedKategorije) {
         final rows = await (db.select(
           db.iriuKatalogConfig,

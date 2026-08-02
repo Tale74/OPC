@@ -207,5 +207,14 @@ IriuData _row(
     iznos: 1,
     cekiran: false,
     redosled: redosled,
+    poslovniStatus: 'AKTIVNO',
+    obezbedjuje: 'FIRMA',
+    poslovnoUpozorenje: '',
+    poslovniRazlog: '',
+    poslovnaCelina: 6,
+    poslovniRedosled: 0,
+    finansijskiUkljuceno: true,
+    scenarioUpravlja: false,
+    cekaOdlukuKorisnika: false,
   );
 }

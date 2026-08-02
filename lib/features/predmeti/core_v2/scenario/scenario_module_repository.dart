@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../../core/database/database.dart';
+import '../../../../core/constants/iriu_constants.dart';
 import 'scenario_contract.dart';
 import 'scenario_persistence_contract.dart';
 
@@ -51,6 +52,19 @@ class ScenarioModuleRepository {
     final module = await ensureModule();
     final existing = await getDefinitions();
     if (existing.isNotEmpty) return module;
+    if (readOsnovniPaket(module).isEmpty) {
+      await saveOsnovniPaket(const <String>{
+        IriuK.sanduk,
+        IriuK.obelezje,
+        IriuK.pokrovGarnitura,
+        IriuK.peskirZaKrst,
+        IriuK.posmrtneParte,
+        IriuK.crnina,
+        IriuK.agencijskeUsluge,
+        IriuK.cvece,
+        IriuK.cituljaP,
+      });
+    }
     try {
       final decoded = jsonDecode(
         await _loadAsset('assets/scenario_defaults.json'),
@@ -62,18 +76,20 @@ class ScenarioModuleRepository {
           id: map['id'] as String,
           version: (map['version'] as num?)?.toInt() ?? 1,
           naziv: map['naziv'] as String,
-          condition: _conditionFromJson(
-            Map<String, dynamic>.from(map['condition'] as Map),
-          ),
-          consequences: (map['consequences'] as List)
-              .whereType<String>()
-              .map(
-                (name) => ScenarioConsequence(
-                  katalogCategoryInternalName: name,
-                  action: ScenarioConsequenceAction.recommended,
-                ),
-              )
-              .toList(growable: false),
+          condition: scenarioDefinitionFromJsonMap({
+            'id': map['id'],
+            'name': map['naziv'],
+            'description': map['opis'] ?? '',
+            'condition': map['condition'],
+            'consequences': map['consequences'],
+          }).condition,
+          consequences: scenarioDefinitionFromJsonMap({
+            'id': map['id'],
+            'name': map['naziv'],
+            'description': map['opis'] ?? '',
+            'condition': map['condition'],
+            'consequences': map['consequences'],
+          }).consequences,
           jePodrazumevani: map['jePodrazumevani'] == true,
           status: 'PRIMENJEN',
         );
@@ -82,15 +98,13 @@ class ScenarioModuleRepository {
       // Nedostupan asset ne sme da blokira otvaranje PREDMETA; tada modul
       // ostaje prazan i korisnik može da ga popuni kroz UI.
     }
-    return module;
+    return ensureModule();
   }
 
   Future<List<ScenarioDefinition>> getActiveDefinitions() async {
     final records = await getDefinitions();
     return records
-        .where(
-          (record) => record.jePodrazumevani && record.status != 'NEAKTIVAN',
-        )
+        .where((record) => record.status == 'PRIMENJEN')
         .map(definitionFromRecord)
         .toList(growable: false);
   }
@@ -107,7 +121,7 @@ class ScenarioModuleRepository {
       _db.scenarioModules,
     )..where((row) => row.id.equals(moduleId))).write(
       ScenarioModulesCompanion(
-        osnovniPaketJson: Value(jsonEncode(normalized.toList()..sort())),
+        osnovniPaketJson: Value(jsonEncode(normalized.toList())),
         updatedAt: Value(DateTime.now().toUtc().toIso8601String()),
       ),
     );
@@ -141,6 +155,7 @@ class ScenarioModuleRepository {
     required String naziv,
     required ScenarioCondition condition,
     required List<ScenarioConsequence> consequences,
+    String description = '',
     bool jePodrazumevani = false,
     String status = 'DRAFT',
   }) async {
@@ -149,12 +164,37 @@ class ScenarioModuleRepository {
     if (normalizedId.isEmpty || normalizedName.isEmpty || version <= 0) {
       throw ArgumentError('SCENARIO mora imati naziv, ID i pozitivnu verziju.');
     }
+    _validateCondition(condition);
+    final categories = <String, ScenarioConsequence>{};
+    for (final consequence in consequences) {
+      final category = consequence.katalogCategoryInternalName.trim();
+      if (category.isEmpty) {
+        throw ArgumentError('Svaka odluka mora koristiti stavku iz KATALOGA.');
+      }
+      final previous = categories[category];
+      if (previous != null && previous.action != consequence.action) {
+        throw ArgumentError(
+          'Scenario daje suprotne odluke za istu stavku u istim okolnostima.',
+        );
+      }
+      categories[category] = consequence;
+    }
     await ensureModule();
+    final existingCatalog = (await (_db.select(
+      _db.iriuKatalogConfig,
+    )).get()).map((item) => item.interniNaziv).toSet();
+    final missing = categories.keys.where(
+      (category) => !existingCatalog.contains(category),
+    );
+    if (missing.isNotEmpty) {
+      throw ArgumentError('Stavka ${missing.first} ne postoji u KATALOGU.');
+    }
     final definition = ScenarioDefinition(
       id: normalizedId,
       name: normalizedName,
       condition: condition,
       consequences: List<ScenarioConsequence>.unmodifiable(consequences),
+      description: description.trim(),
     );
     final wire = scenarioDefinitionToJsonMap(definition);
     final now = DateTime.now().toUtc().toIso8601String();
@@ -191,29 +231,56 @@ class ScenarioModuleRepository {
     _db.scenarioDefinitions,
   )..where((row) => row.id.equals(id) & row.version.equals(version))).go();
 
-  ScenarioCondition _conditionFromJson(Map<String, dynamic> json) {
-    final kind = json['kind'] as String?;
-    if (kind == 'criterion') {
-      return ScenarioCondition.criterion(
-        ScenarioCriterion(
-          field: ScenarioCriterionField.values.firstWhere(
-            (value) => value.name == json['field'],
-          ),
-          operator: ScenarioCriterionOperator.values.firstWhere(
-            (value) => value.name == json['operator'],
-          ),
-          values: (json['values'] as List? ?? const [])
-              .whereType<String>()
-              .toList(growable: false),
-        ),
+  Future<void> setDefinitionInUse(
+    ScenarioDefinitionRecord record,
+    bool inUse,
+  ) async {
+    if (inUse) {
+      final definition = definitionFromRecord(record);
+      await saveDefinition(
+        id: record.id,
+        version: record.version,
+        naziv: record.naziv,
+        description: definition.description,
+        condition: definition.condition,
+        consequences: definition.consequences,
+        jePodrazumevani: record.jePodrazumevani,
+        status: 'PRIMENJEN',
       );
+      return;
     }
-    final children = (json['children'] as List? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map((child) => _conditionFromJson(Map<String, dynamic>.from(child)))
-        .toList(growable: false);
-    return kind == 'any'
-        ? ScenarioCondition.any(children)
-        : ScenarioCondition.all(children);
+    await (_db.update(_db.scenarioDefinitions)..where(
+          (row) =>
+              row.id.equals(record.id) & row.version.equals(record.version),
+        ))
+        .write(
+          ScenarioDefinitionsCompanion(
+            status: const Value('NEAKTIVAN'),
+            updatedAt: Value(DateTime.now().toUtc().toIso8601String()),
+          ),
+        );
+  }
+
+  void _validateCondition(ScenarioCondition condition) {
+    if (condition.kind == ScenarioConditionKind.criterion) {
+      final criterion = condition.criterion;
+      if (criterion == null) {
+        throw ArgumentError('Scenario mora imati kriterijum primene.');
+      }
+      final needsValues =
+          criterion.operator != ScenarioCriterionOperator.isTrue &&
+          criterion.operator != ScenarioCriterionOperator.isFalse;
+      if (needsValues &&
+          criterion.values.every((value) => value.trim().isEmpty)) {
+        throw ArgumentError('Scenario mora imati kriterijum primene.');
+      }
+      return;
+    }
+    if (condition.children.isEmpty) {
+      throw ArgumentError('Scenario mora imati kriterijum primene.');
+    }
+    for (final child in condition.children) {
+      _validateCondition(child);
+    }
   }
 }

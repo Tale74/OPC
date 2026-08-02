@@ -1,24 +1,13 @@
 import '../../../../core/database/database.dart';
 
 /// Eksplicitni poslovni koncepti koje novi core lane razlikuje za svaki IRIU red.
-enum IriuTruthConcept {
-  stored,
-  active,
-  recommended,
-  suppressed,
-}
+enum IriuTruthConcept { stored, active, recommended, suppressed }
 
 /// Operativni status reda u core istini.
-enum IriuOperationalState {
-  active,
-  suppressed,
-}
+enum IriuOperationalState { active, suppressed }
 
 /// Preporuka je namerno odvojena od stored/active stanja.
-enum IriuRecommendationState {
-  none,
-  recommended,
-}
+enum IriuRecommendationState { none, recommended }
 
 /// Finansijska istina ne sme da zavisi od vizuelnog check-a ili derivata.
 enum IriuFinancialState {
@@ -29,10 +18,7 @@ enum IriuFinancialState {
 
 /// Razlozi zbog kojih red može biti izostavljen iz nekog derivata,
 /// bez menjanja core poslovne istine reda.
-enum IriuDerivativeExclusion {
-  notOperationallyActive,
-  documentScopedOut,
-}
+enum IriuDerivativeExclusion { notOperationallyActive, documentScopedOut }
 
 /// Tip auto-upravljanja nad kategorijom.
 enum IriuManagedKind {
@@ -56,6 +42,8 @@ class IriuTruthRow {
     required this.manualDeletionAllowed,
     required this.requiresUserResolution,
     required this.reasons,
+    required this.provider,
+    required this.warning,
   });
 
   final IriuData storedRow;
@@ -70,19 +58,19 @@ class IriuTruthRow {
   final bool manualDeletionAllowed;
   final bool requiresUserResolution;
   final List<String> reasons;
+  final String provider;
+  final String warning;
 
   bool get active => operationalState == IriuOperationalState.active;
   bool get recommended =>
       recommendationState == IriuRecommendationState.recommended;
   bool get suppressed => operationalState == IriuOperationalState.suppressed;
-  bool get countsForFinancialTruth => financialState == IriuFinancialState.counts;
+  bool get countsForFinancialTruth =>
+      financialState == IriuFinancialState.counts;
 }
 
 class PredmetIriuTruthSnapshot {
-  const PredmetIriuTruthSnapshot({
-    required this.predmet,
-    required this.rows,
-  });
+  const PredmetIriuTruthSnapshot({required this.predmet, required this.rows});
 
   final PredmetiData predmet;
   final List<IriuTruthRow> rows;
@@ -96,30 +84,27 @@ class PredmetIriuTruthSnapshot {
   List<IriuTruthRow> get recommendedRows =>
       rows.where((row) => row.recommended).toList(growable: false);
 
-  List<IriuTruthRow> get financialRows => rows
-      .where((row) => row.countsForFinancialTruth)
-      .toList(growable: false);
+  List<IriuTruthRow> get financialRows =>
+      rows.where((row) => row.countsForFinancialTruth).toList(growable: false);
 
-  List<IriuTruthRow> get financialExcludedRows => rows
-      .where((row) => !row.countsForFinancialTruth)
-      .toList(growable: false);
+  List<IriuTruthRow> get financialExcludedRows =>
+      rows.where((row) => !row.countsForFinancialTruth).toList(growable: false);
 
   List<IriuTruthRow> rowsVisibleToDerivative({
-    Set<IriuDerivativeExclusion> excludedReasons = const <IriuDerivativeExclusion>{},
+    Set<IriuDerivativeExclusion> excludedReasons =
+        const <IriuDerivativeExclusion>{},
   }) {
     return rows
         .where(
-          (row) => row.derivativeExclusions.intersection(excludedReasons).isEmpty,
+          (row) =>
+              row.derivativeExclusions.intersection(excludedReasons).isEmpty,
         )
         .toList(growable: false);
   }
 }
 
 class FinancialTruthLine {
-  const FinancialTruthLine({
-    required this.row,
-    required this.amount,
-  });
+  const FinancialTruthLine({required this.row, required this.amount});
 
   final IriuTruthRow row;
   final double amount;

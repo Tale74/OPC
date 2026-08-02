@@ -68,7 +68,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -191,6 +191,17 @@ class AppDatabase extends _$AppDatabase {
         await _ensureTable(m, scenarioDefinitions);
         await _ensureTable(m, predmetScenarioSnapshots);
         await _ensureTable(m, iriuProvenance);
+      }
+      if (from < 24) {
+        await _ensureColumn(m, iriu, iriu.poslovniStatus);
+        await _ensureColumn(m, iriu, iriu.obezbedjuje);
+        await _ensureColumn(m, iriu, iriu.poslovnoUpozorenje);
+        await _ensureColumn(m, iriu, iriu.poslovniRazlog);
+        await _ensureColumn(m, iriu, iriu.poslovnaCelina);
+        await _ensureColumn(m, iriu, iriu.poslovniRedosled);
+        await _ensureColumn(m, iriu, iriu.finansijskiUkljuceno);
+        await _ensureColumn(m, iriu, iriu.scenarioUpravlja);
+        await _ensureColumn(m, iriu, iriu.cekaOdlukuKorisnika);
       }
     },
     beforeOpen: (details) async {
@@ -357,6 +368,15 @@ class AppDatabase extends _$AppDatabase {
     await _ensureTable(migrator, scenarioDefinitions);
     await _ensureTable(migrator, predmetScenarioSnapshots);
     await _ensureTable(migrator, iriuProvenance);
+    await _ensureColumn(migrator, iriu, iriu.poslovniStatus);
+    await _ensureColumn(migrator, iriu, iriu.obezbedjuje);
+    await _ensureColumn(migrator, iriu, iriu.poslovnoUpozorenje);
+    await _ensureColumn(migrator, iriu, iriu.poslovniRazlog);
+    await _ensureColumn(migrator, iriu, iriu.poslovnaCelina);
+    await _ensureColumn(migrator, iriu, iriu.poslovniRedosled);
+    await _ensureColumn(migrator, iriu, iriu.finansijskiUkljuceno);
+    await _ensureColumn(migrator, iriu, iriu.scenarioUpravlja);
+    await _ensureColumn(migrator, iriu, iriu.cekaOdlukuKorisnika);
   }
 
   Future<void> _validateRequiredSchema() async {
@@ -892,6 +912,30 @@ class AppDatabase extends _$AppDatabase {
         prikaz: 'Čitulja Novosti',
         tip: 'KATALOSKA',
         red: 20,
+      ),
+      (
+        naziv: IriuK.medjunarodniPrevoz,
+        prikaz: 'Međunarodni prevoz',
+        tip: 'FIKSNA',
+        red: 21,
+      ),
+      (
+        naziv: IriuK.medjunarodnaDocumentacija,
+        prikaz: 'Međunarodna dokumentacija',
+        tip: 'FIKSNA',
+        red: 22,
+      ),
+      (
+        naziv: IriuK.balsamovanje,
+        prikaz: 'Balsamovanje',
+        tip: 'FIKSNA',
+        red: 23,
+      ),
+      (
+        naziv: IriuK.cargoTroskovi,
+        prikaz: 'Cargo troškovi',
+        tip: 'FIKSNA',
+        red: 24,
       ),
       (
         naziv: IriuK.doradaPogrebneOpreme,
