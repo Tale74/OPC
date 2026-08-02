@@ -2,6 +2,9 @@
 
 **Branch:** `task/OPC-PHASE4-MODULE-SCENARIO-CONTRACT-AND-UI`
 **Review start SHA:** `7c5ef6f6310ee1a5e1261826f660ea474f8b11b0`
+**Reviewed source SHA:** `7c5ef6f6310ee1a5e1261826f660ea474f8b11b0`
+**Report closure:** documentation-only Git closure follows this review; the
+final handoff SHA is recorded by Git after commit/push.
 **Scope:** read-only source/test/documentation stability review; no application
 source or runtime behavior was changed by this review.
 
