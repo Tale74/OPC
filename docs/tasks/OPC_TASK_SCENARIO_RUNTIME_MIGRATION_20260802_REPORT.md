@@ -23,7 +23,8 @@
 
 ## Evidence
 
-- Focused tests: PASS, 3/3 in the focused invocation before the final removal
+- Focused tests: PASS, 3 test files / 7 tests in the focused invocation before
+  the final removal
   of the now-unused legacy lifecycle helpers. The helper removal is compile
   neutral; the immediate rerun was blocked by a stale Flutter native-assets
   cache after the intentionally stopped broad suite (`sqlite3.dll` missing).
