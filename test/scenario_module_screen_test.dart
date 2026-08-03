@@ -31,5 +31,22 @@ void main() {
     expect(find.text('SCENARIO'), findsWidgets);
     expect(find.text('OSNOVNI PAKET'), findsOneWidget);
     expect(find.text('SCENARIJI'), findsOneWidget);
+    expect(
+      find.text(
+        'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('POSLOVNA HIJERARHIJA'), findsNothing);
+    expect(find.byType(PopupMenuButton<String>), findsNothing);
+    expect(find.text('DODAJ NOVI SCENARIO'), findsOneWidget);
+    for (final forbidden in [
+      'PRIKAŽI SAŽETAK ODLUKE',
+      'PROVERI NA PRIMERU',
+      'NAPRAVI KOPIJU',
+      'STAVI SCENARIO VAN UPOTREBE',
+    ]) {
+      expect(find.text(forbidden), findsNothing, reason: forbidden);
+    }
   });
 }

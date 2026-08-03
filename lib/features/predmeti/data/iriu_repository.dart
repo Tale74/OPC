@@ -66,7 +66,11 @@ class IriuRepository {
               (item?.origin == 'OSNOVNI_PAKET' ||
                   item?.origin == 'SCENARIO_PAKET');
         })
-        .toList(growable: false);
+        // This collection is extended below when the basic package was
+        // materialized before provenance existed. Keep it mutable so the
+        // actual PREDMET -> SCENARIO hand-off cannot fail before additions
+        // are written.
+        .toList();
     final existingNames = rows.map((row) => row.interniNaziv).toSet();
     final desired = evaluation.effectiveCategories;
     final dismissed = await _getDismissedCategories(

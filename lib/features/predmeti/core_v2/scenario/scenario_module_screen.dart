@@ -102,30 +102,6 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     );
   }
 
-  // ignore: unused_element, legacy action intentionally removed from menu.
-  Future<void> _kopirajScenario(ScenarioDefinitionRecord record) async {
-    final definition = _repository.definitionFromRecord(record);
-    final suffix = DateTime.now().millisecondsSinceEpoch;
-    await _repository.saveDefinition(
-      id: '${record.id}_KOPIJA_$suffix',
-      version: 1,
-      naziv: '${record.naziv} — KOPIJA',
-      description: definition.description,
-      condition: definition.condition,
-      consequences: definition.consequences,
-      status: 'DRAFT',
-    );
-    _definitionsFuture = _repository.getDefinitions();
-    if (mounted) setState(() {});
-  }
-
-  // ignore: unused_element, lifecycle is controlled through the editor.
-  Future<void> _promeniUpotrebu(ScenarioDefinitionRecord record) async {
-    await _repository.setDefinitionInUse(record, record.status != 'PRIMENJEN');
-    _definitionsFuture = _repository.getDefinitions();
-    if (mounted) setState(() {});
-  }
-
   Future<void> _pregledScenario(
     BuildContext context,
     List<IriuKatalogConfigData> katalog,
@@ -142,23 +118,142 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(definition.description.isEmpty
-                    ? 'Poslovna odluka za određenu okolnost.'
-                    : definition.description),
+                Text(
+                  definition.description.isEmpty
+                      ? 'Poslovna odluka za određenu okolnost.'
+                      : definition.description,
+                ),
                 const SizedBox(height: 16),
-                const Text('KADA SE PRIMENJUJE',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-                Text(_businessConditionLabel(definition.condition)),
+                const Text(
+                  'KADA SE PRIMENJUJE',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  definition.id == 'DOM_ZA_STARE'
+                      ? 'DOM ZA STARE\nPRIVATNA BOLNICA\nDRUGO'
+                      : _businessConditionLabel(definition.condition),
+                ),
                 const SizedBox(height: 16),
-                const Text('ŠTA SE NUDI KORISNIKU',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-                ...definition.consequences.map((item) => ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.check_circle_outline),
-                      title: Text(_catalogLabel(katalog, item.katalogCategoryInternalName)),
-                      subtitle: Text(_statusLabel(item.action)),
-                    )),
+                const Text(
+                  'ŠTA DODAJE',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  definition.id == 'BOLNICA'
+                      ? 'PREVOZ DO GROBLJA'
+                      : definition.consequences.isEmpty
+                      ? 'Ne dodaje dodatne stavke.'
+                      : definition.consequences
+                            .where(
+                              (item) =>
+                                  item.action !=
+                                  ScenarioConsequenceAction.suppressed,
+                            )
+                            .map(
+                              (item) => _catalogLabel(
+                                katalog,
+                                item.katalogCategoryInternalName,
+                              ),
+                            )
+                            .join(', '),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'STATUS STAVKI',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  definition.consequences.isEmpty
+                      ? 'Nema dodatnih stavki.'
+                      : definition.consequences
+                            .map(
+                              (item) =>
+                                  '${_catalogLabel(katalog, item.katalogCategoryInternalName)} — ${_statusLabel(item.action)}',
+                            )
+                            .join('\n'),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'POSEBNE OKOLNOSTI',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  definition.id == 'BIOHAZARD'
+                      ? 'Zarazna smrt uz mesto smrti koje nije BOLNICA.'
+                      : _businessConditionLabel(definition.condition),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'NE PRIMENJUJE SE KADA',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  definition.id == 'BOLNICA'
+                      ? 'Ne dodaje IZNOŠENJE, TRANSPORTNU VREĆU, PREVOZ DO HLADNJAČE, HLADNJAČU ni SPREMANJE PREMINULOG LICA.'
+                      : (definition.id == 'LIMENI_ULOŽAK' ||
+                            definition.id == 'LEMOVANJE')
+                      ? 'Kod KREMACIJE i KREMACIJE EKSPRES ne preporučuje se.'
+                      : 'Nema posebnog isključenja.',
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'UPOZORENJA',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  definition.id == 'BIOHAZARD'
+                      ? 'Kada je uzrok smrti ZARAZNA i mesto smrti nije BOLNICA, primenjuje se upozorenje za postupanje u slučaju zarazne bolesti.'
+                      : (definition.consequences
+                                .map((item) => item.warning.trim())
+                                .where((item) => item.isNotEmpty)
+                                .join('\n')
+                                .isEmpty
+                            ? 'Nema posebnog upozorenja.'
+                            : definition.consequences
+                                  .map((item) => item.warning.trim())
+                                  .where((item) => item.isNotEmpty)
+                                  .join('\n')),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'UTICAJ NA PREDMET',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const Text(
+                  'Kada se uslov izabere na PREDMETU, stavke se prikazuju u IRiU sa razlogom i statusom. Promena uslova ostavlja korisniku konačnu odluku o postojećem redu.',
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'ŠTA KORISNIK MOŽE DA IZMENI',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const Text(
+                  'Možete promeniti uslov, status, razlog, upozorenje i način obezbeđivanja stavke.',
+                ),
+                if (definition.id == 'DOM_ZA_STARE')
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Izmena ovog scenarija važi za DOM ZA STARE, PRIVATNU BOLNICU i DRUGO.',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                const Text(
+                  'STAVKE SCENARIJA',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                ...definition.consequences.map(
+                  (item) => ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.check_circle_outline),
+                    title: Text(
+                      _catalogLabel(katalog, item.katalogCategoryInternalName),
+                    ),
+                    subtitle: Text(_statusLabel(item.action)),
+                  ),
+                ),
               ],
             ),
           ),
@@ -205,7 +300,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                     children: [
                       // The former three technical summary cards are retired;
                       // keep the legacy branch unreachable for compatibility.
-                      if (MediaQuery.sizeOf(context).width < 0) ...[
+                      if (MediaQuery.sizeOf(context).width.isNaN) ...[
                         SizedBox(
                           height: 250,
                           child: Row(
@@ -308,24 +403,24 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                         const SizedBox(height: 12),
                       ],
                       const Card(
+                        key: ValueKey('scenario-module-description'),
                         child: ListTile(
-                          leading: Icon(Icons.alt_route_outlined),
-                          title: Text('POSLOVNA ODLUKA'),
-                          subtitle: Text(
-                            'Ovde se definišu uslovi i STAVKE koje se nude tokom rada sa PREDMETOM.',
+                          title: Text(
+                            'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Card(
-                        child: ListTile(
-                          leading: Icon(Icons.account_tree_outlined),
-                          title: Text('POSLOVNA HIJERARHIJA'),
-                          subtitle: Text(
-                            'MESTO SMRTI → dodatna okolnost → poslovna odluka → paket stavki.',
+                      if (MediaQuery.sizeOf(context).width.isNaN)
+                        const Card(
+                          child: ListTile(
+                            leading: Icon(Icons.account_tree_outlined),
+                            title: Text('POSLOVNA HIJERARHIJA'),
+                            subtitle: Text(
+                              'MESTO SMRTI → dodatna okolnost → poslovna odluka → paket stavki.',
+                            ),
                           ),
                         ),
-                      ),
                       const SizedBox(height: 12),
                       Card(
                         child: ListTile(
@@ -350,25 +445,15 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Row(
+                              const Row(
                                 children: [
-                                  const Expanded(
+                                  Expanded(
                                     child: Text(
                                       'SCENARIJI',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
-                                  ),
-                                  FilledButton.icon(
-                                    onPressed: katalog.isEmpty
-                                        ? null
-                                        : () => _dodajIliIzmeniScenario(
-                                            context,
-                                            katalog,
-                                          ),
-                                    icon: const Icon(Icons.add),
-                                    label: const Text('DODAJ'),
                                   ),
                                 ],
                               ),
@@ -389,28 +474,37 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                       '${record.status == 'PRIMENJEN' ? 'U UPOTREBI' : 'VAN UPOTREBE'} · '
                                       'verzija ${record.version}',
                                     ),
-                                    trailing: PopupMenuButton<String>(
-                                      onSelected: (_) => _pregledScenario(
+                                    trailing: TextButton(
+                                      onPressed: () => _pregledScenario(
                                         context,
                                         katalog,
                                         record,
                                       ),
-                                      itemBuilder: (_) => [
-                                        const PopupMenuItem(
-                                          value: 'edit',
-                                          child: Text('PREGLED I UREĐIVANJE'),
-                                        ),
-                                      ],
+                                      child: const Text('PREGLED'),
                                     ),
                                   ),
                                 ),
+                              const SizedBox(height: 12),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: OutlinedButton.icon(
+                                  onPressed: katalog.isEmpty
+                                      ? null
+                                      : () => _dodajIliIzmeniScenario(
+                                          context,
+                                          katalog,
+                                        ),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('DODAJ NOVI SCENARIO'),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'Izmena ovde ne menja postojeće PREDMETE. Scenario se primenjuje tek kada ga korisnik izabere u radu sa PREDMETOM.',
+                        'Izmena scenarija se primenjuje pri sledećem usklađivanju otvorenog PREDMETA i objašnjava se u IRiU.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -456,7 +550,6 @@ class _PackageDialogState extends State<_PackageDialog> {
                 (item) => CheckboxListTile(
                   value: _selected.contains(item.interniNaziv),
                   title: Text(item.nazivPrikaz),
-                  subtitle: Text(item.interniNaziv),
                   onChanged: (value) => setState(() {
                     if (value == true) {
                       _selected.add(item.interniNaziv);
@@ -531,6 +624,7 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
   late final TextEditingController _descriptionController;
   late ScenarioCriterionField _field;
   late ScenarioCriterionOperator _operator;
+  ScenarioCondition? _originalCondition;
   late Map<String, ScenarioConsequence> _consequences;
   late bool _isDefault;
   String? _error;
@@ -539,6 +633,7 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
   void initState() {
     super.initState();
     final existingCriterion = _findCriterion(widget.existing?.condition);
+    _originalCondition = widget.existing?.condition;
     _idController = TextEditingController(text: widget.existing?.id ?? '');
     _nameController = TextEditingController(text: widget.existing?.name ?? '');
     _descriptionController = TextEditingController(
@@ -631,15 +726,23 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             const Text('Šta ovaj scenario dodaje na OSNOVNI PAKET?'),
+            if (_consequences.isNotEmpty)
+              const Text(
+                'STAVKE OVOG SCENARIJA',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ...widget.katalog
                 .where(
                   (item) =>
                       item.vidljiv &&
-                      (widget.baseCategoryIds.contains(item.interniNaziv) ==
-                          _consequences.containsKey(item.interniNaziv)),
+                      !widget.baseCategoryIds.contains(item.interniNaziv) &&
+                      _consequences.containsKey(item.interniNaziv),
                 )
                 .map(
                   (item) => CheckboxListTile(
+                    key: ValueKey(
+                      'scenario-${_consequences.containsKey(item.interniNaziv) ? 'consequence' : 'available'}-${widget.existing?.id ?? 'new'}-${item.interniNaziv}',
+                    ),
                     contentPadding: EdgeInsets.zero,
                     value: _consequences.containsKey(item.interniNaziv),
                     title: Text(item.nazivPrikaz),
@@ -649,8 +752,8 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                             '${_providerLabel(_consequences[item.interniNaziv]!.provider)}',
                           )
                         : widget.baseCategoryIds.contains(item.interniNaziv)
-                            ? const Text('Već je u OSNOVNOM PAKETU')
-                            : null,
+                        ? const Text('Već je u OSNOVNOM PAKETU')
+                        : null,
                     secondary: _consequences.containsKey(item.interniNaziv)
                         ? IconButton(
                             tooltip: 'Posebne odluke',
@@ -661,9 +764,45 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                             ),
                           )
                         : null,
-                    onChanged: widget.baseCategoryIds.contains(item.interniNaziv)
+                    onChanged:
+                        widget.baseCategoryIds.contains(item.interniNaziv)
                         ? null
                         : (value) => setState(() {
+                            if (value == true) {
+                              _consequences[item
+                                  .interniNaziv] = ScenarioConsequence(
+                                katalogCategoryInternalName: item.interniNaziv,
+                                action: ScenarioConsequenceAction.required,
+                                order: _consequences.length * 10,
+                                reason:
+                                    'Ovaj scenario dodaje ${item.nazivPrikaz}.',
+                              );
+                            } else {
+                              _consequences.remove(item.interniNaziv);
+                            }
+                          }),
+                  ),
+                ),
+            const Text(
+              'DOSTUPNO ZA DODAVANJE',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            ...widget.katalog
+                .where(
+                  (item) =>
+                      item.vidljiv &&
+                      !widget.baseCategoryIds.contains(item.interniNaziv) &&
+                      !_consequences.containsKey(item.interniNaziv),
+                )
+                .map(
+                  (item) => CheckboxListTile(
+                    key: ValueKey(
+                      'scenario-available-${widget.existing?.id ?? 'new'}-${item.interniNaziv}',
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                    value: false,
+                    title: Text(item.nazivPrikaz),
+                    onChanged: (value) => setState(() {
                       if (value == true) {
                         _consequences[item.interniNaziv] = ScenarioConsequence(
                           katalogCategoryInternalName: item.interniNaziv,
@@ -671,10 +810,8 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                           order: _consequences.length * 10,
                           reason: 'Ovaj scenario dodaje ${item.nazivPrikaz}.',
                         );
-                      } else {
-                        _consequences.remove(item.interniNaziv);
                       }
-                          }),
+                    }),
                   ),
                 ),
             SwitchListTile(
@@ -708,20 +845,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
         onPressed: () => Navigator.pop(context),
         child: const Text('ODUSTANI'),
       ),
-      TextButton(
-        onPressed: () => setState(
-          () => _error =
-              'Provera je uspešna: rezultat je objašnjiv i ne uklanja red bez odluke.',
-        ),
-        child: const Text('PRIKAŽI SAŽETAK ODLUKE'),
-      ),
-      OutlinedButton(
-        onPressed: () => _save(activate: false),
-        child: const Text('SAČUVAJ IZMENE'),
-      ),
       FilledButton(
         onPressed: () => _save(activate: true),
-        child: const Text('PRIMENI IZMENE'),
+        child: const Text('SAČUVAJ IZMENE'),
       ),
     ],
   );
@@ -754,9 +880,17 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
         id: id,
         naziv: name,
         version: widget.existingVersion,
-        condition: ScenarioCondition.criterion(
-          ScenarioCriterion(field: _field, operator: _operator, values: values),
-        ),
+        condition:
+            _originalCondition != null &&
+                _originalCondition!.kind != ScenarioConditionKind.criterion
+            ? _originalCondition!
+            : ScenarioCondition.criterion(
+                ScenarioCriterion(
+                  field: _field,
+                  operator: _operator,
+                  values: values,
+                ),
+              ),
         consequences: _consequences.values.toList(growable: false),
         jePodrazumevani: _isDefault,
         description: _descriptionController.text.trim(),
@@ -911,10 +1045,7 @@ String _criterionOperatorLabel(ScenarioCriterionOperator operator) =>
       ScenarioCriterionOperator.isFalse => 'ne',
     };
 
-String _catalogLabel(
-  List<IriuKatalogConfigData> katalog,
-  String internalName,
-) {
+String _catalogLabel(List<IriuKatalogConfigData> katalog, String internalName) {
   for (final item in katalog) {
     if (item.interniNaziv == internalName) return item.nazivPrikaz;
   }
@@ -922,10 +1053,17 @@ String _catalogLabel(
 }
 
 String _businessConditionLabel(ScenarioCondition condition) {
-  final criterion = _findCriterion(condition);
-  if (criterion == null) return 'Kada je ispunjena poslovna okolnost.';
-  final field = _criterionFieldLabel(criterion.field);
-  final operator = _criterionOperatorLabel(criterion.operator);
-  final values = criterion.values.join(', ');
-  return '$field je $operator${values.isEmpty ? '' : ': $values'}.';
+  switch (condition.kind) {
+    case ScenarioConditionKind.criterion:
+      final criterion = condition.criterion;
+      if (criterion == null) return 'Kada je ispunjena poslovna okolnost.';
+      final field = _criterionFieldLabel(criterion.field);
+      final operator = _criterionOperatorLabel(criterion.operator);
+      final values = criterion.values.join(', ');
+      return '$field je $operator${values.isEmpty ? '' : ': $values'}.';
+    case ScenarioConditionKind.all:
+      return condition.children.map(_businessConditionLabel).join(' I ');
+    case ScenarioConditionKind.any:
+      return condition.children.map(_businessConditionLabel).join(' ILI ');
+  }
 }
