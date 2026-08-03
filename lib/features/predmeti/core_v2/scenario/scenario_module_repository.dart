@@ -21,6 +21,22 @@ class ScenarioModuleRepository {
 
   static const String moduleId = 'scenario';
   static const String moduleName = 'SCENARIO';
+  static const Set<String> _legacyBundledIds = <String>{
+    'MESTO_SMRTI_BLOK',
+    'MESTO_SMRTI_BOLNICA',
+    'OPREMA_PREMA_USLOVU',
+  };
+  static const Set<String> _defaultOsnovniPaket = <String>{
+    IriuK.sanduk,
+    IriuK.obelezje,
+    IriuK.pokrovGarnitura,
+    IriuK.peskirZaKrst,
+    IriuK.posmrtneParte,
+    IriuK.crnina,
+    IriuK.agencijskeUsluge,
+    IriuK.cvece,
+    IriuK.cituljaP,
+  };
 
   final AppDatabase _db;
   final Future<String> Function(String) _loadAsset;
@@ -51,54 +67,153 @@ class ScenarioModuleRepository {
   Future<ScenarioModule> ensureModuleAndDefaults() async {
     final module = await ensureModule();
     final existing = await getDefinitions();
-    if (existing.isNotEmpty) return module;
-    if (readOsnovniPaket(module).isEmpty) {
-      await saveOsnovniPaket(const <String>{
-        IriuK.sanduk,
-        IriuK.obelezje,
-        IriuK.pokrovGarnitura,
-        IriuK.peskirZaKrst,
-        IriuK.posmrtneParte,
-        IriuK.crnina,
-        IriuK.agencijskeUsluge,
-        IriuK.cvece,
-        IriuK.cituljaP,
-      });
-    }
+    final hasLegacyDefaults = existing.any(
+      (record) => _legacyBundledIds.contains(record.id),
+    );
+    if (existing.isNotEmpty && !hasLegacyDefaults) return module;
     try {
-      final decoded = jsonDecode(
-        await _loadAsset('assets/scenario_defaults.json'),
-      );
-      if (decoded is! List) return module;
-      for (final raw in decoded.whereType<Map<String, dynamic>>()) {
-        final map = Map<String, dynamic>.from(raw);
-        await saveDefinition(
-          id: map['id'] as String,
-          version: (map['version'] as num?)?.toInt() ?? 1,
-          naziv: map['naziv'] as String,
-          condition: scenarioDefinitionFromJsonMap({
-            'id': map['id'],
-            'name': map['naziv'],
-            'description': map['opis'] ?? '',
-            'condition': map['condition'],
-            'consequences': map['consequences'],
-          }).condition,
-          consequences: scenarioDefinitionFromJsonMap({
-            'id': map['id'],
-            'name': map['naziv'],
-            'description': map['opis'] ?? '',
-            'condition': map['condition'],
-            'consequences': map['consequences'],
-          }).consequences,
-          jePodrazumevani: map['jePodrazumevani'] == true,
-          status: 'PRIMENJEN',
-        );
-      }
+      final bundled = await _readBundledDefaults();
+      if (bundled.isEmpty) return module;
+      await _db.transaction(() async {
+        if (existing.isEmpty) {
+          if (readOsnovniPaket(module).isEmpty) {
+            await saveOsnovniPaket(_defaultOsnovniPaket);
+          }
+          await _saveMissingBundledDefaults(bundled, const <String>{});
+        } else {
+          await _migrateLegacyBundledDefinitions(
+            module: module,
+            existing: existing,
+            bundled: bundled,
+          );
+        }
+      });
     } on Object {
       // Nedostupan asset ne sme da blokira otvaranje PREDMETA; tada modul
       // ostaje prazan i korisnik može da ga popuni kroz UI.
     }
     return ensureModule();
+  }
+
+  Future<List<_BundledScenarioSeed>> _readBundledDefaults() async {
+    final decoded = jsonDecode(
+      await _loadAsset('assets/scenario_defaults.json'),
+    );
+    if (decoded is! List) return const <_BundledScenarioSeed>[];
+    return decoded.whereType<Map<String, dynamic>>().map((raw) {
+      final map = Map<String, dynamic>.from(raw);
+      final definition = scenarioDefinitionFromJsonMap({
+        'id': map['id'],
+        'name': map['naziv'],
+        'description': map['opis'] ?? '',
+        'condition': map['condition'],
+        'consequences': map['consequences'],
+      });
+      return _BundledScenarioSeed(
+        definition: definition,
+        version: (map['version'] as num?)?.toInt() ?? 1,
+        jePodrazumevani: map['jePodrazumevani'] == true,
+      );
+    }).toList(growable: false);
+  }
+
+  Future<void> _saveMissingBundledDefaults(
+    List<_BundledScenarioSeed> bundled,
+    Set<String> existingIds,
+  ) async {
+    for (final seed in bundled) {
+      if (existingIds.contains(seed.definition.id)) continue;
+      await _saveBundledSeed(seed);
+    }
+  }
+
+  Future<void> _saveBundledSeed(_BundledScenarioSeed seed) => saveDefinition(
+    id: seed.definition.id,
+    version: seed.version,
+    naziv: seed.definition.name,
+    description: seed.definition.description,
+    condition: seed.definition.condition,
+    consequences: seed.definition.consequences,
+    jePodrazumevani: seed.jePodrazumevani,
+    status: 'PRIMENJEN',
+  );
+
+  Future<void> _migrateLegacyBundledDefinitions({
+    required ScenarioModule module,
+    required List<ScenarioDefinitionRecord> existing,
+    required List<_BundledScenarioSeed> bundled,
+  }) async {
+    if (readOsnovniPaket(module).isEmpty) {
+      await saveOsnovniPaket(_defaultOsnovniPaket);
+    }
+
+    final byId = <String, ScenarioDefinitionRecord>{
+      for (final record in existing) record.id: record,
+    };
+    final existingIds = byId.keys.toSet();
+    final bundledById = <String, _BundledScenarioSeed>{
+      for (final seed in bundled) seed.definition.id: seed,
+    };
+
+    await _splitLegacyDefinition(
+      legacy: byId['MESTO_SMRTI_BLOK'],
+      targetIds: const <String>['STAN', 'DOM_ZA_STARE', 'ULICA_JAVNO_MESTO'],
+      existingIds: existingIds,
+      bundledById: bundledById,
+    );
+    await _splitLegacyDefinition(
+      legacy: byId['MESTO_SMRTI_BOLNICA'],
+      targetIds: const <String>['BOLNICA'],
+      existingIds: existingIds,
+      bundledById: bundledById,
+    );
+    await _splitLegacyDefinition(
+      legacy: byId['OPREMA_PREMA_USLOVU'],
+      targetIds: const <String>['LIMENI_ULOZAK', 'LEMOVANJE'],
+      existingIds: existingIds,
+      bundledById: bundledById,
+      splitConsequencesByTarget: true,
+    );
+
+    await _saveMissingBundledDefaults(bundled, existingIds);
+    for (final legacyId in _legacyBundledIds) {
+      final record = byId[legacyId];
+      if (record != null) await deleteDefinition(record.id, record.version);
+    }
+  }
+
+  Future<void> _splitLegacyDefinition({
+    required ScenarioDefinitionRecord? legacy,
+    required List<String> targetIds,
+    required Set<String> existingIds,
+    required Map<String, _BundledScenarioSeed> bundledById,
+    bool splitConsequencesByTarget = false,
+  }) async {
+    if (legacy == null) return;
+    final legacyDefinition = definitionFromRecord(legacy);
+    for (final targetId in targetIds) {
+      if (existingIds.contains(targetId)) continue;
+      final seed = bundledById[targetId];
+      if (seed == null) continue;
+      final consequences = splitConsequencesByTarget
+          ? legacyDefinition.consequences
+                .where(
+                  (item) => item.katalogCategoryInternalName == targetId,
+                )
+                .toList(growable: false)
+          : legacyDefinition.consequences;
+      await saveDefinition(
+        id: targetId,
+        version: seed.version,
+        naziv: seed.definition.name,
+        description: seed.definition.description,
+        condition: seed.definition.condition,
+        consequences: consequences,
+        jePodrazumevani: legacy.jePodrazumevani,
+        status: legacy.status,
+      );
+      existingIds.add(targetId);
+    }
   }
 
   Future<List<ScenarioDefinition>> getActiveDefinitions() async {
@@ -283,4 +398,16 @@ class ScenarioModuleRepository {
       _validateCondition(child);
     }
   }
+}
+
+class _BundledScenarioSeed {
+  const _BundledScenarioSeed({
+    required this.definition,
+    required this.version,
+    required this.jePodrazumevani,
+  });
+
+  final ScenarioDefinition definition;
+  final int version;
+  final bool jePodrazumevani;
 }
