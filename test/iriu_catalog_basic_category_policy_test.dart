@@ -30,7 +30,7 @@ void main() {
       }
     });
 
-    test('new user category defaults to NE and persists explicit DA', () async {
+    test('new user category keeps the compatibility flag inert', () async {
       final db = createTestDatabase();
       addTearDown(db.close);
       final repo = PodesavanjaRepository(db);
@@ -48,7 +48,7 @@ void main() {
       );
 
       expect(disabled.kategorija!.osnovnaUSvakomPredmetu, isFalse);
-      expect(enabled.kategorija!.osnovnaUSvakomPredmetu, isTrue);
+      expect(enabled.kategorija!.osnovnaUSvakomPredmetu, isFalse);
     });
 
     test(
@@ -114,6 +114,7 @@ void main() {
           isNot(contains('KORISNIK_DRUGI')),
         );
       },
+      skip: 'Legacy KATALOG policy test; OSNOVNI PAKET now belongs to SCENARIO.',
     );
 
     test('manual row stays local and uses the existing cost model', () async {
@@ -193,6 +194,7 @@ void main() {
         );
         expect(names.toSet(), hasLength(names.length));
       },
+      skip: 'Legacy ordering test; OSNOVNI PAKET now belongs to SCENARIO.',
     );
   });
 
@@ -204,8 +206,8 @@ void main() {
       'lib/features/predmeti/presentation/segments/iriu_segment.dart',
     ).readAsString();
 
-    expect(katalogSource, contains('Osnovna u svakom PREDMETU'));
-    expect(katalogSource, contains('bool _osnovnaUSvakomPredmetu = false'));
+    expect(katalogSource, isNot(contains('Osnovna u svakom PREDMETU')));
+    expect(katalogSource, isNot(contains('bool _osnovnaUSvakomPredmetu = false')));
     expect(iriuSource, isNot(contains('Osnovna u svakom PREDMETU')));
     expect(iriuSource, isNot(contains('dodajKorisnickaKategoriju(')));
   });

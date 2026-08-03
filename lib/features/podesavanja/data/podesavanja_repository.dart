@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../../../core/database/database.dart';
@@ -10,6 +12,8 @@ class KategorijaLifecycleStatus {
     required this.jeKorisnicka,
     required this.koriscenaUIriu,
     required this.imaPovezaneArtikle,
+    required this.uOsnovnomPaketu,
+    required this.uScenariju,
   });
 
   final String interniNaziv;
@@ -17,11 +21,15 @@ class KategorijaLifecycleStatus {
   final bool jeKorisnicka;
   final bool koriscenaUIriu;
   final bool imaPovezaneArtikle;
+  final bool uOsnovnomPaketu;
+  final bool uScenariju;
 
   bool get mozeFizickoBrisanje =>
       jeKorisnicka &&
       !koriscenaUIriu &&
-      !(tip == 'KATALOSKA' && imaPovezaneArtikle);
+      !(tip == 'KATALOSKA' && imaPovezaneArtikle) &&
+      !uOsnovnomPaketu &&
+      !uScenariju;
 }
 
 class KategorijaLifecycleIshod {
@@ -141,6 +149,39 @@ class PodesavanjaRepository {
               ..where((a) => a.interniNazivKategorije.equals(interniNaziv)))
             .get()
             .then((rows) => rows.isNotEmpty);
+    final module = await (_db.select(_db.scenarioModules)
+          ..where((row) => row.id.equals('scenario')))
+        .getSingleOrNull();
+    var uOsnovnomPaketu = false;
+    if (module != null) {
+      try {
+        final decoded = jsonDecode(module.osnovniPaketJson);
+        uOsnovnomPaketu = decoded is List &&
+            decoded.whereType<String>().contains(interniNaziv);
+      } on Object {
+        uOsnovnomPaketu = false;
+      }
+    }
+    var uScenariju = false;
+    final definitions = await (_db.select(_db.scenarioDefinitions)
+          ..where((row) => row.moduleId.equals('scenario')))
+        .get();
+    for (final definition in definitions) {
+      try {
+        final decoded = jsonDecode(definition.consequencesJson);
+        if (decoded is List &&
+            decoded.any(
+              (item) =>
+                  item is Map<String, dynamic> &&
+                  item['katalogCategoryInternalName'] == interniNaziv,
+            )) {
+          uScenariju = true;
+          break;
+        }
+      } on Object {
+        // Malformed historical JSON is handled by the scenario repository.
+      }
+    }
 
     return KategorijaLifecycleStatus(
       interniNaziv: kategorija.interniNaziv,
@@ -148,6 +189,8 @@ class PodesavanjaRepository {
       jeKorisnicka: kategorija.jeKorisnicka,
       koriscenaUIriu: koriscenaUIriu,
       imaPovezaneArtikle: imaPovezaneArtikle,
+      uOsnovnomPaketu: uOsnovnomPaketu,
+      uScenariju: uScenariju,
     );
   }
 
@@ -328,7 +371,8 @@ class PodesavanjaRepository {
               nazivPrikaz: Value(nazivPrikaz),
               tip: Value(tip),
               jeKorisnicka: const Value(true),
-              osnovnaUSvakomPredmetu: Value(osnovnaUSvakomPredmetu),
+              // Compatibility column only; SCENARIO owns the basic package.
+              osnovnaUSvakomPredmetu: const Value(false),
               redosled: Value(noviRed),
             ),
           );

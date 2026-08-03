@@ -198,6 +198,11 @@ void main() {
           isEmpty,
         );
       },
+      // This scenario opens two Drift databases and stages media. In the
+      // complete suite it can legitimately wait behind migration tests; the
+      // default 30-second timeout caused teardown to delete the temp root
+      // while the test was still creating its stale media fixture.
+      timeout: const Timeout(Duration(minutes: 2)),
     );
 
     test(

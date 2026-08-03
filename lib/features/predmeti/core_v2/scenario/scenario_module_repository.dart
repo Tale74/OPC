@@ -211,6 +211,7 @@ class ScenarioModuleRepository {
         consequences: consequences,
         jePodrazumevani: legacy.jePodrazumevani,
         status: legacy.status,
+        allowBaseOverlap: true,
       );
       existingIds.add(targetId);
     }
@@ -232,6 +233,30 @@ class ScenarioModuleRepository {
     await ensureModule();
     final normalized = categoryIds.map((value) => value.trim()).toSet()
       ..removeWhere((value) => value.isEmpty);
+    final catalogIds = (await (_db.select(
+      _db.iriuKatalogConfig,
+    )).get()).map((row) => row.interniNaziv).toSet();
+    final missing = normalized.difference(catalogIds);
+    if (missing.isNotEmpty) {
+      throw ArgumentError(
+        'Osnovni paket sadrži kategoriju koja ne postoji u KATALOGU: ${missing.first}.',
+      );
+    }
+    final definitions = await getDefinitions();
+    final usedByScenario = <String>{};
+    for (final record in definitions) {
+      usedByScenario.addAll(
+        definitionFromRecord(record).consequences.map(
+          (item) => item.katalogCategoryInternalName,
+        ),
+      );
+    }
+    final conflict = normalized.intersection(usedByScenario);
+    if (conflict.isNotEmpty) {
+      throw ArgumentError(
+        'Kategorija ${conflict.first} ne može istovremeno biti u OSNOVNOM PAKETU i dodatku scenarija. Uklonite je iz jednog paketa pa pokušajte ponovo.',
+      );
+    }
     await (_db.update(
       _db.scenarioModules,
     )..where((row) => row.id.equals(moduleId))).write(
@@ -273,6 +298,7 @@ class ScenarioModuleRepository {
     String description = '',
     bool jePodrazumevani = false,
     String status = 'DRAFT',
+    bool allowBaseOverlap = false,
   }) async {
     final normalizedId = id.trim();
     final normalizedName = naziv.trim();
@@ -303,6 +329,14 @@ class ScenarioModuleRepository {
     );
     if (missing.isNotEmpty) {
       throw ArgumentError('Stavka ${missing.first} ne postoji u KATALOGU.');
+    }
+    final module = await ensureModule();
+    final osnovniPaket = readOsnovniPaket(module);
+    final baseConflict = categories.keys.toSet().intersection(osnovniPaket);
+    if (baseConflict.isNotEmpty && !allowBaseOverlap) {
+      throw ArgumentError(
+        'Kategorija ${baseConflict.first} je već u OSNOVNOM PAKETU i ne može biti dodatak scenarija. Uklonite je iz osnovnog paketa pa pokušajte ponovo.',
+      );
     }
     final definition = ScenarioDefinition(
       id: normalizedId,

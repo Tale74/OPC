@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
-import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../core_v2/business_policy/business_scenario_id.dart';
+import '../core_v2/scenario/scenario_module_repository.dart';
 
 enum SacuvajPredmetIshod { prviSave, novoSacuvano, bezIzmena }
 
@@ -158,27 +158,15 @@ class PredmetiRepository {
     final katalogByInternalName = {
       for (final row in katalog) row.interniNaziv: row,
     };
-    final ugradjeneOsnovne = IriuK.ugradjeneOsnovnePreAgencijskih.map(
-      (interniNaziv) => (interniNaziv: interniNaziv, nazivPrikaz: null),
-    );
-    final korisnickeOsnovne = katalog
-        .where(
-          (row) =>
-              row.vidljiv &&
-              row.osnovnaUSvakomPredmetu &&
-              (row.jeKorisnicka ||
-                  IriuK.podesiveOsnovneSeedKategorije.contains(
-                    row.interniNaziv,
-                  )),
-        )
-        .map(
-          (row) =>
-              (interniNaziv: row.interniNaziv, nazivPrikaz: row.nazivPrikaz),
-        );
+    // KATALOG only describes categories.  The SCENARIO module is the single
+    // source of truth for the basic package; the legacy catalog boolean is
+    // intentionally inert (kept in the schema for compatibility).
+    final scenarioRepository = ScenarioModuleRepository(_db);
+    final module = await scenarioRepository.ensureModuleAndDefaults();
+    final osnovniPaket = scenarioRepository.readOsnovniPaket(module);
     final inicijalneStavke = <({String interniNaziv, String? nazivPrikaz})>[
-      ...ugradjeneOsnovne,
-      (interniNaziv: IriuK.agencijskeUsluge, nazivPrikaz: null),
-      ...korisnickeOsnovne,
+      for (final interniNaziv in osnovniPaket)
+        (interniNaziv: interniNaziv, nazivPrikaz: null),
     ];
     final materializedInternalNames = <String>{};
     int red = 0;

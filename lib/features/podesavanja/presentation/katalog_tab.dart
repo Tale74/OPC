@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/database/database.dart';
-import '../../../core/constants/iriu_constants.dart';
 import '../../../core/format/app_format.dart';
 import 'katalog_photo_policy.dart';
 import '../data/podesavanja_repository.dart';
@@ -30,7 +29,6 @@ class KatalogTab extends StatelessWidget {
       interniNaziv: 'KORISNIK_${DateTime.now().millisecondsSinceEpoch}',
       nazivPrikaz: result.naziv,
       tip: result.tip,
-      osnovnaUSvakomPredmetu: result.osnovnaUSvakomPredmetu,
     );
 
     if (!context.mounted) return;
@@ -105,15 +103,13 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
   bool _expanded = false;
 
   bool get _jeKataloska => widget.item.tip == 'KATALOSKA';
-  bool get _jeKorisnicka => widget.item.jeKorisnicka;
-  bool get _osnovnaPolicyEditable =>
-      _jeKorisnicka ||
-      IriuK.podesiveOsnovneSeedKategorije.contains(widget.item.interniNaziv);
+  bool get _legacyBasicFlagIgnored => false;
 
   Future<void> _editDialog(BuildContext context) async {
     final nazivCtrl = TextEditingController(text: widget.item.nazivPrikaz);
     bool vidljiv = widget.item.vidljiv;
-    bool osnovnaUSvakomPredmetu = widget.item.osnovnaUSvakomPredmetu;
+    // Legacy database flag is intentionally not editable in KATALOG.
+    bool legacyCatalogFlag = false;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -137,12 +133,12 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                 title: const Text('Vidljivo u katalogu'),
                 contentPadding: EdgeInsets.zero,
               ),
-              if (_osnovnaPolicyEditable) ...[
+              if (_legacyBasicFlagIgnored) ...[
                 const Divider(),
                 SwitchListTile(
-                  value: osnovnaUSvakomPredmetu,
-                  onChanged: (v) => setDlg(() => osnovnaUSvakomPredmetu = v),
-                  title: const Text('Osnovna u svakom PREDMETU'),
+                  value: legacyCatalogFlag,
+                  onChanged: (v) => setDlg(() => legacyCatalogFlag = v),
+                  title: const Text('OSNOVNI PAKET se uređuje u SCENARIO modulu'),
                   subtitle: const Text(
                     'Primenjuje se samo na buduće PREDMETE.',
                   ),
@@ -176,9 +172,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
             noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
           ),
           vidljiv: Value(vidljiv),
-          osnovnaUSvakomPredmetu: _osnovnaPolicyEditable
-              ? Value(osnovnaUSvakomPredmetu)
-              : const Value.absent(),
+          osnovnaUSvakomPredmetu: const Value.absent(),
         ),
       );
     }
@@ -189,6 +183,24 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
       widget.item.interniNaziv,
     );
     if (status == null || !context.mounted) return;
+    if (!status.jeKorisnicka) {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Zaštićena kategorija'),
+          content: const Text(
+            'Ugrađena kategorija je deo poslovnog modela. Možete promeniti naziv i vidljivost, ali je ne možete ukloniti iz KATALOGA.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('U REDU'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
 
     final ideNaBrisanje = status.mozeFizickoBrisanje;
     final naslov = ideNaBrisanje
@@ -220,6 +232,10 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                       ? 'Kategorija ima povezane artikle.'
                       : 'Kategorija nema povezane artikle.',
                 ),
+              if (status.uOsnovnomPaketu)
+                const Text('Kategorija je deo OSNOVNOG PAKETA u SCENARIO modulu.'),
+              if (status.uScenariju)
+                const Text('Kategorija se koristi u najmanje jednom SCENARIO dodatku.'),
             ],
           ],
         ),
@@ -284,10 +300,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                         Wrap(
                           spacing: 4,
                           runSpacing: 4,
-                          children: [
-                            _TipChip(_jeKataloska),
-                            _OsnovnaChip(widget.item.osnovnaUSvakomPredmetu),
-                          ],
+                          children: [_TipChip(_jeKataloska)],
                         ),
                       ],
                     ),
@@ -297,12 +310,11 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                     tooltip: 'Izmeni',
                     onPressed: () => _editDialog(context),
                   ),
-                  if (_jeKorisnicka)
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Ukloni kategoriju',
-                      onPressed: () => _ukloniIliDeaktiviraj(context),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Ukloni ili zaštiti kategoriju',
+                    onPressed: () => _ukloniIliDeaktiviraj(context),
+                  ),
                   if (_jeKataloska)
                     Icon(
                       _expanded ? Icons.expand_less : Icons.expand_more,
@@ -327,12 +339,10 @@ class _NovaKategorijaResult {
   _NovaKategorijaResult({
     required this.naziv,
     required this.tip,
-    required this.osnovnaUSvakomPredmetu,
   });
 
   final String naziv;
   final String tip;
-  final bool osnovnaUSvakomPredmetu;
 }
 
 class _NovaKategorijaDialog extends StatefulWidget {
@@ -345,8 +355,11 @@ class _NovaKategorijaDialog extends StatefulWidget {
 class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
   final _nazivCtrl = TextEditingController();
   String _tip = 'FIKSNA';
-  bool _osnovnaUSvakomPredmetu = false;
+  // Retained only to keep old serialized dialog state source-compatible;
+  // the inactive branch is never rendered or persisted.
+  bool _legacyCatalogFlag = false;
   bool _greskaNaziv = false;
+  bool get _legacyBasicFlagIgnored => false;
 
   @override
   void dispose() {
@@ -365,7 +378,6 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
       _NovaKategorijaResult(
         naziv: naziv,
         tip: _tip,
-        osnovnaUSvakomPredmetu: _osnovnaUSvakomPredmetu,
       ),
     );
   }
@@ -430,23 +442,24 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
               ),
             ),
             const SizedBox(height: 12),
+            if (_legacyBasicFlagIgnored) ...[
             SegmentedButton<bool>(
               segments: const [
                 ButtonSegment<bool>(value: false, label: Text('NE')),
                 ButtonSegment<bool>(value: true, label: Text('DA')),
               ],
-              selected: {_osnovnaUSvakomPredmetu},
+              selected: {_legacyCatalogFlag},
               onSelectionChanged: (selection) =>
-                  setState(() => _osnovnaUSvakomPredmetu = selection.first),
+                  setState(() => _legacyCatalogFlag = selection.first),
             ),
             const SizedBox(height: 4),
             Text(
-              'Osnovna u svakom PREDMETU: '
-              '${_osnovnaUSvakomPredmetu ? 'DA' : 'NE'}',
+              'OSNOVNI PAKET se uređuje u SCENARIO modulu.',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
+            ],
             Text(
               'Podešavanje važi samo za buduće PREDMETE.',
               style: TextStyle(
@@ -495,28 +508,6 @@ class _TipChip extends StatelessWidget {
   }
 }
 
-class _OsnovnaChip extends StatelessWidget {
-  const _OsnovnaChip(this.osnovna);
-
-  final bool osnovna;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Chip(
-      label: Text('OSNOVNA: ${osnovna ? 'DA' : 'NE'}'),
-      labelStyle: TextStyle(
-        fontSize: 10,
-        color: osnovna ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
-      ),
-      backgroundColor: osnovna
-          ? scheme.secondaryContainer
-          : scheme.surfaceContainerHighest,
-      padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-    );
-  }
-}
 
 // ── Lista artikala za KATALOŠKA stavku ────────────────────────────────────────
 

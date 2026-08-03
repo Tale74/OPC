@@ -70,10 +70,14 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     final existing = record == null
         ? null
         : _repository.definitionFromRecord(record);
+    final module = _currentModule ?? await _repository.ensureModule();
+    if (!context.mounted) return;
+    final baseCategoryIds = _repository.readOsnovniPaket(module);
     final result = await showDialog<_ScenarioDraft>(
       context: context,
       builder: (_) => _ScenarioDialog(
         katalog: katalog,
+        baseCategoryIds: baseCategoryIds,
         existing: existing,
         existingVersion: record?.version ?? 1,
         existingDefault: record?.jePodrazumevani ?? false,
@@ -98,6 +102,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     );
   }
 
+  // ignore: unused_element, legacy action intentionally removed from menu.
   Future<void> _kopirajScenario(ScenarioDefinitionRecord record) async {
     final definition = _repository.definitionFromRecord(record);
     final suffix = DateTime.now().millisecondsSinceEpoch;
@@ -114,10 +119,65 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     if (mounted) setState(() {});
   }
 
+  // ignore: unused_element, lifecycle is controlled through the editor.
   Future<void> _promeniUpotrebu(ScenarioDefinitionRecord record) async {
     await _repository.setDefinitionInUse(record, record.status != 'PRIMENJEN');
     _definitionsFuture = _repository.getDefinitions();
     if (mounted) setState(() {});
+  }
+
+  Future<void> _pregledScenario(
+    BuildContext context,
+    List<IriuKatalogConfigData> katalog,
+    ScenarioDefinitionRecord record,
+  ) async {
+    final definition = _repository.definitionFromRecord(record);
+    final edit = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(definition.name),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(definition.description.isEmpty
+                    ? 'Poslovna odluka za određenu okolnost.'
+                    : definition.description),
+                const SizedBox(height: 16),
+                const Text('KADA SE PRIMENJUJE',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                Text(_businessConditionLabel(definition.condition)),
+                const SizedBox(height: 16),
+                const Text('ŠTA SE NUDI KORISNIKU',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                ...definition.consequences.map((item) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.check_circle_outline),
+                      title: Text(_catalogLabel(katalog, item.katalogCategoryInternalName)),
+                      subtitle: Text(_statusLabel(item.action)),
+                    )),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('ZATVORI'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('UREDI'),
+          ),
+        ],
+      ),
+    );
+    if (edit == true && context.mounted) {
+      await _dodajIliIzmeniScenario(context, katalog, record: record);
+    }
   }
 
   @override
@@ -143,7 +203,9 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                   return ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      if (MediaQuery.sizeOf(context).width >= 1100) ...[
+                      // The former three technical summary cards are retired;
+                      // keep the legacy branch unreachable for compatibility.
+                      if (MediaQuery.sizeOf(context).width < 0) ...[
                         SizedBox(
                           height: 250,
                           child: Row(
@@ -248,9 +310,19 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                       const Card(
                         child: ListTile(
                           leading: Icon(Icons.alt_route_outlined),
-                          title: Text('SCENARIO'),
+                          title: Text('POSLOVNA ODLUKA'),
                           subtitle: Text(
                             'Ovde se definišu uslovi i STAVKE koje se nude tokom rada sa PREDMETOM.',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Card(
+                        child: ListTile(
+                          leading: Icon(Icons.account_tree_outlined),
+                          title: Text('POSLOVNA HIJERARHIJA'),
+                          subtitle: Text(
+                            'MESTO SMRTI → dodatna okolnost → poslovna odluka → paket stavki.',
                           ),
                         ),
                       ),
@@ -318,35 +390,15 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                       'verzija ${record.version}',
                                     ),
                                     trailing: PopupMenuButton<String>(
-                                      onSelected: (value) {
-                                        if (value == 'edit') {
-                                          _dodajIliIzmeniScenario(
-                                            context,
-                                            katalog,
-                                            record: record,
-                                          );
-                                        } else if (value == 'copy') {
-                                          _kopirajScenario(record);
-                                        } else {
-                                          _promeniUpotrebu(record);
-                                        }
-                                      },
+                                      onSelected: (_) => _pregledScenario(
+                                        context,
+                                        katalog,
+                                        record,
+                                      ),
                                       itemBuilder: (_) => [
                                         const PopupMenuItem(
                                           value: 'edit',
-                                          child: Text('UREDI'),
-                                        ),
-                                        const PopupMenuItem(
-                                          value: 'copy',
-                                          child: Text('NAPRAVI KOPIJU'),
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'toggle',
-                                          child: Text(
-                                            record.status == 'PRIMENJEN'
-                                                ? 'STAVI SCENARIO VAN UPOTREBE'
-                                                : 'STAVI SCENARIO U UPOTREBU',
-                                          ),
+                                          child: Text('PREGLED I UREĐIVANJE'),
                                         ),
                                       ],
                                     ),
@@ -456,12 +508,14 @@ class _ScenarioDraft {
 class _ScenarioDialog extends StatefulWidget {
   const _ScenarioDialog({
     required this.katalog,
+    required this.baseCategoryIds,
     this.existing,
     required this.existingVersion,
     required this.existingDefault,
   });
 
   final List<IriuKatalogConfigData> katalog;
+  final Set<String> baseCategoryIds;
   final ScenarioDefinition? existing;
   final int existingVersion;
   final bool existingDefault;
@@ -578,7 +632,12 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
             ),
             const Text('Šta ovaj scenario dodaje na OSNOVNI PAKET?'),
             ...widget.katalog
-                .where((item) => item.vidljiv)
+                .where(
+                  (item) =>
+                      item.vidljiv &&
+                      (widget.baseCategoryIds.contains(item.interniNaziv) ==
+                          _consequences.containsKey(item.interniNaziv)),
+                )
                 .map(
                   (item) => CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
@@ -589,7 +648,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                             '${_statusLabel(_consequences[item.interniNaziv]!.action)} · '
                             '${_providerLabel(_consequences[item.interniNaziv]!.provider)}',
                           )
-                        : null,
+                        : widget.baseCategoryIds.contains(item.interniNaziv)
+                            ? const Text('Već je u OSNOVNOM PAKETU')
+                            : null,
                     secondary: _consequences.containsKey(item.interniNaziv)
                         ? IconButton(
                             tooltip: 'Posebne odluke',
@@ -600,7 +661,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                             ),
                           )
                         : null,
-                    onChanged: (value) => setState(() {
+                    onChanged: widget.baseCategoryIds.contains(item.interniNaziv)
+                        ? null
+                        : (value) => setState(() {
                       if (value == true) {
                         _consequences[item.interniNaziv] = ScenarioConsequence(
                           katalogCategoryInternalName: item.interniNaziv,
@@ -611,7 +674,7 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                       } else {
                         _consequences.remove(item.interniNaziv);
                       }
-                    }),
+                          }),
                   ),
                 ),
             SwitchListTile(
@@ -650,7 +713,7 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
           () => _error =
               'Provera je uspešna: rezultat je objašnjiv i ne uklanja red bez odluke.',
         ),
-        child: const Text('PROVERI NA PRIMERU'),
+        child: const Text('PRIKAŽI SAŽETAK ODLUKE'),
       ),
       OutlinedButton(
         onPressed: () => _save(activate: false),
@@ -847,3 +910,22 @@ String _criterionOperatorLabel(ScenarioCriterionOperator operator) =>
       ScenarioCriterionOperator.isTrue => 'da',
       ScenarioCriterionOperator.isFalse => 'ne',
     };
+
+String _catalogLabel(
+  List<IriuKatalogConfigData> katalog,
+  String internalName,
+) {
+  for (final item in katalog) {
+    if (item.interniNaziv == internalName) return item.nazivPrikaz;
+  }
+  return internalName;
+}
+
+String _businessConditionLabel(ScenarioCondition condition) {
+  final criterion = _findCriterion(condition);
+  if (criterion == null) return 'Kada je ispunjena poslovna okolnost.';
+  final field = _criterionFieldLabel(criterion.field);
+  final operator = _criterionOperatorLabel(criterion.operator);
+  final values = criterion.values.join(', ');
+  return '$field je $operator${values.isEmpty ? '' : ': $values'}.';
+}

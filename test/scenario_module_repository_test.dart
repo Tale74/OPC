@@ -143,7 +143,7 @@ void main() {
         condition: stanBefore.condition,
         consequences: const <ScenarioConsequence>[
           ScenarioConsequence(
-            katalogCategoryInternalName: 'SANDUK',
+            katalogCategoryInternalName: 'IZNOSENJE',
             action: ScenarioConsequenceAction.required,
           ),
         ],
@@ -163,7 +163,7 @@ void main() {
         stanAfter.consequences.map(
           (item) => item.katalogCategoryInternalName,
         ),
-        <String>['SANDUK'],
+        <String>['IZNOSENJE'],
       );
       expect(
         domAfter.consequences.map(
@@ -204,7 +204,7 @@ void main() {
     final repository = ScenarioModuleRepository(db);
 
     final module = await repository.ensureModule();
-    await repository.saveOsnovniPaket({'SANDUK', 'CITULJE'});
+    await repository.saveOsnovniPaket({'SANDUK', 'CITULJA_POLITIKA'});
     await repository.saveDefinition(
       id: 'BOLNICA_GRADSKO',
       version: 1,
@@ -218,7 +218,7 @@ void main() {
       ),
       consequences: const [
         ScenarioConsequence(
-          katalogCategoryInternalName: 'SANDUK',
+          katalogCategoryInternalName: 'IZNOSENJE',
           action: ScenarioConsequenceAction.recommended,
         ),
       ],
@@ -230,7 +230,10 @@ void main() {
               db.scenarioModules,
             )..where((row) => row.id.equals(ScenarioModuleRepository.moduleId)))
             .getSingle();
-    expect(repository.readOsnovniPaket(savedModule), {'CITULJE', 'SANDUK'});
+    expect(
+      repository.readOsnovniPaket(savedModule),
+      {'CITULJA_POLITIKA', 'SANDUK'},
+    );
 
     final saved = await (db.select(
       db.scenarioDefinitions,
@@ -239,7 +242,7 @@ void main() {
     expect(definition.name, 'Bolnica i gradsko groblje');
     expect(
       definition.consequences.single.katalogCategoryInternalName,
-      'SANDUK',
+      'IZNOSENJE',
     );
     expect(module.id, ScenarioModuleRepository.moduleId);
   });
