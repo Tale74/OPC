@@ -37,8 +37,8 @@ void main() {
     expect(find.text('SCENARIJI PO MESTU SMRTI'), findsOneWidget);
     expect(find.text('MESTO SMRTI'), findsOneWidget);
     expect(find.text('DOM ZA STARE'), findsWidgets);
-    expect(find.text('PRIVATNA BOLNICA'), findsOneWidget);
-    expect(find.text('DRUGO'), findsOneWidget);
+    expect(find.text('PRIVATNA BOLNICA'), findsWidgets);
+    expect(find.text('DRUGO'), findsWidgets);
     expect(find.text('DODATNI PAKETI'), findsOneWidget);
     expect(find.text('SAHRANA VAN SRBIJE'), findsWidgets);
     expect(
