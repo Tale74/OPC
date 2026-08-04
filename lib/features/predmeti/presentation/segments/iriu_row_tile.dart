@@ -194,7 +194,15 @@ class _IriuRowTileState extends State<IriuRowTile> {
   void initState() {
     super.initState();
     final s = widget.stavka;
-    _nazivCtrl = TextEditingController(text: s.nazivPrikaz);
+    final rawDisplayName = s.nazivPrikaz.trim();
+    final internalDisplayName =
+        RegExp(r'^KORISNIK_\d+$').hasMatch(rawDisplayName) ||
+        rawDisplayName == s.interniNaziv;
+    _nazivCtrl = TextEditingController(
+      text: internalDisplayName
+          ? (IriuK.naziviPrikaz[s.interniNaziv] ?? 'Dodatna stavka')
+          : rawDisplayName,
+    );
     _komCtrl = TextEditingController(text: s.kom);
     _iznosCtrl = TextEditingController(
       text: s.iznos > 0 ? formatMoneyNumber(s.iznos) : '',

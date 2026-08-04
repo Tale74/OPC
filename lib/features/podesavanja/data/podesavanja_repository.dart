@@ -149,23 +149,24 @@ class PodesavanjaRepository {
               ..where((a) => a.interniNazivKategorije.equals(interniNaziv)))
             .get()
             .then((rows) => rows.isNotEmpty);
-    final module = await (_db.select(_db.scenarioModules)
-          ..where((row) => row.id.equals('scenario')))
-        .getSingleOrNull();
+    final module = await (_db.select(
+      _db.scenarioModules,
+    )..where((row) => row.id.equals('scenario'))).getSingleOrNull();
     var uOsnovnomPaketu = false;
     if (module != null) {
       try {
         final decoded = jsonDecode(module.osnovniPaketJson);
-        uOsnovnomPaketu = decoded is List &&
+        uOsnovnomPaketu =
+            decoded is List &&
             decoded.whereType<String>().contains(interniNaziv);
       } on Object {
         uOsnovnomPaketu = false;
       }
     }
     var uScenariju = false;
-    final definitions = await (_db.select(_db.scenarioDefinitions)
-          ..where((row) => row.moduleId.equals('scenario')))
-        .get();
+    final definitions = await (_db.select(
+      _db.scenarioDefinitions,
+    )..where((row) => row.moduleId.equals('scenario'))).get();
     for (final definition in definitions) {
       try {
         final decoded = jsonDecode(definition.consequencesJson);
@@ -201,10 +202,6 @@ class PodesavanjaRepository {
     if (status == null) {
       throw StateError('Kategorija nije pronađena.');
     }
-    if (!status.jeKorisnicka) {
-      throw StateError('Samo korisničke kategorije mogu menjati lifecycle.');
-    }
-
     if (status.mozeFizickoBrisanje) {
       await _db.transaction(() async {
         await (_db.delete(

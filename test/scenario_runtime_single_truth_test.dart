@@ -23,53 +23,56 @@ void main() {
     final base = scenarios.readOsnovniPaket(module);
     expect(base, hasLength(9));
 
-    final catalogFlag = await (db.select(db.iriuKatalogConfig)
-          ..where((row) => row.interniNaziv.equals('CVECE')))
-        .getSingle();
-    // Historical value may remain in the compatibility column; it is not
-    // consulted by runtime initialization.
+    final catalogFlag = await (db.select(
+      db.iriuKatalogConfig,
+    )..where((row) => row.interniNaziv.equals('CVECE'))).getSingle();
+    // The legacy column is retained for compatibility only; SCENARIO owns
+    // the active basic package and runtime never reads this value.
     expect(catalogFlag.osnovnaUSvakomPredmetu, isTrue);
 
     final predmeti = PredmetiRepository(db);
     final predmet = await predmeti.kreirajPredmet(savetnikId: 1);
     await predmeti.inicijalizujIriu(predmet);
-    final rows = await (db.select(db.iriu)
-          ..where((row) => row.predmetId.equals(predmet)))
-        .get();
+    final rows = await (db.select(
+      db.iriu,
+    )..where((row) => row.predmetId.equals(predmet))).get();
     expect(rows.map((row) => row.interniNaziv), contains('CVECE'));
   });
 
-  test('basic and scenario packages cannot contain the same category', () async {
-    final db = createTestDatabase();
-    addTearDown(db.close);
-    final scenarios = ScenarioModuleRepository(
-      db,
-      loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
-    );
-    final module = await scenarios.ensureModuleAndDefaults();
-    final base = scenarios.readOsnovniPaket(module);
+  test(
+    'basic and scenario packages cannot contain the same category',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final scenarios = ScenarioModuleRepository(
+        db,
+        loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
+      );
+      final module = await scenarios.ensureModuleAndDefaults();
+      final base = scenarios.readOsnovniPaket(module);
 
-    await expectLater(
-      scenarios.saveDefinition(
-        id: 'DUPLICATE_BASE',
-        version: 1,
-        naziv: 'Duplirana odluka',
-        condition: ScenarioCondition.criterion(
-          const ScenarioCriterion(
-            field: ScenarioCriterionField.mestoSmrti,
-            operator: ScenarioCriterionOperator.equals,
-            values: ['STAN'],
+      await expectLater(
+        scenarios.saveDefinition(
+          id: 'DUPLICATE_BASE',
+          version: 1,
+          naziv: 'Duplirana odluka',
+          condition: ScenarioCondition.criterion(
+            const ScenarioCriterion(
+              field: ScenarioCriterionField.mestoSmrti,
+              operator: ScenarioCriterionOperator.equals,
+              values: ['STAN'],
+            ),
           ),
+          consequences: [
+            ScenarioConsequence(
+              katalogCategoryInternalName: base.first,
+              action: ScenarioConsequenceAction.required,
+              order: 10,
+            ),
+          ],
         ),
-        consequences: [
-          ScenarioConsequence(
-            katalogCategoryInternalName: base.first,
-            action: ScenarioConsequenceAction.required,
-            order: 10,
-          ),
-        ],
-      ),
-      throwsArgumentError,
-    );
-  });
+        throwsArgumentError,
+      );
+    },
+  );
 }

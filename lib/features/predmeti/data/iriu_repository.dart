@@ -55,6 +55,12 @@ class IriuRepository {
       osnovniPaket: osnovniPaket,
     );
     final rows = await getIriu(predmetId);
+    final catalogRows = await (_db.select(_db.iriuKatalogConfig)).get();
+    final catalogDisplayNames = <String, String>{
+      for (final row in catalogRows)
+        if (row.nazivPrikaz.trim().isNotEmpty)
+          row.interniNaziv: row.nazivPrikaz.trim(),
+    };
     final provenance = await (_db.select(_db.iriuProvenance)).get();
     final provenanceByIriuId = {
       for (final item in provenance) item.iriuId: item,
@@ -119,7 +125,10 @@ class IriuRepository {
       final id = await _insertStavka(
         predmetId: predmetId,
         interniNaziv: internalName,
-        nazivPrikaz: IriuK.naziviPrikaz[internalName] ?? internalName,
+        nazivPrikaz:
+            catalogDisplayNames[internalName] ??
+            IriuK.naziviPrikaz[internalName] ??
+            'Dodatna stavka',
         redosled: await sledeciredosled(predmetId),
         poslovniStatus: decision.businessStatus,
         obezbedjuje: decision.provider.name,
@@ -253,6 +262,16 @@ class IriuRepository {
     );
     await _rebuildBusinessOrdering(predmetId);
     return id;
+  }
+
+  Future<String> _catalogDisplayName(String internalName) async {
+    final row =
+        await (_db.select(_db.iriuKatalogConfig)
+              ..where((item) => item.interniNaziv.equals(internalName)))
+            .getSingleOrNull();
+    final display = row?.nazivPrikaz.trim();
+    if (display != null && display.isNotEmpty) return display;
+    return IriuK.naziviPrikaz[internalName] ?? 'Dodatna stavka';
   }
 
   Future<int> _insertStavka({
@@ -586,7 +605,7 @@ class IriuRepository {
       await _insertStavka(
         predmetId: predmetId,
         interniNaziv: internalName,
-        nazivPrikaz: IriuK.naziviPrikaz[internalName] ?? internalName,
+        nazivPrikaz: await _catalogDisplayName(internalName),
         redosled: red,
       );
       insertedAny = true;
@@ -615,7 +634,7 @@ class IriuRepository {
       await _insertStavka(
         predmetId: predmetId,
         interniNaziv: internalName,
-        nazivPrikaz: IriuK.naziviPrikaz[internalName] ?? internalName,
+        nazivPrikaz: await _catalogDisplayName(internalName),
         redosled: red,
       );
       insertedAny = true;

@@ -121,4 +121,44 @@ void main() {
       }
     },
   );
+
+  test(
+    'BOLNICA with zarazna smrt keeps non-cremation limeni ulozak and lemovanje',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final scenarioRepository = ScenarioModuleRepository(
+        db,
+        loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
+      );
+      final module = await scenarioRepository.ensureModuleAndDefaults();
+      final definitions = await scenarioRepository.getActiveDefinitions();
+      final predmetRepository = PredmetiRepository(db);
+      final predmetId = await predmetRepository.kreirajPredmet(savetnikId: 1);
+      await predmetRepository.inicijalizujIriu(predmetId);
+      await predmetRepository.azurirajPredmet(
+        predmetId,
+        const PredmetiCompanion(
+          mestoSmrti: Value('BOLNICA'),
+          uzrokSmrti: Value('ZARAZNA'),
+          vrstaCeremonije: Value('SAHRANA'),
+        ),
+      );
+      final result = await IriuRepository(db).syncScenarioRows(
+        predmetId: predmetId,
+        predmet: await predmetRepository.getPredmet(predmetId),
+        scenarios: definitions,
+        osnovniPaket: scenarioRepository.readOsnovniPaket(module),
+      );
+      expect(
+        result.matchedScenarioIds,
+        containsAll(<String>['BOLNICA', 'LIMENI_ULOZAK', 'LEMOVANJE']),
+      );
+      final rows = await IriuRepository(db).getIriu(predmetId);
+      expect(
+        rows.map((row) => row.interniNaziv),
+        containsAll(<String>[IriuK.limeniUlozak, IriuK.lemovanje]),
+      );
+    },
+  );
 }

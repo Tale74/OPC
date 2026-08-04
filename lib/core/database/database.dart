@@ -57,6 +57,8 @@ part 'database.g.dart';
 )
 class AppDatabase extends _$AppDatabase {
   static const String legacyPinHashVersion = 'LEGACY_SHA256';
+  static final Map<String, Uint8List?> _catalogAssetCache =
+      <String, Uint8List?>{};
 
   late final OpcSchemaRecovery _schemaRecovery = OpcSchemaRecovery(this);
 
@@ -214,7 +216,8 @@ class AppDatabase extends _$AppDatabase {
       }
       final migrator = createMigrator();
       await _recoverSupportedAdditiveSchema(migrator);
-      await _seedIriuKatalog();
+      final existingCatalogArticles = await select(katalogArtikli).get();
+      await _seedIriuKatalog(loadPhotos: existingCatalogArticles.isEmpty);
       await _backfillBuiltInIriuBasicPolicy();
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
       await _ensureKatalogStableArticleIdUniqueIndex();
@@ -831,7 +834,7 @@ class AppDatabase extends _$AppDatabase {
 
   // ── IRIU katalog — predefinisane stavke (sloj 1) ─────────────────────────
 
-  Future<void> _seedIriuKatalog() async {
+  Future<void> _seedIriuKatalog({bool loadPhotos = true}) async {
     final stavke = [
       (naziv: 'SANDUK', prikaz: 'Sanduk', tip: 'KATALOSKA', red: 1),
       (
@@ -1514,7 +1517,7 @@ class AppDatabase extends _$AppDatabase {
         ...ceceArtikli,
       ].where((c) => kFullPhotoCatalogSeedKategorije.contains(c.$1));
       for (final c in sviArtikli) {
-        final bytes = await _ucitajAsset(c.$4);
+        final bytes = loadPhotos ? await _ucitajAsset(c.$4) : null;
         await into(katalogArtikli).insert(
           KatalogArtikliCompanion(
             stableArticleId: Value(
@@ -1562,10 +1565,16 @@ class AppDatabase extends _$AppDatabase {
 
   /// Učitava asset kao Uint8List (koristi se pri seeding-u i migraciji).
   Future<Uint8List?> _ucitajAsset(String path) async {
+    if (_catalogAssetCache.containsKey(path)) {
+      return _catalogAssetCache[path];
+    }
     try {
       final data = await rootBundle.load(path);
-      return data.buffer.asUint8List();
+      final bytes = data.buffer.asUint8List();
+      _catalogAssetCache[path] = bytes;
+      return bytes;
     } catch (_) {
+      _catalogAssetCache[path] = null;
       return null;
     }
   }

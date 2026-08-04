@@ -103,13 +103,11 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
   bool _expanded = false;
 
   bool get _jeKataloska => widget.item.tip == 'KATALOSKA';
-  bool get _legacyBasicFlagIgnored => false;
 
   Future<void> _editDialog(BuildContext context) async {
     final nazivCtrl = TextEditingController(text: widget.item.nazivPrikaz);
     bool vidljiv = widget.item.vidljiv;
     // Legacy database flag is intentionally not editable in KATALOG.
-    bool legacyCatalogFlag = false;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -133,18 +131,6 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                 title: const Text('Vidljivo u katalogu'),
                 contentPadding: EdgeInsets.zero,
               ),
-              if (_legacyBasicFlagIgnored) ...[
-                const Divider(),
-                SwitchListTile(
-                  value: legacyCatalogFlag,
-                  onChanged: (v) => setDlg(() => legacyCatalogFlag = v),
-                  title: const Text('OSNOVNI PAKET se uređuje u SCENARIO modulu'),
-                  subtitle: const Text(
-                    'Primenjuje se samo na buduće PREDMETE.',
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ],
             ],
           ),
           actions: [
@@ -183,25 +169,6 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
       widget.item.interniNaziv,
     );
     if (status == null || !context.mounted) return;
-    if (!status.jeKorisnicka) {
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Zaštićena kategorija'),
-          content: const Text(
-            'Ugrađena kategorija je deo poslovnog modela. Možete promeniti naziv i vidljivost, ali je ne možete ukloniti iz KATALOGA.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('U REDU'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
     final ideNaBrisanje = status.mozeFizickoBrisanje;
     final naslov = ideNaBrisanje
         ? 'Obriši kategoriju'
@@ -233,9 +200,13 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                       : 'Kategorija nema povezane artikle.',
                 ),
               if (status.uOsnovnomPaketu)
-                const Text('Kategorija je deo OSNOVNOG PAKETA u SCENARIO modulu.'),
+                const Text(
+                  'Kategorija je deo OSNOVNOG PAKETA u SCENARIO modulu.',
+                ),
               if (status.uScenariju)
-                const Text('Kategorija se koristi u najmanje jednom SCENARIO dodatku.'),
+                const Text(
+                  'Kategorija se koristi u najmanje jednom SCENARIO dodatku.',
+                ),
             ],
           ],
         ),
@@ -336,10 +307,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
 }
 
 class _NovaKategorijaResult {
-  _NovaKategorijaResult({
-    required this.naziv,
-    required this.tip,
-  });
+  _NovaKategorijaResult({required this.naziv, required this.tip});
 
   final String naziv;
   final String tip;
@@ -355,11 +323,7 @@ class _NovaKategorijaDialog extends StatefulWidget {
 class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
   final _nazivCtrl = TextEditingController();
   String _tip = 'FIKSNA';
-  // Retained only to keep old serialized dialog state source-compatible;
-  // the inactive branch is never rendered or persisted.
-  bool _legacyCatalogFlag = false;
   bool _greskaNaziv = false;
-  bool get _legacyBasicFlagIgnored => false;
 
   @override
   void dispose() {
@@ -373,13 +337,7 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
       setState(() => _greskaNaziv = true);
       return;
     }
-    Navigator.pop(
-      context,
-      _NovaKategorijaResult(
-        naziv: naziv,
-        tip: _tip,
-      ),
-    );
+    Navigator.pop(context, _NovaKategorijaResult(naziv: naziv, tip: _tip));
   }
 
   @override
@@ -441,25 +399,6 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 12),
-            if (_legacyBasicFlagIgnored) ...[
-            SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment<bool>(value: false, label: Text('NE')),
-                ButtonSegment<bool>(value: true, label: Text('DA')),
-              ],
-              selected: {_legacyCatalogFlag},
-              onSelectionChanged: (selection) =>
-                  setState(() => _legacyCatalogFlag = selection.first),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'OSNOVNI PAKET se uređuje u SCENARIO modulu.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            ],
             Text(
               'Podešavanje važi samo za buduće PREDMETE.',
               style: TextStyle(
@@ -507,7 +446,6 @@ class _TipChip extends StatelessWidget {
     );
   }
 }
-
 
 // ── Lista artikala za KATALOŠKA stavku ────────────────────────────────────────
 
