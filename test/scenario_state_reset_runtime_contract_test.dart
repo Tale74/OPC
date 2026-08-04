@@ -88,8 +88,8 @@ void main() {
 
       for (final entry in <String, String>{
         'DOM ZA STARE': 'DOM_ZA_STARE',
-        'PRIVATNA BOLNICA': 'DOM_ZA_STARE',
-        'DRUGO': 'DOM_ZA_STARE',
+        'PRIVATNA BOLNICA': 'PRIVATNA_BOLNICA',
+        'DRUGO': 'DRUGO',
         'STAN': 'STAN',
         'ULICA / JAVNO MESTO': 'ULICA_JAVNO_MESTO',
       }.entries) {

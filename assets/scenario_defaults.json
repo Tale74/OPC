@@ -12,8 +12,8 @@
     ]
   },
   {
-    "id":"DOM_ZA_STARE","version":1,"naziv":"DOM ZA STARE","opis":"Koristi se i za PRIVATNU BOLNICU i DRUGO.","jePodrazumevani":true,
-    "condition":{"kind":"CRITERION","field":"mestoSmrti","operator":"inSet","values":["DOM ZA STARE","PRIVATNA BOLNICA","DRUGO"]},
+    "id":"DOM_ZA_STARE","version":1,"naziv":"DOM ZA STARE","opis":"Postupak kada je mesto smrti dom za stare.","jePodrazumevani":true,
+    "condition":{"kind":"CRITERION","field":"mestoSmrti","operator":"equals","values":["DOM ZA STARE"]},
     "consequences":[
       {"katalogCategoryInternalName":"IZNOSENJE","action":"required","order":10,"section":2,"provider":"firma","warning":"","reason":"Primenjen je scenario DOM ZA STARE.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
       {"katalogCategoryInternalName":"TRANSPORTNA_VRECA","action":"required","order":20,"section":2,"provider":"firma","warning":"","reason":"Primenjen je scenario DOM ZA STARE.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
@@ -21,6 +21,30 @@
       {"katalogCategoryInternalName":"HLADNJACA","action":"required","order":40,"section":2,"provider":"firma","warning":"","reason":"Primenjen je scenario DOM ZA STARE.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
       {"katalogCategoryInternalName":"SPREMANJE_POKOJNIKA","action":"required","order":50,"section":2,"provider":"firma","warning":"","reason":"Primenjen je scenario DOM ZA STARE.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
       {"katalogCategoryInternalName":"PREVOZ_DO_GROBLJA","action":"required","order":60,"section":2,"provider":"firma","warning":"","reason":"Primenjen je scenario DOM ZA STARE.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"}
+    ]
+  },
+  {
+    "id":"PRIVATNA_BOLNICA","version":1,"naziv":"PRIVATNA BOLNICA","opis":"Postupak kada je mesto smrti privatna bolnica.","jePodrazumevani":true,
+    "condition":{"kind":"CRITERION","field":"mestoSmrti","operator":"equals","values":["PRIVATNA BOLNICA"]},
+    "consequences":[
+      {"katalogCategoryInternalName":"IZNOSENJE","action":"required","order":10,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je PRIVATNA BOLNICA.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"TRANSPORTNA_VRECA","action":"required","order":20,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je PRIVATNA BOLNICA.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"PREVOZ_DO_HLADNJACE","action":"required","order":30,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je PRIVATNA BOLNICA.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"HLADNJACA","action":"required","order":40,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je PRIVATNA BOLNICA.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"SPREMANJE_POKOJNIKA","action":"required","order":50,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je PRIVATNA BOLNICA.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"PREVOZ_DO_GROBLJA","action":"required","order":60,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je PRIVATNA BOLNICA.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"}
+    ]
+  },
+  {
+    "id":"DRUGO","version":1,"naziv":"DRUGO","opis":"Postupak kada je mesto smrti drugo.","jePodrazumevani":true,
+    "condition":{"kind":"CRITERION","field":"mestoSmrti","operator":"equals","values":["DRUGO"]},
+    "consequences":[
+      {"katalogCategoryInternalName":"IZNOSENJE","action":"required","order":10,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je DRUGO.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"TRANSPORTNA_VRECA","action":"required","order":20,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je DRUGO.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"PREVOZ_DO_HLADNJACE","action":"required","order":30,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je DRUGO.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"HLADNJACA","action":"required","order":40,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je DRUGO.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"SPREMANJE_POKOJNIKA","action":"required","order":50,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je DRUGO.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"},
+      {"katalogCategoryInternalName":"PREVOZ_DO_GROBLJA","action":"required","order":60,"section":2,"provider":"firma","warning":"","reason":"Mesto smrti je DRUGO.","financiallyIncluded":true,"conditionChangeBehavior":"obavestiIPrepustiOdluku"}
     ]
   },
   {

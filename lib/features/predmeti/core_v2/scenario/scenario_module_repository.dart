@@ -70,7 +70,20 @@ class ScenarioModuleRepository {
     final hasLegacyDefaults = existing.any(
       (record) => _legacyBundledIds.contains(record.id),
     );
-    if (existing.isNotEmpty && !hasLegacyDefaults) return module;
+    final hasCollapsedPlaceDefinition = existing.any(
+      (record) =>
+          record.id == 'DOM_ZA_STARE' &&
+          (_definitionHasMestoValue(
+                definitionFromRecord(record),
+                'PRIVATNA BOLNICA',
+              ) ||
+              _definitionHasMestoValue(definitionFromRecord(record), 'DRUGO')),
+    );
+    if (existing.isNotEmpty &&
+        !hasLegacyDefaults &&
+        !hasCollapsedPlaceDefinition) {
+      return module;
+    }
     try {
       final bundled = await _readBundledDefaults();
       if (bundled.isEmpty) return module;
@@ -100,21 +113,24 @@ class ScenarioModuleRepository {
       await _loadAsset('assets/scenario_defaults.json'),
     );
     if (decoded is! List) return const <_BundledScenarioSeed>[];
-    return decoded.whereType<Map<String, dynamic>>().map((raw) {
-      final map = Map<String, dynamic>.from(raw);
-      final definition = scenarioDefinitionFromJsonMap({
-        'id': map['id'],
-        'name': map['naziv'],
-        'description': map['opis'] ?? '',
-        'condition': map['condition'],
-        'consequences': map['consequences'],
-      });
-      return _BundledScenarioSeed(
-        definition: definition,
-        version: (map['version'] as num?)?.toInt() ?? 1,
-        jePodrazumevani: map['jePodrazumevani'] == true,
-      );
-    }).toList(growable: false);
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map((raw) {
+          final map = Map<String, dynamic>.from(raw);
+          final definition = scenarioDefinitionFromJsonMap({
+            'id': map['id'],
+            'name': map['naziv'],
+            'description': map['opis'] ?? '',
+            'condition': map['condition'],
+            'consequences': map['consequences'],
+          });
+          return _BundledScenarioSeed(
+            definition: definition,
+            version: (map['version'] as num?)?.toInt() ?? 1,
+            jePodrazumevani: map['jePodrazumevani'] == true,
+          );
+        })
+        .toList(growable: false);
   }
 
   Future<void> _saveMissingBundledDefaults(
@@ -157,7 +173,13 @@ class ScenarioModuleRepository {
 
     await _splitLegacyDefinition(
       legacy: byId['MESTO_SMRTI_BLOK'],
-      targetIds: const <String>['STAN', 'DOM_ZA_STARE', 'ULICA_JAVNO_MESTO'],
+      targetIds: const <String>[
+        'STAN',
+        'DOM_ZA_STARE',
+        'PRIVATNA_BOLNICA',
+        'DRUGO',
+        'ULICA_JAVNO_MESTO',
+      ],
       existingIds: existingIds,
       bundledById: bundledById,
     );
@@ -174,6 +196,37 @@ class ScenarioModuleRepository {
       bundledById: bundledById,
       splitConsequencesByTarget: true,
     );
+
+    final collapsedDom = byId['DOM_ZA_STARE'];
+    final domSeed = bundledById['DOM_ZA_STARE'];
+    if (collapsedDom != null && domSeed != null) {
+      final legacyRecord = collapsedDom;
+      final seed = domSeed;
+      final legacyDefinition = definitionFromRecord(legacyRecord);
+      final isCollapsed =
+          _definitionHasMestoValue(legacyDefinition, 'PRIVATNA BOLNICA') ||
+          _definitionHasMestoValue(legacyDefinition, 'DRUGO');
+      if (isCollapsed) {
+        await _splitLegacyDefinition(
+          legacy: legacyRecord,
+          targetIds: const <String>['PRIVATNA_BOLNICA', 'DRUGO'],
+          existingIds: existingIds,
+          bundledById: bundledById,
+        );
+        await saveDefinition(
+          id: legacyRecord.id,
+          version: seed.version,
+          naziv: seed.definition.name,
+          description: seed.definition.description,
+          condition: seed.definition.condition,
+          consequences: legacyDefinition.consequences,
+          jePodrazumevani: legacyRecord.jePodrazumevani,
+          status: legacyRecord.status,
+          allowBaseOverlap: true,
+        );
+        existingIds.add(legacyRecord.id);
+      }
+    }
 
     await _saveMissingBundledDefaults(bundled, existingIds);
     for (final legacyId in _legacyBundledIds) {
@@ -197,9 +250,7 @@ class ScenarioModuleRepository {
       if (seed == null) continue;
       final consequences = splitConsequencesByTarget
           ? legacyDefinition.consequences
-                .where(
-                  (item) => item.katalogCategoryInternalName == targetId,
-                )
+                .where((item) => item.katalogCategoryInternalName == targetId)
                 .toList(growable: false)
           : legacyDefinition.consequences;
       await saveDefinition(
@@ -246,9 +297,9 @@ class ScenarioModuleRepository {
     final usedByScenario = <String>{};
     for (final record in definitions) {
       usedByScenario.addAll(
-        definitionFromRecord(record).consequences.map(
-          (item) => item.katalogCategoryInternalName,
-        ),
+        definitionFromRecord(
+          record,
+        ).consequences.map((item) => item.katalogCategoryInternalName),
       );
     }
     final conflict = normalized.intersection(usedByScenario);
@@ -431,6 +482,21 @@ class ScenarioModuleRepository {
     for (final child in condition.children) {
       _validateCondition(child);
     }
+  }
+
+  bool _definitionHasMestoValue(ScenarioDefinition definition, String value) {
+    bool visit(ScenarioCondition condition) {
+      if (condition.kind == ScenarioConditionKind.criterion) {
+        final criterion = condition.criterion;
+        return criterion?.field == ScenarioCriterionField.mestoSmrti &&
+            criterion!.values
+                .map((item) => item.trim().toUpperCase())
+                .contains(value.toUpperCase());
+      }
+      return condition.children.any(visit);
+    }
+
+    return visit(definition.condition);
   }
 }
 

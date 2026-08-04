@@ -59,7 +59,13 @@ void main() {
         );
         expect(result.effectiveCategories, containsAll(fullPlacePackage));
         if (place == 'PRIVATNA BOLNICA' || place == 'DRUGO') {
-          expect(result.matchedScenarioIds, contains('DOM_ZA_STARE'));
+          expect(
+            result.matchedScenarioIds,
+            contains(
+              place == 'PRIVATNA BOLNICA' ? 'PRIVATNA_BOLNICA' : 'DRUGO',
+            ),
+          );
+          expect(result.matchedScenarioIds, isNot(contains('DOM_ZA_STARE')));
         }
       }
 
