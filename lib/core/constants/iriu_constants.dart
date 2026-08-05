@@ -29,6 +29,8 @@ abstract final class IriuK {
   static const String doradaPogrebneOpreme = 'DORADA_POGREBNE_OPREME';
   static const String kucanjeObelezja = 'KUCANJE_OBELEZJA';
   static const String slovaIBrojevi = 'SLOVA_I_BROJEVI';
+  static const String zastitnaIDodatnaOprema = 'ZASTITNA_I_DODATNA_OPREMA';
+  static const String slika = 'SLIKA';
 
   /// Nazivi za prikaz po internom nazivu — koriste se pri automatskom unosu.
   static const Map<String, String> naziviPrikaz = {
@@ -59,6 +61,8 @@ abstract final class IriuK {
     doradaPogrebneOpreme: 'Dorada pogrebne opreme',
     kucanjeObelezja: 'Kucanje obeležja',
     slovaIBrojevi: 'Slova i brojevi',
+    zastitnaIDodatnaOprema: 'Zaštitna i dodatna oprema',
+    slika: 'Slika',
   };
 
   /// Existing non-scenario rows materialized for every new PREDMET.

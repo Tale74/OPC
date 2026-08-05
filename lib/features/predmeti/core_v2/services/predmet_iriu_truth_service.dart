@@ -4,6 +4,8 @@ import '../business_policy/business_policy_evaluator.dart';
 import '../business_policy/business_policy_models.dart';
 import '../models/iriu_truth_models.dart';
 import '../rules/iriu_truth_rules.dart';
+import '../scenario/owner_scenario_policy_kernel.dart';
+import '../scenario/scenario_contract.dart';
 
 class PredmetIriuTruthService {
   const PredmetIriuTruthService({
@@ -240,19 +242,11 @@ class PredmetIriuTruthService {
   bool _requiresBiohazardPrecautionsForIriuTruth(
     _PredmetIriuTruthEvaluationContext context,
   ) {
-    final requiresBiohazardPrecautions =
-        context.policySnapshot.requiresBiohazardPrecautions;
-    final normalizedMestoSmrti = IriuTruthRules.normalizeMestoSmrti(
-      context.predmet.mestoSmrti,
+    final ownerResult = const OwnerScenarioPolicyKernel().evaluate(
+      context.predmet,
     );
-    assert(
-      requiresBiohazardPrecautions ==
-          (context.predmet.uzrokSmrti == 'ZARAZNA' &&
-              normalizedMestoSmrti.isNotEmpty &&
-              normalizedMestoSmrti != 'BOLNICA'),
-      'BusinessPolicySnapshot requiresBiohazardPrecautions must stay aligned '
-      'with the non-row BIOHAZARD precondition during the no-output-change '
-      'migration phase.',
+    final requiresBiohazardPrecautions = ownerResult.consequences.any(
+      (item) => item.warning.trim().isNotEmpty,
     );
     return requiresBiohazardPrecautions;
   }
@@ -327,13 +321,12 @@ class PredmetIriuTruthService {
   bool _expectedLemovanjeRecommendationForIriuTruth(
     _PredmetIriuTruthEvaluationContext context,
   ) {
-    if (context.policySnapshot.isKremacija) {
-      return false;
-    }
-    if (context.policySnapshot.hasUzrokSmrtiOverride) {
-      return true;
-    }
-    return context.policySnapshot.input.tipGrobnogMesta == 'GROBNICA';
+    final result = const OwnerScenarioPolicyKernel().evaluate(context.predmet);
+    return result.consequences.any(
+      (item) =>
+          item.katalogCategoryInternalName == IriuK.lemovanje &&
+          item.action == ScenarioConsequenceAction.recommended,
+    );
   }
 }
 

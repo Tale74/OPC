@@ -3069,6 +3069,21 @@ class $PredmetiTable extends Predmeti
         ),
         defaultValue: const Constant(false),
       );
+  static const VerificationMeta _promenaSandukaMeta = const VerificationMeta(
+    'promenaSanduka',
+  );
+  @override
+  late final GeneratedColumn<bool> promenaSanduka = GeneratedColumn<bool>(
+    'promena_sanduka',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("promena_sanduka" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _docekMestoMeta = const VerificationMeta(
     'docekMesto',
   );
@@ -3375,6 +3390,7 @@ class $PredmetiTable extends Predmeti
     svisZemlja,
     svisGrad,
     docekPosmrtnihOstataka,
+    promenaSanduka,
     docekMesto,
     docekDatum,
     docekVreme,
@@ -4280,6 +4296,15 @@ class $PredmetiTable extends Predmeti
         ),
       );
     }
+    if (data.containsKey('promena_sanduka')) {
+      context.handle(
+        _promenaSandukaMeta,
+        promenaSanduka.isAcceptableOrUnknown(
+          data['promena_sanduka']!,
+          _promenaSandukaMeta,
+        ),
+      );
+    }
     if (data.containsKey('docek_mesto')) {
       context.handle(
         _docekMestoMeta,
@@ -4863,6 +4888,10 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.bool,
         data['${effectivePrefix}docek_posmrtnih_ostataka'],
       )!,
+      promenaSanduka: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}promena_sanduka'],
+      )!,
       docekMesto: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}docek_mesto'],
@@ -5052,6 +5081,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String svisZemlja;
   final String svisGrad;
   final bool docekPosmrtnihOstataka;
+
+  /// Internal DOČEK condition. It is not a separate scenario key.
+  final bool promenaSanduka;
   final String docekMesto;
   final String docekDatum;
   final String docekVreme;
@@ -5186,6 +5218,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.svisZemlja,
     required this.svisGrad,
     required this.docekPosmrtnihOstataka,
+    required this.promenaSanduka,
     required this.docekMesto,
     required this.docekDatum,
     required this.docekVreme,
@@ -5335,6 +5368,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['svis_zemlja'] = Variable<String>(svisZemlja);
     map['svis_grad'] = Variable<String>(svisGrad);
     map['docek_posmrtnih_ostataka'] = Variable<bool>(docekPosmrtnihOstataka);
+    map['promena_sanduka'] = Variable<bool>(promenaSanduka);
     map['docek_mesto'] = Variable<String>(docekMesto);
     map['docek_datum'] = Variable<String>(docekDatum);
     map['docek_vreme'] = Variable<String>(docekVreme);
@@ -5480,6 +5514,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       svisZemlja: Value(svisZemlja),
       svisGrad: Value(svisGrad),
       docekPosmrtnihOstataka: Value(docekPosmrtnihOstataka),
+      promenaSanduka: Value(promenaSanduka),
       docekMesto: Value(docekMesto),
       docekDatum: Value(docekDatum),
       docekVreme: Value(docekVreme),
@@ -5644,6 +5679,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekPosmrtnihOstataka: serializer.fromJson<bool>(
         json['docekPosmrtnihOstataka'],
       ),
+      promenaSanduka: serializer.fromJson<bool>(json['promenaSanduka']),
       docekMesto: serializer.fromJson<String>(json['docekMesto']),
       docekDatum: serializer.fromJson<String>(json['docekDatum']),
       docekVreme: serializer.fromJson<String>(json['docekVreme']),
@@ -5787,6 +5823,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'svisZemlja': serializer.toJson<String>(svisZemlja),
       'svisGrad': serializer.toJson<String>(svisGrad),
       'docekPosmrtnihOstataka': serializer.toJson<bool>(docekPosmrtnihOstataka),
+      'promenaSanduka': serializer.toJson<bool>(promenaSanduka),
       'docekMesto': serializer.toJson<String>(docekMesto),
       'docekDatum': serializer.toJson<String>(docekDatum),
       'docekVreme': serializer.toJson<String>(docekVreme),
@@ -5922,6 +5959,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? svisZemlja,
     String? svisGrad,
     bool? docekPosmrtnihOstataka,
+    bool? promenaSanduka,
     String? docekMesto,
     String? docekDatum,
     String? docekVreme,
@@ -6062,6 +6100,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     svisGrad: svisGrad ?? this.svisGrad,
     docekPosmrtnihOstataka:
         docekPosmrtnihOstataka ?? this.docekPosmrtnihOstataka,
+    promenaSanduka: promenaSanduka ?? this.promenaSanduka,
     docekMesto: docekMesto ?? this.docekMesto,
     docekDatum: docekDatum ?? this.docekDatum,
     docekVreme: docekVreme ?? this.docekVreme,
@@ -6343,6 +6382,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekPosmrtnihOstataka: data.docekPosmrtnihOstataka.present
           ? data.docekPosmrtnihOstataka.value
           : this.docekPosmrtnihOstataka,
+      promenaSanduka: data.promenaSanduka.present
+          ? data.promenaSanduka.value
+          : this.promenaSanduka,
       docekMesto: data.docekMesto.present
           ? data.docekMesto.value
           : this.docekMesto,
@@ -6500,6 +6542,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('svisZemlja: $svisZemlja, ')
           ..write('svisGrad: $svisGrad, ')
           ..write('docekPosmrtnihOstataka: $docekPosmrtnihOstataka, ')
+          ..write('promenaSanduka: $promenaSanduka, ')
           ..write('docekMesto: $docekMesto, ')
           ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
@@ -6637,6 +6680,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     svisZemlja,
     svisGrad,
     docekPosmrtnihOstataka,
+    promenaSanduka,
     docekMesto,
     docekDatum,
     docekVreme,
@@ -6774,6 +6818,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.svisZemlja == this.svisZemlja &&
           other.svisGrad == this.svisGrad &&
           other.docekPosmrtnihOstataka == this.docekPosmrtnihOstataka &&
+          other.promenaSanduka == this.promenaSanduka &&
           other.docekMesto == this.docekMesto &&
           other.docekDatum == this.docekDatum &&
           other.docekVreme == this.docekVreme &&
@@ -6908,6 +6953,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> svisZemlja;
   final Value<String> svisGrad;
   final Value<bool> docekPosmrtnihOstataka;
+  final Value<bool> promenaSanduka;
   final Value<String> docekMesto;
   final Value<String> docekDatum;
   final Value<String> docekVreme;
@@ -7040,6 +7086,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.svisZemlja = const Value.absent(),
     this.svisGrad = const Value.absent(),
     this.docekPosmrtnihOstataka = const Value.absent(),
+    this.promenaSanduka = const Value.absent(),
     this.docekMesto = const Value.absent(),
     this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
@@ -7173,6 +7220,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.svisZemlja = const Value.absent(),
     this.svisGrad = const Value.absent(),
     this.docekPosmrtnihOstataka = const Value.absent(),
+    this.promenaSanduka = const Value.absent(),
     this.docekMesto = const Value.absent(),
     this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
@@ -7306,6 +7354,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? svisZemlja,
     Expression<String>? svisGrad,
     Expression<bool>? docekPosmrtnihOstataka,
+    Expression<bool>? promenaSanduka,
     Expression<String>? docekMesto,
     Expression<String>? docekDatum,
     Expression<String>? docekVreme,
@@ -7451,6 +7500,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (svisGrad != null) 'svis_grad': svisGrad,
       if (docekPosmrtnihOstataka != null)
         'docek_posmrtnih_ostataka': docekPosmrtnihOstataka,
+      if (promenaSanduka != null) 'promena_sanduka': promenaSanduka,
       if (docekMesto != null) 'docek_mesto': docekMesto,
       if (docekDatum != null) 'docek_datum': docekDatum,
       if (docekVreme != null) 'docek_vreme': docekVreme,
@@ -7587,6 +7637,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? svisZemlja,
     Value<String>? svisGrad,
     Value<bool>? docekPosmrtnihOstataka,
+    Value<bool>? promenaSanduka,
     Value<String>? docekMesto,
     Value<String>? docekDatum,
     Value<String>? docekVreme,
@@ -7726,6 +7777,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       svisGrad: svisGrad ?? this.svisGrad,
       docekPosmrtnihOstataka:
           docekPosmrtnihOstataka ?? this.docekPosmrtnihOstataka,
+      promenaSanduka: promenaSanduka ?? this.promenaSanduka,
       docekMesto: docekMesto ?? this.docekMesto,
       docekDatum: docekDatum ?? this.docekDatum,
       docekVreme: docekVreme ?? this.docekVreme,
@@ -8109,6 +8161,9 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
         docekPosmrtnihOstataka.value,
       );
     }
+    if (promenaSanduka.present) {
+      map['promena_sanduka'] = Variable<bool>(promenaSanduka.value);
+    }
     if (docekMesto.present) {
       map['docek_mesto'] = Variable<String>(docekMesto.value);
     }
@@ -8280,6 +8335,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('svisZemlja: $svisZemlja, ')
           ..write('svisGrad: $svisGrad, ')
           ..write('docekPosmrtnihOstataka: $docekPosmrtnihOstataka, ')
+          ..write('promenaSanduka: $promenaSanduka, ')
           ..write('docekMesto: $docekMesto, ')
           ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
@@ -19059,6 +19115,7 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> svisZemlja,
       Value<String> svisGrad,
       Value<bool> docekPosmrtnihOstataka,
+      Value<bool> promenaSanduka,
       Value<String> docekMesto,
       Value<String> docekDatum,
       Value<String> docekVreme,
@@ -19193,6 +19250,7 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> svisZemlja,
       Value<String> svisGrad,
       Value<bool> docekPosmrtnihOstataka,
+      Value<bool> promenaSanduka,
       Value<String> docekMesto,
       Value<String> docekDatum,
       Value<String> docekVreme,
@@ -19925,6 +19983,11 @@ class $$PredmetiTableFilterComposer
 
   ColumnFilters<bool> get docekPosmrtnihOstataka => $composableBuilder(
     column: $table.docekPosmrtnihOstataka,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get promenaSanduka => $composableBuilder(
+    column: $table.promenaSanduka,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20746,6 +20809,11 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get promenaSanduka => $composableBuilder(
+    column: $table.promenaSanduka,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get docekMesto => $composableBuilder(
     column: $table.docekMesto,
     builder: (column) => ColumnOrderings(column),
@@ -21328,6 +21396,11 @@ class $$PredmetiTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get promenaSanduka => $composableBuilder(
+    column: $table.promenaSanduka,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get docekMesto => $composableBuilder(
     column: $table.docekMesto,
     builder: (column) => column,
@@ -21699,6 +21772,7 @@ class $$PredmetiTableTableManager
                 Value<String> svisZemlja = const Value.absent(),
                 Value<String> svisGrad = const Value.absent(),
                 Value<bool> docekPosmrtnihOstataka = const Value.absent(),
+                Value<bool> promenaSanduka = const Value.absent(),
                 Value<String> docekMesto = const Value.absent(),
                 Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
@@ -21832,6 +21906,7 @@ class $$PredmetiTableTableManager
                 svisZemlja: svisZemlja,
                 svisGrad: svisGrad,
                 docekPosmrtnihOstataka: docekPosmrtnihOstataka,
+                promenaSanduka: promenaSanduka,
                 docekMesto: docekMesto,
                 docekDatum: docekDatum,
                 docekVreme: docekVreme,
@@ -21967,6 +22042,7 @@ class $$PredmetiTableTableManager
                 Value<String> svisZemlja = const Value.absent(),
                 Value<String> svisGrad = const Value.absent(),
                 Value<bool> docekPosmrtnihOstataka = const Value.absent(),
+                Value<bool> promenaSanduka = const Value.absent(),
                 Value<String> docekMesto = const Value.absent(),
                 Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
@@ -22100,6 +22176,7 @@ class $$PredmetiTableTableManager
                 svisZemlja: svisZemlja,
                 svisGrad: svisGrad,
                 docekPosmrtnihOstataka: docekPosmrtnihOstataka,
+                promenaSanduka: promenaSanduka,
                 docekMesto: docekMesto,
                 docekDatum: docekDatum,
                 docekVreme: docekVreme,

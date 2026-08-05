@@ -213,6 +213,7 @@ const Set<String> _kPredmetRequiredBoolFields = {
   'naruIstiZaJkp',
   'sahranaVanSrbije',
   'docekPosmrtnihOstataka',
+  'promenaSanduka',
   'jkpPlacaSamostalno',
   'partePotrebna',
 };
@@ -732,6 +733,7 @@ Map<String, dynamic> _normalizujBackupPredmetMap(Map<String, dynamic> row) {
   normalized['businessScenarioId'] ??= _kDefaultBusinessScenarioId;
   normalized['sourceIdentity'] ??= _kDefaultSourceIdentity;
   normalized['partePotrebna'] ??= false;
+  normalized['promenaSanduka'] ??= false;
 
   _zahtevajBackupTekstPolja(
     normalized,
@@ -1769,6 +1771,7 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
   normalized.putIfAbsent('lastBusinessModifiedAt', () => null);
   normalized.putIfAbsent('docekDatum', () => '');
   normalized.putIfAbsent('grobljePolaganjaUrne', () => '');
+  normalized.putIfAbsent('promenaSanduka', () => false);
   return documentTextCodec.normalizeMap(normalized);
 }
 

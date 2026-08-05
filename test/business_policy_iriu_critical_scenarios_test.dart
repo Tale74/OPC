@@ -96,7 +96,7 @@ void main() {
       'NEDEFINISANA',
     }) {
       test(
-        '$overrideCause keeps limeni ulozak and lemovanje required for grob',
+        '$overrideCause does not override the GROBNICA-only rule for grob',
         () async {
           final db = createTestDatabase();
           addTearDown(db.close);
@@ -116,7 +116,8 @@ void main() {
             dismissedCategories: const <String>{},
           );
 
-          _expectLimeniUlozakAndLemovanje(plan.categoriesToInsert);
+          expect(plan.categoriesToInsert, isNot(contains(IriuK.limeniUlozak)));
+          expect(plan.categoriesToInsert, isNot(contains(IriuK.lemovanje)));
         },
       );
     }

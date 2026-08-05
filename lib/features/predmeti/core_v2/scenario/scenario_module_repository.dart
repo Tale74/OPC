@@ -6,13 +6,13 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../../../core/database/database.dart';
 import '../../../../core/constants/iriu_constants.dart';
 import 'scenario_contract.dart';
+import 'owner_scenario_policy_kernel.dart';
 import 'scenario_persistence_contract.dart';
 
 /// Local persistence for the user-editable SCENARIO module.
 ///
-/// This repository deliberately stops at module settings. It does not alter
-/// PREDMET or IRIU rows; applying a scenario remains a separate, explicitly
-/// authorized operation.
+/// The repository owns policy-definition persistence. Runtime materializes
+/// the owner-kernel result through the PREDMET/IRiU path.
 class ScenarioModuleRepository {
   ScenarioModuleRepository(
     this._db, {
@@ -36,6 +36,8 @@ class ScenarioModuleRepository {
     IriuK.agencijskeUsluge,
     IriuK.cvece,
     IriuK.cituljaP,
+    IriuK.cituljaNo,
+    IriuK.slika,
   };
 
   final AppDatabase _db;
@@ -82,11 +84,16 @@ class ScenarioModuleRepository {
     if (existing.isNotEmpty &&
         !hasLegacyDefaults &&
         !hasCollapsedPlaceDefinition) {
-      return module;
+      return _ensureOwnerMapDefinitions(module);
     }
     try {
       final bundled = await _readBundledDefaults();
-      if (bundled.isEmpty) return module;
+      if (bundled.isEmpty) {
+        if (readOsnovniPaket(module).isEmpty) {
+          await saveOsnovniPaket(_defaultOsnovniPaket);
+        }
+        return _ensureOwnerMapDefinitions(await ensureModule());
+      }
       await _db.transaction(() async {
         if (existing.isEmpty) {
           if (readOsnovniPaket(module).isEmpty) {
@@ -105,7 +112,59 @@ class ScenarioModuleRepository {
       // Nedostupan asset ne sme da blokira otvaranje PREDMETA; tada modul
       // ostaje prazan i korisnik može da ga popuni kroz UI.
     }
-    return ensureModule();
+    if (readOsnovniPaket(module).isEmpty) {
+      try {
+        await saveOsnovniPaket(_defaultOsnovniPaket);
+      } on Object {
+        // KATALOG validation remains authoritative.
+      }
+    }
+    return _ensureOwnerMapDefinitions(await ensureModule());
+  }
+
+  /// Materializes the finite owner map as independent editable definitions.
+  /// Existing records, including deliberate user edits and later versions,
+  /// are never overwritten; only missing map keys are seeded.
+  Future<ScenarioModule> _ensureOwnerMapDefinitions(
+    ScenarioModule module,
+  ) async {
+    final existingIds = (await getDefinitions()).map((item) => item.id).toSet();
+    final missing = const OwnerScenarioPolicyKernel()
+        .allKeys()
+        .where((key) => !existingIds.contains(key.stableId))
+        .toList(growable: false);
+    if (missing.isEmpty) {
+      return (await (_db.select(
+        _db.scenarioModules,
+      )..where((row) => row.id.equals(moduleId))).getSingle());
+    }
+    final now = DateTime.now().toUtc().toIso8601String();
+    await _db.transaction(() async {
+      const kernel = OwnerScenarioPolicyKernel();
+      for (final key in missing) {
+        final definition = kernel.definitionForKey(key);
+        final wire = scenarioDefinitionToJsonMap(definition);
+        await _db
+            .into(_db.scenarioDefinitions)
+            .insertOnConflictUpdate(
+              ScenarioDefinitionsCompanion.insert(
+                id: definition.id,
+                moduleId: moduleId,
+                version: 1,
+                status: const Value('PRIMENJEN'),
+                naziv: Value(definition.name),
+                conditionJson: Value(jsonEncode(wire['condition'])),
+                consequencesJson: Value(jsonEncode(wire['consequences'])),
+                jePodrazumevani: const Value(true),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+      }
+    });
+    return (await (_db.select(
+      _db.scenarioModules,
+    )..where((row) => row.id.equals(moduleId))).getSingle());
   }
 
   Future<List<_BundledScenarioSeed>> _readBundledDefaults() async {

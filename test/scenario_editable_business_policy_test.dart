@@ -27,7 +27,7 @@ void main() {
       final predmeti = PredmetiRepository(db);
       final id = await predmeti.kreirajPredmet(savetnikId: 1);
 
-      expect(base, hasLength(9));
+      expect(base, hasLength(11));
       expect(base, isNot(contains(IriuK.prevozDoGroblja)));
 
       Future<ScenarioRuleEvaluation> evaluate(PredmetiCompanion change) async {

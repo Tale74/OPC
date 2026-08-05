@@ -1,6 +1,8 @@
 import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../models/iriu_truth_models.dart';
+import '../scenario/owner_scenario_policy_kernel.dart';
+import '../scenario/scenario_contract.dart';
 
 class IriuManagedPolicy {
   const IriuManagedPolicy({
@@ -128,99 +130,51 @@ abstract final class IriuTruthRules {
   static List<String> autoManagedMestoSmrtiCategories({
     required PredmetiData predmet,
   }) {
-    final normalizedMestoSmrti = normalizeMestoSmrti(predmet.mestoSmrti);
-    final categories = <String>[];
-    if (_mestoSmrtiBlockQualified(normalizedMestoSmrti)) {
-      categories.addAll(const <String>[
-        IriuK.hladnjaca,
-        IriuK.spremaanjePokojnika,
-        IriuK.iznosenje,
-        IriuK.prevozDoHladnjace,
-        IriuK.transportnaVreca,
-        IriuK.prevozDoGroblja,
-      ]);
-    } else if (_mestoSmrtiBolnicaQualified(normalizedMestoSmrti)) {
-      categories.add(IriuK.prevozDoGroblja);
-    }
-    return List<String>.unmodifiable(categories);
+    return const OwnerScenarioPolicyKernel().autoManagedMestoSmrtiForTruth(
+      predmet,
+    );
   }
 
   static List<String> autoManagedBlok2Categories({
     required PredmetiData predmet,
   }) {
-    final categories = <String>[];
-    if (_shouldAutoAddLimeniUlozak(predmet)) {
-      categories.add(IriuK.limeniUlozak);
-    }
-    if (_shouldAutoAddLemovanje(predmet)) {
-      categories.add(IriuK.lemovanje);
-    }
-    if (_shouldRecommendPrevozSprovoda(predmet)) {
-      categories.add(IriuK.prevozSprovoda);
-    }
-    return List<String>.unmodifiable(categories);
+    return const OwnerScenarioPolicyKernel().autoManagedBlok2ForTruth(predmet);
   }
 
   static bool isOperationallyActive({
     required PredmetiData predmet,
     required IriuData row,
   }) {
-    switch (row.interniNaziv) {
-      case IriuK.hladnjaca:
-      case IriuK.spremaanjePokojnika:
-      case IriuK.iznosenje:
-      case IriuK.prevozDoHladnjace:
-      case IriuK.prevozDoGroblja:
-      case IriuK.transportnaVreca:
-        return autoManagedMestoSmrtiCategories(
-          predmet: predmet,
-        ).contains(row.interniNaziv);
-      case IriuK.limeniUlozak:
-      case IriuK.lemovanje:
-      case IriuK.prevozSprovoda:
-        return autoManagedBlok2Categories(
-          predmet: predmet,
-        ).contains(row.interniNaziv);
-      case IriuK.medjunarodniPrevoz:
-      case IriuK.medjunarodnaDocumentacija:
-      case IriuK.balsamovanje:
-        return predmet.sahranaVanSrbije;
-      case IriuK.cargoTroskovi:
-        return predmet.docekPosmrtnihOstataka;
-      case IriuK.kompletZaOpelo:
-        return predmet.opelo == 'DA';
-      default:
-        return true;
-    }
+    return const OwnerScenarioPolicyKernel().isOperationallyActiveForTruth(
+      predmet: predmet,
+      internalName: row.interniNaziv,
+    );
   }
 
   static bool isRecommended({
     required PredmetiData predmet,
     required IriuData row,
   }) {
-    switch (row.interniNaziv) {
-      case IriuK.limeniUlozak:
-        return _shouldAutoAddLimeniUlozak(predmet);
-      case IriuK.lemovanje:
-        return _shouldAutoAddLemovanje(predmet);
-      case IriuK.prevozSprovoda:
-        return _shouldRecommendPrevozSprovoda(predmet);
-      default:
-        return false;
+    final result = const OwnerScenarioPolicyKernel().evaluate(predmet);
+    final baseAction = result.baseActions[row.interniNaziv];
+    if (baseAction != null) {
+      return baseAction == ScenarioConsequenceAction.recommended;
     }
+    return result.consequences
+        .where((item) => item.katalogCategoryInternalName == row.interniNaziv)
+        .any((item) => item.action == ScenarioConsequenceAction.recommended);
   }
 
   static bool isBiohazard({
     required PredmetiData predmet,
     required IriuData row,
   }) {
-    if (row.interniNaziv != IriuK.spremaanjePokojnika) {
-      return false;
-    }
-    final normalizedMestoSmrti = normalizeMestoSmrti(predmet.mestoSmrti);
-    return predmet.uzrokSmrti == 'ZARAZNA' &&
-        normalizedMestoSmrti.isNotEmpty &&
-        normalizedMestoSmrti != 'BOLNICA';
+    final result = const OwnerScenarioPolicyKernel().evaluate(predmet);
+    return result.consequences.any(
+      (item) =>
+          item.katalogCategoryInternalName == row.interniNaziv &&
+          item.warning.trim().isNotEmpty,
+    );
   }
 
   static int truthOrder(IriuData row) {
@@ -257,65 +211,6 @@ abstract final class IriuTruthRules {
   }
 
   static String normalizeMestoSmrti(String mestoSmrti) {
-    final normalized = mestoSmrti.trim();
-    switch (normalized) {
-      case 'ULICA':
-      case 'JAVNO MESTO':
-      case mestoSmrtiUlicaJavnoMesto:
-        return mestoSmrtiUlicaJavnoMesto;
-      default:
-        return normalized;
-    }
-  }
-
-  static bool _mestoSmrtiBlockQualified(String mestoSmrti) {
-    return const <String>{
-      'STAN',
-      'DOM ZA STARE',
-      mestoSmrtiPrivatnaBolnica,
-      mestoSmrtiUlicaJavnoMesto,
-      'DRUGO',
-    }.contains(mestoSmrti);
-  }
-
-  static bool _mestoSmrtiBolnicaQualified(String mestoSmrti) {
-    return mestoSmrti == 'BOLNICA';
-  }
-
-  static bool _shouldAutoAddLimeniUlozak(PredmetiData predmet) {
-    if (_isKremacija(predmet)) {
-      return false;
-    }
-    if (_hasUzrokSmrtiOverride(predmet.uzrokSmrti)) {
-      return true;
-    }
-    return predmet.tipGrobnogMesta == 'GROBNICA';
-  }
-
-  static bool _shouldAutoAddLemovanje(PredmetiData predmet) {
-    if (_isKremacija(predmet)) {
-      return false;
-    }
-    if (_hasUzrokSmrtiOverride(predmet.uzrokSmrti)) {
-      return true;
-    }
-    return predmet.tipGrobnogMesta == 'GROBNICA';
-  }
-
-  static bool _shouldRecommendPrevozSprovoda(PredmetiData predmet) {
-    return predmet.tipGroblja == 'LOKALNO';
-  }
-
-  static bool _isKremacija(PredmetiData predmet) {
-    return predmet.vrstaCeremonije == 'KREMACIJA' ||
-        predmet.vrstaCeremonije == 'KREMACIJA_EKSPRES';
-  }
-
-  static bool _hasUzrokSmrtiOverride(String uzrokSmrti) {
-    return const <String>{
-      'NASILNA',
-      'ZARAZNA',
-      'NEDEFINISANA',
-    }.contains(uzrokSmrti);
+    return normalizeScenarioMestoSmrti(mestoSmrti);
   }
 }

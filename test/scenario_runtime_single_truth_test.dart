@@ -21,7 +21,7 @@ void main() {
     );
     final module = await scenarios.ensureModuleAndDefaults();
     final base = scenarios.readOsnovniPaket(module);
-    expect(base, hasLength(9));
+    expect(base, hasLength(11));
 
     final catalogFlag = await (db.select(
       db.iriuKatalogConfig,

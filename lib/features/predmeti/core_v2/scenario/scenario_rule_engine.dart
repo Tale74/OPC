@@ -1,5 +1,6 @@
 import 'scenario_contract.dart';
 import '../../../../core/database/database.dart';
+import 'owner_scenario_policy_kernel.dart';
 
 /// Jedini runtime evaluator SCENARIO modula.
 ///
@@ -66,6 +67,46 @@ class ScenarioRuleEngine {
       scenarioCategories: List.unmodifiable(scenarioCategories),
       suppressedCategories: Set.unmodifiable(suppressed),
       effectiveCategories: Set.unmodifiable(effective),
+      decisions: Map.unmodifiable(decisions),
+      sourceScenarioIds: Map.unmodifiable(sourceScenarioIds),
+    );
+  }
+
+  /// Converts the owner-kernel result into the materialization shape consumed
+  /// by the IRiU repository. The kernel is the only business decision source.
+  ScenarioRuleEvaluation fromOwnerKernel(OwnerScenarioResult result) {
+    final decisions = <String, ScenarioConsequence>{};
+    var baseOrder = 0;
+    for (final category in result.baseCategories) {
+      final action =
+          result.baseActions[category] ?? ScenarioConsequenceAction.required;
+      decisions[category] = ScenarioConsequence(
+        katalogCategoryInternalName: category,
+        action: action,
+        order: baseOrder++,
+        section: 1,
+        reason: 'Stavka pripada OSNOVNOM PAKETU.',
+      );
+    }
+    for (final consequence in result.consequences) {
+      final previous = decisions[consequence.katalogCategoryInternalName];
+      if (previous == null ||
+          previous.action != ScenarioConsequenceAction.required) {
+        decisions[consequence.katalogCategoryInternalName] = consequence;
+      }
+    }
+    final sourceScenarioIds = <String, String>{
+      for (final consequence in result.consequences)
+        consequence.katalogCategoryInternalName: result.scenarioId ?? '',
+    };
+    return ScenarioRuleEvaluation(
+      matchedScenarioIds: result.scenarioId == null
+          ? const <String>[]
+          : <String>[result.scenarioId!],
+      baseCategories: result.baseCategories,
+      scenarioCategories: result.consequences,
+      suppressedCategories: const <String>{},
+      effectiveCategories: result.effectiveCategories,
       decisions: Map.unmodifiable(decisions),
       sourceScenarioIds: Map.unmodifiable(sourceScenarioIds),
     );

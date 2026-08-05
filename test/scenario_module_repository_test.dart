@@ -19,9 +19,12 @@ void main() {
     await repository.ensureModuleAndDefaults();
     final definitions = await repository.getDefinitions();
 
-    expect(definitions, hasLength(13));
+    expect(
+      definitions.where((item) => item.id.startsWith('MAP_')),
+      hasLength(1008),
+    );
     final module = await repository.ensureModule();
-    expect(repository.readOsnovniPaket(module), hasLength(9));
+    expect(repository.readOsnovniPaket(module), hasLength(11));
     expect(
       repository.readOsnovniPaket(module),
       containsAll([
@@ -107,7 +110,7 @@ void main() {
 
       await repository.ensureModuleAndDefaults();
       final migrated = await repository.getDefinitions();
-      expect(migrated, hasLength(13));
+      expect(migrated, hasLength(1021));
       expect(
         repository
             .definitionFromRecord(
@@ -163,7 +166,7 @@ void main() {
       await repository.ensureModuleAndDefaults();
       final migrated = await repository.getDefinitions();
       final migratedIds = migrated.map((item) => item.id).toSet();
-      expect(migrated, hasLength(13));
+      expect(migrated, hasLength(1021));
       expect(
         migratedIds,
         containsAll(<String>{
@@ -192,7 +195,7 @@ void main() {
       );
       expect(
         repository.readOsnovniPaket(await repository.ensureModule()),
-        hasLength(9),
+        hasLength(11),
       );
 
       final stanRecord = migrated.singleWhere((item) => item.id == 'STAN');

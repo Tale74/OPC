@@ -71,6 +71,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   late final TextEditingController _svisGradCtrl;
 
   bool _docekPosmrtnihOstataka = false;
+  bool _promenaSanduka = false;
   late final TextEditingController _docekMestoCtrl;
   late final TextEditingController _docekDatumCtrl;
   late final TextEditingController _docekVremeCtrl;
@@ -196,8 +197,9 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     );
 
     _grobljeCt = TextEditingController(text: d.groblje);
-    _grobljePolaganjaUrneCt =
-        TextEditingController(text: d.grobljePolaganjaUrne);
+    _grobljePolaganjaUrneCt = TextEditingController(
+      text: d.grobljePolaganjaUrne,
+    );
     _tipGroblja = d.tipGroblja.isEmpty ? 'GRADSKO' : d.tipGroblja;
     _vrstaCeremonije = d.vrstaCeremonije.isEmpty
         ? 'SAHRANA'
@@ -233,6 +235,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _svisGradCtrl = TextEditingController(text: d.svisGrad);
 
     _docekPosmrtnihOstataka = d.docekPosmrtnihOstataka;
+    _promenaSanduka = d.promenaSanduka;
     _docekMestoCtrl = TextEditingController(text: d.docekMesto);
     _docekDatumCtrl = TextEditingController(
       text: normalizeCeremonyDateInput(d.docekDatum),
@@ -291,9 +294,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     widget.onSave(
       PredmetiCompanion(
         groblje: Value(_normalizedText(_grobljeCt)),
-        grobljePolaganjaUrne: Value(
-          _normalizedText(_grobljePolaganjaUrneCt),
-        ),
+        grobljePolaganjaUrne: Value(_normalizedText(_grobljePolaganjaUrneCt)),
         tipGroblja: Value(_tipGroblja),
         vrstaCeremonije: Value(_vrstaCeremonije),
         datumCeremonije: Value(
@@ -321,6 +322,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         svisZemlja: Value(_normalizedText(_svisZemljaCtrl)),
         svisGrad: Value(_normalizedText(_svisGradCtrl)),
         docekPosmrtnihOstataka: Value(_docekPosmrtnihOstataka),
+        promenaSanduka: Value(_promenaSanduka),
         docekMesto: Value(_normalizedText(_docekMestoCtrl)),
         docekDatum: Value(normalizeCeremonyDateInput(_docekDatumCtrl.text)),
         docekVreme: Value(_normalizedTime(_docekVremeCtrl)),
@@ -1072,6 +1074,16 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                 },
               ),
               if (_docekPosmrtnihOstataka) ...[
+                _decisionTile(
+                  title: 'Promena sanduka',
+                  value: _promenaSanduka,
+                  enabled: e,
+                  onChanged: (v) {
+                    setState(() => _promenaSanduka = v);
+                    _scheduleSave();
+                  },
+                ),
+                const SizedBox(height: 12),
                 if (isNarrowAndroid) ...[
                   _docekMestoField(e),
                   const SizedBox(height: 12),

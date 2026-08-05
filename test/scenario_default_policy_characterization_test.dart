@@ -9,12 +9,7 @@ import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 
 import 'test_bootstrap.dart';
 
-/// Characterization of the currently shipped default policy.
-///
-/// This is deliberately a characterization test, not a new scenario engine.
-/// The current output is produced by several hard-coded rule families and
-/// must remain stable until an owner-approved published scenario definition
-/// can represent the same composition and lifecycle semantics.
+/// Characterization of the owner-map policy kernel.
 void main() {
   group('Current default SCENARIO policy characterization', () {
     test('MESTO SMRTI output matrix remains exact', () async {
@@ -23,11 +18,11 @@ void main() {
       final repository = PredmetiRepository(db);
 
       final expectedBlock = <String>[
-        IriuK.hladnjaca,
-        IriuK.spremaanjePokojnika,
+        IriuK.transportnaVreca,
         IriuK.iznosenje,
         IriuK.prevozDoHladnjace,
-        IriuK.transportnaVreca,
+        IriuK.hladnjaca,
+        IriuK.spremaanjePokojnika,
         IriuK.prevozDoGroblja,
       ];
       final cases = <String, List<String>>{
@@ -77,7 +72,7 @@ void main() {
       );
       expect(
         IriuTruthRules.autoManagedBlok2Categories(predmet: causeOverride),
-        <String>[IriuK.limeniUlozak, IriuK.lemovanje],
+        isEmpty,
       );
 
       final cremation = await _predmet(
@@ -125,6 +120,7 @@ void main() {
           _row(5, predmet.id, IriuK.cargoTroskovi, redosled: 13),
           _row(6, predmet.id, IriuK.kompletZaOpelo, redosled: 14),
           _row(7, predmet.id, IriuK.spremaanjePokojnika, redosled: 15),
+          _row(8, predmet.id, IriuK.iznosenje, redosled: 16),
         ];
 
         final snapshot = const PredmetIriuTruthService().evaluate(
@@ -144,12 +140,12 @@ void main() {
         expect(byCategory[IriuK.balsamovanje].active, isTrue);
         expect(byCategory[IriuK.cargoTroskovi].active, isTrue);
         expect(byCategory[IriuK.kompletZaOpelo].active, isTrue);
-        expect(byCategory[IriuK.spremaanjePokojnika].biohazard, isTrue);
+        expect(byCategory[IriuK.iznosenje].biohazard, isTrue);
         expect(byCategory[IriuK.sanduk].truthOrder, -100000);
       },
     );
 
-    test('BLOK 2 cause overrides include NASILNA and NEDEFINISANA', () async {
+    test('BLOK 2 cause overrides do not replace the GROBNICA rule', () async {
       final db = createTestDatabase();
       addTearDown(db.close);
       final repository = PredmetiRepository(db);
@@ -162,7 +158,7 @@ void main() {
         );
         expect(
           IriuTruthRules.autoManagedBlok2Categories(predmet: predmet),
-          <String>[IriuK.limeniUlozak, IriuK.lemovanje],
+          isEmpty,
           reason: 'UZROK SMRTI=$cause',
         );
       }

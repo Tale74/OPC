@@ -426,7 +426,13 @@ class _ScenarioPolicyTree extends StatelessWidget {
         .toList(growable: false);
     final known = {..._placeIds, ..._conditionIds, ..._packageIds};
     final otherRecords = definitions
-        .where((record) => !known.contains(record.id))
+        .where(
+          (record) =>
+              !known.contains(record.id) && !record.id.startsWith('MAP_'),
+        )
+        .toList(growable: false);
+    final ownerMapRecords = definitions
+        .where((record) => record.id.startsWith('MAP_'))
         .toList(growable: false);
 
     return Column(
@@ -485,6 +491,13 @@ class _ScenarioPolicyTree extends StatelessWidget {
                     onPreview: onPreview,
                     onEdit: onEdit,
                   ),
+                if (ownerMapRecords.isNotEmpty)
+                  _OwnerMapFinder(
+                    records: ownerMapRecords,
+                    katalog: katalog,
+                    onPreview: onPreview,
+                    onEdit: onEdit,
+                  ),
               ],
             ),
           ),
@@ -501,6 +514,237 @@ class _ScenarioPolicyTree extends StatelessWidget {
     );
   }
 }
+
+class _OwnerMapFinder extends StatefulWidget {
+  const _OwnerMapFinder({
+    required this.records,
+    required this.katalog,
+    required this.onPreview,
+    required this.onEdit,
+  });
+
+  final List<ScenarioDefinitionRecord> records;
+  final List<IriuKatalogConfigData> katalog;
+  final ValueChanged<ScenarioDefinitionRecord> onPreview;
+  final ValueChanged<ScenarioDefinitionRecord> onEdit;
+
+  @override
+  State<_OwnerMapFinder> createState() => _OwnerMapFinderState();
+}
+
+class _OwnerMapFinderState extends State<_OwnerMapFinder> {
+  String _cause = 'PRIRODNA';
+  String _place = 'STAN';
+  String _ceremony = 'SAHRANA';
+  String _cemetery = 'GRADSKO';
+  String _burial = 'GROB';
+  String _opelo = 'NE';
+  bool _international = false;
+  bool _docek = false;
+
+  bool get _cremation => _ceremony.startsWith('KREMACIJA');
+
+  ScenarioDefinitionRecord? get _selectedRecord {
+    final place = _docek ? 'INFORMATIVNO' : _slug(_place);
+    final cemetery = _cremation ? 'NE_PRIMENJUJE_SE' : _slug(_cemetery);
+    final burial = _cremation ? 'NE_PRIMENJUJE_SE' : _slug(_burial);
+    final id = [
+      'MAP',
+      _slug(_cause),
+      place,
+      _slug(_ceremony),
+      cemetery,
+      burial,
+      _slug(_opelo),
+      _international ? 'DA' : 'NE',
+      _docek ? 'DA' : 'NE',
+    ].join('_');
+    for (final record in widget.records) {
+      if (record.id == id) return record;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final record = _selectedRecord;
+    return Card(
+      key: const ValueKey('scenario-owner-map-finder'),
+      margin: EdgeInsets.zero,
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        title: const Text('PRONAĐI POTPUNU POSLOVNU POLITIKU'),
+        subtitle: Text('${widget.records.length} dozvoljenih kombinacija'),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final fieldWidth = width >= 720
+                  ? (width - 16) / 3
+                  : width >= 460
+                  ? (width - 8) / 2
+                  : width;
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _filter(
+                    width: fieldWidth,
+                    label: 'UZROK SMRTI',
+                    value: _cause,
+                    values: const [
+                      'PRIRODNA',
+                      'NASILNA',
+                      'ZARAZNA',
+                      'NEDEFINISANA',
+                    ],
+                    onChanged: (value) => setState(() => _cause = value),
+                  ),
+                  _filter(
+                    width: fieldWidth,
+                    label: 'VRSTA CEREMONIJE',
+                    value: _ceremony,
+                    values: const [
+                      'SAHRANA',
+                      'SAHRANA EKSPRES',
+                      'KREMACIJA',
+                      'KREMACIJA EKSPRES',
+                    ],
+                    onChanged: (value) => setState(() {
+                      _ceremony = value;
+                      if (_cremation) {
+                        _cemetery = 'GRADSKO';
+                        _burial = 'GROB';
+                        _international = false;
+                      }
+                    }),
+                  ),
+                  _filter(
+                    width: fieldWidth,
+                    label: 'OPELO',
+                    value: _opelo,
+                    values: const ['NE', 'DA'],
+                    onChanged: (value) => setState(() => _opelo = value),
+                  ),
+                  _filter(
+                    width: fieldWidth,
+                    label: 'DOČEK POSMRTNIH OSTATAKA',
+                    value: _docek ? 'DA' : 'NE',
+                    values: const ['NE', 'DA'],
+                    onChanged: (value) => setState(() {
+                      _docek = value == 'DA';
+                      if (_docek) _international = false;
+                    }),
+                  ),
+                  if (!_docek)
+                    _filter(
+                      width: fieldWidth,
+                      label: 'MESTO SMRTI',
+                      value: _place,
+                      values: const [
+                        'STAN',
+                        'DOM ZA STARE',
+                        'BOLNICA',
+                        'PRIVATNA BOLNICA',
+                        'ULICA / JAVNO MESTO',
+                        'DRUGO',
+                      ],
+                      onChanged: (value) => setState(() => _place = value),
+                    ),
+                  if (!_docek && !_cremation)
+                    _filter(
+                      width: fieldWidth,
+                      label: 'TIP GROBLJA',
+                      value: _cemetery,
+                      values: const ['GRADSKO', 'LOKALNO'],
+                      onChanged: (value) => setState(() => _cemetery = value),
+                    ),
+                  if (!_docek && !_cremation)
+                    _filter(
+                      width: fieldWidth,
+                      label: 'TIP GROBNOG MESTA',
+                      value: _burial,
+                      values: const ['GROB', 'GROBNICA'],
+                      onChanged: (value) => setState(() => _burial = value),
+                    ),
+                  if (!_cremation)
+                    _filter(
+                      width: fieldWidth,
+                      label: 'SAHRANA VAN SRBIJE',
+                      value: _international ? 'DA' : 'NE',
+                      values: const ['NE', 'DA'],
+                      onChanged: (value) =>
+                          setState(() => _international = value == 'DA'),
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          if (record == null)
+            const ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.error_outline),
+              title: Text('Izabrana kombinacija nije dostupna.'),
+              subtitle: Text('Proverite uslove prema poslovnoj mapi.'),
+            )
+          else
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.account_tree_outlined),
+              title: Text(record.naziv),
+              subtitle: Text(_scenarioStatusLabel(record)),
+              trailing: Wrap(
+                spacing: 4,
+                children: [
+                  TextButton(
+                    onPressed: () => widget.onPreview(record),
+                    child: const Text('PREGLED'),
+                  ),
+                  FilledButton(
+                    onPressed: () => widget.onEdit(record),
+                    child: const Text('UREDI'),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filter({
+    required double width,
+    required String label,
+    required String value,
+    required List<String> values,
+    required ValueChanged<String> onChanged,
+  }) => SizedBox(
+    width: width,
+    child: DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: values
+          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .toList(growable: false),
+      onChanged: (next) {
+        if (next != null) onChanged(next);
+      },
+    ),
+  );
+}
+
+String _slug(String value) => value
+    .trim()
+    .toUpperCase()
+    .replaceAll(RegExp(r'[^A-Z0-9]+'), '_')
+    .replaceAll(RegExp(r'^_+|_+$'), '');
 
 class _ScenarioPolicyBranch extends StatelessWidget {
   const _ScenarioPolicyBranch({
@@ -909,11 +1153,13 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 'POSLOVNA HIJERARHIJA',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
-              _ConditionHierarchyEditor(
-                condition: _condition,
-                onChanged: (condition) =>
-                    setState(() => _condition = condition),
-              ),
+              if (widget.existing == null)
+                _BusinessConditionPicker(
+                  onChanged: (condition) =>
+                      setState(() => _condition = condition),
+                )
+              else
+                _BusinessConditionSummary(condition: _condition),
               const SizedBox(height: 16),
               const Text(
                 'STAVKE SCENARIJA',
@@ -1111,6 +1357,298 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
   }
 }
 
+class _BusinessConditionSummary extends StatelessWidget {
+  const _BusinessConditionSummary({required this.condition});
+
+  final ScenarioCondition condition;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: const EdgeInsets.only(top: 8),
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'IZABRANI POSLOVNI USLOVI',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          ..._conditionSections(condition).expand(
+            (section) => <Widget>[
+              Text(
+                section.title,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              ...section.lines.map(
+                (line) => Padding(
+                  padding: EdgeInsets.only(left: line.depth * 12.0, top: 3),
+                  child: Text(line.label),
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _BusinessConditionPicker extends StatefulWidget {
+  const _BusinessConditionPicker({required this.onChanged});
+
+  final ValueChanged<ScenarioCondition> onChanged;
+
+  @override
+  State<_BusinessConditionPicker> createState() =>
+      _BusinessConditionPickerState();
+}
+
+class _BusinessConditionPickerState extends State<_BusinessConditionPicker> {
+  String _cause = 'PRIRODNA';
+  String _place = 'STAN';
+  String _ceremony = 'SAHRANA';
+  String _cemetery = 'GRADSKO';
+  String _burial = 'GROB';
+  String _opelo = 'NE';
+  bool _international = false;
+  bool _docek = false;
+
+  bool get _cremation => _ceremony.startsWith('KREMACIJA');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _emit());
+  }
+
+  void _emit() {
+    final criteria = <ScenarioCondition>[
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.uzrokSmrti,
+          operator: ScenarioCriterionOperator.equals,
+          values: [_cause],
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.vrstaCeremonije,
+          operator: ScenarioCriterionOperator.equals,
+          values: [_ceremony],
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.opelo,
+          operator: ScenarioCriterionOperator.equals,
+          values: [_opelo],
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.sahranaVanSrbije,
+          operator: _international
+              ? ScenarioCriterionOperator.isTrue
+              : ScenarioCriterionOperator.isFalse,
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.docekPosmrtnihOstataka,
+          operator: _docek
+              ? ScenarioCriterionOperator.isTrue
+              : ScenarioCriterionOperator.isFalse,
+        ),
+      ),
+    ];
+    if (!_docek) {
+      criteria.add(
+        ScenarioCondition.criterion(
+          ScenarioCriterion(
+            field: ScenarioCriterionField.mestoSmrti,
+            operator: ScenarioCriterionOperator.equals,
+            values: [_place],
+          ),
+        ),
+      );
+      if (!_cremation) {
+        criteria
+          ..add(
+            ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.tipGroblja,
+                operator: ScenarioCriterionOperator.equals,
+                values: [_cemetery],
+              ),
+            ),
+          )
+          ..add(
+            ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.tipGrobnogMesta,
+                operator: ScenarioCriterionOperator.equals,
+                values: [_burial],
+              ),
+            ),
+          );
+      }
+    }
+    widget.onChanged(ScenarioCondition.all(criteria));
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.maxWidth;
+      final fieldWidth = width >= 720
+          ? (width - 16) / 3
+          : width >= 460
+          ? (width - 8) / 2
+          : width;
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _businessField(
+            width: fieldWidth,
+            label: 'UZROK SMRTI',
+            value: _cause,
+            values: const ['PRIRODNA', 'NASILNA', 'ZARAZNA', 'NEDEFINISANA'],
+            onChanged: (value) {
+              setState(() => _cause = value);
+              _emit();
+            },
+          ),
+          _businessField(
+            width: fieldWidth,
+            label: 'VRSTA CEREMONIJE',
+            value: _ceremony,
+            values: const [
+              'SAHRANA',
+              'SAHRANA EKSPRES',
+              'KREMACIJA',
+              'KREMACIJA EKSPRES',
+            ],
+            onChanged: (value) {
+              setState(() {
+                _ceremony = value;
+                if (_cremation) _international = false;
+              });
+              _emit();
+            },
+          ),
+          _businessField(
+            width: fieldWidth,
+            label: 'OPELO',
+            value: _opelo,
+            values: const ['NE', 'DA'],
+            onChanged: (value) {
+              setState(() => _opelo = value);
+              _emit();
+            },
+          ),
+          _businessField(
+            width: fieldWidth,
+            label: 'DOČEK POSMRTNIH OSTATAKA',
+            value: _docek ? 'DA' : 'NE',
+            values: const ['NE', 'DA'],
+            onChanged: (value) {
+              setState(() {
+                _docek = value == 'DA';
+                if (_docek) _international = false;
+              });
+              _emit();
+            },
+          ),
+          if (!_docek)
+            _businessField(
+              width: fieldWidth,
+              label: 'MESTO SMRTI',
+              value: _place,
+              values: const [
+                'STAN',
+                'DOM ZA STARE',
+                'BOLNICA',
+                'PRIVATNA BOLNICA',
+                'ULICA / JAVNO MESTO',
+                'DRUGO',
+              ],
+              onChanged: (value) {
+                setState(() => _place = value);
+                _emit();
+              },
+            ),
+          if (!_docek && !_cremation)
+            _businessField(
+              width: fieldWidth,
+              label: 'TIP GROBLJA',
+              value: _cemetery,
+              values: const ['GRADSKO', 'LOKALNO'],
+              onChanged: (value) {
+                setState(() => _cemetery = value);
+                _emit();
+              },
+            ),
+          if (!_docek && !_cremation)
+            _businessField(
+              width: fieldWidth,
+              label: 'TIP GROBNOG MESTA',
+              value: _burial,
+              values: const ['GROB', 'GROBNICA'],
+              onChanged: (value) {
+                setState(() => _burial = value);
+                _emit();
+              },
+            ),
+          if (!_cremation)
+            _businessField(
+              width: fieldWidth,
+              label: 'SAHRANA VAN SRBIJE',
+              value: _international ? 'DA' : 'NE',
+              values: const ['NE', 'DA'],
+              onChanged: (value) {
+                setState(() => _international = value == 'DA');
+                _emit();
+              },
+            ),
+        ],
+      );
+    },
+  );
+}
+
+Widget _businessField({
+  required double width,
+  required String label,
+  required String value,
+  required List<String> values,
+  required ValueChanged<String> onChanged,
+}) => SizedBox(
+  width: width,
+  child: DropdownButtonFormField<String>(
+    initialValue: value,
+    isExpanded: true,
+    decoration: InputDecoration(
+      labelText: label,
+      border: const OutlineInputBorder(),
+      isDense: true,
+    ),
+    items: values
+        .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+        .toList(growable: false),
+    onChanged: (next) {
+      if (next != null) onChanged(next);
+    },
+  ),
+);
+
+// Retained only to read/maintain legacy serialized conditions; new UI uses
+// the business-condition picker above and never exposes this editor.
+// ignore: unused_element
 class _ConditionHierarchyEditor extends StatelessWidget {
   const _ConditionHierarchyEditor({
     required this.condition,
@@ -1183,7 +1721,7 @@ class _ConditionHierarchyEditor extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => _addChildCriterion(context, node, onChanged),
                 icon: const Icon(Icons.account_tree_outlined),
-                label: const Text('DODAJ PODUSLOV'),
+                label: const Text('DODAJ NIŽI USLOV'),
               ),
             ),
           ],
@@ -1272,7 +1810,7 @@ class _ConditionHierarchyEditor extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () => _addChildCriterion(context, node, onChanged),
               icon: const Icon(Icons.add),
-              label: const Text('DODAJ PODUSLOV'),
+              label: const Text('DODAJ NIŽI USLOV'),
             ),
           ),
         ],
@@ -1291,7 +1829,7 @@ class _ConditionHierarchyEditor extends StatelessWidget {
         field: ScenarioCriterionField.mestoSmrti,
         operator: ScenarioCriterionOperator.equals,
       ),
-      title: 'DODAJ PODUSLOV',
+      title: 'DODAJ NIŽI USLOV',
     );
     if (criterion == null) return;
     final child = ScenarioCondition.criterion(criterion);
@@ -1352,9 +1890,9 @@ class _HierarchyCard extends StatelessWidget {
 }
 
 String _conditionRole(int depth) => switch (depth) {
-  0 => 'NADUSLOV',
+  0 => 'VIŠI USLOV',
   1 => 'USLOV',
-  _ => 'PODUSLOV',
+  _ => 'NIŽI USLOV',
 };
 
 bool _conditionIsComplete(ScenarioCondition condition) {

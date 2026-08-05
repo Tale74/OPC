@@ -160,6 +160,10 @@ class Predmeti extends Table {
   TextColumn get svisGrad => text().withDefault(const Constant(''))();
   BoolColumn get docekPosmrtnihOstataka =>
       boolean().withDefault(const Constant(false))();
+
+  /// Internal DOČEK condition. It is not a separate scenario key.
+  BoolColumn get promenaSanduka =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get docekMesto => text().withDefault(const Constant(''))();
   TextColumn get docekDatum => text().withDefault(const Constant(''))();
   TextColumn get docekVreme => text().withDefault(const Constant(''))();

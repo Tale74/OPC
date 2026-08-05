@@ -85,20 +85,21 @@ ON create_new_PREDMET:
     PESKIR_ZA_KRST,
     POSMRTNE_PARTE,
     CRNINA,
-    AGENCIJSKE_USLUGE,
     CVECE,
     CITULJA_POLITIKA,
-    all_user_catalog_categories
+    CITULJA_NOVOSTI,
+    SLIKA,
+    AGENCIJSKE_USLUGE
   ]:
-    IF category_config_exists:
-      insert IRIU row(
-        generic_display_name,
-        kom = "1",
-        iznos = 0,
-        no_selected_catalog_article_unless_later_selected
-      )
-    ELSE:
-      skip category
+    insert IRIU row from current KATALOG display name
+      origin = OSNOVNI_PAKET
+      scenarioUpravlja = TRUE
+      kom = "1"
+      iznos = 0
+      no_selected_catalog_article_unless_later_selected
+
+  USER_CATALOG_CATEGORIES ARE NOT ADDED TO OSNOVNI_PAKET
+  WITHOUT AN EXPLICIT EDITOR DECISION
 
 INITIAL_ROW DOES_NOT_PROVE selected_article_or_executed_service
 ```
@@ -136,47 +137,66 @@ FOR EACH stored_row:
 NO accepted_completed_cancelled_state_is_created
 ```
 
-## 6. Death-place rules
+## 6. Owner SCENARIO policy kernel
 
 ```text
-normalizedMestoSmrti = normalize(
-  ULICA OR JAVNO_MESTO OR ULICA_JAVNO_MESTO
-  => ULICA_JAVNO_MESTO
-)
+OWNER_MAP = OwnerScenarioPolicyKernel
+OWNER_MAP_GENERATES = 1008 UNIQUE COMPLETE KEYS
+  864 STANDARD + 144 DOCEK
 
-IF normalizedMestoSmrti IN [STAN, DOM_ZA_STARE, ULICA_JAVNO_MESTO, DRUGO]:
-  desiredMestoSmrtiCategories = [
-    HLADNJACA,
-    SPREMANJE_POKOJNIKA,
-    IZNOSENJE,
-    PREVOZ_DO_HLADNJACE,
-    TRANSPORTNA_VRECA,
-    PREVOZ_DO_GROBLJA
-  ]
-ELSE IF normalizedMestoSmrti == BOLNICA:
-  desiredMestoSmrtiCategories = [PREVOZ_DO_GROBLJA]
+KEY = {
+  UZROK_SMRTI,
+  MESTO_SMRTI (omitted for DOCEK),
+  VRSTA_CEREMONIJE,
+  TIP_GROBLJA (not for KREMACIJA),
+  TIP_GROBNOG_MESTA (not for KREMACIJA),
+  OPELO,
+  SAHRANA_VAN_SRBIJE,
+  DOCEK_POSMRTNIH_OSTATAKA
+}
+
+IF complete(PREDMET):
+  scenarioId = exact MAP_* key
+  basePackage = 11 owner categories
+  consequences = owner-map consequences with status and stable order
+  deduplicate by KATALOG internal identity
 ELSE:
-  desiredMestoSmrtiCategories = []
+  do not select a scenario and do not materialize scenario consequences
 
-ON current_state_sync:
-  insert each missing desired category
-    UNLESS category has stored MANUAL_DELETE decision
+SPECIAL_RULES:
+  BOLNICA excludes transportna, iznosenje, prevoz do hladnjace,
+    hladnjaca, spremanje and lemovanje; it may retain PREVOZ_DO_GROBLJA
+  BIOHAZARD warning remains the existing ZARAZNA BOLEST display
+  LIMENI_ULOZAK and LEMOVANJE are independent definition consequences
+  OPELO is ordered last
+  PROMENA_SANDUKA is a DOCEK input, never a scenario key
 
-ON condition_change:
-  FOR previously_active managed_row now_suppressed:
-    ask ZADRZI_OR_UKLONI
-    IF ZADRZI OR dialog_unresolved:
-      keep stored_suppressed
-    IF UKLONI:
-      physically_delete
-      do_not_remember_dismissal_for_this_conflict_removal
+## 7. Automatic PREDMET -> IRiU lifecycle
 
-  insert newly desired missing categories
-    UNLESS dismissed
+ON complete_owner_assignment:
+  read exact persisted MAP_* definition
+  materialize missing scenario-owned rows through KATALOG identity
+  preserve manual, legacy and dismissed rows
+  persist ScenarioAssignmentSnapshot
 
-IF source missing_or_unknown:
-  desired = []
-  DO_NOT_INFER operational_action
+ON complete_assignment_change:
+  preview additions and rows leaving the new result
+  show responsive diff
+  DO NOT mutate rows or snapshot before confirmation
+  IF user confirms:
+    apply additions
+    mark leaving scenario rows CEKA_ODLUKU_KORISNIKA
+    ask ZADRZI RED / UKLONI RED for each pending row
+  IF user cancels:
+    leave IRiU and snapshot unchanged
+
+ON definition_edit:
+  do not rewrite an already assigned PREDMET snapshot
+  use the edited definition for future assignments
+
+ON unresolved_KORISNIK_identity:
+  raise integrity error
+  never create DODATNA_STAVKA or technical fallback
 ```
 
 ## 7. Biohazard signal

@@ -70,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -207,6 +207,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 25) {
         await _ensureColumn(m, predmeti, predmeti.grobljePolaganjaUrne);
+      }
+      if (from < 26) {
+        await _ensureColumn(m, predmeti, predmeti.promenaSanduka);
       }
     },
     beforeOpen: (details) async {
@@ -358,6 +361,7 @@ class AppDatabase extends _$AppDatabase {
     await _ensureCeremonyReminderDeliveryTimesColumn();
     await _ensureColumn(migrator, predmeti, predmeti.docekDatum);
     await _ensureColumn(migrator, predmeti, predmeti.grobljePolaganjaUrne);
+    await _ensureColumn(migrator, predmeti, predmeti.promenaSanduka);
     await _ensureColumn(migrator, predmeti, predmeti.partePotrebna);
     await _ensureColumn(
       migrator,
@@ -919,6 +923,13 @@ class AppDatabase extends _$AppDatabase {
         prikaz: 'Čitulja Novosti',
         tip: 'KATALOSKA',
         red: 20,
+      ),
+      (naziv: IriuK.slika, prikaz: 'Slika', tip: 'KATALOSKA', red: 25),
+      (
+        naziv: IriuK.zastitnaIDodatnaOprema,
+        prikaz: 'ZaÅ¡titna i dodatna oprema',
+        tip: 'FIKSNA',
+        red: 26,
       ),
       (
         naziv: IriuK.medjunarodniPrevoz,

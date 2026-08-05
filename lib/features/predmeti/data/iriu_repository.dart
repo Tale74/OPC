@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../../../core/constants/iriu_constants.dart';
@@ -8,8 +10,10 @@ import '../core_v2/services/iriu_display_name_resolver.dart';
 import '../core_v2/services/iriu_ordering_service.dart';
 import '../core_v2/services/mesto_smrti_iriu_lifecycle_service.dart';
 import '../core_v2/scenario/scenario_contract.dart';
+import '../core_v2/scenario/scenario_persistence_contract.dart';
 import '../core_v2/scenario/scenario_rule_engine.dart';
 import '../core_v2/scenario/scenario_module_repository.dart';
+import '../core_v2/scenario/owner_scenario_policy_kernel.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
@@ -49,12 +53,65 @@ class IriuRepository {
     required PredmetiData predmet,
     required List<ScenarioDefinition> scenarios,
     required Set<String> osnovniPaket,
+    bool applyScenarioChange = true,
   }) async {
-    final evaluation = const ScenarioRuleEngine().evaluate(
-      scenarios: scenarios,
-      predmet: predmet,
-      osnovniPaket: osnovniPaket,
+    final hasOwnerPolicyDefinitions = scenarios.any(
+      (scenario) => scenario.id.startsWith('MAP_'),
     );
+    final ownerResult = hasOwnerPolicyDefinitions
+        ? const OwnerScenarioPolicyKernel().evaluate(predmet)
+        : null;
+    final previousSnapshot = await _readScenarioSnapshot(predmetId);
+    final decodedPreviousSnapshot = previousSnapshot == null
+        ? null
+        : ScenarioAssignmentSnapshot.fromJsonMap(
+            jsonDecode(previousSnapshot.snapshotJson) as Map<String, dynamic>,
+          );
+    final ownerDefinition = ownerResult?.scenarioId == null
+        ? null
+        : scenarios
+              .where((item) => item.id == ownerResult!.scenarioId)
+              .firstOrNull;
+    if (ownerResult?.isComplete == true && ownerDefinition == null) {
+      throw StateError(
+        'SCENARIO owner-map definition is missing or inactive for '
+        '${ownerResult!.scenarioId}.',
+      );
+    }
+    final sameAssignedScenario =
+        ownerResult?.isComplete == true &&
+        decodedPreviousSnapshot?.scenarioId == ownerResult!.scenarioId;
+    final effectiveOwnerDefinition = sameAssignedScenario
+        ? decodedPreviousSnapshot!.scenario
+        : ownerDefinition;
+    final effectiveBasePackage = sameAssignedScenario
+        ? decodedPreviousSnapshot!.osnovniPaket
+        : osnovniPaket;
+    final evaluation = ownerResult != null && ownerDefinition != null
+        ? const ScenarioRuleEngine().evaluate(
+            scenarios: [effectiveOwnerDefinition!],
+            predmet: predmet,
+            osnovniPaket: effectiveBasePackage,
+          )
+        : ownerResult != null
+        ? const ScenarioRuleEngine().fromOwnerKernel(ownerResult)
+        : const ScenarioRuleEngine().evaluate(
+            scenarios: scenarios,
+            predmet: predmet,
+            osnovniPaket: osnovniPaket,
+          );
+    final candidateSnapshot = ownerResult?.isComplete == true
+        ? _ownerScenarioSnapshot(
+            result: ownerResult!,
+            osnovniPaket: evaluation.baseCategories,
+            definition: ownerDefinition,
+          )
+        : null;
+    final scenarioSnapshotChanged =
+        candidateSnapshot != null &&
+        previousSnapshot != null &&
+        !sameAssignedScenario &&
+        previousSnapshot.snapshotHash != candidateSnapshot.snapshotHash;
     final rows = await getIriu(predmetId);
     final catalogRows = await (_db.select(_db.iriuKatalogConfig)).get();
     final catalogDisplayNames = <String, String>{
@@ -84,6 +141,26 @@ class IriuRepository {
       predmetId: predmetId,
       scopeKey: _scenarioScopeKey,
     );
+    final removals = scenarioRows
+        .where((row) => !desired.contains(row.interniNaziv))
+        .toList();
+    final additions =
+        desired.difference(existingNames).difference(dismissed).toList()
+          ..sort();
+
+    // A changed complete combination is previewed before any row,
+    // provenance or snapshot mutation. The UI can show the diff and call
+    // this method again with applyScenarioChange=true only after confirmation.
+    if (scenarioSnapshotChanged && !applyScenarioChange) {
+      return ScenarioSyncResult(
+        matchedScenarioIds: evaluation.matchedScenarioIds,
+        addedCategories: additions,
+        removedCategories: removals.map((row) => row.interniNaziv).toList(),
+        pendingUserDecisionRows: removals,
+        scenarioSnapshotChanged: true,
+      );
+    }
+
     for (final category in dismissed.difference(desired)) {
       await _clearDismissal(
         predmetId: predmetId,
@@ -91,9 +168,6 @@ class IriuRepository {
         scopeKey: _scenarioScopeKey,
       );
     }
-    final removals = scenarioRows
-        .where((row) => !desired.contains(row.interniNaziv))
-        .toList();
     for (final row in rows.where(
       (row) =>
           evaluation.baseCategories.contains(row.interniNaziv) &&
@@ -111,9 +185,6 @@ class IriuRepository {
             ),
           );
     }
-    final additions =
-        desired.difference(existingNames).difference(dismissed).toList()
-          ..sort();
 
     for (final row in removals) {
       await azurirajStavku(
@@ -197,11 +268,31 @@ class IriuRepository {
     if (removals.isNotEmpty || additions.isNotEmpty) {
       await _rebuildBusinessOrdering(predmetId);
     }
+    if (ownerResult?.isComplete ?? false) {
+      final snapshot = candidateSnapshot!;
+      if (sameAssignedScenario) {
+        // A later editor change is intentionally not retroactive for a
+        // PREDMET that already carries this assignment snapshot.
+      } else if (previousSnapshot == null ||
+          previousSnapshot.snapshotHash == snapshot.snapshotHash) {
+        if (previousSnapshot == null) {
+          await _writeScenarioSnapshot(snapshot, predmetId: predmetId);
+        }
+      } else {
+        // A condition change is not silently accepted while rows await a
+        // user's keep/remove decision. Once no rows are pending, the current
+        // owner-map assignment becomes the new restore snapshot.
+        if (removals.isEmpty) {
+          await _writeScenarioSnapshot(snapshot, predmetId: predmetId);
+        }
+      }
+    }
     return ScenarioSyncResult(
       matchedScenarioIds: evaluation.matchedScenarioIds,
       addedCategories: additions,
       removedCategories: const <String>[],
       pendingUserDecisionRows: removals,
+      scenarioSnapshotChanged: scenarioSnapshotChanged,
     );
   }
 
@@ -230,6 +321,161 @@ class IriuRepository {
       );
     }
     await _rebuildBusinessOrdering(predmetId);
+    final predmet = await (_db.select(
+      _db.predmeti,
+    )..where((item) => item.id.equals(predmetId))).getSingleOrNull();
+    if (predmet != null) {
+      final pending =
+          await (_db.select(_db.iriu)..where(
+                (item) =>
+                    item.predmetId.equals(predmetId) &
+                    item.cekaOdlukuKorisnika.equals(true),
+              ))
+              .get();
+      if (pending.isEmpty) {
+        await _persistCurrentOwnerSnapshot(predmet);
+      }
+    }
+  }
+
+  Future<PredmetScenarioSnapshot?> _readScenarioSnapshot(int predmetId) {
+    return (_db.select(
+      _db.predmetScenarioSnapshots,
+    )..where((item) => item.predmetId.equals(predmetId))).getSingleOrNull();
+  }
+
+  Future<void> _persistCurrentOwnerSnapshot(PredmetiData predmet) async {
+    final result = const OwnerScenarioPolicyKernel().evaluate(predmet);
+    if (!result.isComplete) return;
+    final definitionRecord =
+        await (_db.select(_db.scenarioDefinitions)
+              ..where((item) => item.id.equals(result.scenarioId!))
+              ..orderBy([(item) => OrderingTerm.desc(item.version)]))
+            .getSingleOrNull();
+    final definition = definitionRecord == null
+        ? null
+        : ScenarioModuleRepository(_db).definitionFromRecord(definitionRecord);
+    await _writeScenarioSnapshot(
+      _ownerScenarioSnapshot(
+        result: result,
+        osnovniPaket: result.baseCategories,
+        definition: definition,
+      ),
+      predmetId: predmet.id,
+    );
+  }
+
+  Future<void> _writeScenarioSnapshot(
+    ScenarioAssignmentSnapshot snapshot, {
+    required int predmetId,
+  }) async {
+    await _db
+        .into(_db.predmetScenarioSnapshots)
+        .insertOnConflictUpdate(
+          PredmetScenarioSnapshotsCompanion.insert(
+            predmetId: Value(predmetId),
+            moduleId: snapshot.moduleId,
+            scenarioId: snapshot.scenarioId,
+            scenarioVersion: snapshot.scenarioVersion,
+            snapshotJson: jsonEncode(snapshot.toJsonMap()),
+            snapshotHash: snapshot.snapshotHash,
+            assignedAt: snapshot.assignedAt,
+          ),
+        );
+  }
+
+  ScenarioAssignmentSnapshot _ownerScenarioSnapshot({
+    required OwnerScenarioResult result,
+    required Set<String> osnovniPaket,
+    ScenarioDefinition? definition,
+  }) {
+    final key = result.key!;
+    final criteria = <ScenarioCondition>[
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.uzrokSmrti,
+          operator: ScenarioCriterionOperator.equals,
+          values: [key.cause],
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.vrstaCeremonije,
+          operator: ScenarioCriterionOperator.equals,
+          values: [key.ceremony],
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.opelo,
+          operator: ScenarioCriterionOperator.equals,
+          values: [key.opelo],
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.sahranaVanSrbije,
+          operator: key.international
+              ? ScenarioCriterionOperator.isTrue
+              : ScenarioCriterionOperator.isFalse,
+        ),
+      ),
+      ScenarioCondition.criterion(
+        ScenarioCriterion(
+          field: ScenarioCriterionField.docekPosmrtnihOstataka,
+          operator: key.docek
+              ? ScenarioCriterionOperator.isTrue
+              : ScenarioCriterionOperator.isFalse,
+        ),
+      ),
+    ];
+    if (!key.docek) {
+      criteria.add(
+        ScenarioCondition.criterion(
+          ScenarioCriterion(
+            field: ScenarioCriterionField.mestoSmrti,
+            operator: ScenarioCriterionOperator.equals,
+            values: [key.place!],
+          ),
+        ),
+      );
+      if (!key.ceremony.startsWith('KREMACIJA')) {
+        criteria
+          ..add(
+            ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.tipGroblja,
+                operator: ScenarioCriterionOperator.equals,
+                values: [key.cemeteryType],
+              ),
+            ),
+          )
+          ..add(
+            ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.tipGrobnogMesta,
+                operator: ScenarioCriterionOperator.equals,
+                values: [key.burialPlace],
+              ),
+            ),
+          );
+      }
+    }
+    final generatedDefinition = ScenarioDefinition(
+      id: result.scenarioId!,
+      name: 'SCENARIO ${result.scenarioId}',
+      condition: ScenarioCondition.all(criteria),
+      consequences: result.consequences,
+      description: 'Owner map snapshot for ${result.scenarioId}.',
+    );
+    return ScenarioAssignmentSnapshot.create(
+      moduleId: 'scenario',
+      scenarioId: result.scenarioId!,
+      scenarioVersion: 1,
+      scenario: definition ?? generatedDefinition,
+      osnovniPaket: osnovniPaket,
+      assignedAt: DateTime.now().toUtc().toIso8601String(),
+    );
   }
 
   Future<List<IriuData>> getIriu(int predmetId) =>
@@ -791,15 +1037,18 @@ class ScenarioSyncResult {
     required this.addedCategories,
     required this.removedCategories,
     this.pendingUserDecisionRows = const <IriuData>[],
+    this.scenarioSnapshotChanged = false,
   });
 
   final List<String> matchedScenarioIds;
   final List<String> addedCategories;
   final List<String> removedCategories;
   final List<IriuData> pendingUserDecisionRows;
+  final bool scenarioSnapshotChanged;
 
   bool get changed =>
       addedCategories.isNotEmpty ||
       removedCategories.isNotEmpty ||
-      pendingUserDecisionRows.isNotEmpty;
+      pendingUserDecisionRows.isNotEmpty ||
+      scenarioSnapshotChanged;
 }

@@ -1,5 +1,4 @@
 import '../../../../core/database/database.dart';
-import '../rules/iriu_truth_rules.dart';
 
 enum ScenarioCriterionField {
   mestoSmrti,
@@ -54,7 +53,7 @@ class ScenarioCriterion {
   String _valueFor(PredmetiData predmet) {
     switch (field) {
       case ScenarioCriterionField.mestoSmrti:
-        return IriuTruthRules.normalizeMestoSmrti(predmet.mestoSmrti);
+        return normalizeScenarioMestoSmrti(predmet.mestoSmrti);
       case ScenarioCriterionField.uzrokSmrti:
         return predmet.uzrokSmrti.trim().toUpperCase();
       case ScenarioCriterionField.vrstaCeremonije:
@@ -73,6 +72,14 @@ class ScenarioCriterion {
         return predmet.opelo.trim().toUpperCase();
     }
   }
+}
+
+String normalizeScenarioMestoSmrti(String value) {
+  final normalized = value.trim().toUpperCase();
+  if (normalized == 'ULICA' || normalized == 'JAVNO MESTO') {
+    return 'ULICA / JAVNO MESTO';
+  }
+  return normalized;
 }
 
 enum ScenarioConditionKind { all, any, criterion }

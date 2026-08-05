@@ -21,6 +21,9 @@ import 'iriu_row_tile.dart';
 const String iriuStatusPreporuceno = 'PREPORUČENO';
 const double _iriuNarrowLayoutBreakpoint = 640;
 
+double _dialogWidth(BuildContext context, double maximum) =>
+    (MediaQuery.sizeOf(context).width - 48).clamp(280.0, maximum).toDouble();
+
 String? resolveIriuRuntimeStatus({
   required IriuData stavka,
   required PredmetiData predmet,
@@ -119,6 +122,7 @@ class _IriuSegmentState extends State<IriuSegment> {
       predmet.vrstaCeremonije,
       predmet.sahranaVanSrbije,
       predmet.docekPosmrtnihOstataka,
+      predmet.promenaSanduka,
     ].join('|');
   }
 
@@ -284,6 +288,7 @@ class _IriuSegmentState extends State<IriuSegment> {
         promenjeniBlok2Uslovi ||
         old.sahranaVanSrbije != cur.sahranaVanSrbije ||
         old.docekPosmrtnihOstataka != cur.docekPosmrtnihOstataka ||
+        old.promenaSanduka != cur.promenaSanduka ||
         old.opelo != cur.opelo) {
       unawaited(_runScenarioSync(cur));
     }
@@ -292,13 +297,25 @@ class _IriuSegmentState extends State<IriuSegment> {
   Future<void> _runScenarioSync(PredmetiData predmet) async {
     final module = await _scenarioRepository.ensureModuleAndDefaults();
     final scenarios = await _scenarioRepository.getActiveDefinitions();
-    final result = await widget.iriuRepo.syncScenarioRows(
+    var result = await widget.iriuRepo.syncScenarioRows(
       predmetId: widget.predmetId,
       predmet: predmet,
       scenarios: scenarios,
       osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
+      applyScenarioChange: false,
     );
     if (!mounted || !result.changed) return;
+    if (result.scenarioSnapshotChanged) {
+      final confirmed = await _confirmScenarioDiff(context, result);
+      if (!mounted || confirmed != true) return;
+      result = await widget.iriuRepo.syncScenarioRows(
+        predmetId: widget.predmetId,
+        predmet: predmet,
+        scenarios: scenarios,
+        osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
+        applyScenarioChange: true,
+      );
+    }
     for (final row in result.pendingUserDecisionRows) {
       if (!mounted) return;
       final keep = await showDialog<bool>(
@@ -734,6 +751,59 @@ class _IriuSegmentState extends State<IriuSegment> {
       },
     );
   }
+}
+
+Future<bool?> _confirmScenarioDiff(
+  BuildContext context,
+  ScenarioSyncResult result,
+) {
+  final additions = result.addedCategories.isEmpty
+      ? 'Nema novih stavki.'
+      : result.addedCategories.join(', ');
+  final removals = result.pendingUserDecisionRows.isEmpty
+      ? 'Nema stavki za uklanjanje.'
+      : result.pendingUserDecisionRows.map((row) => row.nazivPrikaz).join(', ');
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('PROMENA USLOVA SCENARIJA'),
+      content: SizedBox(
+        width: _dialogWidth(context, 560),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('PREDMET je dobio drugu potpunu poslovnu kombinaciju.'),
+            const SizedBox(height: 12),
+            const Text(
+              'DODATE STAVKE',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(additions),
+            const SizedBox(height: 8),
+            const Text(
+              'STAVKE VAN NOVOG SCENARIJA',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(removals),
+            const SizedBox(height: 12),
+            const Text('Ručno dodate IRiU stavke ostaju nepromenjene.'),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('ODUSTANI'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('POTVRDI PROMENU'),
+        ),
+      ],
+    ),
+  );
 }
 
 // Katalog picker dijalog
