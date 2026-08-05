@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
+import '../services/iriu_display_name_resolver.dart';
 import 'scenario_contract.dart';
 import 'scenario_module_repository.dart';
 
@@ -725,7 +726,7 @@ String _catalogLabel(List<IriuKatalogConfigData> katalog, String internalName) {
       return item.nazivPrikaz;
     }
   }
-  return 'Dodatna stavka';
+  return unresolvedIriuCatalogItemLabel;
 }
 
 double _dialogWidth(BuildContext context, double maximum) =>

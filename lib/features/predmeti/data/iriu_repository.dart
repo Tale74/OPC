@@ -4,6 +4,7 @@ import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
 import '../core_v2/rules/iriu_truth_rules.dart';
 import '../core_v2/services/blok2_iriu_lifecycle_service.dart';
+import '../core_v2/services/iriu_display_name_resolver.dart';
 import '../core_v2/services/iriu_ordering_service.dart';
 import '../core_v2/services/mesto_smrti_iriu_lifecycle_service.dart';
 import '../core_v2/scenario/scenario_contract.dart';
@@ -122,13 +123,20 @@ class IriuRepository {
     }
     for (final internalName in additions) {
       final decision = evaluation.decisions[internalName]!;
+      final displayResolution = resolveIriuDisplayName(
+        internalName: internalName,
+        catalogDisplayNames: catalogDisplayNames,
+      );
+      if (!displayResolution.isResolved) {
+        throw StateError(
+          'SCENARIO consequence has no resolvable KATALOG category: '
+          '$internalName',
+        );
+      }
       final id = await _insertStavka(
         predmetId: predmetId,
         interniNaziv: internalName,
-        nazivPrikaz:
-            catalogDisplayNames[internalName] ??
-            IriuK.naziviPrikaz[internalName] ??
-            'Dodatna stavka',
+        nazivPrikaz: displayResolution.displayName!,
         redosled: await sledeciredosled(predmetId),
         poslovniStatus: decision.businessStatus,
         obezbedjuje: decision.provider.name,
@@ -269,9 +277,16 @@ class IriuRepository {
         await (_db.select(_db.iriuKatalogConfig)
               ..where((item) => item.interniNaziv.equals(internalName)))
             .getSingleOrNull();
-    final display = row?.nazivPrikaz.trim();
-    if (display != null && display.isNotEmpty) return display;
-    return IriuK.naziviPrikaz[internalName] ?? 'Dodatna stavka';
+    final resolution = resolveIriuDisplayName(
+      internalName: internalName,
+      catalogDisplayNames: {if (row != null) internalName: row.nazivPrikaz},
+    );
+    if (!resolution.isResolved) {
+      throw StateError(
+        'IRiU category has no resolvable KATALOG name: $internalName',
+      );
+    }
+    return resolution.displayName!;
   }
 
   Future<int> _insertStavka({

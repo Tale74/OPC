@@ -558,43 +558,61 @@ class _IriuSegmentState extends State<IriuSegment> {
                                 ),
                               );
                             }
-                            return Column(
-                              children: [
-                                if (focusTargetMissing)
-                                  const ListTile(
-                                    key: Key('iriu-parte-focus-unavailable'),
-                                    leading: Icon(Icons.info_outline),
-                                    title: Text(
-                                      'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama.',
+                            return StreamBuilder<List<IriuKatalogConfigData>>(
+                              stream: widget.podesavanjaRepo.watchKatalog(),
+                              builder: (context, catalogSnap) {
+                                final catalogDisplayNames = <String, String>{
+                                  for (final item
+                                      in catalogSnap.data ??
+                                          const <IriuKatalogConfigData>[])
+                                    if (item.nazivPrikaz.trim().isNotEmpty)
+                                      item.interniNaziv: item.nazivPrikaz
+                                          .trim(),
+                                };
+                                return Column(
+                                  children: [
+                                    if (focusTargetMissing)
+                                      const ListTile(
+                                        key: Key(
+                                          'iriu-parte-focus-unavailable',
+                                        ),
+                                        leading: Icon(Icons.info_outline),
+                                        title: Text(
+                                          'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama.',
+                                        ),
+                                        subtitle: Text(
+                                          'Dodajte ih iz postojećeg kataloga ako su potrebne.',
+                                        ),
+                                      ),
+                                    ...stavke.map(
+                                      (s) => IriuRowTile(
+                                        key:
+                                            s.interniNaziv ==
+                                                widget.initialFocusInterniNaziv
+                                            ? _initialFocusKey
+                                            : ValueKey(
+                                                '${s.id}:${s.interniNaziv}:${s.redosled}',
+                                              ),
+                                        stavka: s,
+                                        iriuRepo: widget.iriuRepo,
+                                        podesavanjaRepo: widget.podesavanjaRepo,
+                                        imaArtikalaStream:
+                                            _imaArtikalaStreamFor(
+                                              s.interniNaziv,
+                                            ),
+                                        enabled: e,
+                                        truthRow: truthRowsById[s.id],
+                                        stockConsequence:
+                                            consequencesByIriuId[s.id],
+                                        catalogDisplayNames:
+                                            catalogDisplayNames,
+                                        isNarrowAndroid: isNarrowAndroid,
+                                        preporucenoLabel: iriuStatusPreporuceno,
+                                      ),
                                     ),
-                                    subtitle: Text(
-                                      'Dodajte ih iz postojećeg kataloga ako su potrebne.',
-                                    ),
-                                  ),
-                                ...stavke.map(
-                                  (s) => IriuRowTile(
-                                    key:
-                                        s.interniNaziv ==
-                                            widget.initialFocusInterniNaziv
-                                        ? _initialFocusKey
-                                        : ValueKey(
-                                            '${s.id}:${s.interniNaziv}:${s.redosled}',
-                                          ),
-                                    stavka: s,
-                                    iriuRepo: widget.iriuRepo,
-                                    podesavanjaRepo: widget.podesavanjaRepo,
-                                    imaArtikalaStream: _imaArtikalaStreamFor(
-                                      s.interniNaziv,
-                                    ),
-                                    enabled: e,
-                                    truthRow: truthRowsById[s.id],
-                                    stockConsequence:
-                                        consequencesByIriuId[s.id],
-                                    isNarrowAndroid: isNarrowAndroid,
-                                    preporucenoLabel: iriuStatusPreporuceno,
-                                  ),
-                                ),
-                              ],
+                                  ],
+                                );
+                              },
                             );
                           },
                         );

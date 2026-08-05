@@ -12,6 +12,7 @@ import '../../../podesavanja/presentation/katalog_photo_policy.dart';
 import '../../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../core_v2/models/iriu_truth_models.dart';
+import '../../core_v2/services/iriu_display_name_resolver.dart';
 import '../../data/iriu_repository.dart';
 
 List<String> resolveIriuCatalogPickerCategoryKeys(String interniNaziv) {
@@ -44,6 +45,7 @@ class IriuRowTile extends StatefulWidget {
     required this.enabled,
     required this.truthRow,
     required this.stockConsequence,
+    this.catalogDisplayNames = const <String, String>{},
     required this.isNarrowAndroid,
     required this.preporucenoLabel,
   });
@@ -60,6 +62,7 @@ class IriuRowTile extends StatefulWidget {
   /// The row stays visible but muted instead of being deleted.
   final IriuTruthRow? truthRow;
   final StanjeRobePoslediceData? stockConsequence;
+  final Map<String, String> catalogDisplayNames;
 
   @override
   State<IriuRowTile> createState() => _IriuRowTileState();
@@ -194,14 +197,12 @@ class _IriuRowTileState extends State<IriuRowTile> {
   void initState() {
     super.initState();
     final s = widget.stavka;
-    final rawDisplayName = s.nazivPrikaz.trim();
-    final internalDisplayName =
-        RegExp(r'^KORISNIK_\d+$').hasMatch(rawDisplayName) ||
-        rawDisplayName == s.interniNaziv;
     _nazivCtrl = TextEditingController(
-      text: internalDisplayName
-          ? (IriuK.naziviPrikaz[s.interniNaziv] ?? 'Dodatna stavka')
-          : rawDisplayName,
+      text: resolveIriuDisplayName(
+        internalName: s.interniNaziv,
+        catalogDisplayNames: widget.catalogDisplayNames,
+        storedDisplayName: s.nazivPrikaz,
+      ).userFacingText,
     );
     _komCtrl = TextEditingController(text: s.kom);
     _iznosCtrl = TextEditingController(
@@ -212,6 +213,34 @@ class _IriuRowTileState extends State<IriuRowTile> {
     _iznosFocusNode.addListener(() {
       if (!_iznosFocusNode.hasFocus) _normalizeIznosDisplay();
     });
+  }
+
+  @override
+  void didUpdateWidget(IriuRowTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previousResolved = resolveIriuDisplayName(
+      internalName: oldWidget.stavka.interniNaziv,
+      catalogDisplayNames: oldWidget.catalogDisplayNames,
+      storedDisplayName: oldWidget.stavka.nazivPrikaz,
+    ).userFacingText;
+    final currentResolved = resolveIriuDisplayName(
+      internalName: widget.stavka.interniNaziv,
+      catalogDisplayNames: widget.catalogDisplayNames,
+      storedDisplayName: widget.stavka.nazivPrikaz,
+    ).userFacingText;
+    final currentText = _nazivCtrl.text.trim();
+    final rowIdentityChanged =
+        oldWidget.stavka.interniNaziv != widget.stavka.interniNaziv;
+    final shouldRefresh =
+        rowIdentityChanged ||
+        currentText == previousResolved ||
+        currentText == unresolvedIriuCatalogItemLabel;
+    if (shouldRefresh && currentText != currentResolved) {
+      _nazivCtrl.value = TextEditingValue(
+        text: currentResolved,
+        selection: TextSelection.collapsed(offset: currentResolved.length),
+      );
+    }
   }
 
   @override
