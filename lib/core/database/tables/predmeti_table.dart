@@ -123,6 +123,8 @@ class Predmeti extends Table {
 
   // ── Ceremonija ───────────────────────────────────────────────────────────
   TextColumn get groblje => text().withDefault(const Constant(''))();
+  TextColumn get grobljePolaganjaUrne =>
+      text().withDefault(const Constant(''))();
   // GRADSKO / LOKALNO
   TextColumn get tipGroblja => text().withDefault(const Constant('GRADSKO'))();
   TextColumn get vrstaCeremonije =>

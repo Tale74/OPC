@@ -60,7 +60,7 @@ void main() {
   );
 
   testWidgets(
-    'cremation keeps urn placement options and uses persisted GROBLJE',
+    'cremation keeps urn placement options and separates ceremony and urn cemeteries',
     (tester) async {
       final db = createTestDatabase();
       addTearDown(db.close);
@@ -68,6 +68,7 @@ void main() {
         db,
         vrstaCeremonije: 'KREMACIJA',
         groblje: 'Gradsko krematorijumsko groblje',
+        grobljePolaganjaUrne: 'Novo urno groblje',
         tipPolaganja: 'KOLUMBARIJUM',
       );
 
@@ -78,6 +79,11 @@ void main() {
       expect(find.text('GROBLJE'), findsOneWidget);
       expect(
         find.widgetWithText(TextFormField, 'Gradsko krematorijumsko groblje'),
+        findsOneWidget,
+      );
+      expect(find.text('GROBLJE ZA POLAGANJE URNE'), findsOneWidget);
+      expect(
+        find.widgetWithText(TextFormField, 'Novo urno groblje'),
         findsOneWidget,
       );
 
@@ -106,6 +112,7 @@ void main() {
       db,
       vrstaCeremonije: 'KREMACIJA',
       groblje: 'Gradsko krematorijumsko groblje',
+      grobljePolaganjaUrne: 'Novo urno groblje',
       tipPolaganja: 'KOLUMBARIJUM',
       urnaParcela: '12',
       urnaBroj: '8',
@@ -124,15 +131,64 @@ void main() {
     final groblje = rows.singleWhere((row) => row.label == 'Groblje');
     expect(groblje.value, 'Gradsko krematorijumsko groblje');
     expect(
+      rows.singleWhere((row) => row.label == 'Groblje za polaganje urne').value,
+      'Novo urno groblje',
+    );
+    expect(
       rows.singleWhere((row) => row.label == 'Tip polaganja urne').value,
       'Kolumbarijum',
     );
     expect(rows.singleWhere((row) => row.label == 'Urna parcela').value, '12');
     expect(rows.singleWhere((row) => row.label == 'Urna broj').value, '8');
   });
+
+  testWidgets(
+    'cremation express saves urn cemetery separately from ceremony cemetery',
+    (tester) async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final predmet = await _insertPredmet(
+        db,
+        vrstaCeremonije: 'KREMACIJA_EKSPRES',
+        groblje: 'Groblje ceremonije A',
+        grobljePolaganjaUrne: 'Groblje urne B',
+      );
+      PredmetiCompanion? saved;
+
+      await tester.pumpWidget(
+        _segmentApp(predmet, db, onSave: (companion) => saved = companion),
+      );
+      await tester.pump();
+
+      expect(find.text('GROBLJE ZA POLAGANJE URNE'), findsOneWidget);
+      final urnCemetery = find.widgetWithText(
+        TextFormField,
+        'Groblje urne B',
+      );
+      expect(urnCemetery, findsOneWidget);
+      await tester.enterText(urnCemetery, 'Groblje urne C');
+      await tester.pump(const Duration(milliseconds: 900));
+
+      expect(saved, isNotNull);
+      expect(saved!.groblje.value, 'Groblje ceremonije A');
+      expect(saved!.grobljePolaganjaUrne.value, 'Groblje urne C');
+      await (db.update(db.predmeti)..where((p) => p.id.equals(predmet.id)))
+          .write(saved!);
+      final reloaded = await (db.select(db.predmeti)..where(
+            (p) => p.id.equals(predmet.id),
+          ))
+          .getSingle();
+      expect(reloaded.groblje, 'Groblje ceremonije A');
+      expect(reloaded.grobljePolaganjaUrne, 'Groblje urne C');
+    },
+  );
 }
 
-Widget _segmentApp(PredmetiData predmet, AppDatabase db) {
+Widget _segmentApp(
+  PredmetiData predmet,
+  AppDatabase db, {
+  void Function(PredmetiCompanion)? onSave,
+}) {
   return MaterialApp(
     theme: ThemeData(platform: TargetPlatform.windows),
     home: Scaffold(
@@ -142,7 +198,7 @@ Widget _segmentApp(PredmetiData predmet, AppDatabase db) {
           predmetId: predmet.id,
           iriuRepo: IriuRepository(db),
           enabled: true,
-          onSave: (_) {},
+          onSave: onSave ?? (_) {},
         ),
       ),
     ),
@@ -153,6 +209,7 @@ Future<PredmetiData> _insertPredmet(
   AppDatabase db, {
   String vrstaCeremonije = 'SAHRANA',
   String groblje = '',
+  String grobljePolaganjaUrne = '',
   String tipPolaganja = 'NAKNADNO',
   String urnaParcela = '',
   String urnaBroj = '',
@@ -165,6 +222,7 @@ Future<PredmetiData> _insertPredmet(
           datumKreiranja: const Value('2026-08-05T10:00:00.000'),
           vrstaCeremonije: Value(vrstaCeremonije),
           groblje: Value(groblje),
+          grobljePolaganjaUrne: Value(grobljePolaganjaUrne),
           tipPolaganja: Value(tipPolaganja),
           urnaParcela: Value(urnaParcela),
           urnaBroj: Value(urnaBroj),

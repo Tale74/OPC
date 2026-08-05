@@ -66,27 +66,16 @@ class ListaPdfSectionData {
 }
 
 class ListaPdfSectionPanel {
-  const ListaPdfSectionPanel({
-    required this.title,
-    required this.columns,
-  });
+  const ListaPdfSectionPanel({required this.title, required this.columns});
 
   final String title;
   final List<List<ListaPdfLabelValue>> columns;
 }
 
-enum ListaPdfRowKind {
-  normal,
-  divider,
-  emphasis,
-}
+enum ListaPdfRowKind { normal, divider, emphasis }
 
 class ListaPdfDocumentNote {
-  const ListaPdfDocumentNote(
-    this.label,
-    this.value, {
-    this.groupTitle,
-  });
+  const ListaPdfDocumentNote(this.label, this.value, {this.groupTitle});
 
   final String label;
   final String value;
@@ -128,8 +117,9 @@ class ListaPdfDataBuilder {
       predmet: predmet,
       storedRows: iriuStavke,
     );
-    final finansijskaOsnova =
-        const FinancialTruthService().buildRobaIUsluge(truthSnapshot);
+    final finansijskaOsnova = const FinancialTruthService().buildRobaIUsluge(
+      truthSnapshot,
+    );
     final savetnikIme = documentTextCodec.normalize(
       savetnik?.imePrezime.trim().isNotEmpty == true
           ? savetnik!.imePrezime.trim()
@@ -167,7 +157,9 @@ class ListaPdfDataBuilder {
   }
 }
 
-List<IriuTruthRow> _buildListaIriuItems(PredmetIriuTruthSnapshot truthSnapshot) {
+List<IriuTruthRow> _buildListaIriuItems(
+  PredmetIriuTruthSnapshot truthSnapshot,
+) {
   return truthSnapshot.rowsVisibleToDerivative(
     excludedReasons: const <IriuDerivativeExclusion>{
       IriuDerivativeExclusion.notOperationallyActive,
@@ -252,20 +244,27 @@ ListaPdfSectionData _buildPayerSection(PredmetiData predmet) {
 }
 
 ListaPdfSectionData _buildCeremonySection(PredmetiData predmet) {
-  final ceremonyType = _vrstaCeremonijeNaziv(predmet.vrstaCeremonije).toUpperCase();
+  final ceremonyType = _vrstaCeremonijeNaziv(
+    predmet.vrstaCeremonije,
+  ).toUpperCase();
   final isKremacija = _isKremacija(predmet.vrstaCeremonije);
   final mozeOpelo = _mozeOpelo(predmet.vrstaCeremonije);
   final imaLokalitetUrne = _tipPolaganjaSaLokalitetom(predmet.tipPolaganja);
-  final prikaziPostojeceGrobnoMesto = !isKremacija &&
+  final prikaziPostojeceGrobnoMesto =
+      !isKremacija &&
       predmet.grobnoMesto == 'POSTOJECE' &&
-      (predmet.tipGrobnogMesta == 'GROB' || predmet.tipGrobnogMesta == 'GROBNICA');
+      (predmet.tipGrobnogMesta == 'GROB' ||
+          predmet.tipGrobnogMesta == 'GROBNICA');
   final fields = _compactLabelValues([
     ListaPdfLabelValue('Groblje', predmet.groblje),
     ListaPdfLabelValue('Tip groblja', _tipGrobljaNaziv(predmet.tipGroblja)),
     ListaPdfLabelValue('Datum ceremonije', predmet.datumCeremonije),
     ListaPdfLabelValue('Vreme ceremonije', predmet.vremeCeremonije),
     if (!isKremacija) ...[
-      ListaPdfLabelValue('Grobno mesto', _grobnoMestoNaziv(predmet.grobnoMesto)),
+      ListaPdfLabelValue(
+        'Grobno mesto',
+        _grobnoMestoNaziv(predmet.grobnoMesto),
+      ),
       ListaPdfLabelValue(
         'Tip grobnog mesta',
         _tipGrobnogMestaNaziv(predmet.tipGrobnogMesta),
@@ -278,6 +277,10 @@ ListaPdfSectionData _buildCeremonySection(PredmetiData predmet) {
       ListaPdfLabelValue('NPK', predmet.npk),
     ],
     if (isKremacija) ...[
+      ListaPdfLabelValue(
+        'Groblje za polaganje urne',
+        predmet.grobljePolaganjaUrne,
+      ),
       ListaPdfLabelValue('Šifra urne', predmet.urnaSifra),
       ListaPdfLabelValue(
         'Tip polaganja urne',
@@ -326,7 +329,8 @@ List<ListaPdfLabelValue> _buildFinancialRows({
   final avans = _safeDouble(predmet.avans);
   final troskoviJkp = _safeDouble(predmet.troskoviJkp);
   final popust = _safeDouble(predmet.popust);
-  final refundacijaAktivna = prikazRefundacije &&
+  final refundacijaAktivna =
+      prikazRefundacije &&
       predmet.narucilacRefundira != 'DA' &&
       refundacijaPio > 0;
   final refundacijaZaObracun = refundacijaAktivna ? refundacijaPio : 0.0;
@@ -337,10 +341,7 @@ List<ListaPdfLabelValue> _buildFinancialRows({
   final zaNaplatu = saJkp - popust;
 
   final rows = <ListaPdfLabelValue>[
-    ListaPdfLabelValue(
-      'ROBA I USLUGE',
-      formatMoneyRsd(robaIUsluge),
-    ),
+    ListaPdfLabelValue('ROBA I USLUGE', formatMoneyRsd(robaIUsluge)),
   ];
 
   if (refundacijaAktivna) {
@@ -357,18 +358,11 @@ List<ListaPdfLabelValue> _buildFinancialRows({
     rows.add(ListaPdfLabelValue('OSTATAK', formatMoneyRsd(ostatak)));
   }
   if (jkpObavezaPlatioca) {
-    rows.add(
-      ListaPdfLabelValue(
-        'TROŠKOVI JKP',
-        formatMoneyRsd(troskoviJkp),
-      ),
-    );
+    rows.add(ListaPdfLabelValue('TROŠKOVI JKP', formatMoneyRsd(troskoviJkp)));
   }
   if (popust > 0) {
     rows.add(ListaPdfLabelValue('UKUPNO', formatMoneyRsd(saJkp)));
-    rows.add(
-      ListaPdfLabelValue('POPUST', formatMoneyRsd(popust)),
-    );
+    rows.add(ListaPdfLabelValue('POPUST', formatMoneyRsd(popust)));
   }
   rows.add(const ListaPdfLabelValue('', '', kind: ListaPdfRowKind.divider));
   rows.add(
@@ -480,10 +474,7 @@ List<ListaPdfDocumentNote> _buildOperationalNotes(PredmetiData predmet) {
   if (predmet.bracniDrugOstvarujePravo == 'DA' &&
       predmet.bracniDrugJePenzioner == 'DA') {
     notes.add(
-      const ListaPdfDocumentNote(
-        'Bračni drug',
-        'Bračni drug je penzioner.',
-      ),
+      const ListaPdfDocumentNote('Bračni drug', 'Bračni drug je penzioner.'),
     );
   }
 
@@ -618,7 +609,9 @@ String _buildPartePreviewText(PredmetiData d) {
   if (d.opelo == 'DA' && d.vremeOpela.isNotEmpty) {
     final vreme = formatTimeForSentence(d.vremeOpela);
     if (d.opeloMesto.isNotEmpty) {
-      lines.add('Opelo počinje u $vreme u ${_opeloMestoLocativ(d.opeloMesto)}.');
+      lines.add(
+        'Opelo počinje u $vreme u ${_opeloMestoLocativ(d.opeloMesto)}.',
+      );
     } else {
       lines.add('Opelo počinje u $vreme.');
     }
@@ -632,9 +625,7 @@ String _buildPartePreviewText(PredmetiData d) {
   }
 
   final joined = lines.join('\n');
-  return d.pismo == 'CIRILICA'
-      ? transliterateLatinToCyrillic(joined)
-      : joined;
+  return d.pismo == 'CIRILICA' ? transliterateLatinToCyrillic(joined) : joined;
 }
 
 String _extractYear(String datum) {
@@ -737,13 +728,16 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   if (compact.isEmpty) return const <List<ListaPdfLabelValue>>[];
 
   final safeColumnCount = columnCount < 1 ? 1 : columnCount;
-  final normalizedCount =
-      compact.length < safeColumnCount ? compact.length : safeColumnCount;
+  final normalizedCount = compact.length < safeColumnCount
+      ? compact.length
+      : safeColumnCount;
   final perColumn = (compact.length / normalizedCount).ceil();
 
   final columns = <List<ListaPdfLabelValue>>[];
   for (var i = 0; i < compact.length; i += perColumn) {
-    final end = (i + perColumn) > compact.length ? compact.length : i + perColumn;
+    final end = (i + perColumn) > compact.length
+        ? compact.length
+        : i + perColumn;
     columns.add(List<ListaPdfLabelValue>.unmodifiable(compact.sublist(i, end)));
   }
   return List<List<ListaPdfLabelValue>>.unmodifiable(columns);
@@ -880,10 +874,7 @@ bool _tipPolaganjaSaLokalitetom(String tipPolaganja) {
       tipPolaganja == 'ROZARIJUM';
 }
 
-bool _shouldShowRadniStatusNapomena(
-  PredmetiData predmet,
-  String napomena,
-) {
+bool _shouldShowRadniStatusNapomena(PredmetiData predmet, String napomena) {
   return napomena.isNotEmpty && predmet.radniStatus.trim().isNotEmpty;
 }
 

@@ -70,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -204,6 +204,9 @@ class AppDatabase extends _$AppDatabase {
         await _ensureColumn(m, iriu, iriu.finansijskiUkljuceno);
         await _ensureColumn(m, iriu, iriu.scenarioUpravlja);
         await _ensureColumn(m, iriu, iriu.cekaOdlukuKorisnika);
+      }
+      if (from < 25) {
+        await _ensureColumn(m, predmeti, predmeti.grobljePolaganjaUrne);
       }
     },
     beforeOpen: (details) async {
@@ -354,6 +357,7 @@ class AppDatabase extends _$AppDatabase {
     await _createCeremonyReminderSettingsTable();
     await _ensureCeremonyReminderDeliveryTimesColumn();
     await _ensureColumn(migrator, predmeti, predmeti.docekDatum);
+    await _ensureColumn(migrator, predmeti, predmeti.grobljePolaganjaUrne);
     await _ensureColumn(migrator, predmeti, predmeti.partePotrebna);
     await _ensureColumn(
       migrator,

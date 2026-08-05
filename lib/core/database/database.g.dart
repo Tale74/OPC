@@ -2755,6 +2755,18 @@ class $PredmetiTable extends Predmeti
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _grobljePolaganjaUrneMeta =
+      const VerificationMeta('grobljePolaganjaUrne');
+  @override
+  late final GeneratedColumn<String> grobljePolaganjaUrne =
+      GeneratedColumn<String>(
+        'groblje_polaganja_urne',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
   static const VerificationMeta _tipGrobljaMeta = const VerificationMeta(
     'tipGroblja',
   );
@@ -3337,6 +3349,7 @@ class $PredmetiTable extends Predmeti
     jkpPlTelefon1,
     jkpPlEmail,
     groblje,
+    grobljePolaganjaUrne,
     tipGroblja,
     vrstaCeremonije,
     datumCeremonije,
@@ -4078,6 +4091,15 @@ class $PredmetiTable extends Predmeti
         groblje.isAcceptableOrUnknown(data['groblje']!, _grobljeMeta),
       );
     }
+    if (data.containsKey('groblje_polaganja_urne')) {
+      context.handle(
+        _grobljePolaganjaUrneMeta,
+        grobljePolaganjaUrne.isAcceptableOrUnknown(
+          data['groblje_polaganja_urne']!,
+          _grobljePolaganjaUrneMeta,
+        ),
+      );
+    }
     if (data.containsKey('tip_groblja')) {
       context.handle(
         _tipGrobljaMeta,
@@ -4737,6 +4759,10 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.string,
         data['${effectivePrefix}groblje'],
       )!,
+      grobljePolaganjaUrne: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groblje_polaganja_urne'],
+      )!,
       tipGroblja: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}tip_groblja'],
@@ -5000,6 +5026,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String jkpPlTelefon1;
   final String jkpPlEmail;
   final String groblje;
+  final String grobljePolaganjaUrne;
   final String tipGroblja;
   final String vrstaCeremonije;
   final String datumCeremonije;
@@ -5133,6 +5160,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.jkpPlTelefon1,
     required this.jkpPlEmail,
     required this.groblje,
+    required this.grobljePolaganjaUrne,
     required this.tipGroblja,
     required this.vrstaCeremonije,
     required this.datumCeremonije,
@@ -5281,6 +5309,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['jkp_pl_telefon1'] = Variable<String>(jkpPlTelefon1);
     map['jkp_pl_email'] = Variable<String>(jkpPlEmail);
     map['groblje'] = Variable<String>(groblje);
+    map['groblje_polaganja_urne'] = Variable<String>(grobljePolaganjaUrne);
     map['tip_groblja'] = Variable<String>(tipGroblja);
     map['vrsta_ceremonije'] = Variable<String>(vrstaCeremonije);
     map['datum_ceremonije'] = Variable<String>(datumCeremonije);
@@ -5425,6 +5454,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       jkpPlTelefon1: Value(jkpPlTelefon1),
       jkpPlEmail: Value(jkpPlEmail),
       groblje: Value(groblje),
+      grobljePolaganjaUrne: Value(grobljePolaganjaUrne),
       tipGroblja: Value(tipGroblja),
       vrstaCeremonije: Value(vrstaCeremonije),
       datumCeremonije: Value(datumCeremonije),
@@ -5584,6 +5614,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       jkpPlTelefon1: serializer.fromJson<String>(json['jkpPlTelefon1']),
       jkpPlEmail: serializer.fromJson<String>(json['jkpPlEmail']),
       groblje: serializer.fromJson<String>(json['groblje']),
+      grobljePolaganjaUrne: serializer.fromJson<String>(
+        json['grobljePolaganjaUrne'],
+      ),
       tipGroblja: serializer.fromJson<String>(json['tipGroblja']),
       vrstaCeremonije: serializer.fromJson<String>(json['vrstaCeremonije']),
       datumCeremonije: serializer.fromJson<String>(json['datumCeremonije']),
@@ -5728,6 +5761,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'jkpPlTelefon1': serializer.toJson<String>(jkpPlTelefon1),
       'jkpPlEmail': serializer.toJson<String>(jkpPlEmail),
       'groblje': serializer.toJson<String>(groblje),
+      'grobljePolaganjaUrne': serializer.toJson<String>(grobljePolaganjaUrne),
       'tipGroblja': serializer.toJson<String>(tipGroblja),
       'vrstaCeremonije': serializer.toJson<String>(vrstaCeremonije),
       'datumCeremonije': serializer.toJson<String>(datumCeremonije),
@@ -5862,6 +5896,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? jkpPlTelefon1,
     String? jkpPlEmail,
     String? groblje,
+    String? grobljePolaganjaUrne,
     String? tipGroblja,
     String? vrstaCeremonije,
     String? datumCeremonije,
@@ -6000,6 +6035,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     jkpPlTelefon1: jkpPlTelefon1 ?? this.jkpPlTelefon1,
     jkpPlEmail: jkpPlEmail ?? this.jkpPlEmail,
     groblje: groblje ?? this.groblje,
+    grobljePolaganjaUrne: grobljePolaganjaUrne ?? this.grobljePolaganjaUrne,
     tipGroblja: tipGroblja ?? this.tipGroblja,
     vrstaCeremonije: vrstaCeremonije ?? this.vrstaCeremonije,
     datumCeremonije: datumCeremonije ?? this.datumCeremonije,
@@ -6251,6 +6287,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ? data.jkpPlEmail.value
           : this.jkpPlEmail,
       groblje: data.groblje.present ? data.groblje.value : this.groblje,
+      grobljePolaganjaUrne: data.grobljePolaganjaUrne.present
+          ? data.grobljePolaganjaUrne.value
+          : this.grobljePolaganjaUrne,
       tipGroblja: data.tipGroblja.present
           ? data.tipGroblja.value
           : this.tipGroblja,
@@ -6435,6 +6474,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('jkpPlTelefon1: $jkpPlTelefon1, ')
           ..write('jkpPlEmail: $jkpPlEmail, ')
           ..write('groblje: $groblje, ')
+          ..write('grobljePolaganjaUrne: $grobljePolaganjaUrne, ')
           ..write('tipGroblja: $tipGroblja, ')
           ..write('vrstaCeremonije: $vrstaCeremonije, ')
           ..write('datumCeremonije: $datumCeremonije, ')
@@ -6571,6 +6611,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     jkpPlTelefon1,
     jkpPlEmail,
     groblje,
+    grobljePolaganjaUrne,
     tipGroblja,
     vrstaCeremonije,
     datumCeremonije,
@@ -6707,6 +6748,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.jkpPlTelefon1 == this.jkpPlTelefon1 &&
           other.jkpPlEmail == this.jkpPlEmail &&
           other.groblje == this.groblje &&
+          other.grobljePolaganjaUrne == this.grobljePolaganjaUrne &&
           other.tipGroblja == this.tipGroblja &&
           other.vrstaCeremonije == this.vrstaCeremonije &&
           other.datumCeremonije == this.datumCeremonije &&
@@ -6840,6 +6882,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> jkpPlTelefon1;
   final Value<String> jkpPlEmail;
   final Value<String> groblje;
+  final Value<String> grobljePolaganjaUrne;
   final Value<String> tipGroblja;
   final Value<String> vrstaCeremonije;
   final Value<String> datumCeremonije;
@@ -6971,6 +7014,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.jkpPlTelefon1 = const Value.absent(),
     this.jkpPlEmail = const Value.absent(),
     this.groblje = const Value.absent(),
+    this.grobljePolaganjaUrne = const Value.absent(),
     this.tipGroblja = const Value.absent(),
     this.vrstaCeremonije = const Value.absent(),
     this.datumCeremonije = const Value.absent(),
@@ -7103,6 +7147,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.jkpPlTelefon1 = const Value.absent(),
     this.jkpPlEmail = const Value.absent(),
     this.groblje = const Value.absent(),
+    this.grobljePolaganjaUrne = const Value.absent(),
     this.tipGroblja = const Value.absent(),
     this.vrstaCeremonije = const Value.absent(),
     this.datumCeremonije = const Value.absent(),
@@ -7235,6 +7280,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? jkpPlTelefon1,
     Expression<String>? jkpPlEmail,
     Expression<String>? groblje,
+    Expression<String>? grobljePolaganjaUrne,
     Expression<String>? tipGroblja,
     Expression<String>? vrstaCeremonije,
     Expression<String>? datumCeremonije,
@@ -7377,6 +7423,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (jkpPlTelefon1 != null) 'jkp_pl_telefon1': jkpPlTelefon1,
       if (jkpPlEmail != null) 'jkp_pl_email': jkpPlEmail,
       if (groblje != null) 'groblje': groblje,
+      if (grobljePolaganjaUrne != null)
+        'groblje_polaganja_urne': grobljePolaganjaUrne,
       if (tipGroblja != null) 'tip_groblja': tipGroblja,
       if (vrstaCeremonije != null) 'vrsta_ceremonije': vrstaCeremonije,
       if (datumCeremonije != null) 'datum_ceremonije': datumCeremonije,
@@ -7513,6 +7561,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? jkpPlTelefon1,
     Value<String>? jkpPlEmail,
     Value<String>? groblje,
+    Value<String>? grobljePolaganjaUrne,
     Value<String>? tipGroblja,
     Value<String>? vrstaCeremonije,
     Value<String>? datumCeremonije,
@@ -7650,6 +7699,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       jkpPlTelefon1: jkpPlTelefon1 ?? this.jkpPlTelefon1,
       jkpPlEmail: jkpPlEmail ?? this.jkpPlEmail,
       groblje: groblje ?? this.groblje,
+      grobljePolaganjaUrne: grobljePolaganjaUrne ?? this.grobljePolaganjaUrne,
       tipGroblja: tipGroblja ?? this.tipGroblja,
       vrstaCeremonije: vrstaCeremonije ?? this.vrstaCeremonije,
       datumCeremonije: datumCeremonije ?? this.datumCeremonije,
@@ -7977,6 +8027,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     if (groblje.present) {
       map['groblje'] = Variable<String>(groblje.value);
     }
+    if (grobljePolaganjaUrne.present) {
+      map['groblje_polaganja_urne'] = Variable<String>(
+        grobljePolaganjaUrne.value,
+      );
+    }
     if (tipGroblja.present) {
       map['tip_groblja'] = Variable<String>(tipGroblja.value);
     }
@@ -8199,6 +8254,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('jkpPlTelefon1: $jkpPlTelefon1, ')
           ..write('jkpPlEmail: $jkpPlEmail, ')
           ..write('groblje: $groblje, ')
+          ..write('grobljePolaganjaUrne: $grobljePolaganjaUrne, ')
           ..write('tipGroblja: $tipGroblja, ')
           ..write('vrstaCeremonije: $vrstaCeremonije, ')
           ..write('datumCeremonije: $datumCeremonije, ')
@@ -18977,6 +19033,7 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> jkpPlTelefon1,
       Value<String> jkpPlEmail,
       Value<String> groblje,
+      Value<String> grobljePolaganjaUrne,
       Value<String> tipGroblja,
       Value<String> vrstaCeremonije,
       Value<String> datumCeremonije,
@@ -19110,6 +19167,7 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> jkpPlTelefon1,
       Value<String> jkpPlEmail,
       Value<String> groblje,
+      Value<String> grobljePolaganjaUrne,
       Value<String> tipGroblja,
       Value<String> vrstaCeremonije,
       Value<String> datumCeremonije,
@@ -19737,6 +19795,11 @@ class $$PredmetiTableFilterComposer
 
   ColumnFilters<String> get groblje => $composableBuilder(
     column: $table.groblje,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get grobljePolaganjaUrne => $composableBuilder(
+    column: $table.grobljePolaganjaUrne,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20553,6 +20616,11 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get grobljePolaganjaUrne => $composableBuilder(
+    column: $table.grobljePolaganjaUrne,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tipGroblja => $composableBuilder(
     column: $table.tipGroblja,
     builder: (column) => ColumnOrderings(column),
@@ -21152,6 +21220,11 @@ class $$PredmetiTableAnnotationComposer
   GeneratedColumn<String> get groblje =>
       $composableBuilder(column: $table.groblje, builder: (column) => column);
 
+  GeneratedColumn<String> get grobljePolaganjaUrne => $composableBuilder(
+    column: $table.grobljePolaganjaUrne,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get tipGroblja => $composableBuilder(
     column: $table.tipGroblja,
     builder: (column) => column,
@@ -21600,6 +21673,7 @@ class $$PredmetiTableTableManager
                 Value<String> jkpPlTelefon1 = const Value.absent(),
                 Value<String> jkpPlEmail = const Value.absent(),
                 Value<String> groblje = const Value.absent(),
+                Value<String> grobljePolaganjaUrne = const Value.absent(),
                 Value<String> tipGroblja = const Value.absent(),
                 Value<String> vrstaCeremonije = const Value.absent(),
                 Value<String> datumCeremonije = const Value.absent(),
@@ -21732,6 +21806,7 @@ class $$PredmetiTableTableManager
                 jkpPlTelefon1: jkpPlTelefon1,
                 jkpPlEmail: jkpPlEmail,
                 groblje: groblje,
+                grobljePolaganjaUrne: grobljePolaganjaUrne,
                 tipGroblja: tipGroblja,
                 vrstaCeremonije: vrstaCeremonije,
                 datumCeremonije: datumCeremonije,
@@ -21866,6 +21941,7 @@ class $$PredmetiTableTableManager
                 Value<String> jkpPlTelefon1 = const Value.absent(),
                 Value<String> jkpPlEmail = const Value.absent(),
                 Value<String> groblje = const Value.absent(),
+                Value<String> grobljePolaganjaUrne = const Value.absent(),
                 Value<String> tipGroblja = const Value.absent(),
                 Value<String> vrstaCeremonije = const Value.absent(),
                 Value<String> datumCeremonije = const Value.absent(),
@@ -21998,6 +22074,7 @@ class $$PredmetiTableTableManager
                 jkpPlTelefon1: jkpPlTelefon1,
                 jkpPlEmail: jkpPlEmail,
                 groblje: groblje,
+                grobljePolaganjaUrne: grobljePolaganjaUrne,
                 tipGroblja: tipGroblja,
                 vrstaCeremonije: vrstaCeremonije,
                 datumCeremonije: datumCeremonije,

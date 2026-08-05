@@ -28,8 +28,8 @@ void main() {
     if (await suiteRoot.exists()) await suiteRoot.delete(recursive: true);
   });
 
-  group('confirmed v19 to v24 recovery states', () {
-    test('empty database is created directly as a valid schema 24', () async {
+  group('confirmed v19 to v25 recovery states', () {
+    test('empty database is created directly as a valid schema 25', () async {
       final root = await Directory.systemTemp.createTemp('opc_empty_schema_');
       addTearDown(() async {
         if (await root.exists()) await root.delete(recursive: true);
@@ -38,7 +38,7 @@ void main() {
       final db = AppDatabase.forTesting(NativeDatabase(file));
       addTearDown(db.close);
 
-      expect(await _userVersion(db), 24);
+      expect(await _userVersion(db), 25);
       expect(
         await _tableNames(db),
         containsAll(['predmeti', 'parte_pripreme']),
@@ -46,7 +46,7 @@ void main() {
     });
 
     test(
-      'State A: v19 without docek_datum adds valid v20/v21/v22/v23/v24 schema',
+      'State A: v19 without docek_datum adds valid v20/v21/v22/v23/v24/v25 schema',
       () async {
         final fixture = await _fixture(currentTemplate, 'state_a');
         addTearDown(fixture.dispose);
@@ -55,6 +55,10 @@ void main() {
 
         await _expectMigratedAndPreserved(db);
         expect(await _columnNames(db, 'predmeti'), contains('docek_datum'));
+        expect(
+          await _columnNames(db, 'predmeti'),
+          contains('groblje_polaganja_urne'),
+        );
       },
     );
 
@@ -127,24 +131,27 @@ void main() {
       },
     );
 
-    test('State D: v20 adds only missing valid v21/v22/v23/v24 objects', () async {
-      final fixture = await _fixture(currentTemplate, 'state_d');
-      addTearDown(fixture.dispose);
-      final db = fixture.openAtVersion(20);
-      addTearDown(db.close);
+    test(
+      'State D: v20 adds only missing valid v21/v22/v23/v24/v25 objects',
+      () async {
+        final fixture = await _fixture(currentTemplate, 'state_d');
+        addTearDown(fixture.dispose);
+        final db = fixture.openAtVersion(20);
+        addTearDown(db.close);
 
-      await _expectMigratedAndPreserved(
-        db,
-        expectReminder: true,
-        expectStock: true,
-      );
-      expect(
-        await _tableNames(db),
-        containsAll(['parte_predlosci', 'parte_pripreme']),
-      );
-    });
+        await _expectMigratedAndPreserved(
+          db,
+          expectReminder: true,
+          expectStock: true,
+        );
+        expect(
+          await _tableNames(db),
+          containsAll(['parte_predlosci', 'parte_pripreme']),
+        );
+      },
+    );
 
-    test('State E: valid v24 opens repeatedly without schema drift', () async {
+    test('State E: valid v25 opens repeatedly without schema drift', () async {
       final fixture = await _fixture(currentTemplate, 'state_e');
       addTearDown(fixture.dispose);
       final first = fixture.openAtVersion(22);
@@ -189,7 +196,7 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 24);
+        expect(await _userVersion(second), 25);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
@@ -304,7 +311,7 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      final db = fixture.openAtVersion(25, physicalVersion: 24);
+      final db = fixture.openAtVersion(26, physicalVersion: 25);
       addTearDown(db.close);
 
       await expectLater(
@@ -313,7 +320,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 25 -> 24'),
+            contains('unsupported migration checkpoint 26 -> 25'),
           ),
         ),
       );
@@ -363,7 +370,7 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 24);
+    expect(await _userVersion(retried), 25);
     await retried.close();
   });
 }
@@ -382,11 +389,15 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 24);
+  expect(await _userVersion(db), 25);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);
   expect(await _count(db, 'iriu'), 1);
+  expect(
+    await _columnNames(db, 'predmeti'),
+    contains('groblje_polaganja_urne'),
+  );
   expect(
     await _tableNames(db),
     containsAll(<String>[

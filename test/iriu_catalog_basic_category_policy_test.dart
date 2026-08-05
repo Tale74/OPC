@@ -19,7 +19,7 @@ void main() {
       final db = createTestDatabase();
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 24);
+      expect(db.schemaVersion, 25);
       for (final internalName in IriuK.podesiveOsnovneSeedKategorije) {
         final rows = await (db.select(
           db.iriuKatalogConfig,
@@ -114,7 +114,8 @@ void main() {
           isNot(contains('KORISNIK_DRUGI')),
         );
       },
-      skip: 'Legacy KATALOG policy test; OSNOVNI PAKET now belongs to SCENARIO.',
+      skip:
+          'Legacy KATALOG policy test; OSNOVNI PAKET now belongs to SCENARIO.',
     );
 
     test('manual row stays local and uses the existing cost model', () async {
@@ -207,7 +208,10 @@ void main() {
     ).readAsString();
 
     expect(katalogSource, isNot(contains('Osnovna u svakom PREDMETU')));
-    expect(katalogSource, isNot(contains('bool _osnovnaUSvakomPredmetu = false')));
+    expect(
+      katalogSource,
+      isNot(contains('bool _osnovnaUSvakomPredmetu = false')),
+    );
     expect(iriuSource, isNot(contains('Osnovna u svakom PREDMETU')));
     expect(iriuSource, isNot(contains('dodajKorisnickaKategoriju(')));
   });

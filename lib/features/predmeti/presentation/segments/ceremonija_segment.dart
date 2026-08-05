@@ -38,6 +38,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   Timer? _debounce;
 
   late final TextEditingController _grobljeCt;
+  late final TextEditingController _grobljePolaganjaUrneCt;
   String _tipGroblja = 'GRADSKO';
   String _vrstaCeremonije = 'SAHRANA';
 
@@ -195,6 +196,8 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     );
 
     _grobljeCt = TextEditingController(text: d.groblje);
+    _grobljePolaganjaUrneCt =
+        TextEditingController(text: d.grobljePolaganjaUrne);
     _tipGroblja = d.tipGroblja.isEmpty ? 'GRADSKO' : d.tipGroblja;
     _vrstaCeremonije = d.vrstaCeremonije.isEmpty
         ? 'SAHRANA'
@@ -251,6 +254,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _debounce?.cancel();
     for (final c in [
       _grobljeCt,
+      _grobljePolaganjaUrneCt,
       _datumCeremonijeCtrl,
       _vremeCeremonijeCtrl,
       _vremeOpelaCtrl,
@@ -287,6 +291,9 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     widget.onSave(
       PredmetiCompanion(
         groblje: Value(_normalizedText(_grobljeCt)),
+        grobljePolaganjaUrne: Value(
+          _normalizedText(_grobljePolaganjaUrneCt),
+        ),
         tipGroblja: Value(_tipGroblja),
         vrstaCeremonije: Value(_vrstaCeremonije),
         datumCeremonije: Value(
@@ -683,6 +690,18 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   ),
                 ),
                 const SizedBox(height: 8),
+                TextFormField(
+                  controller: _grobljePolaganjaUrneCt,
+                  enabled: e,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'GROBLJE ZA POLAGANJE URNE',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onChanged: (_) => _scheduleSave(),
+                ),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _oznakUrneCtrl,
                   enabled: e,
