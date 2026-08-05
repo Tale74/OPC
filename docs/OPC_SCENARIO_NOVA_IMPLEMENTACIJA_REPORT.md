@@ -4,6 +4,9 @@ Datum: 2026-08-05
 Branch: `task/OPC-SCENARIO-NOVA-IMPLEMENTACIJA`  
 Baseline: `19dcc68d580c086d9cc74921afa5af8381b9872d` (`task/OPC-SCENARIO-FORENSIC-AUDIT`)
 
+Restore commit: `8e8ae6bf8eac459ba35879c25a42a27d6031796a`  
+Public branch: `origin/task/OPC-SCENARIO-NOVA-IMPLEMENTACIJA`
+
 ## Outcome
 
 SCENARIO je implementiran kao jedinstveni owner-policy kernel koji iz potpunih uslova PREDMETA određuje jednu dozvoljenu kombinaciju, osnovni paket, posledice, statuse, poreklo i redosled. Kernel pokriva 1.008 jedinstvenih kombinacija: 864 standardne i 144 DOČEK kombinacije.
@@ -50,7 +53,7 @@ Tokom validacije pronađena su i ispravljena zastarela očekivanja schema 25 i s
 - PDF derivati nisu menjani.
 - Windows/Android build nije pokrenut u ovom tasku.
 - Windows runtime acceptance nad proverljivom kopijom kanonske baze ostaje odvojena faza.
-- Radno stablo je spremno za commit; javna vidljivost nastaje tek nakon uspešnog commit/push koraka.
+- Radno stablo je čisto nakon commit/push koraka; restore commit je javno vidljiv na navedenoj grani.
 
 ## Authoritative pseudocode
 
