@@ -113,9 +113,15 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     ('SAHRANA_EKSPRES', 'Sahrana ekspres'),
     ('KREMACIJA', 'Kremacija'),
     ('KREMACIJA_EKSPRES', 'Kremacija ekspres'),
-    ('SMESTAJ_URNE', 'Sme\u0161taj urne'),
-    ('RASIPANJE_PEPELA', 'Rasipanje pepela'),
   ];
+
+  // Legacy values remain readable but are no longer offered as main
+  // ceremony types. Existing records keep their stored value until an
+  // explicit user selection changes it.
+  static const _legacyVrsteCeremonije = {
+    'SMESTAJ_URNE': 'Sme\u0161taj urne',
+    'RASIPANJE_PEPELA': 'Rasipanje pepela',
+  };
 
   // TIP POLAGANJA URNE - spec 7.5
   static const _tipPolaganjaOpcije = [
@@ -164,6 +170,12 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
 
   List<String> get _dostupnaMestaOpela =>
       _opeloMestaMap[_vrstaCeremonije] ?? [];
+
+  bool get _imaLegacyVrstuCeremonije =>
+      !_vrsteCeremonije.any((vrsta) => vrsta.$1 == _vrstaCeremonije);
+
+  String get _legacyVrstaCeremonijeLabel =>
+      _legacyVrsteCeremonije[_vrstaCeremonije] ?? _vrstaCeremonije;
 
   String _normalizeTipPolaganjaValue(String value) {
     final normalized = _tipPolaganjaLegacyMap[value] ?? value;
@@ -478,12 +490,17 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
               // Vrsta ceremonije
               DropdownButtonFormField<String>(
                 key: ValueKey(_vrstaCeremonije),
-                initialValue: _vrstaCeremonije,
+                initialValue: _imaLegacyVrstuCeremonije
+                    ? null
+                    : _vrstaCeremonije,
                 decoration: const InputDecoration(
                   labelText: 'VRSTA CEREMONIJE',
                   border: OutlineInputBorder(),
                   isDense: true,
                 ),
+                hint: _imaLegacyVrstuCeremonije
+                    ? Text(_legacyVrstaCeremonijeLabel)
+                    : const Text('- odaberite -'),
                 items: _vrsteCeremonije
                     .map(
                       (t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)),
