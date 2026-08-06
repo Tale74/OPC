@@ -20,18 +20,21 @@ void main() {
       addTearDown(db.close);
       final repo = PodesavanjaRepository(db);
 
-      final result = await repo.dodajKorisnickuKategoriju(
+      final result = await repo.dodajKorisnickaKategoriju(
         interniNaziv: 'KORISNIK_DUPLICATE_SLIKA',
         nazivPrikaz: 'Slika',
         tip: 'KATALOSKA',
       );
 
       expect(result.uspeh, isFalse);
-      expect(result.poruka,
-          'KATALOG sadrži dupliranu poslovnu kategoriju. Prvo ispravite KATALOG.');
       expect(
-        await (db.select(db.iriuKatalogConfig)
-              ..where((row) => row.interniNaziv.equals('KORISNIK_DUPLICATE_SLIKA')))
+        result.poruka,
+        'KATALOG sadrži dupliranu poslovnu kategoriju. Prvo ispravite KATALOG.',
+      );
+      expect(
+        await (db.select(db.iriuKatalogConfig)..where(
+              (row) => row.interniNaziv.equals('KORISNIK_DUPLICATE_SLIKA'),
+            ))
             .get(),
         isEmpty,
       );

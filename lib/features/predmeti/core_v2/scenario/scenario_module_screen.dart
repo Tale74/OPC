@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -21,20 +22,61 @@ class ScenarioModuleScreen extends StatefulWidget {
 
 class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   late final ScenarioModuleRepository _repository;
-  late final Future<ScenarioModule> _moduleFuture;
+  late Future<ScenarioModule> _moduleFuture;
   late Future<List<IriuKatalogConfigData>> _katalogFuture;
   late Future<List<ScenarioDefinitionRecord>> _definitionsFuture;
   ScenarioModule? _currentModule;
+
+  static const _loadTimeout = Duration(seconds: 60);
 
   @override
   void initState() {
     super.initState();
     _repository = ScenarioModuleRepository(widget.podesavanjaRepository.db);
-    _moduleFuture = _repository.ensureModuleAndDefaults();
-    _katalogFuture = widget.podesavanjaRepository.getKatalogVidljive();
-    _definitionsFuture = _moduleFuture.then(
-      (_) => _repository.getDefinitions(),
+    _moduleFuture = _repository.ensureModuleAndDefaults().timeout(
+      _loadTimeout,
+      onTimeout: () => throw TimeoutException('SCENARIO loading timed out.'),
     );
+    _katalogFuture = _moduleFuture
+        .then((_) => widget.podesavanjaRepository.getKatalogVidljive())
+        .timeout(
+          _loadTimeout,
+          onTimeout: () =>
+              throw TimeoutException('KATALOG učitavanje je isteklo.'),
+        );
+    _definitionsFuture = _moduleFuture
+        .then((_) => _repository.getDefinitions())
+        .timeout(
+          _loadTimeout,
+          onTimeout: () => throw TimeoutException(
+            'SCENARIO definicije nisu učitane u dozvoljenom roku.',
+          ),
+        );
+  }
+
+  void _reloadScreen() {
+    if (!mounted) return;
+    setState(() {
+      _moduleFuture = _repository.ensureModuleAndDefaults().timeout(
+        _loadTimeout,
+        onTimeout: () => throw TimeoutException('SCENARIO loading timed out.'),
+      );
+      _katalogFuture = _moduleFuture
+          .then((_) => widget.podesavanjaRepository.getKatalogVidljive())
+          .timeout(
+            _loadTimeout,
+            onTimeout: () =>
+                throw TimeoutException('KATALOG učitavanje je isteklo.'),
+          );
+      _definitionsFuture = _moduleFuture
+          .then((_) => _repository.getDefinitions())
+          .timeout(
+            _loadTimeout,
+            onTimeout: () => throw TimeoutException(
+              'SCENARIO definicije nisu učitane u dozvoljenom roku.',
+            ),
+          );
+    });
   }
 
   Future<void> _izmeniPaket(
@@ -52,10 +94,8 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     );
     if (result == null) return;
     await _repository.saveOsnovniPaket(result);
-    _currentModule = await _repository.ensureModule();
     if (!context.mounted) return;
-    _katalogFuture = widget.podesavanjaRepository.getKatalogVidljive();
-    setState(() {});
+    _reloadScreen();
   }
 
   Future<void> _dodajIliIzmeniScenario(
@@ -90,8 +130,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
       status: 'PRIMENJEN',
     );
     if (!context.mounted) return;
-    _definitionsFuture = _repository.getDefinitions();
-    setState(() {});
+    _reloadScreen();
   }
 
   Future<void> _pregledScenario(
@@ -224,17 +263,46 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
       body: FutureBuilder<ScenarioModule>(
         future: _moduleFuture,
         builder: (context, moduleSnapshot) {
+          if (moduleSnapshot.hasError) {
+            return _ScenarioErrorView(
+              error: moduleSnapshot.error!,
+              onRetry: _reloadScreen,
+            );
+          }
           if (!moduleSnapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const _ScenarioLoadingView();
           }
           return FutureBuilder<List<IriuKatalogConfigData>>(
             future: _katalogFuture,
             builder: (context, katalogSnapshot) {
+              if (katalogSnapshot.hasError) {
+                return _ScenarioErrorView(
+                  error: katalogSnapshot.error!,
+                  onRetry: _reloadScreen,
+                );
+              }
               final katalog = katalogSnapshot.data ?? const [];
               return FutureBuilder<List<ScenarioDefinitionRecord>>(
                 future: _definitionsFuture,
                 builder: (context, definitionSnapshot) {
+                  if (definitionSnapshot.hasError) {
+                    return _ScenarioErrorView(
+                      error: definitionSnapshot.error!,
+                      onRetry: _reloadScreen,
+                    );
+                  }
                   final definitions = definitionSnapshot.data ?? const [];
+                  final ownerDefinitionCount = definitions
+                      .where((record) => record.id.startsWith('MAP_'))
+                      .length;
+                  if (ownerDefinitionCount < 1008) {
+                    return _ScenarioErrorView(
+                      error: StateError(
+                        'Učitano je $ownerDefinitionCount od 1008 scenario definicija.',
+                      ),
+                      onRetry: _reloadScreen,
+                    );
+                  }
                   final module = _currentModule ?? moduleSnapshot.data!;
                   final osnovni = _repository.readOsnovniPaket(module);
                   return ListView(
@@ -368,6 +436,69 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   }
 }
 
+class _ScenarioLoadingView extends StatelessWidget {
+  const _ScenarioLoadingView();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircularProgressIndicator(),
+        SizedBox(height: 16),
+        Text('Učitavanje SCENARIO modula...'),
+      ],
+    ),
+  );
+}
+
+class _ScenarioErrorView extends StatelessWidget {
+  const _ScenarioErrorView({required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 520),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 12),
+                const Text(
+                  'SCENARIO nije moguće učitati.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error is TimeoutException
+                      ? 'Učitavanje je isteklo. Proverite bazu i pokušajte ponovo.'
+                      : 'Baza, KATALOG ili scenario definicije nisu spremne.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('PONOVI UČITAVANJE'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _ScenarioPolicyTree extends StatefulWidget {
   const _ScenarioPolicyTree({
     required this.definitions,
@@ -382,28 +513,6 @@ class _ScenarioPolicyTree extends StatefulWidget {
   final ValueChanged<ScenarioDefinitionRecord> onPreview;
   final ValueChanged<ScenarioDefinitionRecord> onEdit;
   final VoidCallback? onAdd;
-
-  static const _placeIds = <String>[
-    'STAN',
-    'DOM_ZA_STARE',
-    'PRIVATNA_BOLNICA',
-    'DRUGO',
-    'ULICA_JAVNO_MESTO',
-    'BOLNICA',
-  ];
-
-  static const _conditionIds = <String>[
-    'BIOHAZARD',
-    'LIMENI_ULOZAK',
-    'LEMOVANJE',
-    'LOKALNO_GROBLJE',
-    'OPELO',
-  ];
-
-  static const _packageIds = <String>[
-    'SAHRANA_VAN_SRBIJE',
-    'DOCEK_POSMRTNIH_OSTATAKA',
-  ];
 
   @override
   State<_ScenarioPolicyTree> createState() => _ScenarioPolicyTreeState();
@@ -449,14 +558,18 @@ class _ScenarioPolicyTreeState extends State<_ScenarioPolicyTree> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (custom.isNotEmpty) ...[
-          const Text('DODATNI SCENARIJI',
-              style: TextStyle(fontWeight: FontWeight.w700)),
-          ...custom.map((record) => _ScenarioResultCard(
-                record: record,
-                katalog: widget.katalog,
-                onPreview: widget.onPreview,
-                onEdit: widget.onEdit,
-              )),
+          const Text(
+            'DODATNI SCENARIJI',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          ...custom.map(
+            (record) => _ScenarioResultCard(
+              record: record,
+              katalog: widget.katalog,
+              onPreview: widget.onPreview,
+              onEdit: widget.onEdit,
+            ),
+          ),
           const SizedBox(height: 12),
         ],
         const Text(
@@ -488,47 +601,94 @@ class _ScenarioPolicyTreeState extends State<_ScenarioPolicyTree> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _businessFilter(fieldWidth, 'UZROK SMRTI', _cause, const [
-                          'PRIRODNA', 'NASILNA', 'ZARAZNA', 'NEDEFINISANA',
-                        ], (value) => setState(() => _cause = value)),
-                        _businessFilter(fieldWidth, 'MESTO SMRTI', _place, const [
-                          'STAN', 'DOM ZA STARE', 'BOLNICA',
-                          'PRIVATNA BOLNICA', 'ULICA / JAVNO MESTO', 'DRUGO',
-                        ], (value) => setState(() => _place = value)),
-                        _businessFilter(fieldWidth, 'VRSTA CEREMONIJE', _ceremony, const [
-                          'SAHRANA', 'SAHRANA EKSPRES', 'KREMACIJA',
-                          'KREMACIJA EKSPRES',
-                        ], (value) => setState(() {
-                          _ceremony = value;
-                          if (_cremation) {
-                            _international = false;
-                          }
-                        })),
+                        _businessFilter(
+                          fieldWidth,
+                          'UZROK SMRTI',
+                          _cause,
+                          const [
+                            'PRIRODNA',
+                            'NASILNA',
+                            'ZARAZNA',
+                            'NEDEFINISANA',
+                          ],
+                          (value) => setState(() => _cause = value),
+                        ),
+                        _businessFilter(
+                          fieldWidth,
+                          'MESTO SMRTI',
+                          _place,
+                          const [
+                            'STAN',
+                            'DOM ZA STARE',
+                            'BOLNICA',
+                            'PRIVATNA BOLNICA',
+                            'ULICA / JAVNO MESTO',
+                            'DRUGO',
+                          ],
+                          (value) => setState(() => _place = value),
+                        ),
+                        _businessFilter(
+                          fieldWidth,
+                          'VRSTA CEREMONIJE',
+                          _ceremony,
+                          const [
+                            'SAHRANA',
+                            'SAHRANA EKSPRES',
+                            'KREMACIJA',
+                            'KREMACIJA EKSPRES',
+                          ],
+                          (value) => setState(() {
+                            _ceremony = value;
+                            if (_cremation) {
+                              _international = false;
+                            }
+                          }),
+                        ),
                         if (!_cremation && !_docek)
-                          _businessFilter(fieldWidth, 'TIP GROBLJA', _cemetery,
-                              const ['GRADSKO', 'LOKALNO'],
-                              (value) => setState(() => _cemetery = value)),
+                          _businessFilter(
+                            fieldWidth,
+                            'TIP GROBLJA',
+                            _cemetery,
+                            const ['GRADSKO', 'LOKALNO'],
+                            (value) => setState(() => _cemetery = value),
+                          ),
                         if (!_cremation && !_docek)
-                          _businessFilter(fieldWidth, 'GROBNO MESTO', _burial,
-                              const ['GROB', 'GROBNICA'],
-                              (value) => setState(() => _burial = value)),
-                        _businessFilter(fieldWidth, 'OPELO', _opelo,
-                            const ['NE', 'DA'],
-                            (value) => setState(() => _opelo = value)),
-                        _businessFilter(fieldWidth, 'SAHRANA VAN SRBIJE',
-                            _international ? 'DA' : 'NE', const ['NE', 'DA'],
-                            (value) => setState(() {
-                              _international = value == 'DA';
-                              if (_international && _cremation) {
-                                _international = false;
-                              }
-                            })),
-                        _businessFilter(fieldWidth,
-                            'DOČEK POSMRTNIH OSTATAKA', _docek ? 'DA' : 'NE',
-                            const ['NE', 'DA'], (value) => setState(() {
-                              _docek = value == 'DA';
-                              if (_docek) _international = false;
-                            })),
+                          _businessFilter(
+                            fieldWidth,
+                            'GROBNO MESTO',
+                            _burial,
+                            const ['GROB', 'GROBNICA'],
+                            (value) => setState(() => _burial = value),
+                          ),
+                        _businessFilter(
+                          fieldWidth,
+                          'OPELO',
+                          _opelo,
+                          const ['NE', 'DA'],
+                          (value) => setState(() => _opelo = value),
+                        ),
+                        _businessFilter(
+                          fieldWidth,
+                          'SAHRANA VAN SRBIJE',
+                          _international ? 'DA' : 'NE',
+                          const ['NE', 'DA'],
+                          (value) => setState(() {
+                            _international = value == 'DA';
+                            if (_international && _cremation) {
+                              _international = false;
+                            }
+                          }),
+                        ),
+                        _businessFilter(
+                          fieldWidth,
+                          'DOČEK POSMRTNIH OSTATAKA',
+                          _docek ? 'DA' : 'NE',
+                          const ['NE', 'DA'],
+                          (value) => setState(() {
+                            _docek = value == 'DA';
+                            if (_docek) _international = false;
+                          }),
+                        ),
                       ],
                     );
                   },
@@ -633,27 +793,6 @@ class _ScenarioResultCard extends StatelessWidget {
       ),
     );
   }
-}
-
-/* Legacy tree retained only as a compatibility type; the user-facing build
-   is the business-filter workspace above. */
-class _LegacyScenarioPolicyTree extends StatelessWidget {
-  const _LegacyScenarioPolicyTree({
-    required this.definitions,
-    required this.katalog,
-    required this.onPreview,
-    required this.onEdit,
-    required this.onAdd,
-  });
-
-  final List<ScenarioDefinitionRecord> definitions;
-  final List<IriuKatalogConfigData> katalog;
-  final ValueChanged<ScenarioDefinitionRecord> onPreview;
-  final ValueChanged<ScenarioDefinitionRecord> onEdit;
-  final VoidCallback? onAdd;
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 /*
@@ -996,120 +1135,6 @@ String _slug(String value) => value
     .replaceAll(RegExp(r'[^A-Z0-9]+'), '_')
     .replaceAll(RegExp(r'^_+|_+$'), '');
 
-class _ScenarioPolicyBranch extends StatelessWidget {
-  const _ScenarioPolicyBranch({
-    required this.record,
-    required this.katalog,
-    required this.onPreview,
-    required this.onEdit,
-  });
-
-  final ScenarioDefinitionRecord record;
-  final List<IriuKatalogConfigData> katalog;
-  final ValueChanged<ScenarioDefinitionRecord> onPreview;
-  final ValueChanged<ScenarioDefinitionRecord> onEdit;
-
-  @override
-  Widget build(BuildContext context) => ExpansionTile(
-    key: ValueKey('scenario-branch-${record.id}'),
-    initiallyExpanded: true,
-    title: Text(record.naziv),
-    subtitle: Text(_scenarioStatusLabel(record)),
-    children: [
-      _ScenarioPolicyRecordRow(
-        record: record,
-        katalog: katalog,
-        onPreview: onPreview,
-        onEdit: onEdit,
-      ),
-    ],
-  );
-}
-
-class _ScenarioPolicyGroup extends StatelessWidget {
-  const _ScenarioPolicyGroup({
-    super.key,
-    required this.title,
-    required this.records,
-    required this.katalog,
-    required this.onPreview,
-    required this.onEdit,
-  });
-
-  final String title;
-  final List<ScenarioDefinitionRecord> records;
-  final List<IriuKatalogConfigData> katalog;
-  final ValueChanged<ScenarioDefinitionRecord> onPreview;
-  final ValueChanged<ScenarioDefinitionRecord> onEdit;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.zero,
-    child: ExpansionTile(
-      initiallyExpanded: true,
-      title: Text(title),
-      children: [
-        for (final record in records)
-          _ScenarioPolicyRecordRow(
-            record: record,
-            katalog: katalog,
-            onPreview: onPreview,
-            onEdit: onEdit,
-          ),
-      ],
-    ),
-  );
-}
-
-class _ScenarioPolicyRecordRow extends StatelessWidget {
-  const _ScenarioPolicyRecordRow({
-    required this.record,
-    required this.katalog,
-    required this.onPreview,
-    required this.onEdit,
-  });
-
-  final ScenarioDefinitionRecord record;
-  final List<IriuKatalogConfigData> katalog;
-  final ValueChanged<ScenarioDefinitionRecord> onPreview;
-  final ValueChanged<ScenarioDefinitionRecord> onEdit;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    key: ValueKey('scenario-row-${record.id}'),
-    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.account_tree_outlined),
-          title: Text(record.naziv),
-          subtitle: Text(_scenarioStatusLabel(record)),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Wrap(
-            spacing: 4,
-            children: [
-              TextButton(
-                key: ValueKey('scenario-preview-${record.id}'),
-                onPressed: () => onPreview(record),
-                child: const Text('PREGLED'),
-              ),
-              TextButton(
-                key: ValueKey('scenario-edit-${record.id}'),
-                onPressed: () => onEdit(record),
-                child: const Text('UREDI'),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 String _scenarioStatusLabel(ScenarioDefinitionRecord record) =>
     record.status == 'PRIMENJEN' ? 'U UPOTREBI' : 'VAN UPOTREBE';
 
@@ -1254,33 +1279,47 @@ class _PackageDialogState extends State<_PackageDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('STAVKE U OSNOVNOM PAKETU',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text(
+                'STAVKE U OSNOVNOM PAKETU',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 4),
               ...widget.katalog
-                  .where((item) => item.vidljiv && _selected.contains(item.interniNaziv))
-                  .map((item) => CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        value: true,
-                        title: Text(item.nazivPrikaz),
-                        onChanged: (value) => setState(() {
-                          if (value != true) _selected.remove(item.interniNaziv);
-                        }),
-                      )),
+                  .where(
+                    (item) =>
+                        item.vidljiv && _selected.contains(item.interniNaziv),
+                  )
+                  .map(
+                    (item) => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: true,
+                      title: Text(item.nazivPrikaz),
+                      onChanged: (value) => setState(() {
+                        if (value != true) _selected.remove(item.interniNaziv);
+                      }),
+                    ),
+                  ),
               const Divider(),
-              const Text('DOSTUPNE KATALOG STAVKE',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text(
+                'DOSTUPNE KATALOG STAVKE',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 4),
               ...widget.katalog
-                  .where((item) => item.vidljiv && !_selected.contains(item.interniNaziv))
-                  .map((item) => CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        value: false,
-                        title: Text(item.nazivPrikaz),
-                        onChanged: (value) => setState(() {
-                          if (value == true) _selected.add(item.interniNaziv);
-                        }),
-                      )),
+                  .where(
+                    (item) =>
+                        item.vidljiv && !_selected.contains(item.interniNaziv),
+                  )
+                  .map(
+                    (item) => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: false,
+                      title: Text(item.nazivPrikaz),
+                      onChanged: (value) => setState(() {
+                        if (value == true) _selected.add(item.interniNaziv);
+                      }),
+                    ),
+                  ),
             ],
           ),
         ),
@@ -1387,7 +1426,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
         )
         .toList(growable: false);
     return AlertDialog(
-      title: Text(widget.existing == null ? 'DODAJ NOVI SCENARIO' : 'UREDI SCENARIO'),
+      title: Text(
+        widget.existing == null ? 'DODAJ NOVI SCENARIO' : 'UREDI SCENARIO',
+      ),
       content: SizedBox(
         width: _dialogWidth(context, 560),
         child: SingleChildScrollView(
@@ -1397,8 +1438,10 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
               if (widget.existing == null)
                 const _WizardProgress()
               else
-                Text(widget.existing!.name,
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  widget.existing!.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               const SizedBox(height: 12),
               const Text(
                 'USLOVI',
@@ -1488,9 +1531,11 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
         ),
         FilledButton(
           onPressed: _save,
-          child: Text(widget.existing == null
-              ? 'SAČUVAJ NOVI SCENARIO'
-              : 'SAČUVAJ IZMENE'),
+          child: Text(
+            widget.existing == null
+                ? 'SAČUVAJ NOVI SCENARIO'
+                : 'SAČUVAJ IZMENE',
+          ),
         ),
       ],
     );
@@ -1632,8 +1677,11 @@ class _WizardProgress extends StatelessWidget {
   void collect(ScenarioCondition item) {
     final criterion = item.criterion;
     if (criterion != null) values.addAll(criterion.values);
-    for (final child in item.children) collect(child);
+    for (final child in item.children) {
+      collect(child);
+    }
   }
+
   collect(condition);
   final suffix = values
       .join('_')

@@ -163,6 +163,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
           ),
         );
       } on KatalogIntegrityException catch (error) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error.message)),
         );
