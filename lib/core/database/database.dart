@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:drift/native.dart';
@@ -81,6 +83,7 @@ class AppDatabase extends _$AppDatabase {
       await _createIriuLifecycleDecisionTable();
       await _createCeremonyReminderSettingsTable();
       await _seedIriuKatalog();
+      await repairKnownCatalogIntegrity();
       await _backfillBuiltInIriuBasicPolicy();
       await _seedPredlosciDokumenata();
       await _seedSingletons();
@@ -224,6 +227,7 @@ class AppDatabase extends _$AppDatabase {
       await _recoverSupportedAdditiveSchema(migrator);
       final existingCatalogArticles = await select(katalogArtikli).get();
       await _seedIriuKatalog(loadPhotos: existingCatalogArticles.isEmpty);
+      await repairKnownCatalogIntegrity();
       await _backfillBuiltInIriuBasicPolicy();
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
       await _ensureKatalogStableArticleIdUniqueIndex();
@@ -927,7 +931,7 @@ class AppDatabase extends _$AppDatabase {
       (naziv: IriuK.slika, prikaz: 'Slika', tip: 'KATALOSKA', red: 25),
       (
         naziv: IriuK.zastitnaIDodatnaOprema,
-        prikaz: 'ZaÅ¡titna i dodatna oprema',
+        prikaz: 'Zaštitna i dodatna oprema',
         tip: 'FIKSNA',
         red: 26,
       ),
@@ -1564,6 +1568,282 @@ class AppDatabase extends _$AppDatabase {
         mode: InsertMode.insertOrIgnore,
       );
     }
+  }
+
+  /// Repairs the two known catalog integrity defects without applying a
+  /// broad name-based deduplication to user data.
+  ///
+  /// `SLIKA` is a built-in business identity. Older databases could also
+  /// contain a user category with the same display name. References are
+  /// mapped before the duplicate config row is removed, including stored
+  /// IRIU rows, catalog articles, scenario packages/definitions and
+  /// assignment snapshots.
+  Future<void> repairKnownCatalogIntegrity() async {
+    await (update(iriuKatalogConfig)
+          ..where(
+            (row) => row.interniNaziv.equals(IriuK.zastitnaIDodatnaOprema),
+          ))
+        .write(
+          const IriuKatalogConfigCompanion(
+            nazivPrikaz: Value('Zaštitna i dodatna oprema'),
+          ),
+        );
+
+    final canonical = await (select(iriuKatalogConfig)
+          ..where((row) => row.interniNaziv.equals(IriuK.slika)))
+        .getSingleOrNull();
+    if (canonical == null) return;
+
+    final duplicates = (await select(iriuKatalogConfig).get())
+        .where(
+          (row) =>
+              row.interniNaziv != canonical.interniNaziv &&
+              _catalogBusinessKey(row.nazivPrikaz) == 'SLIKA',
+        )
+        .map((row) => row.interniNaziv)
+        .toList(growable: false);
+    for (final duplicate in duplicates) {
+      await _mergeCatalogCategory(duplicate, canonical.interniNaziv);
+    }
+  }
+
+  String? _catalogBusinessKey(String value) {
+    final normalized = value.trim().toUpperCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
+    return normalized == 'SLIKA' ? 'SLIKA' : null;
+  }
+
+  Future<void> _mergeCatalogCategory(
+    String duplicate,
+    String canonical,
+  ) async {
+    await transaction(() async {
+      final duplicateRows = await (select(iriu)
+            ..where((row) => row.interniNaziv.equals(duplicate)))
+          .get();
+      for (final duplicateRow in duplicateRows) {
+        final canonicalRow = await (select(iriu)
+              ..where(
+                (row) =>
+                    row.predmetId.equals(duplicateRow.predmetId) &
+                    row.interniNaziv.equals(canonical),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+        if (canonicalRow == null) {
+          await (update(iriu)..where((row) => row.id.equals(duplicateRow.id)))
+              .write(IriuCompanion(interniNaziv: Value(canonical)));
+          continue;
+        }
+
+        await (update(iriu)..where((row) => row.id.equals(canonicalRow.id)))
+            .write(
+              IriuCompanion(
+                nazivPrikaz: canonicalRow.nazivPrikaz.trim().isEmpty
+                    ? Value(duplicateRow.nazivPrikaz)
+                    : const Value.absent(),
+                kom: canonicalRow.kom.trim().isEmpty
+                    ? Value(duplicateRow.kom)
+                    : const Value.absent(),
+                iznos: canonicalRow.iznos == 0 && duplicateRow.iznos != 0
+                    ? Value(duplicateRow.iznos)
+                    : const Value.absent(),
+                redosled: canonicalRow.redosled <= 0
+                    ? Value(duplicateRow.redosled)
+                    : const Value.absent(),
+              ),
+            );
+        await _mergeIriuProvenance(duplicateRow.id, canonicalRow.id);
+        await (delete(iriu)..where((row) => row.id.equals(duplicateRow.id)))
+            .go();
+      }
+
+      await (update(katalogArtikli)
+            ..where((row) => row.interniNazivKategorije.equals(duplicate)))
+          .write(
+            KatalogArtikliCompanion(
+              interniNazivKategorije: Value(canonical),
+            ),
+          );
+
+      final modules = await select(scenarioModules).get();
+      for (final module in modules) {
+        final next = _replaceCategoryInJsonList(
+          module.osnovniPaketJson,
+          duplicate,
+          canonical,
+        );
+        if (next != null) {
+          await (update(scenarioModules)
+                ..where((row) => row.id.equals(module.id)))
+              .write(ScenarioModulesCompanion(osnovniPaketJson: Value(next)));
+        }
+      }
+
+      final definitions = await select(scenarioDefinitions).get();
+      for (final definition in definitions) {
+        final next = _replaceCategoryInConsequences(
+          definition.consequencesJson,
+          duplicate,
+          canonical,
+        );
+        if (next != null) {
+          await (update(scenarioDefinitions)
+                ..where(
+                  (row) =>
+                      row.id.equals(definition.id) &
+                      row.version.equals(definition.version),
+                ))
+              .write(
+                ScenarioDefinitionsCompanion(consequencesJson: Value(next)),
+              );
+        }
+      }
+
+      final snapshots = await select(predmetScenarioSnapshots).get();
+      for (final snapshot in snapshots) {
+        final decoded = _decodeJson(snapshot.snapshotJson);
+        if (decoded == null) continue;
+        final changed = _replaceCategoryInJsonValue(
+          decoded,
+          duplicate,
+          canonical,
+        );
+        if (!changed) continue;
+        await (update(predmetScenarioSnapshots)
+              ..where((row) => row.predmetId.equals(snapshot.predmetId)))
+            .write(
+              PredmetScenarioSnapshotsCompanion(
+                snapshotJson: Value(jsonEncode(decoded)),
+              ),
+            );
+      }
+
+      await (delete(iriuKatalogConfig)
+            ..where((row) => row.interniNaziv.equals(duplicate)))
+          .go();
+    });
+  }
+
+  Future<void> _mergeIriuProvenance(int duplicateId, int canonicalId) async {
+    final duplicate = await (select(iriuProvenance)
+          ..where((row) => row.iriuId.equals(duplicateId)))
+        .getSingleOrNull();
+    if (duplicate == null) return;
+    final canonical = await (select(iriuProvenance)
+          ..where((row) => row.iriuId.equals(canonicalId)))
+        .getSingleOrNull();
+    if (canonical == null) {
+      await (update(iriuProvenance)
+            ..where((row) => row.iriuId.equals(duplicateId)))
+          .write(IriuProvenanceCompanion(iriuId: Value(canonicalId)));
+    } else {
+      await (delete(iriuProvenance)
+            ..where((row) => row.iriuId.equals(duplicateId)))
+          .go();
+    }
+  }
+
+  String? _replaceCategoryInJsonList(
+    String json,
+    String duplicate,
+    String canonical,
+  ) {
+    final decoded = _decodeJson(json);
+    if (decoded is! List) return null;
+    final next = <dynamic>[];
+    var changed = false;
+    for (final value in decoded) {
+      if (value is! String) {
+        next.add(value);
+        continue;
+      }
+      final replacement = value == duplicate ? canonical : value;
+      changed = changed || replacement != value;
+      if (!next.contains(replacement)) next.add(replacement);
+    }
+    return changed ? jsonEncode(next) : null;
+  }
+
+  String? _replaceCategoryInConsequences(
+    String json,
+    String duplicate,
+    String canonical,
+  ) {
+    final decoded = _decodeJson(json);
+    if (decoded is! List) return null;
+    final seen = <String>{};
+    var changed = false;
+    final next = <dynamic>[];
+    for (final raw in decoded) {
+      if (raw is! Map) {
+        next.add(raw);
+        continue;
+      }
+      final item = Map<String, dynamic>.from(raw);
+      final value = item['katalogCategoryInternalName'];
+      if (value == duplicate) {
+        item['katalogCategoryInternalName'] = canonical;
+        changed = true;
+      }
+      final key = item['katalogCategoryInternalName'];
+      if (key is String && !seen.add(key)) {
+        changed = true;
+        continue;
+      }
+      next.add(item);
+    }
+    return changed ? jsonEncode(next) : null;
+  }
+
+  dynamic _decodeJson(String json) {
+    try {
+      return jsonDecode(json);
+    } on Object {
+      return null;
+    }
+  }
+
+  bool _replaceCategoryInJsonValue(
+    dynamic value,
+    String duplicate,
+    String canonical,
+  ) {
+    var changed = false;
+    if (value is List) {
+      for (var index = 0; index < value.length; index++) {
+        final item = value[index];
+        if (item is String && item == duplicate) {
+          value[index] = canonical;
+          changed = true;
+        } else {
+          changed = _replaceCategoryInJsonValue(
+                item,
+                duplicate,
+                canonical,
+              ) ||
+              changed;
+        }
+      }
+    } else if (value is Map) {
+      for (final entry in value.entries) {
+        final item = entry.value;
+        if (item is String && item == duplicate) {
+          value[entry.key] = canonical;
+          changed = true;
+        } else {
+          changed = _replaceCategoryInJsonValue(
+                item,
+                duplicate,
+                canonical,
+              ) ||
+              changed;
+        }
+      }
+    }
+    return changed;
   }
 
   Future<void> _backfillBuiltInIriuBasicPolicy() async {

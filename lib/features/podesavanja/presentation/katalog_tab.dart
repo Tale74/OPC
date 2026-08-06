@@ -151,16 +151,22 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
     nazivCtrl.dispose();
 
     if (ok == true && context.mounted) {
-      await widget.repo.azurirajKatalogStavku(
-        widget.item.interniNaziv,
-        IriuKatalogConfigCompanion(
-          nazivPrikaz: Value(
-            noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
+      try {
+        await widget.repo.azurirajKatalogStavku(
+          widget.item.interniNaziv,
+          IriuKatalogConfigCompanion(
+            nazivPrikaz: Value(
+              noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
+            ),
+            vidljiv: Value(vidljiv),
+            osnovnaUSvakomPredmetu: const Value.absent(),
           ),
-          vidljiv: Value(vidljiv),
-          osnovnaUSvakomPredmetu: const Value.absent(),
-        ),
-      );
+        );
+      } on KatalogIntegrityException catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
     }
   }
 

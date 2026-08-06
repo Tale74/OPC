@@ -33,11 +33,8 @@ void main() {
 
     expect(find.text('SCENARIO'), findsWidgets);
     expect(find.text('OSNOVNI PAKET'), findsOneWidget);
-    expect(find.text('SCENARIJI'), findsOneWidget);
-    expect(find.text('SCENARIJI PO MESTU SMRTI'), findsOneWidget);
-    expect(find.text('MESTO SMRTI'), findsWidgets);
-    expect(find.text('PRONAĐI POTPUNU POSLOVNU POLITIKU'), findsOneWidget);
-    expect(find.text('1008 dozvoljenih kombinacija'), findsOneWidget);
+    expect(find.text('POSTOJEĆI SCENARIJI'), findsOneWidget);
+    expect(find.text('MESTO SMRTI'), findsOneWidget);
     expect(
       find.text(
         'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
@@ -45,6 +42,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('POSLOVNA HIJERARHIJA'), findsNothing);
+    expect(find.text('DODATNI USLOVI'), findsNothing);
+    expect(find.text('DODATNI PAKETI'), findsNothing);
     expect(find.byType(PopupMenuButton<String>), findsNothing);
     expect(find.text('DODAJ NOVI SCENARIO'), findsOneWidget);
     for (final forbidden in [
@@ -119,7 +118,7 @@ void main() {
       expect(find.text('NADUSLOV'), findsNothing);
       expect(find.text('PODUSLOV'), findsNothing);
       expect(find.text('OPERATOR'), findsNothing);
-      expect(find.text('STAVKE SCENARIJA'), findsOneWidget);
+      expect(find.text('DODATNE STAVKE SCENARIJA'), findsOneWidget);
       expect(find.text('DOSTUPNE STAVKE'), findsOneWidget);
     },
   );

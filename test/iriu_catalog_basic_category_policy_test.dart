@@ -15,6 +15,28 @@ import 'test_bootstrap.dart';
 
 void main() {
   group('KATALOG osnovna category policy', () {
+    test('new business duplicate for SLIKA is rejected', () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repo = PodesavanjaRepository(db);
+
+      final result = await repo.dodajKorisnickuKategoriju(
+        interniNaziv: 'KORISNIK_DUPLICATE_SLIKA',
+        nazivPrikaz: 'Slika',
+        tip: 'KATALOSKA',
+      );
+
+      expect(result.uspeh, isFalse);
+      expect(result.poruka,
+          'KATALOG sadrži dupliranu poslovnu kategoriju. Prvo ispravite KATALOG.');
+      expect(
+        await (db.select(db.iriuKatalogConfig)
+              ..where((row) => row.interniNaziv.equals('KORISNIK_DUPLICATE_SLIKA')))
+            .get(),
+        isEmpty,
+      );
+    });
+
     test('fresh schema seeds fixed categories once with policy NE', () async {
       final db = createTestDatabase();
       addTearDown(db.close);

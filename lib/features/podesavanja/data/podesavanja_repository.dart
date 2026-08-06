@@ -3,7 +3,17 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/constants/iriu_constants.dart';
 import '../../../core/utils/stable_id_generator.dart';
+
+class KatalogIntegrityException implements Exception {
+  const KatalogIntegrityException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
 
 class KategorijaLifecycleStatus {
   const KategorijaLifecycleStatus({
@@ -45,10 +55,15 @@ class KategorijaLifecycleIshod {
 }
 
 class KategorijaInsertIshod {
-  const KategorijaInsertIshod({required this.uspeh, required this.kategorija});
+  const KategorijaInsertIshod({
+    required this.uspeh,
+    required this.kategorija,
+    this.poruka,
+  });
 
   final bool uspeh;
   final IriuKatalogConfigData? kategorija;
+  final String? poruka;
 }
 
 class KatalogPickerArticleSummary {
@@ -127,9 +142,24 @@ class PodesavanjaRepository {
   Future<void> azurirajKatalogStavku(
     String interniNaziv,
     IriuKatalogConfigCompanion companion,
-  ) => (_db.update(
-    _db.iriuKatalogConfig,
-  )..where((k) => k.interniNaziv.equals(interniNaziv))).write(companion);
+  ) async {
+    final proposedName = companion.nazivPrikaz.present
+        ? companion.nazivPrikaz.value.trim()
+        : null;
+    if (proposedName != null && _catalogBusinessKey(proposedName) == 'SLIKA') {
+      final canonical = await (_db.select(_db.iriuKatalogConfig)..where(
+        (row) => row.interniNaziv.equals(IriuK.slika),
+      )).getSingleOrNull();
+      if (canonical != null && canonical.interniNaziv != interniNaziv) {
+        throw const KatalogIntegrityException(
+          'KATALOG sadrži dupliranu poslovnu kategoriju. Prvo ispravite KATALOG.',
+        );
+      }
+    }
+    await (_db.update(_db.iriuKatalogConfig)..where(
+      (k) => k.interniNaziv.equals(interniNaziv),
+    )).write(companion);
+  }
 
   Future<KategorijaLifecycleStatus?> proveriKategorijuZaLifecycleAkciju(
     String interniNaziv,
@@ -353,6 +383,14 @@ class PodesavanjaRepository {
     required String tip, // FIKSNA ili KATALOSKA
     bool osnovnaUSvakomPredmetu = false,
   }) async {
+    if (_catalogBusinessKey(nazivPrikaz) == 'SLIKA') {
+      return const KategorijaInsertIshod(
+        uspeh: false,
+        kategorija: null,
+        poruka:
+            'KATALOG sadrži dupliranu poslovnu kategoriju. Prvo ispravite KATALOG.',
+      );
+    }
     final maxRed =
         await (_db.select(_db.iriuKatalogConfig)
               ..orderBy([(k) => OrderingTerm.desc(k.redosled)])
@@ -384,6 +422,16 @@ class PodesavanjaRepository {
       _db.iriuKatalogConfig,
     )..where((k) => k.interniNaziv.equals(interniNaziv))).getSingleOrNull();
     return KategorijaInsertIshod(uspeh: upisana != null, kategorija: upisana);
+  }
+
+  Future<void> ensureKatalogIntegrity() => _db.repairKnownCatalogIntegrity();
+
+  String? _catalogBusinessKey(String value) {
+    final normalized = value.trim().toUpperCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
+    return normalized == 'SLIKA' ? 'SLIKA' : null;
   }
 
   Stream<List<KatalogArtikliData>> watchArtikli(

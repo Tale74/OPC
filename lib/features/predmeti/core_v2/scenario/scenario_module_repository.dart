@@ -39,6 +39,35 @@ class ScenarioModuleRepository {
     IriuK.cituljaNo,
     IriuK.slika,
   };
+  static const List<String> _ownerPackageOrder = <String>[
+    IriuK.sanduk,
+    IriuK.obelezje,
+    IriuK.pokrovGarnitura,
+    IriuK.peskirZaKrst,
+    IriuK.posmrtneParte,
+    IriuK.crnina,
+    IriuK.cvece,
+    IriuK.cituljaP,
+    IriuK.cituljaNo,
+    IriuK.slika,
+    IriuK.agencijskeUsluge,
+  ];
+
+  // The first editable SCENARIO implementation seeded these nine owner
+  // categories.  This exact set is a known legacy default, not a user
+  // decision; it is therefore safe to extend it to the current eleven-item
+  // owner package.  Any other non-empty package remains user-owned.
+  static const Set<String> _legacyDefaultOsnovniPaket = <String>{
+    IriuK.sanduk,
+    IriuK.obelezje,
+    IriuK.pokrovGarnitura,
+    IriuK.peskirZaKrst,
+    IriuK.posmrtneParte,
+    IriuK.crnina,
+    IriuK.agencijskeUsluge,
+    IriuK.cvece,
+    IriuK.cituljaP,
+  };
 
   final AppDatabase _db;
   final Future<String> Function(String) _loadAsset;
@@ -67,7 +96,11 @@ class ScenarioModuleRepository {
   /// Kreira početne scenarije kao podatke modula, samo kada je modul prazan.
   /// Posle toga korisničke izmene imaju punu prednost i ne prepisuju se.
   Future<ScenarioModule> ensureModuleAndDefaults() async {
-    final module = await ensureModule();
+    var module = await ensureModule();
+    if (_isLegacyDefaultPackage(readOsnovniPaket(module))) {
+      await saveOsnovniPaket(_defaultOsnovniPaket);
+      module = await ensureModule();
+    }
     final existing = await getDefinitions();
     final hasLegacyDefaults = existing.any(
       (record) => _legacyBundledIds.contains(record.id),
@@ -121,6 +154,10 @@ class ScenarioModuleRepository {
     }
     return _ensureOwnerMapDefinitions(await ensureModule());
   }
+
+  bool _isLegacyDefaultPackage(Set<String> package) =>
+      package.length == _legacyDefaultOsnovniPaket.length &&
+      package.containsAll(_legacyDefaultOsnovniPaket);
 
   /// Materializes the finite owner map as independent editable definitions.
   /// Existing records, including deliberate user edits and later versions,
@@ -367,11 +404,15 @@ class ScenarioModuleRepository {
         'Kategorija ${conflict.first} ne može istovremeno biti u OSNOVNOM PAKETU i dodatku scenarija. Uklonite je iz jednog paketa pa pokušajte ponovo.',
       );
     }
+    final ordered = <String>[
+      ..._ownerPackageOrder.where(normalized.contains),
+      ...normalized.where((value) => !_ownerPackageOrder.contains(value)),
+    ];
     await (_db.update(
       _db.scenarioModules,
     )..where((row) => row.id.equals(moduleId))).write(
       ScenarioModulesCompanion(
-        osnovniPaketJson: Value(jsonEncode(normalized.toList())),
+        osnovniPaketJson: Value(jsonEncode(ordered)),
         updatedAt: Value(DateTime.now().toUtc().toIso8601String()),
       ),
     );

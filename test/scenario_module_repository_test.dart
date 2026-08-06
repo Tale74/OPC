@@ -74,6 +74,38 @@ void main() {
   });
 
   test(
+    'legacy nine-item basic package migrates once while custom package remains owned',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repository = ScenarioModuleRepository(
+        db,
+        loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
+      );
+      await repository.ensureModule();
+      await repository.saveOsnovniPaket(const {
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+        'PESKIR_ZA_KRST',
+        'POSMRTNE_PARTE',
+        'CRNINA',
+        'AGENCIJSKE_USLUGE',
+        'CVECE',
+        'CITULJA_POLITIKA',
+      });
+      await repository.ensureModuleAndDefaults();
+      expect((await repository.ensureModule()).osnovniPaketJson, contains('CITULJA_NOVOSTI'));
+      expect(repository.readOsnovniPaket(await repository.ensureModule()), hasLength(11));
+
+      await repository.saveOsnovniPaket(const {'SANDUK', 'CITULJA_NOVOSTI'});
+      await repository.ensureModuleAndDefaults();
+      expect(repository.readOsnovniPaket(await repository.ensureModule()),
+          {'SANDUK', 'CITULJA_NOVOSTI'});
+    },
+  );
+
+  test(
     'collapsed DOM legacy alias definition expands into independent place branches',
     () async {
       final db = createTestDatabase();
