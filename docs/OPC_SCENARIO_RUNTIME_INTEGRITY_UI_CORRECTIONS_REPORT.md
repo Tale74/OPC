@@ -54,7 +54,21 @@ BIOHAZARD tekst/prikaz i PDF derivati nisu menjani.
 - `flutter test test/iriu_catalog_basic_category_policy_test.dart --no-pub` — PASS.
 - `flutter test test/scenario_module_screen_test.dart --no-pub` — PASS, 2 testa.
 - `flutter analyze --no-pub` i kompletan `flutter test --no-pub` su pokrenuti, ali ova validaciona sesija nije dobila jasan završni izlaz/exit code nakon početka rada alata. Zbog OPC pravila to nije proglašeno PASS-om.
-- Windows/Android build nije pokretan u ovom tasku.
+
+## Release build evidence
+
+- Windows release: `flutter build windows --release` — `BUILD_EXIT=0`.
+  - Release folder: `build/windows/x64/runner/Release`.
+  - Native runner: `OPC.exe`, 89,088 bytes.
+  - `OPC.exe` timestamp ostaje `2026-08-06 12:00:17` zato što Dart/UI kod nije u native runneru; regenerisani Dart release artefakt je `data/app.so`.
+  - `data/app.so`: `2026-08-06 16:33:00`, SHA-256 `AE71FAB29A619A8A15366B0B79179157001BFEFD20B06AEC8540F6429EBE85DD`.
+  - Build log: `build_windows_20260806_164218.log`.
+- Android universal APK: `flutter build apk --release` — `BUILD_EXIT=0`.
+  - Artefakt: `build/app/outputs/flutter-apk/app-release.apk`.
+  - Veličina: 77,862,695 bytes.
+  - SHA-256: `23A342DE7E66184B059A6F5DE610DB00D2A8E43F187DD2F6E7ABF0E45D575FCE`.
+  - Build log: `build_android_20260806_164651.log`.
+- Za Windows distribuciju koristi se ceo `Release` folder, ne samo `OPC.exe`.
 
 ## Konačni kontrolni status
 
@@ -70,6 +84,7 @@ SCENARIO RUNTIME INTEGRITY AND UI CORRECTION
 — TARGETED REPOSITORY AND KATALOG TESTS PASS
 — COMPLETE FLUTTER ANALYZE PENDING FINAL SESSION
 — COMPLETE FLUTTER TEST PENDING FINAL SESSION
-— WINDOWS/ANDROID BUILD NOT RUN
+— WINDOWS RELEASE BUILD PASS
+— ANDROID APK RELEASE BUILD PASS
 — RUNTIME ACCEPTANCE PENDING OWNER VERIFICATION
 ```
