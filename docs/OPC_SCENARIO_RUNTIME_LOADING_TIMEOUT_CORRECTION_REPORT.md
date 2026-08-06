@@ -53,6 +53,17 @@ SCENARIO RUNTIME LOADING CORRECTION
 — FULL ANALYZE PASS
 — FOCUSED SCENARIO/REPOSITORY/KATALOG TESTS PASS
 — FULL FLUTTER TEST NOT CERTIFIED (904s TIMEOUT)
-— WINDOWS/ANDROID RELEASE BUILD NOT RUN IN THIS CORRECTION
+— WINDOWS RELEASE BUILD PASS AFTER FULL SUITE
+— ANDROID APK RELEASE BUILD PASS AFTER FULL SUITE
 — RUNTIME RECHECK REQUIRED WITH NEW BUILD
+
+## Release evidence
+
+Full suite was subsequently completed with `370 passed`, `3 skipped`, exit code 0. The approved builds then completed successfully:
+
+- Windows: `build/windows/x64/runner/Release/OPC.exe`, exit code 0, 89,088 bytes, SHA-256 `EB2DB87A10379AB9325DBFDC04EEBFF011C97A0B59C2CB24FA94B6A5D84A1E92`.
+- Windows Dart payload: `build/windows/x64/runner/Release/data/app.so`, 12,600,240 bytes, SHA-256 `0ADBA7C07D491735DD3CBD56C5745217E9308571A292AAB7C5AA5971B15FFD06`.
+- Android universal APK: `build/app/outputs/flutter-apk/app-release.apk`, exit code 0, 77,862,731 bytes, SHA-256 `B92ADFC5C0F93C8C66DC336A4E8F4E3143F928435BAB647C965168EC2826B366`.
+
+The Windows executable timestamp/hash remained unchanged because the native runner did not change; the newly compiled Dart/UI payload is the updated `data/app.so`. The complete Windows release folder remains the distributable artifact.
 ```
