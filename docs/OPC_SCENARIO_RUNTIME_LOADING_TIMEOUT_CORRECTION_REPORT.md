@@ -41,6 +41,8 @@ U `katalog_tab.dart` dodat je mounted-gate posle asinhronog ažuriranja, čime j
 
 Tokom prvog ciljanog pokušaja test je naišao na zaostali sqlite3 native-assets hook output (`download-*` direktorijum). Očišćeni su samo generisani `.dart_tool/hooks_runner/sqlite3`, `.dart_tool/hooks_runner/shared/sqlite3`, `.dart_tool/flutter_build` i `build/native_assets` delovi; nakon regeneracije ciljani testovi prolaze. Live `OPC.exe` nije diran.
 
+Naknadni vlasnički pokušaj `flutter test --no-pub` ponovio je isti Flutter tool crash, sada sa drugim zaostalim direktorijumom (`download-161ee2f0`) i postojećim ciljnim `build/native_assets/windows/sqlite3.dll`. To potvrđuje nestabilnost generisanog native-assets state-a, a ne regresiju SCENARIO koda. Pre novog full-suite pokušaja moraju se zatvoriti samo zaostali `flutter_tester` procesi i očistiti navedena četiri generisana direktorijuma; instalirani live `OPC.exe` proces se ne zaustavlja.
+
 ## Status
 
 ```text
