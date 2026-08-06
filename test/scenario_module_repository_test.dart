@@ -95,13 +95,124 @@ void main() {
         'CITULJA_POLITIKA',
       });
       await repository.ensureModuleAndDefaults();
-      expect((await repository.ensureModule()).osnovniPaketJson, contains('CITULJA_NOVOSTI'));
-      expect(repository.readOsnovniPaket(await repository.ensureModule()), hasLength(11));
+      expect(
+        (await repository.ensureModule()).osnovniPaketJson,
+        contains('CITULJA_NOVOSTI'),
+      );
+      expect(
+        repository.readOsnovniPaket(await repository.ensureModule()),
+        hasLength(11),
+      );
 
       await repository.saveOsnovniPaket(const {'SANDUK', 'CITULJA_NOVOSTI'});
       await repository.ensureModuleAndDefaults();
-      expect(repository.readOsnovniPaket(await repository.ensureModule()),
-          {'SANDUK', 'CITULJA_NOVOSTI'});
+      expect(repository.readOsnovniPaket(await repository.ensureModule()), {
+        'SANDUK',
+        'CITULJA_NOVOSTI',
+      });
+    },
+  );
+
+  test(
+    'legacy runtime defaults are repaired before the eleven-item package is saved',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repository = ScenarioModuleRepository(
+        db,
+        loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
+      );
+      await repository.ensureModule();
+      await repository.saveOsnovniPaket(const {
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+        'PESKIR_ZA_KRST',
+        'POSMRTNE_PARTE',
+        'CRNINA',
+        'AGENCIJSKE_USLUGE',
+        'CVECE',
+        'CITULJA_POLITIKA',
+      });
+
+      const placeValues = <String, String>{
+        'STAN': 'STAN',
+        'DOM_ZA_STARE': 'DOM ZA STARE',
+        'PRIVATNA_BOLNICA': 'PRIVATNA BOLNICA',
+        'DRUGO': 'DRUGO',
+        'ULICA_JAVNO_MESTO': 'ULICA / JAVNO MESTO',
+      };
+      for (final entry in placeValues.entries) {
+        await repository.saveDefinition(
+          id: entry.key,
+          version: 1,
+          naziv: entry.key,
+          condition: ScenarioCondition.criterion(
+            ScenarioCriterion(
+              field: ScenarioCriterionField.mestoSmrti,
+              operator: ScenarioCriterionOperator.equals,
+              values: [entry.value],
+            ),
+          ),
+          consequences: _legacyRuntimePlaceConsequences,
+          jePodrazumevani: true,
+          status: 'PRIMENJEN',
+        );
+      }
+      await repository.saveDefinition(
+        id: 'BIOHAZARD',
+        version: 1,
+        naziv: 'ZARAZNA SMRT VAN BOLNICE',
+        condition: const ScenarioCondition.criterion(
+          ScenarioCriterion(
+            field: ScenarioCriterionField.uzrokSmrti,
+            operator: ScenarioCriterionOperator.equals,
+            values: ['ZARAZNA'],
+          ),
+        ),
+        consequences: _legacyRuntimeBiohazardConsequences,
+        jePodrazumevani: true,
+        status: 'PRIMENJEN',
+      );
+
+      await repository.ensureModuleAndDefaults();
+      final module = await repository.ensureModule();
+      final definitions = await repository.getDefinitions();
+      final biohazard = repository.definitionFromRecord(
+        definitions.singleWhere((item) => item.id == 'BIOHAZARD'),
+      );
+      final stan = repository.definitionFromRecord(
+        definitions.singleWhere((item) => item.id == 'STAN'),
+      );
+
+      expect(repository.readOsnovniPaket(module), hasLength(11));
+      expect(
+        definitions.where((item) => item.id.startsWith('MAP_')),
+        hasLength(1008),
+      );
+      expect(
+        stan.consequences.map((item) => item.katalogCategoryInternalName),
+        [
+          'IZNOSENJE',
+          'TRANSPORTNA_VRECA',
+          'PREVOZ_DO_HLADNJACE',
+          'HLADNJACA',
+          'SPREMANJE_POKOJNIKA',
+          'PREVOZ_DO_GROBLJA',
+        ],
+      );
+      expect(
+        stan.consequences.every(
+          (item) => item.action == ScenarioConsequenceAction.required,
+        ),
+        isTrue,
+      );
+      expect(
+        biohazard.consequences.map((item) => item.katalogCategoryInternalName),
+        ['SPREMANJE_POKOJNIKA'],
+      );
+      expect(biohazard.condition.kind, ScenarioConditionKind.all);
+      expect(biohazard.condition.children, hasLength(2));
     },
   );
 
@@ -311,6 +422,28 @@ void main() {
     },
   );
 
+  test(
+    'legacy scenario migration preserves a non-legacy user package',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repository = ScenarioModuleRepository(
+        db,
+        loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
+      );
+      await repository.ensureModule();
+      await repository.saveOsnovniPaket(const {'SANDUK', 'CITULJA_NOVOSTI'});
+      await _seedLegacySevenDefinitions(repository);
+
+      await repository.ensureModuleAndDefaults();
+
+      expect(repository.readOsnovniPaket(await repository.ensureModule()), {
+        'SANDUK',
+        'CITULJA_NOVOSTI',
+      });
+    },
+  );
+
   test('SCENARIO module persists the base package and a user rule', () async {
     final db = createTestDatabase();
     addTearDown(db.close);
@@ -360,6 +493,103 @@ void main() {
     expect(module.id, ScenarioModuleRepository.moduleId);
   });
 }
+
+const _legacyRuntimePlaceConsequences = <ScenarioConsequence>[
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'HLADNJACA',
+    action: ScenarioConsequenceAction.recommended,
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'SPREMANJE_POKOJNIKA',
+    action: ScenarioConsequenceAction.recommended,
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'IZNOSENJE',
+    action: ScenarioConsequenceAction.recommended,
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'PREVOZ_DO_HLADNJACE',
+    action: ScenarioConsequenceAction.recommended,
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'TRANSPORTNA_VRECA',
+    action: ScenarioConsequenceAction.recommended,
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'PREVOZ_DO_GROBLJA',
+    action: ScenarioConsequenceAction.recommended,
+  ),
+];
+
+const _legacyRuntimeBiohazardConsequences = <ScenarioConsequence>[
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'SPREMANJE_POKOJNIKA',
+    action: ScenarioConsequenceAction.required,
+    order: 50,
+    warning: 'Postupati prema merama zaštite za zaraznu bolest.',
+    reason: 'Uzrok smrti je zarazan, a mesto smrti nije bolnica.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'HLADNJACA',
+    action: ScenarioConsequenceAction.required,
+    order: 10,
+    reason: 'Ovaj scenario dodaje Hladnjača.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'IZNOSENJE',
+    action: ScenarioConsequenceAction.required,
+    order: 20,
+    reason: 'Ovaj scenario dodaje Iznošenje.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'PREVOZ_DO_HLADNJACE',
+    action: ScenarioConsequenceAction.required,
+    order: 30,
+    reason: 'Ovaj scenario dodaje Prevoz do hladnjače.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'PREVOZ_DO_GROBLJA',
+    action: ScenarioConsequenceAction.required,
+    order: 40,
+    reason: 'Ovaj scenario dodaje Prevoz do groblja.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'LIMENI_ULOZAK',
+    action: ScenarioConsequenceAction.required,
+    order: 50,
+    reason: 'Ovaj scenario dodaje Limeni uložak.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'LEMOVANJE',
+    action: ScenarioConsequenceAction.required,
+    order: 60,
+    reason: 'Ovaj scenario dodaje Lemovanje.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'TRANSPORTNA_VRECA',
+    action: ScenarioConsequenceAction.required,
+    order: 70,
+    reason: 'Ovaj scenario dodaje Transportna vreća.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'KOMPLET_ZA_OPELO',
+    action: ScenarioConsequenceAction.required,
+    order: 80,
+    reason: 'Ovaj scenario dodaje Komplet za opelo.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'CITULJA_NOVOSTI',
+    action: ScenarioConsequenceAction.required,
+    order: 90,
+    reason: 'Ovaj scenario dodaje Čitulja Novosti.',
+  ),
+  ScenarioConsequence(
+    katalogCategoryInternalName: 'SLIKA',
+    action: ScenarioConsequenceAction.required,
+    order: 100,
+    reason: 'Ovaj scenario dodaje Slika.',
+  ),
+];
 
 Future<void> _seedLegacySevenDefinitions(
   ScenarioModuleRepository repository,

@@ -68,6 +68,34 @@ class ScenarioModuleRepository {
     IriuK.cvece,
     IriuK.cituljaP,
   };
+  static const Set<String> _legacyPlaceDefinitionIds = <String>{
+    'STAN',
+    'DOM_ZA_STARE',
+    'PRIVATNA_BOLNICA',
+    'DRUGO',
+    'ULICA_JAVNO_MESTO',
+  };
+  static const Set<String> _legacyPlaceConsequenceIds = <String>{
+    IriuK.hladnjaca,
+    IriuK.spremaanjePokojnika,
+    IriuK.iznosenje,
+    IriuK.prevozDoHladnjace,
+    IriuK.transportnaVreca,
+    IriuK.prevozDoGroblja,
+  };
+  static const Set<String> _legacyBiohazardConsequenceIds = <String>{
+    IriuK.spremaanjePokojnika,
+    IriuK.hladnjaca,
+    IriuK.iznosenje,
+    IriuK.prevozDoHladnjace,
+    IriuK.prevozDoGroblja,
+    IriuK.limeniUlozak,
+    IriuK.lemovanje,
+    IriuK.transportnaVreca,
+    IriuK.kompletZaOpelo,
+    IriuK.cituljaNo,
+    IriuK.slika,
+  };
 
   final AppDatabase _db;
   final Future<String> Function(String) _loadAsset;
@@ -96,12 +124,9 @@ class ScenarioModuleRepository {
   /// Kreira početne scenarije kao podatke modula, samo kada je modul prazan.
   /// Posle toga korisničke izmene imaju punu prednost i ne prepisuju se.
   Future<ScenarioModule> ensureModuleAndDefaults() async {
-    var module = await ensureModule();
-    if (_isLegacyDefaultPackage(readOsnovniPaket(module))) {
-      await saveOsnovniPaket(_defaultOsnovniPaket);
-      module = await ensureModule();
-    }
+    final module = await ensureModule();
     final existing = await getDefinitions();
+    final hasLegacyPackage = _isLegacyDefaultPackage(readOsnovniPaket(module));
     final hasLegacyDefaults = existing.any(
       (record) => _legacyBundledIds.contains(record.id),
     );
@@ -115,6 +140,7 @@ class ScenarioModuleRepository {
               _definitionHasMestoValue(definitionFromRecord(record), 'DRUGO')),
     );
     if (existing.isNotEmpty &&
+        !hasLegacyPackage &&
         !hasLegacyDefaults &&
         !hasCollapsedPlaceDefinition) {
       return _ensureOwnerMapDefinitions(module);
@@ -129,13 +155,13 @@ class ScenarioModuleRepository {
       }
       await _db.transaction(() async {
         if (existing.isEmpty) {
-          if (readOsnovniPaket(module).isEmpty) {
+          final package = readOsnovniPaket(module);
+          if (package.isEmpty || _isLegacyDefaultPackage(package)) {
             await saveOsnovniPaket(_defaultOsnovniPaket);
           }
           await _saveMissingBundledDefaults(bundled, const <String>{});
         } else {
           await _migrateLegacyBundledDefinitions(
-            module: module,
             existing: existing,
             bundled: bundled,
           );
@@ -251,14 +277,9 @@ class ScenarioModuleRepository {
   );
 
   Future<void> _migrateLegacyBundledDefinitions({
-    required ScenarioModule module,
     required List<ScenarioDefinitionRecord> existing,
     required List<_BundledScenarioSeed> bundled,
   }) async {
-    if (readOsnovniPaket(module).isEmpty) {
-      await saveOsnovniPaket(_defaultOsnovniPaket);
-    }
-
     final byId = <String, ScenarioDefinitionRecord>{
       for (final record in existing) record.id: record,
     };
@@ -266,6 +287,11 @@ class ScenarioModuleRepository {
     final bundledById = <String, _BundledScenarioSeed>{
       for (final seed in bundled) seed.definition.id: seed,
     };
+
+    await _repairKnownLegacyDefaultDefinitions(
+      existing: existing,
+      bundledById: bundledById,
+    );
 
     await _splitLegacyDefinition(
       legacy: byId['MESTO_SMRTI_BLOK'],
@@ -329,7 +355,130 @@ class ScenarioModuleRepository {
       final record = byId[legacyId];
       if (record != null) await deleteDefinition(record.id, record.version);
     }
+    final package = readOsnovniPaket(await ensureModule());
+    if (package.isEmpty || _isLegacyDefaultPackage(package)) {
+      await saveOsnovniPaket(_defaultOsnovniPaket);
+    }
   }
+
+  Future<void> _repairKnownLegacyDefaultDefinitions({
+    required List<ScenarioDefinitionRecord> existing,
+    required Map<String, _BundledScenarioSeed> bundledById,
+  }) async {
+    for (final record in existing) {
+      final seed = bundledById[record.id];
+      if (seed == null ||
+          !record.jePodrazumevani ||
+          record.version != seed.version ||
+          record.naziv != seed.definition.name) {
+        continue;
+      }
+      final current = definitionFromRecord(record);
+      final isKnownPlaceShape =
+          _legacyPlaceDefinitionIds.contains(record.id) &&
+          _sameCondition(current, seed.definition) &&
+          _isLegacyPlaceDefinition(current);
+      final isKnownBiohazardShape =
+          record.id == 'BIOHAZARD' && _isLegacyBiohazardDefinition(current);
+      if (!isKnownPlaceShape && !isKnownBiohazardShape) continue;
+
+      // This is the exact shape emitted by the obsolete bundled migration:
+      // it is not a user-authored edit. Restore only that known shape from
+      // the current owner seed, while retaining status/default ownership.
+      await saveDefinition(
+        id: record.id,
+        version: record.version,
+        naziv: seed.definition.name,
+        description: seed.definition.description,
+        condition: seed.definition.condition,
+        consequences: seed.definition.consequences,
+        jePodrazumevani: record.jePodrazumevani,
+        status: record.status,
+      );
+    }
+  }
+
+  bool _isLegacyPlaceDefinition(ScenarioDefinition definition) {
+    if (definition.consequences.length != _legacyPlaceConsequenceIds.length) {
+      return false;
+    }
+    return definition.consequences.every(
+      (item) =>
+          _legacyPlaceConsequenceIds.contains(
+            item.katalogCategoryInternalName,
+          ) &&
+          item.action == ScenarioConsequenceAction.recommended &&
+          item.order == 0 &&
+          item.section == 2 &&
+          item.provider == ScenarioItemProvider.firma &&
+          item.warning.isEmpty &&
+          item.reason.isEmpty &&
+          item.financiallyIncluded &&
+          item.conditionChangeBehavior ==
+              ScenarioConditionChangeBehavior.obavestiIPrepustiOdluku,
+    );
+  }
+
+  bool _isLegacyBiohazardDefinition(ScenarioDefinition definition) {
+    final criterion = definition.condition.criterion;
+    if (definition.condition.kind != ScenarioConditionKind.criterion ||
+        criterion == null ||
+        criterion.field != ScenarioCriterionField.uzrokSmrti ||
+        criterion.operator != ScenarioCriterionOperator.equals ||
+        criterion.values.length != 1 ||
+        criterion.values.single != 'ZARAZNA' ||
+        definition.consequences.length !=
+            _legacyBiohazardConsequenceIds.length) {
+      return false;
+    }
+    final expectedOrders = <String, int>{
+      IriuK.spremaanjePokojnika: 50,
+      IriuK.hladnjaca: 10,
+      IriuK.iznosenje: 20,
+      IriuK.prevozDoHladnjace: 30,
+      IriuK.prevozDoGroblja: 40,
+      IriuK.limeniUlozak: 50,
+      IriuK.lemovanje: 60,
+      IriuK.transportnaVreca: 70,
+      IriuK.kompletZaOpelo: 80,
+      IriuK.cituljaNo: 90,
+      IriuK.slika: 100,
+    };
+    return definition.consequences.every(
+      (item) =>
+          _legacyBiohazardConsequenceIds.contains(
+            item.katalogCategoryInternalName,
+          ) &&
+          item.action == ScenarioConsequenceAction.required &&
+          item.order == expectedOrders[item.katalogCategoryInternalName] &&
+          item.warning ==
+              (item.katalogCategoryInternalName == IriuK.spremaanjePokojnika
+                  ? 'Postupati prema merama zaštite za zaraznu bolest.'
+                  : '') &&
+          item.reason ==
+              (item.katalogCategoryInternalName == IriuK.spremaanjePokojnika
+                  ? 'Uzrok smrti je zarazan, a mesto smrti nije bolnica.'
+                  : 'Ovaj scenario dodaje ${_displayNameForLegacyCategory(item.katalogCategoryInternalName)}.'),
+    );
+  }
+
+  String _displayNameForLegacyCategory(String category) => switch (category) {
+    IriuK.hladnjaca => 'Hladnjača',
+    IriuK.iznosenje => 'Iznošenje',
+    IriuK.prevozDoHladnjace => 'Prevoz do hladnjače',
+    IriuK.prevozDoGroblja => 'Prevoz do groblja',
+    IriuK.limeniUlozak => 'Limeni uložak',
+    IriuK.lemovanje => 'Lemovanje',
+    IriuK.transportnaVreca => 'Transportna vreća',
+    IriuK.kompletZaOpelo => 'Komplet za opelo',
+    IriuK.cituljaNo => 'Čitulja Novosti',
+    IriuK.slika => 'Slika',
+    _ => '',
+  };
+
+  bool _sameCondition(ScenarioDefinition left, ScenarioDefinition right) =>
+      jsonEncode(scenarioDefinitionToJsonMap(left)['condition']) ==
+      jsonEncode(scenarioDefinitionToJsonMap(right)['condition']);
 
   Future<void> _splitLegacyDefinition({
     required ScenarioDefinitionRecord? legacy,
