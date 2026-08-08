@@ -311,7 +311,9 @@ final class OwnerScenarioPolicyKernel {
                   ? ScenarioConsequenceAction.required
                   : ScenarioConsequenceAction.recommended;
       add(IriuK.limeniUlozak, action: action);
-      if (input.mestoSmrti != 'BOLNICA') {
+      // DOCEK makes MESTO SMRTI informational; the hospital exception only
+      // applies when the place participates in the active scenario key.
+      if (input.docek || input.mestoSmrti != 'BOLNICA') {
         add(IriuK.lemovanje, action: action);
       }
     }

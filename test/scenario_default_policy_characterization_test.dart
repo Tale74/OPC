@@ -72,7 +72,7 @@ void main() {
       );
       expect(
         IriuTruthRules.autoManagedBlok2Categories(predmet: causeOverride),
-        isEmpty,
+        <String>[IriuK.limeniUlozak, IriuK.lemovanje],
       );
 
       final cremation = await _predmet(
@@ -158,7 +158,9 @@ void main() {
         );
         expect(
           IriuTruthRules.autoManagedBlok2Categories(predmet: predmet),
-          isEmpty,
+          cause == 'NEDEFINISANA'
+              ? <String>[IriuK.limeniUlozak, IriuK.lemovanje]
+              : isEmpty,
           reason: 'UZROK SMRTI=$cause',
         );
       }

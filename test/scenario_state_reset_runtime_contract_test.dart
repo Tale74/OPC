@@ -167,7 +167,7 @@ void main() {
     final rows = await IriuRepository(db).getIriu(predmetId);
     expect(
       rows.map((row) => row.interniNaziv),
-      isNot(contains(IriuK.limeniUlozak)),
+      contains(IriuK.limeniUlozak),
     );
     expect(
       rows.map((row) => row.interniNaziv),

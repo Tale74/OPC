@@ -42,10 +42,14 @@ void main() {
     final result = kernel.evaluate(await repository.getPredmet(id));
     expect(result.isComplete, isTrue);
     expect(result.key!.place, 'BOLNICA');
-    expect(
-      result.consequences.map((item) => item.katalogCategoryInternalName),
-      [IriuK.prevozDoGroblja, IriuK.kompletZaOpelo],
-    );
+      expect(
+        result.consequences.map((item) => item.katalogCategoryInternalName),
+        [
+          IriuK.limeniUlozak,
+          IriuK.prevozDoGroblja,
+          IriuK.kompletZaOpelo,
+        ],
+      );
     expect(
       result.consequences.any(
         (item) => item.katalogCategoryInternalName == IriuK.iznosenje,
