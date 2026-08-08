@@ -148,6 +148,28 @@ class IriuRepository {
     final additions =
         desired.difference(existingNames).difference(dismissed).toList()
           ..sort();
+    final changedRows = scenarioRows
+        .where((row) => desired.contains(row.interniNaziv))
+        .where((row) {
+          final decision = evaluation.decisions[row.interniNaziv];
+          return decision != null && _scenarioDecisionChanged(row, decision);
+        })
+        .toList(growable: false);
+    final addedLabels = _resolveScenarioLabels(additions, catalogDisplayNames);
+    final removedNames = removals
+        .map((row) => row.interniNaziv)
+        .toList(growable: false);
+    final removedLabels = _resolveScenarioLabels(
+      removedNames,
+      catalogDisplayNames,
+    );
+    final changedNames = changedRows
+        .map((row) => row.interniNaziv)
+        .toList(growable: false);
+    final changedLabels = _resolveScenarioLabels(
+      changedNames,
+      catalogDisplayNames,
+    );
 
     // A changed complete combination is previewed before any row,
     // provenance or snapshot mutation. The UI can show the diff and call
@@ -156,7 +178,11 @@ class IriuRepository {
       return ScenarioSyncResult(
         matchedScenarioIds: evaluation.matchedScenarioIds,
         addedCategories: additions,
-        removedCategories: removals.map((row) => row.interniNaziv).toList(),
+        addedCategoryLabels: addedLabels,
+        removedCategories: removedNames,
+        removedCategoryLabels: removedLabels,
+        changedCategories: changedNames,
+        changedCategoryLabels: changedLabels,
         pendingUserDecisionRows: removals,
         scenarioSnapshotChanged: true,
       );
@@ -265,6 +291,30 @@ class IriuRepository {
           cekaOdlukuKorisnika: const Value(false),
         ),
       );
+      final isBase = evaluation.baseCategories.contains(row.interniNaziv);
+      final consequence = evaluation.scenarioCategories.firstWhere(
+        (item) => item.katalogCategoryInternalName == row.interniNaziv,
+        orElse: () => const ScenarioConsequence(
+          katalogCategoryInternalName: '',
+          action: ScenarioConsequenceAction.recommended,
+        ),
+      );
+      await (_db.update(
+        _db.iriuProvenance,
+      )..where((item) => item.iriuId.equals(row.id))).write(
+        IriuProvenanceCompanion(
+          origin: Value(isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET'),
+          scenarioId: Value(
+            isBase || evaluation.matchedScenarioIds.isEmpty
+                ? null
+                : evaluation.sourceScenarioIds[row.interniNaziv],
+          ),
+          scenarioVersion: Value(isBase ? null : 1),
+          ruleId: Value(
+            isBase ? null : consequence.katalogCategoryInternalName,
+          ),
+        ),
+      );
     }
     if (removals.isNotEmpty || additions.isNotEmpty) {
       await _rebuildBusinessOrdering(predmetId);
@@ -291,7 +341,13 @@ class IriuRepository {
     return ScenarioSyncResult(
       matchedScenarioIds: evaluation.matchedScenarioIds,
       addedCategories: additions,
-      removedCategories: const <String>[],
+      addedCategoryLabels: addedLabels,
+      removedCategories: applyScenarioChange ? const <String>[] : removedNames,
+      removedCategoryLabels: applyScenarioChange
+          ? const <String>[]
+          : removedLabels,
+      changedCategories: changedNames,
+      changedCategoryLabels: changedLabels,
       pendingUserDecisionRows: removals,
       scenarioSnapshotChanged: scenarioSnapshotChanged,
     );
@@ -680,6 +736,37 @@ class IriuRepository {
               ..limit(1))
             .getSingleOrNull();
     return config?.tip == 'FIKSNA' ? config!.cena : 0.0;
+  }
+
+  bool _scenarioDecisionChanged(IriuData row, ScenarioConsequence decision) {
+    return row.poslovniStatus != decision.businessStatus ||
+        row.obezbedjuje != decision.provider.name ||
+        row.poslovnoUpozorenje != decision.warning ||
+        row.poslovniRazlog != decision.reason ||
+        row.poslovnaCelina != decision.section ||
+        row.poslovniRedosled != decision.order ||
+        row.finansijskiUkljuceno != decision.financiallyIncluded;
+  }
+
+  List<String> _resolveScenarioLabels(
+    Iterable<String> internalNames,
+    Map<String, String> catalogDisplayNames,
+  ) {
+    final labels = <String>[];
+    for (final internalName in internalNames) {
+      final resolution = resolveIriuDisplayName(
+        internalName: internalName,
+        catalogDisplayNames: catalogDisplayNames,
+      );
+      if (!resolution.isResolved) {
+        throw StateError(
+          'SCENARIO consequence has no resolvable KATALOG category: '
+          '$internalName',
+        );
+      }
+      labels.add(resolution.displayName!);
+    }
+    return labels;
   }
 
   double _amountForQuantity(String kom, double cena) {
@@ -1080,20 +1167,29 @@ class ScenarioSyncResult {
   const ScenarioSyncResult({
     required this.matchedScenarioIds,
     required this.addedCategories,
+    this.addedCategoryLabels = const <String>[],
     required this.removedCategories,
+    this.removedCategoryLabels = const <String>[],
+    this.changedCategories = const <String>[],
+    this.changedCategoryLabels = const <String>[],
     this.pendingUserDecisionRows = const <IriuData>[],
     this.scenarioSnapshotChanged = false,
   });
 
   final List<String> matchedScenarioIds;
   final List<String> addedCategories;
+  final List<String> addedCategoryLabels;
   final List<String> removedCategories;
+  final List<String> removedCategoryLabels;
+  final List<String> changedCategories;
+  final List<String> changedCategoryLabels;
   final List<IriuData> pendingUserDecisionRows;
   final bool scenarioSnapshotChanged;
 
   bool get changed =>
       addedCategories.isNotEmpty ||
       removedCategories.isNotEmpty ||
+      changedCategories.isNotEmpty ||
       pendingUserDecisionRows.isNotEmpty ||
       scenarioSnapshotChanged;
 }

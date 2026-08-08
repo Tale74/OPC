@@ -306,7 +306,11 @@ class _IriuSegmentState extends State<IriuSegment> {
     );
     if (!mounted || !result.changed) return;
     if (result.scenarioSnapshotChanged) {
-      final confirmed = await _confirmScenarioDiff(context, result);
+      final confirmed = await _confirmScenarioDiff(
+        context,
+        result,
+        predmet.brojPredmeta,
+      );
       if (!mounted || confirmed != true) return;
       result = await widget.iriuRepo.syncScenarioRows(
         predmetId: widget.predmetId,
@@ -757,18 +761,22 @@ class _IriuSegmentState extends State<IriuSegment> {
 Future<bool?> _confirmScenarioDiff(
   BuildContext context,
   ScenarioSyncResult result,
+  String brojPredmeta,
 ) {
-  final additions = result.addedCategories.isEmpty
+  final additions = result.addedCategoryLabels.isEmpty
       ? 'Nema novih stavki.'
-      : result.addedCategories.join(', ');
-  final removals = result.pendingUserDecisionRows.isEmpty
+      : result.addedCategoryLabels.join(', ');
+  final removals = result.removedCategoryLabels.isEmpty
       ? 'Nema stavki za uklanjanje.'
-      : result.pendingUserDecisionRows.map((row) => row.nazivPrikaz).join(', ');
+      : result.removedCategoryLabels.join(', ');
+  final changes = result.changedCategoryLabels.isEmpty
+      ? 'Nema promena atributa.'
+      : result.changedCategoryLabels.join(', ');
   return showDialog<bool>(
     context: context,
     barrierDismissible: false,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('PROMENA USLOVA SCENARIJA'),
+      title: Text('PROMENA USLOVA SCENARIJA — PREDMET $brojPredmeta'),
       content: SizedBox(
         width: _dialogWidth(context, 560),
         child: Column(
@@ -788,6 +796,12 @@ Future<bool?> _confirmScenarioDiff(
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             Text(removals),
+            const SizedBox(height: 8),
+            const Text(
+              'MENJA SE',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(changes),
             const SizedBox(height: 12),
             const Text('Ručno dodate IRiU stavke ostaju nepromenjene.'),
           ],

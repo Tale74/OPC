@@ -65,6 +65,33 @@ ON OPEN_PREDMET manual_amount_edit:
 
 CRNINA is canonical KATALOSKA; its stable internal identity is unchanged.
 
+OPEN_PREDMET_SCENARIO_CHANGE:
+  previousSnapshot = PREDMET-scoped applied ScenarioAssignmentSnapshot
+  candidate = derive scenario from current PREDMET conditions
+  IF candidate differs from previousSnapshot:
+    diff = identity_based(previous applied rows, candidate effective categories)
+    diff.ADD = candidate categories missing from scenario-managed rows
+    diff.REMOVE = scenario-managed rows absent from candidate
+    diff.CHANGE = same category with changed scenario-managed status/provider/
+                  warning/reason/section/order/financial flag
+    expose user-facing KATALOG labels only
+    DO NOT mutate IRiU, provenance or snapshot before confirmation
+
+  AFTER explicit confirmation:
+    mark removals pending and ask keep/remove for each affected row
+    insert additions with current KATALOG price snapshot
+    amount for a priced addition = KOM * applied price
+    update only scenario-managed attributes and provenance for unchanged rows
+    preserve manual rows, KOM, CENA snapshots and manual IZNOS overrides
+    persist the candidate snapshot only when no pending removal decision remains
+
+  IF conditions change again before confirmation:
+    recompute from previousSnapshot to newest candidate (A -> C)
+    never persist the intermediate pending candidate
+
+  all snapshot, pending diff and row operations are keyed by predmetId;
+  no global currentScenario or pendingDiff state is permitted.
+
 ON PREDMET_DELETE:
   reconcile_current_stock_effects
   delete IRIU rows
