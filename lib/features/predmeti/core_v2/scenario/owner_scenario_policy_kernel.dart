@@ -283,18 +283,39 @@ final class OwnerScenarioPolicyKernel {
     add,
   ) {
     final isKremacija = input.isKremacija;
-    if (!isKremacija && input.tipGrobnogMesta == 'GROBNICA') {
-      final action = input.tipGroblja == 'LOKALNO'
-          ? ScenarioConsequenceAction.recommended
-          : ScenarioConsequenceAction.required;
-      if (!input.docek && input.mestoSmrti == 'BOLNICA') {
-        add(IriuK.limeniUlozak, action: action);
-      } else {
-        add(IriuK.limeniUlozak, action: action);
+    final isBiohazardCause =
+        input.uzrokSmrti == 'ZARAZNA' || input.uzrokSmrti == 'NEDEFINISANA';
+    final needsMetalInsert = !isKremacija &&
+        ((isBiohazardCause && !input.docek) ||
+            (!input.sahranaVanSrbije &&
+                input.tipGrobnogMesta == 'GROBNICA') ||
+            (!input.docek && input.sahranaVanSrbije));
+    final localInternationalGrob =
+        input.tipGroblja == 'LOKALNO' &&
+        input.sahranaVanSrbije &&
+        input.tipGrobnogMesta == 'GROB' &&
+        !isBiohazardCause;
+    var localTransportAdded = false;
+    if (localInternationalGrob) {
+      add(IriuK.prevozSprovoda, action: ScenarioConsequenceAction.recommended);
+      localTransportAdded = true;
+    }
+    if (needsMetalInsert) {
+      final action = input.sahranaVanSrbije
+          ? ScenarioConsequenceAction.required
+          : input.tipGrobnogMesta == 'GROBNICA'
+              ? (input.tipGroblja == 'LOKALNO'
+                    ? ScenarioConsequenceAction.recommended
+                    : ScenarioConsequenceAction.required)
+              : input.mestoSmrti == 'BOLNICA'
+                  ? ScenarioConsequenceAction.required
+                  : ScenarioConsequenceAction.recommended;
+      add(IriuK.limeniUlozak, action: action);
+      if (input.mestoSmrti != 'BOLNICA') {
         add(IriuK.lemovanje, action: action);
       }
     }
-    if (!isKremacija && input.tipGroblja == 'LOKALNO') {
+    if (!isKremacija && input.tipGroblja == 'LOKALNO' && !localTransportAdded) {
       add(IriuK.prevozSprovoda, action: ScenarioConsequenceAction.recommended);
     }
     if (input.sahranaVanSrbije) {

@@ -90,11 +90,7 @@ void main() {
       },
     );
 
-    for (final overrideCause in const <String>{
-      'NASILNA',
-      'ZARAZNA',
-      'NEDEFINISANA',
-    }) {
+    for (final overrideCause in const <String>{'NASILNA'}) {
       test(
         '$overrideCause does not override the GROBNICA-only rule for grob',
         () async {
@@ -118,6 +114,34 @@ void main() {
 
           expect(plan.categoriesToInsert, isNot(contains(IriuK.limeniUlozak)));
           expect(plan.categoriesToInsert, isNot(contains(IriuK.lemovanje)));
+        },
+      );
+    }
+
+    for (final biohazardCause in const <String>{'ZARAZNA', 'NEDEFINISANA'}) {
+      test(
+        '$biohazardCause adds owner-required metal insert package for grob',
+        () async {
+          final db = createTestDatabase();
+          addTearDown(db.close);
+
+          final predmet = await _insertPredmet(
+            db,
+            mestoSmrti: 'STAN',
+            uzrokSmrti: biohazardCause,
+            tipGroblja: 'GRADSKO',
+            grobnoMesto: 'POSTOJECE',
+            tipGrobnogMesta: 'GROB',
+          );
+
+          final plan = const Blok2IriuLifecycleService().planForCurrentState(
+            predmet: predmet,
+            storedRows: const <IriuData>[],
+            dismissedCategories: const <String>{},
+          );
+
+          expect(plan.categoriesToInsert, contains(IriuK.limeniUlozak));
+          expect(plan.categoriesToInsert, contains(IriuK.lemovanje));
         },
       );
     }
