@@ -95,6 +95,50 @@ void main() {
   );
 
   test(
+    'NASILNA STAN burial map includes protective equipment in owner order',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repository = PredmetiRepository(db);
+      final id = await repository.kreirajPredmet(savetnikId: 1);
+      await repository.azurirajPredmet(
+        id,
+        const PredmetiCompanion(
+          uzrokSmrti: Value('NASILNA'),
+          mestoSmrti: Value('STAN'),
+          vrstaCeremonije: Value('SAHRANA'),
+          tipGroblja: Value('GRADSKO'),
+          tipGrobnogMesta: Value('GROBNICA'),
+          opelo: Value('NE'),
+          sahranaVanSrbije: Value(false),
+          docekPosmrtnihOstataka: Value(false),
+        ),
+      );
+
+      final result = kernel.evaluate(await repository.getPredmet(id));
+
+      expect(
+        result.key!.stableId,
+        'MAP_NASILNA_STAN_SAHRANA_GRADSKO_GROBNICA_NE_NE_NE',
+      );
+      expect(
+        result.consequences.map((item) => item.katalogCategoryInternalName),
+        <String>[
+          IriuK.transportnaVreca,
+          IriuK.iznosenje,
+          IriuK.zastitnaIDodatnaOprema,
+          IriuK.prevozDoHladnjace,
+          IriuK.hladnjaca,
+          IriuK.spremaanjePokojnika,
+          IriuK.limeniUlozak,
+          IriuK.lemovanje,
+          IriuK.prevozDoGroblja,
+        ],
+      );
+    },
+  );
+
+  test(
     'reception excludes death place and supports inner sanduk change',
     () async {
       final db = createTestDatabase();

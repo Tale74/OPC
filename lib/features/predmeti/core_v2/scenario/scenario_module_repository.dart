@@ -191,6 +191,7 @@ class ScenarioModuleRepository {
   Future<ScenarioModule> _ensureOwnerMapDefinitions(
     ScenarioModule module,
   ) async {
+    await _repairKnownOwnerMapProtectiveEquipmentGap();
     final existingIds = (await getDefinitions()).map((item) => item.id).toSet();
     final missing = const OwnerScenarioPolicyKernel()
         .allKeys()
@@ -228,6 +229,70 @@ class ScenarioModuleRepository {
     return (await (_db.select(
       _db.scenarioModules,
     )..where((row) => row.id.equals(moduleId))).getSingle());
+  }
+
+  /// Repairs only the exact version-1 system shape produced before the
+  /// NASILNA protective-equipment omission was found. User-edited records do
+  /// not match this fingerprint and are deliberately left untouched.
+  Future<void> _repairKnownOwnerMapProtectiveEquipmentGap() async {
+    const kernel = OwnerScenarioPolicyKernel();
+    final records = (await getDefinitions())
+        .where(
+          (record) =>
+              record.id.startsWith('MAP_NASILNA_') &&
+              record.version == 1 &&
+              record.jePodrazumevani,
+        )
+        .toList(growable: false);
+    if (records.isEmpty) return;
+
+    final keysById = <String, OwnerScenarioKey>{
+      for (final key in kernel.allKeys()) key.stableId: key,
+    };
+    final now = DateTime.now().toUtc().toIso8601String();
+    await _db.transaction(() async {
+      for (final record in records) {
+        final key = keysById[record.id];
+        if (key == null) continue;
+        final expected = kernel.definitionForKey(key);
+        final expectedWire = scenarioDefinitionToJsonMap(expected);
+        final oldConsequences = expected.consequences.toList(growable: true);
+        final protectiveIndex = oldConsequences.indexWhere(
+          (item) =>
+              item.katalogCategoryInternalName == IriuK.zastitnaIDodatnaOprema,
+        );
+        if (protectiveIndex < 0) continue;
+        oldConsequences.removeAt(protectiveIndex);
+        final oldWire = scenarioDefinitionToJsonMap(
+          ScenarioDefinition(
+            id: expected.id,
+            name: expected.name,
+            condition: expected.condition,
+            consequences: oldConsequences,
+            description: expected.description,
+          ),
+        );
+        final isKnownSystemShape =
+            record.naziv == expected.name &&
+            record.conditionJson == jsonEncode(expectedWire['condition']) &&
+            record.consequencesJson == jsonEncode(oldWire['consequences']);
+        if (!isKnownSystemShape) continue;
+
+        await (_db.update(_db.scenarioDefinitions)..where(
+              (item) =>
+                  item.id.equals(record.id) &
+                  item.version.equals(record.version),
+            ))
+            .write(
+              ScenarioDefinitionsCompanion(
+                consequencesJson: Value(
+                  jsonEncode(expectedWire['consequences']),
+                ),
+                updatedAt: Value(now),
+              ),
+            );
+      }
+    });
   }
 
   Future<List<_BundledScenarioSeed>> _readBundledDefaults() async {
@@ -516,7 +581,10 @@ class ScenarioModuleRepository {
   Future<List<ScenarioDefinition>> getActiveDefinitions() async {
     final records = await getDefinitions();
     return records
-        .where((record) => record.status == 'PRIMENJEN')
+        .where(
+          (record) =>
+              record.status == 'PRIMENJEN' && record.id.startsWith('MAP_'),
+        )
         .map(definitionFromRecord)
         .toList(growable: false);
   }

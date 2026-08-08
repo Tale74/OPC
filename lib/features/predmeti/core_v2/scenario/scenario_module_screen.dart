@@ -6,15 +6,21 @@ import 'package:flutter/material.dart';
 import '../../../../core/database/database.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
 import '../services/iriu_display_name_resolver.dart';
+import 'owner_scenario_policy_kernel.dart';
 import 'scenario_contract.dart';
 import 'scenario_module_repository.dart';
 import 'scenario_persistence_contract.dart';
 
 /// User-facing editor for the SCENARIO module.
 class ScenarioModuleScreen extends StatefulWidget {
-  const ScenarioModuleScreen({super.key, required this.podesavanjaRepository});
+  const ScenarioModuleScreen({
+    super.key,
+    required this.podesavanjaRepository,
+    this.predmet,
+  });
 
   final PodesavanjaRepository podesavanjaRepository;
+  final PredmetiData? predmet;
 
   @override
   State<ScenarioModuleScreen> createState() => _ScenarioModuleScreenState();
@@ -152,7 +158,13 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Row(
           children: [
-            Expanded(child: Text(definition.name)),
+            Expanded(
+              child: Text(
+                record.id.startsWith('MAP_')
+                    ? _scenarioBusinessSummary(definition)
+                    : definition.name,
+              ),
+            ),
             Chip(
               label: Text(
                 record.status == 'PRIMENJEN' ? 'U UPOTREBI' : 'VAN UPOTREBE',
@@ -308,6 +320,10 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                   return ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
+                      if (widget.predmet != null) ...[
+                        PredmetAppliedScenarioCard(predmet: widget.predmet!),
+                        const SizedBox(height: 12),
+                      ],
                       const Card(
                         key: ValueKey('scenario-module-description'),
                         child: ListTile(
@@ -551,27 +567,9 @@ class _ScenarioPolicyTreeState extends State<_ScenarioPolicyTree> {
   @override
   Widget build(BuildContext context) {
     final selected = _selectedRecord;
-    final custom = widget.definitions
-        .where((record) => !record.id.startsWith('MAP_'))
-        .toList(growable: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (custom.isNotEmpty) ...[
-          const Text(
-            'DODATNI SCENARIJI',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          ...custom.map(
-            (record) => _ScenarioResultCard(
-              record: record,
-              katalog: widget.katalog,
-              onPreview: widget.onPreview,
-              onEdit: widget.onEdit,
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
         const Text(
           'POSTOJEĆI SCENARIJI',
           style: TextStyle(fontWeight: FontWeight.w700),
@@ -767,9 +765,7 @@ class _ScenarioResultCard extends StatelessWidget {
       'condition': jsonDecode(record.conditionJson),
       'consequences': jsonDecode(record.consequencesJson),
     });
-    final summary = definition.condition.criterion == null
-        ? record.naziv
-        : definition.condition.criterion!.values.join(', ');
+    final summary = _scenarioBusinessSummary(definition);
     return Card(
       margin: const EdgeInsets.only(top: 8),
       child: ListTile(
@@ -793,6 +789,70 @@ class _ScenarioResultCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class PredmetAppliedScenarioCard extends StatelessWidget {
+  const PredmetAppliedScenarioCard({super.key, required this.predmet});
+
+  final PredmetiData predmet;
+
+  @override
+  Widget build(BuildContext context) {
+    final result = const OwnerScenarioPolicyKernel().evaluate(predmet);
+    final predmetIdentity = predmet.brojPredmeta.trim().isEmpty
+        ? predmet.id.toString()
+        : predmet.brojPredmeta.trim();
+    return Card(
+      key: ValueKey('predmet-applied-scenario-${predmet.id}'),
+      child: ListTile(
+        leading: const Icon(Icons.assignment_turned_in_outlined),
+        title: Text('Scenario za PREDMET $predmetIdentity'),
+        subtitle: Text(
+          result.isComplete
+              ? result.key!.businessSummary
+              : 'Poslovni uslovi joÅ¡ nisu kompletni.',
+        ),
+      ),
+    );
+  }
+}
+
+String _scenarioBusinessSummary(ScenarioDefinition definition) {
+  final values = <ScenarioCriterionField, String>{};
+  void collect(ScenarioCondition condition) {
+    final criterion = condition.criterion;
+    if (criterion != null) {
+      values[criterion.field] = switch (criterion.operator) {
+        ScenarioCriterionOperator.isTrue => 'DA',
+        ScenarioCriterionOperator.isFalse => 'NE',
+        _ => criterion.values.join(', '),
+      };
+    }
+    for (final child in condition.children) {
+      collect(child);
+    }
+  }
+
+  collect(definition.condition);
+  final ordered = <String?>[
+    values[ScenarioCriterionField.uzrokSmrti],
+    values[ScenarioCriterionField.mestoSmrti],
+    values[ScenarioCriterionField.vrstaCeremonije],
+    values[ScenarioCriterionField.tipGroblja],
+    values[ScenarioCriterionField.tipGrobnogMesta],
+    values[ScenarioCriterionField.opelo] == null
+        ? null
+        : 'OPELO ${values[ScenarioCriterionField.opelo]}',
+    values[ScenarioCriterionField.sahranaVanSrbije] == null
+        ? null
+        : 'VAN SRBIJE ${values[ScenarioCriterionField.sahranaVanSrbije]}',
+    values[ScenarioCriterionField.docekPosmrtnihOstataka] == null
+        ? null
+        : 'DOÄŒEK ${values[ScenarioCriterionField.docekPosmrtnihOstataka]}',
+  ].whereType<String>().where((value) => value.isNotEmpty).toList();
+  return ordered.isEmpty
+      ? 'Potpuna poslovna kombinacija'
+      : ordered.join(' Â· ');
 }
 
 /*
@@ -1439,7 +1499,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 const _WizardProgress()
               else
                 Text(
-                  widget.existing!.name,
+                  widget.existing!.id.startsWith('MAP_')
+                      ? _scenarioBusinessSummary(widget.existing!)
+                      : widget.existing!.name,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               const SizedBox(height: 12),

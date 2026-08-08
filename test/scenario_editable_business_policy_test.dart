@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_repository.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/owner_scenario_policy_kernel.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_rule_engine.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 
@@ -26,15 +28,32 @@ void main() {
       final base = scenarios.readOsnovniPaket(module);
       final predmeti = PredmetiRepository(db);
       final id = await predmeti.kreirajPredmet(savetnikId: 1);
+      await predmeti.azurirajPredmet(
+        id,
+        const PredmetiCompanion(
+          uzrokSmrti: Value('PRIRODNA'),
+          mestoSmrti: Value('STAN'),
+          vrstaCeremonije: Value('SAHRANA'),
+          tipGroblja: Value('GRADSKO'),
+          tipGrobnogMesta: Value('GROB'),
+          opelo: Value('NE'),
+        ),
+      );
 
       expect(base, hasLength(11));
       expect(base, isNot(contains(IriuK.prevozDoGroblja)));
 
       Future<ScenarioRuleEvaluation> evaluate(PredmetiCompanion change) async {
         await predmeti.azurirajPredmet(id, change);
+        final predmet = await predmeti.getPredmet(id);
+        final owner = const OwnerScenarioPolicyKernel().evaluate(predmet);
+        expect(owner.isComplete, isTrue);
+        final definition = definitions.singleWhere(
+          (item) => item.id == owner.scenarioId,
+        );
         return const ScenarioRuleEngine().evaluate(
-          scenarios: definitions,
-          predmet: await predmeti.getPredmet(id),
+          scenarios: <ScenarioDefinition>[definition],
+          predmet: predmet,
           osnovniPaket: base,
         );
       }
@@ -60,12 +79,15 @@ void main() {
         expect(result.effectiveCategories, containsAll(fullPlacePackage));
         if (place == 'PRIVATNA BOLNICA' || place == 'DRUGO') {
           expect(
-            result.matchedScenarioIds,
+            result.matchedScenarioIds.single,
             contains(
               place == 'PRIVATNA BOLNICA' ? 'PRIVATNA_BOLNICA' : 'DRUGO',
             ),
           );
-          expect(result.matchedScenarioIds, isNot(contains('DOM_ZA_STARE')));
+          expect(
+            result.matchedScenarioIds.single,
+            isNot(contains('DOM_ZA_STARE')),
+          );
         }
       }
 
@@ -89,7 +111,7 @@ void main() {
       );
       expect(
         localAndOpelo.decisions[IriuK.kompletZaOpelo]!.businessStatus,
-        'PREPORUČENO',
+        'AKTIVNO',
       );
 
       final cremation = await evaluate(
@@ -115,7 +137,7 @@ void main() {
         ),
       );
       expect(
-        nonHospitalBiohazard.decisions[IriuK.spremaanjePokojnika]!.warning,
+        nonHospitalBiohazard.decisions[IriuK.iznosenje]!.warning,
         isNotEmpty,
       );
       expect(

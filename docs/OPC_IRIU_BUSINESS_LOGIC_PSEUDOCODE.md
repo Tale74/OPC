@@ -742,3 +742,22 @@ NO_SCENARIO_RUNTIME_RULES:
   IRIU segment does not invoke the former hardcoded lifecycle triggers
   defaults are data, not active business policy in Dart code
 ```
+# Runtime authority clarification — 2026-08-08
+
+Normalni SCENARIO runtime učitava samo aktivne potpune `MAP_*` definicije.
+Legacy parcijalni zapisi ostaju isključivo migration/backward-compatibility
+podaci i nisu input normalnog evaluator call chain-a.
+
+```text
+PREDMET
+  -> formiraj potpuni OwnerScenarioKey
+  -> učitaj tačno jednu sačuvanu MAP ScenarioDefinition
+  -> evaluiraj MAP consequence podatke
+  -> razreši stabilne KATALOG identitete
+  -> uporedi/upamti snapshot po predmetId
+  -> materijalizuj samo scenario-managed IRiU redove
+```
+
+`ZAŠTITNA I DODATNA OPREMA` pripada svim neprirodnim uzrocima van bolničkog
+izuzetka i u DOČEK toku. BIOHAZARD upozorenje ostaje zasebna, uža odluka; ova
+dva uslova se ne smeju ponovo spajati.

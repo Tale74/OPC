@@ -26,6 +26,7 @@ import '../parte/data/parte_media_store.dart';
 import '../parte/data/parte_preparation_repository.dart';
 import '../parte/domain/parte_models.dart';
 import '../reminders/ceremony_notification_gateway.dart';
+import '../core_v2/scenario/scenario_module_screen.dart';
 import 'segments/ceremonija_segment.dart';
 import 'segments/finansije_segment.dart';
 import 'segments/iriu_segment.dart';
@@ -1644,6 +1645,17 @@ class _PredmetScreenState extends State<PredmetScreen> {
                   ),
               PopupMenuButton<String>(
                 onSelected: (v) {
+                  if (v == 'scenario') {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => ScenarioModuleScreen(
+                          podesavanjaRepository: _podesavanjaRepo,
+                          predmet: p,
+                        ),
+                      ),
+                    );
+                  }
                   if (v == 'save') _sacuvajPredmet();
                   if (v == 'close') _zatvori();
                   if (v == 'edit') _otkljucajZaIzmenu();
@@ -1652,6 +1664,14 @@ class _PredmetScreenState extends State<PredmetScreen> {
                   if (v == 'delete') _obrisiPredmet();
                 },
                 itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'scenario',
+                    child: ListTile(
+                      leading: Icon(Icons.alt_route_outlined),
+                      title: Text('Scenario predmeta'),
+                      dense: true,
+                    ),
+                  ),
                   if (_zatvoren)
                     const PopupMenuItem(
                       value: 'finish',

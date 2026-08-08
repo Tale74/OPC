@@ -216,6 +216,7 @@ final class OwnerScenarioPolicyKernel {
     }
 
     final isHospital = input.mestoSmrti == 'BOLNICA';
+    final requiresProtectiveEquipment = input.uzrokSmrti != 'PRIRODNA';
     final biohazard =
         input.uzrokSmrti == 'ZARAZNA' || input.uzrokSmrti == 'NEDEFINISANA';
     final warning = biohazard
@@ -229,7 +230,9 @@ final class OwnerScenarioPolicyKernel {
         warning: biohazard ? warning : '',
         reason: biohazard ? 'BIOHAZARD' : '',
       );
-      if (biohazard) add(IriuK.zastitnaIDodatnaOprema);
+      if (requiresProtectiveEquipment) {
+        add(IriuK.zastitnaIDodatnaOprema);
+      }
       add(IriuK.prevozDoHladnjace);
       add(IriuK.hladnjaca);
       _addBurialAndInternational(rows, input, add);
@@ -252,7 +255,9 @@ final class OwnerScenarioPolicyKernel {
         warning: biohazard ? warning : '',
         reason: biohazard ? 'BIOHAZARD' : '',
       );
-      if (biohazard) add(IriuK.zastitnaIDodatnaOprema);
+      if (requiresProtectiveEquipment) {
+        add(IriuK.zastitnaIDodatnaOprema);
+      }
       add(IriuK.prevozDoHladnjace);
       add(IriuK.hladnjaca);
       add(
@@ -542,6 +547,17 @@ final class OwnerScenarioKey {
   final String opelo;
   final bool international;
   final bool docek;
+
+  String get businessSummary => <String>[
+    cause,
+    place ?? 'MESTO SMRTI INFORMATIVNO',
+    ceremony,
+    cemeteryType,
+    burialPlace,
+    'OPELO $opelo',
+    'VAN SRBIJE ${international ? 'DA' : 'NE'}',
+    'DOÄŒEK ${docek ? 'DA' : 'NE'}',
+  ].join(' Â· ');
 
   String get stableId {
     final fields = <String>[

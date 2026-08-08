@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:opc_v4/core/constants/iriu_constants.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/owner_scenario_policy_kernel.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_repository.dart';
 
@@ -492,6 +494,90 @@ void main() {
     );
     expect(module.id, ScenarioModuleRepository.moduleId);
   });
+
+  test(
+    'known generated NASILNA gap is repaired without rewriting a custom MAP record',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repository = ScenarioModuleRepository(db);
+      await repository.ensureModule();
+      const kernel = OwnerScenarioPolicyKernel();
+      final keys = kernel
+          .allKeys()
+          .where(
+            (key) =>
+                key.cause == 'NASILNA' &&
+                key.place == 'STAN' &&
+                !key.docek &&
+                key.ceremony == 'SAHRANA',
+          )
+          .take(2)
+          .toList(growable: false);
+      final generated = kernel.definitionForKey(keys.first);
+      final oldConsequences = generated.consequences
+          .where(
+            (item) =>
+                item.katalogCategoryInternalName !=
+                IriuK.zastitnaIDodatnaOprema,
+          )
+          .toList(growable: false);
+      await repository.saveDefinition(
+        id: generated.id,
+        version: 1,
+        naziv: generated.name,
+        condition: generated.condition,
+        consequences: oldConsequences,
+        jePodrazumevani: true,
+        status: 'PRIMENJEN',
+      );
+
+      final customGenerated = kernel.definitionForKey(keys.last);
+      final customConsequences = customGenerated.consequences
+          .where(
+            (item) =>
+                item.katalogCategoryInternalName !=
+                IriuK.zastitnaIDodatnaOprema,
+          )
+          .map(
+            (item) => item.katalogCategoryInternalName == IriuK.iznosenje
+                ? ScenarioConsequence(
+                    katalogCategoryInternalName:
+                        item.katalogCategoryInternalName,
+                    action: ScenarioConsequenceAction.recommended,
+                    order: item.order,
+                  )
+                : item,
+          )
+          .toList(growable: false);
+      await repository.saveDefinition(
+        id: customGenerated.id,
+        version: 1,
+        naziv: customGenerated.name,
+        condition: customGenerated.condition,
+        consequences: customConsequences,
+        jePodrazumevani: true,
+        status: 'PRIMENJEN',
+      );
+
+      await repository.ensureModuleAndDefaults();
+      final records = await repository.getDefinitions();
+      final repaired = repository.definitionFromRecord(
+        records.singleWhere((item) => item.id == generated.id),
+      );
+      final custom = repository.definitionFromRecord(
+        records.singleWhere((item) => item.id == customGenerated.id),
+      );
+      expect(
+        repaired.consequences.map((item) => item.katalogCategoryInternalName),
+        contains(IriuK.zastitnaIDodatnaOprema),
+      );
+      expect(
+        custom.consequences.map((item) => item.katalogCategoryInternalName),
+        isNot(contains(IriuK.zastitnaIDodatnaOprema)),
+      );
+    },
+  );
 }
 
 const _legacyRuntimePlaceConsequences = <ScenarioConsequence>[

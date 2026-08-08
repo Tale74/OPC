@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_repository.dart';
 import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
@@ -121,11 +122,116 @@ void main() {
       expect(applied.scenarioSnapshotChanged, isTrue);
       expect(applied.pendingUserDecisionRows, isNotEmpty);
       expect(
-        (await iriuRepository.getIriu(predmetId)).any(
-          (row) => row.interniNaziv == 'PREVOZ_DO_GROBLJA',
-        ),
+        (await iriuRepository.getIriu(
+          predmetId,
+        )).any((row) => row.interniNaziv == 'PREVOZ_DO_GROBLJA'),
         isTrue,
       );
+    },
+  );
+
+  test(
+    'NASILNA regression uses only the complete MAP definition and isolates PREDMET state',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final predmeti = PredmetiRepository(db);
+      final scenarios = ScenarioModuleRepository(db);
+      final iriu = IriuRepository(db);
+      final predmetA = await predmeti.kreirajPredmet(savetnikId: 1);
+      final predmetB = await predmeti.kreirajPredmet(savetnikId: 1);
+      await predmeti.azurirajPredmet(
+        predmetA,
+        const PredmetiCompanion(
+          uzrokSmrti: Value('NASILNA'),
+          mestoSmrti: Value('STAN'),
+          vrstaCeremonije: Value('SAHRANA'),
+          tipGroblja: Value('GRADSKO'),
+          tipGrobnogMesta: Value('GROBNICA'),
+          opelo: Value('NE'),
+        ),
+      );
+      await predmeti.azurirajPredmet(
+        predmetB,
+        const PredmetiCompanion(
+          uzrokSmrti: Value('PRIRODNA'),
+          mestoSmrti: Value('BOLNICA'),
+          vrstaCeremonije: Value('SAHRANA'),
+          tipGroblja: Value('GRADSKO'),
+          tipGrobnogMesta: Value('GROB'),
+          opelo: Value('NE'),
+        ),
+      );
+      final module = await scenarios.ensureModuleAndDefaults();
+      final active = await scenarios.getActiveDefinitions();
+      expect(active, hasLength(1008));
+      expect(active.every((item) => item.id.startsWith('MAP_')), isTrue);
+
+      const legacy = ScenarioDefinition(
+        id: 'STAN',
+        name: 'STAN',
+        condition: ScenarioCondition.criterion(
+          ScenarioCriterion(
+            field: ScenarioCriterionField.mestoSmrti,
+            operator: ScenarioCriterionOperator.equals,
+            values: ['STAN'],
+          ),
+        ),
+        consequences: <ScenarioConsequence>[
+          ScenarioConsequence(
+            katalogCategoryInternalName: IriuK.kompletZaOpelo,
+            action: ScenarioConsequenceAction.required,
+          ),
+        ],
+      );
+      final resultA = await iriu.syncScenarioRows(
+        predmetId: predmetA,
+        predmet: await predmeti.getPredmet(predmetA),
+        scenarios: <ScenarioDefinition>[...active, legacy],
+        osnovniPaket: scenarios.readOsnovniPaket(module),
+      );
+      final resultB = await iriu.syncScenarioRows(
+        predmetId: predmetB,
+        predmet: await predmeti.getPredmet(predmetB),
+        scenarios: <ScenarioDefinition>[legacy, ...active],
+        osnovniPaket: scenarios.readOsnovniPaket(module),
+      );
+
+      expect(resultA.matchedScenarioIds, <String>[
+        'MAP_NASILNA_STAN_SAHRANA_GRADSKO_GROBNICA_NE_NE_NE',
+      ]);
+      final rowsA = await iriu.getIriu(predmetA);
+      final additionsA = rowsA
+          .where(
+            (row) =>
+                !scenarios.readOsnovniPaket(module).contains(row.interniNaziv),
+          )
+          .map((row) => row.interniNaziv)
+          .toList(growable: false);
+      expect(additionsA, <String>[
+        IriuK.transportnaVreca,
+        IriuK.iznosenje,
+        IriuK.zastitnaIDodatnaOprema,
+        IriuK.prevozDoHladnjace,
+        IriuK.hladnjaca,
+        IriuK.spremaanjePokojnika,
+        IriuK.limeniUlozak,
+        IriuK.lemovanje,
+        IriuK.prevozDoGroblja,
+      ]);
+      expect(additionsA, isNot(contains(IriuK.kompletZaOpelo)));
+      expect(resultB.matchedScenarioIds.single, contains('PRIRODNA_BOLNICA'));
+      expect(
+        (await iriu.getIriu(predmetB)).map((row) => row.interniNaziv),
+        isNot(contains(IriuK.zastitnaIDodatnaOprema)),
+      );
+
+      final snapshots = await db.select(db.predmetScenarioSnapshots).get();
+      expect(snapshots.map((item) => item.predmetId).toSet(), {
+        predmetA,
+        predmetB,
+      });
+      expect(snapshots.map((item) => item.scenarioId).toSet(), hasLength(2));
     },
   );
 }
