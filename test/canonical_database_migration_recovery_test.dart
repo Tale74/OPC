@@ -311,7 +311,9 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      final db = fixture.openAtVersion(27, physicalVersion: 26);
+      // Schema 27 is the current supported version (KATALOG pricing fields);
+      // use the next checkpoint to exercise the future-version guard.
+      final db = fixture.openAtVersion(28, physicalVersion: 27);
       addTearDown(db.close);
 
       await expectLater(
@@ -320,7 +322,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 27 -> 26'),
+            contains('unsupported migration checkpoint 28 -> 27'),
           ),
         ),
       );
