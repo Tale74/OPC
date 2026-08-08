@@ -5,7 +5,7 @@
 - Baseline branch: `task/OPC-KATALOG-FIKSNA-CENA-CRNINA-IRiU-IZNOS`
 - Baseline SHA: `3b4442b76ef263eb68b1a6e688309cc650847329`
 - Task branch: `task/OPC-SCENARIO-IRiU-CHANGE-DIFF-LIFECYCLE`
-- Final SHA: recorded by the Git handoff after commit
+- Final implementation SHA: `67eca36` (the evidence-only follow-up commit is the final branch head reported by Git handoff)
 - Remote tracking and baseline remote SHA matched before edits; working tree was clean.
 - No SCENARIO MAP definition or golden fixture was changed.
 
@@ -82,6 +82,7 @@ Passing commands:
 - `flutter test --no-pub test/scenario_map_1008_golden_consistency_test.dart test/scenario_module_repository_test.dart` — exit 0.
 - `flutter test --no-pub test/katalog_fiksna_cena_iriu_iznos_test.dart test/json_transfer_regression_test.dart test/business_policy_iriu_critical_scenarios_test.dart` — exit 0.
 - `flutter analyze --no-pub` — exit 0, no issues.
+- `flutter test --no-pub test/canonical_database_migration_recovery_test.dart --plain-name "empty database"` — exit 0 (isolated checkpoint; full family remains incomplete).
 
 The previous migration recovery family remains `INCOMPLETE` because its full suite exceeded the documented ten-minute execution window. This task did not relabel that status as PASS; the file-backed lifecycle reopen test passed. No app build, release packaging or runtime build was run.
 
