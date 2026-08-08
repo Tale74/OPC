@@ -799,6 +799,7 @@ Map<String, dynamic> _normalizujBackupIriuKatalogConfigMap(
         IriuK.agencijskeUsluge,
       }).contains(internalName);
   normalized['osnovnaUSvakomPredmetu'] ??= builtInBasic;
+  normalized['cena'] ??= 0.0;
   _requiredBool(normalized, 'osnovnaUSvakomPredmetu', 'iriuKatalogConfig');
   return normalized;
 }

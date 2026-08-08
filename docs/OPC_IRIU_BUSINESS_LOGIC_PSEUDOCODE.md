@@ -31,9 +31,39 @@ IRIU_ROW = {
   nazivPrikaz: editable_visible_snapshot,
   kom: informational_document_text,
   iznos: stored_row_amount,
+  cena: applied_unit_price_snapshot,
   cekiran: legacy_boolean_without_current_business_state_consumption,
   redosled: presentation/business_order
 }
+
+KATALOG_CONFIG = {
+  interniNaziv: stable_category_discriminator,
+  tip: FIKSNA_OR_KATALOSKA,
+  cena: category_unit_price_for_FIKSNA_only
+}
+
+KATALOSKA_ARTICLE.cena remains the existing article-level price.
+FIKSNA has the same monetary input/format model at category level,
+but never exposes article photography or a photo placeholder.
+
+ON materialize_or_select_IRIU_ROW:
+  appliedCena = explicit price
+    OR KATALOSKA_ARTICLE.cena by stable article id
+    OR FIKSNA KATALOG_CONFIG.cena
+  persist appliedCena on the row (snapshot; later KATALOG edits do not rewrite it)
+  IF no explicit amount was supplied AND appliedCena > 0:
+    iznos = parse(KOM) * appliedCena
+
+ON OPEN_PREDMET quantity_change:
+  IF current amount still equals previous automatic KOM * cena:
+    iznos = new KOM * cena
+  ELSE:
+    preserve the manually overridden iznos
+
+ON OPEN_PREDMET manual_amount_edit:
+  persist the entered iznos and retain the applied cena snapshot
+
+CRNINA is canonical KATALOSKA; its stable internal identity is unchanged.
 
 ON PREDMET_DELETE:
   reconcile_current_stock_effects

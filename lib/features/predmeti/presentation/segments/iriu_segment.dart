@@ -395,6 +395,7 @@ class _IriuSegmentState extends State<IriuSegment> {
             nazivPrikaz: naziv,
             katalogStableArticleId: katalogStableArticleId,
             iznos: iznos,
+            cena: iznos,
             redosled: red,
           );
         },
@@ -998,7 +999,9 @@ class _KatalogPickerDialogState extends State<_KatalogPickerDialog> {
                       style: const TextStyle(fontSize: 13),
                     ),
                     trailing: Text(
-                      'FIKSNA',
+                      kat.cena > 0
+                          ? 'FIKSNA · ${formatMoneyNumber(kat.cena)} RSD'
+                          : 'FIKSNA',
                       style: TextStyle(
                         fontSize: 11,
                         color: cs.onSurfaceVariant,
@@ -1008,7 +1011,7 @@ class _KatalogPickerDialogState extends State<_KatalogPickerDialog> {
                       context,
                       kat.interniNaziv,
                       kat.nazivPrikaz,
-                      0.0,
+                      kat.cena,
                       null,
                     ),
                   );

@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
+import '../../../core/format/app_money_format.dart';
 import '../core_v2/rules/iriu_truth_rules.dart';
 import '../core_v2/services/blok2_iriu_lifecycle_service.dart';
 import '../core_v2/services/iriu_display_name_resolver.dart';
@@ -491,6 +492,7 @@ class IriuRepository {
     String? katalogStableArticleId,
     String kom = '1',
     double iznos = 0.0,
+    double? cena,
     int redosled = 0,
   }) async {
     await _clearManagedManualDeletionDecisionIfNeeded(
@@ -504,6 +506,7 @@ class IriuRepository {
       katalogStableArticleId: katalogStableArticleId,
       kom: kom,
       iznos: iznos,
+      cena: cena,
       redosled: redosled,
     );
     await _applyStockEffectForCatalogSelection(
@@ -542,6 +545,7 @@ class IriuRepository {
     String? katalogStableArticleId,
     String kom = '1',
     double iznos = 0.0,
+    double? cena,
     int redosled = 0,
     String poslovniStatus = 'AKTIVNO',
     String obezbedjuje = 'FIRMA',
@@ -551,27 +555,38 @@ class IriuRepository {
     int poslovniRedosled = 0,
     bool finansijskiUkljuceno = true,
     bool scenarioUpravlja = false,
-  }) => _db
-      .into(_db.iriu)
-      .insert(
-        IriuCompanion(
-          predmetId: Value(predmetId),
-          katalogStableArticleId: Value(katalogStableArticleId),
-          interniNaziv: Value(interniNaziv),
-          nazivPrikaz: Value(nazivPrikaz),
-          kom: Value(kom),
-          iznos: Value(iznos),
-          redosled: Value(redosled),
-          poslovniStatus: Value(poslovniStatus),
-          obezbedjuje: Value(obezbedjuje),
-          poslovnoUpozorenje: Value(poslovnoUpozorenje),
-          poslovniRazlog: Value(poslovniRazlog),
-          poslovnaCelina: Value(poslovnaCelina),
-          poslovniRedosled: Value(poslovniRedosled),
-          finansijskiUkljuceno: Value(finansijskiUkljuceno),
-          scenarioUpravlja: Value(scenarioUpravlja),
-        ),
-      );
+  }) async {
+    final appliedCena = await _resolveAppliedUnitPrice(
+      interniNaziv: interniNaziv,
+      katalogStableArticleId: katalogStableArticleId,
+      explicitCena: cena,
+    );
+    final effectiveIznos = iznos == 0 && appliedCena > 0
+        ? _amountForQuantity(kom, appliedCena)
+        : iznos;
+    return _db
+        .into(_db.iriu)
+        .insert(
+          IriuCompanion(
+            predmetId: Value(predmetId),
+            katalogStableArticleId: Value(katalogStableArticleId),
+            interniNaziv: Value(interniNaziv),
+            nazivPrikaz: Value(nazivPrikaz),
+            kom: Value(kom),
+            cena: Value(appliedCena),
+            iznos: Value(effectiveIznos),
+            redosled: Value(redosled),
+            poslovniStatus: Value(poslovniStatus),
+            obezbedjuje: Value(obezbedjuje),
+            poslovnoUpozorenje: Value(poslovnoUpozorenje),
+            poslovniRazlog: Value(poslovniRazlog),
+            poslovnaCelina: Value(poslovnaCelina),
+            poslovniRedosled: Value(poslovniRedosled),
+            finansijskiUkljuceno: Value(finansijskiUkljuceno),
+            scenarioUpravlja: Value(scenarioUpravlja),
+          ),
+        );
+  }
 
   Future<void> azurirajStavku(int id, IriuCompanion companion) =>
       (_db.update(_db.iriu)..where((i) => i.id.equals(id))).write(companion);
@@ -582,6 +597,7 @@ class IriuRepository {
     required String kom,
     required double iznos,
     required String? katalogStableArticleId,
+    double? cena,
     String? interniNaziv,
   }) async {
     final nextStableArticleId = _normalizeNullableStableArticleId(
@@ -636,10 +652,39 @@ class IriuRepository {
           katalogStableArticleId: Value(katalogStableArticleId),
           nazivPrikaz: Value(nazivPrikaz),
           kom: Value(kom),
+          cena: cena == null ? const Value.absent() : Value(cena),
           iznos: Value(iznos),
         ),
       );
     });
+  }
+
+  Future<double> _resolveAppliedUnitPrice({
+    required String interniNaziv,
+    required String? katalogStableArticleId,
+    double? explicitCena,
+  }) async {
+    if (explicitCena != null) return explicitCena;
+    final stableId = _normalizeNullableStableArticleId(katalogStableArticleId);
+    if (stableId != null) {
+      final article =
+          await (_db.select(_db.katalogArtikli)
+                ..where((row) => row.stableArticleId.equals(stableId))
+                ..limit(1))
+              .getSingleOrNull();
+      if (article != null) return article.cena;
+    }
+    final config =
+        await (_db.select(_db.iriuKatalogConfig)
+              ..where((row) => row.interniNaziv.equals(interniNaziv))
+              ..limit(1))
+            .getSingleOrNull();
+    return config?.tip == 'FIKSNA' ? config!.cena : 0.0;
+  }
+
+  double _amountForQuantity(String kom, double cena) {
+    final quantity = tryParseSerbianManualAmount(kom.trim()) ?? 1.0;
+    return quantity * cena;
   }
 
   Future<void> obrisiStavku(int id) async {

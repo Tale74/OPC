@@ -14,6 +14,7 @@ IriuData iriuDataFromCompatibleJson(Map<String, dynamic> json) {
     'poslovniRazlog': '',
     'poslovnaCelina': 6,
     'poslovniRedosled': 0,
+    'cena': 0.0,
     'finansijskiUkljuceno': true,
     'scenarioUpravlja': false,
     'cekaOdlukuKorisnika': false,

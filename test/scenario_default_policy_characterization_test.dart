@@ -200,6 +200,7 @@ IriuData _row(
     interniNaziv: interniNaziv,
     nazivPrikaz: interniNaziv,
     kom: '1',
+    cena: 0,
     iznos: 1,
     cekiran: false,
     redosled: redosled,

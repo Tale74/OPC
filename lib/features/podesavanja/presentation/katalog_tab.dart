@@ -106,6 +106,11 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
 
   Future<void> _editDialog(BuildContext context) async {
     final nazivCtrl = TextEditingController(text: widget.item.nazivPrikaz);
+    final cenaCtrl = TextEditingController(
+      text: !_jeKataloska && widget.item.cena > 0
+          ? formatBroj(widget.item.cena)
+          : '',
+    );
     bool vidljiv = widget.item.vidljiv;
     // Legacy database flag is intentionally not editable in KATALOG.
 
@@ -124,6 +129,20 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                   border: OutlineInputBorder(),
                 ),
               ),
+              if (!_jeKataloska) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  controller: cenaCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'CENA (RSD)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               SwitchListTile(
                 value: vidljiv,
@@ -149,6 +168,8 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
 
     final noviNaziv = nazivCtrl.text.trim();
     nazivCtrl.dispose();
+    final cena = !_jeKataloska ? parsirajBroj(cenaCtrl.text) : 0.0;
+    cenaCtrl.dispose();
 
     if (ok == true && context.mounted) {
       try {
@@ -159,14 +180,15 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
               noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
             ),
             vidljiv: Value(vidljiv),
+            cena: _jeKataloska ? const Value.absent() : Value(cena),
             osnovnaUSvakomPredmetu: const Value.absent(),
           ),
         );
       } on KatalogIntegrityException catch (error) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
       }
     }
   }
@@ -274,6 +296,11 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                           widget.item.nazivPrikaz,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
+                        if (!_jeKataloska && widget.item.cena > 0)
+                          Text(
+                            formatRsd(widget.item.cena),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         const SizedBox(height: 3),
                         Wrap(
                           spacing: 4,

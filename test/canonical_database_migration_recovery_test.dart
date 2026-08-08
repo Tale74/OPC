@@ -38,7 +38,7 @@ void main() {
       final db = AppDatabase.forTesting(NativeDatabase(file));
       addTearDown(db.close);
 
-      expect(await _userVersion(db), 26);
+      expect(await _userVersion(db), 27);
       expect(
         await _tableNames(db),
         containsAll(['predmeti', 'parte_pripreme']),
@@ -196,7 +196,7 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 26);
+        expect(await _userVersion(second), 27);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
@@ -370,7 +370,7 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 26);
+    expect(await _userVersion(retried), 27);
     await retried.close();
   });
 }
@@ -389,7 +389,7 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 26);
+  expect(await _userVersion(db), 27);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);

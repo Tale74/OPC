@@ -72,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 26;
+  int get schemaVersion => 27;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -213,6 +213,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 26) {
         await _ensureColumn(m, predmeti, predmeti.promenaSanduka);
+      }
+      if (from < 27) {
+        await _ensureColumn(m, iriuKatalogConfig, iriuKatalogConfig.cena);
+        await _ensureColumn(m, iriu, iriu.cena);
       }
     },
     beforeOpen: (details) async {
@@ -366,6 +370,8 @@ class AppDatabase extends _$AppDatabase {
     await _ensureColumn(migrator, predmeti, predmeti.docekDatum);
     await _ensureColumn(migrator, predmeti, predmeti.grobljePolaganjaUrne);
     await _ensureColumn(migrator, predmeti, predmeti.promenaSanduka);
+    await _ensureColumn(migrator, iriuKatalogConfig, iriuKatalogConfig.cena);
+    await _ensureColumn(migrator, iriu, iriu.cena);
     await _ensureColumn(migrator, predmeti, predmeti.partePotrebna);
     await _ensureColumn(
       migrator,
@@ -894,7 +900,7 @@ class AppDatabase extends _$AppDatabase {
         tip: 'FIKSNA',
         red: 11,
       ),
-      (naziv: 'CRNINA', prikaz: 'Crnina', tip: 'FIKSNA', red: 12),
+      (naziv: 'CRNINA', prikaz: 'Crnina', tip: 'KATALOSKA', red: 12),
       (naziv: 'LIMENI_ULOZAK', prikaz: 'Limeni uložak', tip: 'FIKSNA', red: 13),
       (naziv: 'LEMOVANJE', prikaz: 'Lemovanje', tip: 'FIKSNA', red: 14),
       (
@@ -1579,19 +1585,24 @@ class AppDatabase extends _$AppDatabase {
   /// IRIU rows, catalog articles, scenario packages/definitions and
   /// assignment snapshots.
   Future<void> repairKnownCatalogIntegrity() async {
+    // CRNINA is a canonical category identity. Older databases stored it as
+    // FIKSNA; migrate only this type in place so all existing references and
+    // user data remain untouched.
     await (update(iriuKatalogConfig)
-          ..where(
-            (row) => row.interniNaziv.equals(IriuK.zastitnaIDodatnaOprema),
-          ))
+          ..where((row) => row.interniNaziv.equals(IriuK.crnina)))
+        .write(const IriuKatalogConfigCompanion(tip: Value('KATALOSKA')));
+    await (update(iriuKatalogConfig)..where(
+          (row) => row.interniNaziv.equals(IriuK.zastitnaIDodatnaOprema),
+        ))
         .write(
           const IriuKatalogConfigCompanion(
             nazivPrikaz: Value('Zaštitna i dodatna oprema'),
           ),
         );
 
-    final canonical = await (select(iriuKatalogConfig)
-          ..where((row) => row.interniNaziv.equals(IriuK.slika)))
-        .getSingleOrNull();
+    final canonical = await (select(
+      iriuKatalogConfig,
+    )..where((row) => row.interniNaziv.equals(IriuK.slika))).getSingleOrNull();
     if (canonical == null) return;
 
     final duplicates = (await select(iriuKatalogConfig).get())
@@ -1615,58 +1626,56 @@ class AppDatabase extends _$AppDatabase {
     return normalized == 'SLIKA' ? 'SLIKA' : null;
   }
 
-  Future<void> _mergeCatalogCategory(
-    String duplicate,
-    String canonical,
-  ) async {
+  Future<void> _mergeCatalogCategory(String duplicate, String canonical) async {
     await transaction(() async {
-      final duplicateRows = await (select(iriu)
-            ..where((row) => row.interniNaziv.equals(duplicate)))
-          .get();
+      final duplicateRows = await (select(
+        iriu,
+      )..where((row) => row.interniNaziv.equals(duplicate))).get();
       for (final duplicateRow in duplicateRows) {
-        final canonicalRow = await (select(iriu)
-              ..where(
-                (row) =>
-                    row.predmetId.equals(duplicateRow.predmetId) &
-                    row.interniNaziv.equals(canonical),
-              )
-              ..limit(1))
-            .getSingleOrNull();
+        final canonicalRow =
+            await (select(iriu)
+                  ..where(
+                    (row) =>
+                        row.predmetId.equals(duplicateRow.predmetId) &
+                        row.interniNaziv.equals(canonical),
+                  )
+                  ..limit(1))
+                .getSingleOrNull();
         if (canonicalRow == null) {
           await (update(iriu)..where((row) => row.id.equals(duplicateRow.id)))
               .write(IriuCompanion(interniNaziv: Value(canonical)));
           continue;
         }
 
-        await (update(iriu)..where((row) => row.id.equals(canonicalRow.id)))
-            .write(
-              IriuCompanion(
-                nazivPrikaz: canonicalRow.nazivPrikaz.trim().isEmpty
-                    ? Value(duplicateRow.nazivPrikaz)
-                    : const Value.absent(),
-                kom: canonicalRow.kom.trim().isEmpty
-                    ? Value(duplicateRow.kom)
-                    : const Value.absent(),
-                iznos: canonicalRow.iznos == 0 && duplicateRow.iznos != 0
-                    ? Value(duplicateRow.iznos)
-                    : const Value.absent(),
-                redosled: canonicalRow.redosled <= 0
-                    ? Value(duplicateRow.redosled)
-                    : const Value.absent(),
-              ),
-            );
+        await (update(
+          iriu,
+        )..where((row) => row.id.equals(canonicalRow.id))).write(
+          IriuCompanion(
+            nazivPrikaz: canonicalRow.nazivPrikaz.trim().isEmpty
+                ? Value(duplicateRow.nazivPrikaz)
+                : const Value.absent(),
+            kom: canonicalRow.kom.trim().isEmpty
+                ? Value(duplicateRow.kom)
+                : const Value.absent(),
+            iznos: canonicalRow.iznos == 0 && duplicateRow.iznos != 0
+                ? Value(duplicateRow.iznos)
+                : const Value.absent(),
+            redosled: canonicalRow.redosled <= 0
+                ? Value(duplicateRow.redosled)
+                : const Value.absent(),
+          ),
+        );
         await _mergeIriuProvenance(duplicateRow.id, canonicalRow.id);
-        await (delete(iriu)..where((row) => row.id.equals(duplicateRow.id)))
-            .go();
+        await (delete(
+          iriu,
+        )..where((row) => row.id.equals(duplicateRow.id))).go();
       }
 
-      await (update(katalogArtikli)
-            ..where((row) => row.interniNazivKategorije.equals(duplicate)))
-          .write(
-            KatalogArtikliCompanion(
-              interniNazivKategorije: Value(canonical),
-            ),
-          );
+      await (update(
+        katalogArtikli,
+      )..where((row) => row.interniNazivKategorije.equals(duplicate))).write(
+        KatalogArtikliCompanion(interniNazivKategorije: Value(canonical)),
+      );
 
       final modules = await select(scenarioModules).get();
       for (final module in modules) {
@@ -1690,12 +1699,11 @@ class AppDatabase extends _$AppDatabase {
           canonical,
         );
         if (next != null) {
-          await (update(scenarioDefinitions)
-                ..where(
-                  (row) =>
-                      row.id.equals(definition.id) &
-                      row.version.equals(definition.version),
-                ))
+          await (update(scenarioDefinitions)..where(
+                (row) =>
+                    row.id.equals(definition.id) &
+                    row.version.equals(definition.version),
+              ))
               .write(
                 ScenarioDefinitionsCompanion(consequencesJson: Value(next)),
               );
@@ -1712,37 +1720,37 @@ class AppDatabase extends _$AppDatabase {
           canonical,
         );
         if (!changed) continue;
-        await (update(predmetScenarioSnapshots)
-              ..where((row) => row.predmetId.equals(snapshot.predmetId)))
-            .write(
-              PredmetScenarioSnapshotsCompanion(
-                snapshotJson: Value(jsonEncode(decoded)),
-              ),
-            );
+        await (update(
+          predmetScenarioSnapshots,
+        )..where((row) => row.predmetId.equals(snapshot.predmetId))).write(
+          PredmetScenarioSnapshotsCompanion(
+            snapshotJson: Value(jsonEncode(decoded)),
+          ),
+        );
       }
 
-      await (delete(iriuKatalogConfig)
-            ..where((row) => row.interniNaziv.equals(duplicate)))
-          .go();
+      await (delete(
+        iriuKatalogConfig,
+      )..where((row) => row.interniNaziv.equals(duplicate))).go();
     });
   }
 
   Future<void> _mergeIriuProvenance(int duplicateId, int canonicalId) async {
-    final duplicate = await (select(iriuProvenance)
-          ..where((row) => row.iriuId.equals(duplicateId)))
-        .getSingleOrNull();
+    final duplicate = await (select(
+      iriuProvenance,
+    )..where((row) => row.iriuId.equals(duplicateId))).getSingleOrNull();
     if (duplicate == null) return;
-    final canonical = await (select(iriuProvenance)
-          ..where((row) => row.iriuId.equals(canonicalId)))
-        .getSingleOrNull();
+    final canonical = await (select(
+      iriuProvenance,
+    )..where((row) => row.iriuId.equals(canonicalId))).getSingleOrNull();
     if (canonical == null) {
       await (update(iriuProvenance)
             ..where((row) => row.iriuId.equals(duplicateId)))
           .write(IriuProvenanceCompanion(iriuId: Value(canonicalId)));
     } else {
-      await (delete(iriuProvenance)
-            ..where((row) => row.iriuId.equals(duplicateId)))
-          .go();
+      await (delete(
+        iriuProvenance,
+      )..where((row) => row.iriuId.equals(duplicateId))).go();
     }
   }
 
@@ -1819,11 +1827,8 @@ class AppDatabase extends _$AppDatabase {
           value[index] = canonical;
           changed = true;
         } else {
-          changed = _replaceCategoryInJsonValue(
-                item,
-                duplicate,
-                canonical,
-              ) ||
+          changed =
+              _replaceCategoryInJsonValue(item, duplicate, canonical) ||
               changed;
         }
       }
@@ -1834,11 +1839,8 @@ class AppDatabase extends _$AppDatabase {
           value[entry.key] = canonical;
           changed = true;
         } else {
-          changed = _replaceCategoryInJsonValue(
-                item,
-                duplicate,
-                canonical,
-              ) ||
+          changed =
+              _replaceCategoryInJsonValue(item, duplicate, canonical) ||
               changed;
         }
       }

@@ -75,7 +75,10 @@ class _IriuRowTileState extends State<IriuRowTile> {
   late final TextEditingController _iznosCtrl;
   late final FocusNode _iznosFocusNode;
   late double _lastValidIznos;
+  late double _unitPrice;
+  late double _lastKomValue;
   bool _iznosInvalid = false;
+  bool _amountManuallyOverridden = false;
 
   bool _mozeIzgledatiKaoDostupanKatalog(bool? imaArtikala) {
     return imaArtikala ?? false;
@@ -86,6 +89,36 @@ class _IriuRowTileState extends State<IriuRowTile> {
 
   double _parsedIznos() =>
       tryParseSerbianManualAmount(_iznosCtrl.text) ?? _lastValidIznos;
+
+  double _parsedKom() =>
+      tryParseSerbianManualAmount(_komCtrl.text.trim()) ?? _lastKomValue;
+
+  bool _nearlyEquals(double left, double right) => (left - right).abs() < 0.005;
+
+  void _setAutomaticAmount(double amount) {
+    _amountManuallyOverridden = false;
+    _lastValidIznos = amount;
+    _iznosInvalid = false;
+    final formatted = amount > 0 ? formatMoneyNumber(amount) : '';
+    if (_iznosCtrl.text == formatted) return;
+    _iznosCtrl.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  void _onQuantityChanged() {
+    final nextKom = _parsedKom();
+    if (!_amountManuallyOverridden && _unitPrice > 0) {
+      final currentAmount = _parsedIznos();
+      final previousAutomaticAmount = _lastKomValue * _unitPrice;
+      if (_nearlyEquals(currentAmount, previousAutomaticAmount)) {
+        _setAutomaticAmount(nextKom * _unitPrice);
+      }
+    }
+    _lastKomValue = nextKom;
+    _scheduleSave();
+  }
 
   void _normalizeIznosDisplay() {
     final formatted = normalizeSerbianManualAmount(_iznosCtrl.text);
@@ -209,6 +242,13 @@ class _IriuRowTileState extends State<IriuRowTile> {
       text: s.iznos > 0 ? formatMoneyNumber(s.iznos) : '',
     );
     _lastValidIznos = s.iznos;
+    _unitPrice = s.cena;
+    _lastKomValue = 1;
+    _lastKomValue = _parsedKom();
+    _amountManuallyOverridden =
+        _unitPrice > 0 &&
+        s.iznos > 0 &&
+        !_nearlyEquals(s.iznos, _lastKomValue * _unitPrice);
     _iznosFocusNode = FocusNode();
     _iznosFocusNode.addListener(() {
       if (!_iznosFocusNode.hasFocus) _normalizeIznosDisplay();
@@ -317,9 +357,9 @@ class _IriuRowTileState extends State<IriuRowTile> {
     setState(() {
       _nazivCtrl.text = naziv;
       _komCtrl.text = '1';
-      _iznosCtrl.text = cena > 0 ? formatMoneyNumber(cena) : '';
-      _lastValidIznos = cena;
-      _iznosInvalid = false;
+      _unitPrice = cena;
+      _lastKomValue = 1;
+      _setAutomaticAmount(cena);
     });
     _debounce?.cancel();
     await widget.iriuRepo.azurirajKatalogIzborStavke(
@@ -328,6 +368,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
       interniNaziv: interniNazivKategorije,
       nazivPrikaz: _normalizedText(_nazivCtrl),
       kom: _normalizedText(_komCtrl),
+      cena: cena,
       iznos: _parsedIznos(),
     );
   }
@@ -479,7 +520,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
           fontSize: 13,
           color: aktivan ? null : cs.onSurfaceVariant,
         ),
-        onChanged: (_) => _scheduleSave(),
+        onChanged: (_) => _onQuantityChanged(),
       );
       return width == null ? field : SizedBox(width: width, child: field);
     }
@@ -506,6 +547,12 @@ class _IriuRowTileState extends State<IriuRowTile> {
           setState(() => _iznosInvalid = parsed == null);
           if (parsed != null) {
             _lastValidIznos = parsed;
+            if (_unitPrice > 0) {
+              _amountManuallyOverridden = !_nearlyEquals(
+                parsed,
+                _lastKomValue * _unitPrice,
+              );
+            }
             _scheduleSave();
           } else {
             _debounce?.cancel();

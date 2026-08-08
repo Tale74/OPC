@@ -11,6 +11,10 @@ class IriuKatalogConfig extends Table {
       boolean().withDefault(const Constant(false))();
   // FIKSNA / KATALOSKA
   TextColumn get tip => text().withDefault(const Constant('FIKSNA'))();
+
+  /// Category-level unit price used by FIKSNA entries. KATALOSKA prices live
+  /// on their KatalogArtikli rows and this field remains unused for them.
+  RealColumn get cena => real().withDefault(const Constant(0.0))();
   BoolColumn get jeKorisnicka => boolean().withDefault(const Constant(false))();
 
   /// Persistent KATALOG policy: materialize this category only in future

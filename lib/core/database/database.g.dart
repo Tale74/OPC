@@ -8926,6 +8926,16 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _cenaMeta = const VerificationMeta('cena');
+  @override
+  late final GeneratedColumn<double> cena = GeneratedColumn<double>(
+    'cena',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   static const VerificationMeta _iznosMeta = const VerificationMeta('iznos');
   @override
   late final GeneratedColumn<double> iznos = GeneratedColumn<double>(
@@ -9086,6 +9096,7 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     interniNaziv,
     nazivPrikaz,
     kom,
+    cena,
     iznos,
     cekiran,
     redosled,
@@ -9155,6 +9166,12 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
       context.handle(
         _komMeta,
         kom.isAcceptableOrUnknown(data['kom']!, _komMeta),
+      );
+    }
+    if (data.containsKey('cena')) {
+      context.handle(
+        _cenaMeta,
+        cena.isAcceptableOrUnknown(data['cena']!, _cenaMeta),
       );
     }
     if (data.containsKey('iznos')) {
@@ -9289,6 +9306,10 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         DriftSqlType.string,
         data['${effectivePrefix}kom'],
       )!,
+      cena: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cena'],
+      )!,
       iznos: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}iznos'],
@@ -9361,6 +9382,9 @@ class IriuData extends DataClass implements Insertable<IriuData> {
   /// Količina — slobodan tekst (informativno, ne ulazi u formulu).
   final String kom;
 
+  /// Applied unit-price snapshot used by the automatic amount formula.
+  final double cena;
+
   /// Iznos se čuva kao REAL (float sa tačkom). Konverzija u srpski format SAMO pri prikazu.
   final double iznos;
   final bool cekiran;
@@ -9384,6 +9408,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     required this.interniNaziv,
     required this.nazivPrikaz,
     required this.kom,
+    required this.cena,
     required this.iznos,
     required this.cekiran,
     required this.redosled,
@@ -9410,6 +9435,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     map['interni_naziv'] = Variable<String>(interniNaziv);
     map['naziv_prikaz'] = Variable<String>(nazivPrikaz);
     map['kom'] = Variable<String>(kom);
+    map['cena'] = Variable<double>(cena);
     map['iznos'] = Variable<double>(iznos);
     map['cekiran'] = Variable<bool>(cekiran);
     map['redosled'] = Variable<int>(redosled);
@@ -9435,6 +9461,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       interniNaziv: Value(interniNaziv),
       nazivPrikaz: Value(nazivPrikaz),
       kom: Value(kom),
+      cena: Value(cena),
       iznos: Value(iznos),
       cekiran: Value(cekiran),
       redosled: Value(redosled),
@@ -9464,6 +9491,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       interniNaziv: serializer.fromJson<String>(json['interniNaziv']),
       nazivPrikaz: serializer.fromJson<String>(json['nazivPrikaz']),
       kom: serializer.fromJson<String>(json['kom']),
+      cena: serializer.fromJson<double>(json['cena'] ?? 0.0),
       iznos: serializer.fromJson<double>(json['iznos']),
       cekiran: serializer.fromJson<bool>(json['cekiran']),
       redosled: serializer.fromJson<int>(json['redosled']),
@@ -9496,6 +9524,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       'interniNaziv': serializer.toJson<String>(interniNaziv),
       'nazivPrikaz': serializer.toJson<String>(nazivPrikaz),
       'kom': serializer.toJson<String>(kom),
+      'cena': serializer.toJson<double>(cena),
       'iznos': serializer.toJson<double>(iznos),
       'cekiran': serializer.toJson<bool>(cekiran),
       'redosled': serializer.toJson<int>(redosled),
@@ -9518,6 +9547,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     String? interniNaziv,
     String? nazivPrikaz,
     String? kom,
+    double? cena,
     double? iznos,
     bool? cekiran,
     int? redosled,
@@ -9539,6 +9569,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     interniNaziv: interniNaziv ?? this.interniNaziv,
     nazivPrikaz: nazivPrikaz ?? this.nazivPrikaz,
     kom: kom ?? this.kom,
+    cena: cena ?? this.cena,
     iznos: iznos ?? this.iznos,
     cekiran: cekiran ?? this.cekiran,
     redosled: redosled ?? this.redosled,
@@ -9566,6 +9597,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
           ? data.nazivPrikaz.value
           : this.nazivPrikaz,
       kom: data.kom.present ? data.kom.value : this.kom,
+      cena: data.cena.present ? data.cena.value : this.cena,
       iznos: data.iznos.present ? data.iznos.value : this.iznos,
       cekiran: data.cekiran.present ? data.cekiran.value : this.cekiran,
       redosled: data.redosled.present ? data.redosled.value : this.redosled,
@@ -9608,6 +9640,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
           ..write('interniNaziv: $interniNaziv, ')
           ..write('nazivPrikaz: $nazivPrikaz, ')
           ..write('kom: $kom, ')
+          ..write('cena: $cena, ')
           ..write('iznos: $iznos, ')
           ..write('cekiran: $cekiran, ')
           ..write('redosled: $redosled, ')
@@ -9632,6 +9665,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     interniNaziv,
     nazivPrikaz,
     kom,
+    cena,
     iznos,
     cekiran,
     redosled,
@@ -9655,6 +9689,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
           other.interniNaziv == this.interniNaziv &&
           other.nazivPrikaz == this.nazivPrikaz &&
           other.kom == this.kom &&
+          other.cena == this.cena &&
           other.iznos == this.iznos &&
           other.cekiran == this.cekiran &&
           other.redosled == this.redosled &&
@@ -9676,6 +9711,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
   final Value<String> interniNaziv;
   final Value<String> nazivPrikaz;
   final Value<String> kom;
+  final Value<double> cena;
   final Value<double> iznos;
   final Value<bool> cekiran;
   final Value<int> redosled;
@@ -9695,6 +9731,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     this.interniNaziv = const Value.absent(),
     this.nazivPrikaz = const Value.absent(),
     this.kom = const Value.absent(),
+    this.cena = const Value.absent(),
     this.iznos = const Value.absent(),
     this.cekiran = const Value.absent(),
     this.redosled = const Value.absent(),
@@ -9715,6 +9752,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     required String interniNaziv,
     this.nazivPrikaz = const Value.absent(),
     this.kom = const Value.absent(),
+    this.cena = const Value.absent(),
     this.iznos = const Value.absent(),
     this.cekiran = const Value.absent(),
     this.redosled = const Value.absent(),
@@ -9736,6 +9774,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     Expression<String>? interniNaziv,
     Expression<String>? nazivPrikaz,
     Expression<String>? kom,
+    Expression<double>? cena,
     Expression<double>? iznos,
     Expression<bool>? cekiran,
     Expression<int>? redosled,
@@ -9757,6 +9796,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
       if (interniNaziv != null) 'interni_naziv': interniNaziv,
       if (nazivPrikaz != null) 'naziv_prikaz': nazivPrikaz,
       if (kom != null) 'kom': kom,
+      if (cena != null) 'cena': cena,
       if (iznos != null) 'iznos': iznos,
       if (cekiran != null) 'cekiran': cekiran,
       if (redosled != null) 'redosled': redosled,
@@ -9781,6 +9821,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     Value<String>? interniNaziv,
     Value<String>? nazivPrikaz,
     Value<String>? kom,
+    Value<double>? cena,
     Value<double>? iznos,
     Value<bool>? cekiran,
     Value<int>? redosled,
@@ -9802,6 +9843,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
       interniNaziv: interniNaziv ?? this.interniNaziv,
       nazivPrikaz: nazivPrikaz ?? this.nazivPrikaz,
       kom: kom ?? this.kom,
+      cena: cena ?? this.cena,
       iznos: iznos ?? this.iznos,
       cekiran: cekiran ?? this.cekiran,
       redosled: redosled ?? this.redosled,
@@ -9839,6 +9881,9 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     }
     if (kom.present) {
       map['kom'] = Variable<String>(kom.value);
+    }
+    if (cena.present) {
+      map['cena'] = Variable<double>(cena.value);
     }
     if (iznos.present) {
       map['iznos'] = Variable<double>(iznos.value);
@@ -9888,6 +9933,7 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
           ..write('interniNaziv: $interniNaziv, ')
           ..write('nazivPrikaz: $nazivPrikaz, ')
           ..write('kom: $kom, ')
+          ..write('cena: $cena, ')
           ..write('iznos: $iznos, ')
           ..write('cekiran: $cekiran, ')
           ..write('redosled: $redosled, ')
@@ -10493,6 +10539,16 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     requiredDuringInsert: false,
     defaultValue: const Constant('FIKSNA'),
   );
+  static const VerificationMeta _cenaMeta = const VerificationMeta('cena');
+  @override
+  late final GeneratedColumn<double> cena = GeneratedColumn<double>(
+    'cena',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   static const VerificationMeta _jeKorisnickaMeta = const VerificationMeta(
     'jeKorisnicka',
   );
@@ -10542,6 +10598,7 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     vidljiv,
     uvekPrikazati,
     tip,
+    cena,
     jeKorisnicka,
     osnovnaUSvakomPredmetu,
     redosled,
@@ -10601,6 +10658,12 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
         tip.isAcceptableOrUnknown(data['tip']!, _tipMeta),
       );
     }
+    if (data.containsKey('cena')) {
+      context.handle(
+        _cenaMeta,
+        cena.isAcceptableOrUnknown(data['cena']!, _cenaMeta),
+      );
+    }
     if (data.containsKey('je_korisnicka')) {
       context.handle(
         _jeKorisnickaMeta,
@@ -10654,6 +10717,10 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
         DriftSqlType.string,
         data['${effectivePrefix}tip'],
       )!,
+      cena: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cena'],
+      )!,
       jeKorisnicka: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}je_korisnicka'],
@@ -10685,6 +10752,7 @@ class IriuKatalogConfigData extends DataClass
   /// true = štampa se čak i ako je prazno; false = samo ako je popunjeno.
   final bool uvekPrikazati;
   final String tip;
+  final double cena;
   final bool jeKorisnicka;
 
   /// Persistent KATALOG policy: materialize this category only in future
@@ -10697,6 +10765,7 @@ class IriuKatalogConfigData extends DataClass
     required this.vidljiv,
     required this.uvekPrikazati,
     required this.tip,
+    required this.cena,
     required this.jeKorisnicka,
     required this.osnovnaUSvakomPredmetu,
     required this.redosled,
@@ -10709,6 +10778,7 @@ class IriuKatalogConfigData extends DataClass
     map['vidljiv'] = Variable<bool>(vidljiv);
     map['uvek_prikazati'] = Variable<bool>(uvekPrikazati);
     map['tip'] = Variable<String>(tip);
+    map['cena'] = Variable<double>(cena);
     map['je_korisnicka'] = Variable<bool>(jeKorisnicka);
     map['osnovna_u_svakom_predmetu'] = Variable<bool>(osnovnaUSvakomPredmetu);
     map['redosled'] = Variable<int>(redosled);
@@ -10722,6 +10792,7 @@ class IriuKatalogConfigData extends DataClass
       vidljiv: Value(vidljiv),
       uvekPrikazati: Value(uvekPrikazati),
       tip: Value(tip),
+      cena: Value(cena),
       jeKorisnicka: Value(jeKorisnicka),
       osnovnaUSvakomPredmetu: Value(osnovnaUSvakomPredmetu),
       redosled: Value(redosled),
@@ -10739,6 +10810,7 @@ class IriuKatalogConfigData extends DataClass
       vidljiv: serializer.fromJson<bool>(json['vidljiv']),
       uvekPrikazati: serializer.fromJson<bool>(json['uvekPrikazati']),
       tip: serializer.fromJson<String>(json['tip']),
+      cena: serializer.fromJson<double>(json['cena'] ?? 0.0),
       jeKorisnicka: serializer.fromJson<bool>(json['jeKorisnicka']),
       osnovnaUSvakomPredmetu: serializer.fromJson<bool>(
         json['osnovnaUSvakomPredmetu'],
@@ -10755,6 +10827,7 @@ class IriuKatalogConfigData extends DataClass
       'vidljiv': serializer.toJson<bool>(vidljiv),
       'uvekPrikazati': serializer.toJson<bool>(uvekPrikazati),
       'tip': serializer.toJson<String>(tip),
+      'cena': serializer.toJson<double>(cena),
       'jeKorisnicka': serializer.toJson<bool>(jeKorisnicka),
       'osnovnaUSvakomPredmetu': serializer.toJson<bool>(osnovnaUSvakomPredmetu),
       'redosled': serializer.toJson<int>(redosled),
@@ -10767,6 +10840,7 @@ class IriuKatalogConfigData extends DataClass
     bool? vidljiv,
     bool? uvekPrikazati,
     String? tip,
+    double? cena,
     bool? jeKorisnicka,
     bool? osnovnaUSvakomPredmetu,
     int? redosled,
@@ -10776,6 +10850,7 @@ class IriuKatalogConfigData extends DataClass
     vidljiv: vidljiv ?? this.vidljiv,
     uvekPrikazati: uvekPrikazati ?? this.uvekPrikazati,
     tip: tip ?? this.tip,
+    cena: cena ?? this.cena,
     jeKorisnicka: jeKorisnicka ?? this.jeKorisnicka,
     osnovnaUSvakomPredmetu:
         osnovnaUSvakomPredmetu ?? this.osnovnaUSvakomPredmetu,
@@ -10794,6 +10869,7 @@ class IriuKatalogConfigData extends DataClass
           ? data.uvekPrikazati.value
           : this.uvekPrikazati,
       tip: data.tip.present ? data.tip.value : this.tip,
+      cena: data.cena.present ? data.cena.value : this.cena,
       jeKorisnicka: data.jeKorisnicka.present
           ? data.jeKorisnicka.value
           : this.jeKorisnicka,
@@ -10812,6 +10888,7 @@ class IriuKatalogConfigData extends DataClass
           ..write('vidljiv: $vidljiv, ')
           ..write('uvekPrikazati: $uvekPrikazati, ')
           ..write('tip: $tip, ')
+          ..write('cena: $cena, ')
           ..write('jeKorisnicka: $jeKorisnicka, ')
           ..write('osnovnaUSvakomPredmetu: $osnovnaUSvakomPredmetu, ')
           ..write('redosled: $redosled')
@@ -10826,6 +10903,7 @@ class IriuKatalogConfigData extends DataClass
     vidljiv,
     uvekPrikazati,
     tip,
+    cena,
     jeKorisnicka,
     osnovnaUSvakomPredmetu,
     redosled,
@@ -10839,6 +10917,7 @@ class IriuKatalogConfigData extends DataClass
           other.vidljiv == this.vidljiv &&
           other.uvekPrikazati == this.uvekPrikazati &&
           other.tip == this.tip &&
+          other.cena == this.cena &&
           other.jeKorisnicka == this.jeKorisnicka &&
           other.osnovnaUSvakomPredmetu == this.osnovnaUSvakomPredmetu &&
           other.redosled == this.redosled);
@@ -10851,6 +10930,7 @@ class IriuKatalogConfigCompanion
   final Value<bool> vidljiv;
   final Value<bool> uvekPrikazati;
   final Value<String> tip;
+  final Value<double> cena;
   final Value<bool> jeKorisnicka;
   final Value<bool> osnovnaUSvakomPredmetu;
   final Value<int> redosled;
@@ -10861,6 +10941,7 @@ class IriuKatalogConfigCompanion
     this.vidljiv = const Value.absent(),
     this.uvekPrikazati = const Value.absent(),
     this.tip = const Value.absent(),
+    this.cena = const Value.absent(),
     this.jeKorisnicka = const Value.absent(),
     this.osnovnaUSvakomPredmetu = const Value.absent(),
     this.redosled = const Value.absent(),
@@ -10872,6 +10953,7 @@ class IriuKatalogConfigCompanion
     this.vidljiv = const Value.absent(),
     this.uvekPrikazati = const Value.absent(),
     this.tip = const Value.absent(),
+    this.cena = const Value.absent(),
     this.jeKorisnicka = const Value.absent(),
     this.osnovnaUSvakomPredmetu = const Value.absent(),
     this.redosled = const Value.absent(),
@@ -10884,6 +10966,7 @@ class IriuKatalogConfigCompanion
     Expression<bool>? vidljiv,
     Expression<bool>? uvekPrikazati,
     Expression<String>? tip,
+    Expression<double>? cena,
     Expression<bool>? jeKorisnicka,
     Expression<bool>? osnovnaUSvakomPredmetu,
     Expression<int>? redosled,
@@ -10895,6 +10978,7 @@ class IriuKatalogConfigCompanion
       if (vidljiv != null) 'vidljiv': vidljiv,
       if (uvekPrikazati != null) 'uvek_prikazati': uvekPrikazati,
       if (tip != null) 'tip': tip,
+      if (cena != null) 'cena': cena,
       if (jeKorisnicka != null) 'je_korisnicka': jeKorisnicka,
       if (osnovnaUSvakomPredmetu != null)
         'osnovna_u_svakom_predmetu': osnovnaUSvakomPredmetu,
@@ -10909,6 +10993,7 @@ class IriuKatalogConfigCompanion
     Value<bool>? vidljiv,
     Value<bool>? uvekPrikazati,
     Value<String>? tip,
+    Value<double>? cena,
     Value<bool>? jeKorisnicka,
     Value<bool>? osnovnaUSvakomPredmetu,
     Value<int>? redosled,
@@ -10920,6 +11005,7 @@ class IriuKatalogConfigCompanion
       vidljiv: vidljiv ?? this.vidljiv,
       uvekPrikazati: uvekPrikazati ?? this.uvekPrikazati,
       tip: tip ?? this.tip,
+      cena: cena ?? this.cena,
       jeKorisnicka: jeKorisnicka ?? this.jeKorisnicka,
       osnovnaUSvakomPredmetu:
           osnovnaUSvakomPredmetu ?? this.osnovnaUSvakomPredmetu,
@@ -10946,6 +11032,9 @@ class IriuKatalogConfigCompanion
     if (tip.present) {
       map['tip'] = Variable<String>(tip.value);
     }
+    if (cena.present) {
+      map['cena'] = Variable<double>(cena.value);
+    }
     if (jeKorisnicka.present) {
       map['je_korisnicka'] = Variable<bool>(jeKorisnicka.value);
     }
@@ -10971,6 +11060,7 @@ class IriuKatalogConfigCompanion
           ..write('vidljiv: $vidljiv, ')
           ..write('uvekPrikazati: $uvekPrikazati, ')
           ..write('tip: $tip, ')
+          ..write('cena: $cena, ')
           ..write('jeKorisnicka: $jeKorisnicka, ')
           ..write('osnovnaUSvakomPredmetu: $osnovnaUSvakomPredmetu, ')
           ..write('redosled: $redosled, ')

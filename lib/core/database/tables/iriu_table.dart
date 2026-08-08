@@ -16,8 +16,12 @@ class Iriu extends Table {
   /// Naziv za prikaz — vidljiv korisniku, editabilan.
   TextColumn get nazivPrikaz => text().withDefault(const Constant(''))();
 
-  /// Količina — slobodan tekst (informativno, ne ulazi u formulu).
+  /// Količina — slobodan tekst; when a unit price is applied it drives IZNOS.
   TextColumn get kom => text().withDefault(const Constant(''))();
+
+  /// Applied unit-price snapshot. KATALOG changes never rewrite an existing
+  /// PREDMET row; the row keeps the price that was applied at selection time.
+  RealColumn get cena => real().withDefault(const Constant(0.0))();
 
   /// Iznos se čuva kao REAL (float sa tačkom). Konverzija u srpski format SAMO pri prikazu.
   RealColumn get iznos => real().withDefault(const Constant(0.0))();
