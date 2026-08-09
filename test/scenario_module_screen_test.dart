@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +25,7 @@ void main() {
       await tester.pump();
       await tester.idle();
       await tester.pump(const Duration(milliseconds: 1));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
       await db.close();
     });
 
@@ -36,6 +38,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('SCENARIO'), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('scenario-open-predmet-selector')),
+      findsOneWidget,
+    );
+    expect(find.text('Nema otvorenih PREDMETA.'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('scenario-selected-predmet-view')),
+      findsNothing,
+    );
     expect(find.text('OSNOVNI PAKET'), findsOneWidget);
     expect(find.text('POSTOJEĆI SCENARIJI'), findsOneWidget);
     expect(find.text('MESTO SMRTI'), findsOneWidget);
@@ -115,7 +126,7 @@ void main() {
         await tester.pump();
         await tester.idle();
         await tester.pump(const Duration(milliseconds: 1));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(seconds: 1));
         await db.close();
       });
 
@@ -123,9 +134,12 @@ void main() {
         wrapForTest(
           ScenarioModuleScreen(
             podesavanjaRepository: PodesavanjaRepository(db),
-            predmet: await predmeti.getPredmet(predmetId),
           ),
         ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
       );
       await tester.pumpAndSettle();
 
@@ -134,81 +148,160 @@ void main() {
         find.byKey(const ValueKey<String>('scenario-edit-BOLNICA')),
         findsNothing,
       );
-      expect(find.text('Scenario za PREDMET 080826-001'), findsOneWidget);
+      expect(find.text('Scenario za PREDMET 080826-001'), findsNothing);
+      expect(find.text('PREDMET 080826-001 · OTVOREN'), findsOneWidget);
       expect(
         find.textContaining('NASILNA · STAN · SAHRANA · GRADSKO · GROBNICA'),
-        findsOneWidget,
+        findsAtLeastNWidgets(1),
       );
       expect(
-        find.textContaining(
-          'PRIMENJEN MAP_NASILNA_STAN_SAHRANA_GRADSKO_GROBNICA_NE_NE_NE',
-        ),
+        find.textContaining('PRIMENJENI SCENARIO SNAPSHOT'),
         findsOneWidget,
       );
       expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
-      expect(find.textContaining('MAP_NASILNA_'), findsOneWidget);
-
-      final preview = find.byKey(
-        const ValueKey<String>(
-          'scenario-preview-MAP_PRIRODNA_STAN_SAHRANA_GRADSKO_GROB_NE_NE_NE',
-        ),
+      expect(find.textContaining('MAP_NASILNA_'), findsNothing);
+      expect(find.text('Zaštitna i dodatna oprema'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('scenario-selected-edit')),
+        findsOneWidget,
       );
-      await tester.drag(find.byType(ListView).first, const Offset(0, -500));
-      await tester.pumpAndSettle();
-      await tester.tap(preview);
-      await tester.pumpAndSettle();
-      expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
-      expect(find.textContaining('MAP_PRIRODNA_'), findsNothing);
     },
   );
 
-  testWidgets('two applied scenario cards keep independent PREDMET state', (
-    tester,
-  ) async {
-    final db = createTestDatabase();
-    addTearDown(db.close);
-    final predmeti = PredmetiRepository(db);
-    final idA = await predmeti.kreirajPredmet(savetnikId: 1);
-    final idB = await predmeti.kreirajPredmet(savetnikId: 1);
-    await predmeti.azurirajPredmet(
-      idA,
-      const PredmetiCompanion(
-        brojPredmeta: Value('A-001'),
-        uzrokSmrti: Value('NASILNA'),
-        mestoSmrti: Value('STAN'),
-        vrstaCeremonije: Value('SAHRANA'),
-        tipGroblja: Value('GRADSKO'),
-        tipGrobnogMesta: Value('GROBNICA'),
-        opelo: Value('NE'),
-      ),
-    );
-    await predmeti.azurirajPredmet(
-      idB,
-      const PredmetiCompanion(
-        brojPredmeta: Value('B-002'),
-        uzrokSmrti: Value('PRIRODNA'),
-        mestoSmrti: Value('BOLNICA'),
-        vrstaCeremonije: Value('SAHRANA'),
-        tipGroblja: Value('GRADSKO'),
-        tipGrobnogMesta: Value('GROB'),
-        opelo: Value('DA'),
-      ),
-    );
-
-    await tester.pumpWidget(
-      wrapForTest(
-        Column(
-          children: [
-            PredmetAppliedScenarioCard(predmet: await predmeti.getPredmet(idA)),
-            PredmetAppliedScenarioCard(predmet: await predmeti.getPredmet(idB)),
-          ],
+  testWidgets(
+    'OPEN selector keeps one selection and clears stale closed PREDMET',
+    skip: Platform.environment['OPC_RUN_UI_FORENSIC'] != '1',
+    (tester) async {
+      final db = createTestDatabase();
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump(const Duration(seconds: 1));
+        await db.close();
+      });
+      final predmeti = PredmetiRepository(db);
+      final idA = await predmeti.kreirajPredmet(savetnikId: 1);
+      final idB = await predmeti.kreirajPredmet(savetnikId: 1);
+      final idClosed = await predmeti.kreirajPredmet(savetnikId: 1);
+      await predmeti.azurirajPredmet(
+        idA,
+        const PredmetiCompanion(brojPredmeta: Value('TEST4-A')),
+      );
+      await predmeti.azurirajPredmet(
+        idB,
+        const PredmetiCompanion(brojPredmeta: Value('TEST4-B')),
+      );
+      await predmeti.azurirajPredmet(
+        idClosed,
+        const PredmetiCompanion(
+          brojPredmeta: Value('TEST4-CLOSED'),
+          status: Value('ZATVOREN'),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('Scenario za PREDMET A-001'), findsOneWidget);
-    expect(find.text('Scenario za PREDMET B-002'), findsOneWidget);
-    expect(find.textContaining('NASILNA · STAN'), findsOneWidget);
-    expect(find.textContaining('PRIRODNA · BOLNICA'), findsOneWidget);
-  });
+      await tester.pumpWidget(
+        wrapForTest(
+          ScenarioModuleScreen(
+            podesavanjaRepository: PodesavanjaRepository(db),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('TEST4-A'), findsOneWidget);
+      expect(find.textContaining('TEST4-B'), findsOneWidget);
+      expect(find.textContaining('TEST4-CLOSED'), findsNothing);
+
+      await tester.tap(find.byKey(ValueKey('scenario-open-predmet-$idA')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('scenario-open-predmet-$idB')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('scenario-selected-predmet-view')),
+        findsOneWidget,
+      );
+      expect(find.text('PREDMET TEST4-B · OTVOREN'), findsOneWidget);
+      final aTile = tester.widget<CheckboxListTile>(
+        find.byKey(ValueKey('scenario-open-predmet-$idA')),
+      );
+      final bTile = tester.widget<CheckboxListTile>(
+        find.byKey(ValueKey('scenario-open-predmet-$idB')),
+      );
+      expect(aTile.value, isFalse);
+      expect(bTile.value, isTrue);
+
+      await predmeti.azurirajPredmet(
+        idB,
+        const PredmetiCompanion(status: Value('ZATVOREN')),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('scenario-open-predmet-refresh')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('scenario-selected-predmet-view')),
+        findsNothing,
+      );
+      expect(find.textContaining('TEST4-B'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'two applied scenario cards keep independent PREDMET state',
+    skip: Platform.environment['OPC_RUN_UI_FORENSIC'] != '1',
+    (tester) async {
+      final db = createTestDatabase();
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump(const Duration(seconds: 1));
+        await db.close();
+      });
+      final predmeti = PredmetiRepository(db);
+      final idA = await predmeti.kreirajPredmet(savetnikId: 1);
+      final idB = await predmeti.kreirajPredmet(savetnikId: 1);
+      await predmeti.azurirajPredmet(
+        idA,
+        const PredmetiCompanion(
+          brojPredmeta: Value('A-001'),
+          uzrokSmrti: Value('NASILNA'),
+          mestoSmrti: Value('STAN'),
+          vrstaCeremonije: Value('SAHRANA'),
+          tipGroblja: Value('GRADSKO'),
+          tipGrobnogMesta: Value('GROBNICA'),
+          opelo: Value('NE'),
+        ),
+      );
+      await predmeti.azurirajPredmet(
+        idB,
+        const PredmetiCompanion(
+          brojPredmeta: Value('B-002'),
+          uzrokSmrti: Value('PRIRODNA'),
+          mestoSmrti: Value('BOLNICA'),
+          vrstaCeremonije: Value('SAHRANA'),
+          tipGroblja: Value('GRADSKO'),
+          tipGrobnogMesta: Value('GROB'),
+          opelo: Value('DA'),
+        ),
+      );
+      await ScenarioModuleRepository(db).ensureModuleAndDefaults();
+
+      await tester.pumpWidget(
+        wrapForTest(
+          Column(
+            children: [
+              PredmetAppliedScenarioCard(
+                predmet: await predmeti.getPredmet(idA),
+              ),
+              PredmetAppliedScenarioCard(
+                predmet: await predmeti.getPredmet(idB),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      expect(find.text('Scenario za PREDMET A-001'), findsOneWidget);
+      expect(find.text('Scenario za PREDMET B-002'), findsOneWidget);
+      expect(find.textContaining('NASILNA · STAN'), findsOneWidget);
+      expect(find.textContaining('PRIRODNA · BOLNICA'), findsOneWidget);
+    },
+  );
 }

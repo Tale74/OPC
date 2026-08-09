@@ -799,6 +799,27 @@ NO_SCENARIO_RUNTIME_RULES:
   IRIU segment does not invoke the former hardcoded lifecycle triggers
   defaults are data, not active business policy in Dart code
 ```
+
+### 21.1 Owner-locked runtime entry and persisted price boundary
+
+```text
+WHEN MODULI → SCENARIO opens:
+  load PREDMETI where status = OTVOREN
+  show one checkbox per PREDMET
+  IF no checkbox is selected:
+    show the global/default SCENARIO editor
+  ELSE:
+    show the selected PREDMET conditions, derived scenario, persisted snapshot,
+    scenario-added items and the global/default edit action
+  never expose a direct PREDMET → SCENARIO route
+
+WHEN a new PREDMET is created:
+  materialize the SCENARIO OSNOVNI_PAKET through PredmetiRepository
+  for each fixed-price KATALOG category:
+    snapshot CENA and set IZNOS = CENA for KOM = 1
+  leave KATALOŠKA categories unmaterialized until explicitly selected
+  subsequent scenario edits do not rewrite an existing PREDMET snapshot
+```
 # Runtime authority clarification — 2026-08-08
 
 Normalni SCENARIO runtime učitava samo aktivne potpune `MAP_*` definicije.

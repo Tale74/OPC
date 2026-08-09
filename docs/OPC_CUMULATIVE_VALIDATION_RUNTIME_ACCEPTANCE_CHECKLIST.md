@@ -71,7 +71,20 @@ runtime PASS without the owner completing the checks below.
 - [ ] Repeat it on Android.
 - [ ] Confirm both platforms produce the same business result.
 
-## K. Runtime reconciliation gate (OPC-RUNTIME-RECONCILIATION)
+## K. Runtime reconciliation gate (OPC-SCENARIO-END-TO-END)
+
+- [ ] Enter SCENARIO only through `MODULI → SCENARIO`; confirm PREDMET does
+  not expose a direct SCENARIO action.
+- [ ] Confirm the `OTVORENI PREDMETI` selector lists only `OTVOREN` records.
+- [ ] With no selection, confirm the global editor is shown; select one open
+  PREDMET, switch to another, and confirm only one checkbox remains selected.
+- [ ] Verify the selected view shows name/surname, number, current conditions,
+  derived scenario, persisted snapshot distinction, and scenario-added items
+  without `MAP_*`, JSON, internal KATALOG IDs, or mojibake.
+- [ ] Use `UREDI RELEVANTNI SCENARIO` and verify it edits the global/default
+  definition while an existing PREDMET snapshot remains unchanged.
+- [ ] For NASILNA / STAN / SAHRANA / GRADSKO / GROB / OPELO NE, verify
+  `ZAŠTITNA I DODATNA OPREMA` is present with SCENARIO provenance.
 
 - [ ] Enter SCENARIO from the concrete PREDMET action and verify the card
   reads `Scenario za PREDMET <broj>`, not only the global MODULI view.

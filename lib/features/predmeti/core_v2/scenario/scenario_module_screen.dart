@@ -10,6 +10,8 @@ import 'owner_scenario_policy_kernel.dart';
 import 'scenario_contract.dart';
 import 'scenario_module_repository.dart';
 import 'scenario_persistence_contract.dart';
+import '../../data/iriu_repository.dart';
+import '../../data/predmeti_repository.dart';
 
 /// User-facing editor for the SCENARIO module.
 class ScenarioModuleScreen extends StatefulWidget {
@@ -31,64 +33,51 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   late Future<ScenarioModule> _moduleFuture;
   late Future<List<IriuKatalogConfigData>> _katalogFuture;
   late Future<List<ScenarioDefinitionRecord>> _definitionsFuture;
-  Future<ScenarioAssignmentSnapshot?>? _snapshotFuture;
+  late Future<List<PredmetiData>> _openPredmetiFuture;
+  late final PredmetiRepository _predmetiRepository;
   ScenarioModule? _currentModule;
-
-  static const _loadTimeout = Duration(seconds: 60);
+  int? _selectedPredmetId;
 
   @override
   void initState() {
     super.initState();
     _repository = ScenarioModuleRepository(widget.podesavanjaRepository.db);
-    _snapshotFuture = widget.predmet == null
-        ? null
-        : _readAppliedScenarioSnapshot(
-            widget.podesavanjaRepository.db,
-            widget.predmet!.id,
-          );
-    _moduleFuture = _repository.ensureModuleAndDefaults().timeout(
-      _loadTimeout,
-      onTimeout: () => throw TimeoutException('SCENARIO loading timed out.'),
+    _predmetiRepository = PredmetiRepository(widget.podesavanjaRepository.db);
+    _openPredmetiFuture = _predmetiRepository.getSvePredmete();
+    _moduleFuture = _repository.ensureModuleAndDefaults();
+    _katalogFuture = _moduleFuture.then(
+      (_) => widget.podesavanjaRepository.getKatalogVidljive(),
     );
-    _katalogFuture = _moduleFuture
-        .then((_) => widget.podesavanjaRepository.getKatalogVidljive())
-        .timeout(
-          _loadTimeout,
-          onTimeout: () =>
-              throw TimeoutException('KATALOG učitavanje je isteklo.'),
-        );
-    _definitionsFuture = _moduleFuture
-        .then((_) => _repository.getDefinitions())
-        .timeout(
-          _loadTimeout,
-          onTimeout: () => throw TimeoutException(
-            'SCENARIO definicije nisu učitane u dozvoljenom roku.',
-          ),
-        );
+    _definitionsFuture = _moduleFuture.then(
+      (_) => _repository.getDefinitions(),
+    );
+  }
+
+  void _selectPredmet(int? predmetId) {
+    if (_selectedPredmetId == predmetId) return;
+    setState(() {
+      _selectedPredmetId = predmetId;
+    });
+  }
+
+  void _refreshOpenPredmeti() {
+    if (!mounted) return;
+    setState(() {
+      _openPredmetiFuture = _predmetiRepository.getSvePredmete();
+    });
   }
 
   void _reloadScreen() {
     if (!mounted) return;
     setState(() {
-      _moduleFuture = _repository.ensureModuleAndDefaults().timeout(
-        _loadTimeout,
-        onTimeout: () => throw TimeoutException('SCENARIO loading timed out.'),
+      _openPredmetiFuture = _predmetiRepository.getSvePredmete();
+      _moduleFuture = _repository.ensureModuleAndDefaults();
+      _katalogFuture = _moduleFuture.then(
+        (_) => widget.podesavanjaRepository.getKatalogVidljive(),
       );
-      _katalogFuture = _moduleFuture
-          .then((_) => widget.podesavanjaRepository.getKatalogVidljive())
-          .timeout(
-            _loadTimeout,
-            onTimeout: () =>
-                throw TimeoutException('KATALOG učitavanje je isteklo.'),
-          );
-      _definitionsFuture = _moduleFuture
-          .then((_) => _repository.getDefinitions())
-          .timeout(
-            _loadTimeout,
-            onTimeout: () => throw TimeoutException(
-              'SCENARIO definicije nisu učitane u dozvoljenom roku.',
-            ),
-          );
+      _definitionsFuture = _moduleFuture.then(
+        (_) => _repository.getDefinitions(),
+      );
     });
   }
 
@@ -324,66 +313,110 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                   }
                   final module = _currentModule ?? moduleSnapshot.data!;
                   final osnovni = _repository.readOsnovniPaket(module);
-                  return ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      if (widget.predmet != null) ...[
-                        PredmetAppliedScenarioCard(
-                          predmet: widget.predmet!,
-                          snapshotFuture: _snapshotFuture,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      const Card(
-                        key: ValueKey('scenario-module-description'),
-                        child: ListTile(
-                          title: Text(
-                            'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
+                  return FutureBuilder<List<PredmetiData>>(
+                    future: _openPredmetiFuture,
+                    builder: (context, predmetSnapshot) {
+                      final openPredmeti = (predmetSnapshot.data ?? const [])
+                          .where((item) => item.status == 'OTVOREN')
+                          .toList(growable: false);
+                      final selected = _selectedPredmetId == null
+                          ? null
+                          : openPredmeti
+                                .where((item) => item.id == _selectedPredmetId)
+                                .firstOrNull;
+                      if (_selectedPredmetId != null && selected == null) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted && _selectedPredmetId != null) {
+                            _selectPredmet(null);
+                          }
+                        });
+                      }
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          _OpenPredmetSelector(
+                            predmeti: openPredmeti,
+                            selectedPredmetId: selected?.id,
+                            onSelected: _selectPredmet,
+                            onRefresh: _refreshOpenPredmeti,
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Card(
-                        child: ListTile(
-                          title: const Text('OSNOVNI PAKET'),
-                          subtitle: Text(
-                            osnovni.isEmpty
-                                ? 'Nije izabrana nijedna STAVKA.'
-                                : '${osnovni.length} STAVKI iz KATALOGA',
-                          ),
-                          trailing: FilledButton(
-                            onPressed: katalog.isEmpty
-                                ? null
-                                : () => _izmeniPaket(context, module, katalog),
-                            child: const Text('UREDI'),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _ScenarioPolicyTree(
-                                definitions: definitions,
-                                katalog: katalog,
-                                onPreview: (record) =>
-                                    _pregledScenario(context, katalog, record),
-                                onEdit: (record) => _dodajIliIzmeniScenario(
-                                  context,
-                                  katalog,
-                                  record: record,
+                          const SizedBox(height: 12),
+                          if (selected != null)
+                            _SelectedPredmetScenarioView(
+                              predmet: selected,
+                              db: widget.podesavanjaRepository.db,
+                              definitions: definitions,
+                              onEdit: (record) => _dodajIliIzmeniScenario(
+                                context,
+                                katalog,
+                                record: record,
+                              ),
+                            )
+                          else ...[
+                            const Card(
+                              key: ValueKey('scenario-module-description'),
+                              child: ListTile(
+                                title: Text(
+                                  'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
                                 ),
-                                onAdd: katalog.isEmpty
-                                    ? null
-                                    : () => _dodajIliIzmeniScenario(
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Card(
+                              child: ListTile(
+                                title: const Text('OSNOVNI PAKET'),
+                                subtitle: Text(
+                                  osnovni.isEmpty
+                                      ? 'Nije izabrana nijedna STAVKA.'
+                                      : '${osnovni.length} STAVKI iz KATALOGA',
+                                ),
+                                trailing: FilledButton(
+                                  onPressed: katalog.isEmpty
+                                      ? null
+                                      : () => _izmeniPaket(
+                                          context,
+                                          module,
+                                          katalog,
+                                        ),
+                                  child: const Text('UREDI'),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  8,
+                                  8,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    _ScenarioPolicyTree(
+                                      definitions: definitions,
+                                      katalog: katalog,
+                                      onPreview: (record) => _pregledScenario(
                                         context,
                                         katalog,
+                                        record,
                                       ),
-                              ),
-                              /*
+                                      onEdit: (record) =>
+                                          _dodajIliIzmeniScenario(
+                                            context,
+                                            katalog,
+                                            record: record,
+                                          ),
+                                      onAdd: katalog.isEmpty
+                                          ? null
+                                          : () => _dodajIliIzmeniScenario(
+                                              context,
+                                              katalog,
+                                            ),
+                                    ),
+                                    /*
                               if (definitions.isEmpty)
                                 const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 16),
@@ -446,11 +479,14 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                 ),
                               ),
 */
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   );
                 },
               );
@@ -460,6 +496,218 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
       ),
     );
   }
+}
+
+class _OpenPredmetSelector extends StatelessWidget {
+  const _OpenPredmetSelector({
+    required this.predmeti,
+    required this.selectedPredmetId,
+    required this.onSelected,
+    required this.onRefresh,
+  });
+
+  final List<PredmetiData> predmeti;
+  final int? selectedPredmetId;
+  final ValueChanged<int?> onSelected;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      key: const ValueKey('scenario-open-predmet-selector'),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'OTVORENI PREDMETI',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey('scenario-open-predmet-refresh'),
+                  tooltip: 'OSVEŽI OTVORENE PREDMETE',
+                  onPressed: onRefresh,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Izaberite jedan PREDMET za pregled njegovog SCENARIO stanja.',
+            ),
+            if (predmeti.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 14),
+                child: Text('Nema otvorenih PREDMETA.'),
+              )
+            else
+              ...predmeti.map(
+                (predmet) => CheckboxListTile(
+                  key: ValueKey('scenario-open-predmet-${predmet.id}'),
+                  contentPadding: EdgeInsets.zero,
+                  value: selectedPredmetId == predmet.id,
+                  onChanged: (checked) =>
+                      onSelected(checked == true ? predmet.id : null),
+                  title: Text(_openPredmetDisplayName(predmet)),
+                  subtitle: Text('PREDMET ${predmet.brojPredmeta}'),
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _openPredmetDisplayName(PredmetiData predmet) {
+  final fullName = '${predmet.ime.trim()} ${predmet.prezime.trim()}'.trim();
+  return fullName.isEmpty ? 'Bez unetog imena i prezimena' : fullName;
+}
+
+class _SelectedPredmetScenarioView extends StatelessWidget {
+  const _SelectedPredmetScenarioView({
+    required this.predmet,
+    required this.db,
+    required this.definitions,
+    required this.onEdit,
+  });
+
+  final PredmetiData predmet;
+  final AppDatabase db;
+  final List<ScenarioDefinitionRecord> definitions;
+  final ValueChanged<ScenarioDefinitionRecord> onEdit;
+
+  Future<_SelectedScenarioData> _load() async {
+    final snapshotRow = await (db.select(
+      db.predmetScenarioSnapshots,
+    )..where((item) => item.predmetId.equals(predmet.id))).getSingleOrNull();
+    final snapshot = snapshotRow == null
+        ? null
+        : ScenarioAssignmentSnapshot.fromJsonMap(
+            jsonDecode(snapshotRow.snapshotJson) as Map<String, dynamic>,
+          );
+    final rows = await IriuRepository(db).getIriu(predmet.id);
+    final provenance = await (db.select(
+      db.iriuProvenance,
+    )..where((item) => item.moduleId.equals('scenario'))).get();
+    final scenarioOwnedIds = provenance
+        .where((item) => item.origin == 'SCENARIO_PAKET')
+        .map((item) => item.iriuId)
+        .toSet();
+    return _SelectedScenarioData(
+      snapshot: snapshot,
+      scenarioRows: rows
+          .where((row) => scenarioOwnedIds.contains(row.id))
+          .toList(growable: false),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final derived = const OwnerScenarioPolicyKernel().evaluate(predmet);
+    final relevantRecord = derived.scenarioId == null
+        ? null
+        : definitions
+              .where((record) => record.id == derived.scenarioId)
+              .firstOrNull;
+    return FutureBuilder<_SelectedScenarioData>(
+      future: _load(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Card(
+            key: const ValueKey('scenario-selected-predmet-view'),
+            child: ListTile(
+              leading: const Icon(Icons.error_outline),
+              title: Text(_openPredmetDisplayName(predmet)),
+              subtitle: const Text('SCENARIO stanje nije moguće učitati.'),
+            ),
+          );
+        }
+        final data = snapshot.data;
+        return Card(
+          key: const ValueKey('scenario-selected-predmet-view'),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.assignment_turned_in_outlined),
+                  title: Text(_openPredmetDisplayName(predmet)),
+                  subtitle: Text('PREDMET ${predmet.brojPredmeta} · OTVOREN'),
+                ),
+                const Divider(),
+                const Text(
+                  'TRENUTNI USLOVI I IZVEDENI SCENARIO',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  derived.isComplete
+                      ? derived.key!.businessSummary
+                      : 'Poslovni uslovi još nisu kompletni.',
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'PRIMENJENI SCENARIO SNAPSHOT',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  data?.snapshot == null
+                      ? 'Nije formiran; prikazan je samo trenutno izvedeni scenario.'
+                      : _scenarioBusinessSummary(data!.snapshot!.scenario),
+                ),
+                if (data?.scenarioRows.isNotEmpty == true) ...[
+                  const SizedBox(height: 14),
+                  const Text(
+                    'DODATE STAVKE SCENARIJA',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  for (final row in data!.scenarioRows)
+                    ListTile(
+                      key: ValueKey('scenario-selected-item-${row.id}'),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.check_circle_outline),
+                      title: Text(row.nazivPrikaz),
+                      subtitle: Text(row.poslovniStatus),
+                    ),
+                ],
+                if (relevantRecord != null) ...[
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    key: const ValueKey('scenario-selected-edit'),
+                    onPressed: () => onEdit(relevantRecord),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('UREDI RELEVANTNI SCENARIO'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SelectedScenarioData {
+  const _SelectedScenarioData({
+    required this.snapshot,
+    required this.scenarioRows,
+  });
+
+  final ScenarioAssignmentSnapshot? snapshot;
+  final List<IriuData> scenarioRows;
 }
 
 class _ScenarioLoadingView extends StatelessWidget {
@@ -825,7 +1073,7 @@ class PredmetAppliedScenarioCard extends StatelessWidget {
             ? (result.isComplete
                   ? result.key!.businessSummary
                   : 'Poslovni uslovi još nisu kompletni.')
-            : '${_scenarioBusinessSummary(applied.scenario)} · PRIMENJEN ${applied.scenarioId}';
+            : '${_scenarioBusinessSummary(applied.scenario)} · PRIMENJENI SCENARIO';
         return Card(
           key: ValueKey('predmet-applied-scenario-${predmet.id}'),
           child: ListTile(
@@ -837,22 +1085,6 @@ class PredmetAppliedScenarioCard extends StatelessWidget {
       },
     );
   }
-}
-
-Future<ScenarioAssignmentSnapshot?> _readAppliedScenarioSnapshot(
-  AppDatabase db,
-  int predmetId,
-) async {
-  // The card is deliberately backed by the same persisted assignment used by
-  // IRiU reconciliation. A missing row falls back to the live owner-key
-  // preview, while a present row makes the applied MAP identity visible.
-  final row = await (db.select(
-    db.predmetScenarioSnapshots,
-  )..where((item) => item.predmetId.equals(predmetId))).getSingleOrNull();
-  if (row == null) return null;
-  return ScenarioAssignmentSnapshot.fromJsonMap(
-    jsonDecode(row.snapshotJson) as Map<String, dynamic>,
-  );
 }
 
 String _scenarioBusinessSummary(ScenarioDefinition definition) {
