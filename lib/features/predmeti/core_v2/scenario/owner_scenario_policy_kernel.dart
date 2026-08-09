@@ -579,8 +579,8 @@ final class OwnerScenarioKey {
     burialPlace,
     'OPELO $opelo',
     'VAN SRBIJE ${international ? 'DA' : 'NE'}',
-    'DOÄŒEK ${docek ? 'DA' : 'NE'}',
-  ].join(' Â· ');
+    'DOČEK ${docek ? 'DA' : 'NE'}',
+  ].join(' · ');
 
   String get stableId {
     final fields = <String>[

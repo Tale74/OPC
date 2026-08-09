@@ -182,6 +182,12 @@ class PredmetiRepository {
               interniNaziv: Value(stavka.interniNaziv),
               nazivPrikaz: Value(stavka.nazivPrikaz ?? katalogRow.nazivPrikaz),
               kom: const Value('1'),
+              // OSNOVNI PAKET is materialized before the SCENARIO
+              // reconciliation pass.  Carry the fixed KATALOG price at
+              // this boundary so the persisted IRiU row has the same
+              // price/amount semantics as a scenario-added row.
+              cena: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
+              iznos: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
               redosled: Value(red++),
             ),
           );

@@ -4,7 +4,10 @@ import 'dart:io';
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart';
 
+import 'package:opc_v4/core/constants/iriu_constants.dart';
+import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_repository.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
@@ -12,6 +15,31 @@ import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'test_bootstrap.dart';
 
 void main() {
+  test(
+    'OSNOVNI PAKET materialization snapshots fixed KATALOG price and amount',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      await (db.update(db.iriuKatalogConfig)
+            ..where((row) => row.interniNaziv.equals(IriuK.peskirZaKrst)))
+          .write(const IriuKatalogConfigCompanion(cena: Value(42.5)));
+
+      final predmeti = PredmetiRepository(db);
+      final predmetId = await predmeti.kreirajPredmet(savetnikId: 1);
+      await predmeti.inicijalizujIriu(predmetId);
+
+      final row =
+          await (db.select(db.iriu)..where(
+                (item) =>
+                    item.predmetId.equals(predmetId) &
+                    item.interniNaziv.equals(IriuK.peskirZaKrst),
+              ))
+              .getSingle();
+      expect(row.cena, 42.5);
+      expect(row.iznos, 42.5);
+    },
+  );
+
   test('SCENARIO is the only source of the basic package', () async {
     final db = createTestDatabase();
     addTearDown(db.close);

@@ -76,6 +76,48 @@ void main() {
   });
 
   test(
+    'legacy NASILNA MAP shape is repaired with protective equipment',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final repository = ScenarioModuleRepository(db);
+      final key = const OwnerScenarioPolicyKernel().allKeys().singleWhere(
+        (item) =>
+            item.stableId ==
+            'MAP_NASILNA_STAN_SAHRANA_GRADSKO_GROBNICA_NE_NE_NE',
+      );
+      final expected = const OwnerScenarioPolicyKernel().definitionForKey(key);
+      await repository.ensureModule();
+      await repository.saveDefinition(
+        id: expected.id,
+        version: 1,
+        naziv: expected.name,
+        condition: expected.condition,
+        consequences: expected.consequences
+            .where(
+              (item) =>
+                  item.katalogCategoryInternalName !=
+                  IriuK.zastitnaIDodatnaOprema,
+            )
+            .toList(),
+        jePodrazumevani: true,
+        status: 'PRIMENJEN',
+      );
+
+      await repository.ensureModuleAndDefaults();
+      final repaired = repository.definitionFromRecord(
+        (await repository.getDefinitions()).singleWhere(
+          (item) => item.id == expected.id,
+        ),
+      );
+      expect(
+        repaired.consequences.map((item) => item.katalogCategoryInternalName),
+        contains(IriuK.zastitnaIDodatnaOprema),
+      );
+    },
+  );
+
+  test(
     'legacy nine-item basic package migrates once while custom package remains owned',
     () async {
       final db = createTestDatabase();

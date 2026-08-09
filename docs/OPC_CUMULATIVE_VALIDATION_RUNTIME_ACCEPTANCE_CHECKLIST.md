@@ -71,6 +71,20 @@ runtime PASS without the owner completing the checks below.
 - [ ] Repeat it on Android.
 - [ ] Confirm both platforms produce the same business result.
 
+## K. Runtime reconciliation gate (OPC-RUNTIME-RECONCILIATION)
+
+- [ ] Enter SCENARIO from the concrete PREDMET action and verify the card
+  reads `Scenario za PREDMET <broj>`, not only the global MODULI view.
+- [ ] Verify the card shows the persisted applied `MAP_…` assignment after the
+  PREDMET has been reconciled, with no mojibake in the business summary.
+- [ ] For NASILNA / STAN / SAHRANA / GRADSKO / GROBNICA / OPELO NE, verify
+  `ZAŠTITNA I DODATNA OPREMA` is present and that the active definition is the
+  complete 1008 owner-map record.
+- [ ] Create a fresh PREDMET and verify every fixed-price OSNOVNI PAKET row
+  carries `CENA` and `IZNOS` immediately after materialization.
+- [ ] Verify `KOM>1`, manual IZNOS override, A→B→C diff, multi-PREDMET
+  isolation, and close/reopen persistence remain unchanged.
+
 Owner notes:
 
 ```text

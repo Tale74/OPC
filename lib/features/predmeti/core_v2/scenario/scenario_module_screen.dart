@@ -31,6 +31,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   late Future<ScenarioModule> _moduleFuture;
   late Future<List<IriuKatalogConfigData>> _katalogFuture;
   late Future<List<ScenarioDefinitionRecord>> _definitionsFuture;
+  Future<ScenarioAssignmentSnapshot?>? _snapshotFuture;
   ScenarioModule? _currentModule;
 
   static const _loadTimeout = Duration(seconds: 60);
@@ -39,6 +40,12 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   void initState() {
     super.initState();
     _repository = ScenarioModuleRepository(widget.podesavanjaRepository.db);
+    _snapshotFuture = widget.predmet == null
+        ? null
+        : _readAppliedScenarioSnapshot(
+            widget.podesavanjaRepository.db,
+            widget.predmet!.id,
+          );
     _moduleFuture = _repository.ensureModuleAndDefaults().timeout(
       _loadTimeout,
       onTimeout: () => throw TimeoutException('SCENARIO loading timed out.'),
@@ -321,7 +328,10 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                     padding: const EdgeInsets.all(16),
                     children: [
                       if (widget.predmet != null) ...[
-                        PredmetAppliedScenarioCard(predmet: widget.predmet!),
+                        PredmetAppliedScenarioCard(
+                          predmet: widget.predmet!,
+                          snapshotFuture: _snapshotFuture,
+                        ),
                         const SizedBox(height: 12),
                       ],
                       const Card(
@@ -792,29 +802,57 @@ class _ScenarioResultCard extends StatelessWidget {
 }
 
 class PredmetAppliedScenarioCard extends StatelessWidget {
-  const PredmetAppliedScenarioCard({super.key, required this.predmet});
+  const PredmetAppliedScenarioCard({
+    super.key,
+    required this.predmet,
+    this.snapshotFuture,
+  });
 
   final PredmetiData predmet;
+  final Future<ScenarioAssignmentSnapshot?>? snapshotFuture;
 
   @override
   Widget build(BuildContext context) {
-    final result = const OwnerScenarioPolicyKernel().evaluate(predmet);
     final predmetIdentity = predmet.brojPredmeta.trim().isEmpty
         ? predmet.id.toString()
         : predmet.brojPredmeta.trim();
-    return Card(
-      key: ValueKey('predmet-applied-scenario-${predmet.id}'),
-      child: ListTile(
-        leading: const Icon(Icons.assignment_turned_in_outlined),
-        title: Text('Scenario za PREDMET $predmetIdentity'),
-        subtitle: Text(
-          result.isComplete
-              ? result.key!.businessSummary
-              : 'Poslovni uslovi joÅ¡ nisu kompletni.',
-        ),
-      ),
+    return FutureBuilder<ScenarioAssignmentSnapshot?>(
+      future: snapshotFuture,
+      builder: (context, snapshot) {
+        final applied = snapshot.data;
+        final result = const OwnerScenarioPolicyKernel().evaluate(predmet);
+        final summary = applied == null
+            ? (result.isComplete
+                  ? result.key!.businessSummary
+                  : 'Poslovni uslovi još nisu kompletni.')
+            : '${_scenarioBusinessSummary(applied.scenario)} · PRIMENJEN ${applied.scenarioId}';
+        return Card(
+          key: ValueKey('predmet-applied-scenario-${predmet.id}'),
+          child: ListTile(
+            leading: const Icon(Icons.assignment_turned_in_outlined),
+            title: Text('Scenario za PREDMET $predmetIdentity'),
+            subtitle: Text(summary),
+          ),
+        );
+      },
     );
   }
+}
+
+Future<ScenarioAssignmentSnapshot?> _readAppliedScenarioSnapshot(
+  AppDatabase db,
+  int predmetId,
+) async {
+  // The card is deliberately backed by the same persisted assignment used by
+  // IRiU reconciliation. A missing row falls back to the live owner-key
+  // preview, while a present row makes the applied MAP identity visible.
+  final row = await (db.select(
+    db.predmetScenarioSnapshots,
+  )..where((item) => item.predmetId.equals(predmetId))).getSingleOrNull();
+  if (row == null) return null;
+  return ScenarioAssignmentSnapshot.fromJsonMap(
+    jsonDecode(row.snapshotJson) as Map<String, dynamic>,
+  );
 }
 
 String _scenarioBusinessSummary(ScenarioDefinition definition) {
@@ -848,11 +886,9 @@ String _scenarioBusinessSummary(ScenarioDefinition definition) {
         : 'VAN SRBIJE ${values[ScenarioCriterionField.sahranaVanSrbije]}',
     values[ScenarioCriterionField.docekPosmrtnihOstataka] == null
         ? null
-        : 'DOÄŒEK ${values[ScenarioCriterionField.docekPosmrtnihOstataka]}',
+        : 'DOČEK ${values[ScenarioCriterionField.docekPosmrtnihOstataka]}',
   ].whereType<String>().where((value) => value.isNotEmpty).toList();
-  return ordered.isEmpty
-      ? 'Potpuna poslovna kombinacija'
-      : ordered.join(' Â· ');
+  return ordered.isEmpty ? 'Potpuna poslovna kombinacija' : ordered.join(' · ');
 }
 
 /*
@@ -894,7 +930,7 @@ class _ScenarioPolicyTree extends StatelessWidget {
         if (definitions.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text('Nema saÄuvanih scenarija.'),
+            child: Text('Nema sačuvanih scenarija.'),
           )
         else
           Card(

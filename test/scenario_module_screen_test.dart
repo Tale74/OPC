@@ -7,6 +7,7 @@ import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_screen.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_repository.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
+import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:drift/drift.dart' show Value;
 
@@ -102,6 +103,13 @@ void main() {
           opelo: Value('NE'),
         ),
       );
+      final module = await scenarioRepository.ensureModuleAndDefaults();
+      await IriuRepository(db).syncScenarioRows(
+        predmetId: predmetId,
+        predmet: await predmeti.getPredmet(predmetId),
+        scenarios: await scenarioRepository.getActiveDefinitions(),
+        osnovniPaket: scenarioRepository.readOsnovniPaket(module),
+      );
       addTearDown(() async {
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump();
@@ -128,13 +136,17 @@ void main() {
       );
       expect(find.text('Scenario za PREDMET 080826-001'), findsOneWidget);
       expect(
+        find.textContaining('NASILNA · STAN · SAHRANA · GRADSKO · GROBNICA'),
+        findsOneWidget,
+      );
+      expect(
         find.textContaining(
-          'NASILNA Â· STAN Â· SAHRANA Â· GRADSKO Â· GROBNICA',
+          'PRIMENJEN MAP_NASILNA_STAN_SAHRANA_GRADSKO_GROBNICA_NE_NE_NE',
         ),
         findsOneWidget,
       );
       expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
-      expect(find.textContaining('MAP_NASILNA_'), findsNothing);
+      expect(find.textContaining('MAP_NASILNA_'), findsOneWidget);
 
       final preview = find.byKey(
         const ValueKey<String>(
@@ -196,7 +208,7 @@ void main() {
 
     expect(find.text('Scenario za PREDMET A-001'), findsOneWidget);
     expect(find.text('Scenario za PREDMET B-002'), findsOneWidget);
-    expect(find.textContaining('NASILNA Â· STAN'), findsOneWidget);
-    expect(find.textContaining('PRIRODNA Â· BOLNICA'), findsOneWidget);
+    expect(find.textContaining('NASILNA · STAN'), findsOneWidget);
+    expect(find.textContaining('PRIRODNA · BOLNICA'), findsOneWidget);
   });
 }
