@@ -10,6 +10,7 @@ import 'owner_scenario_policy_kernel.dart';
 import 'scenario_contract.dart';
 import 'scenario_module_repository.dart';
 import 'scenario_persistence_contract.dart';
+import 'scenario_runtime_reconciliation_service.dart';
 import '../../data/iriu_repository.dart';
 import '../../data/predmeti_repository.dart';
 
@@ -570,7 +571,7 @@ String _openPredmetDisplayName(PredmetiData predmet) {
   return fullName.isEmpty ? 'Bez unetog imena i prezimena' : fullName;
 }
 
-class _SelectedPredmetScenarioView extends StatelessWidget {
+class _SelectedPredmetScenarioView extends StatefulWidget {
   const _SelectedPredmetScenarioView({
     required this.predmet,
     required this.db,
@@ -583,18 +584,48 @@ class _SelectedPredmetScenarioView extends StatelessWidget {
   final List<ScenarioDefinitionRecord> definitions;
   final ValueChanged<ScenarioDefinitionRecord> onEdit;
 
+  @override
+  State<_SelectedPredmetScenarioView> createState() =>
+      _SelectedPredmetScenarioViewState();
+}
+
+class _SelectedPredmetScenarioViewState
+    extends State<_SelectedPredmetScenarioView> {
+  late Future<_SelectedScenarioData> _dataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _dataFuture = _load();
+  }
+
+  @override
+  void didUpdateWidget(_SelectedPredmetScenarioView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.predmet.id != widget.predmet.id) {
+      _dataFuture = _load();
+    }
+  }
+
   Future<_SelectedScenarioData> _load() async {
-    final snapshotRow = await (db.select(
-      db.predmetScenarioSnapshots,
-    )..where((item) => item.predmetId.equals(predmet.id))).getSingleOrNull();
+    // The production MODULI -> SCENARIO hand-off must reconcile before the
+    // view reads persisted rows. Earlier E2E tests called the repository
+    // directly and therefore bypassed this real runtime boundary.
+    await ScenarioRuntimeReconciliationService(
+      widget.db,
+    ).reconcileOpenPredmet(widget.predmet);
+    final snapshotRow =
+        await (widget.db.select(widget.db.predmetScenarioSnapshots)
+              ..where((item) => item.predmetId.equals(widget.predmet.id)))
+            .getSingleOrNull();
     final snapshot = snapshotRow == null
         ? null
         : ScenarioAssignmentSnapshot.fromJsonMap(
             jsonDecode(snapshotRow.snapshotJson) as Map<String, dynamic>,
           );
-    final rows = await IriuRepository(db).getIriu(predmet.id);
-    final provenance = await (db.select(
-      db.iriuProvenance,
+    final rows = await IriuRepository(widget.db).getIriu(widget.predmet.id);
+    final provenance = await (widget.db.select(
+      widget.db.iriuProvenance,
     )..where((item) => item.moduleId.equals('scenario'))).get();
     final scenarioOwnedIds = provenance
         .where((item) => item.origin == 'SCENARIO_PAKET')
@@ -610,21 +641,21 @@ class _SelectedPredmetScenarioView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final derived = const OwnerScenarioPolicyKernel().evaluate(predmet);
+    final derived = const OwnerScenarioPolicyKernel().evaluate(widget.predmet);
     final relevantRecord = derived.scenarioId == null
         ? null
-        : definitions
+        : widget.definitions
               .where((record) => record.id == derived.scenarioId)
               .firstOrNull;
     return FutureBuilder<_SelectedScenarioData>(
-      future: _load(),
+      future: _dataFuture,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Card(
             key: const ValueKey('scenario-selected-predmet-view'),
             child: ListTile(
               leading: const Icon(Icons.error_outline),
-              title: Text(_openPredmetDisplayName(predmet)),
+              title: Text(_openPredmetDisplayName(widget.predmet)),
               subtitle: const Text('SCENARIO stanje nije moguće učitati.'),
             ),
           );
@@ -640,8 +671,10 @@ class _SelectedPredmetScenarioView extends StatelessWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.assignment_turned_in_outlined),
-                  title: Text(_openPredmetDisplayName(predmet)),
-                  subtitle: Text('PREDMET ${predmet.brojPredmeta} · OTVOREN'),
+                  title: Text(_openPredmetDisplayName(widget.predmet)),
+                  subtitle: Text(
+                    'PREDMET ${widget.predmet.brojPredmeta} · OTVOREN',
+                  ),
                 ),
                 const Divider(),
                 const Text(
@@ -686,7 +719,7 @@ class _SelectedPredmetScenarioView extends StatelessWidget {
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     key: const ValueKey('scenario-selected-edit'),
-                    onPressed: () => onEdit(relevantRecord),
+                    onPressed: () => widget.onEdit(relevantRecord),
                     icon: const Icon(Icons.edit_outlined),
                     label: const Text('UREDI RELEVANTNI SCENARIO'),
                   ),

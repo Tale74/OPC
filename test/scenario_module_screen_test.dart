@@ -114,13 +114,6 @@ void main() {
           opelo: Value('NE'),
         ),
       );
-      final module = await scenarioRepository.ensureModuleAndDefaults();
-      await IriuRepository(db).syncScenarioRows(
-        predmetId: predmetId,
-        predmet: await predmeti.getPredmet(predmetId),
-        scenarios: await scenarioRepository.getActiveDefinitions(),
-        osnovniPaket: scenarioRepository.readOsnovniPaket(module),
-      );
       addTearDown(() async {
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump();
