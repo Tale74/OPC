@@ -9,7 +9,6 @@ import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_screen.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_repository.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
-import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:drift/drift.dart' show Value;
 

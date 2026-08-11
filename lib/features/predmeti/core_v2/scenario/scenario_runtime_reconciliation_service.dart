@@ -1,6 +1,5 @@
 import '../../../../core/database/database.dart';
 import '../../data/iriu_repository.dart';
-import 'scenario_contract.dart';
 import 'scenario_module_repository.dart';
 
 /// Reconciles an open PREDMET when the production SCENARIO module observes it.

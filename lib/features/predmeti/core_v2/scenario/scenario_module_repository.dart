@@ -256,26 +256,44 @@ class ScenarioModuleRepository {
         if (key == null) continue;
         final expected = kernel.definitionForKey(key);
         final expectedWire = scenarioDefinitionToJsonMap(expected);
-        final oldConsequences = expected.consequences.toList(growable: true);
-        final protectiveIndex = oldConsequences.indexWhere(
-          (item) =>
-              item.katalogCategoryInternalName == IriuK.zastitnaIDodatnaOprema,
-        );
-        if (protectiveIndex < 0) continue;
-        oldConsequences.removeAt(protectiveIndex);
-        final oldWire = scenarioDefinitionToJsonMap(
-          ScenarioDefinition(
-            id: expected.id,
-            name: expected.name,
-            condition: expected.condition,
-            consequences: oldConsequences,
-            description: expected.description,
-          ),
-        );
+        final expectedWithoutProtective = (expectedWire['consequences'] as List)
+            .where(
+              (item) =>
+                  item['katalogCategoryInternalName'] !=
+                  IriuK.zastitnaIDodatnaOprema,
+            )
+            .map(
+              (item) => <String, Object?>{
+                'katalogCategoryInternalName':
+                    item['katalogCategoryInternalName'],
+                'action': item['action'],
+              },
+            )
+            .toList(growable: false);
+        final actualConsequences = (jsonDecode(record.consequencesJson) as List)
+            .whereType<Map<Object?, Object?>>()
+            .map(
+              (item) => <String, Object?>{
+                'katalogCategoryInternalName':
+                    item['katalogCategoryInternalName'],
+                'action': item['action'],
+              },
+            )
+            .toList(growable: false);
+        final sameLegacyBusinessShape =
+            actualConsequences.length == expectedWithoutProtective.length &&
+            Iterable<int>.generate(actualConsequences.length).every(
+              (index) =>
+                  actualConsequences[index]['katalogCategoryInternalName'] ==
+                      expectedWithoutProtective[index]['katalogCategoryInternalName'] &&
+                  actualConsequences[index]['action'] ==
+                      expectedWithoutProtective[index]['action'],
+            );
         final isKnownSystemShape =
-            record.naziv == expected.name &&
-            record.conditionJson == jsonEncode(expectedWire['condition']) &&
-            record.consequencesJson == jsonEncode(oldWire['consequences']);
+            // Only version-1 owner defaults are eligible. A user-edited MAP
+            // remains protected by jePodrazumevani == false, even when its
+            // consequence list intentionally differs from the owner kernel.
+            record.jePodrazumevani && sameLegacyBusinessShape;
         if (!isKnownSystemShape) continue;
 
         await (_db.update(_db.scenarioDefinitions)..where(

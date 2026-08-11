@@ -1564,6 +1564,20 @@ class AppDatabase extends _$AppDatabase {
 
     // ── Čitulje — seede se uvek (standardni cenici novina) ───────────────────
     for (final c in [...cituljePolitika, ...cituljaNovosti]) {
+      // This seed runs on every open. Match the immutable business tuple
+      // before inserting; a generated stable ID otherwise creates duplicate
+      // citation articles and mutates the canonical DB on every startup.
+      final alreadySeeded =
+          await (select(katalogArtikli)
+                ..where(
+                  (row) =>
+                      row.interniNazivKategorije.equals(c.$1) &
+                      row.naziv.equals(c.$2) &
+                      row.cena.equals(c.$3),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+      if (alreadySeeded != null) continue;
       await into(katalogArtikli).insert(
         KatalogArtikliCompanion(
           stableArticleId: Value(generateCatalogArticleStableId()),
