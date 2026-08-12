@@ -67,7 +67,7 @@ The release blocker was the `printing` Windows CMake `ExternalProject` archive l
 
 ## K. Builds
 
-Windows: `C:\flutter\bin\flutter.bat build windows --release --no-pub` — PASS. Artifacts: `build/windows/x64/runner/Release/OPC.exe` (89,088 bytes; SHA-256 `374672A0B86357AAFCB22EC4B8A51816386F1EC9B0DDC4791105D09756C1098B`) and `build/windows/x64/runner/Release/data/app.so` (12,649,392 bytes; SHA-256 `1BFB8799CB77B0A74DD5992D5BA1FB55F7822DB3620307E5B8B2EDACA5719D70`). An APK was generated during the retry (`app-release.apk`, 77,961,079 bytes, SHA-256 `65D539B49C88A36A00335997B4A236D558A841165C6A73ADDE3F4BCF651F87A4`), but the final post-repair Android assemble did not return naturally and was stopped after stale Gradle diagnosis; it is not claimed as a final-source PASS.
+Windows: `C:\flutter\bin\flutter.bat build windows --release --no-pub` — PASS. Artifacts: `build/windows/x64/runner/Release/OPC.exe` (89,088 bytes; SHA-256 `374672A0B86357AAFCB22EC4B8A51816386F1EC9B0DDC4791105D09756C1098B`) and `build/windows/x64/runner/Release/data/app.so` (12,649,392 bytes; SHA-256 `1BFB8799CB77B0A74DD5992D5BA1FB55F7822DB3620307E5B8B2EDACA5719D70`). Android final retry: `C:\flutter\bin\flutter.bat build apk --release --no-pub` — PASS, natural exit; `build/app/outputs/flutter-apk/app-release.apk` (78,042,999 bytes, 74.4 MB; SHA-256 `33D6D5616F4318A2EE438B28DA381D39CE2E72B98FC5FADDB2BA430AEBD15DB1`).
 
 ## L. Live after-fix proof
 
@@ -103,7 +103,7 @@ The canonical DB was never replaced by a prepared copy. The fresh JSON backup re
 - `FULL TEST FAILED COUNT — 0`
 - `TEST TIMEOUT POLICY — NO ARTIFICIAL TIMEOUT USED`
 - `WINDOWS BUILD — PASS`
-- `ANDROID BUILD — NOT PASS (APK artifact generated; final post-repair assemble did not return naturally)`
+- `ANDROID BUILD — PASS`
 - `LIVE WINDOWS NASILNA AFTER FIX — PASS`
 - `REMOTE SHA — CONFIRMED (6c8a7d7eb4c21701816ccfd39dd6bed5b6d523b3)`
 - `WORKING TREE — CLEAN`
