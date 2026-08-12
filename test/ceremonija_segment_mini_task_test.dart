@@ -138,8 +138,8 @@ void main() {
       rows.singleWhere((row) => row.label == 'Tip polaganja urne').value,
       'Kolumbarijum',
     );
-    expect(rows.singleWhere((row) => row.label == 'Urna parcela').value, '12');
-    expect(rows.singleWhere((row) => row.label == 'Urna broj').value, '8');
+    expect(rows.singleWhere((row) => row.label == 'Parcela').value, '12');
+    expect(rows.singleWhere((row) => row.label == 'Broj').value, '8');
   });
 
   testWidgets(
@@ -161,10 +161,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('GROBLJE ZA POLAGANJE URNE'), findsOneWidget);
-      final urnCemetery = find.widgetWithText(
-        TextFormField,
-        'Groblje urne B',
-      );
+      final urnCemetery = find.widgetWithText(TextFormField, 'Groblje urne B');
       expect(urnCemetery, findsOneWidget);
       await tester.enterText(urnCemetery, 'Groblje urne C');
       await tester.pump(const Duration(milliseconds: 900));
@@ -172,12 +169,12 @@ void main() {
       expect(saved, isNotNull);
       expect(saved!.groblje.value, 'Groblje ceremonije A');
       expect(saved!.grobljePolaganjaUrne.value, 'Groblje urne C');
-      await (db.update(db.predmeti)..where((p) => p.id.equals(predmet.id)))
-          .write(saved!);
-      final reloaded = await (db.select(db.predmeti)..where(
-            (p) => p.id.equals(predmet.id),
-          ))
-          .getSingle();
+      await (db.update(
+        db.predmeti,
+      )..where((p) => p.id.equals(predmet.id))).write(saved!);
+      final reloaded = await (db.select(
+        db.predmeti,
+      )..where((p) => p.id.equals(predmet.id))).getSingle();
       expect(reloaded.groblje, 'Groblje ceremonije A');
       expect(reloaded.grobljePolaganjaUrne, 'Groblje urne C');
     },

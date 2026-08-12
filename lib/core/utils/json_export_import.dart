@@ -16,6 +16,9 @@ import '../json_transfer/predmet_json_transfer_core.dart';
 import '../../features/auth/data/auth_security_repository.dart';
 import '../../features/predmeti/application/full_backup_restore_coordinator.dart';
 import '../../features/predmeti/data/predmeti_repository.dart';
+import '../../features/predmeti/core_v2/scenario/scenario_persistence_contract.dart';
+import '../../features/predmeti/core_v2/scenario/scenario_transfer_envelope.dart';
+import '../../features/predmeti/core_v2/scenario/single_predmet_scenario_carrier_contract.dart';
 import '../../features/predmeti/parte/data/parte_media_store.dart';
 import '../../features/predmeti/parte/domain/parte_models.dart';
 import '../../features/predmeti/reminders/ceremony_notification_gateway.dart';
@@ -34,6 +37,7 @@ const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
 const String _kBackupTransferFormat = 'OPC_BACKUP';
 const String _kStanjeRobeConsequenceTransferBlock =
     'stanjeRobeConsequenceTransfer';
+const String _kSinglePredmetScenarioCarrierBlock = 'singlePredmetScenario';
 const int _kStanjeRobeConsequenceTransferSchemaVersion = 1;
 const String _kStanjeRobeConsequenceTransferPolicy =
     'single_predmet_unresolved_consequence_v1';
@@ -285,12 +289,14 @@ class _PredmetTransferPayload {
     required this.iriu,
     required this.kontaktLica,
     required this.stanjeRobeConsequences,
+    required this.scenarioCarrier,
   });
 
   final PredmetiData predmet;
   final List<IriuData> iriu;
   final List<KontaktLicaData> kontaktLica;
   final List<_StanjeRobeConsequenceTransferItem> stanjeRobeConsequences;
+  final SinglePredmetScenarioCarrierBlock? scenarioCarrier;
 }
 
 class _StanjeRobeConsequenceTransferItem {
@@ -453,12 +459,61 @@ Map<String, dynamic> _normalizeDocumentMap(Map<String, dynamic> value) {
   return documentTextCodec.normalizeMap(value);
 }
 
-String _serijalizujPredmet(
+Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
+  required AppDatabase db,
+  required int predmetId,
+  required List<IriuData> iriu,
+}) async {
+  final snapshot = await (db.select(
+    db.predmetScenarioSnapshots,
+  )..where((row) => row.predmetId.equals(predmetId))).getSingleOrNull();
+  if (snapshot == null) return null;
+
+  final assignment = ScenarioAssignmentSnapshot.fromJsonMap(
+    (jsonDecode(snapshot.snapshotJson) as Map).cast<String, dynamic>(),
+  );
+  final provenanceRows =
+      await (db.select(db.iriuProvenance)..where(
+            (row) => row.iriuId.isIn(iriu.map((item) => item.id).toList()),
+          ))
+          .get();
+  final provenanceById = {for (final row in provenanceRows) row.iriuId: row};
+  final complete = iriu.every((row) => provenanceById.containsKey(row.id));
+  final envelope = ScenarioTransferEnvelope.create(
+    assignment: assignment,
+    provenanceCoverage: complete
+        ? ScenarioIriuProvenanceCoverage.complete
+        : ScenarioIriuProvenanceCoverage.unavailable,
+    provenance: complete
+        ? iriu
+              .map((row) {
+                final item = provenanceById[row.id]!;
+                return ScenarioIriuProvenance(
+                  iriuId: row.id,
+                  origin: ScenarioIriuOriginKindWire.fromWireName(item.origin),
+                  moduleId: item.moduleId,
+                  scenarioId: item.scenarioId,
+                  scenarioVersion: item.scenarioVersion,
+                  ruleId: item.ruleId,
+                  operationId: item.operationId,
+                );
+              })
+              .toList(growable: false)
+        : const [],
+  );
+  return SinglePredmetScenarioCarrierBlock.fromEnvelope(
+    envelope: envelope,
+    sourceIriuIds: iriu.map((row) => row.id).toList(growable: false),
+  );
+}
+
+Future<String> _serijalizujPredmet(
   PredmetiData p,
   List<IriuData> iriu,
   List<KontaktLicaData> kl,
-  List<StanjeRobePoslediceData> stanjeRobePosledice,
-) {
+  List<StanjeRobePoslediceData> stanjeRobePosledice, {
+  SinglePredmetScenarioCarrierBlock? scenarioCarrier,
+}) {
   final consequenceTransferItems = _stanjeRobeConsequenceTransferItemsForExport(
     iriu: iriu,
     posledice: stanjeRobePosledice,
@@ -493,7 +548,10 @@ String _serijalizujPredmet(
       },
       'jsonTransfer': <String, dynamic>{
         'identity': 'single-PREDMET',
-        'includes': jsonTransferIncludes,
+        'includes': [
+          ...jsonTransferIncludes,
+          if (scenarioCarrier != null) _kSinglePredmetScenarioCarrierBlock,
+        ],
       },
     },
     'predmet': _normalizeDocumentMap(p.toJson()),
@@ -505,9 +563,13 @@ String _serijalizujPredmet(
         'policy': _kStanjeRobeConsequenceTransferPolicy,
         'items': consequenceTransferItems.map((item) => item.toJson()).toList(),
       },
+    if (scenarioCarrier != null)
+      _kSinglePredmetScenarioCarrierBlock: scenarioCarrier.toJsonMap(),
   };
-  return PredmetJsonTransferCore.encodeMap(
-    documentTextCodec.normalizeValue(map) as Map<String, dynamic>,
+  return Future.value(
+    PredmetJsonTransferCore.encodeMap(
+      documentTextCodec.normalizeValue(map) as Map<String, dynamic>,
+    ),
   );
 }
 
@@ -591,6 +653,8 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
       .select(db.stanjeRobeAppliedEffects)
       .get();
   final stanjeRobePosledice = await db.select(db.stanjeRobePosledice).get();
+  final scenarioSnapshots = await db.select(db.predmetScenarioSnapshots).get();
+  final scenarioProvenance = await db.select(db.iriuProvenance).get();
   final reminderSettings = await db.customSelect('''
       SELECT predmet_id, enabled, delivery_times
       FROM ceremony_reminder_settings
@@ -618,6 +682,10 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'stockBackupPolicy': _kStockBackupPolicySchema16Complete,
     'predmeti': predmeti.map((p) => p.toJson()).toList(),
     'iriu': iriu.map((i) => i.toJson()).toList(),
+    'predmetScenarioSnapshots': scenarioSnapshots
+        .map((row) => row.toJson())
+        .toList(),
+    'iriuProvenance': scenarioProvenance.map((row) => row.toJson()).toList(),
     'kontaktLica': kl.map((k) => k.toJson()).toList(),
     'iriuLifecycleDecisions': iriuLifecycle.map((row) => row.data).toList(),
     'korisnici': korisnici.map((k) => k.toJson()).toList(),
@@ -831,6 +899,12 @@ Future<void> _uvoziPredmetUBazu(
       iriu: payload.iriu,
       kontaktLica: payload.kontaktLica,
     );
+    await _restoreImportedScenarioCarrier(
+      db: db,
+      predmetId: newId,
+      importedIriu: payload.iriu,
+      carrier: payload.scenarioCarrier,
+    );
     await _attachImportedStanjeRobeConsequences(
       db: db,
       predmetId: newId,
@@ -853,6 +927,12 @@ Future<void> _zameniPredmetUBazi({
       iriu: payload.iriu,
       kontaktLica: payload.kontaktLica,
     );
+    await _restoreImportedScenarioCarrier(
+      db: db,
+      predmetId: lokalniPredmetId,
+      importedIriu: payload.iriu,
+      carrier: payload.scenarioCarrier,
+    );
     await _attachImportedStanjeRobeConsequences(
       db: db,
       predmetId: lokalniPredmetId,
@@ -860,6 +940,57 @@ Future<void> _zameniPredmetUBazi({
       consequenceItems: payload.stanjeRobeConsequences,
     );
   });
+}
+
+Future<void> _restoreImportedScenarioCarrier({
+  required AppDatabase db,
+  required int predmetId,
+  required List<IriuData> importedIriu,
+  required SinglePredmetScenarioCarrierBlock? carrier,
+}) async {
+  if (carrier == null) return;
+  final localIriu = await _listIriuForImportedPredmet(db, predmetId);
+  if (localIriu.length != importedIriu.length) {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran jer nije bezbedno mapirati SCENARIO carrier na IRIU redove.',
+    );
+  }
+  final envelope = carrier.resolveToEnvelope(
+    destinationIriuIds: localIriu.map((row) => row.id).toList(growable: false),
+  );
+  await db
+      .into(db.predmetScenarioSnapshots)
+      .insertOnConflictUpdate(
+        PredmetScenarioSnapshotsCompanion.insert(
+          predmetId: Value(predmetId),
+          moduleId: envelope.assignment.moduleId,
+          scenarioId: envelope.assignment.scenarioId,
+          scenarioVersion: envelope.assignment.scenarioVersion,
+          snapshotJson: jsonEncode(envelope.assignment.toJsonMap()),
+          snapshotHash: envelope.assignment.snapshotHash,
+          assignedAt: envelope.assignment.assignedAt,
+          assignedByKorisnikId: Value(envelope.assignment.assignedByKorisnikId),
+        ),
+      );
+  if (envelope.provenanceCoverage != ScenarioIriuProvenanceCoverage.complete) {
+    return;
+  }
+  for (final item in envelope.provenance) {
+    await db
+        .into(db.iriuProvenance)
+        .insertOnConflictUpdate(
+          IriuProvenanceCompanion.insert(
+            iriuId: Value(item.iriuId),
+            origin: item.origin.wireName,
+            moduleId: Value(item.moduleId),
+            scenarioId: Value(item.scenarioId),
+            scenarioVersion: Value(item.scenarioVersion),
+            ruleId: Value(item.ruleId),
+            operationId: Value(item.operationId),
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+  }
 }
 
 Future<void> _attachImportedStanjeRobeConsequences({
@@ -933,6 +1064,8 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.customStatement('DELETE FROM ceremony_reminder_settings');
     await db.delete(db.partePripreme).go();
     await db.delete(db.kontaktLica).go();
+    await db.delete(db.predmetScenarioSnapshots).go();
+    await db.delete(db.iriuProvenance).go();
     await db.delete(db.iriu).go();
     await db.delete(db.predmeti).go();
     await db.delete(db.korisnici).go();
@@ -1160,6 +1293,31 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
               'kontaktLica',
               normalizedKontakt,
               (row) => KontaktLicaData.fromJson(row),
+            ).toCompanion(true),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+
+    for (final snapshot in _optionalMapList(json, 'predmetScenarioSnapshots')) {
+      await db
+          .into(db.predmetScenarioSnapshots)
+          .insert(
+            _procitajBackupRed(
+              'predmetScenarioSnapshots',
+              snapshot,
+              (row) => PredmetScenarioSnapshot.fromJson(row),
+            ).toCompanion(true),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    for (final provenance in _optionalMapList(json, 'iriuProvenance')) {
+      await db
+          .into(db.iriuProvenance)
+          .insert(
+            _procitajBackupRed(
+              'iriuProvenance',
+              provenance,
+              (row) => IriuProvenanceData.fromJson(row),
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
@@ -1816,11 +1974,18 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     json,
     iriuList,
   );
+  final rawScenarioCarrier = json[_kSinglePredmetScenarioCarrierBlock];
+  final scenarioCarrier = rawScenarioCarrier == null
+      ? null
+      : SinglePredmetScenarioCarrierBlock.fromJsonMap(
+          (rawScenarioCarrier as Map).cast<String, dynamic>(),
+        );
   return _PredmetTransferPayload(
     predmet: PredmetiData.fromJson(predmetMap),
     iriu: iriuList,
     kontaktLica: klList,
     stanjeRobeConsequences: stanjeRobeConsequences,
+    scenarioCarrier: scenarioCarrier,
   );
 }
 
@@ -2223,7 +2388,17 @@ Future<String> serializePredmetJsonForTest({
     db,
   ).listActiveUnresolvedForPredmet(predmetId);
 
-  return _serijalizujPredmet(predmet, iriuList, klList, stanjeRobePosledice);
+  return _serijalizujPredmet(
+    predmet,
+    iriuList,
+    klList,
+    stanjeRobePosledice,
+    scenarioCarrier: await _scenarioCarrierForExport(
+      db: db,
+      predmetId: predmetId,
+      iriu: iriuList,
+    ),
+  );
 }
 
 @visibleForTesting
@@ -2300,11 +2475,16 @@ Future<void> izvoziBeleznica({
       db,
     ).listActiveUnresolvedForPredmet(predmetId);
 
-    final jsonStr = _serijalizujPredmet(
+    final jsonStr = await _serijalizujPredmet(
       pFresh,
       iriuList,
       klList,
       stanjeRobePosledice,
+      scenarioCarrier: await _scenarioCarrierForExport(
+        db: db,
+        predmetId: predmetId,
+        iriu: iriuList,
+      ),
     );
     final naziv = predmetFajlNaziv(pFresh);
 

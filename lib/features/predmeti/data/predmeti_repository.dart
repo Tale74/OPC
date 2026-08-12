@@ -612,6 +612,9 @@ class PredmetiRepository {
     await (_db.delete(
       _db.iriu,
     )..where((i) => i.predmetId.equals(lokalniPredmetId))).go();
+    await (_db.delete(
+      _db.predmetScenarioSnapshots,
+    )..where((snapshot) => snapshot.predmetId.equals(lokalniPredmetId))).go();
     await _db.customStatement(
       'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
       [lokalniPredmetId],

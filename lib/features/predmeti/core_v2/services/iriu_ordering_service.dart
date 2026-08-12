@@ -5,7 +5,7 @@ class IriuOrderingService {
   const IriuOrderingService();
 
   static const List<String> _systemCategoryOrder = <String>[
-    // Existing scenario-dependent order is preserved as one leading block.
+    // Scenario-dependent order is applied only inside its own partition.
     IriuK.iznosenje,
     IriuK.transportnaVreca,
     IriuK.prevozDoHladnjace,
@@ -34,20 +34,53 @@ class IriuOrderingService {
     return _systemCategories.contains(internalName);
   }
 
-  List<IriuData> orderedRows(List<IriuData> rows) {
+  List<IriuData> orderedRows(
+    List<IriuData> rows, {
+    Map<int, String>? provenanceOrigins,
+  }) {
     final currentRows = List<IriuData>.from(rows)
       ..sort((a, b) => a.redosled.compareTo(b.redosled));
 
-    if (currentRows.any((row) => row.scenarioUpravlja)) {
-      final managed = currentRows.where((row) => row.scenarioUpravlja).toList()
-        ..sort((a, b) {
-          final section = a.poslovnaCelina.compareTo(b.poslovnaCelina);
-          return section != 0
-              ? section
-              : a.poslovniRedosled.compareTo(b.poslovniRedosled);
-        });
-      final manual = currentRows.where((row) => !row.scenarioUpravlja).toList();
-      return List<IriuData>.unmodifiable([...managed, ...manual]);
+    if (provenanceOrigins != null &&
+        currentRows.any((row) => row.scenarioUpravlja)) {
+      final osnovni = <IriuData>[];
+      final scenario = <IriuData>[];
+      final managedUnclassified = <IriuData>[];
+      final manual = <IriuData>[];
+      for (final row in currentRows) {
+        final origin = provenanceOrigins[row.id];
+        if (origin == 'OSNOVNI_PAKET' ||
+            (origin == null &&
+                row.scenarioUpravlja &&
+                row.poslovnaCelina <= 1)) {
+          osnovni.add(row);
+        } else if (origin == 'SCENARIO_PAKET' ||
+            (origin == null &&
+                row.scenarioUpravlja &&
+                row.poslovnaCelina >= 2)) {
+          scenario.add(row);
+        } else if (row.scenarioUpravlja) {
+          managedUnclassified.add(row);
+        } else {
+          manual.add(row);
+        }
+      }
+      int compareBusiness(IriuData a, IriuData b) {
+        final section = a.poslovnaCelina.compareTo(b.poslovnaCelina);
+        if (section != 0) return section;
+        final business = a.poslovniRedosled.compareTo(b.poslovniRedosled);
+        return business != 0 ? business : a.redosled.compareTo(b.redosled);
+      }
+
+      osnovni.sort(compareBusiness);
+      scenario.sort(compareBusiness);
+      managedUnclassified.sort(compareBusiness);
+      return List<IriuData>.unmodifiable([
+        ...osnovni,
+        ...scenario,
+        ...managedUnclassified,
+        ...manual,
+      ]);
     }
 
     final rowsByCategory = <String, List<IriuData>>{};

@@ -288,10 +288,10 @@ ListaPdfSectionData _buildCeremonySection(PredmetiData predmet) {
       ),
     ],
     if (imaLokalitetUrne) ...[
-      ListaPdfLabelValue('Urna parcela', predmet.urnaParcela),
-      ListaPdfLabelValue('Urna broj', predmet.urnaBroj),
-      ListaPdfLabelValue('Urna red', predmet.urnaRed),
-      ListaPdfLabelValue('Urna NPK', predmet.urnaNpk),
+      ListaPdfLabelValue('Parcela', predmet.urnaParcela),
+      ListaPdfLabelValue('Broj', predmet.urnaBroj),
+      ListaPdfLabelValue('Red', predmet.urnaRed),
+      ListaPdfLabelValue('NPK', predmet.urnaNpk),
     ],
     if (mozeOpelo)
       ListaPdfLabelValue('Opelo', predmet.opelo == 'DA' ? 'DA' : 'NE'),

@@ -47,7 +47,7 @@ for the stable Serbian-market product-line gate and is not a rename.
 
 | Area | Current state | Next evidence/action |
 | --- | --- | --- |
-| SCENARIO JSON | Pure envelope and Single-PREDMET adapter contracts exist, but production `OPC_PREDMET` schema 6/7 and `OPC_BACKUP` schema 8 do not serialize SCENARIO snapshot/provenance. | Integrate both carriers with schema/fail-closed/legacy/rollback and Windows/Android round-trip proof. |
+| SCENARIO JSON | Production `OPC_PREDMET` now carries an optional hashed Single-PREDMET snapshot/provenance block; `OPC_BACKUP` carries snapshot/provenance sections. Legacy schema 6/7 remains readable without falsely claiming imported continuity. | Complete full analyze/build and Windows/Android round-trip acceptance; Android physical transfer remains deferred. |
 | PREDMET/referential lifecycle | Hard-delete and scoped restore work have technical/runtime evidence; FK remains off and some RI owner gates remain. | Close only release-required risks; classify deferred RI work explicitly. |
 | Windows single-instance | Audit proved concurrent canonical DB risk; no native process guard exists. | Implement the locked named-mutex and installer running-app contract; runtime accept. |
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |

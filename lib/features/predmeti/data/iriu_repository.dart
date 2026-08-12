@@ -1040,7 +1040,14 @@ class IriuRepository {
   Future<void> _rebuildBusinessOrdering(int predmetId) async {
     final rows = await getIriu(predmetId);
     if (rows.isEmpty) return;
-    final orderedRows = _orderingService.orderedRows(rows);
+    final provenance = await (_db.select(_db.iriuProvenance)).get();
+    final provenanceOrigins = <int, String>{
+      for (final item in provenance) item.iriuId: item.origin,
+    };
+    final orderedRows = _orderingService.orderedRows(
+      rows,
+      provenanceOrigins: provenanceOrigins,
+    );
     await _db.transaction(() async {
       for (var index = 0; index < orderedRows.length; index++) {
         final row = orderedRows[index];
