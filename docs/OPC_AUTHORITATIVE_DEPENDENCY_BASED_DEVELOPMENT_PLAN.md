@@ -1,1619 +1,431 @@
 # OPC — authoritative dependency-based development plan
 
-**Status:** `POST-ZERO PROSPECTIVE UPGRADE PROGRAM`
-**Autoritativnost:** Tale je 26. jula 2026. odobrio sadržaj, Decision Authority Matrix i dependency red. Dokument je obavezni kontrolni naslednik plan-draft ciklusa, ali još ne autorizuje aplikacionu implementaciju dok documentation protection, removal, Git/lokalna sinhronizacija i Gate 0 closure ne dobiju PASS.
-**Approved candidate branch:** `task/OPC-GATE-0-FINAL-PLAN-OWNER-APPROVAL`
-**Approved candidate SHA:** `8fb5aed98568e8e7becf7f17792e5066e3dfefdd`
-**Owner approval record:** `docs/OPC_GATE_0_OWNER_APPROVAL_RECORD.md`
-**Protection-map branch:** `task/OPC-GATE-0-DOCUMENTATION-PROTECTION-MAP`
-**Datum owner odobrenja:** 26. jul 2026.
-**Ugrađeni review nalazi:** F-01–F-12 iz `docs/OPC_AUTHORITATIVE_DEVELOPMENT_PLAN_OWNER_REVIEW_FINDINGS.md`
-**Ugrađene naknadne owner odluke:** potpuni code/architecture review; PREDMET-core dependency zaštita; tehnička/owner decision matrica; OPC v.1 / OPC_v.1_Int razdvajanje; MODUL DVE VALUTE.
-**ARC–T.A.R.S.:** Definiši, ugradi, potvrdi, zapamti.
+**Status:** `CURRENT OPERATIVE DEPENDENCY MAP`
 
-## Post-zero interpretation rule - 2026-07-30
+**Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 
-The zero baseline at
-`docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md` supersedes this
-plan's pre-zero authority and Gate 0 status statements.
+**Reconciled:** 2026-08-12
 
-This document remains the owner-carried-forward prospective dependency
-program. It does not revive pre-zero owner decisions as current authority and
-does not authorize application implementation by itself.
+**Application name:** `OPC`
 
-Historical statements below about active `SOURCE/PROJECT_DOCS`, an external
-`PROJECT_DOCS`, unresolved pre-zero document protection, or plan activation
-pending the former Gate 0 describe the pre-zero state only. The current
-classification is
-`docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md`.
+**Market gate:** stable OPC v.1 for the Serbian market
 
-Current implementation tasks still require an exact post-zero scope,
-applicable technical evidence, post-zero owner approval for business-policy
-changes, and the validation/runtime/Git gates defined by current workflow.
+**Later product-line working identity:** `OPC_v.1_Int`
 
-The effective post-zero status of this document is:
+This document is the current control plane for remaining OPC development. It
+supersedes stale status and sequencing statements in its pre-reconciliation
+version while preserving their owner decisions and audit provenance through
+Git history at the baseline SHA above and through section 12 below.
 
-`POST-ZERO PROSPECTIVE UPGRADE PROGRAM`
+`OPC Srbija` is planning shorthand only for the Serbian-market product-line
+gate. It is not the product name and must not be added to application UI,
+package-facing identity, installer identity or documentation as a rename.
 
-## 1. Svrha plana
+## 1. Authority and interpretation
 
-Ovaj plan određuje zavisnosni i kontrolni red daljeg razvoja OPC-a. Redosled nije kalendar niti automatska autorizacija narednog taska. Svaki program počinje dokazima, razdvaja dijagnostiku od implementacije i završava tehničkom, owner-runtime i dokumentacionom kapijom.
+### 1.1 Evidence order
 
-Plan ima šest ciljeva:
+When statements conflict, use this order:
 
-1. sačuvati PREDMET kao jedinu autoritativnu poslovnu istinu;
-2. stabilizovati i dovršiti aktuelne Windows i Android aplikacije za tržište Srbije;
-3. doneti ranu, dokazima zasnovanu odluku o targeted korekcijama, progresivnom refactoru, parcijalnom ili potpunom rewrite-u;
-4. izgraditi korisnički konfigurabilan SCENARIO bez retroaktivne promene istorijske istine;
-5. pripremiti OPC v.1 za kontrolisanu promenu primarne valute RSD/EUR bez novog coding/build ciklusa u trenutku aktivacije;
-6. tek posle stabilizacije Srbije odlučiti i graditi buduću multilingual product line OPC_v.1_Int.
+1. current post-zero owner decisions and later explicit owner instructions;
+2. current source and tests for implemented technical behavior;
+3. the latest task/runtime report within its exact proven scope;
+4. this plan for dependency ordering and release-gate control;
+5. older reports and pre-reconciliation plan text as historical evidence.
 
-### 1.1 Decision Authority Matrix
+A technical PASS is not owner runtime acceptance. A Windows PASS is not an
+Android PASS. A pure contract is not carrier/runtime integration. A successful
+restore incident is not the final product-line backup/restore rehearsal.
 
-Owner zadržava konačnu odluku o:
+### 1.2 Decision classes
 
-- poslovnoj politici i značenju poslovnih pravila;
-- PREDMET lifecycle-u, statusima i istorijskom zaključavanju;
-- SCENARIO uslovima i njihovim IRiU posledicama;
-- sadržaju poslovnih dokumenata;
-- poslovnom značenju valuta i trenutku globalne promene;
-- jezicima, tržištima, product identity-ju;
-- poreskoj, pravnoj, licensing i distributivnoj politici;
-- Windows i Android runtime acceptance-u.
+Every material statement in this plan is one of:
 
-Codex donosi tehničke i arhitektonske odluke o:
+- `LOCKED OWNER DECISION` — business outcome; Codex must not reinterpret it;
+- `SOURCE/TEST FACT` — current implementation proven by source/tests;
+- `RUNTIME FACT` — owner/live evidence tied to a platform and artifact;
+- `TECHNICAL RECOMMENDATION` — evidence-based but not business authority;
+- `OPEN OWNER DECISION` — the owner must decide before affected work closes;
+- `HISTORICAL/SUPERSEDED` — retained for provenance, not current instruction.
 
-- organizaciji source-a, modula, adaptera, branch-eva i release toka;
-- refactor/rewrite granicama kada ne menjaju poslovno značenje;
-- persistence reprezentaciji, test strategiji, profiling-u i tehničkim acceptance merama;
-- platformskim mehanizmima uz isti poslovni rezultat;
-- implementacionoj strukturi i redosledu tehnički zavisnih zahvata.
+New evidence may supersede a technical premise or ordering. It may not silently
+rewrite a locked business decision.
 
-Codex mora vratiti odluku owneru kada tehnički izbor:
+### 1.3 Permanent product boundaries
 
-- menja poslovno značenje ili istoriju PREDMETA;
-- zahteva destruktivnu ili nekompatibilnu migraciju;
-- menja Windows/Android business parity;
-- uvodi novu poslovnu, pravnu, poresku ili licensing politiku;
-- menja sadržaj poslovnog dokumenta ili product-line identitet.
+- `PREDMET` is the sole business truth. Documents, JSON, SCENARIO, PODSETNIK,
+  PARTE, IRiU views and statistics are derivatives or controlled application
+  layers, never parallel masters.
+- Windows and Android are equal standalone local applications using local
+  Drift/SQLite and user-controlled JSON transfer. No mandatory network sync is
+  introduced.
+- The designated user database is never replaced by a test/prepared database.
+- PAKETI/licensing restrictions remain retired for the current native product.
+- OPC Web and `OPC_v.1_Int` are outside current implementation scope.
+- The application/product name remains `OPC`.
 
-## 2. Verifikovani baseline i review izvori
+## 2. Current state at a glance
 
-### 2.1 Source i Git baseline
+### 2.1 Completed work that must not be repeated
 
-Finalni kandidat je pripremljen sa:
-
-- source/review lineage HEAD: `eab28232dd1a791ecd0c24ee33b7f93a34f13797`;
-- preparation base branch: `task/OPC-AUTHORITATIVE-DEVELOPMENT-PLAN-REVISION`;
-- potvrđenim čistim worktree-om;
-- identičnim lokalnim i origin HEAD-om;
-- divergencijom `0/0`.
-
-Operativni development lineage trenutno je na task granama. Javni `main` nije automatski pretpostavljen kao aktuelni source HEAD.
-
-### 2.2 Obavezni review dokumenti
-
-- `docs/OPC_DOCUMENTATION_ARCHITECTURE_AND_DEVELOPMENT_PLAN_AUDIT.md`
-- `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN_DRAFT.md`
-- `docs/OPC_AUTHORITATIVE_DEVELOPMENT_PLAN_OWNER_REVIEW_PREPARATION_REPORT.md`
-- `docs/OPC_AUTHORITATIVE_DEVELOPMENT_PLAN_OWNER_REVIEW_FINDINGS.md`
-- `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`
-- `docs/OPC_SOURCE_OF_TRUTH_MAP.md`
-- `docs/OPC_OWNER_DECISION_REPORT.md`
-- `docs/OPC_OWNER_DECISION_INDEX.md`
-- `docs/OPC_IMPLEMENTATION_STOP_LIST.md`
-- `docs/OPC_CURRENT_DEVELOPMENT_STATE.md`
-- `docs/OPC_CANONICAL_DATABASE_MIGRATION_POLICY.md`
-- `docs/GIT_WORKFLOW_ARC.md`
-- `docs/OPC_PROJECT_DOCS_PUBLIC_PROMOTION_MAP.md`
-
-Relevantni lokalni `PROJECT_DOCS` i restore/audit izvori ostaju supporting/historical evidence. Nisu automatski autoritet i nisu javno kopirani.
-
-## 3. Dokumentacioni authority model
-
-### 3.1 Trenutna hijerarhija
-
-Do nove owner odluke:
-
-1. Git-verzionisani current dokumenti u `docs/` određuju aktivni javni continuity baseline.
-2. Source kod, testovi i platform folderi dokazuju trenutno implementaciono ponašanje.
-3. Najnoviji task report pobeđuje samo unutar sopstvenog potvrđenog scope-a.
-4. Lokalni `PROJECT_DOCS` i restore-point materijal pružaju istoriju i kontekst.
-5. Nova owner odluka superseduje stariji konfliktni dokument tek kada je zapisana i Git-dostupna.
-
-### 3.2 Klasifikovani postojeći konflikti
-
-| Konflikt | Trenutni status | Pravilo ovog plana |
+| Area | Current classification | Evidence boundary |
 | --- | --- | --- |
-| `main` kao stabilni baseline naspram stacked task lineage-a | TECHNICAL MODEL SELECTED – ACTIVATION AFTER OWNER APPROVAL | Sačuvati stacked lineage; formirati operativni `develop/opc-v1`; `main` ostaje stabilni/release baseline. |
-| Lokalni “Master PROJECT_DOCS” naspram Git source-of-truth mape | CLASSIFIED, NOT DELETED | Git docs vode current continuity; lokalni dokumenti ostaju supporting dok owner ne odobri promociju. |
-| Istorijska odluka da Git ne postoji/ne treba da postoji | SUPERSEDED BY ACTUAL GIT FLOW | Sačuvati kao istoriju, ne primenjivati na novi rad. |
-| Package/licensing-era pravila naspram odluke o napuštanju PAKETA | SUPERSEDED FOR CURRENT PRODUCT | Stage 1 politika važi; Stage 2 ostaje kasniji cleanup. |
-| Schema 21 closure zapis naspram current schema 23 | RESOLVED BY ADDITIVE SCENARIO PERSISTENCE MIGRATION | Schema 23 adds only SCENARIO definition/snapshot/provenance tables; live canonical rollout still requires owner authorization. |
-
-### 3.3 Semantic parity pravilo
-
-Dokumentaciona usklađenost znači:
-
-- isti business meaning;
-- isti owner-decision status;
-- isti dependency i acceptance sadržaj;
-- kontrolisani source-specific metadata;
-- evidentirane sanitizacione i environment razlike.
-
-Byte-identičnost i SHA-256 paritet zahtevaju se samo kada su tehnički mogući i privacy-bezbedni. Kada Git i lokalni dokument opravdano imaju različite putanje, manifest podatke, environment reference ili sanitizaciju:
-
-- oba dokumenta nose isti document ID/verziju;
-- reconciliation registar beleži oba hash-a;
-- razlog transformacije je eksplicitan;
-- sadržinska ekvivalencija se proverava;
-- javni dokument nikada ne otkriva privatnu putanju, korisničko ime, tajnu ili runtime podatak radi byte-pariteta.
-
-## 4. Trajne arhitektonske i owner konstante
-
-### 4.1 PREDMET i derivati
-
-- PREDMET je jedina autoritativna poslovna istina.
-- PDF, DOCX, JSON, PODSETNIK, PARTE, NALOG CVEĆARI, IRiU prikazi, statistike i drugi izlazi ostaju derivati ili operativni slojevi.
-- Derivat ne sme postati paralelni master.
-- KATALOG je dopuna znanja; kasnija KATALOG promena ne prepisuje istorijsku PREDMET istinu.
-- Poslovni upis iz UI-a ili MODULA prolazi kroz kontrolisani PREDMET application/domain ugovor; derivat ne upisuje konkurentnu truth kopiju direktno u bazu.
-- Derivat sme čuvati samo sopstveno tehničko stanje koje ne nadjačava PREDMET, na primer render pripremu, raspored elementa ili notification scheduling metadata.
-- Code review mora dokazati smer zavisnosti `UI/MODULI → application/domain ugovor → PREDMET core` i prijaviti svako obrnuto, kružno ili derivat-na-derivat sprezanje koje ugrožava truth boundary.
-
-### 4.2 SCENARIO
-
-- SCENARIO je deo svakog konkretnog PREDMETA.
-- FIRMA podešavanja daju scenario templates/defaults za nove PREDMETE.
-- Kasnija promena FIRMA template-a, default-a ili business policy-ja ne menja istorijski zaključan PREDMET.
-- Dozvoljeni nezavršeni PREDMET scenario menja samo eksplicitnom korisničkom radnjom i bezbednim IRiU reconciliation-om.
-- Fizička reprezentacija istorijski stabilnog scenario state-a nije unapred zaključana.
-
-### 4.3 Postojeći scenariji
-
-Postojeći hard-coded scenariji nisu trajno zaštićeni ili neizmenljivi sistemski scenariji.
-
-Posle audita i korekcije:
-
-- svaki postojeći scenario postaje potpuno korisnički izmenjiv kroz PODEŠAVANJA;
-- korisnik može da kreira novi scenario;
-- template može da se sačuva, uveze i izveze;
-- pojedinačni scenario može biti FIRMA default;
-- kompletan FIRMA scenario set može biti sačuvan i primenjen kao default konfiguracija;
-- postojeći scenariji mogu biti početni sadržaj, ali ne ostaju zaključani.
-
-Obavezne prethodne korekcije:
-
-- uklanjanje zavisnosti od hard-coded rezultata za `JAVNO MESTO/NEDEFINISANO`
-  kroz odobreni korisnički podesiv SCENARIO ugovor; postojeće ponašanje se
-  karakterizuje samo radi bezbedne migracije, a ne kao zaseban owner fixture;
-- zasebno informativno PREDMET polje za groblje polaganja urne u postojećem
-  `TIP POLAGANJA URNE` toku; ovaj podatak nije `MESTO CEREMONIJE` odnosno
-  `groblje` same kremacije;
-- zastareli ili nepotrebni IRiU redovi posle promene uslova.
-
-### 4.4 Platforme i podaci
-
-- Windows i Android su ravnopravne, samostalne lokalne aplikacije.
-- Svaka koristi lokalni SQLite/Drift model i postojeći JSON interchange.
-- OS mehanizam može biti različit; business i data rezultat mora biti ekvivalentan.
-- Ne uvodi se obavezni network sync.
-- OPC Web ostaje van current implementation scope-a.
-
-### 4.5 PAKETI i licensing
-
-- PAKETI su trajno napušteni za sadašnji proizvod.
-- Stage 1 uklanjanja runtime ograničenja je završen.
-- Stage 2 fizičko uklanjanje mrtvog licensing/package koda je poseban kasniji task.
-- Stage 2 ne blokira stabilizaciju ili zadržavanje OPC Srbija.
-- Budući kupac eventualni licensing vraća kroz čiste module/capability extension boundaries, dokumentovan istorijski model i Git istoriju, ne kroz mrtav runtime kod.
-
-### 4.6 Dokumenti, statusi i teme
-
-- Single-PREDMET JSON export pripada PREDMET trotačka meniju, ne `DOKUMENTA`.
-- Automatski `ZAVRŠEN` se napušta posle eksplicitne lifecycle odluke.
-- Completion signali su izračunati derivati PREDMETA/IRiU, nikada novo skladišteno business truth stanje.
-- Standardni PDF dokumenti osim PARTE menjaju tipografiju dokument po dokument.
-- PDF RAČUN dobija prost FIRMA availability toggle.
-- Nema PDV obračuna, fiskalizacije ili automatskog legal-form zaključivanja.
-- Windows prati system theme kao Android gde je tehnički moguće.
-- Windows-only theme selector zahteva dokazanu tehničku prepreku i posebnu owner odluku.
-
-### 4.7 Lokalizacija i valute
-
-- Albanski je isključen.
-- Multilingual razmatra srpski latinicu, srpski ćirilicu, hrvatski, bosanski, slovenački, crnogorski, makedonski, mađarski, rumunski, bugarski, nemački i engleski.
-- UI jezik, pismo, country profile, business policy, dokumenti, KATALOG, scenario i valuta ostaju odvojeni koncepti.
-- Multicurrency readiness ne odobrava PDV, porez ili fiskalizaciju.
-- OPC v.1 dobija jedan MODUL DVE VALUTE sa dva poslovna režima, ne dve naknadne razvojne faze.
-- Početni režim je `RSD primarna / EUR informativna`.
-- Posle globalne owner aktivacije režim je `EUR primarna / RSD informativna`.
-- Globalna EUR aktivacija je jednosmerna u redovnom korišćenju; zaštićeni RSD fallback ostaje dostupan za vanrednu potrebu.
-- Promena režima je runtime funkcija MODULA i ne zahteva novo kodiranje ili build.
-- FINANSIJE imaju odvojeni toggle za informativni prikaz sekundarne valute i ručni unos kursa.
-- Informativna valuta je izvedeni prikaz; ne menja autoritativne iznose, IRiU, KATALOG ili dokumente.
-- FIRMA režim određuje primary default za nove PREDMETE; svaki PREDMET čuva sopstvenu primarnu valutu i relevantan kurs.
-- Završeni/istorijski zaključani PREDMET i njegovi derivati ostaju stabilni.
-- Postojeći dozvoljeni otvoreni PREDMET prelazi u drugi režim samo eksplicitnom kontrolisanom korisničkom radnjom.
-
-## 5. Dependency principi
-
-Redosled određuju:
-
-1. dokumentacioni autoritet;
-2. rizik gubitka ili nekonzistentnosti podataka;
-3. migracioni i JSON rizik;
-4. arhitektonska zavisnost i cena rework-a;
-5. poslovni smisao i owner odluka;
-6. Windows/Android parity;
-7. merljivost tehničkog rezultata;
-8. owner runtime acceptance;
-9. product-line odluke.
-
-Audit koji ne menja stanje može početi ranije kada ne preskače source-learning ili owner gate. Implementacija ne može početi samo zato što je stavka navedena u planu.
-
-## 6. Obavezni lifecycle svakog audit/implementation područja
-
-Svaka velika oblast mora imati odvojene korake.
-
-### 6.1 Dokumentacioni i source-learning audit
-
-- pročitati current Git dokumente, latest report i relevantne lokalne izvore;
-- evidentirati source commit;
-- mapirati PREDMET/SCENARIO/IRiU/JSON/parity posledice;
-- klasifikovati konflikt, bez tihog rešavanja.
-
-### 6.2 Reprodukcija i dijagnostika
-
-- ponovljiv fixture i okruženje;
-- observed/expected rezultat;
-- source-supported root-cause hipoteza;
-- dokaz ili odbacivanje hipoteze;
-- bez promene produkcionih podataka.
-
-### 6.3 Owner/architecture decision gate
-
-Obavezan kada nalaz menja:
-
-- poslovno pravilo;
-- lifecycle;
-- migraciju;
-- PREDMET authority;
-- scenario istoriju;
-- platform parity;
-- product identity;
-- dokumentacioni/Git governance.
-
-### 6.4 Implementaciona autorizacija
-
-Mora imati:
-
-- tačan scope;
-- out-of-scope;
-- migracioni/backup plan;
-- acceptance kriterijume;
-- stop uslove;
-- eksplicitno owner odobrenje kada je zahtevano.
-
-### 6.5 Tehnička potvrda
-
-- fokusirani testovi;
-- `flutter analyze --no-pub` do finalnog PASS-a;
-- tek zatim kompletan `flutter test --no-pub` do finalnog PASS-a;
-- buildovi tek uz owner odobrenje;
-- Windows/Android buildovi sukcesivno.
-
-### 6.6 Owner runtime acceptance
-
-- odvojeno od tehničkog PASS-a;
-- odvojeno po platformi;
-- koristi dogovoreni realni poslovni scenario;
-- fizički/štampani rezultat gde je relevantan.
-
-### 6.7 Dokumentacioni closure
-
-- task report;
-- owner odluka/status;
-- source HEAD i final SHA;
-- semantic-parity sync;
-- migration/JSON/pseudocode/manifest update gde je relevantan;
-- CODEX → GIT completion gate.
-
-## 7. Gate 0 — documentation reconciliation i Git governance
-
-Nijedan novi implementation task ne počinje pre Gate 0 closure-a.
-
-### 7.1 Obavezni izlazi
-
-- owner approval final-candidate sadržaja, Decision Authority Matrix-a i dependency reda — PASS, zapisano u `docs/OPC_GATE_0_OWNER_APPROVAL_RECORD.md`;
-- odluka o F-01–F-12 integraciji;
-- formalni operational development HEAD;
-- Git/main/integration politika;
-- dokumentacioni authority i semantic-parity pravilo;
-- klasifikovani historical/superseded konflikti;
-- finalni owner-odobren plan;
-- usklađeni Git i lokalni dokumentacioni zapis tek posle odobrenja.
-
-### 7.2 Git/main governance odluka
-
-Codex tehnička odluka, koja se aktivira tek posle owner odobrenja ovog plana:
-
-- postojeći stacked task lineage ostaje neizmenjen dokazni razvojni sled;
-- Git-history rewrite je zabranjen;
-- formira se dugotrajnija operativna grana `develop/opc-v1` iz owner-odobrenog Gate 0 vrha;
-- svi novi OPC v.1 task branch-evi polaze sa aktuelnog `develop/opc-v1` HEAD-a;
-- svaki task navodi exact base branch/SHA i final branch/SHA;
-- `main` ostaje stabilni/release baseline i ne proglašava se operativnim HEAD-om samo zato što je default branch;
-- owner-runtime prihvaćen integracioni/release rezultat ulazi u `main` kontrolisanim merge/release taskom;
-- release dobija dokaziv commit i tag;
-- historical task branches se ne brišu u ovom programu;
-- budući OPC_v.1_Int ne dobija samostalni domain/migration fork pre Second Product-Line Gate-a;
-- odobreni dokument ulazi u autoritativni manifest posebnim Gate 0 closure commitom.
-
-Do aktivacije:
-
-- task ne sme pretpostaviti da je public `main` source truth;
-- mora navesti exact base branch/SHA;
-- nova implementacija je zaustavljena.
-
-### 7.3 Gate 0 protection re-evaluation — 29. jul 2026.
-
-Section-by-section cross-map obuhvatio je svih 61 prvobitno blokiranih
-targeta, a semantic evidence register svih 704 izdvojenih tvrdnji. Ponovna
-evaluacija daje:
-
-- originalni PASS targeti: 54;
-- raniji blockeri podignuti na protection PASS: 36;
-- ukupni protection PASS: 90;
-- i dalje blokirane tačne putanje: 25;
-- insufficient-context tvrdnje na tim putanjama: 169;
-- fizičko uklanjanje: 0.
-
-Owner stop-pravilo važi globalno: dok postoji makar jedna putanja bez potpunog
-section-level autoritativnog naslednika, ne izvršava se delimično uklanjanje
-grupa 5, 6, 8 ili 9. Zato Gate 0 i dalje nije zatvoren, lokalni aktivni izvori
-se još ne konsoliduju fizičkim brisanjem, a `develop/opc-v1` se ne aktivira.
-
-Aktuelna tačna mapa:
-`docs/OPC_GATE_0_PROTECTION_REEVALUATION_AND_CLOSURE_MAP.md`.
-
-## 8. Phase 1 — minimum evidence pre Architecture Decision Gate-a
-
-Phase 1 prvenstveno prikuplja dokaze. Ne autorizuje automatski korekcije.
-
-### 8.1 Full code/architecture review — prvi izvršni ciklus
-
-Review obuhvata kompletan zajednički, Windows i Android source, a ne samo prijavljene simptome.
-
-Obavezni scope:
-
-- PREDMET domain i svi write/read putevi;
-- repositories i Drift/SQLite;
-- migracije, recovery, backup/restore i JSON;
-- scenario/business-policy sloj;
-- legacy/`core_v2` odnos;
-- veliki presentation/util/database fajlovi;
-- navigation/state/error handling;
-- module boundaries i međumodulske zavisnosti;
-- KATALOG i svi derivati;
-- reminders;
-- PDF/DOCX pipeline;
-- Windows/Android platform adapters;
-- testabilnost i characterization gaps;
-- performance i product-profile readiness.
-
-Review mora razlikovati:
-
-- potvrđen kvar;
-- owner runtime simptom ili hipotezu;
-- dokazani arhitektonski dug;
-- opravdanu platformsku razliku;
-- poslovnu odluku koja nije tehnički dug.
-
-### 8.2 PREDMET source-to-truth i dependency mapa
-
-Pre pojedinačnih implementacionih korekcija dokazati:
-
-- ko kreira i menja PREDMET;
-- ko direktno pristupa PREDMET/IRiU tabelama;
-- gde se business pravila nalaze van očekivanog domain/application sloja;
-- gde derivati čuvaju kopije PREDMET podataka;
-- da li se kopije mogu razići sa PREDMETOM;
-- kako SCENARIO i IRiU pripadaju poslovnom kontekstu PREDMETA;
-- kako KATALOG daje znanje bez retroaktivne izmene istorije;
-- kako derivati reaguju na promenu, lock, anonimizaciju ili brisanje;
-- postoje li direktni database upisi mimo kontrolisanog PREDMET lifecycle-a;
-- da li Windows i Android imaju različite business puteve ili rezultate.
-
-Svaka povreda PREDMET truth boundary-ja ima viši prioritet od običnog UI ili performance duga.
-
-### 8.3 PODSETNIK orphan i OS notification lifecycle
-
-**Audit/diagnosis:**
-
-- reprodukovati brisanje, anonimizaciju i restart;
-- proveriti DB cascade, sačuvane notification IDs i OS scheduler;
-- proveriti već zakazane i već isporučene notifikacije;
-- potvrditi ili odbaciti prijavljeni root-cause kandidat;
-- proveriti Windows in-app i Android OS mehanizam.
-
-**Emergency integrity gate:**
-
-Ako je potvrđen uzak data/lifecycle kvar koji ne zahteva novu arhitekturu ili migraciju, owner može odobriti minimalnu korekciju pre opšte Architecture Decision Gate odluke. U suprotnom implementacija čeka Gate.
-
-### 8.4 Windows multiple-instance — data-integrity prioritet
-
-Odvojiti:
-
-1. reprodukciju više instanci;
-2. audit concurrent pristupa SQLite bazi;
-3. isti-PREDMET write scenario;
-4. migration/startup race;
-5. import/export i output overwrite;
-6. architecture odluku o single-instance/IPC/focus ponašanju;
-7. implementaciju;
-8. owner runtime acceptance.
-
-Multiple-instance zaštita je viši prioritet od ordinary startup UX-a.
-
-### 8.5 Windows startup performance — povezano, ali zasebno
-
-Ne pretpostaviti uzrok. Meriti:
-
-- cold i warm start;
-- process start;
-- window creation;
-- config/locale;
-- DB open/migration;
-- KATALOG/reminder init;
-- first usable screen.
-
-Korekcija sledi tek posle baseline-a i owner-odobrenog cilja.
-
-### 8.6 Android MODULI PARTE performance — simptom u okviru full review-a
-
-Owner hipoteza je da prijavljeno „seckanje” može poticati od komplikovanog koda. Hipoteza nije potvrđen root cause. Code review prethodi ciljanoj optimizaciji i ispituje:
-
-- module open;
-- text edit;
-- block drag;
-- canvas pan/zoom;
-- repaint;
-- media;
-- preview;
-- narrow i wide layout;
-- veličinu i odgovornosti komponenti;
-- spregu editora, canvasa, gesture obrade, medija i preview-a;
-- nepotrebne ili široke rebuild/repaint cikluse;
-- sinhrone UI-thread, DB ili file operacije;
-- lifecycle kontrolera/listenera/resursa;
-- reprezentativan slabiji i srednji uređaj/hardware class.
-
-Prvo se proverava da li se simptom još reprodukuje na aktuelnom HEAD-u. Ako ne, zatvara se dokumentovanim runtime nalazom. Ako da, source review i profiling zajedno odlučuju između minimalne korekcije i progresivnog PARTE refactor-a. Audit ne menja owner-prihvaćen PDF/DOCX rezultat.
-
-Source audit završen 29. jula 2026. potvrđuje sledeće kandidate:
-
-- `ParteModuleScreen._load()` serijski traži PARTE pripremu za svaki PREDMET;
-- `InteractiveViewer.onInteractionUpdate` poziva široki `setState` pri svakom
-  pan/zoom update-u i ponovo gradi preview subtree;
-- media blok na rebuild-u kreira novi file-read future, a decode/effects/PNG
-  obrada se izvršava sinhrono;
-- veliki broj editor radnji upisuje draft i zatim pokreće kompletan
-  `buildPlan/_reload`, uključujući DB, media i controller obnovu;
-- sam block-drag tokom kretanja ostaje lokalni widget state i commit se vrši na
-  završetku, pa nije potvrđen kao glavni per-frame DB uzrok.
-
-Nalaz podržava ciljanu progresivnu refaktorizaciju presentation/render granice,
-ne full rewrite. Android uređaj nije bio povezan tokom audita; owner je potvrdio
-da ga može staviti na raspolaganje po preciznom zahtevu. Zato se izbor i
-acceptance korekcije odlažu do jednog ciljanog latest-HEAD profiler prolaza.
-
-### 8.7 Scenario/IRiU audit
-
-- popisati sve hard-coded scenario family/uslove;
-- karakterizovati postojeće `JAVNO MESTO/NEDEFINISANO` ponašanje isključivo
-  radi migracione sigurnosti ka korisnički podesivom SCENARIO ugovoru;
-- mapirati postojeći `TIP POLAGANJA URNE` tok i zasebno informativno polje
-  groblja polaganja urne, različito od `MESTO CEREMONIJE`/`groblje` kremacije;
-- klasifikovati managed/manual IRiU redove;
-- reprodukovati stale-row ponašanje;
-- mapirati scenario → PREDMET → IRiU → dokumenti → completion signali;
-- utvrditi current scenario ID/version/storage/JSON ponašanje;
-- karakterizovati postojeće baze.
-
-Source audit završen 29. jula 2026.:
-
-- postoji samo `default_funeral_ceremony_policy`; stvarna politika je skup
-  hard-coded condition family pravila, ne skup korisničkih scenarija;
-- `businessScenarioId` je PREDMET polje i deo je single-PREDMET JSON-a, ali
-  nema scenario definition/version snapshot-a, FIRMA template tabele ili
-  PODEŠAVANJA UI-a;
-- `snapshotZaSaveCommit` trenutno izostavlja `businessScenarioId`, a IRIU
-  promene nisu deo tog PREDMET-only snapshot-a;
-- IRIU red nema persisted provenance koji pouzdano razlikuje basic,
-  scenario-created, catalog i manual red iste kategorije;
-- incident scenario-first redosleda je potvrđen i ostaje neispravljen;
-- current lifecycle suppressuje zastarele redove i traži korisničke
-  `ZADRŽI/UKLONI` ili `DODAJ/NE DODAJ` odluke, što je superseded novijom
-  owner odlukom `ODQ-SCENARIO-001`;
-- `SAHRANA VAN SRBIJE`, `DOČEK` i `OPELO` imaju add-only UI triggere; pri
-  gašenju uslova redovi ostaju stored i truth sloj ih samo potiskuje;
-- UI uvek čuva `groblje`, a downstream builder ga već koristi kao
-  `MESTO CEREMONIJE`; za `SMESTAJ_URNE` ne postoji eksplicitno istoimeni
-  UI/business ugovor;
-- source i dva pre-regression backup-a koriste `NEDEFINISANA` kao
-  `uzrokSmrti` vrednost i normalizuju `ULICA`/`JAVNO MESTO`; ne postoji
-  dedicated kombinovani regression test niti dokumentovan expected rezultat
-  dovoljan da se `JAVNO MESTO/NEDEFINISANO` proglasi reprodukovanim.
-
-Naknadna owner odluka od 29. jula 2026. zatvara oba poslovna gate-a:
-
-- poseban expected-result fixture za `JAVNO MESTO/NEDEFINISANO` više nije
-  implementaciona zavisnost, jer se scenario politika izmešta iz hard-code-a u
-  korisnički podesiv UI; current behavior ostaje characterization input samo za
-  bezbednu migraciju;
-- postojeći padajući meni `TIP POLAGANJA URNE` i njegova uslovna polja ostaju;
-  dodaje se zasebno informativno PREDMET polje za groblje polaganja urne, koje
-  može biti različito od `MESTO CEREMONIJE` odnosno `groblje` same kremacije.
-
-Arhitektonski zaključak:
-
-`RETAIN PREDMET/IRiU CORE + BOUNDED PARTIAL REWRITE OF THE SCENARIO/CONFIGURATION BOUNDARY`
-
-Pre automatskog reconciliation-a potrebni su versioned PREDMET scenario
-snapshot, FIRMA template/default persistence, IRiU row provenance i
-reconciliation-pending tehnički recovery. Izolovan delete patch nije bezbedan.
-
-### 8.8 UI/UX, migration i product-profile readiness audit
-
-- historical schema 1–22;
-- canonical DB policy;
-- JSON schemas i previously distributed versions;
-- FIRMA/scenario/currency persistence opcije;
-- Serbia/multilingual separation;
-- one-core/profiles/branches/flavors/modules opcije;
-- signing/release identity posledice;
-- Android narrow, Android wide i Windows UI/UX;
-- keyboard/mouse/touch/accessibility parity.
-
-### 8.9 Phase 1 execution checkpoint — 28. jul 2026.
-
-Full source/architecture review iz 8.1 je završen:
-`docs/OPC_PHASE_1_FULL_CODE_ARCHITECTURE_REVIEW.md`.
-
-Objedinjena evidence matrica:
-`docs/OPC_PHASE_1_ARCHITECTURE_DECISION_GATE_EVIDENCE_MATRIX.md`.
-
-Current tehnička preporuka je:
-
-`RETAIN CURRENT CODEBASE + PROGRESSIVE REFACTOR`.
-
-Full rewrite nije podržan dokazima. Partial rewrite ostaje evidence-gated
-opcija za scenario/configuration i JSON orchestration granicu; PARTE
-presentation samo ako profiling dokaže potrebu.
-
-Architecture Decision Gate još nije otvoren. Preostali dokazni red je:
-
-1. Windows multiple-instance/concurrent SQLite — audit complete 29 July 2026;
-2. Windows startup baseline — source audit complete 29 July 2026; quantitative current-HEAD runtime baseline awaits owner-authorized isolated WINDOWS_TEST instrumentation/build;
-3. Android PARTE source audit — complete 29 July 2026; targeted latest-HEAD
-   reproduction/profiling awaits an owner-provided Android device;
-4. kompletan SCENARIO/IRiU audit;
-5. UI/UX, migration, parity i product-profile synthesis;
-6. pouzdan kompletan Flutter test rezultat — PASS za neizmenjeni application
-   tree na `e9ea4a9679f0a9f80521fc3aa362e78b7993d073`: 247 passed, 1 skipped,
-   0 failed; kasniji Phase 1 commitovi do ovog checkpoint-a su documentation-only.
-
-Windows concurrency audit result:
-
-- no process-level guard exists before Flutter/SQLite initialization;
-- every production Windows process opens the same canonical database lane;
-- isolated synthetic probes confirmed blocking during concurrent open/write;
-- recommended correction is a named mutex before Dart/SQLite plus installer
-  running-app coordination;
-- installation/update/uninstall must never modify canonical database identity,
-  location or content;
-- implementation remains unauthorized until the relevant correction gate.
-
-Windows startup source-audit result:
-
-- the native shell can be visible before the first usable Flutter route;
-- `main.dart` awaits window-manager setup and global Serbian date-symbol
-  initialization before `runApp`;
-- first-login routing waits on the first database query;
-- every database open repeats schema recovery/validation, 74 sequential seed
-  attempts, an unconditional built-in policy update and a full KATALOG
-  stable-ID scan;
-- post-login work also starts automatic status, reminder, setup-readiness and
-  SAVETNIK operations;
-- one synthetic external harness did not reach its first SQLite phase within
-  nine minutes and produced no valid OPC performance metric; it must not be
-  repeated;
-- a quantitative current-HEAD baseline remains gated by explicit owner
-  authorization for isolated WINDOWS_TEST instrumentation and a release build;
-- the initial source/harness phase did not open the canonical database and did
-  not change application source or runtime behavior.
-
-Subsequent owner-authorized installed-runtime evidence:
-
-- the real installed owner version reaches the login screen in approximately
-  `8–9 s` on the reference machine;
-- startup to login, without authentication, changed the canonical SQLite file
-  by `+8,192` bytes and changed its SHA-256;
-- post-exit `PRAGMA integrity_check` is `ok`, schema checkpoint remains 22 and
-  no sidecar file remains;
-- no restore or overwrite was attempted;
-- the owner also confirms visibly slow normal exit, consistent with the prior
-  recorded `12.8 s` close;
-- production source does not explicitly close the application-owned
-  `AppDatabase` before awaiting native window destruction;
-- installed-version evidence does not replace the still-required current-HEAD
-  isolated measurement before correction acceptance.
-
-## 9. Architecture / refactor / rewrite Decision Gate
-
-### Post-zero technical gate result - 2026-07-30
-
-The post-zero synthesis at
-`docs/OPC_POST_ZERO_ARCHITECTURE_DECISION_GATE_SYNTHESIS.md` closes the
-whole-codebase technical architecture choice:
-
-`RETAIN + PROGRESSIVE REFACTOR + BOUNDED SUBSYSTEM CHANGE ONLY WHERE PROVEN`.
-
-Full rewrite is rejected by current evidence. Windows startup/shutdown timing
-and Android PARTE profiling are safely deferred for this whole-codebase choice
-but remain mandatory before code changes in their affected performance areas.
-Business-policy and lifecycle meaning changes still require a post-zero owner
-gate. This result does not authorize implementation.
-
-Ovaj gate dolazi posle minimalnih Phase 1 dokaza i pre velikog scenario/configuration ili modularnog implementacionog rada.
-
-### 9.1 Opcije koje se porede
-
-| Opcija | Kada je opravdana | Glavni rizik | Dokaz potreban |
-| --- | --- | --- | --- |
-| Targeted corrections | Uzak potvrđen kvar, stabilna granica | Dug tehnički dug ostaje | Reprodukcija, focused test, minimal diff |
-| Progressive refactor | Postojeći domain/data core je očuviv | Privremeni adapteri i duži prelaz | Characterization, module map, parity dokaz |
-| Partial subsystem rewrite | Izolovan podsistem ne može bezbedno da evoluira | Compatibility/migration granica | Jasni ugovori, rollback, coexistence plan |
-| Partial scenario/configuration rewrite | Current hard-coded evaluator ne može dati user-editable policy bez nove granice | PREDMET history i IRiU migration | Scenario audit, persistence comparison, JSON/migration fixtures |
-| Full rewrite | Postojeća osnova dokazivo sprečava stabilnost, parity ili evoluciju | Najveći data/migration/runtime rizik | Potpuna cost/risk analiza, canonical migration proof, rollback i owner odluka |
-
-### 9.2 Trenutna provisional preporuka
-
-`RETAIN CURRENT CORE → TARGETED INTEGRITY FIXES → PROGRESSIVE REFACTOR → BOUNDED PARTIAL REWRITE WHERE PROVEN`
-
-Full rewrite nije pretpostavljen. Gate može promeniti preporuku samo dokazima.
-
-### 9.3 Scenario persistence opcije
-
-Gate poredi najmanje:
-
-- kopirane/verzionisane scenario podatke;
-- immutable scenario version reference;
-- normalizovani PREDMET-owned scenario state;
-- hibridni state/provenance model;
-- drugi evidence-supported model.
-
-Obavezni ishod, nezavisno od fizičkog modela:
-
-- PREDMET samorazrešivo čuva scenario/business context koji je važio;
-- završeni/istorijski zaključan PREDMET ostaje stabilan;
-- FIRMA template promena ne menja postojeću istoriju;
-- JSON/migracija ostaju kompatibilni;
-- Windows i Android identično tumače stanje.
-
-### 9.4 Gate odluke
-
-Codex na osnovu dokaza odlučuje:
-
-- architecture option;
-- scenario persistence model;
-- migration strategiju;
-- module/refactor granice;
-- koje minimalne integrity korekcije mogu prethoditi većem refactoru.
-
-Owner potvrđuje samo poslovne posledice tih odluka, uključujući lifecycle, SCENARIO/IRiU značenje, valutu, dokumente, product identity i svaki izuzetak od PREDMET authority-ja ili Windows/Android parity-ja. Ako tehnički izbor dodiruje takvu posledicu, Gate staje do owner odluke.
-
-## 10. Phase 2 — potvrđene integrity i performance korekcije
-
-Svaka stavka koristi lifecycle iz odeljka 6.
-
-### 10.1 PODSETNIK orphan korekcija
-
-#### Post-zero RI-1 through RI-5 design result - 2026-07-30
-
-The controlling post-zero lifecycle/referential design is
-`docs/OPC_POST_ZERO_PREDMET_LIFECYCLE_REFERENTIAL_DESIGN.md`.
-
-It confirms the first executable stage as committed RI-1 characterization and
-dependency/orphan inventory with no production behavior change. RI-2
-coordination, RI-3 recovery, RI-4 FK enforcement and RI-5 restore/parity proof
-remain separately gated. Business/privacy/transfer choices identified by the
-design require post-zero owner authority before their affected implementation.
-
-#### RI-1 execution result - 2026-07-30
-
-RI-1 committed characterization and inventory is implemented in
-`test/predmet_lifecycle_referential_characterization_test.dart`.
-
-The isolated in-memory evidence locks:
-
-- `foreign_keys=0` as current behavior;
-- all seven declared PREDMET dependencies through `foreign_key_list`;
-- metadata-only orphan counts for every dependent table;
-- hard-delete PARTE/reminder FK orphans;
-- derivative PII retained after current anonymization;
-- stale PARTE/reminder state retained across individual replacement;
-- stale reminder re-association by reused local ID during full restore, even
-  when `foreign_key_check` is clean.
-
-This is characterization, not approval of current behavior. Production source,
-schema, migration, FK enforcement, JSON format and canonical data are unchanged.
-Existing committed stock-compensation, PARTE media rollback, reminder and
-historical migration fixtures remain the supporting seam evidence; RI-1 does not
-duplicate those broad suites.
-
-Next dependency is RI-2 explicit lifecycle coordination, only after exact
-implementation authorization. Hard-delete coordination can proceed without a
-new business-policy answer. Replacement, anonymization and restore must stop at
-their recorded post-zero owner gates.
-
-#### RI-2 hard-delete slice result - 2026-07-30
-
-The first technically independent RI-2 slice is implemented:
-
-- both production UI delete paths use one application-level hard-delete
-  coordinator;
-- the coordinator inventories PARTE/reminder state before mutation;
-- exclusively owned PARTE media is staged through the existing recoverable
-  trash mechanism, while shared media is preserved;
-- only stored/scoped ceremony notification IDs are cancelled;
-- the existing STANJE ROBE compensation and one DB transaction explicitly
-  remove reminder, PARTE, log, contact, IRiU decision, IRiU, consequence and
-  PREDMET rows;
-- DB/cancellation failure restores staged media and re-establishes reminder
-  scheduling before surfacing failure;
-- successful commit purges staged app-owned media best-effort.
-
-No schema, migration, FK setting, JSON format, anonymization, replacement or
-restore behavior changed. This technical PASS does not close owner runtime
-acceptance.
-
-Remaining RI-2 slices stay closed at their post-zero owner gates.
-
-Owner runtime acceptance for this hard-delete slice is explicitly
-`DEFERRED / OWED` and must be included with the next authorized Windows/Android
-runtime cycle. Deferral is not runtime PASS and does not authorize another RI-2
-business-policy slice.
-
-#### RI-2 full-restore slice result - 2026-07-30
-
-The owner selected post-zero policies 3A and 4A. Full backup schema 8 now
-transfers reminder enablement/delivery times without device notification IDs.
-Restore scoped-cancels destination IDs, explicitly clears PREDMET child state,
-imports the database transactionally, removes old app-owned PARTE media and
-rebuilds reminder schedules with new local IDs where possible.
-
-Users/PIN hashes remain portable. Destination-installation
-`security_settings` and existing `auth_audit_log` remain local; restore appends
-one local `full_backup_restore` audit event. Legacy schema-7 backups remain
-readable and clear stale destination reminder state. Isolated failure proof
-rolls back the database, restores staged media and re-establishes old reminders.
-
-Anonymization and individual replacement remain closed at owner gates 1 and 2.
-FK enablement, orphan recovery, migration and canonical/live data remain
-outside this slice. Focused technical tests pass. The owner-provided cumulative
-PowerShell gate at `a1ec31fcd4b2113740a9e118a29c94a556f4243c` also passes:
-analyze with no issues, complete tests 258 passed/1 skipped/0 failed, Windows
-release build PASS and Android APK release build PASS. Owner Windows/Android
-runtime acceptance remains separately `DEFERRED / OWED`.
-
-Owner Windows hard-delete runtime acceptance subsequently passed: the deleted
-synthetic PREDMET remained absent after restart, the application stayed stable,
-and unrelated PREDMET/PARTE state remained intact. Android hard delete and
-Windows/Android full restore remain owed.
-
-Android subsequently passed the hard-delete UI/database persistence and
-isolation checks with the same stable/restart/unrelated-data outcome. The owner
-did not report the scheduled-reminder non-arrival observation, so scoped Android
-notification cancellation remains owed rather than inferred.
-
-The same Windows session identified two separately source-confirmed PARTE UI
-defects (mojibake/internal `mourners` warning text and initial-versus-fitted
-font-size display mismatch) plus an unmeasured performance impression. These
-findings do not reopen hard-delete PASS. UI correction requires a separate
-notified task; performance requires targeted measurement before diagnosis.
-
-Android reproduced both UI defects. The owner additionally established and
-clarified the global PARTE empty-content rule: defined blocks remain mandatory
-in template/draft structure, while each block's content may be empty. Empty
-content is omitted and does not block preparation/confirmation/export. Current
-`requiredTextBlockIds` composition and export validation incorrectly infer
-missing required structure from content-bearing render output. Correct that
-structure-versus-content conflation only in a separate notified task with
-focused empty-content, structural-integrity, output and Windows/Android parity
-evidence.
-
-Android full-restore runtime subsequently failed before destination mutation.
-Read-only inspection of the exact owner-supplied schema-8 backup confirmed 2
-orphan reminder rows among 9 reminder rows; all other reminder validator
-conditions were valid. The schema-8 exporter included every FK-off reminder
-row, while the importer rejected rows without a transferred PREDMET. This
-confirmed self-produced-backup compatibility defect is `INC-003`.
-
-Before full-restore acceptance can close, a separate notified correction must:
-
-- restrict future exported reminder settings to transferred PREDMET ownership;
-- define safe compatibility for existing schema-8 files carrying orphan
-  reminder derivatives without reassociating them;
-- preserve valid 3A logical settings and 4A installation-local security/audit;
-- prove isolated round-trip/rollback and repeat Android owner runtime.
-
-#### INC-003 bounded full-restore compatibility correction - 2026-07-31
-
-The notified correction is technically implemented on a separate task branch.
-It does not perform RI-3 recovery, live cleanup, FK enablement, migration,
-relinking or canonical database mutation.
-
-- Export uses the exact captured exported-PREDMET set to include only owned
-  reminder settings and change-history rows.
-- Schema-8 import fully validates each reminder/history row, then skips only a
-  structurally valid row whose PREDMET is absent from the backup. Destination
-  IDs never validate ownership, preventing reassociation through reused IDs.
-- Restore inventories and scoped-cancels all destination notification IDs,
-  including IDs in an orphan reminder row. Rollback compensates only configured
-  reminders owned by an existing old PREDMET.
-- Policy 3A remains exact: logical enabled/delivery-time configuration is
-  transferred, device IDs are not, and future platform slots are rebuilt with
-  new local IDs. A future prepared platform slot is not an active trigger now;
-  the current trigger remains `activeCeremonyReminderSlot`.
-- Policy 4A remains exact: users/PIN hashes transfer, destination security and
-  existing audit remain local, and one local restore audit event is appended.
-- Supplied-backup isolated evidence: 46 PREDMETI; reminder rows 9 total, 7
-  owned, 2 skipped; change-history rows 230 total, 224 owned, 6 skipped; active
-  triggers 0 at the recorded preflight moment; 3 future platform slots rebuilt;
-  referential check clean.
-- Focused and related regressions pass; final analyze is clean and complete
-  tests pass 264 with 1 skipped. Owner-provided Windows and Android release
-  builds pass on the final correction SHA; runtime acceptance remains separate.
-
-Technical correction PASS does not close Android runtime acceptance. The owner
-Android full-restore retest remains owed.
-
-Root-cause dijagnoza je potvrđena code-first auditom:
-`docs/OPC_PODSETNIK_ORPHAN_REFERENCE_ROOT_CAUSE_AND_RECOVERY_AUDIT.md`.
-
-Potvrđena su dva nezavisna lifecycle nedostatka:
-
-- reminder SQLite red se oslanja na deklarisani cascade bez uključenog/dokazanog
-  runtime foreign-key enforcement-a;
-- Android OS notification se ne otkazuje pre brisanja PREDMETA.
-
-Historical diagnosis below is superseded by the RI-2 implementation and
-INC-003 correction above: full restore now clears/transfers/rebuilds reminder
-configuration under policy 3A. It remains preserved only as chronology, not as
-current source state.
-
-Full-backup restore je dodatni trigger jer ne čisti, ne prenosi niti ponovo
-gradi reminder konfiguraciju.
-
-Buduća odobrena implementacija mora obuhvatiti:
-
-- atomic/compensating deletion lifecycle;
-- cancel pre gubitka notification IDs ili drugi dokazivo bezbedan red;
-- idempotent retry;
-- recovery za ranije orphan payload-e;
-- eksplicitno čišćenje orphan SQLite redova;
-- scoped pregled pending OPC payload-a, bez `cancelAll`;
-- full-backup prenos logičke konfiguracije bez device-local notification IDs;
-- restore cancel/clear/import/reschedule red;
-- nema gubitka validnog PREDMETA;
-- Windows/Android ekvivalentan business rezultat.
-
-Globalno uključivanje `PRAGMA foreign_keys = ON` ostaje zaseban širi integrity
-audit posle inventara svih relacija i postojećih orphan redova.
-
-Taj širi audit je završen:
-`docs/OPC_DATABASE_REFERENTIAL_INTEGRITY_AND_PREDMET_DEPENDENCY_AUDIT.md`.
-
-Fixture dokaz potvrđuje FK-off runtime, orphan PARTE/reminder redove,
-anonymization privacy ostatke i full-restore dependent-data rizik. Zbog toga
-PODSETNIK orphan implementacija ne sme biti izolovan UI/repository patch.
-Najpre se primenjuje auditovani progressive lifecycle/referential refactor red.
-
-### 10.2 Windows multiple-instance zaštita
-
-Samo posle architecture odluke:
-
-- sprečiti concurrent data mutation;
-- bezbedno fokusirati/proslediti launch postojećoj instanci gde je odobreno;
-- fail-safe migration/import/export ponašanje;
-- isti-PREDMET i output collision testovi;
-- owner runtime acceptance.
-
-### 10.3 Startup korekcija
-
-Menjati samo dokazane bottleneck-e. Single-instance i startup mogu deliti platform infrastrukturu, ali imaju odvojene acceptance rezultate.
-
-### 10.4 Android PARTE performance korekcija
-
-Najmanji dokazani rendering/state zahvat, bez promene:
-
-- PREDMET/IRiU boundary-ja;
-- editor business ponašanja;
-- PDF/DOCX formation pravila;
-- owner-prihvaćenog vizuelnog rezultata.
-
-## 11. Merljiva performance acceptance
-
-Za Windows startup i Android PARTE task mora zapisati:
-
-- referentni uređaj ili hardware class;
-- OS verziju;
-- release build variant;
-- canonical-like izolovanu bazu/fixture;
-- reprezentativni PREDMET i PARTE sadržaj;
-- broj ponavljanja;
-- cold/warm razliku;
-- pre-change baseline;
-- proposed target;
-- owner odobren target pre implementation acceptance;
-- post-change rezultat;
-- owner-perceived runtime nalaz.
-
-### 11.1 Windows minimum metrike
-
-- process start → first window;
-- process start → first usable screen;
-- DB open/migration trajanje;
-- cold median i raspon;
-- warm median i raspon;
-- single-instance second-launch ponašanje.
-
-### 11.2 Android PARTE minimum metrike
-
-- module-open latency;
-- frame/render profiling;
-- jank/missed-frame evidence;
-- drag/pan/zoom interaction;
-- media-heavy fixture;
-- narrow/wide;
-- najmanje jedna slabija i jedna srednja hardware class.
-
-Plan ne izmišlja numeričke pragove bez baseline-a. Audit predlaže prag; owner ga potvrđuje.
-
-## 12. Phase 3 — PREDMET lifecycle i sadašnji scenario defects
-
-### 12.1 Historical/completed PREDMET owner gate
-
-Pre status ili scenario implementacije owner odlučuje ponašanje za:
-
-- otvoren PREDMET;
-- završen PREDMET;
-- zatvoren PREDMET ako source razlikuje taj status;
-- anonimizovan PREDMET;
-- obrisan PREDMET;
-- istorijski auto-završen PREDMET;
-- drugi source-defined locked state.
-
-Owner mora odlučiti:
-
-- koji status aktivira istorijski lock;
-- odnos `ZATVOREN`/`ZAVRŠEN`;
-- reverzibilnost;
-- dozvoljeni correction/reopen izuzetak, ako postoji;
-- ko ga pokreće i kakav audit trag ostavlja;
-- reminders, editovanje, dokumenti i scenario posledice;
-- legacy auto-completed tretman.
-
-Invariant:
-
-Kasnija FIRMA scenario/KATALOG/default/business-policy promena ne menja istorijsku poslovnu istinu zaključanog PREDMETA.
-
-### 12.2 Uklanjanje automatskog `ZAVRŠEN`
-
-- eksplicitna korisnička radnja;
-- confirmation i lifecycle guard;
-- bez anonimizacionih/destruktivnih posledica;
-- legacy/import kompatibilnost;
-- owner runtime provera.
-
-### 12.3 Korekcija sadašnjih scenario defects
-
-Pre user-configurable UI-a završavaju se characterization, owner gates i
-scenario/configuration data ugovor. Source korekcije se zatim implementiraju u
-jednom kontrolisanom Phase 4 programu, jer automatsko brisanje nije bezbedno bez
-row provenance-a i PREDMET-owned scenario snapshot-a:
-
-- migraciona characterization provera sadašnjeg
-  `JAVNO MESTO/NEDEFINISANO` ponašanja, bez zasebnog owner fixture-a ili
-  izolovane hard-code korekcije;
-- zasebno informativno groblje polaganja urne u postojećem
-  `TIP POLAGANJA URNE` toku, odvojeno od mesta/groblja kremacije;
-- stale/nepotrebni IRiU redovi;
-- incident iz 2026-07-17: scenario redovi su neautorizovano pomereni ispred
-  `SANDUK` i osnovnog IRiU bloka;
-- jedna poslovna potvrda `NASTAVI/ODUSTANI`, bez tehničkog consequence preview-a;
-- automatsko uklanjanje neprimenljivih scenario-owned redova, uključujući
-  njihove korisničke vrednosti, bez neaktivne kopije i bez kasnijeg vraćanja;
-- automatsko kreiranje novih potrebnih redova sa praznim korisničkim
-  vrednostima;
-- automatsko poništavanje operativnih/STANJE ROBE posledica ili skriveni,
-  nefinansijski `RECONCILIATION_PENDING` recovery kada trenutno ne uspe;
-- idempotent reconciliation.
-
-Phase 3 završava dokaz, karakterizaciju mutation putanja, schema/migration
-design i zaštitu historical/locked PREDMET granice. Source korekcije se ne rade
-kao izolovani patch-evi: implementiraju se u Phase 4 zajedno sa
-konfigurabilnim SCENARIO ugovorom.
-
-## 13. Migration, backup i restore pravila
-
-Svaka schema ili data migracija mora:
-
-1. koristiti izolovanu kopiju, nikada jedini canonical fajl;
-2. napraviti SQLite-consistent backup pre otvaranja realne ili verified canonical kopije;
-3. dokazati da je backup čitljiv;
-4. koristiti realistične historical schema fixtures;
-5. uključiti partial-migration state fixtures;
-6. dokazati idempotency i bezbedan retry;
-7. sačuvati row counts i reprezentativne poslovne vrednosti;
-8. dokazati JSON round-trip za Windows i Android gde je relevantan;
-9. izvesti restore rehearsal i dokazati da se backup stvarno vraća;
-10. definisati rollback ili forward-fix pravilo;
-11. zabraniti merge test baze u canonical user bazu;
-12. zahtevati owner autorizaciju pre live canonical upgrade-a.
-
-Schema verzija nije business authority. Existing user database ostaje korisnikova istina.
-
-## 14. Phase 4 — korisnički konfigurabilni SCENARIO
-
-Počinje tek posle Architecture Decision Gate-a i Phase 3 korekcija.
-
-### 14.1 Domain/data ugovor
-
-- owner-odobren persistence model;
-- stable ID i version/provenance;
-- PREDMET-owned historically stable scenario state;
-- FIRMA templates/defaults;
-- individualni i kompletni default set;
-- prospective application;
-- migration/JSON contracts;
-- Windows/Android identično tumačenje.
-
-### 14.2 PODEŠAVANJA
-
-- prikaz svih korigovanih postojećih scenarija;
-- puna user editability;
-- create/copy/save;
-- import/export;
-- individualni default;
-- complete FIRMA default set;
-- validation kontradikcija;
-- Android narrow/wide/Windows parity.
-
-Obavezni incident acceptance uslov:
-
-- očuvati KATALOG mogućnost da user/Administrator definiše nove osnovne IRiU
-  kategorije;
-- ta mogućnost ne sme menjati postojeće SCENARIO odluke ili logiku;
-- `SANDUK` i kompletan primenljiv osnovni IRiU blok moraju prethoditi
-  scenario-dependent redovima;
-- ukloniti obrnuti test uveden 2026-07-17 i zameniti ga owner-approved
-  business-contract i mutation-path regresionim testovima;
-- ne menjati completed/locked PREDMET istinu; eligible nezavršen PREDMET koristi
-  samo kontrolisani SCENARIO/IRiU reconciliation.
-
-### 14.3 Promena scenarija postojećeg PREDMETA
-
-Samo za lifecycle-eligible PREDMET:
-
-- eksplicitna akcija;
-- jedna potvrda da će OPC automatski uskladiti IRiU;
-- bez prikaza tehničkog old/new consequence diff-a korisniku;
-- automatsko uklanjanje svih neprimenljivih scenario-owned IRiU redova i
-  njihovih korisničkih vrednosti;
-- automatsko kreiranje novih potrebnih redova sa praznim vrednostima;
-- uklonjene vrednosti se ne arhiviraju i ne vraćaju pri povratku na raniji
-  SCENARIO;
-- operativne posledice se automatski poništavaju; neuspeh koristi skriveni
-  `RECONCILIATION_PENDING` recovery bez vraćanja korisniku tehničkog zadatka;
-- atomic transaction ili dokazivo bezbedan compensation plan;
-- provenance/audit;
-- nikada automatski za istorijski zaključan PREDMET.
-
-## 15. Phase 5 — dovršavanje postojećih funkcija
-
-### 15.1 Kompletan signalni model
-
-Pre povratka na poslovni PODSETNIK model mora se inventarisati i dokazati ceo
-skup signala:
-
-- narandžasto prazno;
-- žuto delimično;
-- zeleno potpuno;
-- ikona/tekst pored boje;
-- scenario-dependent relevantna polja;
-- N/A i opciona polja;
+| Documentation authority reset and architecture review | `COMPLETED — TECHNICAL PASS` | Post-zero authority inventory, full architecture review and decision synthesis select retain + progressive refactor; full rewrite is rejected. |
+| PREDMET authority and scenario ownership model | `COMPLETED — SOURCE/TEST FACT` | Definitions/defaults live in MODULI; selected/applied snapshot and provenance are PREDMET-owned. |
+| Explicit completion lifecycle | `COMPLETED — TECHNICAL PASS` | Automatic `ZAVRŠEN` is retired; only explicit `OTVOREN → ZATVOREN → ZAVRŠEN`; final state is immutable for direct edit/reopen. Platform runtime acceptance is not separately proven for this focused lifecycle. |
+| SCENARIO business implementation | `COMPLETED — TECHNICAL PASS` | Editable OSNOVNI PAKET + scenario additional packages, 1,008 combinations, data-driven evaluation, protected manual/legacy rows, PREDMET snapshot/provenance and controlled reconciliation are implemented. |
+| SCENARIO Windows runtime | `COMPLETED — OWNER RUNTIME PASS` | Real release path `MODULI → SCENARIO`, OPEN-PREDMET selection, persisted snapshot, IRiU and non-retroactivity proven. |
+| SCENARIO Android runtime | `COMPLETED — OWNER RUNTIME PASS` | Physical Android device proves startup, selector, complete tuple, applied snapshot and scenario IRiU. |
+| Cross-platform GROBLJE finding | `HISTORICAL / NO ACTION` | Reported GRADSKO→LOKALNO mismatch was an acceptance-reading error; full eight-axis equality passed on both platforms. |
+| 1,008 consistency gates | `COMPLETED — TECHNICAL PASS` | Independent owner-map golden plus production-path E2E pass 1,008/1,008 with zero key/item/status/order mismatch. |
+| KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | FIKSNA price, CRNINA KATALOŠKA, applied price snapshot, `KOM × CENA = IZNOS`, manual override and OSNOVNI pricing are covered. |
+| Android release build/startup | `COMPLETED — OWNER RUNTIME PASS` | Fresh release APK, in-place upgrade, cold/warm startup, login/navigation and stability smoke passed. |
+| Full technical regression baseline | `COMPLETED — TECHNICAL PASS` | Latest inherited baseline: analyze PASS; full suite 393 passed, 7 skipped, 0 failed; Windows and Android release builds PASS. |
+
+These items reopen only for a new source/runtime finding, a regression, or an
+explicit new owner business decision.
+
+### 2.2 Current one-line dependency order
+
+**Documentation reconciliation → release-risk integrity closure (Windows
+single-instance and remaining PREDMET/referential acceptance) → evidence-first
+performance closure → SCENARIO JSON carrier parity → complete signal/lifecycle
+model and full PODSETNIK upgrade → remaining JSON/document/theme/UI work →
+MODUL DVE VALUTE → final Windows/Android business-semantic parity and
+backup/restore rehearsal → app identity/version/update-channel decision → First
+Product-Line Gate for stable OPC v.1 → optional non-blocking debt/Stage 2
+cleanup → `OPC_v.1_Int` architecture/localization/country/multicurrency work →
+signing and professional handover.**
+
+This order replaces every older “next dependency” statement, including future
+SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
+
+## 3. Reality matrix
+
+| Program / dependency | Actual state | Windows | Android | Remaining work / dependency decision | Old premise |
+| --- | --- | --- | --- | --- | --- |
+| Documentation/continuity governance | `COMPLETED — TECHNICAL PASS` for zero-baseline classification; this reconciliation restores current sequencing | N/A | N/A | Maintain plan/report/current-state parity per task | Gate 0 activation wording is historical/superseded |
+| Code/architecture review | `COMPLETED — TECHNICAL PASS` | N/A | N/A | Refactor only where evidence proves need | Mandatory broad rewrite/refactor is false |
+| PREDMET authority/dependency protection | `PARTIAL` | Core truth and SCENARIO hand-off proven | Core truth and SCENARIO hand-off proven | Finish referential/lifecycle acceptance and carrier parity; do not reopen proven scenario ownership | Future snapshot/provenance premise is superseded |
+| Database/referential integrity | `PARTIAL` | Hard-delete runtime PASS; scoped restore history exists | Hard-delete DB/isolation PASS; scoped restore PASS on prior artifact | Remaining RI owner gates, FK/orphan strategy if pursued, current-tip final rehearsal | Isolated PODSETNIK orphan patch is superseded by coordinated program |
+| Windows single-instance | `OPEN — BLOCKING FOR OPC v.1` | No native guard | N/A | Implement locked named-mutex/installer coordination contract; runtime accept | “Audit pending” is false; audit done, implementation open |
+| Windows startup/exit performance | `PARTIAL` | Installed baseline about 8–9 s to login; slow exit observed; current-tip instrumented acceptance absent | N/A | Measure current release lane, agree target, correct only proven bottlenecks if gate fails | Later runtime work does not prove performance closure |
+| Android PARTE performance | `PARTIAL` | N/A | Source risks known; latest focused profiler/acceptance not performed | Reproduce/profile on representative devices; fix only if measured | No full/partial rewrite is authorized by source audit alone |
+| IRiU/KATALOG performance | `PARTIAL` | Repository characterization exists; owner slowdown not decomposed | Same shared path; no measured platform acceptance | Separate repository, first-frame, photo read/decode timing before correction | Synthetic timing is diagnostic only |
+| PREDMET `ZAVRŠEN` lifecycle | `COMPLETED — TECHNICAL PASS / RUNTIME OWED` | Focused runtime not separately recorded | Focused runtime not separately recorded | Include lifecycle in final platform semantic acceptance | Old unresolved lifecycle queue is superseded |
+| SCENARIO implementation | `COMPLETED — TECHNICAL PASS` | See runtime row | See runtime row | Protect; do not repeat | Hard-coded/future-wiring chronology is superseded |
+| SCENARIO Windows runtime | `COMPLETED — OWNER RUNTIME PASS` | PASS | N/A | Only regression protection | Future wiring premise false |
+| SCENARIO Android runtime | `COMPLETED — OWNER RUNTIME PASS` | N/A | PASS on physical Android 15 device | Only regression protection | Runtime-pending premise false |
+| SCENARIO JSON carriers | `PARTIAL — BLOCKING FOR OPC v.1` | Pure envelope/adapter contracts exist; production carrier not wired | Same shared implementation | Integrate snapshot + complete provenance into Single-PREDMET and full backup roots, schema bump/fail-closed old client, round-trip/rollback/parity proof | “Carrier support complete” would be false |
+| KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | Build/technical evidence | Build/technical evidence | Include in final runtime business parity; do not redesign | Future FIKSNA/amount premise superseded |
+| Completion/signal model | `OPEN` | Not complete | Not complete | Inventory all derived completeness/due/missed/lifecycle signals; owner confirms business meaning | Must precede full PODSETNIK |
+| PODSETNIK full upgrade | `OPEN — REQUIRED PREDECESSOR` | In-app/notification behavior requires full model | OS notification exists; new notification for a `ZAVRŠEN` PREDMET is a retained finding | One lifecycle-aware informed-reminder program; no isolated status patch | Standalone reminder fix is rejected |
+| Single-PREDMET JSON relocation | `OPEN` | Move export/import action to PREDMET three-dot menu | Same | Preserve schema/legacy behavior and separate from full backup | Still valid |
+| Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
+| NALOG CVEĆARI | `OPEN — OWNER DECISION REQUIRED` | No standalone generator proven | No standalone generator proven | Source/business inventory, owner content and PDF/DOCX scope, then implementation/acceptance if required | “Nearly complete” is unsupported |
+| Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
+| PDF RAČUN availability/business scope | `PARTIAL — OWNER DECISION REQUIRED` | RAČUN PDF currently available under standard document entitlement | Same shared product behavior | Decide FIRMA availability/default and confirm present limited business scope; no VAT/tax/fiscal inference | “RAČUN absent” is false; availability-policy work remains |
+| System theme parity | `PARTIAL` | Shared `ThemeMode.system` exists; Windows runtime parity audit not closed | System theme path exists | Verify runtime changes/contrast/accessibility; no Windows-only selector without proved obstacle + owner decision | “Implement theme” is false; verify existing behavior |
+| Full UI/UX audit | `OPEN` | Only short SCENARIO impression | Only bounded runtime impressions | Full Windows/Android audit; concise working screens; hierarchy/terminology/interaction carry clarity | Runtime smoke is not full UX acceptance |
+| Contextual Help/User Guide | `DEFERRED PRODUCT DIRECTION` | Not designed | Not designed | Evaluate screen-contextual `Pomoć`/`Uputstvo` after UX audit; no immediate implementation authority | New direction, not current task |
+| MODUL DVE VALUTE | `OPEN — BLOCKING FOR OPC v.1` | Not implemented | Not implemented | Implement and prove contract in section 7 before product-line gate | Moving it to Int is prohibited |
+| Progressive refactor / partial rewrite | `DEFERRED / EVIDENCE-GATED` | Some bounded refactors already landed | Shared | Only where stability, maintainability, parity or localization evidence requires it | Roadmap-wide refactor predecessor is superseded |
+| Stage 2 package/licensing cleanup | `NON-BLOCKING BEFORE OPC v.1` | Dead compatibility code may remain | Same | Optional exact-scope cleanup; never restore restrictions | Not a gate predecessor |
+| Final platform business-semantic parity | `OPEN — BLOCKING FOR GATE` | Separate final acceptance required | Separate final acceptance required | Release-candidate matrix including lifecycle, JSON, reminders, documents, currency and theme | Scenario parity alone is insufficient |
+| App identity/version/update channel | `OWNER DECISION REQUIRED — BLOCKING FOR GATE` | Installer/update identity unresolved | Current technical identity `com.tale.opc_v4`, `4.0.0+1` is fact, not final owner policy | Decide release identity/version/update channel; product name stays OPC | `OPC Srbija` must not become app name |
+| First Product-Line Gate | `OPEN` | Required | Required | Close checklist in section 9 | Old gate wording was not actionable enough |
+| `OPC_v.1_Int` and international profiles | `DEFERRED` | Not started | Not started | Begins only after First Product-Line Gate | No early localization implementation |
+| Signing/professional handover | `POST-GATE / RELEASE CLOSURE` | Open | Open | Signing identity/key custody, release continuity, handover package | Still valid, sequenced after product decisions |
+
+## 4. Required predecessors of stable OPC v.1
+
+### 4.1 Release-risk integrity closure
+
+1. Implement Windows process-level single-instance ownership before Flutter,
+   plugins and SQLite initialize. A second launch focuses the existing instance
+   where reliable or exits safely with a clear message. Installer/update must
+   refuse program-file replacement while OPC is running and must never modify
+   canonical database identity/content.
+2. Consolidate the remaining PREDMET dependency/referential work actually
+   required for release. Do not reopen completed hard-delete or scoped restore
+   work without a finding. Explicitly classify deferred anonymization,
+   replacement, RI-3 recovery and FK enablement.
+3. Include the explicit `ZAVRŠEN` lifecycle in final Windows and Android runtime
+   semantic acceptance; focused tests alone do not create platform PASS.
+
+### 4.2 Evidence-first performance closure
+
+Performance work starts with current-tip release measurements. It does not
+start with a presumed refactor.
+
+- Windows: cold/warm process start to first window/usable screen, DB/open work,
+  exit, and second-launch behavior.
+- Android PARTE: module open, editing, media-heavy pan/zoom/drag, frame/jank
+  evidence on at least representative weaker and middle device classes where
+  available.
+- IRiU/KATALOG: repository wait, first dialog frame, photo read and image decode.
+
+Owner confirms an acceptance target after baseline evidence. If current
+behavior meets the target, close by evidence with no code change.
+
+### 4.3 SCENARIO carrier parity
+
+Production JSON integration must implement the already accepted carrier
+contract rather than invent a second model:
+
+- Single-PREDMET JSON carries the PREDMET snapshot and complete STAVKA
+  provenance through transfer-index reassociation;
+- full backup carries SCENARIO module definitions/defaults, PREDMET snapshots
+  and provenance with preserved database identity semantics;
+- `COMPLETE` and `UNAVAILABLE` remain distinct; unavailable provenance never
+  permits automatic deletion;
+- matching Single-PREDMET import offers explicit new/replace choice;
+- newer roots fail closed on older clients; legacy inputs remain supported;
+- preflight, transaction/rollback, Windows/Android round-trip and non-
+  retroactivity are proven.
+
+Source reality at this reconciliation baseline: the pure envelope and
+Single-PREDMET adapter exist, but `json_export_import.dart` still emits
+Single-PREDMET schema 6/7 and full-backup schema 8 without the SCENARIO carrier.
+
+### 4.4 Complete signal model and PODSETNIK
+
+Do not implement the observed `ZAVRŠEN` notification as an isolated patch.
+
+First define the full derived signal model from PREDMET/SCENARIO/IRiU:
+
+- empty/partial/complete and N/A/optional semantics;
 - lifecycle eligibility;
-- nedostajuća obavezna PREDMET/SCENARIO polja;
-- IRiU complete/exception stanje;
-- rok/due/missed kandidat;
-- izračunato iz PREDMETA/SCENARIO/IRiU;
-- nema paralelnog skladištenog truth statusa.
-
-Codex tehnički mapira izvore i zavisnosti. Owner potvrđuje koji signali imaju
-poslovno značenje za informisani podsetnik.
-
-### 15.2 Povratak na PODSETNIK model i notifications
-
-Tek posle orphan/lifecycle korekcija i owner-potvrđenog kompletnog signalnog
-modela:
-
-- informed reminder trigger mapa;
-- active/due/missed/completed/cancelled model;
-- closed-app delivery;
-- restart/reboot recovery;
-- permission denied;
-- no duplicates;
-- tap vodi samo na postojeći PREDMET;
-- Windows i Android jednaka poslovna funkcija uz različit OS mehanizam gde je potrebno.
-
-### 15.3 Single-PREDMET JSON relokacija
-
-- premeštanje u trotačka meni PREDMETA;
-- ista schema;
-- legacy import;
-- Windows/Android interchange;
-- odvojeno od full backup/database JSON.
-
-### 15.4 NALOG CVEĆARI
-
-- source/business inventory;
-- PREDMET/IRiU input map;
-- owner definisan sadržaj;
-- PDF i eventualni DOCX scope;
-- boundary fixtures;
-- owner acceptance.
-
-### 15.5 Standardni PDF typography
-
-PARTE je van scope-a.
-
-Za svaki dokument:
-
-- current layout/font inventar;
-- minimal/normal/max fixtures;
-- kontrolisano malo povećanje;
-- bez overflow-a, truncation-a ili promene formation pravila;
-- render diff;
-- owner vizuelna i, gde treba, štampana provera.
-
-### 15.6 PDF RAČUN FIRMA toggle
-
-- availability only;
-- nema PDV/tax/fiscal/legal inference-a;
-- ne menja PREDMET/IRiU;
-- ne briše postojeće fajlove;
-- migration default za postojeće instalacije zahteva owner odluku.
-
-### 15.7 Windows system theme
-
-- proveriti postojeći `ThemeMode.system`;
-- runtime theme change, kontrast i accessibility;
-- PDF/DOCX output ostaje nezavisan;
-- Windows-only selector samo posle dokazane prepreke i owner odluke.
-
-### 15.8 MODUL DVE VALUTE za OPC v.1
-
-Jedan modul podržava dva runtime režima:
-
-1. `RSD primarna / EUR informativna`;
-2. `EUR primarna / RSD informativna`.
-
-Pre globalne aktivacije:
-
-- RSD ostaje autoritativna obračunska i dokumentarna valuta;
-- FINANSIJE mogu uključiti informativni EUR prikaz;
-- toggle otkriva ručni kurs `1 EUR = ___ RSD`;
-- informativni EUR se računa kao `RSD / kurs`;
-- preračun ne menja PREDMET/IRiU/KATALOG/PDF/RAČUN business iznose.
-
-Posle owner globalne aktivacije:
-
-- EUR postaje default primarna valuta za nove PREDMETE;
-- RSD prelazi u informativni FINANSIJE prikaz;
-- PDF/DOCX derivati novih EUR PREDMETA koriste EUR bez novog coding/build ciklusa;
-- redovna aktivacija je jednosmerna;
-- zaštićeni RSD fallback postoji u naprednim podešavanjima MODULA, sa jasnim upozorenjem, višestepenom potvrdom i audit zapisom.
-
-Persistence/migration ugovor mora obezbediti:
-
-- FIRMA default primary režim;
-- PREDMET primary currency;
-- kurs, datum i provenance potrebne za istorijski prikaz;
-- stabilnost završenih/istorijski zaključanih PREDMETA;
-- eksplicitnu, kontrolisanu konverziju dozvoljenog otvorenog PREDMETA;
-- identičan Windows/Android i JSON rezultat;
-- unapred pripremljene RSD i EUR document formation grane;
-- bez automatskog spoljnog kursa, PDV-a, poreza ili fiskalizacije.
-
-## 16. Phase 6 — progressive refactor i cross-platform UX
-
-Samo u granicama odobrenim Architecture Decision Gate-om:
-
-- razdvajanje velikih presentation fajlova;
-- JSON serialization/validation/IO/orchestration granice;
-- database schema/migration/domain separacija gde je bezbedna;
-- legacy/`core_v2` convergence;
-- adapters tokom prelaza;
-- characterization pre zamene;
-- Android narrow/wide/Windows UX korekcije;
-- keyboard/mouse/touch/accessibility parity.
-
-Partial rewrite je dozvoljen samo za dokazano izolovan subsystem sa compatibility i rollback ugovorom.
-
-## 17. First product-line gate — OPC Srbija
-
-Aktuelni projekat `OPC v.1` dovršava se i stabilizuje kao samostalna OPC Srbija product line do lokalizacionog razdvajanja. Posle potrebnih audita i korekcija owner donosi binding odluku o njenom konačnom release statusu.
-
-Mora sačuvati:
-
-- Windows i Android;
-- srpski latinicu;
-- srpski ćirilicu;
-- standalone lokalni rad;
-- SQLite;
-- JSON interchange;
-- PREDMET authority;
-- scenario istoriju;
-- Windows/Android business parity;
-- canonical database kompatibilnost.
-- MODUL DVE VALUTE sa RSD početnim i EUR aktivacionim režimom.
-
-Gate zahteva:
-
-- regression evidence;
-- backup/restore rehearsal;
-- odvojeni Windows/Android runtime acceptance;
-- known issues/technical debt;
-- app identity, versioning i update-channel odluku;
-- release baseline commit/tag/branch odluku.
-
-Stage 2 licensing cleanup nije predecessor ovog gate-a.
-
-## 18. Stage 2 package/licensing cleanup
-
-Stage 2 može početi posle module-boundary audita i odgovarajuće owner autorizacije. Može biti pre ili posle Serbia gate-a samo ako konkretna zavisnost to opravda; po default-u ga ne blokira.
-
-Ukloniti:
-
-- mrtav runtime licensing/package kod;
-- bypass ostatke;
-- neaktivne restrikcije;
-- stare tajne/ključeve ako bi postojali u runtime scope-u;
-- misleading uslove.
-
-Sačuvati:
-
-- clean module boundaries;
-- opravdane capability/extension boundaries;
-- historical model kao sanitizovanu dokumentaciju;
-- Git istoriju;
-- mogućnost budućeg spoljnog komercijalnog sloja.
-
-## 19. Second product-line gate — multilingual version
-
-Počinje tek kada OPC Srbija gate bude zatvoren.
-
-Budući projekat nosi radni identitet `OPC_v.1_Int`. Fizički source fork/novi project root ne nastaje pre ovog gate-a. Architecture audit prvo dokazuje šta ostaje shared core, šta je country/language profile i šta zahteva samostalni release sloj.
-
-### 19.1 Obavezna podrška
-
-- srpski latinica;
-- srpski ćirilica.
-
-### 19.2 Jezici za razmatranje
-
-- hrvatski;
-- bosanski;
-- slovenački;
-- crnogorski;
-- makedonski;
-- mađarski;
-- rumunski;
-- bugarski;
-- nemački;
-- engleski.
-
-Albanski je isključen.
-
-### 19.3 Arhitektonske opcije
-
-Audit poredi:
-
-- jedan shared core + profiles;
-- flavors;
-- modules;
-- release branches;
-- drugi evidence-supported model.
-
-Dugoročno divergentni domain/migration forkovi nisu default preporuka. Početna tehnička preporuka je shared PREDMET/data core sa odvojenim country/language/document/scenario profilima i zasebnim product/release identitetom, osim ako audit dokaže da migraciona ili poslovna izolacija zahteva drugačije.
-
-Odvojiti:
-
-- UI language;
-- script;
-- country profile;
-- business policy;
-- documents;
-- KATALOG;
-- scenarios;
-- currencies.
-
-### 19.4 International multicurrency readiness
-
-- ponovo koristiti dokazani currency ugovor iz OPC v.1, bez fork dupliciranja;
-- FIRMA/country base currency;
-- PREDMET/stavka valuta;
-- originalni i preračunati iznos;
-- kurs, datum, izvor i rounding;
-- IRiU/dokument/JSON prikaz;
-- dual-currency country profile.
-
-Nema PDV-a, poreza ili fiskalizacije bez nove owner odluke.
-
-## 20. Signing i professional handover closure
-
-### 20.1 Android
-
-- production application ID;
-- release keystore;
-- update continuity;
-- backup/custody/recovery;
-- publisher transfer plan.
-
-### 20.2 Windows
-
-- executable/installer signing;
-- publisher identity;
-- certificate/timestamp;
-- key custody;
-- transfer implications.
-
-### 20.3 Handover paket
-
-- product/domain/architecture;
-- source-of-truth;
-- DB/migrations/JSON;
-- module map;
-- build/release/signing;
-- dependencies/licences/assets;
-- privacy/security;
-- tests;
-- known issues/technical debt;
-- ADR/pseudocode/runbook;
-- owner decisions i development history.
-
-## 21. Owner decision queue
-
-Queue sadrži samo nerešene odluke.
-
-### Pre autoritativne aktivacije plana
-
-Nema unapred otvorene owner odluke. Nova owner odluka traži se samo ako protection mapa pronađe cilj bez dokazanog autoritativnog naslednika ili privacy procena zahteva širenje scope-a.
-
-### Posle Phase 1 audita, pre relevantne implementacije
-
-1. `ZATVOREN`/`ZAVRŠEN` i historical-lock lifecycle, uključujući eventualni correction/reopen izuzetak.
-2. Tretman istorijski auto-završenih PREDMETA.
-3. Owner runtime acceptance za Codex-definisane Windows startup i Android PARTE tehničke targete.
-
-### Pre odgovarajućih funkcionalnih/product taskova
-
-4. PDF RAČUN toggle migration default za postojeće instalacije.
-5. Poslovni sadržaj i PDF/DOCX scope NALOGA CVEĆARI.
-6. Globalni trenutak aktivacije EUR režima i eventualna owner odluka o konverziji tada otvorenih PREDMETA.
-7. OPC Srbija app identity i update kanal.
-8. Multilingual product/business identity.
-9. Publisher i signing-key custody/transfer model.
-
-Architecture option, persistence model, module topology, refactor/rewrite granice, technical versioning i release mehanizam pripadaju Codex tehničkoj odluci po Decision Authority Matrix-u. Svaki njihov business-impact izuzetak vraća se owneru.
-
-Već zaključane owner odluke iz odeljka 4 ne vraćaju se u queue.
-
-## 22. Stop uslovi
-
-Rad mora stati kada:
-
-- source/Git baseline nije dokaziv;
-- current owner odluke su u nerešivom konfliktu;
-- task pretpostavlja `main` bez governance odluke;
-- audit se pretvara u neautorizovanu implementaciju;
-- root-cause hipoteza se tretira kao potvrđen uzrok;
-- promena ugrožava PREDMET authority;
-- završeni PREDMET bi retroaktivno promenio scenario/KATALOG/business policy;
-- IRiU reconciliation može tiho izgubiti validan user sadržaj;
-- migracija nema isolated copy, backup, restore rehearsal i recovery dokaz;
-- test baza bi bila spojena u canonical bazu;
-- JSON compatibility ili Windows/Android parity ne mogu biti sačuvani;
-- full rewrite nema cost/migration/rollback dokaz;
-- Stage 2 vraća package restrikcije;
-- scope uvodi Web, PDV, porez ili fiskalizaciju;
-- javni dokument bi otkrio privatnu putanju, identitet, tajnu ili runtime podatak;
-- technical PASS se predstavlja kao owner runtime acceptance.
-
-## 23. Pravila izmene plana
-
-Plan se menja samo kroz Git documentation task koji navodi:
-
-- base i final SHA;
-- razlog i source evidence;
-- affected dependency;
-- owner decision status;
-- migration/parity/PREDMET uticaj;
-- change matrix;
-- semantic-parity dokumentacioni update;
-- CODEX → GIT completion gate.
-
-Nijedna preporuka ne postaje owner odluka samo zato što je upisana u plan.
-
-## 24. Kriterijumi za autoritativno proglašenje
-
-Plan postaje autoritativan tek kada:
-
-1. Tale eksplicitno odobri final-candidate sadržaj, Decision Authority Matrix i dependency red;
-2. izabrani Git/main governance model bude aktiviran i zapisan;
-3. otvoreni queue ostane jasno odvojen od zaključanih odluka;
-4. nema P0 findings bez resolution-a;
-5. finalni plan dobije novi naziv bez `DRAFT`;
-6. Git i lokalni dokumentacioni izvori budu semantički usklađeni;
-7. kontrolisane razlike i hash-evi budu evidentirani;
-8. autoritativni manifest/source-of-truth dokumenti budu ažurirani posebnim owner-odobrenim documentation taskom;
-9. branch/commit/report budu pushovani;
-10. worktree i origin budu usklađeni.
-
-Do potpunog Gate 0 closure-a status ostaje:
-
-`OWNER APPROVED – AUTHORITATIVE ACTIVATION PENDING GATE 0 CLOSURE`
-
-## Current post-zero sequencing update - 2026-08-01
-
-The current authorized dependency is the bounded PARTE correction on
-`task/OPC-POSTZERO-STABILIZATION-AND-PERFORMANCE`, not a rewrite or a new
-business-policy task. Its Gate 1 implementation is technically PASS with
-focused evidence and remains separate from owner Windows/Android runtime
-acceptance.
-
-The owner has reported a scoped Android full-restore PASS after the INC-003
-correction; the earlier FAIL is preserved as incident history and the result
-does not waive current-tip runtime or security/data coverage.
-
-The observed IRIU/KATALOG slowdown is still an unmeasured performance finding.
-The next dependency is a reproducible timing trace. No query/index/startup
-change is authorized until that evidence proves a cause. OPC Web,
-`OPC_v.1_Int`, RI-3 recovery, migrations and reminder-policy reinterpretation
-remain deferred.
-
-Gate 2A repository characterization is now recorded on
-`task/OPC-GATE2-IRIU-KATALOG-PERFORMANCE-EVIDENCE`: lightweight category and
-article ordering, identity, price, `hasPhoto`, scoped loading and separate
-photo-byte lookup are covered without production behavior change. Synthetic
-cold/warm timings are diagnostic only. Owner Windows/Android timing must still
-separate repository wait, first dialog frame, photo read and image decode
-before any batch query, cache, index or schema correction is considered.
-
-Phase 3 lifecycle correction is now owner-approved: automatic `ZAVRŠEN`
-transition is retired, and the only business transition is the explicit
-`OTVOREN → ZATVOREN → ZAVRŠEN` action. The final state is immutable for direct
-edits and reopening. Ceremony date, reminder state and derivative output do
-not infer completion. Focused evidence is recorded in
-`test/predmet_completion_state_characterization_test.dart` and the task
-implementation report; Windows/Android runtime acceptance remains separate.
-
-Phase 3 SCENARIO/IRiU mutation characterization is now recorded on
-`task/OPC-PHASE3-SCENARIO-IRIU-MUTATION-CHARACTERIZATION`. The owner clarified
-the governing rule: each scenario owns its IRiU consequence set; changing a
-scenario criterion must create newly applicable consequences, remove all
-no-longer-applicable scenario-owned rows and values, and inform the user. No
-stale scenario consequence may remain. The existing per-row suppress/keep
-behavior is therefore compatibility evidence, not the target contract.
-
-The owner further clarified the authority boundary: SCENARIO is part of
-PREDMET authority, so no valid PREDMET exists without a scenario snapshot.
-SCENARIO definitions/defaults belong to MODULI for UI configuration, while the
-selected scenario and applied consequence snapshot remain PREDMET-owned.
-Existing hard-coded scenarios must first be exposed as module defaults and
-then become UI-upgradeable; changing a module default never silently rewrites
-an existing PREDMET.
-
-Implementation remains the controlled ODQ-SCENARIO-001 Phase 4 dependency:
-provenance/snapshot, eligible-`OTVOREN` confirmation, retry/rollback and
-locked-PREDMET protection are required before source change. The existing
-`PREDMET → IRIU → STANJE ROBE` flow is preserved as an independent module
-invariant; SCENARIO does not call or mutate STANJE ROBE, and STANJE ROBE keeps
-its own operational-toggle boundary.
-
-The follow-up contract audit confirms that current MODULI are only a static
-navigation/entitlement layer and that `businessScenarioId` alone cannot carry
-the required module/default/version/provenance contract. The audit and owner
-gates are recorded in
-`docs/tasks/OPC_TASK_PHASE4_MODULE_SCENARIO_CONTRACT_AUDIT_20260801_REPORT.md`.
-
-The owner has now fixed the package boundary: SCENARIO defines the user-owned
-OSNOVNI PAKET ROBE I USLUGA and each scenario's additional package. KATALOG
-remains the master dictionary of standard categories/articles; the former
-`osnovnaUSvakomPredmetu` switch is package policy to be moved from KATALOG
-settings into SCENARIO, without deleting catalog definitions. RUČNA STAVKA
-remains a valid one-PREDMET exception and is outside automatic scenario
-cleanup. UI terminology is simply STAVKA; `IRIU` remains internal.
-
-
-## 25. Jednolinijski dependency red
-
-
-**Gate 0 documentation/Git governance → full code/architecture review → PREDMET source-to-truth/dependency mapa → integrity, platform, performance, scenario, UI i migration evidence → Architecture/refactor/rewrite Decision Gate po Decision Authority Matrix-u → potvrđene integrity/performance korekcije → historical/completed PREDMET lifecycle odluka i uklanjanje automatskog ZAVRŠEN → korekcija sadašnjih scenario/IRiU grešaka → user-editable SCENARIO i PODEŠAVANJA → kompletan signalni model → informed PODSETNIK → JSON/dokumenti/PDF/RAČUN/tema → MODUL DVE VALUTE → dokazani progressive refactor/partial rewrite → First Product-Line Gate: stabilni OPC v.1 Srbija → non-blocking Stage 2 cleanup kada opravdan → Second Product-Line Gate: OPC_v.1_Int → i18n/country/multicurrency profiles → signing i professional handover closure.**
-
-## Post-zero carrier decisions accepted — 2026-08-02
-
-The owner accepted the following bounded decisions for the prospective SCENARIO
-carrier program. They do not authorize runtime wiring until the corresponding
-pure contracts and parity gates pass:
-
-1. SCENARIO data is supported by both Single-PREDMET JSON and Full backup.
-2. The scenario snapshot and provenance for all STAVKE travel; RUČNA STAVKA and
-   LEGACY remain outside automatic scenario cleanup.
-3. A matching Single-PREDMET import requires an explicit user choice between
-   importing as a new PREDMET and replacing the existing one.
-4. COMPLETE means complete provenance coverage; UNAVAILABLE never permits
-   automatic removal of existing STAVKE. A catalog-only backup with no PREDMET
-   has no scenario assignment to transfer and remains importable.
-5. Single-PREDMET schema 7 becomes 8 and Full backup schema 8 becomes 9; older
-   clients reject newer roots instead of silently dropping SCENARIO data, while
-   existing older payloads remain supported.
-
-The approved dependency sequence is pure Single-PREDMET adapter, pure Full
-backup aggregate adapter, parity fixtures, then separately authorized carrier
-root/schema wiring with atomic preflight and rollback evidence. Local source IDs,
-destination reassociation and repository transaction behavior remain technical
-gates of those tasks, not parallel business authority.
-
-## Phase 9 SCENARIO UI v1 — bounded implementation slice
-
-The carrier sequence is intentionally paused while the basic user-facing
-SCENARIO module is made understandable and usable. The operational
-`PREDMETI → MODULI` screen now owns the editable OSNOVNI PAKET and scenario
-definitions. The screen refers only to KATALOG category IDs and stores one
-canonical scenario representation through the existing persistence contract.
-
-This phase does not apply a definition to a PREDMET, remove or add existing
-STAVKE, alter JSON/full-backup roots, or change runtime behavior. The next
-dependency is PREDMET-side explicit selection/application with user notice and
-safe scenario-owned stale-row removal; RUČNA and LEGACY rows remain protected.
-
-## Phase 10 SCENARIO reconciliation planning — pure boundary
-
-Phase 10 adds `ScenarioReconciliationPlanner`, a read-only contract that
-resolves the selected scenario package for one PREDMET and produces a
-deterministic add/remove/provenance-update plan. Only rows whose provenance is
-OSNOVNI_PAKET or SCENARIO_PAKET for the selected module are eligible for
-automatic reconciliation. RUČNA, LEGACY, unknown-provenance and other-module
-rows are protected. A non-empty plan carries a user-notice flag.
-
-This slice performs no Drift/JSON/full-backup write and no runtime trigger. The
-next separately gated task may implement the PREDMET application transaction
-only after proving eligible-PREDMET confirmation, retry/rollback and unchanged
-locked-PREDMET behavior. It must preserve the existing PREDMET → IRIU flow
-without introducing direct SCENARIO → STANJE ROBE coupling.
-
-## Phase 11 PREDMET-side SCENARIO application gate
-
-Phase 11 adds a pure gate before any repository transaction. It accepts only
-an `OTVOREN` PREDMET, verifies that the selected assignment and reconciliation
-plan carry the same module/scenario/version identity, requires explicit user
-confirmation for a new or changed assignment, and returns a no-op for an
-unchanged snapshot with no consequence changes.
-
-The gate writes no module state. The future commit belongs to PREDMET and must
-preserve the existing PREDMET → IRIU path without direct SCENARIO coupling to
-PARTE, PODSETNIK or STANJE ROBE.
+- due/missed/completed/cancelled semantics;
+- scenario-dependent required fields and IRiU exceptions;
+- no parallel stored business truth.
+
+Then implement one informed reminder program covering DB ownership, OS
+scheduling/cancellation, restart/reboot, permission denial, duplicates, valid
+tap target, restore/reschedule, and Windows/Android business parity. The Android
+notification created for an already `ZAVRŠEN` PREDMET is an acceptance fixture
+for this program.
+
+### 4.5 Remaining product completeness
+
+- relocate Single-PREDMET JSON to the PREDMET three-dot menu;
+- decide and, if required, implement NALOG CVEĆARI content/output;
+- refine standard PDF typography document by document;
+- decide RAČUN FIRMA availability/default while preserving its current limited
+  scope and avoiding VAT/tax/fiscal/legal inference;
+- verify shared system-theme runtime parity;
+- perform a full Windows/Android UI/UX audit;
+- evaluate, but do not automatically implement, contextual `Pomoć`/`Uputstvo`.
+
+## 5. SCENARIO closed contract
+
+The following is current and protected:
+
+- SCENARIO is under operational `MODULI`, not hidden `PODEŠAVANJA`;
+- user-owned OSNOVNI PAKET plus scenario-specific additional package;
+- 1,008 eight-axis scenario combinations backed by an independent golden;
+- editable definitions and user-preserved edits;
+- PREDMET facts are the sole source of scenario conditions;
+- no user manual scenario selection/application; selecting an OPEN PREDMET in
+  SCENARIO invokes the controlled production reconciliation boundary;
+- current/derived state is distinct from the applied persisted snapshot;
+- snapshot and scenario row provenance are PREDMET-owned;
+- completed/historical snapshots are non-retroactive;
+- additions/changes/removals are controlled; manual, legacy, unknown and other-
+  module rows are protected;
+- KATALOG stable identity and OSNOVNI/FIKSNA pricing are resolved at application;
+- Windows and Android full eight-axis runtime acceptance passed;
+- GRADSKO and LOKALNO remain distinct; the reported mismatch was not a defect.
+
+No “future SCENARIO wiring,” direct PREDMET menu action, manual user application
+button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
+
+## 6. Documents, JSON, theme and UX boundaries
+
+- Single-PREDMET JSON and full backup JSON remain distinct products.
+- A restore success from an earlier artifact is evidence, not the final gate.
+- RAČUN PDF exists today. Open work concerns FIRMA availability/default and
+  business scope, not recreation of the exporter.
+- NALOG CVEĆARI remains unproven as a standalone generator and needs an owner
+  content decision.
+- Standard PDF typography work excludes PARTE and preserves document formation.
+- Shared source already uses `ThemeMode.system`; close by runtime verification
+  or a proven bounded correction, not by adding a Windows-only selector.
+- Working screens remain concise. Do not add explanatory prose to compensate
+  for weak hierarchy, grouping, terminology or interactions.
+- Contextual help is a future design direction, not implementation authority.
+
+## 7. MODUL DVE VALUTE — mandatory before OPC_v.1_Int
+
+`LOCKED OWNER DECISION — REQUIRED PREDECESSOR OF STABLE OPC v.1`
+
+One runtime-capable module must support:
+
+1. initial `RSD primary / EUR informative`;
+2. later owner-controlled `EUR primary / RSD informative` activation without a
+   new coding/build cycle.
+
+Required contract:
+
+- FINANSIJE may optionally show informative EUR;
+- manual rate is `1 EUR = ___ RSD`;
+- informative EUR equals `RSD / kurs`;
+- informative display never mutates authoritative business amounts;
+- FIRMA has an owner-controlled global primary mode;
+- every PREDMET persists its primary currency, relevant rate/date/provenance and
+  history needed for stable documents;
+- open-PREDMET conversion is explicit and controlled; locked history is stable;
+- Windows, Android and JSON semantics are equal;
+- RSD and EUR document formation is prepared before activation;
+- no automatic external exchange rate;
+- no VAT, tax or fiscalization implication.
+
+Open owner decisions: activation timing and the permitted treatment of PREDMETI
+that are open at activation. `OPC_v.1_Int` later reuses/extends this proven
+contract for country and multicurrency profiles.
+
+## 8. Active owner decision queue
+
+Only unresolved current decisions are active:
+
+| Decision | Needed before | Status |
+| --- | --- | --- |
+| Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance | `OPEN OWNER DECISION` |
+| NALOG CVEĆARI business content and PDF/DOCX scope | Its implementation/closure | `OPEN OWNER DECISION` |
+| RAČUN FIRMA availability and default for existing installations | Availability-policy implementation | `OPEN OWNER DECISION` |
+| Complete signal meanings used by informed reminders | PODSETNIK implementation | `OPEN OWNER DECISION` |
+| EUR global activation timing and treatment/conversion of eligible open PREDMETI | Currency activation/release contract | `OPEN OWNER DECISION` |
+| Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate | `OPEN OWNER DECISION` |
+| Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |
+
+Removed from the active queue as already decided:
+
+- `ZATVOREN/ZAVRŠEN` lifecycle and retirement of automatic completion;
+- historical auto-completed behavior as a continuing automatic rule;
+- SCENARIO placement, package model, PREDMET ownership, application and
+  non-retroactivity;
+- Windows/Android equality and system-theme rule;
+- MODUL DVE VALUTE belonging before `OPC_v.1_Int`;
+- product name remaining `OPC`.
+
+Pre-zero owner-decision indexes remain historical/navigation evidence under
+the post-zero authority inventory. They are not silently promoted into this
+active queue.
+
+## 9. First Product-Line Gate — stable OPC v.1
+
+The gate closes only when every required item is evidenced:
+
+- [ ] application name and visible product identity remain `OPC`;
+- [ ] Windows and Android release builds come from the release baseline;
+- [ ] Serbian Latin and Serbian Cyrillic support required by the current
+      Serbian-market baseline are accepted;
+- [ ] standalone local operation, SQLite ownership and canonical migration
+      compatibility are proven;
+- [ ] PREDMET authority and scenario history/provenance remain intact;
+- [ ] 1,008 golden and production E2E remain green;
+- [ ] Single-PREDMET and full-backup JSON carry SCENARIO state/provenance with
+      legacy/fail-closed compatibility;
+- [ ] Windows single-instance and installer/update database protection pass;
+- [ ] explicit completion and the full signal/PODSETNIK lifecycle pass;
+- [ ] MODUL DVE VALUTE passes Windows, Android, JSON and document formation;
+- [ ] remaining required documents/policies are closed or explicitly classified;
+- [ ] system-theme and final business-semantic parity pass separately on Windows
+      and Android;
+- [ ] final backup/restore rehearsal passes on release-candidate artifacts;
+- [ ] analyze, full tests and release builds pass successively;
+- [ ] known issues are divided into blockers and non-blocking debt;
+- [ ] owner decides app identity/version/update channel;
+- [ ] owner runtime acceptance is recorded separately for Windows and Android;
+- [ ] release commit, branch/tag and rollback/handover evidence are recorded.
+
+Stage 2 package/licensing cleanup is not a default predecessor.
+
+## 10. Non-blocking debt and evidence-gated work
+
+The following may remain after the stable OPC v.1 gate when explicitly recorded
+and when no current evidence promotes it to a blocker:
+
+- Stage 2 physical removal of dead package/licensing compatibility code;
+- broad RI-3 orphan recovery or global FK enforcement not required by the final
+  release rehearsal;
+- progressive refactor of stable code without a concrete stability,
+  maintainability, parity or localization need;
+- contextual help implementation beyond an accepted design;
+- OPC Web research and implementation;
+- international language/country/profile implementation.
+
+Stable code is not rewritten for roadmap aesthetics.
+
+## 11. OPC v.1 → OPC_v.1_Int boundary
+
+`OPC_v.1_Int` starts only after section 9 closes. Before that gate there is no
+international localization implementation, physical source fork, country
+profile rollout or international release identity.
+
+After the gate, architecture work may define shared core/profiles/flavors and
+add supported languages/country/document/business-policy profiles. Serbian
+Latin and Cyrillic remain supported. The proven dual-currency contract is
+extended rather than duplicated. Tax, VAT, fiscalization and legal-form policy
+still require separate owner authority.
+
+## 12. Historical provenance and superseded chronology
+
+The pre-reconciliation plan at Git baseline
+`78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9` preserves the complete original
+Gate 0 and Phase 1–11 chronology. The following statements from that version
+are historical only:
+
+- Gate 0 closure/activation pending and `develop/opc-v1` as the next action;
+- SCENARIO as hard-coded future configuration under `PODEŠAVANJA`;
+- Phase 9 UI, Phase 10 pure planner and Phase 11 pure gate as current end state;
+- “next dependency” being future PREDMET-side SCENARIO wiring;
+- missing scenario snapshot/provenance as current architecture;
+- SCENARIO Windows/Android runtime being pending;
+- unresolved `ZATVOREN/ZAVRŠEN` business policy;
+- broad progressive refactor/partial rewrite as a mandatory predecessor;
+- wording that could imply the application should be renamed `OPC Srbija`.
+
+Historical audit reports remain evidence and must not be rewritten to pretend
+they knew later results.
+
+## 13. Plan-change and anti-drift rules
+
+Every future change to this plan records:
+
+- exact base and final Git evidence;
+- reason and source/runtime evidence;
+- affected dependency and classification;
+- owner-decision status;
+- PREDMET, migration, JSON and platform-parity impact;
+- changed authority documents;
+- validation, commit, push, remote SHA and clean-tree result.
+
+New incidental findings are classified as:
+
+- `BLOCKING FOR OPC v.1`;
+- `NON-BLOCKING BEFORE OPC v.1`;
+- `BELONGS TO EXISTING FUTURE PROGRAM`;
+- `HISTORICAL / NO ACTION`;
+- `OWNER DECISION REQUIRED`.
+
+A finding joins the correct existing program; it does not automatically create
+a standalone patch task.
+
+## 14. Stop conditions
+
+Stop affected work when:
+
+- owner business meaning is unresolved or would be silently changed;
+- canonical data safety, backup/readability or rollback is not proven;
+- PREDMET authority, locked history, JSON compatibility or platform parity is
+  threatened;
+- technical PASS is being presented as owner runtime PASS;
+- a performance hypothesis is treated as a root cause without measurement;
+- a pure contract/test is being presented as production wiring;
+- completed SCENARIO work is being repeated without a new finding;
+- an isolated PODSETNIK patch would pre-empt the complete signal/lifecycle model;
+- `OPC Srbija` is being used to rename the application;
+- dual currency is being deferred to `OPC_v.1_Int`;
+- Web, internationalization, tax, VAT or fiscalization enters current scope
+  without the required gate and owner decision.

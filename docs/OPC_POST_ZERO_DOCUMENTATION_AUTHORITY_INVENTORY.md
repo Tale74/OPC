@@ -10,12 +10,16 @@ This register classifies every Markdown document currently tracked below
 `docs/` without deleting Git history or treating pre-zero owner decisions as
 current authority.
 
-Verified inventory at task start:
+Historical verified inventory at the 2026-07-30 task start:
 
 - 102 top-level Markdown documents in `docs/`;
 - 92 task reports in `docs/tasks/`;
 - one task template in `docs/templates/`;
 - 195 tracked Markdown documents in total.
+
+Those numbers are a dated audit snapshot, not a current file-count assertion.
+Later reports and this reconciliation were added without changing the
+classification rules below.
 
 The classifications below are path-rule based and mutually exclusive. They
 cover the complete inventory, including documents added later.
@@ -61,13 +65,20 @@ approval of a business change.
 - `docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md`;
 - `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`;
 - `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`, prospective
-  sequencing only;
+  sequencing and current operative dependency-map role;
+- `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`, current
+  evidence matrix and reconciliation provenance;
 - `docs/OPC_CURRENT_DEVELOPMENT_STATE.md`;
 - `docs/OPC_SOURCE_OF_TRUTH_MAP.md`;
 - `docs/GIT_WORKFLOW_ARC.md`;
 - `docs/OPC_IMPLEMENTATION_STOP_LIST.md`;
 - `docs/templates/OPC_TASK_TEMPLATE.md`;
 - the latest completed post-zero task report, within its exact scope only.
+
+The reconciled plan is authoritative for current dependency ordering, not for
+inventing business policy. The reconciliation report proves why status and
+ordering changed. Earlier plan chronology remains Git historical evidence at
+its recorded baseline SHA.
 
 These documents control workflow, continuity and sequencing. They do not
 revive a pre-zero owner decision quoted or linked inside them.
