@@ -1,0 +1,57 @@
+{
+  "auditDate": "2026-08-13",
+  "baselineSha": "9f111064557bd870399d5931e621626f188bd5ee",
+  "canonicalBeforeAndAfter": {
+    "sha256": "812aa438f747d59d3af3eb073b5fb99ea9d9687459fcf52fc4c01946d06bc51c",
+    "sizeBytes": 82829312,
+    "integrityCheck": "ok",
+    "foreignKeyViolations": 0,
+    "predmeti": 47,
+    "iriu": 631,
+    "katalogArtikli": 138,
+    "cituljaPolitika": 34,
+    "cituljaNovosti": 17,
+    "citationDuplicateBusinessTuples": 0,
+    "predmetScenarioSnapshots": 1,
+    "iriuProvenance": 17,
+    "partePripreme": 1
+  },
+  "installedWindowsArtifact": {
+    "path": "C:\\Program Files\\OPC",
+    "opcExeSha256": "dcb784346da415ed19fe6ad458e5917a1e83f5f58f2363a8400e68f1f5115a7c",
+    "matchesLocalDiagnosticReleaseFolder": true,
+    "compiledBuildVariant": "WINDOWS_TEST",
+    "compiledMigrationTestDatabase": "C:\\Users\\Steva\\AppData\\Local\\Temp\\opc_luna_recovery_20260813\\LUNA_MIGRATION_TEST.sqlite",
+    "normalCanonicalRuntimeProven": false
+  },
+  "sequentialFullTest": {
+    "command": "flutter test --no-pub --concurrency=1 --reporter silent --file-reporter json:<audit-log>",
+    "elapsedSeconds": 2081.8,
+    "testDoneEvents": 480,
+    "successEvents": 479,
+    "failureEvents": 1,
+    "skippedTests": 7,
+    "doneSuccess": false,
+    "reportedShellExitCode": 0,
+    "failure": {
+      "file": "test/parte_print_preparation_json_test.dart",
+      "name": "full backup includes user templates but excludes draft and media",
+      "cause": "schema-9 exports partePripreme while the schema-8 expectation still requires the section to be absent"
+    },
+    "longestFile": {
+      "file": "test/canonical_database_migration_recovery_test.dart",
+      "elapsedSeconds": 465.4
+    }
+  },
+  "backup": {
+    "schemaVersion": 9,
+    "cleanBackupSha256": "16df8b3c00f7bf71da6dc9efcc9184f2070e4f5b33d2732a8a838de38f2a3910",
+    "cleanRoomRestoreIntegrityCheck": "ok",
+    "cleanRoomRestoreForeignKeyViolations": 0,
+    "reexportSemanticallyEqualExceptExportDatum": true,
+    "partePreparationsIncluded": 1,
+    "parteMediaBytesIncluded": false,
+    "separateOfficialMediaRecoveryPackageProven": false
+  },
+  "canonicalDatabaseMutatedDuringAudit": false
+}
