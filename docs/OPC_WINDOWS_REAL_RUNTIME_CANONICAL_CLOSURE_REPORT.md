@@ -1,5 +1,10 @@
 # OPC Windows Real Runtime / Canonical Closure Report
 
+> Superseded for the repaired-database visual-closure attempt by
+> `docs/OPC_WINDOWS_VISUAL_REPAIRED_DB_FINAL_CLOSURE_REPORT.md`. The original
+> report remains the baseline installed-runtime evidence; its deferred gates
+> were not silently converted to PASS.
+
 Date: 2026-08-13  
 Branch: `task/OPC-WINDOWS-REAL-RUNTIME-CANONICAL-CLOSURE`  
 Starting SHA: `1d71dc5cab9df0d8091bdeb27bc4029e0b96dfb5`

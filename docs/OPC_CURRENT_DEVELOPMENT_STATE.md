@@ -84,11 +84,13 @@ Already decided and not returned to the active queue: explicit completion
 lifecycle, SCENARIO ownership/placement/application, application name `OPC`,
 dual currency before `OPC_v.1_Int`, and non-blocking Stage 2 cleanup.
 
-Windows real-runtime closure is partially proven: installed cold start/reopen,
-target OPEN PREDMET/IRiU loading and citation non-growth pass; repaired-copy
-runtime injection, SCENARIO viewing, LISTA visual acceptance and canonical
+Windows real-runtime closure remains partial: installed cold start/reopen,
+target OPEN PREDMET/IRiU loading, and repaired-state startup/PREDMET loading
+pass; citation non-growth remains closed. Rendered concrete KATALOG names,
+IRiU order, SCENARIO viewing, LISTA visual acceptance and canonical
 deduplication remain explicit release gates. Android physical acceptance stays
-deferred until those Windows gates close.
+deferred until those Windows gates close. See
+`docs/OPC_WINDOWS_VISUAL_REPAIRED_DB_FINAL_CLOSURE_REPORT.md`.
 
 ## Prohibitions
 
