@@ -61,7 +61,7 @@ void main() {
                 as Map<String, dynamic>;
         final exportedReminder =
             (backup['ceremonyReminderSettings'] as List).single as Map;
-        expect(backup['schemaVersion'], 8);
+        expect(backup['schemaVersion'], 9);
         expect(exportedReminder['deliveryTimes'], ['08:30', '11:15']);
         expect(exportedReminder.containsKey('scheduledNotificationIds'), false);
         expect(backup.containsKey('securitySettings'), false);
@@ -891,7 +891,7 @@ void main() {
           .length;
       final orphanLogCount = logs.length - validLogCount;
       expect(json['format'], 'OPC_BACKUP');
-      expect(json['schemaVersion'], 8);
+    expect(json['schemaVersion'], 9);
       expect(predmeti.length, 46);
       expect(reminders.length, 9);
       expect(parentOwnedReminderCount, 7);

@@ -28,9 +28,9 @@ import 'document_text_codec.dart';
 import 'export_utils.dart';
 
 const int _kSchemaVersion = 6;
-const int _kBackupSchemaVersion = 8;
+const int _kBackupSchemaVersion = 9;
 const int _kMaxSupportedPredmetSchemaVersion = 7;
-const int _kMaxSupportedBackupSchemaVersion = 8;
+const int _kMaxSupportedBackupSchemaVersion = 9;
 const int _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer = 7;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
@@ -647,6 +647,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
   )..where((t) => t.id.equals(1))).getSingle();
   final predlosci = await db.select(db.predlosciDokumenata).get();
   final partePredlosci = await db.select(db.partePredlosci).get();
+  final partePripreme = await db.select(db.partePripreme).get();
   final log = await db.select(db.logIzmena).get();
   final stanjeRobeStavke = await db.select(db.stanjeRobeStavke).get();
   final stanjeRobeAppliedEffects = await db
@@ -655,12 +656,15 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
   final stanjeRobePosledice = await db.select(db.stanjeRobePosledice).get();
   final scenarioSnapshots = await db.select(db.predmetScenarioSnapshots).get();
   final scenarioProvenance = await db.select(db.iriuProvenance).get();
+  final scenarioModules = await db.select(db.scenarioModules).get();
+  final scenarioDefinitions = await db.select(db.scenarioDefinitions).get();
   final reminderSettings = await db.customSelect('''
       SELECT predmet_id, enabled, delivery_times
       FROM ceremony_reminder_settings
       ORDER BY predmet_id
     ''').get();
   final exportedPredmetIds = predmeti.map((item) => item.id).toSet();
+  final exportedIriuIds = iriu.map((item) => item.id).toSet();
   final stanjeRobeAppliedEffectsZaExport =
       _referencijalnoValidniAppliedEffectsZaBackup(
         appliedEffects: stanjeRobeAppliedEffects,
@@ -683,9 +687,13 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'predmeti': predmeti.map((p) => p.toJson()).toList(),
     'iriu': iriu.map((i) => i.toJson()).toList(),
     'predmetScenarioSnapshots': scenarioSnapshots
+        .where((row) => exportedPredmetIds.contains(row.predmetId))
         .map((row) => row.toJson())
         .toList(),
-    'iriuProvenance': scenarioProvenance.map((row) => row.toJson()).toList(),
+    'iriuProvenance': scenarioProvenance
+        .where((row) => exportedIriuIds.contains(row.iriuId))
+        .map((row) => row.toJson())
+        .toList(),
     'kontaktLica': kl.map((k) => k.toJson()).toList(),
     'iriuLifecycleDecisions': iriuLifecycle.map((row) => row.data).toList(),
     'korisnici': korisnici.map((k) => k.toJson()).toList(),
@@ -695,6 +703,14 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'appPodesavanja': apPod.toJson(),
     'predlosciDokumenata': predlosci.map((p) => p.toJson()).toList(),
     'partePredlosci': partePredlosci.map((p) => p.toJson()).toList(),
+    'partePripreme': partePripreme
+        .where((row) => exportedPredmetIds.contains(row.predmetId))
+        .map((row) => row.toJson())
+        .toList(),
+    'scenarioModules': scenarioModules.map((row) => row.toJson()).toList(),
+    'scenarioDefinitions': scenarioDefinitions
+        .map((row) => row.toJson())
+        .toList(),
     'logIzmena': log
         .where((item) => exportedPredmetIds.contains(item.predmetId))
         .map((item) => item.toJson())
@@ -912,7 +928,6 @@ Future<void> _uvoziPredmetUBazu(
       consequenceItems: payload.stanjeRobeConsequences,
     );
   });
-  await db.repairMalformedIriuCatalogSnapshots();
 }
 
 Future<void> _zameniPredmetUBazi({
@@ -941,7 +956,6 @@ Future<void> _zameniPredmetUBazi({
       consequenceItems: payload.stanjeRobeConsequences,
     );
   });
-  await db.repairMalformedIriuCatalogSnapshots();
 }
 
 Future<void> _restoreImportedScenarioCarrier({
@@ -1055,6 +1069,8 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     json,
     'predmeti',
   ).map((row) => row['id']).whereType<int>().toSet();
+  final hasScenarioState =
+      json['scenarioModules'] is List || json['scenarioDefinitions'] is List;
   var skippedOrphanLogEntries = 0;
 
   await db.transaction(() async {
@@ -1077,6 +1093,10 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.appPodesavanja).go();
     await db.delete(db.predlosciDokumenata).go();
     await db.delete(db.partePredlosci).go();
+    if (hasScenarioState) {
+      await db.delete(db.scenarioDefinitions).go();
+      await db.delete(db.scenarioModules).go();
+    }
 
     for (final k in _requiredMapList(json, 'korisnici')) {
       _zahtevajBackupTekstPolja(k, 'korisnici', const [
@@ -1228,6 +1248,29 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             parteDefaultTemplateId: Value(parteBuiltinTemplateId),
           ),
         );
+      }
+    }
+
+    if (hasScenarioState) {
+      for (final module in _optionalMapList(json, 'scenarioModules')) {
+        await db.into(db.scenarioModules).insert(
+              _procitajBackupRed(
+                'scenarioModules',
+                module,
+                (row) => ScenarioModule.fromJson(row),
+              ).toCompanion(true),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
+      for (final definition in _optionalMapList(json, 'scenarioDefinitions')) {
+        await db.into(db.scenarioDefinitions).insert(
+              _procitajBackupRed(
+                'scenarioDefinitions',
+                definition,
+                (row) => ScenarioDefinitionRecord.fromJson(row),
+              ).toCompanion(true),
+              mode: InsertMode.insertOrReplace,
+            );
       }
     }
 
@@ -1405,6 +1448,20 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             );
       }
     }
+
+    for (final preparation in _optionalMapList(json, 'partePripreme')) {
+      final parsed = _procitajBackupRed(
+        'partePripreme',
+        preparation,
+        (row) => PartePripremeData.fromJson(row),
+      );
+      if (!backupPredmetIds.contains(parsed.predmetId)) continue;
+      await db.into(db.partePripreme).insert(
+            parsed.toCompanion(true),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    await db.deduplicateCituljeCatalogAndRemapReferences();
     await db.backfillMissingKatalogStableArticleIds();
     await db.canonicalizeSeedCatalogStableArticleIds();
     await AuthSecurityRepository(db).writeAuthAuditEvent(

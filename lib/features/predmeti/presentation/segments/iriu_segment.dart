@@ -16,6 +16,7 @@ import '../../core_v2/rules/iriu_truth_rules.dart';
 import '../../core_v2/services/predmet_iriu_truth_service.dart';
 import '../../core_v2/scenario/scenario_module_repository.dart';
 import '../../data/iriu_repository.dart';
+import '../../domain/iriu_catalog_selection.dart';
 import 'iriu_row_tile.dart';
 
 const String iriuStatusPreporuceno = 'PREPORUČENO';
@@ -393,13 +394,15 @@ class _IriuSegmentState extends State<IriuSegment> {
             widget.predmetId,
             interniNaziv,
           );
-          await widget.iriuRepo.dodajStavku(
+          await widget.iriuRepo.dodajKatalogSelection(
             predmetId: widget.predmetId,
-            interniNaziv: interniNaziv,
-            nazivPrikaz: naziv,
-            katalogStableArticleId: katalogStableArticleId,
-            iznos: iznos,
-            cena: iznos,
+            selection: IriuCatalogSelection(
+              interniNaziv: interniNaziv,
+              nazivPrikaz: naziv,
+              katalogStableArticleId: katalogStableArticleId,
+              cena: iznos,
+              iznos: iznos,
+            ),
             redosled: red,
           );
         },

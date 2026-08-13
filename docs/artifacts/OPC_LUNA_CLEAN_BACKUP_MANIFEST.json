@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 9,
+  "cleanBackupSha256": "16df8b3c00f7bf71da6dc9efcc9184f2070e4f5b33d2732a8a838de38f2a3910",
+  "cleanRoomReexportSemanticallyEqualExcept": ["exportDatum"],
+  "entityCounts": {
+    "predmeti": 47,
+    "iriu": 631,
+    "katalogArtikli": 138,
+    "stanjeRobeStavke": 33,
+    "stanjeRobePosledice": 46,
+    "stanjeRobeAppliedEffects": 53,
+    "predmetScenarioSnapshots": 1,
+    "iriuProvenance": 17,
+    "partePripreme": 1,
+    "scenarioModules": 1,
+    "scenarioDefinitions": 1021
+  },
+  "citationTuples": {
+    "CITULJA_POLITIKA": 34,
+    "CITULJA_NOVOSTI": 17,
+    "duplicateBusinessTuples": 0
+  },
+  "integrity": {
+    "sqliteIntegrityCheck": "ok",
+    "foreignKeyViolations": 0
+  }
+}

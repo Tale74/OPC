@@ -14,6 +14,7 @@ import '../../../stanje_robe/application/stanje_robe_operational_availability.da
 import '../../core_v2/models/iriu_truth_models.dart';
 import '../../core_v2/services/iriu_display_name_resolver.dart';
 import '../../data/iriu_repository.dart';
+import '../../domain/iriu_catalog_selection.dart';
 
 List<String> resolveIriuCatalogPickerCategoryKeys(String interniNaziv) {
   if (interniNaziv == IriuK.cituljaP || interniNaziv == IriuK.cituljaNo) {
@@ -362,14 +363,16 @@ class _IriuRowTileState extends State<IriuRowTile> {
       _setAutomaticAmount(cena);
     });
     _debounce?.cancel();
-    await widget.iriuRepo.azurirajKatalogIzborStavke(
+    await widget.iriuRepo.azurirajKatalogSelection(
       row: widget.stavka,
-      katalogStableArticleId: katalogStableArticleId,
-      interniNaziv: interniNazivKategorije,
-      nazivPrikaz: _normalizedText(_nazivCtrl),
-      kom: _normalizedText(_komCtrl),
-      cena: cena,
-      iznos: _parsedIznos(),
+      selection: IriuCatalogSelection(
+        interniNaziv: interniNazivKategorije,
+        nazivPrikaz: _normalizedText(_nazivCtrl),
+        katalogStableArticleId: katalogStableArticleId,
+        cena: cena,
+        kom: _normalizedText(_komCtrl),
+        iznos: _parsedIznos(),
+      ),
     );
   }
 

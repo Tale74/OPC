@@ -45,6 +45,15 @@ This document summarizes policy only. It does not implement backup, restore, imp
 | `OPC_v1_PROJECT_FLOW_AND_DELTA.md` | `SOURCE/PROJECT_DOCS` and byte-identical control copy | HISTORICAL / SUPPORTING | This document | NO | YES | Used for chronological evidence of JSON and backup boundaries. |
 | `OPC_RE_ENTRY_AUDIT_PROJECT_STATE_AND_NEXT_MACRO_STEPS_REPORT.md` | `SOURCE/PROJECT_DOCS` only | SUPPORTING | This document | NO | YES | Used for current-state summary of single-PREDMET and full-database JSON transfer. |
 
+## Schema-9 recovery contract — 2026-08-13
+
+FULL backup schema 9 includes live-owner-filtered PARTE preparations, scenario
+modules/definitions, snapshots/provenance, stock under the declared policy,
+and current PREDMET/IRiU/KATALOG/contact/settings data. Restore deduplicates
+CITULJE by `(category,name,price)` and remaps stable references deterministically.
+The clean-room restore reproduced the clean canonical business state; export
+and re-export differ only in the expected export timestamp.
+
 ## Technical-Audit Required
 
 - repository/firma identity model;

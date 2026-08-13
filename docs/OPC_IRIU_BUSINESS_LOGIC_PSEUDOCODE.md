@@ -836,6 +836,17 @@ PREDMET
   -> materijalizuj samo scenario-managed IRiU redove
 ```
 
+## Canonical selection contract — 2026-08-13
+
+```text
+KATALOG selection
+  -> IriuCatalogSelection(category identity, stable id, displayed snapshot name,
+                           price, quantity, amount)
+  -> one repository write path for add and reselection
+  -> persist the selected snapshot on IRiU
+  -> never refresh an existing PREDMET snapshot from current KATALOG
+```
+
 `ZAŠTITNA I DODATNA OPREMA` pripada svim neprirodnim uzrocima van bolničkog
 izuzetka i u DOČEK toku. BIOHAZARD upozorenje ostaje zasebna, uža odluka; ova
 dva uslova se ne smeju ponovo spajati.

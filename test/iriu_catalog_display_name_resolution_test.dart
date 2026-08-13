@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show Value;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -56,10 +59,17 @@ void main() {
   });
 
   test(
-    'stable article identity repairs only a generic stored category label',
+    'historical snapshot remains unchanged when stable ID resolves to Flor',
     () async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
+      final directory = await Directory.systemTemp.createTemp(
+        'opc_snapshot_immunity_',
+      );
+      final path = File('${directory.path}${Platform.pathSeparator}opc.sqlite');
+      final db = AppDatabase.forTesting(NativeDatabase(path));
+      addTearDown(() async {
+        await db.close();
+        await directory.delete(recursive: true);
+      });
       await (db.update(
         db.iriuKatalogConfig,
       )..where((row) => row.interniNaziv.equals('CRNINA'))).write(
@@ -95,15 +105,22 @@ void main() {
             ),
           );
 
-      expect(await db.repairMalformedIriuCatalogSnapshots(), 1);
-      final repaired = await (db.select(
+      final current = await (db.select(
         db.iriu,
       )..where((row) => row.id.equals(rowId))).getSingle();
-      expect(repaired.nazivPrikaz, 'Flor');
-      expect(repaired.katalogStableArticleId, 'flor-stable');
-      expect(repaired.cena, 100);
-      expect(repaired.kom, '3');
-      expect(repaired.iznos, 300);
+      expect(current.nazivPrikaz, 'Crnina');
+      await db.close();
+
+      final reopened = AppDatabase.forTesting(NativeDatabase(path));
+      final persisted = await (reopened.select(
+        reopened.iriu,
+      )..where((row) => row.id.equals(rowId))).getSingle();
+      expect(persisted.nazivPrikaz, 'Crnina');
+      expect(persisted.katalogStableArticleId, 'flor-stable');
+      expect(persisted.cena, 100);
+      expect(persisted.kom, '3');
+      expect(persisted.iznos, 300);
+      await reopened.close();
     },
   );
 
@@ -144,7 +161,6 @@ void main() {
             ),
           );
 
-      expect(await db.repairMalformedIriuCatalogSnapshots(), 0);
       expect(
         (await IriuRepository(db).getIriu(predmetId)).single.nazivPrikaz,
         'Moja posebna oznaka',

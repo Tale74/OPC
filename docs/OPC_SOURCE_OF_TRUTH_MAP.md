@@ -47,6 +47,14 @@ Status: public continuity baseline.
 | Source code under `lib/`, `test/`, platform folders | Runtime implementation evidence | Generated DB files, tests, build configs | Technical source of implementation truth, but not changed by this docs baseline. |
 | Private databases, exports, backups, credentials | Private runtime data | None in public repo | PRIVATE / DO NOT PROMOTE. |
 
+## LUNA recovery authority — 2026-08-13
+
+`docs/OPC_CANONICAL_DATA_RECOVERY_AND_STABILIZATION_REPORT.md` is the current
+execution report for canonical data recovery. Its committed ledger summary is
+`docs/artifacts/OPC_LUNA_RECOVERY_LEDGER_SUMMARY.json`. The canonical DB and
+clean backup remain private runtime artifacts; the original contaminated
+backup is forensic evidence and was not overwritten.
+
 ## Hierarchy Rule
 
 For future OPC tasks, `SOURCE/docs` is the single active local Git working copy

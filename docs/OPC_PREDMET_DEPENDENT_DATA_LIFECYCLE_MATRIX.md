@@ -63,3 +63,10 @@ PODSETNIK integrity correction precedes business expansion.
 PODSETNIK informed-reminder design resumes only after the complete signal
 inventory is established and the owner confirms which signals have business
 meaning. Completion colors alone are not the whole signal model.
+
+## Recovery lifecycle rule — 2026-08-13
+
+Current state is authoritative and deletion is final. A dependent row whose
+business parent no longer exists is technical orphan state and is removed;
+existing PREDMET-owned snapshots and current business relations are preserved.
+Later KATALOG edits never rewrite a formed PREDMET/IRiU snapshot.

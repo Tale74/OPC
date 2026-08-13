@@ -100,3 +100,13 @@ No current authority permits application renaming, Web implementation,
 international localization, automatic exchange rates, tax/VAT/fiscalization,
 package restriction restoration, isolated PODSETNIK status patching, broad
 rewrite, or canonical database replacement.
+
+## LUNA canonical recovery reconciliation — 2026-08-13
+
+The canonical recovery execution supersedes the scoped Windows deployment
+deferral for this data-recovery scope. The promoted canonical database is
+integrity-clean, all current PREDMET/IRiU business rows are preserved, the
+citation catalogue is deduplicated, and schema-9 clean backup/clean-room
+restore equivalence is proven. Historical PREDMET snapshots are immune to
+later KATALOG changes. The installed protected-folder visual gate remains a
+separate owner deployment concern; no ACL or ownership change was attempted.

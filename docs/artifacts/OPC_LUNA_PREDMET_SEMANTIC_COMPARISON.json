@@ -1,0 +1,12 @@
+{
+  "predmetiCountBefore": 47,
+  "predmetiCountAfter": 47,
+  "iriuCountBefore": 631,
+  "iriuCountAfter": 631,
+  "predmetiBusinessHashBefore": "6c78e0308c21323388a9ba58dfa877276fcd7158a3afa90a9d63a9848fe9015a",
+  "predmetiBusinessHashAfter": "6c78e0308c21323388a9ba58dfa877276fcd7158a3afa90a9d63a9848fe9015a",
+  "iriuBusinessHashBefore": "9208caf45c2b44fbebb28070b35165567a72c273aafa4ab96594e7e6d89af721",
+  "iriuBusinessHashAfter": "9208caf45c2b44fbebb28070b35165567a72c273aafa4ab96594e7e6d89af721",
+  "snapshotNamesPricesQuantitiesAmountsRewritten": false,
+  "deletedBusinessEntitiesReconstructed": false
+}

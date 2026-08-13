@@ -435,3 +435,11 @@ Stop affected work when:
 - dual currency is being deferred to `OPC_v.1_Int`;
 - Web, internationalization, tax, VAT or fiscalization enters current scope
   without the required gate and owner decision.
+
+## LUNA recovery completion — 2026-08-13
+
+The canonical data-recovery work is complete for this scope: the promoted
+canonical DB is FK/integrity-clean, live PREDMET/IRiU business truth is
+preserved, CITULJE deduplication and restore recurrence closure are proven,
+and schema-9 clean backup/restore is semantically idempotent. Future work must
+not reintroduce startup snapshot repair or category-specific KATALOG writers.

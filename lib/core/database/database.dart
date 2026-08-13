@@ -242,7 +242,6 @@ class AppDatabase extends _$AppDatabase {
       await _ensureCeremonyReminderDeliveryTimesColumn();
       await backfillMissingKatalogStableArticleIds();
       await canonicalizeSeedCatalogStableArticleIds();
-      await repairMalformedIriuCatalogSnapshots();
       await _validateRequiredSchema();
     },
   );
@@ -1633,54 +1632,6 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  /// Repairs only unambiguous historical IRiU snapshot defects.
-  ///
-  /// A non-empty [Iriu.katalogStableArticleId] is the selected article
-  /// identity. If that identity resolves to an article in the same category
-  /// and the stored display text is only a generic/category/technical
-  /// placeholder, the concrete article name is the safe derived snapshot to
-  /// restore. Custom user-entered text and unknown/ambiguous references are
-  /// deliberately left untouched.
-  Future<int> repairMalformedIriuCatalogSnapshots() async {
-    return transaction(() async {
-      final configs = await select(iriuKatalogConfig).get();
-      final categoryLabels = <String, String>{
-        for (final row in configs) row.interniNaziv: row.nazivPrikaz.trim(),
-      };
-      final articles = await select(katalogArtikli).get();
-      final articlesByStableId = <String, KatalogArtikliData>{
-        for (final article in articles)
-          if (article.stableArticleId?.trim().isNotEmpty == true)
-            article.stableArticleId!.trim(): article,
-      };
-      final rows = await select(iriu).get();
-      var repaired = 0;
-      for (final row in rows) {
-        final stableId = row.katalogStableArticleId?.trim();
-        if (stableId == null || stableId.isEmpty) continue;
-        final article = articlesByStableId[stableId];
-        if (article == null ||
-            article.interniNazivKategorije != row.interniNaziv) {
-          continue;
-        }
-        final stored = row.nazivPrikaz.trim();
-        final categoryLabel = categoryLabels[row.interniNaziv] ?? '';
-        final isTechnical =
-            stored.isEmpty ||
-            stored == row.interniNaziv ||
-            stored.startsWith('KORISNIK_');
-        if (!isTechnical && stored != categoryLabel) continue;
-        final concreteName = article.naziv.trim();
-        if (concreteName.isEmpty || concreteName == stored) continue;
-        await (update(iriu)..where((item) => item.id.equals(row.id))).write(
-          IriuCompanion(nazivPrikaz: Value(concreteName)),
-        );
-        repaired++;
-      }
-      return repaired;
-    });
-  }
-
   String? _catalogBusinessKey(String value) {
     final normalized = value.trim().toUpperCase().replaceAll(
       RegExp(r'\s+'),
@@ -2111,6 +2062,115 @@ class AppDatabase extends _$AppDatabase {
           updates: {katalogArtikli},
         );
       }
+    });
+  }
+
+  /// Collapses only the built-in ČITULJE business tuples during an explicit
+  /// restore/recovery transaction. This is deliberately not called from
+  /// startup: existing user/PREDMET snapshots are never rewritten by live
+  /// KATALOG state.
+  Future<int> deduplicateCituljeCatalogAndRemapReferences() async {
+    return transaction(() async {
+      final articles = (await select(katalogArtikli).get())
+          .where(
+            (row) =>
+                row.interniNazivKategorije == 'CITULJA_POLITIKA' ||
+                row.interniNazivKategorije == 'CITULJA_NOVOSTI',
+          )
+          .toList(growable: false);
+      final groups = <String, List<KatalogArtikliData>>{};
+      for (final article in articles) {
+        final key =
+            '${article.interniNazivKategorije}\u0000${article.naziv}\u0000${article.cena}';
+        groups.putIfAbsent(key, () => <KatalogArtikliData>[]).add(article);
+      }
+
+      var removed = 0;
+      for (final group in groups.values.where((items) => items.length > 1)) {
+        final byStableId = <String, KatalogArtikliData>{
+          for (final item in group)
+            if (item.stableArticleId?.trim().isNotEmpty == true)
+              item.stableArticleId!.trim(): item,
+        };
+        final referencedStableIds = <String>{};
+        for (final row in await select(iriu).get()) {
+          final stableId = row.katalogStableArticleId?.trim();
+          if (stableId != null && byStableId.containsKey(stableId)) {
+            referencedStableIds.add(stableId);
+          }
+        }
+        for (final row in await select(stanjeRobeStavke).get()) {
+          final stableId = row.stableArticleId.trim();
+          if (byStableId.containsKey(stableId)) referencedStableIds.add(stableId);
+        }
+        for (final row in await select(stanjeRobeAppliedEffects).get()) {
+          final stableId = row.stableArticleId.trim();
+          if (byStableId.containsKey(stableId)) referencedStableIds.add(stableId);
+        }
+        for (final row in await select(stanjeRobePosledice).get()) {
+          final stableId = row.katalogStableArticleId.trim();
+          if (byStableId.containsKey(stableId)) referencedStableIds.add(stableId);
+        }
+
+        final survivor = referencedStableIds.length == 1
+            ? byStableId[referencedStableIds.single]!
+            : (group..sort((a, b) => a.id.compareTo(b.id))).first;
+        final survivorStableId = survivor.stableArticleId?.trim();
+        if (survivorStableId == null || survivorStableId.isEmpty) {
+          throw StateError('CITULJE grupa nema validan survivor stable ID.');
+        }
+
+        for (final duplicate in group) {
+          final duplicateStableId = duplicate.stableArticleId?.trim();
+          if (duplicate.id == survivor.id) continue;
+          if (duplicateStableId != null &&
+              duplicateStableId.isNotEmpty &&
+              duplicateStableId != survivorStableId) {
+            await customUpdate(
+              'UPDATE iriu SET katalog_stable_article_id = ? '
+              'WHERE katalog_stable_article_id = ?',
+              variables: [
+                Variable<String>(survivorStableId),
+                Variable<String>(duplicateStableId),
+              ],
+              updates: {iriu},
+            );
+            await customUpdate(
+              'UPDATE stanje_robe_stavke SET stable_article_id = ? '
+              'WHERE stable_article_id = ?',
+              variables: [
+                Variable<String>(survivorStableId),
+                Variable<String>(duplicateStableId),
+              ],
+              updates: {stanjeRobeStavke},
+            );
+            await customUpdate(
+              'UPDATE stanje_robe_applied_effects SET stable_article_id = ? '
+              'WHERE stable_article_id = ?',
+              variables: [
+                Variable<String>(survivorStableId),
+                Variable<String>(duplicateStableId),
+              ],
+              updates: {stanjeRobeAppliedEffects},
+            );
+            await customUpdate(
+              'UPDATE stanje_robe_posledice '
+              'SET katalog_stable_article_id = ? '
+              'WHERE katalog_stable_article_id = ?',
+              variables: [
+                Variable<String>(survivorStableId),
+                Variable<String>(duplicateStableId),
+              ],
+              updates: {stanjeRobePosledice},
+            );
+          }
+          await (delete(katalogArtikli)
+                ..where((row) => row.id.equals(duplicate.id)))
+              .go();
+          removed++;
+        }
+      }
+      return removed;
     });
   }
 

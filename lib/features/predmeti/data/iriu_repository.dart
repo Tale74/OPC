@@ -18,6 +18,7 @@ import '../core_v2/scenario/owner_scenario_policy_kernel.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
+import '../domain/iriu_catalog_selection.dart';
 
 class IriuRepository {
   const IriuRepository(AppDatabase db) : _db = db;
@@ -577,6 +578,25 @@ class IriuRepository {
     return id;
   }
 
+  /// Canonical concrete KATALOG → IRiU insertion contract used by live
+  /// pickers. Category-only scenario/base rows use their own lifecycle path.
+  Future<int> dodajKatalogSelection({
+    required int predmetId,
+    required IriuCatalogSelection selection,
+    int redosled = 0,
+  }) {
+    return dodajStavku(
+      predmetId: predmetId,
+      interniNaziv: selection.interniNaziv,
+      nazivPrikaz: selection.nazivPrikaz,
+      katalogStableArticleId: selection.katalogStableArticleId,
+      kom: selection.kom,
+      iznos: selection.iznos,
+      cena: selection.cena,
+      redosled: redosled,
+    );
+  }
+
   Future<String> _catalogDisplayName(String internalName) async {
     final row =
         await (_db.select(_db.iriuKatalogConfig)
@@ -713,6 +733,23 @@ class IriuRepository {
         ),
       );
     });
+  }
+
+  /// Canonical concrete KATALOG → IRiU reselection contract. Add and edit
+  /// paths therefore apply the same immutable selection shape.
+  Future<void> azurirajKatalogSelection({
+    required IriuData row,
+    required IriuCatalogSelection selection,
+  }) {
+    return azurirajKatalogIzborStavke(
+      row: row,
+      katalogStableArticleId: selection.katalogStableArticleId,
+      interniNaziv: selection.interniNaziv,
+      nazivPrikaz: selection.nazivPrikaz,
+      kom: selection.kom,
+      cena: selection.cena,
+      iznos: selection.iznos,
+    );
   }
 
   Future<double> _resolveAppliedUnitPrice({

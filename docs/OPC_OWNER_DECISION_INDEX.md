@@ -259,3 +259,10 @@ Executable and installer signing remain subject to the later signing gate.
 
 Evidence:
 `docs/tasks/OPC_TASK_PHASE_1_WINDOWS_MULTIPLE_INSTANCE_CONCURRENT_DB_AUDIT_REPORT.md`.
+
+## Current recovery decision — 2026-08-13
+
+Current state is authoritative; user deletion is final; technical orphans of
+deleted business entities are removed. Existing PREDMET snapshots are not
+rewritten from current KATALOG. The schema-9 clean backup and clean-room
+restore are the current recovery contract; see the canonical recovery report.

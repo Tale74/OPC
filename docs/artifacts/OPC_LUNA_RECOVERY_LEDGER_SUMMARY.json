@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "sourceCanonicalSha256": "a09a2d1ef8b9d7b62fa1b699637273f912a4164cffc1c58c916fe36dcd37bb39",
+  "repairedForensicCopySha256": "812aa438f747d59d3af3eb073b5fb99ea9d9687459fcf52fc4c01946d06bc51c",
+  "tableCountsBefore": {
+    "predmeti": 47,
+    "iriu": 631,
+    "katalog_artikli": 4470,
+    "stanje_robe_stavke": 33,
+    "stanje_robe_posledice": 46,
+    "stanje_robe_applied_effects": 53,
+    "predmet_scenario_snapshots": 8,
+    "iriu_provenance": 181,
+    "log_izmena": 235,
+    "ceremony_reminder_settings": 11,
+    "parte_pripreme": 3,
+    "scenario_modules": 1,
+    "scenario_definitions": 1021
+  },
+  "tableCountsAfter": {
+    "predmeti": 47,
+    "iriu": 631,
+    "katalog_artikli": 138,
+    "stanje_robe_stavke": 33,
+    "stanje_robe_posledice": 46,
+    "stanje_robe_applied_effects": 53,
+    "predmet_scenario_snapshots": 1,
+    "iriu_provenance": 17,
+    "log_izmena": 229,
+    "ceremony_reminder_settings": 8,
+    "parte_pripreme": 1,
+    "scenario_modules": 1,
+    "scenario_definitions": 1021
+  },
+  "actions": {
+    "foreignKeyOrphanDependentsDeleted": 182,
+    "foreignKeyOrphanDependentsByTable": {
+      "iriu_provenance": 164,
+      "predmet_scenario_snapshots": 7,
+      "log_izmena": 6,
+      "ceremony_reminder_settings": 3,
+      "parte_pripreme": 2
+    },
+    "citationCatalogRowsDeleted": 4332,
+    "citationDuplicateTuplesCollapsed": 51,
+    "staleTechnicalStableReferencesRemapped": 16,
+    "staleTechnicalStableReferencesRemappedByTable": {
+      "iriu": 13,
+      "stanje_robe_posledice": 3
+    }
+  },
+  "gates": {
+    "sqliteIntegrityCheck": "ok",
+    "foreignKeyViolationsAfter": 0,
+    "predmetiBusinessHashUnchanged": true,
+    "iriuBusinessHashUnchanged": true,
+    "unresolvedStableReferencesAfter": 0
+  },
+  "fullLedgerPath": "C:\\Users\\Steva\\AppData\\Local\\Temp\\opc_luna_recovery_20260813\\recovery_ledger.json"
+}
