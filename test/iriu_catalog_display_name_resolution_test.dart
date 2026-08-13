@@ -55,6 +55,103 @@ void main() {
     expect(resolution.displayName, 'Ešarpa');
   });
 
+  test(
+    'stable article identity repairs only a generic stored category label',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      await (db.update(
+        db.iriuKatalogConfig,
+      )..where((row) => row.interniNaziv.equals('CRNINA'))).write(
+        const IriuKatalogConfigCompanion(
+          nazivPrikaz: Value('Crnina'),
+          tip: Value('KATALOSKA'),
+        ),
+      );
+      await db
+          .into(db.katalogArtikli)
+          .insert(
+            KatalogArtikliCompanion.insert(
+              stableArticleId: const Value('flor-stable'),
+              interniNazivKategorije: 'CRNINA',
+              naziv: 'Flor',
+              cena: const Value(100.0),
+            ),
+          );
+      final predmetId = await PredmetiRepository(
+        db,
+      ).kreirajPredmet(savetnikId: 1);
+      final rowId = await db
+          .into(db.iriu)
+          .insert(
+            IriuCompanion.insert(
+              predmetId: predmetId,
+              interniNaziv: 'CRNINA',
+              nazivPrikaz: const Value('Crnina'),
+              katalogStableArticleId: const Value('flor-stable'),
+              cena: const Value(100),
+              kom: const Value('3'),
+              iznos: const Value(300),
+            ),
+          );
+
+      expect(await db.repairMalformedIriuCatalogSnapshots(), 1);
+      final repaired = await (db.select(
+        db.iriu,
+      )..where((row) => row.id.equals(rowId))).getSingle();
+      expect(repaired.nazivPrikaz, 'Flor');
+      expect(repaired.katalogStableArticleId, 'flor-stable');
+      expect(repaired.cena, 100);
+      expect(repaired.kom, '3');
+      expect(repaired.iznos, 300);
+    },
+  );
+
+  test(
+    'stable article identity does not overwrite an intentional custom name',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      await (db.update(
+        db.iriuKatalogConfig,
+      )..where((row) => row.interniNaziv.equals('CRNINA'))).write(
+        const IriuKatalogConfigCompanion(
+          nazivPrikaz: Value('Crnina'),
+          tip: Value('KATALOSKA'),
+        ),
+      );
+      await db
+          .into(db.katalogArtikli)
+          .insert(
+            KatalogArtikliCompanion.insert(
+              stableArticleId: const Value('flor-stable'),
+              interniNazivKategorije: 'CRNINA',
+              naziv: 'Flor',
+              cena: const Value(100.0),
+            ),
+          );
+      final predmetId = await PredmetiRepository(
+        db,
+      ).kreirajPredmet(savetnikId: 1);
+      await db
+          .into(db.iriu)
+          .insert(
+            IriuCompanion.insert(
+              predmetId: predmetId,
+              interniNaziv: 'CRNINA',
+              nazivPrikaz: const Value('Moja posebna oznaka'),
+              katalogStableArticleId: const Value('flor-stable'),
+            ),
+          );
+
+      expect(await db.repairMalformedIriuCatalogSnapshots(), 0);
+      expect(
+        (await IriuRepository(db).getIriu(predmetId)).single.nazivPrikaz,
+        'Moja posebna oznaka',
+      );
+    },
+  );
+
   test('unresolved KORISNIK_* is an integrity error, not a business item', () {
     final resolution = resolveIriuDisplayName(
       internalName: 'KORISNIK_MISSING',

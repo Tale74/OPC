@@ -65,11 +65,13 @@ must not hide financially included citation rows.
 ### OPC-OD-WINDOWS-CANONICAL-CLOSURE-012 — GATED
 
 Installed Windows cold start/reopen, target PREDMET/IRiU loading, and repaired
-state startup/PREDMET loading are accepted as scoped runtime evidence. Rendered
-KATALOG/IRiU, SCENARIO and LISTA proof remains open. Canonical ČITULJE repair
-still requires the complete repaired-state application-runtime gate and a
-post-repair startup; the authorized temporary swap was rolled back without
-canonical mutation. See `docs/OPC_WINDOWS_VISUAL_REPAIRED_DB_FINAL_CLOSURE_REPORT.md`.
+state startup/PREDMET loading are accepted as scoped runtime evidence. The
+canonical KATALOG→IRiU snapshot contract is source-proven and covered by a
+bounded malformed-row repair, but the repaired build could not be deployed to
+the protected install. Rendered KATALOG/IRiU, SCENARIO and LISTA proof remains
+open. Canonical ČITULJE repair still requires the complete repaired-state
+application-runtime gate and a post-repair startup. See
+`docs/OPC_CANONICAL_KATALOG_IRIU_PIPELINE_WINDOWS_CLOSURE_REPORT.md`.
 
 ## OPC-OD-NATIVE-DEV-POTPUN-001 — SUPERSEDED
 

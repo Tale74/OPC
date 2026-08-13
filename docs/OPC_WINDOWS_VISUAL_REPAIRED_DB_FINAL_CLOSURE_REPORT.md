@@ -1,5 +1,8 @@
 # OPC Windows Visual + Repaired-DB Final Closure Report
 
+> Superseded for the KATALOG→IRiU pipeline defect and source repair by
+> `docs/OPC_CANONICAL_KATALOG_IRIU_PIPELINE_WINDOWS_CLOSURE_REPORT.md`.
+
 Date: 2026-08-13  
 Branch: `task/OPC-WINDOWS-VISUAL-REPAIRED-DB-FINAL-CLOSURE`  
 Baseline commit / remote SHA: `3d00f4fd6f37f0b48edb9affb25f159c2240340f`

@@ -86,11 +86,13 @@ dual currency before `OPC_v.1_Int`, and non-blocking Stage 2 cleanup.
 
 Windows real-runtime closure remains partial: installed cold start/reopen,
 target OPEN PREDMET/IRiU loading, and repaired-state startup/PREDMET loading
-pass; citation non-growth remains closed. Rendered concrete KATALOG names,
-IRiU order, SCENARIO viewing, LISTA visual acceptance and canonical
-deduplication remain explicit release gates. Android physical acceptance stays
-deferred until those Windows gates close. See
-`docs/OPC_WINDOWS_VISUAL_REPAIRED_DB_FINAL_CLOSURE_REPORT.md`.
+pass; citation non-growth remains closed. The source-level canonical
+KATALOG→IRiU snapshot contract and bounded malformed-row repair now pass
+focused tests/analyzer/build, but the repaired build is not deployed to the
+protected install. Rendered concrete KATALOG names, IRiU order, SCENARIO
+viewing, LISTA visual acceptance and canonical deduplication remain explicit
+release gates. See
+`docs/OPC_CANONICAL_KATALOG_IRIU_PIPELINE_WINDOWS_CLOSURE_REPORT.md`.
 
 ## Prohibitions
 

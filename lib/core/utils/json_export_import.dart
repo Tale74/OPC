@@ -912,6 +912,7 @@ Future<void> _uvoziPredmetUBazu(
       consequenceItems: payload.stanjeRobeConsequences,
     );
   });
+  await db.repairMalformedIriuCatalogSnapshots();
 }
 
 Future<void> _zameniPredmetUBazi({
@@ -940,6 +941,7 @@ Future<void> _zameniPredmetUBazi({
       consequenceItems: payload.stanjeRobeConsequences,
     );
   });
+  await db.repairMalformedIriuCatalogSnapshots();
 }
 
 Future<void> _restoreImportedScenarioCarrier({
