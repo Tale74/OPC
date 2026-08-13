@@ -25,6 +25,36 @@ void main() {
     expect(resolution.userFacingText, 'Slika');
   });
 
+  test('concrete selected article name wins over category label', () {
+    final resolution = resolveIriuDisplayName(
+      internalName: 'CRNINA',
+      catalogDisplayNames: const {'CRNINA': 'Crnina'},
+      storedDisplayName: 'Ešarpa',
+    );
+
+    expect(resolution.displayName, 'Ešarpa');
+  });
+
+  test('the shared projection rule applies to another catalog category', () {
+    final resolution = resolveIriuDisplayName(
+      internalName: 'SANDUK',
+      catalogDisplayNames: const {'SANDUK': 'Sanduk'},
+      storedDisplayName: 'SANDUK V-4',
+    );
+
+    expect(resolution.displayName, 'SANDUK V-4');
+    expect(resolution.internalName, 'SANDUK');
+  });
+
+  test('missing local catalog keeps the stored concrete article snapshot', () {
+    final resolution = resolveIriuDisplayName(
+      internalName: 'CRNINA',
+      storedDisplayName: 'Ešarpa',
+    );
+
+    expect(resolution.displayName, 'Ešarpa');
+  });
+
   test('unresolved KORISNIK_* is an integrity error, not a business item', () {
     final resolution = resolveIriuDisplayName(
       internalName: 'KORISNIK_MISSING',

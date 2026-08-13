@@ -9,11 +9,12 @@ Baseline: `26840fe38489b4fbf4cac6cf441c694d11322405`
 **OVERNIGHT PARTIAL — SAFE OWNER-INDEPENDENT WORK EXHAUSTED**
 
 The production Single-PREDMET carrier, IRiU order partition, replacement
-snapshot lifecycle, KATALOG continuity tests, and owner-independent LISTA urn
-labels are implemented and targeted tests pass. Concrete-article editor
-projection, citation-row PDF presentation, duplicate survivor selection, and
-Android physical-device acceptance remain owner/deferred or explicitly outside
-the overnight boundary.
+snapshot lifecycle, KATALOG continuity tests, owner-independent LISTA urn
+labels, concrete-article editor projection, and citation-row PDF presentation
+are implemented and targeted tests pass. Historical duplicate survivor choice
+is now deterministic and proven on a fresh copy; canonical mutation remains
+deferred until the final release/startup gate. Android physical-device
+acceptance remains explicitly outside the owner-independent boundary.
 
 ## Runtime/database provenance
 
@@ -67,16 +68,27 @@ The existing business order remains the tie-breaker within each partition.
 ### LISTA PDF
 
 Urn labels now use established document terminology: `Parcela`, `Broj`, `Red`,
-`NPK`. Values and article naming are unchanged. Citation visible-row versus
-financial-total presentation remains deferred because it requires an owner
-decision.
+`NPK`. The shared LISTA item projection no longer removes
+`documentScopedOut` rows, so financially included citation rows remain visible
+and reconcile with `ROBA I USLUGE`. Shared itemized derivatives inherit this
+prepared data; NALOG's intentionally narrower seven-category scope is
+unchanged.
+
+### Concrete KATALOG article projection
+
+The shared IRiU display resolver now gives a non-technical stored concrete
+article name precedence over the current category label. This applies to all
+KATALOG-backed categories, preserves category identity in `interniNaziv`, and
+keeps an imported row readable when the receiver has no matching KATALOG row.
 
 ### KATALOG continuity/repair preparation
 
 The tuple-idempotent citation seed path is source-confirmed and covered by the
-existing KATALOG tests. Historical duplicates and unresolved references are
-reported from the fresh forensic copy only. No blind duplicate deletion or
-canonical survivor choice was performed.
+existing KATALOG tests. A fresh-copy repair proved deterministic `MIN(id)`
+survivors for 51 exact citation tuples, removed 4,332 duplicate rows, preserved
+the full target PREDMET/IRiU truth, and left the repaired copy integral and
+idempotent. The canonical database was not mutated because final startup and
+release validation are not yet complete.
 
 ## Validation
 
@@ -96,8 +108,7 @@ by the task boundary.
 
 ## Deferred decisions and next safe step
 
-Still owner-dependent: concrete selected-article labels in the editable IRiU
-UI, citation aggregation/visible-row PDF policy, and canonical citation
-duplicate survivor selection. The next safe step is to run the full analyze,
-Windows release build/startup, and Android shared-code tests in a clean Flutter
-toolchain, then commit/push this branch after review.
+Remaining gates are validation of the final release artifacts, real Windows
+startup (if computer-use becomes available), and canonical repair authorization
+after those gates. Concrete selected-article labels and citation-row
+visibility are locked implementation decisions, not owner-dependent work.

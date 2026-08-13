@@ -64,7 +64,7 @@ for the stable Serbian-market product-line gate and is not a rename.
 
 Documentation reconciliation → Windows single-instance and remaining
 release-risk integrity closure → evidence-first performance closure → SCENARIO
-JSON carrier parity → complete signal model and full PODSETNIK upgrade →
+continuity carrier/order/KATALOG/PDF fidelity closure → complete signal model and full PODSETNIK upgrade →
 remaining JSON/document/theme/UI work → MODUL DVE VALUTE → final
 Windows/Android semantic parity and backup/restore rehearsal → app
 identity/version/update channel → stable OPC v.1 product-line gate → optional

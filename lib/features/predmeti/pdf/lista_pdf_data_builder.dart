@@ -163,7 +163,6 @@ List<IriuTruthRow> _buildListaIriuItems(
   return truthSnapshot.rowsVisibleToDerivative(
     excludedReasons: const <IriuDerivativeExclusion>{
       IriuDerivativeExclusion.notOperationallyActive,
-      IriuDerivativeExclusion.documentScopedOut,
     },
   );
 }

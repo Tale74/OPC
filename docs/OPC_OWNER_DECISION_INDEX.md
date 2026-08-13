@@ -46,6 +46,22 @@ This register gives every recorded owner decision a stable identifier. It is a n
 4. Every future implementation task must cite the applicable IDs and resolve all listed dependencies/fallbacks in its authorized scope.
 5. If source and guide disagree, the discrepancy is reported; production behavior is not changed by this register.
 
+## Final continuity closure decisions — 2026-08-13
+
+### OPC-OD-IRIU-KATALOG-LABEL-010 — LOCKED
+
+Every KATALOG-backed IRiU row displays the stored concrete selected-article
+name when one exists. The category remains classification metadata through
+`interniNaziv`; current KATALOG labels are fallback only for rows without a
+concrete snapshot.
+
+### OPC-OD-PDF-PREDMET-FIDELITY-011 — LOCKED
+
+If an IRiU row participates in PREDMET financial/business truth and the
+derivative presents an itemized list, the row is visible in that list and its
+amount reconciles to the displayed total. LISTA and shared itemized derivatives
+must not hide financially included citation rows.
+
 ## OPC-OD-NATIVE-DEV-POTPUN-001 — SUPERSEDED
 
 - Decision: Windows/Android development, presentation and runtime validation use

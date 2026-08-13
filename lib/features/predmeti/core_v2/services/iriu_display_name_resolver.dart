@@ -39,17 +39,31 @@ bool isTechnicalIriuDisplayName({
       normalizedDisplayName == internalName.trim();
 }
 
-/// Resolves an IRIU row label from one authoritative source order:
+/// Resolves an IRIU row label from one authoritative source order.
 ///
-/// 1. current KATALOG category name;
-/// 2. built-in IRIU name;
-/// 3. a non-technical name already stored on the row;
-/// 4. an explicit KATALOG-integrity error state (not a fabricated item name).
+/// A concrete selected article is a PREDMET-owned snapshot, so a non-technical
+/// stored name wins over the current category label. This keeps an imported
+/// row readable even when the destination has no matching KATALOG article.
+/// Category/built-in labels remain the fallback for rows without a concrete
+/// selection. The category identity is still carried by [internalName].
 IriuDisplayNameResolution resolveIriuDisplayName({
   required String internalName,
   Map<String, String> catalogDisplayNames = const <String, String>{},
   String? storedDisplayName,
 }) {
+  final storedName = storedDisplayName?.trim();
+  if (storedName != null &&
+      storedName.isNotEmpty &&
+      !isTechnicalIriuDisplayName(
+        internalName: internalName,
+        displayName: storedName,
+      )) {
+    return IriuDisplayNameResolution.resolved(
+      internalName: internalName,
+      displayName: storedName,
+    );
+  }
+
   final catalogName = catalogDisplayNames[internalName]?.trim();
   if (catalogName != null && catalogName.isNotEmpty) {
     return IriuDisplayNameResolution.resolved(
@@ -63,19 +77,6 @@ IriuDisplayNameResolution resolveIriuDisplayName({
     return IriuDisplayNameResolution.resolved(
       internalName: internalName,
       displayName: builtInName,
-    );
-  }
-
-  final storedName = storedDisplayName?.trim();
-  if (storedName != null &&
-      storedName.isNotEmpty &&
-      !isTechnicalIriuDisplayName(
-        internalName: internalName,
-        displayName: storedName,
-      )) {
-    return IriuDisplayNameResolution.resolved(
-      internalName: internalName,
-      displayName: storedName,
     );
   }
 
