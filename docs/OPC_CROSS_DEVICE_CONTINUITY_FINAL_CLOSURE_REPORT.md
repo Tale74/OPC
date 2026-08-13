@@ -4,6 +4,10 @@ Date: 2026-08-13
 Branch: `task/OPC-CROSS-DEVICE-CONTINUITY-FINAL-CLOSURE`  
 Baseline/current starting SHA: `e9d2684166386c8ff60f2ea496599cd07beb785a`
 
+Windows follow-up status: this report is the owner-independent source/test and
+copy-repair baseline. Superseding installed-runtime evidence is recorded in
+`docs/OPC_WINDOWS_REAL_RUNTIME_CANONICAL_CLOSURE_REPORT.md`.
+
 ## A. Baseline / branch / SHAs
 
 The branch was created from the clean overnight branch at `e9d2684`; the

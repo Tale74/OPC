@@ -84,6 +84,12 @@ Already decided and not returned to the active queue: explicit completion
 lifecycle, SCENARIO ownership/placement/application, application name `OPC`,
 dual currency before `OPC_v.1_Int`, and non-blocking Stage 2 cleanup.
 
+Windows real-runtime closure is partially proven: installed cold start/reopen,
+target OPEN PREDMET/IRiU loading and citation non-growth pass; repaired-copy
+runtime injection, SCENARIO viewing, LISTA visual acceptance and canonical
+deduplication remain explicit release gates. Android physical acceptance stays
+deferred until those Windows gates close.
+
 ## Prohibitions
 
 No current authority permits application renaming, Web implementation,

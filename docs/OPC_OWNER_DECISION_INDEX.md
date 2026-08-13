@@ -62,6 +62,13 @@ derivative presents an itemized list, the row is visible in that list and its
 amount reconciles to the displayed total. LISTA and shared itemized derivatives
 must not hide financially included citation rows.
 
+### OPC-OD-WINDOWS-CANONICAL-CLOSURE-012 — GATED
+
+Installed Windows cold start/reopen and target PREDMET/IRiU loading are
+accepted as runtime evidence for this scoped closure. Canonical ČITULJE repair
+still requires repaired-copy application-runtime proof or a separately
+authorized rollback-backed canonical transaction and post-repair startup.
+
 ## OPC-OD-NATIVE-DEV-POTPUN-001 — SUPERSEDED
 
 - Decision: Windows/Android development, presentation and runtime validation use

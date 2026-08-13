@@ -90,7 +90,7 @@ explicit new owner business decision.
 **Documentation reconciliation → release-risk integrity closure (Windows
 single-instance and remaining PREDMET/referential acceptance) → evidence-first
 performance closure → SCENARIO continuity carrier/order/KATALOG/PDF fidelity
-closure → complete signal/lifecycle
+closure → Windows real-runtime/canonical closure → complete signal/lifecycle
 model and full PODSETNIK upgrade → remaining JSON/document/theme/UI work →
 MODUL DVE VALUTE → final Windows/Android business-semantic parity and
 backup/restore rehearsal → app identity/version/update-channel decision → First
@@ -120,6 +120,7 @@ SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
 | SCENARIO JSON carriers | `COMPLETED — TECHNICAL PASS / RELEASE ACCEPTANCE OPEN` | Production Single-PREDMET and full-backup snapshot/provenance carriers are wired; targeted contracts pass | Same shared implementation | Complete final analyze/build and platform round-trip/release rehearsal; Android physical transfer remains deferred | “Carrier not wired” premise is superseded |
 | IRiU/KATALOG concrete labels | `COMPLETED — TECHNICAL PASS` | Shared resolver preserves stored concrete article names and category metadata | Same shared implementation | Protect with regression coverage and final platform smoke | Category-only projection premise is superseded |
 | LISTA/PDF item fidelity | `COMPLETED — TECHNICAL PASS` | Financially included citation rows remain visible in LISTA/shared itemized derivatives; NALOG scope remains intentional | Same shared implementation | Protect with reconciliation test and visual release acceptance | Hidden citation-row premise is superseded |
+| Windows real runtime/canonical closure | `PARTIAL — BLOCKING FOR WINDOWS GATE` | Installed cold/reopen and target PREDMET/IRiU open pass; recurrence is closed; repaired-copy UI injection is unavailable | N/A | Prove repaired-copy runtime or execute separately authorized canonical repair with rollback and post-repair startup; then release Android gate | “Windows startup unverified” is superseded within proven scope |
 | KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | Build/technical evidence | Build/technical evidence | Include in final runtime business parity; do not redesign | Future FIKSNA/amount premise superseded |
 | Completion/signal model | `OPEN` | Not complete | Not complete | Inventory all derived completeness/due/missed/lifecycle signals; owner confirms business meaning | Must precede full PODSETNIK |
 | PODSETNIK full upgrade | `OPEN — REQUIRED PREDECESSOR` | In-app/notification behavior requires full model | OS notification exists; new notification for a `ZAVRŠEN` PREDMET is a retained finding | One lifecycle-aware informed-reminder program; no isolated status patch | Standalone reminder fix is rejected |
