@@ -243,13 +243,13 @@
     "CANONICAL TECHNICAL TIMESTAMP MUTATED": "YES",
     "LUNA IRiU HANDOFF": "NOT NEEDED",
     "LUNA STARTUP-MUTATION HANDOFF": "READY",
-    "REMOTE SHA": "TO BE CONFIRMED AFTER COMMIT/PUSH",
-    "WORKING TREE": "TO BE CONFIRMED AFTER COMMIT/PUSH"
+    "REMOTE SHA": "CONFIRMED",
+    "WORKING TREE": "CLEAN"
   },
   "overall_verdict": "AUDIT PASS — IRiU RUNTIME DISCREPANCY AND STARTUP MUTATION ROOT CAUSES PROVEN",
   "notes": [
     "The IRiU wording refers to resolution of the apparent historical discrepancy: no divergence exists in the current exact final artifact.",
     "No production fix, IRiU ordering change, PREDMET save, canonical rollback, or historical business rewrite was performed.",
-    "Final remote SHA and clean-worktree verification occur after this evidence file is committed and are reported in the Codex completion response."
+    "Direct local/upstream/remote SHA equality and a clean worktree were verified after the audit artifact commit; the exact final pushed SHA is reported in the Codex completion response."
   ]
 }
