@@ -37,17 +37,20 @@ IRIU_ROW = {
 }
 
 DISPLAY_AND_DOCUMENT_ORDER:
-  is_derived_from(applied_PREDMET_scenario_snapshot,
-                  IRIU_provenance,
-                  business_section_and_order,
-                  stable_tie_rank)
-  authority = IriuOrderingService
-  partitions = [OSNOVNI_PAKET, SCENARIO_PAKET, MANUAL_OR_OTHER]
-  managed_rows_use_snapshot_and_business_order_with_redosled_tie_fallback
-  manual_rows_remain_in_final_partition
-  redosled_is_NOT_universal_historical_display_truth
+  business_authority =
+    ordered_members(OSNOVNI_PAKET)
+    -> ordered_members(applied_SCENARIO_PAKET)
+    -> manual_or_unpredicted_items
+  package_membership_and_configured_intra_package_order_are_authoritative
+  package_contents_are_editable_and_may_differ_by_user_scenario_and_time
+  concrete_item_names_and_item_counts_are_not_ordering_authority
+  persisted_redosled_is_NOT_business_order_authority
+  provenance_is_NOT_business_order_authority
+  current_source_output_is_NOT_business_order_authority
+  golden_or_characterization_fixture_is_NOT_business_authority
+  technical_projection_must_materialize_the_authoritative_package_order
   UI_and_[LISTA, PREDRACUN, RACUN, SPECIFIKACIJA, PREDMET_PDF, NALOG]
-    consume_the_same_derived_projection
+    consume_the_same_package_order_projection
   raw_import_restore_may_preserve_stale_redosled_without_database_rewrite
 
 KATALOG_CONFIG = {
@@ -149,28 +152,12 @@ DO_NOT_INFER:
 ```text
 ON create_new_PREDMET:
   insert PREDMET
-  FOR category IN [
-    SANDUK,
-    OBELEZJE,
-    POKROV_GARNITURA,
-    PESKIR_ZA_KRST,
-    POSMRTNE_PARTE,
-    CRNINA,
-    CVECE,
-    CITULJA_POLITIKA,
-    CITULJA_NOVOSTI,
-    SLIKA,
-    AGENCIJSKE_USLUGE
-  ]:
-    insert IRIU row from current KATALOG display name
-      origin = OSNOVNI_PAKET
-      scenarioUpravlja = TRUE
-      kom = "1"
-      iznos = 0
-      no_selected_catalog_article_unless_later_selected
-
-  USER_CATALOG_CATEGORIES ARE NOT ADDED TO OSNOVNI_PAKET
-  WITHOUT AN EXPLICIT EDITOR DECISION
+  materialize the currently configured ordered OSNOVNI_PAKET membership
+  without hardcoding concrete item names or a universal item count
+  apply the currently selected SCENARIO and materialize its ordered package
+  preserve manual/unpredicted rows in the final partition
+  do not infer package membership from persisted redosled, provenance,
+    current source output or a golden fixture
 
 INITIAL_ROW DOES_NOT_PROVE selected_article_or_executed_service
 ```

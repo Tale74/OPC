@@ -101,6 +101,51 @@ international localization, automatic exchange rates, tax/VAT/fiscalization,
 package restriction restoration, isolated PODSETNIK status patching, broad
 rewrite, or canonical database replacement.
 
+## Documentation truth recovery — 2026-08-14
+
+The active IRiU business invariant is package-based and generic:
+
+```text
+ordered OSNOVNI PAKET
+  -> ordered applied SCENARIO PAKET
+  -> manual/unpredicted items
+```
+
+`OSNOVNI PAKET` here means the editable SCENARIO goods/services composition
+block. It is not the abandoned native licensing/entitlement terminology
+`Osnovni/Srednji/Potpuni`.
+
+Package membership and the configured order inside each package are the
+business authority. Package contents may change by user, scenario and time.
+Concrete item names, item counts, persisted `redosled`, provenance, current
+source output and golden fixtures are technical evidence only and must not
+become a universal business order.
+
+The recent IRiU ordering reports and tests are therefore classified as
+technical or historical evidence. They may prove that an implementation
+matches an expectation, but they cannot establish that expectation. Any
+fixture that lacks a package-authority reference is characterization only and
+does not open an implementation or acceptance gate.
+
+The active synthesis must be read with this correction: the earlier statement
+that the owner-required IRiU target was unknown is superseded at the model
+level. The generic package invariant is established; concrete package content
+is intentionally not part of the ordering algorithm.
+
+Known separate technical debt remains open and unimplemented:
+
+```text
+IriuSegment.initState
+  -> _runScenarioSync
+  -> ScenarioModuleRepository.ensureModuleAndDefaults()
+  -> _ensureOwnerMapDefinitions()
+  -> _repairKnownOwnerMapProtectiveEquipmentGap()
+  -> identical scenario_definitions payload UPDATE (updated_at only)
+```
+
+This documentation correction does not authorize a code patch, canonical
+database rewrite, test-fixture rewrite or runtime acceptance claim.
+
 ## LUNA canonical recovery reconciliation — 2026-08-13
 
 The canonical recovery execution supersedes the scoped Windows deployment

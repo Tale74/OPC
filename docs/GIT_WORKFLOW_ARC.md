@@ -24,6 +24,23 @@ git status
 
 Every OPC task must also read [OPC Purpose and Anti-Drift Manifest](OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md) before work starts and must emit the manifest task-start check block defined there. If the manifest is not read, the task must not proceed.
 
+Before substantive execution, every OPC task must also complete the owner
+confirmation gate defined in the task template: task understanding,
+continuity establishment and documentation reading. Codex must stop after
+those confirmations and wait for explicit owner continuation. Logos must review
+the confirmations against the intended task and authority hierarchy. This rule
+has no small-task, audit-only or documentation-only exception.
+
+The generic IRiU ordering authority is package-based:
+
+```text
+ordered OSNOVNI PAKET -> ordered applied SCENARIO PAKET -> manual/unpredicted items
+```
+
+Editable package contents, concrete item lists, persisted order, provenance,
+source output and golden tests are not substitutes for package membership and
+the configured order inside each package.
+
 Manifest checking is also tooling-enforced for changed task reports by `scripts/validate_opc_manifest_gate.py` and the `OPC Manifest Gate` GitHub Actions workflow. A task report missing the manifest start-check or end-compliance block must be treated as NOT PASS.
 
 ## Authoritative successive validation and build gate

@@ -4,6 +4,60 @@
 
 `OPC TASK TITLE`
 
+## OWNER CONFIRMATION GATE - PHASE 0
+
+### TASK UNDERSTANDING CONFIRMATION
+
+Restate the intended outcome, scope, non-goals, locked owner decisions,
+required evidence and stop conditions in the model's own words.
+
+Verdict:
+
+`TASK UNDERSTANDING - CONFIRMED / NOT CONFIRMED`
+
+### CONTINUITY ESTABLISHMENT CONFIRMATION
+
+Record the public branch/HEAD, predecessor task/report chain, relevant incident
+lineage, zero-baseline transition, current business model, technical debt and
+unresolved gates. Do not reason from the latest report alone.
+
+The current generic IRiU business invariant is:
+
+```text
+IRiU = ordered OSNOVNI PAKET
+       -> ordered applied SCENARIO PAKET
+       -> manual/unpredicted items
+```
+
+Package contents are editable. Concrete item names, persisted order,
+provenance, source output and golden fixtures are not business authority.
+
+Verdict:
+
+`PROJECT CONTINUITY - ESTABLISHED / NOT ESTABLISHED`
+
+### DOCUMENTATION READING CONFIRMATION
+
+List every relevant document actually read and classify it as current owner
+authority, permanent incident evidence, active governance/continuity,
+historical task evidence, pre-zero evidence, technical source-learning
+evidence or future-scope evidence. Record conflicts plainly.
+
+Verdict:
+
+`AUTHORITATIVE DOCUMENTATION READ - CONFIRMED / NOT CONFIRMED`
+
+### Required stop
+
+After the three confirmations, output exactly:
+
+`OWNER CONFIRMATION GATE - WAITING FOR EXPLICIT CONTINUE`
+
+Do not edit, implement, test, build, commit or push until the owner explicitly
+responds with `CONTINUE`, `APPROVED - CONTINUE`, `NASTAVI` or an equivalent
+unambiguous authorization. If the owner corrects any confirmation, revise it
+and stop again.
+
 ## OPC MANIFEST CHECK — TASK START
 
 Manifest read:

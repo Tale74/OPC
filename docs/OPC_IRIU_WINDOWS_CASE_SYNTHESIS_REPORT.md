@@ -173,3 +173,36 @@ Ako se potvrdi da novija sekvenca nije željena, tada se radi novi narrow forens
 | IRiU production repair handoff | nije spreman bez autoritativnog target order-a |
 
 **Konačni objedinjeni zaključak:** istorijski i noviji screenshot dokazi se razlikuju zato što pripadaju različitim lifecycle/build/evidence grupama, ali noviji root RUNTIME snimci i moji Computer Use snimci ne pokazuju međusobnu razliku. Ono što još nije zatvoreno jeste da li je novija sekvenca zaista ona koju vlasnik zahteva. Startup mutation je zaseban, potpuno dokazan problem.
+
+## 11. Documentation truth recovery correction — 2026-08-14
+
+The previous sections preserve the historical forensic exchange. Their
+statement that the owner-required IRiU target was not known is superseded at
+the business-model level by the owner-approved generic invariant:
+
+```text
+IRiU = ordered OSNOVNI PAKET
+       -> ordered applied SCENARIO PAKET
+       -> manual/unpredicted items
+```
+
+This is a package-composition rule, not a fixed list of article names. The
+packages are editable. The item count and item identity may change by user,
+scenario and time. The ordering authority is package membership plus the
+configured order inside each package.
+
+Therefore the earlier request for the owner to restate a complete concrete
+IRiU sequence is withdrawn. Concrete screenshots, persisted `redosled`,
+provenance, current repository output and golden fixtures remain evidence of a
+particular runtime or characterization lane; none may redefine the package
+invariant.
+
+The current synthesis must distinguish:
+
+- business truth: the generic package invariant above;
+- technical evidence: what a specific build/repository/test/runtime lane
+  produced;
+- separate technical debt: the proven 36-row SCENARIO no-op timestamp write.
+
+No ordering implementation, historical PREDMET rewrite or golden-fixture
+rewrite is authorized by this correction.

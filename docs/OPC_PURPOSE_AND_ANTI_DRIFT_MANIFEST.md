@@ -135,6 +135,27 @@ internal identifier, but new UI, PDF/DOCX and user documentation use
 `Osnovni` / `Srednji` / `Potpuni` package terms are historical compatibility
 evidence, not active current-product policy. Section 2.1 governs them.
 
+`OSNOVNI PAKET` in the SCENARIO business model is a different concept. It is
+an editable goods/services composition block applied by SCENARIO and is not a
+licensing or entitlement package. Do not collapse these concepts because of
+terminological similarity.
+
+### 7.1 IRiU package-ordering invariant
+
+The current business ordering invariant is:
+
+```text
+IRiU = ordered OSNOVNI PAKET
+       -> ordered applied SCENARIO PAKET
+       -> manual/unpredicted items
+```
+
+Package membership and the configured order inside each package are the
+business authority. Package contents are editable and may differ by user,
+scenario and time. Concrete item names, item counts, persisted `redosled`,
+provenance, current source output and golden fixtures must not become a
+replacement business authority. They may be technical evidence only.
+
 Other new business terms may only be used if marked:
 
 ```text
@@ -306,6 +327,28 @@ Codex must execute tasks with the manifest check included.
 Neither Logos nor Codex may rely on memory instead of the manifest.
 
 If the manifest conflicts with a task instruction, the conflict must be reported before implementation.
+
+### 11.1 Mandatory owner confirmation gate
+
+Before any OPC task proceeds beyond read-only preparation, both Logos and Codex
+must record:
+
+```text
+TASK UNDERSTANDING CONFIRMATION
+CONTINUITY ESTABLISHMENT CONFIRMATION
+DOCUMENTATION READING CONFIRMATION
+OWNER CONFIRMATION GATE - WAITING FOR EXPLICIT CONTINUE
+```
+
+The owner must explicitly approve continuation. Silence, model confidence,
+task size, audit-only scope, documentation-only scope or a technical PASS is
+not authorization. If Logos or Codex finds a misunderstanding, missing
+continuity, authority conflict or technical premise promoted to business
+truth, execution remains stopped until corrected and re-approved.
+
+The same protocol applies to implementation, audit, documentation, release,
+cleanup and tooling tasks. The protocol is a project control, not an optional
+conversation convention.
 
 ## 12. GitHub-Aware Verification
 
