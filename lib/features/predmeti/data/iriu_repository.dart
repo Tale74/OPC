@@ -20,6 +20,22 @@ import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../domain/iriu_catalog_selection.dart';
 
+class _LiveOrderingClassification {
+  const _LiveOrderingClassification({
+    required this.managed,
+    required this.scenario,
+    required this.section,
+    required this.order,
+    required this.context,
+  });
+
+  final bool managed;
+  final bool scenario;
+  final int section;
+  final int order;
+  final IriuOrderingContext context;
+}
+
 class IriuRepository {
   const IriuRepository(AppDatabase db) : _db = db;
 
@@ -45,8 +61,11 @@ class IriuRepository {
   Stream<List<IriuData>> watchIriu(int predmetId) =>
       (_db.select(_db.iriu)
             ..where((i) => i.predmetId.equals(predmetId))
-            ..orderBy([(i) => OrderingTerm.asc(i.redosled)]))
-          .watch();
+            // Raw storage order is explicit here; presentation order is
+            // derived below and never delegated to redosled.
+            ..orderBy([(i) => OrderingTerm.asc(i.id)]))
+          .watch()
+          .asyncMap((rows) => _orderedProjection(predmetId, rows));
 
   /// Sinhronizuje samo stavke koje je kreirao SCENARIO modul.
   /// Ručne, legacy i stavke drugih modula se nikada ne uklanjaju.
@@ -137,6 +156,7 @@ class IriuRepository {
         // actual PREDMET -> SCENARIO hand-off cannot fail before additions
         // are written.
         .toList();
+    var orderingInvalidated = false;
     final existingNames = rows.map((row) => row.interniNaziv).toSet();
     final desired = evaluation.effectiveCategories;
     final dismissed = await _getDismissedCategories(
@@ -202,6 +222,7 @@ class IriuRepository {
           provenanceByIriuId[row.id] == null,
     )) {
       scenarioRows.add(row);
+      orderingInvalidated = true;
       await _db
           .into(_db.iriuProvenance)
           .insertOnConflictUpdate(
@@ -278,6 +299,9 @@ class IriuRepository {
       (row) => desired.contains(row.interniNaziv),
     )) {
       final decision = evaluation.decisions[row.interniNaziv]!;
+      if (_scenarioDecisionChanged(row, decision) || !row.scenarioUpravlja) {
+        orderingInvalidated = true;
+      }
       await azurirajStavku(
         row.id,
         IriuCompanion(
@@ -317,7 +341,7 @@ class IriuRepository {
         ),
       );
     }
-    if (removals.isNotEmpty || additions.isNotEmpty) {
+    if (removals.isNotEmpty || additions.isNotEmpty || orderingInvalidated) {
       await _rebuildBusinessOrdering(predmetId);
     }
     if (ownerResult?.isComplete ?? false) {
@@ -536,11 +560,83 @@ class IriuRepository {
     );
   }
 
-  Future<List<IriuData>> getIriu(int predmetId) =>
+  Future<List<IriuData>> getIriu(int predmetId) async {
+    final rows = await _rawIriu(predmetId);
+    return _orderedProjection(predmetId, rows);
+  }
+
+  Future<List<IriuData>> _rawIriu(int predmetId) =>
       (_db.select(_db.iriu)
             ..where((i) => i.predmetId.equals(predmetId))
-            ..orderBy([(i) => OrderingTerm.asc(i.redosled)]))
+            // Raw order is suitable for transfer/internal work only.
+            ..orderBy([(i) => OrderingTerm.asc(i.id)]))
           .get();
+
+  Future<List<IriuData>> _orderedProjection(
+    int predmetId,
+    List<IriuData> rows,
+  ) async {
+    if (rows.isEmpty) return const <IriuData>[];
+    final context = await _orderingContext(predmetId);
+    return _orderingService.orderedRows(rows, context: context);
+  }
+
+  Future<IriuOrderingContext> _orderingContext(int predmetId) async {
+    final provenance = await (_db.select(_db.iriuProvenance)).get();
+    final origins = <int, String>{
+      for (final item in provenance) item.iriuId: item.origin,
+    };
+    final snapshotRow = await _readScenarioSnapshot(predmetId);
+    if (snapshotRow == null || snapshotRow.snapshotJson.trim().isEmpty) {
+      final module = await (_db.select(
+        _db.scenarioModules,
+      )..where((item) => item.id.equals(ScenarioModuleRepository.moduleId)))
+          .getSingleOrNull();
+      final osnovni = module == null
+          ? ScenarioModuleRepository.defaultOsnovniPaket
+          : ScenarioModuleRepository(_db).readOsnovniPaket(module);
+      return IriuOrderingContext(
+        osnovniCategories: osnovni,
+        provenanceOrigins: origins,
+        moduleId: ScenarioModuleRepository.moduleId,
+      );
+    }
+    try {
+      final snapshot = ScenarioAssignmentSnapshot.fromJsonMap(
+        jsonDecode(snapshotRow.snapshotJson) as Map<String, dynamic>,
+      );
+      final activeConsequences = snapshot.scenario.consequences.where(
+        (item) => item.action != ScenarioConsequenceAction.suppressed,
+      );
+      return IriuOrderingContext(
+        osnovniCategories: snapshot.osnovniPaket,
+        scenarioCategories: activeConsequences
+            .map((item) => item.katalogCategoryInternalName)
+            .toSet(),
+        scenarioBusinessSections: {
+          for (final item in activeConsequences)
+            item.katalogCategoryInternalName: item.section,
+        },
+        scenarioBusinessOrders: {
+          for (final item in activeConsequences)
+            item.katalogCategoryInternalName: item.order,
+        },
+        provenanceOrigins: origins,
+        moduleId: snapshot.moduleId,
+        scenarioId: snapshot.scenarioId,
+        scenarioVersion: snapshot.scenarioVersion,
+        scenarioRuleIds: {
+          for (final item in activeConsequences)
+            item.katalogCategoryInternalName: item.katalogCategoryInternalName,
+        },
+      );
+    } on Object {
+      // A malformed/legacy snapshot must not block opening a PREDMET. The
+      // persisted provenance and business metadata remain deterministic
+      // fallbacks until the normal scenario lifecycle repairs the snapshot.
+      return IriuOrderingContext(provenanceOrigins: origins);
+    }
+  }
 
   Future<int> dodajStavku({
     required int predmetId,
@@ -603,9 +699,14 @@ class IriuRepository {
   }) async {
     if (row != null) {
       await _updateLiveCatalogSelection(row: row, selection: selection);
+      await _rebuildBusinessOrdering(row.predmetId);
       return row.id;
     }
     final targetPredmetId = predmetId!;
+    final classification = await _classifyLiveCategory(
+      predmetId: targetPredmetId,
+      interniNaziv: selection.interniNaziv,
+    );
     await _clearManagedManualDeletionDecisionIfNeeded(
       predmetId: targetPredmetId,
       interniNaziv: selection.interniNaziv,
@@ -619,6 +720,14 @@ class IriuRepository {
       iznos: selection.iznos,
       cena: selection.cena,
       redosled: redosled,
+      poslovnaCelina: classification.section,
+      poslovniRedosled: classification.order,
+      scenarioUpravlja: classification.managed,
+    );
+    await _persistLiveProvenance(
+      id: id,
+      internalName: selection.interniNaziv,
+      classification: classification,
     );
     await _applyStockEffectForCatalogSelection(
       predmetId: targetPredmetId,
@@ -739,6 +848,10 @@ class IriuRepository {
     final normalizedInterniNaziv = nextInterniNaziv.isEmpty
         ? row.interniNaziv
         : nextInterniNaziv;
+    final classification = await _classifyLiveCategory(
+      predmetId: row.predmetId,
+      interniNaziv: normalizedInterniNaziv,
+    );
 
     await _db.transaction(() async {
       if (nextStableArticleId != null &&
@@ -785,9 +898,95 @@ class IriuRepository {
           kom: Value(selection.kom),
           cena: Value(selection.cena),
           iznos: Value(selection.iznos),
+          poslovnaCelina: Value(classification.section),
+          poslovniRedosled: Value(classification.order),
+          scenarioUpravlja: Value(classification.managed),
         ),
       );
+      await _persistLiveProvenance(
+        id: row.id,
+        internalName: normalizedInterniNaziv,
+        classification: classification,
+      );
     });
+  }
+
+  Future<_LiveOrderingClassification> _classifyLiveCategory({
+    required int predmetId,
+    required String interniNaziv,
+  }) async {
+    final context = await _orderingContext(predmetId);
+    final rows = await _rawIriu(predmetId);
+    final existing = rows
+        .where((item) => item.interniNaziv == interniNaziv)
+        .where((item) => item.scenarioUpravlja)
+        .firstOrNull;
+    final isScenario = context.scenarioCategories.contains(interniNaziv);
+    final isOsnovni = context.osnovniCategories.contains(interniNaziv);
+    final managed = isScenario || isOsnovni || existing != null;
+    final scenario =
+        isScenario ||
+        (!isOsnovni && existing != null && existing.poslovnaCelina >= 2);
+    return _LiveOrderingClassification(
+      managed: managed,
+      scenario: scenario,
+      section:
+          context.scenarioBusinessSections[interniNaziv] ??
+          existing?.poslovnaCelina ??
+          (scenario
+              ? 2
+              : managed
+              ? 1
+              : 6),
+      order:
+          context.scenarioBusinessOrders[interniNaziv] ??
+          existing?.poslovniRedosled ??
+          0,
+      context: context,
+    );
+  }
+
+  Future<void> _persistLiveProvenance({
+    required int id,
+    required String internalName,
+    required _LiveOrderingClassification classification,
+  }) async {
+    if (!classification.managed) {
+      await (_db.delete(
+        _db.iriuProvenance,
+      )..where((item) => item.iriuId.equals(id))).go();
+      return;
+    }
+    final context = classification.context;
+    if (classification.scenario &&
+        (context.moduleId == null ||
+            context.scenarioId == null ||
+            context.scenarioVersion == null)) {
+      return;
+    }
+    await _db
+        .into(_db.iriuProvenance)
+        .insertOnConflictUpdate(
+          IriuProvenanceCompanion.insert(
+            iriuId: Value(id),
+            origin: classification.scenario
+                ? 'SCENARIO_PAKET'
+                : 'OSNOVNI_PAKET',
+            moduleId: Value(context.moduleId ?? 'scenario'),
+            scenarioId: Value(
+              classification.scenario ? context.scenarioId : null,
+            ),
+            scenarioVersion: Value(
+              classification.scenario ? context.scenarioVersion : null,
+            ),
+            ruleId: Value(
+              classification.scenario
+                  ? (context.scenarioRuleIds[internalName] ?? internalName)
+                  : null,
+            ),
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
   }
 
   /// Canonical concrete KATALOG → IRiU reselection contract. Add and edit
@@ -1125,15 +1324,11 @@ class IriuRepository {
   }
 
   Future<void> _rebuildBusinessOrdering(int predmetId) async {
-    final rows = await getIriu(predmetId);
+    final rows = await _rawIriu(predmetId);
     if (rows.isEmpty) return;
-    final provenance = await (_db.select(_db.iriuProvenance)).get();
-    final provenanceOrigins = <int, String>{
-      for (final item in provenance) item.iriuId: item.origin,
-    };
     final orderedRows = _orderingService.orderedRows(
       rows,
-      provenanceOrigins: provenanceOrigins,
+      context: await _orderingContext(predmetId),
     );
     await _db.transaction(() async {
       for (var index = 0; index < orderedRows.length; index++) {

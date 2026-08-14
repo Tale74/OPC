@@ -18,6 +18,7 @@ class PredmetIriuTruthService {
   PredmetIriuTruthSnapshot evaluate({
     required PredmetiData predmet,
     required List<IriuData> storedRows,
+    bool preserveInputOrder = false,
   }) {
     final context = _PredmetIriuTruthEvaluationContext(
       predmet: predmet,
@@ -31,25 +32,29 @@ class PredmetIriuTruthService {
     final isLocalCemetery = _isLocalCemeteryForIriuTruth(context);
     final isKremacija = _isKremacijaForIriuTruth(context);
     final isHospitalDeath = _isHospitalDeathForIriuTruth(context);
-    final rows =
-        storedRows
-            .map(
-              (row) => _evaluateRow(
-                context: context,
-                row: row,
-                normalizedMestoSmrti: normalizedMestoSmrti,
-                requiresBiohazardPrecautions: requiresBiohazardPrecautions,
-                hasReceptionOfRemains: hasReceptionOfRemains,
-                isInternationalCase: isInternationalCase,
-                isLocalCemetery: isLocalCemetery,
-                isKremacija: isKremacija,
-                isHospitalDeath: isHospitalDeath,
-              ),
-            )
-            .toList(growable: false)
-          ..sort((a, b) => a.truthOrder.compareTo(b.truthOrder));
+    final evaluatedRows = storedRows
+        .map(
+          (row) => _evaluateRow(
+            context: context,
+            row: row,
+            normalizedMestoSmrti: normalizedMestoSmrti,
+            requiresBiohazardPrecautions: requiresBiohazardPrecautions,
+            hasReceptionOfRemains: hasReceptionOfRemains,
+            isInternationalCase: isInternationalCase,
+            isLocalCemetery: isLocalCemetery,
+            isKremacija: isKremacija,
+            isHospitalDeath: isHospitalDeath,
+          ),
+        )
+        .toList(growable: true);
+    if (!preserveInputOrder) {
+      evaluatedRows.sort((a, b) => a.truthOrder.compareTo(b.truthOrder));
+    }
 
-    return PredmetIriuTruthSnapshot(predmet: context.predmet, rows: rows);
+    return PredmetIriuTruthSnapshot(
+      predmet: context.predmet,
+      rows: List<IriuTruthRow>.unmodifiable(evaluatedRows),
+    );
   }
 
   IriuTruthRow _evaluateRow({

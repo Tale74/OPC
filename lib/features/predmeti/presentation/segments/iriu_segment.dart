@@ -148,6 +148,7 @@ class _IriuSegmentState extends State<IriuSegment> {
     final snapshot = _predmetIriuTruthService.evaluate(
       predmet: widget.predmetData,
       storedRows: stavke,
+      preserveInputOrder: true,
     );
     final rowsById = <int, IriuTruthRow>{
       for (final row in snapshot.rows) row.storedRow.id: row,

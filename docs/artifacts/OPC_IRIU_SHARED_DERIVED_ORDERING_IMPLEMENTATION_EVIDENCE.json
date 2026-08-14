@@ -1,0 +1,45 @@
+{
+  "task": "OPC_LUNA_HIGH_IRIU_SHARED_DERIVED_ORDERING_IMPLEMENTATION",
+  "baselineAuditCommit": "9d385358a934644c2e52a3c6d1253580f390c8f5",
+  "branch": "task/OPC-IRIU-SHARED-DERIVED-ORDERING-IMPLEMENTATION",
+  "sharedAuthority": "IriuOrderingService",
+  "targetedTests": {
+    "orderingAndCatalog": "PASS",
+    "newGoldenOrdering": "PASS",
+    "scenarioLifecycle": "PASS",
+    "flutterAnalyze": "PASS"
+  },
+  "fullFlutterTest": {
+    "reporter": "json",
+    "path": "docs/artifacts/full_flutter_test_retry.json",
+    "doneSuccess": false,
+    "doneEvent": true,
+    "failures": [
+      "predmet_hard_delete_lifecycle_coordinator_test.dart test 421: timeout after PathNotFoundException in an isolated temp media fixture; isolated rerun repeated the same environmental timeout"
+    ],
+    "firstAttempt": "docs/artifacts/full_flutter_test.json"
+  },
+  "analyzer": {
+    "command": "flutter analyze --no-pub",
+    "result": "PASS",
+    "evidence": "docs/artifacts/flutter_analyze_final.log"
+  },
+  "canonicalDatabase": {
+    "path": "C:\\Users\\Steva\\Documents\\opc_v4_release.sqlite",
+    "sha256": "B90DBAA065BB2C8ED3D23C6B9AB6BFB4FCB9ED5C501831C9E9F0ABD8C88B2222",
+    "integrityCheck": "ok",
+    "foreignKeyCheck": [],
+    "counts": {
+      "predmeti": 47,
+      "iriu": 631,
+      "iriuKatalogConfig": 29,
+      "iriuProvenance": 17,
+      "predmetScenarioSnapshots": 1
+    }
+  },
+  "childProcessCleanup": "PASS",
+  "windowsBuild": "NOT_RUN",
+  "androidBuild": "NOT_RUN",
+  "computerUse": "NOT_RUN",
+  "canonicalRewrite": "NO"
+}

@@ -33,8 +33,22 @@ IRIU_ROW = {
   iznos: stored_row_amount,
   cena: applied_unit_price_snapshot,
   cekiran: legacy_boolean_without_current_business_state_consumption,
-  redosled: presentation/business_order
+  redosled: persisted_storage_rank_and_deterministic_fallback
 }
+
+DISPLAY_AND_DOCUMENT_ORDER:
+  is_derived_from(applied_PREDMET_scenario_snapshot,
+                  IRIU_provenance,
+                  business_section_and_order,
+                  stable_tie_rank)
+  authority = IriuOrderingService
+  partitions = [OSNOVNI_PAKET, SCENARIO_PAKET, MANUAL_OR_OTHER]
+  managed_rows_use_snapshot_and_business_order_with_redosled_tie_fallback
+  manual_rows_remain_in_final_partition
+  redosled_is_NOT_universal_historical_display_truth
+  UI_and_[LISTA, PREDRACUN, RACUN, SPECIFIKACIJA, PREDMET_PDF, NALOG]
+    consume_the_same_derived_projection
+  raw_import_restore_may_preserve_stale_redosled_without_database_rewrite
 
 KATALOG_CONFIG = {
   interniNaziv: stable_category_discriminator,

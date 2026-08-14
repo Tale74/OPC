@@ -39,6 +39,10 @@ class ScenarioModuleRepository {
     IriuK.cituljaNo,
     IriuK.slika,
   };
+
+  /// Read-only fallback used by derived ordering before a PREDMET has an
+  /// applied snapshot. It never creates or updates module rows.
+  static Set<String> get defaultOsnovniPaket => _defaultOsnovniPaket;
   static const List<String> _ownerPackageOrder = <String>[
     IriuK.sanduk,
     IriuK.obelezje,

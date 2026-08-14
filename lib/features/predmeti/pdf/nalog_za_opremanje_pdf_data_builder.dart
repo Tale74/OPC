@@ -51,6 +51,7 @@ class NalogZaOpremanjePdfDataBuilder {
     final truthSnapshot = const PredmetIriuTruthService().evaluate(
       predmet: predmet,
       storedRows: iriuStavke,
+      preserveInputOrder: true,
     );
     final allRowsByInternalName = <String, IriuTruthRow>{
       for (final row in truthSnapshot.rows) row.storedRow.interniNaziv: row,

@@ -116,6 +116,7 @@ class ListaPdfDataBuilder {
     final truthSnapshot = const PredmetIriuTruthService().evaluate(
       predmet: predmet,
       storedRows: iriuStavke,
+      preserveInputOrder: true,
     );
     final finansijskaOsnova = const FinancialTruthService().buildRobaIUsluge(
       truthSnapshot,

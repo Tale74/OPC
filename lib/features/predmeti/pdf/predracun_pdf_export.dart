@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
@@ -10,6 +9,7 @@ import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/document_text_codec.dart';
 import '../../../core/utils/export_utils.dart';
+import '../data/iriu_repository.dart';
 import '../../podesavanja/domain/nbs_ips_qr_payload_builder.dart';
 import 'lista_pdf_data_builder.dart';
 import 'memorandum_logo.dart';
@@ -34,11 +34,7 @@ Future<void> izvoziPredracunPdf({
     final predmet = await (db.select(
       db.predmeti,
     )..where((t) => t.id.equals(predmetId))).getSingle();
-    final iriuStavke =
-        await (db.select(db.iriu)
-              ..where((t) => t.predmetId.equals(predmetId))
-              ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-            .get();
+    final iriuStavke = await IriuRepository(db).getIriu(predmetId);
     final firma = await (db.select(
       db.firmaPodaci,
     )..where((t) => t.id.equals(1))).getSingle();
