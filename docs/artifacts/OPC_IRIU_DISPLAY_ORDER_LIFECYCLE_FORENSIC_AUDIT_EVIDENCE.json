@@ -1,0 +1,230 @@
+{
+  "task": "OPC_SOL_MEDIUM_IRIU_DISPLAY_ORDER_LIFECYCLE_FORENSIC_AUDIT_TASK",
+  "date": "2026-08-14",
+  "baseline": {
+    "branch": "task/OPC-OVERNIGHT-POST-RECOVERY-STABILIZATION",
+    "localSha": "30cf577cf00594f01c413cc2de89f52dbde4274b",
+    "remoteSha": "30cf577cf00594f01c413cc2de89f52dbde4274b",
+    "clean": true
+  },
+  "failingPredmet": {
+    "id": 113,
+    "brojPredmeta": "120826_1949",
+    "imePrezime": "JOVIĆ ŽIVKO",
+    "status": "OTVOREN",
+    "createdAt": "2026-08-12T19:49:00.835878",
+    "scenarioId": "MAP_PRIRODNA_DOM_ZA_STARE_KREMACIJA_NE_PRIMENJUJE_SE_NE_PRIMENJUJE_SE_DA_NE_NE",
+    "iriuCount": 18
+  },
+  "orders": {
+    "physicalRowId": [
+      "Sanduk V-4",
+      "SVETOSAVSKI KRST Topola/Hrast",
+      "Pokrov garnitura BORDO",
+      "Peškir za krst",
+      "Posmrtne parte",
+      "Cveće SUZA SU 1/1",
+      "ČITULJA POLITIKA I/90 mm — Cela zemlja",
+      "Slika",
+      "Agencijske usluge",
+      "Komplet 80",
+      "Hladnjača",
+      "Iznošenje",
+      "Prevoz do groblja",
+      "Prevoz do hladnjače",
+      "Spremanje pokojnika",
+      "Transportna vreća",
+      "Crnina",
+      "Ešarpa"
+    ],
+    "storedAndRuntime": [
+      "Agencijske usluge",
+      "ČITULJA POLITIKA I/90 mm — Cela zemlja",
+      "Cveće SUZA SU 1/1",
+      "SVETOSAVSKI KRST Topola/Hrast",
+      "Peškir za krst",
+      "Pokrov garnitura BORDO",
+      "Posmrtne parte",
+      "Sanduk V-4",
+      "Slika",
+      "Transportna vreća",
+      "Iznošenje",
+      "Prevoz do hladnjače",
+      "Hladnjača",
+      "Spremanje pokojnika",
+      "Prevoz do groblja",
+      "Komplet 80",
+      "Crnina",
+      "Ešarpa"
+    ],
+    "expectedAuthoritative": [
+      "Agencijske usluge",
+      "ČITULJA POLITIKA I/90 mm — Cela zemlja",
+      "Crnina",
+      "Ešarpa",
+      "Cveće SUZA SU 1/1",
+      "SVETOSAVSKI KRST Topola/Hrast",
+      "Peškir za krst",
+      "Pokrov garnitura BORDO",
+      "Posmrtne parte",
+      "Sanduk V-4",
+      "Slika",
+      "Transportna vreća",
+      "Iznošenje",
+      "Prevoz do hladnjače",
+      "Hladnjača",
+      "Spremanje pokojnika",
+      "Prevoz do groblja",
+      "Komplet 80"
+    ],
+    "listaPdfVisible": [
+      "Komplet 80",
+      "Agencijske usluge",
+      "Crnina",
+      "Ešarpa",
+      "Cveće SUZA SU 1/1",
+      "SVETOSAVSKI KRST Topola/Hrast",
+      "Peškir za krst",
+      "Pokrov garnitura BORDO",
+      "Posmrtne parte",
+      "Sanduk V-4",
+      "Slika",
+      "Transportna vreća",
+      "Iznošenje",
+      "Prevoz do hladnjače",
+      "Hladnjača",
+      "Spremanje pokojnika",
+      "Prevoz do groblja"
+    ],
+    "listaPdfExplicitExclusion": "CITULJA_POLITIKA documentScopedOut"
+  },
+  "canonicalDatabase": {
+    "path": "C:\\Users\\Steva\\Documents\\opc_v4_release.sqlite",
+    "overnightPreOwnerMaramaSha256": "812AA438F747D59D3AF3EB073B5FB99EA9D9687459FCF52FC4C01946D06BC51C",
+    "postOwnerMaramaAndCheckpointSha256": "B90DBAA065BB2C8ED3D23C6B9AB6BFB4FCB9ED5C501831C9E9F0ABD8C88B2222",
+    "finalSha256": "B90DBAA065BB2C8ED3D23C6B9AB6BFB4FCB9ED5C501831C9E9F0ABD8C88B2222",
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "counts": {
+      "predmeti": 47,
+      "iriu": 631,
+      "katalogArtikli": 139,
+      "iriuProvenance": 17,
+      "predmetScenarioSnapshots": 1
+    },
+    "ownerAddedArticle": {
+      "id": 4471,
+      "stableArticleId": "katalog_artikal_1786682155503700_0b99ae44a32a2eff",
+      "category": "CRNINA",
+      "name": "Marama",
+      "price": 500.0,
+      "createdFromStableIdUtc": "2026-08-14T04:35:55Z"
+    },
+    "ownerJsonComparison": {
+      "path": "C:\\Users\\Steva\\Downloads\\KORICE\\JOVIC_ZIVKO_120826_1949_v1.json",
+      "iriuCount": 18,
+      "logicalRowsEqualCurrentCanonical": true,
+      "comparedFields": [
+        "interniNaziv",
+        "nazivPrikaz",
+        "kom",
+        "cena",
+        "iznos",
+        "cekiran",
+        "redosled",
+        "katalogStableArticleId",
+        "poslovniStatus",
+        "obezbedjuje",
+        "poslovnoUpozorenje",
+        "poslovniRazlog",
+        "poslovnaCelina",
+        "poslovniRedosled",
+        "finansijskiUkljuceno",
+        "scenarioUpravlja",
+        "cekaOdlukuKorisnika"
+      ]
+    },
+    "mutatedByAudit": false,
+    "hashBoundary": "Overnight hash predates the accepted owner Marama write; DB was already open at audit start and was checkpointed on process release. Logical PREDMET rows equal the pre-audit owner JSON."
+  },
+  "computerUse": {
+    "installedExe": "C:\\Program Files\\OPC\\OPC.exe",
+    "windowTitle": "OPC ORGANIZATOR POGREBNE CEREMONIJE",
+    "exactPredmetOpened": true,
+    "robaIUslugeOpened": true,
+    "fullListScrolled": true,
+    "rowEditorGroups": 18,
+    "saveInvoked": false,
+    "closePredmetInvoked": false,
+    "businessRowsChanged": false
+  },
+  "rootCause": {
+    "persistedUi": "Live concrete add is written without applied OSNOVNI provenance, rebuild classifies it as manual, later adoption writes OSNOVNI metadata without invalidating persisted redosled, and UI loads only by redosled.",
+    "pdfLista": "PredmetIriuTruthService mixes raw un-managed redosled with managed section*10000+businessOrder, placing manual Komplet 80 before every managed row.",
+    "firstIncorrectTransition": "KATALOG writer -> stored redosled before authoritative package classification",
+    "firstMissedRepairTransition": "provenance/business adoption -> no rebuild/derived-order refresh",
+    "mechanisms": "MULTIPLE"
+  },
+  "isolatedTests": {
+    "existingRegressionSet": {
+      "files": [
+        "test/iriu_ordering_partition_test.dart",
+        "test/katalog_fiksna_cena_iriu_iznos_test.dart",
+        "test/scenario_iriu_change_diff_lifecycle_test.dart",
+        "test/json_transfer_regression_test.dart"
+      ],
+      "testDone": 39,
+      "success": 39,
+      "failed": 0,
+      "skipped": 0,
+      "doneSuccess": true,
+      "shellExitCode": 0,
+      "elapsedMs": 180251
+    },
+    "temporaryCharacterization": {
+      "committed": false,
+      "testDone": 2,
+      "success": 2,
+      "failed": 0,
+      "doneSuccess": true,
+      "shellExitCode": 0,
+      "elapsedMs": 69195,
+      "proved": [
+        "current concrete CRNINA add remains behind SCENARIO",
+        "current second OSNOVNI-category add remains behind SCENARIO",
+        "reopen adopts both as OSNOVNI without fixing persisted order",
+        "shared IriuOrderingService derives both before SCENARIO",
+        "manual row remains last",
+        "reselection snapshot survives"
+      ]
+    },
+    "interruptedAttemptAccepted": false,
+    "postProcessCount": 0
+  },
+  "repair": {
+    "layer": "shared derived ordering service feeding UI and every PDF/document consumer",
+    "schemaMigrationRequired": false,
+    "historicalDbRewriteRequired": false,
+    "startupRepairRequired": false,
+    "historicalNamePriceRefreshRequired": false
+  },
+  "verdicts": {
+    "realWindowsFailure": "CONFIRMED",
+    "failingPredmet": "IDENTIFIED",
+    "expectedOrder": "PROVEN",
+    "currentRuntimeOrder": "CAPTURED",
+    "dbOrderMetadata": "MIXED",
+    "firstIncorrectTransition": "IDENTIFIED",
+    "orderingMechanism": "MULTIPLE",
+    "historicalSnapshotImmunity": "PRESERVABLE",
+    "displayOrderHistoricalProtection": "NOT APPLICABLE",
+    "currentNewWriteOrder": "FAIL",
+    "reopenOrder": "FAIL",
+    "pdfListaPropagation": "INDEPENDENT DEFECT",
+    "uiOnlyFixSufficient": "NO",
+    "hiddenStartupRepairRequired": "NO",
+    "canonicalDbMutated": "NO",
+    "lunaHandoff": "READY",
+    "overall": "AUDIT PASS — IRiU ORDER ROOT CAUSE PROVEN — LUNA REPAIR READY"
+  }
+}
