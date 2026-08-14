@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -17,6 +18,7 @@ void main() {
       'deletes every PREDMET child, scoped reminder IDs and exclusive media',
       () async {
         final fixture = await _Fixture.create();
+        expect(await fixture.root.exists(), isTrue);
         addTearDown(fixture.dispose);
         final target = await fixture.insertPredmet('RI2-DELETE-001/2026');
         final other = await fixture.insertPredmet('RI2-KEEP-001/2026');
@@ -34,7 +36,7 @@ void main() {
         await fixture.writeMedia('target/exclusive.png');
         await fixture.writeMedia('shared/symbol.png');
 
-        await fixture.coordinator.deletePredmet(target);
+        await fixture.deletePredmet(target);
 
         expect(await fixture.predmetExists(target), isFalse);
         expect(await fixture.predmetExists(other), isTrue);
@@ -71,10 +73,7 @@ void main() {
           END
         ''');
 
-        await expectLater(
-          fixture.coordinator.deletePredmet(target),
-          throwsA(anything),
-        );
+        await expectLater(fixture.deletePredmet(target), throwsA(anything));
 
         expect(await fixture.predmetExists(target), isTrue);
         expect(await fixture.dependentCount(target), greaterThan(0));
@@ -104,10 +103,7 @@ void main() {
         );
         await fixture.writeMedia('cancel-failure/exclusive.png');
 
-        await expectLater(
-          fixture.coordinator.deletePredmet(target),
-          throwsA(anything),
-        );
+        await expectLater(fixture.deletePredmet(target), throwsA(anything));
 
         expect(await fixture.predmetExists(target), isTrue);
         expect(await fixture.dependentCount(target), greaterThan(0));
@@ -119,6 +115,22 @@ void main() {
         expect(await fixture.foreignKeyViolations(), isEmpty);
       },
     );
+
+    test('fixture cleanup waits for an in-flight media operation', () async {
+      final fixture = await _Fixture.create();
+      final operation = fixture._withMediaLease(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        await fixture._writeMedia('late/operation.png');
+      });
+
+      final cleanup = fixture.dispose();
+      await operation;
+      await cleanup;
+
+      expect(await fixture.root.exists(), isFalse);
+      // Idempotent cleanup is safe for addTearDown or explicit ownership.
+      await fixture.dispose();
+    });
   });
 }
 
@@ -136,10 +148,16 @@ class _Fixture {
   final _FakeNotificationGateway gateway;
   final ParteMediaStore mediaStore;
   final PredmetHardDeleteCoordinator coordinator;
+  Future<void>? _disposeFuture;
+  Completer<void>? _mediaIdle;
+  int _activeMediaOperations = 0;
 
   static Future<_Fixture> create({_FakeNotificationGateway? gateway}) async {
     final db = createTestDatabase();
     final root = await Directory.systemTemp.createTemp('opc-ri2-hard-delete-');
+    if (!await root.exists()) {
+      throw StateError('RI2 fixture media root was not created.');
+    }
     final resolvedGateway = gateway ?? _FakeNotificationGateway();
     final mediaStore = ParteMediaStore(rootDirectory: () async => root);
     return _Fixture._(
@@ -155,10 +173,37 @@ class _Fixture {
     );
   }
 
-  Future<void> dispose() async {
-    await db.close();
-    if (await root.exists()) await root.delete(recursive: true);
+  Future<void> dispose() {
+    final existing = _disposeFuture;
+    if (existing != null) return existing;
+    final future = () async {
+      if (_activeMediaOperations > 0) {
+        await (_mediaIdle ??= Completer<void>()).future;
+      }
+      await db.close();
+      if (await root.exists()) await root.delete(recursive: true);
+    }();
+    _disposeFuture = future;
+    return future;
   }
+
+  Future<T> _withMediaLease<T>(Future<T> Function() operation) async {
+    if (_disposeFuture != null) {
+      throw StateError('RI2 fixture media root is already disposing.');
+    }
+    _activeMediaOperations++;
+    try {
+      return await operation();
+    } finally {
+      _activeMediaOperations--;
+      if (_activeMediaOperations == 0 && _mediaIdle != null) {
+        _mediaIdle!.complete();
+      }
+    }
+  }
+
+  Future<void> deletePredmet(int predmetId) =>
+      _withMediaLease(() => coordinator.deletePredmet(predmetId));
 
   Future<int> insertPredmet(
     String broj, {
@@ -270,14 +315,17 @@ class _Fixture {
     );
   }
 
-  Future<void> writeMedia(String key) async {
+  Future<void> writeMedia(String key) =>
+      _withMediaLease(() => _writeMedia(key));
+
+  Future<void> _writeMedia(String key) async {
     final file = File(p.join(root.path, p.fromUri(key)));
     await file.parent.create(recursive: true);
     await file.writeAsBytes([1, 2, 3], flush: true);
   }
 
   Future<bool> mediaExists(String key) =>
-      File(p.join(root.path, p.fromUri(key))).exists();
+      _withMediaLease(() => File(p.join(root.path, p.fromUri(key))).exists());
 
   Future<bool> predmetExists(int predmetId) async {
     final row = await (db.select(

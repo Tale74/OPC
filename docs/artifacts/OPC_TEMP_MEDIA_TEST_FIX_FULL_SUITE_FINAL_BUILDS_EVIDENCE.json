@@ -1,0 +1,101 @@
+{
+  "task": "OPC_LUNA_HIGH_TEMP_MEDIA_TEST_FIX_FULL_SUITE_FINAL_BUILDS",
+  "baseline": {
+    "branch": "task/OPC-IRIU-SHARED-DERIVED-ORDERING-IMPLEMENTATION",
+    "commit": "a252d04f23cc35beaa3243c9b6e220080cf7e290",
+    "workBranch": "task/OPC-TEMP-MEDIA-TEST-FIX-FULL-SUITE-FINAL-BUILDS"
+  },
+  "rootCause": {
+    "status": "PROVEN",
+    "finding": "The isolated fixture owned a system-temp media root, while teardown could recursively delete that root while a late media future was still creating/writing a child path. The resulting late write presents as PathNotFoundException and then a 30-second test timeout.",
+    "proof": "A characterization test holds a media lease across a delayed write, calls cleanup during the operation, and proves cleanup waits for the write before deleting the root.",
+    "productionChange": false,
+    "timeoutUsedAsFix": false,
+    "skipRetrySuppressionUsed": false
+  },
+  "fixtureFix": {
+    "file": "test/predmet_hard_delete_lifecycle_coordinator_test.dart",
+    "changes": [
+      "Idempotent disposal is lease-aware and waits for active media operations.",
+      "Media writes, existence checks, and coordinator deletion acquire the fixture lease.",
+      "Fixture creation asserts that the system-temp root exists before use.",
+      "Characterization coverage exercises late media work racing cleanup."
+    ]
+  },
+  "targetedTests": {
+    "command": "flutter test --no-pub --concurrency=1 test/predmet_hard_delete_lifecycle_coordinator_test.dart",
+    "result": "PASS",
+    "tests": 4,
+    "repeat": "PASS",
+    "iriuRegressionSlice": {
+      "command": "flutter test --no-pub --concurrency=1 test/iriu_shared_derived_ordering_test.dart test/iriu_ordering_partition_test.dart test/scenario_iriu_change_diff_lifecycle_test.dart test/scenario_runtime_application_test.dart test/scenario_owner_runtime_lifecycle_test.dart",
+      "result": "PASS",
+      "tests": 13
+    }
+  },
+  "analyzer": {
+    "command": "flutter analyze --no-pub",
+    "result": "PASS",
+    "evidence": "docs/artifacts/flutter_analyze_final.log"
+  },
+  "fullFlutterTest": {
+    "command": "flutter test --no-pub --concurrency=1 --reporter=json",
+    "reporter": "json",
+    "path": "docs/artifacts/full_flutter_test_temp_fix.json",
+    "visibleTests": 416,
+    "failures": 0,
+    "doneSuccess": true,
+    "doneTimeMs": 1200936
+  },
+  "childProcessCleanup": {
+    "result": "PASS",
+    "verification": "tools/verify_toolchain_processes.ps1",
+    "count": 0
+  },
+  "builds": {
+    "windows": {
+      "command": "flutter build windows --release --no-pub",
+      "result": "PASS",
+      "log": "docs/artifacts/windows_build_temp_fix.log",
+      "artifact": "build/windows/x64/runner/Release/OPC.exe",
+      "bytes": 89088,
+      "sha256": "DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C",
+      "durationSeconds": 254.2
+    },
+    "android": {
+      "command": "flutter build apk --release --no-pub",
+      "result": "PASS",
+      "log": "docs/artifacts/android_build_temp_fix.log",
+      "artifact": "build/app/outputs/flutter-apk/app-release.apk",
+      "bytes": 78321527,
+      "sha256": "33F9741C3494A9201D4704F7B9FBFA7A351A73384C92D897312F60B5C16B9FF1",
+      "durationSeconds": 1088.1
+    }
+  },
+  "canonicalDatabase": {
+    "path": "C:\\Users\\Steva\\Documents\\opc_v4_release.sqlite",
+    "sha256Before": "B90DBAA065BB2C8ED3D23C6B9AB6BFB4FCB9ED5C501831C9E9F0ABD8C88B2222",
+    "sha256After": "B90DBAA065BB2C8ED3D23C6B9AB6BFB4FCB9ED5C501831C9E9F0ABD8C88B2222",
+    "integrityCheck": "ok",
+    "foreignKeyCheck": [],
+    "counts": {
+      "predmeti": 47,
+      "iriu": 631,
+      "iriuKatalogConfig": 29,
+      "iriuProvenance": 17,
+      "predmetScenarioSnapshots": 1
+    },
+    "canonicalRewrite": false
+  },
+  "selectorScan": {
+    "result": "PASS",
+    "note": "Release commands used no WINDOWS_TEST or migration-test database selector; canonical production DB remained untouched."
+  },
+  "git": {
+    "commit": "see final git handoff",
+    "remoteBranch": "origin/task/OPC-TEMP-MEDIA-TEST-FIX-FULL-SUITE-FINAL-BUILDS",
+    "remoteSha": "see final git handoff",
+    "worktree": "clean"
+  },
+  "privatePayloadsIncluded": false
+}
