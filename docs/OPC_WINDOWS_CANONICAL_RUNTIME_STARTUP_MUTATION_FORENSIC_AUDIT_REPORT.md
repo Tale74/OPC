@@ -8,6 +8,8 @@ The clean starting point was `bbbea6b35b3a5728feee2a4f0cfb775eda0febef` on `audi
 
 The machine-readable authority for this report is [OPC_WINDOWS_CANONICAL_RUNTIME_STARTUP_MUTATION_EVIDENCE.json](artifacts/OPC_WINDOWS_CANONICAL_RUNTIME_STARTUP_MUTATION_EVIDENCE.json).
 
+Evidence identity clarification: the lifecycle verdicts below use only the nine files in `RUNTIME\OPC_WINDOWS_STARTUP_MUTATION_20260814` captured during this audit (16:49–17:09 local time). The separate root-level `RUNTIME\IRIU1.PNG` and `RUNTIME\IRIU2.PNG` were created later at 17:43:39 and 17:44:03, respectively, and were not viewed or used by the original Computer Use run. They are recorded as supplemental, provenance-unattributed evidence only; `IRIU2.PNG` visibly contains a “Full-screen Snip” overlay. Their visible rows are consistent with the expected order, but they do not establish the three lifecycle verdicts in this report.
+
 ## B. Installed artifact identity
 
 The installed and release artifacts are byte-identical:

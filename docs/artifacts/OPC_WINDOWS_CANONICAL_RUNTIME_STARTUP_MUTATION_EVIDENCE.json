@@ -101,6 +101,25 @@
     },
     "external_evidence_directory": "C:\\Projekti\\OPC\\OPC v.1\\RUNTIME\\OPC_WINDOWS_STARTUP_MUTATION_20260814"
   },
+  "supplemental_root_runtime_evidence": {
+    "used_for_lifecycle_verdicts": false,
+    "provenance": "not attributable to the original Computer Use run",
+    "note": "These newer root-level files were inspected after the audit challenge; IRIU2.PNG visibly contains a Full-screen Snip overlay. They are visually consistent with the expected order but are supplemental only.",
+    "files": [
+      {
+        "path": "C:\\Projekti\\OPC\\OPC v.1\\RUNTIME\\IRIU1.PNG",
+        "sha256": "B5A68989F49F7CEEAEC26A30D1018F260D01E6467A424E0FE8F7CABD87AE1ED6",
+        "creation_time_local": "2026-08-14T17:43:39+02:00",
+        "last_write_time_local": "2026-08-14T17:43:40+02:00"
+      },
+      {
+        "path": "C:\\Projekti\\OPC\\OPC v.1\\RUNTIME\\IRIU2.PNG",
+        "sha256": "3EC3694DE8C31A3A5D9B0FD02F579098FB8EF1946BDEB54F6BBD434704C53E02",
+        "creation_time_local": "2026-08-14T17:44:03+02:00",
+        "last_write_time_local": "2026-08-14T17:44:03+02:00"
+      }
+    ]
+  },
   "iriu_pipeline": {
     "repository_test": {
       "test": "test/iriu_production_test_ordering_discrepancy_characterization_test.dart",
