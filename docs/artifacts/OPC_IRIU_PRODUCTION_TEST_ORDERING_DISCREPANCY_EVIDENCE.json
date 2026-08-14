@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "task": "OPC IRiU production/test ordering discrepancy forensic audit",
+  "audit_date": "2026-08-14",
+  "baseline": {
+    "starting_branch": "task/OPC-TEMP-MEDIA-TEST-FIX-FULL-SUITE-FINAL-BUILDS",
+    "starting_sha": "f265231e36eb11f68963d226182eaed8b788bd06",
+    "starting_remote_sha": "f265231e36eb11f68963d226182eaed8b788bd06",
+    "visibility_sha": "9d733b144200028dee4ca2908735e6af61ec2124",
+    "audit_branch": "audit/OPC-IRIU-PRODUCTION-TEST-ORDERING-DISCREPANCY",
+    "origin": "https://github.com/Tale74/OPC.git"
+  },
+  "installed_artifact_identity": {
+    "installed_exe": "C:\\Program Files\\OPC\\OPC.exe",
+    "installed_exe_sha256": "DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C",
+    "release_exe_same_hash": true,
+    "installed_app_so_sha256": "031B3075BE289521823811B39AD4399C9429CBAA5D0F84D94C4237139CD067C5",
+    "release_app_so_same_hash": true,
+    "initial_process_start_local": "2026-08-14T14:53:10+02:00",
+    "stale_installed_artifact_disproved": true
+  },
+  "computer_use": {
+    "app_id": "process:C:\\Program Files\\OPC\\OPC.exe",
+    "initial_window_id": 15598396,
+    "restarted_window_id": 15729468,
+    "predmet": "JOVIĆ ŽIVKO / 120826_1949",
+    "section": "ROBA I USLUGE",
+    "row_count": 18,
+    "grouped_or_filtered": false,
+    "reopen_without_save_completed": true,
+    "cold_restart_completed": true,
+    "cold_restart_predmet_reopen_completed": false,
+    "cold_restart_blocker": "SAŠA ANDONOV PIN authentication",
+    "screenshot_capture_error": "SetIsBorderRequired failed: No such interface supported (0x80004002)",
+    "current_edit_values_accessible": false,
+    "archived_runtime_capture": {
+      "iriu1_sha256": "317DCECE679FDAAD5FE344C55B7F986C19D2508AC27D4E6637C928C5DB684B80",
+      "iriu2_sha256": "7D7D041D36367AA3F0CFBF96CAE49A799234D3CDC69D1B939A9731195249013D",
+      "timestamp_relation": "pre-final-build",
+      "wrong_sequence": [
+        "Agencijske usluge",
+        "ČITULJA POLITIKA I/90 mm — Cela zemlja",
+        "Cveće SUZA SU 1/1",
+        "SVETOSAVSKI KRST Topola/Hrast",
+        "Peškir za krst",
+        "Pokrov garnitura BORDO",
+        "Posmrtne parte",
+        "Sanduk V-4",
+        "Slika",
+        "Transportna vreća",
+        "Iznošenje",
+        "Prevoz do hladnjače",
+        "Hladnjača",
+        "Spremanje pokojnika",
+        "Prevoz do groblja",
+        "Komplet 80",
+        "Crnina",
+        "Ešarpa"
+      ]
+    }
+  },
+  "real_predmet": {
+    "id": 113,
+    "broj": "120826_1949",
+    "ime": "ŽIVKO",
+    "prezime": "JOVIĆ",
+    "status": "OTVOREN",
+    "scenario_id": "MAP_PRIRODNA_DOM_ZA_STARE_KREMACIJA_NE_PRIMENJUJE_SE_NE_PRIMENJUJE_SE_DA_NE_NE",
+    "applied_snapshot": "complete_for_ordering",
+    "provenance": {
+      "present": 17,
+      "total": 18,
+      "missing_iriu_ids": [1725]
+    },
+    "raw_stored_order_ids": [1724, 1721, 1720, 1715, 1717, 1716, 1718, 1714, 1723, 1731, 1727, 1729, 1726, 1730, 1728, 1725, 1732, 1733],
+    "expected_derived_order_ids": [1724, 1721, 1732, 1733, 1720, 1715, 1717, 1716, 1718, 1714, 1723, 1731, 1727, 1729, 1726, 1730, 1728, 1725],
+    "repository_output_ids": [1724, 1721, 1732, 1733, 1720, 1715, 1717, 1716, 1718, 1714, 1723, 1731, 1727, 1729, 1726, 1730, 1728, 1725],
+    "repository_output_correct": true,
+    "business_fingerprints_before_after": {
+      "predmeti_row_113": "9D8BE07A5E2919751CE19EF6F81F4414786DA24F0FF5BB202FFFA065C2377EAC",
+      "iriu_rows_predmet_113": "C50AF4A990FC5C7D7BA06265108D62052EFA9E4AFA28BF3209BB0279E27FB175",
+      "provenance_rows_predmet_113": "52B431F54E0DB8E970B5BC04FCBA4741598C5B5207F45DA61E07368D6B2D20A0",
+      "snapshot_row_predmet_113": "D96F5F88C756256FA62097B5521245B539DCCD4F267C861BD401EC15DCDC6DA6"
+    }
+  },
+  "golden_real_comparison": {
+    "metadata_shape_matches": false,
+    "differences": [
+      "synthetic IDs versus production IDs",
+      "golden ESARPA category versus real duplicate CRNINA",
+      "golden non-production Cvece category encoding versus real CVECE",
+      "explicit synthetic context versus persisted parsed snapshot",
+      "empty golden provenance map versus 17/18 real provenance rows",
+      "real KOMPLET_ZA_OPELO stored as unmanaged section 6/order 0"
+    ],
+    "difference_causes_wrong_service_output": false
+  },
+  "caller_path": {
+    "screen_constructs_repository": true,
+    "ui_calls_watch_iriu": true,
+    "watch_iriu_calls_ordered_projection": true,
+    "get_iriu_calls_ordered_projection": true,
+    "ordered_projection_builds_context": true,
+    "ordered_projection_calls_shared_service": true,
+    "post_service_source_sort_found": false,
+    "pdf_exporters_use_get_iriu": true
+  },
+  "characterization_test": {
+    "path": "test/iriu_production_test_ordering_discrepancy_characterization_test.dart",
+    "database_input": "isolated SQLite online backup selected by OPC_IRIU_FORENSIC_COPY",
+    "command": "flutter test --no-pub --concurrency=1 --reporter=expanded test/iriu_production_test_ordering_discrepancy_characterization_test.dart",
+    "exit_code": 0,
+    "duration_seconds": 42.1,
+    "result": "unexpected_pass"
+  },
+  "canonical_safety": {
+    "path": "C:\\Users\\Steva\\Documents\\opc_v4_release.sqlite",
+    "audit_start_sha256": "7C185E8CB93539A5B74E5999CEF0D883C9A1BF541353A08E9C871810C6B4CA45",
+    "audit_final_sha256": "0C3515CA4FA69041E8E52AF2AEC29035D84A3640E2C4C4C09746081D0A4526DF",
+    "integrity_check": "ok",
+    "foreign_key_violations": 0,
+    "non_sqlite_tables_compared": 23,
+    "changed_tables": ["scenario_definitions"],
+    "changed_rows": 36,
+    "changed_columns": ["updated_at"],
+    "baseline_updated_at": "2026-08-14T12:53:31.560613Z",
+    "final_updated_at": "2026-08-14T13:18:43.394232Z",
+    "business_payload_changed": false,
+    "canonical_mutated": true,
+    "rollback_attempted": false
+  },
+  "git_completion": {
+    "branch": "audit/OPC-IRIU-PRODUCTION-TEST-ORDERING-DISCREPANCY",
+    "committed_paths_only": [
+      "docs/OPC_IRIU_PRODUCTION_TEST_ORDERING_DISCREPANCY_FORENSIC_AUDIT_REPORT.md",
+      "docs/artifacts/OPC_IRIU_PRODUCTION_TEST_ORDERING_DISCREPANCY_EVIDENCE.json",
+      "test/iriu_production_test_ordering_discrepancy_characterization_test.dart"
+    ],
+    "remote_sha_confirmed_equal_to_local": true,
+    "working_tree_clean_after_push": true
+  },
+  "verdicts": {
+    "real_windows_historical_iriu_order_failure": "CONFIRMED_WITH_OWNER_LOCK_AND_ARCHIVED_CAPTURE_CURRENT_VALUES_NOT_RECAPTURED",
+    "failure_after_reopen": "YES_OWNER_LOCKED_CURRENT_VALUES_INACCESSIBLE",
+    "failure_after_process_restart": "NO_NOT_PROVEN_AUTHENTICATION_BLOCKED",
+    "real_historical_ui_uses_shared_ordering_service": "YES",
+    "applied_snapshot_context": "COMPLETE",
+    "provenance": "PARTIAL",
+    "golden_fixture_matches_real_shape": "NO",
+    "real_shaped_input": "CAPTURED",
+    "real_shaped_output": "CORRECT",
+    "post_service_ui_order": "NOT_PROVEN",
+    "cache_contribution": "NOT_PROVEN",
+    "fallback_to_stale_redosled": "NO",
+    "first_divergence": "NOT_IDENTIFIED",
+    "characterization": "UNEXPECTED_PASS",
+    "root_cause": "NOT_PROVEN",
+    "canonical_db_mutated": "YES",
+    "luna_handoff": "NOT_READY",
+    "overall": "STOP_CANONICAL_DB_MUTATED"
+  }
+}
