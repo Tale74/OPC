@@ -10,6 +10,21 @@ import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_module_reposi
 import 'test_bootstrap.dart';
 
 void main() {
+  test('OSNOVNI package read/save preserves configured order', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final repository = ScenarioModuleRepository(db);
+
+    await repository.ensureModule();
+    await repository.saveOsnovniPaket(const {'CITULJA_POLITIKA', 'SANDUK'});
+
+    final module = await repository.ensureModule();
+    expect(repository.readOsnovniPaketOrder(module), [
+      'CITULJA_POLITIKA',
+      'SANDUK',
+    ]);
+  });
+
   test('SCENARIO module seeds defaults as editable data', () async {
     final db = createTestDatabase();
     addTearDown(db.close);

@@ -26,7 +26,7 @@ class ScenarioModuleRepository {
     'MESTO_SMRTI_BOLNICA',
     'OPREMA_PREMA_USLOVU',
   };
-  static const Set<String> _defaultOsnovniPaket = <String>{
+  static const List<String> _defaultOsnovniPaketOrder = <String>[
     IriuK.sanduk,
     IriuK.obelezje,
     IriuK.pokrovGarnitura,
@@ -38,24 +38,17 @@ class ScenarioModuleRepository {
     IriuK.cituljaP,
     IriuK.cituljaNo,
     IriuK.slika,
-  };
+  ];
+
+  static final Set<String> _defaultOsnovniPaket = Set<String>.unmodifiable(
+    _defaultOsnovniPaketOrder,
+  );
 
   /// Read-only fallback used by derived ordering before a PREDMET has an
   /// applied snapshot. It never creates or updates module rows.
   static Set<String> get defaultOsnovniPaket => _defaultOsnovniPaket;
-  static const List<String> _ownerPackageOrder = <String>[
-    IriuK.sanduk,
-    IriuK.obelezje,
-    IriuK.pokrovGarnitura,
-    IriuK.peskirZaKrst,
-    IriuK.posmrtneParte,
-    IriuK.crnina,
-    IriuK.cvece,
-    IriuK.cituljaP,
-    IriuK.cituljaNo,
-    IriuK.slika,
-    IriuK.agencijskeUsluge,
-  ];
+  static List<String> get defaultOsnovniPaketOrder =>
+      List<String>.unmodifiable(_defaultOsnovniPaketOrder);
 
   // The first editable SCENARIO implementation seeded these nine owner
   // categories.  This exact set is a known legacy default, not a user
@@ -643,10 +636,20 @@ class ScenarioModuleRepository {
         'Kategorija ${conflict.first} ne može istovremeno biti u OSNOVNOM PAKETU i dodatku scenarija. Uklonite je iz jednog paketa pa pokušajte ponovo.',
       );
     }
-    final ordered = <String>[
-      ..._ownerPackageOrder.where(normalized.contains),
-      ...normalized.where((value) => !_ownerPackageOrder.contains(value)),
-    ];
+    // The caller supplies the configured package order. Preserve that order;
+    // a universal concrete-category sequence is not business authority.
+    final ordered = <String>[];
+    final seen = <String>{};
+    for (final value in categoryIds) {
+      final normalizedValue = value.trim();
+      if (normalizedValue.isEmpty || !normalized.contains(normalizedValue)) {
+        continue;
+      }
+      if (seen.add(normalizedValue)) ordered.add(normalizedValue);
+    }
+    for (final value in normalized) {
+      if (seen.add(value)) ordered.add(value);
+    }
     await (_db.update(
       _db.scenarioModules,
     )..where((row) => row.id.equals(moduleId))).write(
@@ -657,14 +660,20 @@ class ScenarioModuleRepository {
     );
   }
 
-  Set<String> readOsnovniPaket(ScenarioModule module) {
+  List<String> readOsnovniPaketOrder(ScenarioModule module) {
     final decoded = jsonDecode(module.osnovniPaketJson);
-    if (decoded is! List) return <String>{};
-    return decoded
-        .whereType<String>()
-        .map((value) => value.trim())
-        .where((value) => value.isNotEmpty)
-        .toSet();
+    if (decoded is! List) return const <String>[];
+    final result = <String>[];
+    final seen = <String>{};
+    for (final value in decoded.whereType<String>()) {
+      final normalized = value.trim();
+      if (normalized.isNotEmpty && seen.add(normalized)) result.add(normalized);
+    }
+    return List<String>.unmodifiable(result);
+  }
+
+  Set<String> readOsnovniPaket(ScenarioModule module) {
+    return readOsnovniPaketOrder(module).toSet();
   }
 
   Stream<List<ScenarioDefinitionRecord>> watchDefinitions() =>

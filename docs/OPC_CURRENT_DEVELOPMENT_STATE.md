@@ -146,6 +146,26 @@ IriuSegment.initState
 This documentation correction does not authorize a code patch, canonical
 database rewrite, test-fixture rewrite or runtime acceptance claim.
 
+## IRiU package-authority display ordering implementation — 2026-08-14
+
+The approved generic invariant is now implemented on the shared production
+projection used by the IRiU table:
+
+```text
+ordered OSNOVNI PAKET
+  -> ordered applied SCENARIO PAKET
+  -> manual/unpredicted items
+```
+
+The implementation consumes ordered editable OSNOVNI package JSON and the
+active applied SCENARIO package membership/order. It does not use concrete
+item lists, persisted `redosled`, provenance sequence, current output or
+golden fixtures as business authority. Rows outside both package memberships
+remain in the final manual/unpredicted partition. No canonical database,
+historical snapshot, package membership, or SCENARIO no-op debt path was
+changed. See
+`docs/OPC_IRIU_PACKAGE_AUTHORITY_DISPLAY_ORDER_IMPLEMENTATION_REPORT.md`.
+
 ## LUNA canonical recovery reconciliation — 2026-08-13
 
 The canonical recovery execution supersedes the scoped Windows deployment

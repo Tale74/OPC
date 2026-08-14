@@ -5,7 +5,7 @@ import 'package:opc_v4/features/predmeti/core_v2/services/iriu_ordering_service.
 
 void main() {
   test(
-    'JOVIĆ golden 18-row order derives from snapshot, not stale redosled',
+    'configured package order governs production-shaped rows, not stale redosled',
     () {
       const base = <String>{
         'AGENCIJSKE_USLUGE',
@@ -54,6 +54,19 @@ void main() {
         rows,
         context: const IriuOrderingContext(
           osnovniCategories: base,
+          osnovniBusinessOrders: {
+            'AGENCIJSKE_USLUGE': 0,
+            'CITULJA_POLITIKA': 1,
+            'CRNINA': 2,
+            'ESARPA': 3,
+            'CVEĆE': 4,
+            'OBELEZJE': 5,
+            'PESKIR_ZA_KRST': 6,
+            'POKROV_GARNITURA': 7,
+            'POSMRTNE_PARTE': 8,
+            'SANDUK': 9,
+            'SLIKA': 10,
+          },
           scenarioCategories: scenario,
           scenarioBusinessSections: {
             'TRANSPORTNA_VRECA': 2,
@@ -100,7 +113,7 @@ void main() {
   );
 
   test(
-    'duplicate concrete OSNOVNI rows use stable stored-rank/id tie order',
+    'duplicate package rows use stable id tie order, not persisted rank',
     () {
       final ordered = const IriuOrderingService().orderedRows(
         <IriuData>[
@@ -110,10 +123,11 @@ void main() {
         ],
         context: const IriuOrderingContext(
           osnovniCategories: {'CRNINA'},
+          osnovniBusinessOrders: {'CRNINA': 0},
           provenanceOrigins: {},
         ),
       );
-      expect(ordered.map((row) => row.id), [21, 20, 22]);
+      expect(ordered.map((row) => row.id), [20, 21, 22]);
     },
   );
 

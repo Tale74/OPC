@@ -586,17 +586,27 @@ class IriuRepository {
     final origins = <int, String>{
       for (final item in provenance) item.iriuId: item.origin,
     };
+    final module =
+        await (_db.select(_db.scenarioModules)..where(
+              (item) => item.id.equals(ScenarioModuleRepository.moduleId),
+            ))
+            .getSingleOrNull();
+    final scenarioRepository = ScenarioModuleRepository(_db);
+    final osnovniOrder = module == null
+        ? ScenarioModuleRepository.defaultOsnovniPaketOrder
+        : scenarioRepository.readOsnovniPaketOrder(module);
+    final osnovniBusinessOrders = <String, int>{
+      for (var index = 0; index < osnovniOrder.length; index++)
+        osnovniOrder[index]: index,
+    };
     final snapshotRow = await _readScenarioSnapshot(predmetId);
     if (snapshotRow == null || snapshotRow.snapshotJson.trim().isEmpty) {
-      final module = await (_db.select(
-        _db.scenarioModules,
-      )..where((item) => item.id.equals(ScenarioModuleRepository.moduleId)))
-          .getSingleOrNull();
       final osnovni = module == null
           ? ScenarioModuleRepository.defaultOsnovniPaket
-          : ScenarioModuleRepository(_db).readOsnovniPaket(module);
+          : scenarioRepository.readOsnovniPaket(module);
       return IriuOrderingContext(
         osnovniCategories: osnovni,
+        osnovniBusinessOrders: osnovniBusinessOrders,
         provenanceOrigins: origins,
         moduleId: ScenarioModuleRepository.moduleId,
       );
@@ -610,6 +620,7 @@ class IriuRepository {
       );
       return IriuOrderingContext(
         osnovniCategories: snapshot.osnovniPaket,
+        osnovniBusinessOrders: osnovniBusinessOrders,
         scenarioCategories: activeConsequences
             .map((item) => item.katalogCategoryInternalName)
             .toSet(),
