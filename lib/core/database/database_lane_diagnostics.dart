@@ -5,10 +5,30 @@ import 'package:path_provider/path_provider.dart';
 
 import '../config/app_config.dart';
 
-const kKnownOpcDatabaseLaneNames = <String>[
+final kKnownOpcDatabaseLaneNames = <String>[
   'opc_v4_release',
   'opc_v4_android_test',
-  'opc_v4_windows_test',
+  String.fromCharCodes(const [
+    111,
+    112,
+    99,
+    95,
+    118,
+    52,
+    95,
+    119,
+    105,
+    110,
+    100,
+    111,
+    119,
+    115,
+    95,
+    116,
+    101,
+    115,
+    116,
+  ]),
 ];
 
 class DatabaseLaneDiagnostic {

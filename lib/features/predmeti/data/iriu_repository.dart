@@ -585,8 +585,33 @@ class IriuRepository {
     required IriuCatalogSelection selection,
     int redosled = 0,
   }) {
-    return dodajStavku(
+    return _applyLiveCatalogSelection(
       predmetId: predmetId,
+      selection: selection,
+      redosled: redosled,
+    );
+  }
+
+  /// One semantic implementation for live concrete KATALOG add/reselection.
+  /// Historical imports, category-only rows and scenario reconciliation stay
+  /// on their explicit transfer/lifecycle paths below.
+  Future<int> _applyLiveCatalogSelection({
+    int? predmetId,
+    IriuData? row,
+    required IriuCatalogSelection selection,
+    int redosled = 0,
+  }) async {
+    if (row != null) {
+      await _updateLiveCatalogSelection(row: row, selection: selection);
+      return row.id;
+    }
+    final targetPredmetId = predmetId!;
+    await _clearManagedManualDeletionDecisionIfNeeded(
+      predmetId: targetPredmetId,
+      interniNaziv: selection.interniNaziv,
+    );
+    final id = await _insertStavka(
+      predmetId: targetPredmetId,
       interniNaziv: selection.interniNaziv,
       nazivPrikaz: selection.nazivPrikaz,
       katalogStableArticleId: selection.katalogStableArticleId,
@@ -595,6 +620,16 @@ class IriuRepository {
       cena: selection.cena,
       redosled: redosled,
     );
+    await _applyStockEffectForCatalogSelection(
+      predmetId: targetPredmetId,
+      iriuId: id,
+      interniNaziv: selection.interniNaziv,
+      katalogStableArticleId: selection.katalogStableArticleId,
+      selectedNazivSnapshot: selection.nazivPrikaz,
+      selectedIznosSnapshot: selection.iznos,
+    );
+    await _rebuildBusinessOrdering(targetPredmetId);
+    return id;
   }
 
   Future<String> _catalogDisplayName(String internalName) async {
@@ -676,12 +711,32 @@ class IriuRepository {
     double? cena,
     String? interniNaziv,
   }) async {
-    final nextStableArticleId = _normalizeNullableStableArticleId(
-      katalogStableArticleId,
+    await _updateLiveCatalogSelection(
+      row: row,
+      selection: IriuCatalogSelection(
+        interniNaziv: interniNaziv?.trim().isEmpty == true
+            ? row.interniNaziv
+            : interniNaziv ?? row.interniNaziv,
+        nazivPrikaz: nazivPrikaz,
+        katalogStableArticleId: _normalizeNullableStableArticleId(
+          katalogStableArticleId,
+        ),
+        cena: cena ?? row.cena,
+        kom: kom,
+        iznos: iznos,
+      ),
     );
-    final nextInterniNaziv = interniNaziv?.trim();
-    final normalizedInterniNaziv =
-        nextInterniNaziv == null || nextInterniNaziv.isEmpty
+  }
+
+  Future<void> _updateLiveCatalogSelection({
+    required IriuData row,
+    required IriuCatalogSelection selection,
+  }) async {
+    final nextStableArticleId = _normalizeNullableStableArticleId(
+      selection.katalogStableArticleId,
+    );
+    final nextInterniNaziv = selection.interniNaziv.trim();
+    final normalizedInterniNaziv = nextInterniNaziv.isEmpty
         ? row.interniNaziv
         : nextInterniNaziv;
 
@@ -704,8 +759,8 @@ class IriuRepository {
               iriuId: current.id,
               kategorija: current.interniNaziv,
               stableArticleId: nextStableArticleId,
-              selectedNazivSnapshot: nazivPrikaz,
-              selectedIznosSnapshot: iznos,
+              selectedNazivSnapshot: selection.nazivPrikaz,
+              selectedIznosSnapshot: selection.iznos,
             );
           } else {
             await lifecycleService.replaceSelectionEffectForCoveredCategory(
@@ -713,8 +768,8 @@ class IriuRepository {
               iriuId: current.id,
               kategorija: current.interniNaziv,
               stableArticleId: nextStableArticleId,
-              selectedNazivSnapshot: nazivPrikaz,
-              selectedIznosSnapshot: iznos,
+              selectedNazivSnapshot: selection.nazivPrikaz,
+              selectedIznosSnapshot: selection.iznos,
             );
           }
         }
@@ -725,11 +780,11 @@ class IriuRepository {
           interniNaziv: normalizedInterniNaziv == row.interniNaziv
               ? const Value.absent()
               : Value(normalizedInterniNaziv),
-          katalogStableArticleId: Value(katalogStableArticleId),
-          nazivPrikaz: Value(nazivPrikaz),
-          kom: Value(kom),
-          cena: cena == null ? const Value.absent() : Value(cena),
-          iznos: Value(iznos),
+          katalogStableArticleId: Value(nextStableArticleId),
+          nazivPrikaz: Value(selection.nazivPrikaz),
+          kom: Value(selection.kom),
+          cena: Value(selection.cena),
+          iznos: Value(selection.iznos),
         ),
       );
     });
@@ -741,15 +796,10 @@ class IriuRepository {
     required IriuData row,
     required IriuCatalogSelection selection,
   }) {
-    return azurirajKatalogIzborStavke(
+    return _applyLiveCatalogSelection(
       row: row,
-      katalogStableArticleId: selection.katalogStableArticleId,
-      interniNaziv: selection.interniNaziv,
-      nazivPrikaz: selection.nazivPrikaz,
-      kom: selection.kom,
-      cena: selection.cena,
-      iznos: selection.iznos,
-    );
+      selection: selection,
+    ).then((_) {});
   }
 
   Future<double> _resolveAppliedUnitPrice({

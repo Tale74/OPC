@@ -8,13 +8,13 @@ RESOLVE database filename and platform documents directory
 OPEN only the database selected by that established runtime lane
 
 IF BUILD_VARIANT == WINDOWS_TEST:
-    REQUIRE compile-time MIGRATION_TEST_DATABASE_PATH
+    REQUIRE compile-time OPC_MIGRATION_COPY_PATH
     REQUIRE absolute existing regular .sqlite file
     REQUIRE MIGRATION_TEST in filename and valid SQLite 3 header
     REJECT opc_v4_release.sqlite and any filesystem alias of canonical
     DO NOT persist path
 ELSE:
-    IGNORE MIGRATION_TEST_DATABASE_PATH
+    IGNORE OPC_MIGRATION_COPY_PATH
     preserve established production/platform database lane
 
 IF database is an explicitly designated canonical user database:

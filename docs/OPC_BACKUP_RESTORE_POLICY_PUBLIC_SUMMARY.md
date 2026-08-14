@@ -52,7 +52,12 @@ modules/definitions, snapshots/provenance, stock under the declared policy,
 and current PREDMET/IRiU/KATALOG/contact/settings data. Restore deduplicates
 CITULJE by `(category,name,price)` and remaps stable references deterministically.
 The clean-room restore reproduced the clean canonical business state; export
-and re-export differ only in the expected export timestamp.
+and re-export differ only in the expected export timestamp. App-owned PARTE PNG
+bytes and generated external derivatives are not in JSON: schema 9 declares
+`parteMediaPolicy=bounded-exclusion-v1`, omits media keys from the portable row,
+and clears any legacy keys during restore so a fresh machine cannot retain a
+dangling media reference. This is a logical database backup, not a self-contained
+PARTE media archive.
 
 ## Technical-Audit Required
 

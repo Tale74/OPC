@@ -54,6 +54,27 @@ run again in the same order before another build. Documentation-only tasks that
 change none of those surfaces use documentation/repository checks and do not
 need to repeat Flutter validation.
 
+### Machine-specific sequential execution and evidence rules
+
+On the current Windows validation machine, all Flutter, Dart, Flutter tester,
+Java and Gradle workloads are strictly sequential; Flutter test commands use
+`--concurrency=1`. Before and after every heavy command, confirm that
+`flutter`, `dart`, `dartvm`, `dartaotruntime`, `flutter_tester`, `java`, Gradle
+and (when relevant) `OPC` processes have exited. An interruption, artificial
+timeout or missing final summary is not PASS. For Flutter tests, the
+machine-readable JSON reporter's final `done.success` and failed-test count
+override a misleading zero shell exit code. The mandatory order is targeted
+tests → analyzer → full JSON test suite → final Windows/Android builds →
+disposable runtime checks. A build made before a green full suite is diagnostic
+only, and a protected install must never receive a `WINDOWS_TEST` or migration-
+test database selector. Sol's forensic audit establishes defects and Luna's
+implementation branch closes only proven technical gates; owner business
+decisions remain locked, runtime/PIN/visual/device acceptance remains owner
+work. The canonical database is read-only; risky data work is forensic-copy-
+first with hash/count/FK/integrity proof before promotion. PREDMET snapshots
+remain immune to later KATALOG changes, and historical transfer paths remain
+separate from live selection. No ownerless technical orphan is preserved.
+
 ## Task branches
 
 Use one branch per future task:

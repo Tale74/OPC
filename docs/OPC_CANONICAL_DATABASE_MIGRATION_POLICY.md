@@ -110,7 +110,7 @@ authorization requirement for another database or user.
 
 ## Fail-closed Windows copy smoke selector
 
-The compile-time `MIGRATION_TEST_DATABASE_PATH` hook is accepted only by the
+The compile-time `OPC_MIGRATION_COPY_PATH` hook is accepted only by the
 `WINDOWS_TEST` build variant. That variant fails before database open when the
 path is absent, relative, missing, not a regular `.sqlite` file, lacks
 `MIGRATION_TEST` in the filename, lacks a SQLite 3 header, names the canonical

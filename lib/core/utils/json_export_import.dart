@@ -35,6 +35,7 @@ const int _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer = 7;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
 const String _kBackupTransferFormat = 'OPC_BACKUP';
+const String _kParteMediaBackupPolicy = 'bounded-exclusion-v1';
 const String _kStanjeRobeConsequenceTransferBlock =
     'stanjeRobeConsequenceTransfer';
 const String _kSinglePredmetScenarioCarrierBlock = 'singlePredmetScenario';
@@ -683,6 +684,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'exportDatum': DateTime.now().toIso8601String(),
     'entityType': 'FULL_DATABASE_BACKUP',
     'databaseIdentity': 'OPC',
+    'parteMediaPolicy': _kParteMediaBackupPolicy,
     'stockBackupPolicy': _kStockBackupPolicySchema16Complete,
     'predmeti': predmeti.map((p) => p.toJson()).toList(),
     'iriu': iriu.map((i) => i.toJson()).toList(),
@@ -705,7 +707,7 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'partePredlosci': partePredlosci.map((p) => p.toJson()).toList(),
     'partePripreme': partePripreme
         .where((row) => exportedPredmetIds.contains(row.predmetId))
-        .map((row) => row.toJson())
+        .map(_partePripremeToBackupMap)
         .toList(),
     'scenarioModules': scenarioModules.map((row) => row.toJson()).toList(),
     'scenarioDefinitions': scenarioDefinitions
@@ -930,6 +932,17 @@ Future<void> _uvoziPredmetUBazu(
   });
 }
 
+/// Schema-9 is a logical database backup. App-owned PARTE PNG bytes live in
+/// the installation media store and are intentionally excluded from JSON.
+/// Clearing the keys in the exported representation prevents a fresh restore
+/// from manufacturing apparently valid references to unavailable files.
+Map<String, dynamic> _partePripremeToBackupMap(PartePripremeData row) {
+  final map = Map<String, dynamic>.from(row.toJson())
+    ..['photoMediaKey'] = null
+    ..['customSymbolMediaKey'] = null;
+  return map;
+}
+
 Future<void> _zameniPredmetUBazi({
   required AppDatabase db,
   required int lokalniPredmetId,
@@ -1059,10 +1072,42 @@ Future<List<IriuData>> _listIriuForImportedPredmet(
       .get();
 }
 
+String _normalizedIdentityPart(Object? value) => value?.toString().trim() ?? '';
+
+/// Non-destructive FULL-backup identity preflight. An uninitialised local
+/// installation has blank identity fields and is allowed to receive a backup;
+/// two established, non-blank identities must match before any destructive
+/// restore transaction starts.
+Future<void> _validateBackupFirmIdentityPreflight(
+  AppDatabase db,
+  Map<String, dynamic> json,
+) async {
+  final incoming = json['firmaPodaci'];
+  if (incoming is! Map) return;
+  final local = await db.select(db.firmaPodaci).getSingleOrNull();
+  if (local == null) return;
+  final localPib = _normalizedIdentityPart(local.pib);
+  final localMb = _normalizedIdentityPart(local.mb);
+  final incomingMap = incoming.cast<String, dynamic>();
+  final incomingPib = _normalizedIdentityPart(incomingMap['pib']);
+  final incomingMb = _normalizedIdentityPart(incomingMap['mb']);
+  final pibMismatch =
+      localPib.isNotEmpty && incomingPib.isNotEmpty && localPib != incomingPib;
+  final mbMismatch =
+      localMb.isNotEmpty && incomingMb.isNotEmpty && localMb != incomingMb;
+  if (pibMismatch || mbMismatch) {
+    throw const _ImportBlokiranException(
+      'Uvoz cele baze je blokiran: PIB/matični broj firme ne odgovara '
+      'lokalnoj instalaciji. Lokalni podaci nisu promenjeni.',
+    );
+  }
+}
+
 Future<_BackupImportResult> _uvoziBackupUBazu(
   AppDatabase db,
   Map<String, dynamic> json,
 ) async {
+  await _validateBackupFirmIdentityPreflight(db, json);
   final stockPayload = await _procitajStanjeRobeBackupPayload(db, json);
   final reminderPayload = _procitajBackupReminderSettings(json);
   final backupPredmetIds = _requiredMapList(
@@ -1253,7 +1298,9 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
 
     if (hasScenarioState) {
       for (final module in _optionalMapList(json, 'scenarioModules')) {
-        await db.into(db.scenarioModules).insert(
+        await db
+            .into(db.scenarioModules)
+            .insert(
               _procitajBackupRed(
                 'scenarioModules',
                 module,
@@ -1263,7 +1310,9 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             );
       }
       for (final definition in _optionalMapList(json, 'scenarioDefinitions')) {
-        await db.into(db.scenarioDefinitions).insert(
+        await db
+            .into(db.scenarioDefinitions)
+            .insert(
               _procitajBackupRed(
                 'scenarioDefinitions',
                 definition,
@@ -1449,17 +1498,26 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
       }
     }
 
+    final parteMediaPolicy = json['parteMediaPolicy'];
+    if (parteMediaPolicy != null &&
+        parteMediaPolicy != _kParteMediaBackupPolicy) {
+      throw const _ImportBlokiranException(
+        'Uvoz je blokiran jer PARTE media politika kopije nije podrzana.',
+      );
+    }
     for (final preparation in _optionalMapList(json, 'partePripreme')) {
+      final portablePreparation = Map<String, dynamic>.from(preparation)
+        ..['photoMediaKey'] = null
+        ..['customSymbolMediaKey'] = null;
       final parsed = _procitajBackupRed(
         'partePripreme',
-        preparation,
+        portablePreparation,
         (row) => PartePripremeData.fromJson(row),
       );
       if (!backupPredmetIds.contains(parsed.predmetId)) continue;
-      await db.into(db.partePripreme).insert(
-            parsed.toCompanion(true),
-            mode: InsertMode.insertOrReplace,
-          );
+      await db
+          .into(db.partePripreme)
+          .insert(parsed.toCompanion(true), mode: InsertMode.insertOrReplace);
     }
     await db.deduplicateCituljeCatalogAndRemapReferences();
     await db.backfillMissingKatalogStableArticleIds();

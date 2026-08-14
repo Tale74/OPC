@@ -81,7 +81,7 @@ Post-promotion SQL verification reports 47 PREDMETs, 631 IRiU rows, 138 KATALOG 
 
 ## Q. FULL backup contract changes
 
-The schema-9 FULL backup now includes current `partePripreme` rows scoped to live PREDMETs, `scenarioModules`, and `scenarioDefinitions`; snapshots and provenance are filtered to live owners. Restore consumes these sections before canonicalization and deduplicates citation tuples. External PARTE media bytes remain governed by the existing media-store policy; media keys/metadata are retained in `partePripreme`.
+The schema-9 FULL backup now includes current `partePripreme` rows scoped to live PREDMETs, `scenarioModules`, and `scenarioDefinitions`; snapshots and provenance are filtered to live owners. Restore consumes these sections before canonicalization and deduplicates citation tuples. App-owned PARTE media bytes are explicitly excluded from JSON under `parteMediaPolicy=bounded-exclusion-v1`; exported/imported preparation rows clear media keys so a fresh restore cannot leave dangling references.
 
 ## R. New backup schema/version
 
@@ -124,7 +124,7 @@ This report and `docs/artifacts/OPC_LUNA_RECOVERY_LEDGER_SUMMARY.json` document 
 
 ## Z. Deferred items
 
-No protected deployment action was required. Android physical-device acceptance is intentionally not performed in this task. External PARTE media bytes remain subject to the declared media-store backup policy; media metadata and keys are included in the schema-9 contract.
+No protected deployment action was required. Android physical-device acceptance is intentionally not performed in this task. External PARTE media bytes remain outside the logical JSON backup; the schema-9 contract carries preparation metadata only and marks the bounded exclusion explicitly.
 
 ## AA. Git completion
 
@@ -164,7 +164,7 @@ CANONICAL ČITULJE DUPLICATION — ZERO
 
 CANONICAL PREDMET BUSINESS TRUTH — PRESERVED
 
-FULL BACKUP LOSSLESSNESS FOR CURRENT OPC STATE — PROVEN
+FULL LOGICAL BACKUP LOSSLESSNESS EXCLUDING PARTE MEDIA/DERIVATIVES — PROVEN
 
 CLEAN FULL BACKUP — PASS
 

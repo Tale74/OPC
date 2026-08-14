@@ -1,0 +1,66 @@
+{
+  "task": "OPC_LUNA_HIGH_OVERNIGHT_POST_RECOVERY_STABILIZATION_TASK",
+  "baseline": {
+    "auditCommit": "095e1a90418fe11bbcc9c3b40e5a8eb411ba0fe2",
+    "recoverySource": "9f111064557bd870399d5931e621626f188bd5ee",
+    "canonicalDb": {
+      "sha256": "812AA438F747D59D3AF3EB073B5FB99EA9D9687459FCF52FC4C01946D06BC51C",
+      "sizeBytes": 82829312,
+      "integrity": "ok",
+      "foreignKeyViolations": 0,
+      "counts": {
+        "predmeti": 47,
+        "iriu": 631,
+        "katalogArtikli": 138,
+        "cituljaPolitika": 34,
+        "cituljaNovosti": 17,
+        "cituljaDuplicateTuples": 0
+      }
+    }
+  },
+  "processPreflight": {
+    "script": "tools/verify_toolchain_processes.ps1",
+    "heavyChildrenAfterFinalBuilds": 0
+  },
+  "fullFlutterSuite": {
+    "command": "flutter test --no-pub --concurrency=1 --reporter silent --file-reporter json:<local-temp-log>",
+    "shellExitCode": 0,
+    "jsonDoneSuccess": true,
+    "testDone": 484,
+    "success": 484,
+    "failed": 0,
+    "skipped": 7,
+    "elapsedSeconds": 1858.6,
+    "jsonLog": "<local-temp>/opc_luna_overnight_full_release_20260814.json"
+  },
+  "parteMedia": {
+    "policy": "bounded-exclusion-v1",
+    "jsonCarriesPreparationMetadata": true,
+    "appOwnedBytesInJson": false,
+    "freshRestoreDanglingKeys": 0,
+    "missingMediaBehavior": "keys cleared; logical preparation retained"
+  },
+  "windowsProduction": {
+    "command": "flutter build windows --release",
+    "migrationSelectorStrings": "absent",
+    "opcExeSha256": "DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C",
+    "appSoSha256": "B1AF07C9871A903BA27BD2DF0D7EF65AACB01B4048D4DAD9C3E39C55E85EFC62"
+  },
+  "androidRelease": {
+    "command": "flutter build apk --release",
+    "apkSha256": "54262EBE3215ECAFB2F628A5F5203020C8B480D68D3D784A1FA52209C35714A1",
+    "sizeBytes": 78321527
+  },
+  "canonicalAfter": {
+    "sha256": "812AA438F747D59D3AF3EB073B5FB99EA9D9687459FCF52FC4C01946D06BC51C",
+    "sizeBytes": 82829312,
+    "integrity": "ok",
+    "foreignKeyViolations": 0,
+    "cituljaDuplicateTuples": 0
+  },
+  "ownerRuntime": {
+    "windowsDeploymentLoginVisualAcceptance": "deferred",
+    "androidPhysicalAcceptance": "deferred",
+    "canonicalWriteCapableRuntime": "not attempted"
+  }
+}

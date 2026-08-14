@@ -2101,15 +2101,21 @@ class AppDatabase extends _$AppDatabase {
         }
         for (final row in await select(stanjeRobeStavke).get()) {
           final stableId = row.stableArticleId.trim();
-          if (byStableId.containsKey(stableId)) referencedStableIds.add(stableId);
+          if (byStableId.containsKey(stableId)) {
+            referencedStableIds.add(stableId);
+          }
         }
         for (final row in await select(stanjeRobeAppliedEffects).get()) {
           final stableId = row.stableArticleId.trim();
-          if (byStableId.containsKey(stableId)) referencedStableIds.add(stableId);
+          if (byStableId.containsKey(stableId)) {
+            referencedStableIds.add(stableId);
+          }
         }
         for (final row in await select(stanjeRobePosledice).get()) {
           final stableId = row.katalogStableArticleId.trim();
-          if (byStableId.containsKey(stableId)) referencedStableIds.add(stableId);
+          if (byStableId.containsKey(stableId)) {
+            referencedStableIds.add(stableId);
+          }
         }
 
         final survivor = referencedStableIds.length == 1
@@ -2164,9 +2170,9 @@ class AppDatabase extends _$AppDatabase {
               updates: {stanjeRobePosledice},
             );
           }
-          await (delete(katalogArtikli)
-                ..where((row) => row.id.equals(duplicate.id)))
-              .go();
+          await (delete(
+            katalogArtikli,
+          )..where((row) => row.id.equals(duplicate.id))).go();
           removed++;
         }
       }
@@ -2566,9 +2572,14 @@ class KorisnikReferenceSummary {
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    final migrationTestFile = await resolveMigrationTestDatabaseFile();
-    if (migrationTestFile != null) {
-      return NativeDatabase(migrationTestFile);
+    // The migration-copy lane is compile-time unreachable in production. The
+    // constant guard lets AOT tree-shake the test-only selector and its DB
+    // names out of the normal release artifact.
+    if (kIsWindowsTestBuild) {
+      final migrationTestFile = await resolveMigrationTestDatabaseFile();
+      if (migrationTestFile != null) {
+        return NativeDatabase(migrationTestFile);
+      }
     }
     return driftDatabase(name: kDatabaseName);
   });
