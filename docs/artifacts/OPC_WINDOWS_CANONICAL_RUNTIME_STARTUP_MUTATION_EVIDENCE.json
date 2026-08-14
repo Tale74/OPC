@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "audit_id": "OPC_WINDOWS_CANONICAL_RUNTIME_STARTUP_MUTATION_FORENSIC_AUDIT",
+  "captured_date": "2026-08-14",
+  "scope": "forensic audit only; no production fix and no canonical rollback",
+  "baseline": {
+    "branch": "audit/OPC-WINDOWS-RUNTIME-STARTUP-MUTATION-FORENSIC",
+    "starting_local_sha": "bbbea6b35b3a5728feee2a4f0cfb775eda0febef",
+    "starting_remote_sha": "bbbea6b35b3a5728feee2a4f0cfb775eda0febef",
+    "final_tested_built_sha": "f265231e36eb11f68963d226182eaed8b788bd06",
+    "origin": "https://github.com/Tale74/OPC.git",
+    "starting_worktree": "CLEAN"
+  },
+  "installed_artifact": {
+    "exe_path": "C:\\Program Files\\OPC\\OPC.exe",
+    "exe_sha256": "DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C",
+    "release_exe_sha256": "DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C",
+    "app_so_path": "C:\\Program Files\\OPC\\data\\app.so",
+    "app_so_sha256": "031B3075BE289521823811B39AD4399C9429CBAA5D0F84D94C4237139CD067C5",
+    "release_app_so_sha256": "031B3075BE289521823811B39AD4399C9429CBAA5D0F84D94C4237139CD067C5",
+    "release_build_command": "flutter build windows --release --no-pub",
+    "binary_string_absence": [
+      "WINDOWS_TEST",
+      "LUNA_MIGRATION_TEST.sqlite",
+      "MIGRATION_TEST_DB_PATH",
+      "OPC_MIGRATION_TEST_DB"
+    ],
+    "database_selector": "production default opc_v4_release; migration selector compile-time guarded by kIsWindowsTestBuild",
+    "verdict": "INSTALLED WINDOWS ARTIFACT — EXACT FINAL BUILD"
+  },
+  "authentication": {
+    "durable_statement": "OWNER-AUTHORIZED OPC LOGIN USED",
+    "first_login": "COMPLETED",
+    "cold_restart_login": "COMPLETED",
+    "secret_persisted": false,
+    "verdict": "OWNER-AUTHORIZED LOGIN — COMPLETED"
+  },
+  "predmet": {
+    "id": 113,
+    "identity": "JOVIĆ ŽIVKO / 120826_1949",
+    "edited_or_saved": false
+  },
+  "expected_iriu_order": [
+    "Agencijske usluge",
+    "ČITULJA POLITIKA I/90 mm — Cela zemlja",
+    "Crnina",
+    "Ešarpa",
+    "Cveće SUZA SU 1/1",
+    "SVETOSAVSKI KRST Topola/Hrast",
+    "Peškir za krst",
+    "Pokrov garnitura BORDO",
+    "Posmrtne parte",
+    "Sanduk V-4",
+    "Slika",
+    "Transportna vreća",
+    "Iznošenje",
+    "Prevoz do hladnjače",
+    "Hladnjača",
+    "Spremanje pokojnika",
+    "Prevoz do groblja",
+    "Komplet 80"
+  ],
+  "windows_lifecycle": {
+    "first_open": {
+      "observed_order_matches_expected": true,
+      "row_count": 18,
+      "verdict": "REAL WINDOWS IRiU ORDER FIRST OPEN — PASS",
+      "screenshots": [
+        {"name": "iriu_first_open_top.png", "sha256": "8D774E574EB5996D3B90E7F136142BF8C3BDBEA4ED4D9D0EEA789C20C6027B77"},
+        {"name": "iriu_first_open_middle.png", "sha256": "18983A43FD098FCB105271E1B03574115C8D0C4C3C85430E30E8FFF7582BD959"},
+        {"name": "iriu_first_open_bottom.png", "sha256": "A32770EE6AA96C5EFBD466CA70115B83E1049BC8ABCC4BD656B7C0FB7736C3C5"}
+      ]
+    },
+    "reopen": {
+      "observed_order_matches_expected": true,
+      "row_count": 18,
+      "verdict": "REAL WINDOWS IRiU ORDER REOPEN — PASS",
+      "screenshots": [
+        {"name": "iriu_reopen_top.png", "sha256": "548AF2BB9E31160756680E85FDFC7A6F8133556DC314F8E4E490F61F57EBFD05"},
+        {"name": "iriu_reopen_middle.png", "sha256": "EA61281B19F833EF749E82038545D8E67E67FECCEC89F31BE963A5EB41A9E599"},
+        {"name": "iriu_reopen_bottom.png", "sha256": "9C8711872F98811DECB185573F3C6D17E4E9F9A94248FE3A7EF80E71B4364154"}
+      ]
+    },
+    "cold_restart": {
+      "process_exit_confirmed_before_restart": true,
+      "second_owner_login_completed": true,
+      "observed_order_matches_expected": true,
+      "row_count": 18,
+      "verdict": "REAL WINDOWS IRiU ORDER COLD RESTART — PASS",
+      "screenshots": [
+        {"name": "iriu_cold_restart_top.png", "sha256": "8D933E11A262B9EB0D06AB63C203BC22ADC6A19A1595D24F7983B43BF52FAA14"},
+        {"name": "iriu_cold_restart_middle.png", "sha256": "1E05EB1E019079293814E11996A39B76FA048683FAD3AC756EA5FCBC362E3ECB"},
+        {"name": "iriu_cold_restart_bottom.png", "sha256": "B5F59BF93ECB4C5D2834AD63F53D11BF2BDA910853F5F23DDAD6EDEEF5503F8B"}
+      ]
+    },
+    "all_three_identical": true,
+    "capture_method": {
+      "computer_use_navigation": true,
+      "standard_window_screenshot_error": "SetIsBorderRequired failed: No such interface supported (0x80004002)",
+      "pixel_fallback": "PIL ImageGrab full-screen PNG; no authentication screen captured"
+    },
+    "external_evidence_directory": "C:\\Projekti\\OPC\\OPC v.1\\RUNTIME\\OPC_WINDOWS_STARTUP_MUTATION_20260814"
+  },
+  "iriu_pipeline": {
+    "repository_test": {
+      "test": "test/iriu_production_test_ordering_discrepancy_characterization_test.dart",
+      "database": "isolated canonical-shaped copy",
+      "call": "IriuRepository(db).getIriu(113)",
+      "ids": [1724, 1721, 1732, 1733, 1720, 1715, 1717, 1716, 1718, 1714, 1723, 1731, 1727, 1729, 1726, 1730, 1728, 1725],
+      "matches_expected": true
+    },
+    "stream_provider": "watchIriu selects raw rows and applies the same _orderedProjection used by getIriu",
+    "widget_handoff": "IriuSegment assigns snap.data directly to stavke and maps stavke directly to IriuRowTile without another sort",
+    "pixel_sequence_matches_repository": true,
+    "repository_output_verdict": "REPOSITORY OUTPUT — CORRECT",
+    "provider_output_verdict": "PROVIDER OUTPUT — CORRECT",
+    "widget_input_verdict": "WIDGET INPUT ORDER — CORRECT",
+    "pixel_verdict": "PIXEL/VISIBLE ORDER — CORRECT",
+    "first_runtime_divergence_verdict": "FIRST IRiU RUNTIME DIVERGENCE — NOT IDENTIFIED"
+  },
+  "ui_state_analysis": {
+    "row_key": "ValueKey('${s.id}:${s.interniNaziv}:${s.redosled}') except the unique initial-focus row",
+    "row_controller_refresh": "IriuRowTile.didUpdateWidget refreshes display text when row identity or resolved name changes",
+    "index_key_reuse_found": false,
+    "post_service_sort_found": false,
+    "historical_screenshot_timestamps_local": [
+      "2026-08-14T06:37:14+02:00",
+      "2026-08-14T06:37:45+02:00"
+    ],
+    "final_app_so_last_write_local": "2026-08-14T13:52:18+02:00",
+    "historical_screenshot_hashes": [
+      "317DCECE679FDAAD5FE344C55B7F986C19D2508AC27D4E6637C928C5DB684B80",
+      "7D7D041D36367AA3F0CFBF96CAE49A799234D3CDC69D1B939A9731195249013D"
+    ],
+    "root_cause": "the apparent contradiction compared pre-final-build screenshots with the later final installed artifact; the current exact final artifact has no repository/provider/widget/pixel divergence",
+    "root_cause_verdict": "IRiU ROOT CAUSE — PROVEN",
+    "luna_handoff": "LUNA IRiU HANDOFF — NOT NEEDED"
+  },
+  "canonical": {
+    "path": "C:\\Users\\Steva\\Documents\\opc_v4_release.sqlite",
+    "pre_login_control": {
+      "physical_sha256_before": "0C3515CA4FA69041E8E52AF2AEC29035D84A3640E2C4C4C09746081D0A4526DF",
+      "physical_sha256_after_start_to_login_exit": "0C3515CA4FA69041E8E52AF2AEC29035D84A3640E2C4C4C09746081D0A4526DF",
+      "logical_row_sha256_before": "A646A2607BB5F7C4D26665A96A469241EA118E06B141CA29ACEF763EB75611F9",
+      "logical_row_sha256_after": "A646A2607BB5F7C4D26665A96A469241EA118E06B141CA29ACEF763EB75611F9",
+      "conclusion": "process launch through the login screen does not mutate scenario_definitions"
+    },
+    "forensic_files": [
+      {"name": "canonical_before.sqlite", "sha256": "0A954B74BA2401ECCDFF0FEA2FA0FCCEA8A4D0108C473EFF5FD4DFE775DA63FA", "kind": "SQLite online backup"},
+      {"name": "canonical_after_first_and_reopen.sqlite", "sha256": "1BB5316B5FBB707D9BFCF985B662FD506A43B5B03B1EBB5CFA09EC614CFA40EF", "kind": "closed physical DB copy"},
+      {"name": "canonical_after_cold_restart.sqlite", "sha256": "068DC752A9E24CB76A8D2C87AEE85227C02961F081F235E108B415A74F9EF942", "kind": "closed physical DB copy"},
+      {"name": "scenario_definitions_before.json", "sha256": "D9EDAD0FE49A389D32290CA33F9AB3EDAD984EFEADB53AA6E1B5C272C8730038"},
+      {"name": "scenario_definitions_after_first_and_reopen.json", "sha256": "A60457601C122EF1344E454623EBD453D7B7E8FFB26B46A8B6E58C7C74273CEF"},
+      {"name": "scenario_definitions_after_cold_restart.json", "sha256": "6FBEC27E36C21A842B101979E5EF8AFB27F35E140529276626CCBAF1179373B5"}
+    ],
+    "first_open_and_reopen_diff": {
+      "row_count_before": 1021,
+      "row_count_after": 1021,
+      "changed_rows": 36,
+      "changed_fields": ["updated_at"],
+      "all_ids_prefix": "MAP_NASILNA_BOLNICA_",
+      "before_updated_at": "2026-08-14T13:18:43.394232Z",
+      "after_updated_at": "2026-08-14T14:54:43.200455Z"
+    },
+    "cold_restart_diff": {
+      "row_count_before": 1021,
+      "row_count_after": 1021,
+      "changed_rows": 36,
+      "changed_fields": ["updated_at"],
+      "all_ids_prefix": "MAP_NASILNA_BOLNICA_",
+      "before_updated_at": "2026-08-14T14:54:43.200455Z",
+      "after_updated_at": "2026-08-14T15:07:50.852142Z"
+    },
+    "business_payload_changed": false,
+    "business_data_verdict": "CANONICAL BUSINESS DATA MUTATED — NO",
+    "technical_timestamp_verdict": "CANONICAL TECHNICAL TIMESTAMP MUTATED — YES"
+  },
+  "startup_mutation": {
+    "precise_lifecycle_boundary": "opening Roba i usluge after login, not bare process start",
+    "call_chain": [
+      "PredmetScreen selects RobaIUsluge",
+      "IriuSegment.initState",
+      "IriuSegment._runScenarioSync",
+      "ScenarioModuleRepository.ensureModuleAndDefaults",
+      "ScenarioModuleRepository._ensureOwnerMapDefinitions",
+      "ScenarioModuleRepository._repairKnownOwnerMapProtectiveEquipmentGap",
+      "Drift update(scenario_definitions).write(consequences_json, updated_at)"
+    ],
+    "affected_selector": "id starts MAP_NASILNA_, version == 1, je_podrazumevani == true, category/action fingerprint matches expected-without-protective",
+    "why_exactly_36": "the 36 BOLNICA keys legitimately omit protective equipment in OwnerScenarioPolicyKernel; removing protective equipment from their expected list is a no-op, so all 36 falsely match the legacy-gap repair predicate",
+    "equality_check": "only consequence category and action are compared; full semantic equality and identical JSON payload are not checked before UPDATE",
+    "write_behavior": "consequences_json is rewritten to the identical JSON and updated_at is always set to one fresh transaction timestamp",
+    "business_payload_change_verdict": "scenario_definitions BUSINESS PAYLOAD CHANGE — NONE",
+    "updated_at_change_verdict": "scenario_definitions updated_at CHANGE — 36",
+    "write_verdict": "STARTUP scenario_definitions WRITE — REPRODUCED",
+    "caller_verdict": "STARTUP NO-OP WRITE CALLER — IDENTIFIED",
+    "root_cause_verdict": "STARTUP MUTATION ROOT CAUSE — PROVEN"
+  },
+  "risk_and_blast_radius": {
+    "user_edit_risk": "default rows retain je_podrazumevani=true; edits limited to consequence metadata ignored by the category/action fingerprint can be overwritten",
+    "ignored_consequence_fields": ["order", "section", "provider", "warning", "reason", "financiallyIncluded", "condition-change behavior"],
+    "android_shared_code_effect": true,
+    "watch_effect": "scenario_definitions watchers are invalidated by every 36-row transaction",
+    "backup_export_effect": "updated_at-only churn changes full backup/export diffs and hashes",
+    "performance": "each IRiU opening reads definitions repeatedly, generates the owner key space, parses/compares 252 NASILNA rows, and performs 36 UPDATEs in one transaction"
+  },
+  "tests": {
+    "command": "flutter test --no-pub --concurrency=1 --reporter=expanded test/iriu_production_test_ordering_discrepancy_characterization_test.dart test/scenario_startup_noop_timestamp_mutation_characterization_test.dart",
+    "result": "PASS",
+    "tests_passed": 3,
+    "wall_seconds": 110.1,
+    "characterization": "semantically unchanged owner map rewrites exactly 36 MAP_NASILNA_BOLNICA_ updated_at values while all business fields remain identical",
+    "analyze_command": "flutter analyze --no-pub test/scenario_startup_noop_timestamp_mutation_characterization_test.dart",
+    "analyze_result": "PASS — No issues found"
+  },
+  "luna_startup_mutation_handoff": {
+    "verdict": "LUNA STARTUP-MUTATION HANDOFF — READY",
+    "files": [
+      "lib/features/predmeti/core_v2/scenario/scenario_module_repository.dart",
+      "lib/features/predmeti/core_v2/scenario/owner_scenario_policy_kernel.dart",
+      "lib/features/predmeti/presentation/segments/iriu_segment.dart"
+    ],
+    "required_behavior": "skip UPDATE and preserve updated_at when the complete persisted business payload is already identical; retain timestamps for legitimate user edits; add Windows/shared tests; perform no canonical cleanup without separate authorization"
+  },
+  "mandatory_verdicts": {
+    "INSTALLED WINDOWS ARTIFACT": "EXACT FINAL BUILD",
+    "OWNER-AUTHORIZED LOGIN": "COMPLETED",
+    "REAL WINDOWS IRiU ORDER FIRST OPEN": "PASS",
+    "REAL WINDOWS IRiU ORDER REOPEN": "PASS",
+    "REAL WINDOWS IRiU ORDER COLD RESTART": "PASS",
+    "REPOSITORY OUTPUT": "CORRECT",
+    "PROVIDER OUTPUT": "CORRECT",
+    "WIDGET INPUT ORDER": "CORRECT",
+    "PIXEL/VISIBLE ORDER": "CORRECT",
+    "FIRST IRiU RUNTIME DIVERGENCE": "NOT IDENTIFIED",
+    "IRiU ROOT CAUSE": "PROVEN",
+    "STARTUP scenario_definitions WRITE": "REPRODUCED",
+    "scenario_definitions BUSINESS PAYLOAD CHANGE": "NONE",
+    "scenario_definitions updated_at CHANGE": "36",
+    "STARTUP NO-OP WRITE CALLER": "IDENTIFIED",
+    "STARTUP MUTATION ROOT CAUSE": "PROVEN",
+    "CANONICAL BUSINESS DATA MUTATED": "NO",
+    "CANONICAL TECHNICAL TIMESTAMP MUTATED": "YES",
+    "LUNA IRiU HANDOFF": "NOT NEEDED",
+    "LUNA STARTUP-MUTATION HANDOFF": "READY",
+    "REMOTE SHA": "TO BE CONFIRMED AFTER COMMIT/PUSH",
+    "WORKING TREE": "TO BE CONFIRMED AFTER COMMIT/PUSH"
+  },
+  "overall_verdict": "AUDIT PASS — IRiU RUNTIME DISCREPANCY AND STARTUP MUTATION ROOT CAUSES PROVEN",
+  "notes": [
+    "The IRiU wording refers to resolution of the apparent historical discrepancy: no divergence exists in the current exact final artifact.",
+    "No production fix, IRiU ordering change, PREDMET save, canonical rollback, or historical business rewrite was performed.",
+    "Final remote SHA and clean-worktree verification occur after this evidence file is committed and are reported in the Codex completion response."
+  ]
+}
