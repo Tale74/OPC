@@ -114,6 +114,11 @@ canonical database or unrelated business data was changed.
 - Android release build — PASS: `build/app/outputs/flutter-apk/app-release.apk`
   (74.7 MB).
 
+Artifact SHA-256 evidence:
+
+- Windows `OPC.exe`: `DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C`.
+- Android `app-release.apk`: `CF1FF31BE296CA2D8FE8E2504827E1A40986EF9A255659AE53C06F3C9533FD92`.
+
 ### Disposable Windows startup lane
 
 The release artifact was built with `BUILD_VARIANT=WINDOWS_TEST` and an
