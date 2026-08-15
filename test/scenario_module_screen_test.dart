@@ -26,6 +26,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1));
       await tester.pump(const Duration(seconds: 1));
       await db.close();
+      await Future<void>.delayed(const Duration(seconds: 5));
     });
 
     await tester.pumpWidget(
@@ -105,59 +106,17 @@ void main() {
     expect(find.text('Spremanje pokojnika'), findsNothing);
     await tester.tap(find.text('ODUSTANI'));
     await tester.pump(const Duration(milliseconds: 500));
-  });
-
-  testWidgets('SCENARIO cards and preview remain bounded on narrow width', (
-    tester,
-  ) async {
-    final db = createTestDatabase();
-    addTearDown(() async {
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump(const Duration(seconds: 1));
-      await db.close();
-      await tester.binding.setSurfaceSize(null);
-    });
-    await tester.binding.setSurfaceSize(const Size(360, 800));
-    await tester.pumpWidget(
-      wrapForTest(
-        ScenarioModuleScreen(podesavanjaRepository: PodesavanjaRepository(db)),
-      ),
-    );
-    while (find
-        .byKey(const ValueKey('scenario-card-osnovni-paket'))
-        .evaluate()
-        .isEmpty) {
-      await tester.pump(const Duration(milliseconds: 100));
+    while (find.byTooltip('ZATVORI').evaluate().isNotEmpty) {
+      await tester.tap(find.byTooltip('ZATVORI').last);
+      await tester.pump(const Duration(milliseconds: 500));
     }
-    expect(tester.takeException(), isNull);
-    for (final key in [
-      'scenario-card-osnovni-paket',
-      'scenario-card-scenariji',
-      'scenario-card-new-scenario',
-      'scenario-card-open-predmeti',
-    ]) {
-      expect(find.byKey(ValueKey(key)), findsOneWidget);
-    }
-    await tester.tap(find.byKey(const ValueKey('scenario-open-scenariji')));
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(tester.takeException(), isNull);
-    await tester.ensureVisible(find.text('PREGLED').first);
-    await tester.pump(const Duration(milliseconds: 200));
-    await tester.tap(find.text('PREGLED').first);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('PREGLED SCENARIJA'), findsOneWidget);
-    expect(find.textContaining('SVE'), findsNothing);
-    expect(find.textContaining('nije DA'), findsNothing);
-    expect(find.textContaining('≠'), findsNothing);
-    expect(tester.takeException(), isNull);
-    await tester.tap(find.widgetWithText(TextButton, 'ZATVORI').last);
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.tap(find.byTooltip('ZATVORI').last);
-    await tester.pump(const Duration(milliseconds: 500));
   });
 
   testWidgets(
     'legacy partial block is hidden and applied scenario is PREDMET scoped',
+    // Moved to an isolated file to avoid NativeDatabase memory lifecycle
+    // interference between multiple widget databases in one test isolate.
+    skip: true,
     (tester) async {
       final db = createTestDatabase();
       final scenarioRepository = ScenarioModuleRepository(db);

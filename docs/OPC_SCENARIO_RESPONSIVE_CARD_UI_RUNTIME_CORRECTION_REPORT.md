@@ -51,6 +51,18 @@ The observed failure was architectural presentation state, not an IRiU ordering 
 
 ## VALIDATION EVIDENCE
 
+### Validation-sequence correction
+
+The predecessor handoff built Windows and Android artifacts before a demonstrated full-suite Flutter gate. That was a validation-sequence violation: the artifacts were diagnostic/preliminary and are not treated as the final validation artifacts for this continuation.
+
+For this continuation, the owner issued a one-time decision: when the required full analyze and full test are green, do not create new builds; create new builds only if validation exposes findings that must be fixed. That decision applies only to this validation continuation.
+
+The corrected sequence was:
+
+1. full `flutter analyze` — PASS, `No issues found!`;
+2. full `flutter test --machine --concurrency=1 --no-pub` — PASS, authoritative JSON `done.success=true`;
+3. no new build, because both required gates were green under the owner decision.
+
 The following focused checks passed after the correction:
 
 - `flutter test --no-pub test/scenario_module_screen_test.dart --plain-name "SCENARIO module opens with base package and scenario sections"` — PASS.
@@ -58,9 +70,21 @@ The following focused checks passed after the correction:
 - `flutter test --no-pub test/scenario_module_screen_test.dart --plain-name "legacy partial block is hidden and applied scenario is PREDMET scoped"` — PASS.
 - `flutter test --no-pub test/iriu_catalog_display_name_resolution_test.dart` — PASS (11 tests).
 - `flutter test --no-pub test/scenario_editable_business_policy_test.dart test/scenario_module_repository_test.dart` — PASS (11 tests).
-- `flutter analyze` — PASS: `No issues found!`.
-- `flutter build windows --release` — PASS (`build/windows/x64/runner/Release/OPC.exe`).
-- `flutter build apk --release` — PASS (`build/app/outputs/flutter-apk/app-release.apk`, 74.8 MB).
+- full `flutter analyze` rerun after the validation correction — PASS: `No issues found!`.
+
+Full machine-readable evidence:
+
+- Evidence: `C:\Projekti\OPC\OPC v.1\RUNTIME\OPC_SCENARIO_RESPONSIVE_CARD_UI_RUNTIME_CORRECTION_FULL_FLUTTER_TEST_MACHINE_FINAL_20260815.jsonl`
+- Command: `flutter test --machine --concurrency=1 --no-pub`
+- `done.success`: `true`
+- total `testDone`: `507`
+- failures: `0`
+- skips: `10`
+- JSON parse errors: `0`
+
+The first full run reached 500 successful test completions but never emitted `done.success`; it was correctly classified as NOT PASS. Root cause was a test-isolate lifecycle conflict: multiple widget tests in one file created sequential `NativeDatabase.memory()` instances, and the next test blocked at `createTestDatabase()`. The narrow responsive and bounded open-PREDMET tests were moved to isolated test files; the historical inline test is retained as an explicit skipped characterization. The split validation passed, and the corrected full run then reached `done.success=true`.
+
+Per the one-time owner decision, no new Windows or Android builds were run after the green analyze/test gates. The earlier `flutter build windows --release` and `flutter build apk --release` outputs remain diagnostic/pre-gate results only and are not claimed as final validation artifacts for this continuation.
 
 The three active SCENARIO widget tests pass when isolated. Running them together on this Windows Flutter tester instance remained a harness/lifecycle hang; it produced no assertion failure and was not represented as a product PASS. The test teardown now closes nested preview, SCENARIJI and PREDMET dialogs explicitly.
 
