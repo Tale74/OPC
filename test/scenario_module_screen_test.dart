@@ -33,8 +33,12 @@ void main() {
         ScenarioModuleScreen(podesavanjaRepository: PodesavanjaRepository(db)),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 100));
-    await tester.pumpAndSettle();
+    while (find
+        .byKey(const ValueKey('scenario-card-osnovni-paket'))
+        .evaluate()
+        .isEmpty) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(find.text('SCENARIO'), findsWidgets);
     expect(
       find.byKey(const ValueKey('scenario-selected-predmet-view')),
@@ -53,34 +57,23 @@ void main() {
       find.byKey(const ValueKey('scenario-card-new-scenario')),
       findsOneWidget,
     );
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('scenario-open-predmet-selector')),
-      500,
-      scrollable: find.byType(Scrollable),
-    );
     expect(
-      find.byKey(const ValueKey('scenario-open-predmet-selector')),
+      find.byKey(const ValueKey('scenario-card-open-predmeti')),
       findsOneWidget,
     );
-    expect(find.text('Nema otvorenih PREDMETA.'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('scenario-card-scenariji')),
-      -500,
-      scrollable: find.byType(Scrollable),
+    expect(find.text('Nema otvorenih PREDMETA'), findsOneWidget);
+    expect(find.text('POSTOJEĆI SCENARIJI'), findsNothing);
+    expect(find.text('MESTO SMRTI'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('scenario-open-scenariji')));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(
+      find.byKey(const ValueKey('scenario-management-context')),
+      findsOneWidget,
     );
     expect(find.text('POSTOJEĆI SCENARIJI'), findsOneWidget);
     expect(find.text('MESTO SMRTI'), findsOneWidget);
     expect(find.text('DODATNI SCENARIJI'), findsNothing);
     expect(find.text('STAN'), findsOneWidget);
-    expect(find.textContaining('SCENARIO defini'), findsAtLeastNWidgets(1));
-    if (Platform.environment['OPC_LEGACY_DESCRIPTION_TEST'] == '1') {
-      expect(
-        find.text(
-          'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
-        ),
-        findsOneWidget,
-      );
-    }
     expect(find.text('POSLOVNA HIJERARHIJA'), findsNothing);
     expect(find.text('DODATNI USLOVI'), findsNothing);
     expect(find.text('DODATNI PAKETI'), findsNothing);
@@ -95,20 +88,72 @@ void main() {
       expect(find.text(forbidden), findsNothing, reason: forbidden);
     }
 
+    await tester.tap(find.byTooltip('ZATVORI'));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.ensureVisible(
       find.byKey(const ValueKey('scenario-card-osnovni-paket')),
     );
-    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'UREDI').first);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
     expect(
       find.text(
         'Izmene OSNOVNOG PAKETA primenjuju se samo na nove PREDMETE. Postojeći PREDMETI ostaju nepromenjeni.',
       ),
       findsOneWidget,
     );
+    expect(find.text('Spremanje preminulog lica'), findsOneWidget);
+    expect(find.text('Spremanje pokojnika'), findsNothing);
     await tester.tap(find.text('ODUSTANI'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+  });
+
+  testWidgets('SCENARIO cards and preview remain bounded on narrow width', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
+      await db.close();
+      await tester.binding.setSurfaceSize(null);
+    });
+    await tester.binding.setSurfaceSize(const Size(360, 800));
+    await tester.pumpWidget(
+      wrapForTest(
+        ScenarioModuleScreen(podesavanjaRepository: PodesavanjaRepository(db)),
+      ),
+    );
+    while (find
+        .byKey(const ValueKey('scenario-card-osnovni-paket'))
+        .evaluate()
+        .isEmpty) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(tester.takeException(), isNull);
+    for (final key in [
+      'scenario-card-osnovni-paket',
+      'scenario-card-scenariji',
+      'scenario-card-new-scenario',
+      'scenario-card-open-predmeti',
+    ]) {
+      expect(find.byKey(ValueKey(key)), findsOneWidget);
+    }
+    await tester.tap(find.byKey(const ValueKey('scenario-open-scenariji')));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(find.text('PREGLED').first);
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.tap(find.text('PREGLED').first);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('PREGLED SCENARIJA'), findsOneWidget);
+    expect(find.textContaining('SVE'), findsNothing);
+    expect(find.textContaining('nije DA'), findsNothing);
+    expect(find.textContaining('≠'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.widgetWithText(TextButton, 'ZATVORI').last);
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byTooltip('ZATVORI').last);
+    await tester.pump(const Duration(milliseconds: 500));
   });
 
   testWidgets(
@@ -168,15 +213,36 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      while (find
+          .byKey(const ValueKey('scenario-card-osnovni-paket'))
+          .evaluate()
+          .isEmpty) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      while (find.text('1 otvorenih PREDMETA').evaluate().isEmpty) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.tap(
+        find.byKey(const ValueKey('scenario-card-open-predmeti')),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        find.byKey(const ValueKey('scenario-open-predmet-context')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('scenario-open-predmet-list')),
+        findsOneWidget,
+      );
       await tester.ensureVisible(
         find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
       );
-      await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
       );
-      await tester.pumpAndSettle();
+      while (find.text('PRIMENJENI SCENARIO PAKET').evaluate().isEmpty) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
 
       expect(find.text('DODATNI SCENARIJI'), findsNothing);
       expect(
@@ -195,7 +261,7 @@ void main() {
           findsOneWidget,
         );
       }
-      expect(find.text('PRIMENJENO NA PREDMET'), findsOneWidget);
+      expect(find.text('PRIMENJENO NA PREDMET'), findsAtLeastNWidgets(1));
       expect(find.text('PRIMENJENI SCENARIO PAKET'), findsOneWidget);
       expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
       expect(find.textContaining('MAP_NASILNA_'), findsNothing);
@@ -204,6 +270,8 @@ void main() {
         find.byKey(const ValueKey('scenario-selected-edit')),
         findsNothing,
       );
+      await tester.tap(find.byTooltip('ZATVORI').last);
+      await tester.pump(const Duration(milliseconds: 500));
     },
   );
 

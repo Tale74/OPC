@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
 import '../services/iriu_display_name_resolver.dart';
@@ -37,7 +38,6 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   late Future<List<PredmetiData>> _openPredmetiFuture;
   late final PredmetiRepository _predmetiRepository;
   ScenarioModule? _currentModule;
-  int? _selectedPredmetId;
 
   @override
   void initState() {
@@ -54,20 +54,6 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     );
   }
 
-  void _selectPredmet(int? predmetId) {
-    if (_selectedPredmetId == predmetId) return;
-    setState(() {
-      _selectedPredmetId = predmetId;
-    });
-  }
-
-  void _refreshOpenPredmeti() {
-    if (!mounted) return;
-    setState(() {
-      _openPredmetiFuture = _predmetiRepository.getSvePredmete();
-    });
-  }
-
   void _reloadScreen() {
     if (!mounted) return;
     setState(() {
@@ -80,6 +66,91 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
         (_) => _repository.getDefinitions(),
       );
     });
+  }
+
+  Future<void> _openScenarioManagement(
+    BuildContext context,
+    List<ScenarioDefinitionRecord> definitions,
+    List<IriuKatalogConfigData> katalog,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => Dialog(
+        key: const ValueKey('scenario-management-context'),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 920,
+            maxHeight: MediaQuery.sizeOf(context).height * .86,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'SCENARIJI',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'ZATVORI',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: _ScenarioPolicyTree(
+                      definitions: definitions,
+                      katalog: katalog,
+                      onPreview: (record) =>
+                          _pregledScenario(context, katalog, record),
+                      onEdit: (record) => _dodajIliIzmeniScenario(
+                        context,
+                        katalog,
+                        record: record,
+                      ),
+                      onAdd: null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openPredmetiDialog(
+    BuildContext context,
+    List<PredmetiData> predmeti,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => Dialog(
+        key: const ValueKey('scenario-open-predmet-context'),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 720,
+            maxHeight: MediaQuery.sizeOf(context).height * .86,
+          ),
+          child: _OpenPredmetiDialogContent(
+            predmeti: predmeti,
+            db: widget.podesavanjaRepository.db,
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _izmeniPaket(
@@ -157,19 +228,18 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     final edit = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Row(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: Text(
-                record.id.startsWith('MAP_')
-                    ? _scenarioBusinessSummary(definition)
-                    : definition.name,
-              ),
-            ),
-            Chip(
-              label: Text(
-                record.status == 'PRIMENJEN' ? 'U UPOTREBI' : 'VAN UPOTREBE',
-              ),
+            const Text('PREGLED SCENARIJA'),
+            const SizedBox(height: 4),
+            Text(
+              record.id.startsWith('MAP_')
+                  ? 'Poslovna kombinacija'
+                  : definition.name,
+              style: Theme.of(context).textTheme.bodyMedium,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -184,23 +254,11 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
-                ..._conditionSections(definition.condition).expand(
-                  (section) => <Widget>[
-                    Text(
-                      section.title,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    ...section.lines.map(
-                      (line) => Padding(
-                        padding: EdgeInsets.only(
-                          left: line.depth * 16.0,
-                          top: 3,
-                        ),
-                        child: Text(line.label),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+                ..._conciseConditionLabels(definition.condition).map(
+                  (line) => Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(line),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -324,94 +382,41 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                       final openPredmeti = (predmetSnapshot.data ?? const [])
                           .where((item) => item.status == 'OTVOREN')
                           .toList(growable: false);
-                      final selected = _selectedPredmetId == null
-                          ? null
-                          : openPredmeti
-                                .where((item) => item.id == _selectedPredmetId)
-                                .firstOrNull;
-                      if (_selectedPredmetId != null && selected == null) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted && _selectedPredmetId != null) {
-                            _selectPredmet(null);
-                          }
-                        });
-                      }
                       return SingleChildScrollView(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const Card(
-                              key: ValueKey('scenario-module-description'),
-                              child: ListTile(
-                                title: Text(
-                                  'SCENARIO definiše osnovni i primenjeni paket robe i usluga za buduće PREDMETE.',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Card(
+                            _ScenarioLauncherCard(
                               key: const ValueKey(
                                 'scenario-card-osnovni-paket',
                               ),
-                              child: ListTile(
-                                title: const Text('OSNOVNI PAKET'),
-                                subtitle: Text(
-                                  osnovni.isEmpty
-                                      ? 'Nije izabrana nijedna STAVKA.'
-                                      : '${osnovni.length} STAVKI iz KATALOGA · za nove PREDMETE',
-                                ),
-                                trailing: FilledButton(
-                                  onPressed: katalog.isEmpty
-                                      ? null
-                                      : () => _izmeniPaket(
-                                          context,
-                                          module,
-                                          katalog,
-                                        ),
-                                  child: const Text('UREDI'),
-                                ),
-                              ),
+                              title: 'OSNOVNI PAKET',
+                              subtitle: osnovni.isEmpty
+                                  ? 'Nema izabranih stavki'
+                                  : '${osnovni.length} STAVKI',
+                              icon: Icons.inventory_2_outlined,
+                              actionLabel: 'UREDI',
+                              onPressed: katalog.isEmpty
+                                  ? () {}
+                                  : () =>
+                                        _izmeniPaket(context, module, katalog),
                             ),
                             const SizedBox(height: 12),
-                            Card(
+                            _ScenarioLauncherCard(
                               key: const ValueKey('scenario-card-scenariji'),
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  12,
-                                  8,
-                                  8,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    const ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      title: Text('SCENARIJI'),
-                                      subtitle: Text(
-                                        'Pregled i uređivanje SCENARIO politike za buduće PREDMETE.',
-                                      ),
-                                    ),
-                                    _ScenarioPolicyTree(
-                                      definitions: definitions,
-                                      katalog: katalog,
-                                      onPreview: (record) => _pregledScenario(
-                                        context,
-                                        katalog,
-                                        record,
-                                      ),
-                                      onEdit: (record) =>
-                                          _dodajIliIzmeniScenario(
-                                            context,
-                                            katalog,
-                                            record: record,
-                                          ),
-                                      onAdd: null,
-                                    ),
-                                  ],
-                                ),
+                              title: 'SCENARIJI',
+                              subtitle:
+                                  '${definitions.where((item) => item.id.startsWith('MAP_')).length} poslovnih kombinacija',
+                              icon: Icons.account_tree_outlined,
+                              actionLabel: 'OTVORI',
+                              actionKey: const ValueKey(
+                                'scenario-open-scenariji',
+                              ),
+                              onPressed: () => _openScenarioManagement(
+                                context,
+                                definitions,
+                                katalog,
                               ),
                             ),
                             /*
@@ -549,38 +554,33 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                            ),
                            */
                             const SizedBox(height: 12),
-                            Card(
+                            _ScenarioLauncherCard(
                               key: const ValueKey('scenario-card-new-scenario'),
-                              child: ListTile(
-                                title: const Text('NOVI SCENARIO'),
-                                subtitle: const Text(
-                                  'Kreirajte novu SCENARIO definiciju za buduće PREDMETE.',
-                                ),
-                                trailing: FilledButton.icon(
-                                  onPressed: katalog.isEmpty
-                                      ? null
-                                      : () => _dodajIliIzmeniScenario(
-                                          context,
-                                          katalog,
-                                        ),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('DODAJ NOVI SCENARIO'),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            _OpenPredmetSelector(
-                              predmeti: openPredmeti,
-                              selectedPredmetId: selected?.id,
-                              onSelected: _selectPredmet,
-                              onRefresh: _refreshOpenPredmeti,
+                              title: 'NOVI SCENARIO',
+                              subtitle: 'Nova poslovna politika',
+                              icon: Icons.add_circle_outline,
+                              actionLabel: 'DODAJ NOVI SCENARIO',
+                              onPressed: katalog.isEmpty
+                                  ? () {}
+                                  : () => _dodajIliIzmeniScenario(
+                                      context,
+                                      katalog,
+                                    ),
                             ),
                             const SizedBox(height: 12),
-                            if (selected != null)
-                              _SelectedPredmetScenarioView(
-                                predmet: selected,
-                                db: widget.podesavanjaRepository.db,
+                            _ScenarioLauncherCard(
+                              key: const ValueKey(
+                                'scenario-card-open-predmeti',
                               ),
+                              title: 'OTVORENI PREDMETI',
+                              subtitle: openPredmeti.isEmpty
+                                  ? 'Nema otvorenih PREDMETA'
+                                  : '${openPredmeti.length} otvorenih PREDMETA',
+                              icon: Icons.folder_open_outlined,
+                              actionLabel: 'OTVORI',
+                              onPressed: () =>
+                                  _openPredmetiDialog(context, openPredmeti),
+                            ),
                           ],
                         ),
                       );
@@ -596,6 +596,174 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   }
 }
 
+class _ScenarioLauncherCard extends StatelessWidget {
+  const _ScenarioLauncherCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.actionLabel,
+    required this.onPressed,
+    this.actionKey,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String actionLabel;
+  final VoidCallback onPressed;
+  final Key? actionKey;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 420;
+            final heading = Row(
+              children: [
+                Icon(icon),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            );
+            final action = FilledButton(
+              key: actionKey,
+              onPressed: onPressed,
+              child: Text(actionLabel),
+            );
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  heading,
+                  const SizedBox(height: 4),
+                  Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 8),
+                  Align(alignment: Alignment.centerRight, child: action),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      heading,
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                action,
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+class _OpenPredmetiDialogContent extends StatefulWidget {
+  const _OpenPredmetiDialogContent({required this.predmeti, required this.db});
+
+  final List<PredmetiData> predmeti;
+  final AppDatabase db;
+
+  @override
+  State<_OpenPredmetiDialogContent> createState() =>
+      _OpenPredmetiDialogContentState();
+}
+
+class _OpenPredmetiDialogContentState
+    extends State<_OpenPredmetiDialogContent> {
+  PredmetiData? _selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _selected;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              if (selected != null)
+                IconButton(
+                  tooltip: 'NAZAD',
+                  onPressed: () => setState(() => _selected = null),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              Expanded(
+                child: Text(
+                  selected == null
+                      ? 'OTVORENI PREDMETI'
+                      : 'PRIMENJENO NA PREDMET',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'ZATVORI',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          const Divider(height: 1),
+          const SizedBox(height: 8),
+          Expanded(
+            child: selected == null
+                ? ListView.separated(
+                    key: const ValueKey('scenario-open-predmet-list'),
+                    itemCount: widget.predmeti.length,
+                    separatorBuilder: (_, index) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final predmet = widget.predmeti[index];
+                      return ListTile(
+                        key: ValueKey('scenario-open-predmet-${predmet.id}'),
+                        leading: const Icon(Icons.assignment_outlined),
+                        title: Text(_openPredmetDisplayName(predmet)),
+                        subtitle: Text('PREDMET ${predmet.brojPredmeta}'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => setState(() => _selected = predmet),
+                      );
+                    },
+                  )
+                : SingleChildScrollView(
+                    key: const ValueKey('scenario-selected-predmet-detail'),
+                    child: _SelectedPredmetScenarioView(
+                      predmet: selected,
+                      db: widget.db,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ignore: unused_element
 class _OpenPredmetSelector extends StatelessWidget {
   const _OpenPredmetSelector({
     required this.predmeti,
@@ -777,6 +945,16 @@ class _SelectedPredmetScenarioViewState
                     'PREDMET ${widget.predmet.brojPredmeta} · OTVOREN',
                   ),
                 ),
+                Text(
+                  [
+                    widget.predmet.uzrokSmrti,
+                    widget.predmet.mestoSmrti,
+                    widget.predmet.vrstaCeremonije,
+                    widget.predmet.tipGroblja,
+                    widget.predmet.tipGrobnogMesta,
+                  ].where((value) => value.trim().isNotEmpty).join(' · '),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const Divider(),
                 const Text(
                   'PRIMENJENO NA PREDMET',
@@ -800,7 +978,12 @@ class _SelectedPredmetScenarioViewState
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.inventory_2_outlined),
-                        title: Text(row.nazivPrikaz),
+                        title: Text(
+                          _scenarioDisplayName(
+                            row.interniNaziv,
+                            row.nazivPrikaz,
+                          ),
+                        ),
                         subtitle: Text(row.poslovniStatus),
                       ),
                   const SizedBox(height: 10),
@@ -826,7 +1009,12 @@ class _SelectedPredmetScenarioViewState
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.check_circle_outline),
-                        title: Text(row.nazivPrikaz),
+                        title: Text(
+                          _scenarioDisplayName(
+                            row.interniNaziv,
+                            row.nazivPrikaz,
+                          ),
+                        ),
                         subtitle: Text(row.poslovniStatus),
                       ),
                 ],
@@ -1221,11 +1409,12 @@ class _ScenarioResultCard extends StatelessWidget {
       'condition': jsonDecode(record.conditionJson),
       'consequences': jsonDecode(record.consequencesJson),
     });
-    final summary = _scenarioBusinessSummary(definition);
     return Card(
       margin: const EdgeInsets.only(top: 8),
       child: ListTile(
-        title: Text(record.id.startsWith('MAP_') ? summary : record.naziv),
+        title: Text(
+          record.id.startsWith('MAP_') ? 'SCENARIO PRONAĐEN' : record.naziv,
+        ),
         subtitle: Text('${definition.consequences.length} dodatnih stavki'),
         trailing: Wrap(
           spacing: 4,
@@ -1678,6 +1867,23 @@ class _ConditionSection {
   final List<_ConditionLine> lines;
 }
 
+List<String> _conciseConditionLabels(ScenarioCondition condition) {
+  final labels = <String>[];
+  void visit(ScenarioCondition node) {
+    final criterion = node.criterion;
+    if (criterion != null) {
+      final label = _criterionLabel(criterion);
+      if (label.isNotEmpty && !labels.contains(label)) labels.add(label);
+    }
+    for (final child in node.children) {
+      visit(child);
+    }
+  }
+
+  visit(condition);
+  return labels;
+}
+
 List<_ConditionSection> _conditionSections(ScenarioCondition condition) {
   final place = _conditionLinesWhere(
     condition,
@@ -1735,8 +1941,9 @@ String _criterionLabel(ScenarioCriterion criterion) {
   return switch (criterion.operator) {
     ScenarioCriterionOperator.equals || ScenarioCriterionOperator.isTrue =>
       '$field: ${values.isEmpty ? 'DA' : values}',
-    ScenarioCriterionOperator.isFalse || ScenarioCriterionOperator.notEquals =>
-      '$field: nije ${values.isEmpty ? 'DA' : values}',
+    ScenarioCriterionOperator.isFalse => '$field: NE',
+    ScenarioCriterionOperator.notEquals =>
+      '$field: ${values == 'DA' ? 'NE' : 'nije $values'}',
     ScenarioCriterionOperator.inSet => '$field: jedno od $values',
     ScenarioCriterionOperator.notInSet => '$field: nije jedno od $values',
   };
@@ -1774,10 +1981,22 @@ String _catalogLabel(List<IriuKatalogConfigData> katalog, String internalName) {
   for (final item in katalog) {
     if (item.interniNaziv == internalName &&
         item.nazivPrikaz.trim().isNotEmpty) {
-      return item.nazivPrikaz;
+      return _scenarioDisplayName(internalName, item.nazivPrikaz);
     }
   }
-  return unresolvedIriuCatalogItemLabel;
+  final builtIn = IriuK.naziviPrikaz[internalName];
+  return builtIn == null
+      ? unresolvedIriuCatalogItemLabel
+      : _scenarioDisplayName(internalName, builtIn);
+}
+
+String _scenarioDisplayName(String internalName, String fallback) {
+  // Presentation-only terminology recovery. The stable category identity is
+  // unchanged and the persisted PREDMET/IRiU snapshot is never rewritten.
+  if (internalName == IriuK.spremaanjePokojnika) {
+    return 'Spremanje preminulog lica';
+  }
+  return fallback;
 }
 
 double _dialogWidth(BuildContext context, double maximum) =>
@@ -1831,7 +2050,12 @@ class _PackageDialogState extends State<_PackageDialog> {
                     (item) => CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: true,
-                      title: Text(item.nazivPrikaz),
+                      title: Text(
+                        _scenarioDisplayName(
+                          item.interniNaziv,
+                          item.nazivPrikaz,
+                        ),
+                      ),
                       onChanged: (value) => setState(() {
                         if (value != true) _selected.remove(item.interniNaziv);
                       }),
@@ -1852,7 +2076,12 @@ class _PackageDialogState extends State<_PackageDialog> {
                     (item) => CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: false,
-                      title: Text(item.nazivPrikaz),
+                      title: Text(
+                        _scenarioDisplayName(
+                          item.interniNaziv,
+                          item.nazivPrikaz,
+                        ),
+                      ),
                       onChanged: (value) => setState(() {
                         if (value == true) _selected.add(item.interniNaziv);
                       }),
@@ -2014,14 +2243,19 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                     key: ValueKey('scenario-selected-${item.interniNaziv}'),
                     contentPadding: EdgeInsets.zero,
                     value: true,
-                    title: Text(item.nazivPrikaz),
+                    title: Text(
+                      _scenarioDisplayName(item.interniNaziv, item.nazivPrikaz),
+                    ),
                     subtitle: Text(
                       _statusLabel(_consequences[item.interniNaziv]!.action),
                     ),
                     secondary: TextButton(
                       onPressed: () => _editConsequenceBusiness(
                         item.interniNaziv,
-                        item.nazivPrikaz,
+                        _scenarioDisplayName(
+                          item.interniNaziv,
+                          item.nazivPrikaz,
+                        ),
                       ),
                       child: const Text('UREDI'),
                     ),
@@ -2039,7 +2273,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                   key: ValueKey('scenario-available-${item.interniNaziv}'),
                   contentPadding: EdgeInsets.zero,
                   value: false,
-                  title: Text(item.nazivPrikaz),
+                  title: Text(
+                    _scenarioDisplayName(item.interniNaziv, item.nazivPrikaz),
+                  ),
                   onChanged: (value) => setState(() {
                     if (value == true) {
                       _consequences[item.interniNaziv] = ScenarioConsequence(
