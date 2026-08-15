@@ -142,9 +142,13 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     ScenarioDefinitionRecord record,
   ) async {
     final definition = _repository.definitionFromRecord(record);
-    final consequences = definition.consequences
-        .where((item) => item.action != ScenarioConsequenceAction.suppressed)
-        .toList(growable: false);
+    final consequences =
+        definition.consequences
+            .where(
+              (item) => item.action != ScenarioConsequenceAction.suppressed,
+            )
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
     final warnings = consequences
         .map((item) => item.warning.trim())
         .where((item) => item.isNotEmpty)
@@ -176,7 +180,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'POSLOVNA HIJERARHIJA',
+                  'USLOVI PRIMENE',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
@@ -200,7 +204,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'STAVKE',
+                  'DODATNE STAVKE SCENARIJA',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 if (consequences.isEmpty)
@@ -332,29 +336,87 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                           }
                         });
                       }
-                      return ListView(
+                      return SingleChildScrollView(
                         padding: const EdgeInsets.all(16),
-                        children: [
-                          _OpenPredmetSelector(
-                            predmeti: openPredmeti,
-                            selectedPredmetId: selected?.id,
-                            onSelected: _selectPredmet,
-                            onRefresh: _refreshOpenPredmeti,
-                          ),
-                          const SizedBox(height: 12),
-                          if (selected != null)
-                            _SelectedPredmetScenarioView(
-                              predmet: selected,
-                              db: widget.podesavanjaRepository.db,
-                              definitions: definitions,
-                              onEdit: (record) => _dodajIliIzmeniScenario(
-                                context,
-                                katalog,
-                                record: record,
-                              ),
-                            )
-                          else ...[
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
                             const Card(
+                              key: ValueKey('scenario-module-description'),
+                              child: ListTile(
+                                title: Text(
+                                  'SCENARIO definiše osnovni i primenjeni paket robe i usluga za buduće PREDMETE.',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Card(
+                              key: const ValueKey(
+                                'scenario-card-osnovni-paket',
+                              ),
+                              child: ListTile(
+                                title: const Text('OSNOVNI PAKET'),
+                                subtitle: Text(
+                                  osnovni.isEmpty
+                                      ? 'Nije izabrana nijedna STAVKA.'
+                                      : '${osnovni.length} STAVKI iz KATALOGA · za nove PREDMETE',
+                                ),
+                                trailing: FilledButton(
+                                  onPressed: katalog.isEmpty
+                                      ? null
+                                      : () => _izmeniPaket(
+                                          context,
+                                          module,
+                                          katalog,
+                                        ),
+                                  child: const Text('UREDI'),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Card(
+                              key: const ValueKey('scenario-card-scenariji'),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  8,
+                                  8,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    const ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text('SCENARIJI'),
+                                      subtitle: Text(
+                                        'Pregled i uređivanje SCENARIO politike za buduće PREDMETE.',
+                                      ),
+                                    ),
+                                    _ScenarioPolicyTree(
+                                      definitions: definitions,
+                                      katalog: katalog,
+                                      onPreview: (record) => _pregledScenario(
+                                        context,
+                                        katalog,
+                                        record,
+                                      ),
+                                      onEdit: (record) =>
+                                          _dodajIliIzmeniScenario(
+                                            context,
+                                            katalog,
+                                            record: record,
+                                          ),
+                                      onAdd: null,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            /*
+                            if (false)
+                              const Card(
                               key: ValueKey('scenario-module-description'),
                               child: ListTile(
                                 title: Text(
@@ -363,8 +425,9 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Card(
-                              child: ListTile(
+                            if (false)
+                              Card(
+                                child: ListTile(
                                 title: const Text('OSNOVNI PAKET'),
                                 subtitle: Text(
                                   osnovni.isEmpty
@@ -384,8 +447,9 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Card(
-                              child: Padding(
+                             if (false)
+                              Card(
+                                child: Padding(
                                 padding: const EdgeInsets.fromLTRB(
                                   16,
                                   12,
@@ -417,8 +481,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                               katalog,
                                             ),
                                     ),
-                                    /*
-                              if (definitions.isEmpty)
+                               if (definitions.isEmpty)
                                 const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 16),
                                   child: Text('Nema sačuvanih scenarija.'),
@@ -464,8 +527,8 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                       ],
                                     ),
                                   ),
-                                ),
-                              const SizedBox(height: 12),
+                                   ),
+                            const SizedBox(height: 12),
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: OutlinedButton.icon(
@@ -479,13 +542,47 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                   label: const Text('DODAJ NOVI SCENARIO'),
                                 ),
                               ),
-*/
-                                  ],
+                                   const SizedBox(height: 12),
+                                ],
+                              ),
+                            ),
+                           ),
+                           */
+                            const SizedBox(height: 12),
+                            Card(
+                              key: const ValueKey('scenario-card-new-scenario'),
+                              child: ListTile(
+                                title: const Text('NOVI SCENARIO'),
+                                subtitle: const Text(
+                                  'Kreirajte novu SCENARIO definiciju za buduće PREDMETE.',
+                                ),
+                                trailing: FilledButton.icon(
+                                  onPressed: katalog.isEmpty
+                                      ? null
+                                      : () => _dodajIliIzmeniScenario(
+                                          context,
+                                          katalog,
+                                        ),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('DODAJ NOVI SCENARIO'),
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 20),
+                            _OpenPredmetSelector(
+                              predmeti: openPredmeti,
+                              selectedPredmetId: selected?.id,
+                              onSelected: _selectPredmet,
+                              onRefresh: _refreshOpenPredmeti,
+                            ),
+                            const SizedBox(height: 12),
+                            if (selected != null)
+                              _SelectedPredmetScenarioView(
+                                predmet: selected,
+                                db: widget.podesavanjaRepository.db,
+                              ),
                           ],
-                        ],
+                        ),
                       );
                     },
                   );
@@ -572,17 +669,10 @@ String _openPredmetDisplayName(PredmetiData predmet) {
 }
 
 class _SelectedPredmetScenarioView extends StatefulWidget {
-  const _SelectedPredmetScenarioView({
-    required this.predmet,
-    required this.db,
-    required this.definitions,
-    required this.onEdit,
-  });
+  const _SelectedPredmetScenarioView({required this.predmet, required this.db});
 
   final PredmetiData predmet;
   final AppDatabase db;
-  final List<ScenarioDefinitionRecord> definitions;
-  final ValueChanged<ScenarioDefinitionRecord> onEdit;
 
   @override
   State<_SelectedPredmetScenarioView> createState() =>
@@ -627,12 +717,29 @@ class _SelectedPredmetScenarioViewState
     final provenance = await (widget.db.select(
       widget.db.iriuProvenance,
     )..where((item) => item.moduleId.equals('scenario'))).get();
-    final scenarioOwnedIds = provenance
-        .where((item) => item.origin == 'SCENARIO_PAKET')
-        .map((item) => item.iriuId)
+    final provenanceById = {
+      for (final item in provenance) item.iriuId: item.origin,
+    };
+    final scenarioOwnedIds = provenanceById.entries
+        .where((entry) => entry.value == 'SCENARIO_PAKET')
+        .map((entry) => entry.key)
         .toSet();
+    final osnovniOwnedIds = provenanceById.entries
+        .where((entry) => entry.value == 'OSNOVNI_PAKET')
+        .map((entry) => entry.key)
+        .toSet();
+    final snapshotOsnovni = snapshot?.osnovniPaket.toSet() ?? const <String>{};
+    final knownProvenanceIds = provenanceById.keys.toSet();
     return _SelectedScenarioData(
       snapshot: snapshot,
+      osnovniRows: rows
+          .where(
+            (row) =>
+                osnovniOwnedIds.contains(row.id) ||
+                (!knownProvenanceIds.contains(row.id) &&
+                    snapshotOsnovni.contains(row.interniNaziv)),
+          )
+          .toList(growable: false),
       scenarioRows: rows
           .where((row) => scenarioOwnedIds.contains(row.id))
           .toList(growable: false),
@@ -641,12 +748,6 @@ class _SelectedPredmetScenarioViewState
 
   @override
   Widget build(BuildContext context) {
-    final derived = const OwnerScenarioPolicyKernel().evaluate(widget.predmet);
-    final relevantRecord = derived.scenarioId == null
-        ? null
-        : widget.definitions
-              .where((record) => record.id == derived.scenarioId)
-              .firstOrNull;
     return FutureBuilder<_SelectedScenarioData>(
       future: _dataFuture,
       builder: (context, snapshot) {
@@ -677,6 +778,65 @@ class _SelectedPredmetScenarioViewState
                   ),
                 ),
                 const Divider(),
+                const Text(
+                  'PRIMENJENO NA PREDMET',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 10),
+                if (data == null)
+                  const LinearProgressIndicator()
+                else ...[
+                  const Text(
+                    'OSNOVNI PAKET',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  if (data.osnovniRows.isEmpty)
+                    const Text('Nema zabeleženih stavki OSNOVNOG PAKETA.')
+                  else
+                    for (final row in data.osnovniRows)
+                      ListTile(
+                        key: ValueKey('scenario-selected-osnovni-${row.id}'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.inventory_2_outlined),
+                        title: Text(row.nazivPrikaz),
+                        subtitle: Text(row.poslovniStatus),
+                      ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'PRIMENJENI SCENARIO PAKET',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    data.snapshot == null
+                        ? 'SCENARIO paket nije primenjen.'
+                        : _scenarioBusinessSummary(data.snapshot!.scenario),
+                  ),
+                  const SizedBox(height: 4),
+                  if (data.scenarioRows.isEmpty)
+                    const Text(
+                      'Nema dodatnih stavki primenjenog SCENARIO paketa.',
+                    )
+                  else
+                    for (final row in data.scenarioRows)
+                      ListTile(
+                        key: ValueKey('scenario-selected-item-${row.id}'),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.check_circle_outline),
+                        title: Text(row.nazivPrikaz),
+                        subtitle: Text(row.poslovniStatus),
+                      ),
+                ],
+                if (data != null) const SizedBox(height: 10),
+                if (data != null)
+                  const Text(
+                    'Korekcije ovog PREDMETA obavljaju se kroz IRiU stavke.',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                /*
                 const Text(
                   'TRENUTNI USLOVI I IZVEDENI SCENARIO',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -724,6 +884,7 @@ class _SelectedPredmetScenarioViewState
                     label: const Text('UREDI RELEVANTNI SCENARIO'),
                   ),
                 ],
+                */
               ],
             ),
           ),
@@ -736,10 +897,12 @@ class _SelectedPredmetScenarioViewState
 class _SelectedScenarioData {
   const _SelectedScenarioData({
     required this.snapshot,
+    required this.osnovniRows,
     required this.scenarioRows,
   });
 
   final ScenarioAssignmentSnapshot? snapshot;
+  final List<IriuData> osnovniRows;
   final List<IriuData> scenarioRows;
 }
 
@@ -996,15 +1159,17 @@ class _ScenarioPolicyTreeState extends State<_ScenarioPolicyTree> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton.icon(
-            onPressed: widget.onAdd,
-            icon: const Icon(Icons.add),
-            label: const Text('DODAJ NOVI SCENARIO'),
+        if (widget.onAdd != null) ...[
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: widget.onAdd,
+              icon: const Icon(Icons.add),
+              label: const Text('DODAJ NOVI SCENARIO'),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -1566,9 +1731,15 @@ List<_ConditionLine> _conditionLinesWhere(
 
 String _criterionLabel(ScenarioCriterion criterion) {
   final field = _criterionFieldLabel(criterion.field);
-  final operator = _criterionOperatorLabel(criterion.operator);
   final values = criterion.values.join(', ');
-  return '$field $operator${values.isEmpty ? '' : ': $values'}';
+  return switch (criterion.operator) {
+    ScenarioCriterionOperator.equals || ScenarioCriterionOperator.isTrue =>
+      '$field: ${values.isEmpty ? 'DA' : values}',
+    ScenarioCriterionOperator.isFalse || ScenarioCriterionOperator.notEquals =>
+      '$field: nije ${values.isEmpty ? 'DA' : values}',
+    ScenarioCriterionOperator.inSet => '$field: jedno od $values',
+    ScenarioCriterionOperator.notInSet => '$field: nije jedno od $values',
+  };
 }
 
 String _statusLabel(ScenarioConsequenceAction action) => switch (action) {
@@ -1812,9 +1983,9 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               const SizedBox(height: 12),
-              const Text(
-                'USLOVI',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              Text(
+                widget.existing == null ? 'USLOVI' : 'USLOVI PRIMENE',
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               if (widget.existing == null)
                 _BusinessConditionPicker(

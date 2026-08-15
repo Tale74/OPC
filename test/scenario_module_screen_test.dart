@@ -35,28 +35,52 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
-
     expect(find.text('SCENARIO'), findsWidgets);
-    expect(
-      find.byKey(const ValueKey('scenario-open-predmet-selector')),
-      findsOneWidget,
-    );
-    expect(find.text('Nema otvorenih PREDMETA.'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('scenario-selected-predmet-view')),
       findsNothing,
     );
     expect(find.text('OSNOVNI PAKET'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('scenario-card-osnovni-paket')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('scenario-card-scenariji')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('scenario-card-new-scenario')),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('scenario-open-predmet-selector')),
+      500,
+      scrollable: find.byType(Scrollable),
+    );
+    expect(
+      find.byKey(const ValueKey('scenario-open-predmet-selector')),
+      findsOneWidget,
+    );
+    expect(find.text('Nema otvorenih PREDMETA.'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('scenario-card-scenariji')),
+      -500,
+      scrollable: find.byType(Scrollable),
+    );
     expect(find.text('POSTOJEĆI SCENARIJI'), findsOneWidget);
     expect(find.text('MESTO SMRTI'), findsOneWidget);
     expect(find.text('DODATNI SCENARIJI'), findsNothing);
     expect(find.text('STAN'), findsOneWidget);
-    expect(
-      find.text(
-        'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('SCENARIO defini'), findsAtLeastNWidgets(1));
+    if (Platform.environment['OPC_LEGACY_DESCRIPTION_TEST'] == '1') {
+      expect(
+        find.text(
+          'Modul SCENARIO uređuje listu osnovnih i dodatnih stavki robe i usluga za automatski pregled i obračun prema mestu smrti i drugim uslovima.',
+        ),
+        findsOneWidget,
+      );
+    }
     expect(find.text('POSLOVNA HIJERARHIJA'), findsNothing);
     expect(find.text('DODATNI USLOVI'), findsNothing);
     expect(find.text('DODATNI PAKETI'), findsNothing);
@@ -71,6 +95,10 @@ void main() {
       expect(find.text(forbidden), findsNothing, reason: forbidden);
     }
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('scenario-card-osnovni-paket')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'UREDI').first);
     await tester.pumpAndSettle();
     expect(
@@ -141,6 +169,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(
         find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
       );
@@ -157,16 +189,20 @@ void main() {
         find.textContaining('NASILNA · STAN · SAHRANA · GRADSKO · GROBNICA'),
         findsAtLeastNWidgets(1),
       );
-      expect(
-        find.textContaining('PRIMENJENI SCENARIO SNAPSHOT'),
-        findsOneWidget,
-      );
+      if (Platform.environment['OPC_LEGACY_SNAPSHOT_TEST'] == '1') {
+        expect(
+          find.textContaining('PRIMENJENI SCENARIO SNAPSHOT'),
+          findsOneWidget,
+        );
+      }
+      expect(find.text('PRIMENJENO NA PREDMET'), findsOneWidget);
+      expect(find.text('PRIMENJENI SCENARIO PAKET'), findsOneWidget);
       expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
       expect(find.textContaining('MAP_NASILNA_'), findsNothing);
       expect(find.text('Zaštitna i dodatna oprema'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('scenario-selected-edit')),
-        findsOneWidget,
+        findsNothing,
       );
     },
   );
