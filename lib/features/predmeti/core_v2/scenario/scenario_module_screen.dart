@@ -1640,6 +1640,12 @@ class _PackageDialogState extends State<_PackageDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (widget.title == 'OSNOVNI PAKET') ...[
+                const Text(
+                  'Izmene OSNOVNOG PAKETA primenjuju se samo na nove PREDMETE. Postojeći PREDMETI ostaju nepromenjeni.',
+                ),
+                const SizedBox(height: 12),
+              ],
               const Text(
                 'STAVKE U OSNOVNOM PAKETU',
                 style: TextStyle(fontWeight: FontWeight.w700),

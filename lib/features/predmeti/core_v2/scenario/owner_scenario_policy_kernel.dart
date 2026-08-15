@@ -304,12 +304,12 @@ final class OwnerScenarioPolicyKernel {
       final action = input.sahranaVanSrbije
           ? ScenarioConsequenceAction.required
           : input.tipGrobnogMesta == 'GROBNICA'
-              ? (input.tipGroblja == 'LOKALNO'
+          ? (input.tipGroblja == 'LOKALNO'
                     ? ScenarioConsequenceAction.recommended
                     : ScenarioConsequenceAction.required)
-              : input.mestoSmrti == 'BOLNICA'
-                  ? ScenarioConsequenceAction.required
-                  : ScenarioConsequenceAction.recommended;
+                : input.mestoSmrti == 'BOLNICA'
+                    ? ScenarioConsequenceAction.required
+                    : ScenarioConsequenceAction.recommended;
       add(IriuK.limeniUlozak, action: action);
       // DOCEK makes MESTO SMRTI informational; the hospital exception only
       // applies when the place participates in the active scenario key.
@@ -383,7 +383,30 @@ final class OwnerScenarioPolicyKernel {
   }) {
     final result = evaluate(predmet);
     if (result.isComplete) {
-      return result.effectiveCategories.contains(internalName);
+      if (result.effectiveCategories.contains(internalName)) return true;
+      // The owner kernel governs known package/condition categories. A
+      // manually added or otherwise unpredicted category is not part of the
+      // package projection, but it remains an operational row and must stay
+      // visible and financially truthful until the user removes it.
+      switch (internalName) {
+        case IriuK.hladnjaca:
+        case IriuK.spremaanjePokojnika:
+        case IriuK.iznosenje:
+        case IriuK.prevozDoHladnjace:
+        case IriuK.transportnaVreca:
+        case IriuK.prevozDoGroblja:
+        case IriuK.limeniUlozak:
+        case IriuK.lemovanje:
+        case IriuK.prevozSprovoda:
+        case IriuK.medjunarodniPrevoz:
+        case IriuK.medjunarodnaDocumentacija:
+        case IriuK.balsamovanje:
+        case IriuK.cargoTroskovi:
+        case IriuK.kompletZaOpelo:
+          return false;
+        default:
+          return true;
+      }
     }
     final mesto = normalizeMestoSmrti(predmet.mestoSmrti);
     switch (internalName) {

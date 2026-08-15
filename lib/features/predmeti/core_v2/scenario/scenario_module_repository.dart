@@ -253,6 +253,13 @@ class ScenarioModuleRepository {
         if (key == null) continue;
         final expected = kernel.definitionForKey(key);
         final expectedWire = scenarioDefinitionToJsonMap(expected);
+        final actualWire = jsonDecode(record.consequencesJson);
+        if (_canonicalJsonEncode(actualWire) ==
+            _canonicalJsonEncode(expectedWire['consequences'])) {
+          // The stored definition already equals the owner payload. This is
+          // a real startup no-op: preserve both payload and updated_at.
+          continue;
+        }
         final expectedWithoutProtective = (expectedWire['consequences'] as List)
             .where(
               (item) =>
@@ -559,6 +566,22 @@ class ScenarioModuleRepository {
   bool _sameCondition(ScenarioDefinition left, ScenarioDefinition right) =>
       jsonEncode(scenarioDefinitionToJsonMap(left)['condition']) ==
       jsonEncode(scenarioDefinitionToJsonMap(right)['condition']);
+
+  String _canonicalJsonEncode(Object? value) =>
+      jsonEncode(_canonicalJson(value));
+
+  Object? _canonicalJson(Object? value) {
+    if (value is Map) {
+      final keys = value.keys.map((key) => key.toString()).toList()..sort();
+      return <String, Object?>{
+        for (final key in keys) key: _canonicalJson(value[key]),
+      };
+    }
+    if (value is Iterable) {
+      return value.map(_canonicalJson).toList(growable: false);
+    }
+    return value;
+  }
 
   Future<void> _splitLegacyDefinition({
     required ScenarioDefinitionRecord? legacy,

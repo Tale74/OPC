@@ -70,6 +70,17 @@ void main() {
     ]) {
       expect(find.text(forbidden), findsNothing, reason: forbidden);
     }
+
+    await tester.tap(find.widgetWithText(FilledButton, 'UREDI').first);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Izmene OSNOVNOG PAKETA primenjuju se samo na nove PREDMETE. Postojeći PREDMETI ostaju nepromenjeni.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('ODUSTANI'));
+    await tester.pumpAndSettle();
   });
 
   testWidgets(

@@ -43,6 +43,12 @@ authority, permanent incident evidence, active governance/continuity,
 historical task evidence, pre-zero evidence, technical source-learning
 evidence or future-scope evidence. Record conflicts plainly.
 
+For every reported defect, keep the evidence claims separate: observed
+behavior (owner runtime evidence), independently proven root cause
+(source/data/history/controlled test), correction, and post-correction
+acceptance. Runtime screenshots and characterization fixtures do not prove
+root cause by themselves.
+
 Verdict:
 
 `AUTHORITATIVE DOCUMENTATION READ - CONFIRMED / NOT CONFIRMED`

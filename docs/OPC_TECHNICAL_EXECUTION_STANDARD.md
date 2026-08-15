@@ -97,6 +97,18 @@ targeted tests
 - Never include canonical databases, customer data, credentials, exports,
   logs, signing material or machine-local configuration in the public tree.
 
+### 5.1 Observed behavior and root-cause evidence
+
+- Owner runtime evidence is authoritative for observed behavior and acceptance
+  of the named flow; it is not, by itself, proof of root cause.
+- Root cause must be independently proven from production source/data/history
+  or a controlled reproduction that exercises the real caller path.
+- Every incident report and handoff must keep these claims separate:
+  `OBSERVED BEHAVIOR`, `PROVEN ROOT CAUSE`, `CORRECTION`, and
+  `POST-CORRECTION ACCEPTANCE`.
+- A screenshot, fixture or characterization test may support observed behavior
+  but must not be promoted to owner authority for an implementation premise.
+
 ## 6. Test authority
 
 > A test may prove that code matches an expected result. A test must never
