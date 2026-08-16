@@ -96,6 +96,9 @@ Focused checks passed before the full gate:
 
 Full analyzer:
 
+- Initial analyzer run reported three `use_null_aware_elements` style findings
+  in the new responsive row composition; they were corrected before the final
+  gate.
 - `flutter analyze --no-pub` — PASS, `No issues found!`.
 
 Full machine-readable suite:
