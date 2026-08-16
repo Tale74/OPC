@@ -24,7 +24,7 @@ The required order was executed:
 
 1. Focused test: `flutter test --no-pub test/scenario_module_narrow_responsive_test.dart --concurrency=1 --reporter expanded` — PASS (`+1`).
 2. Full `flutter analyze --no-pub` — PASS, `No issues found!` (a first orchestration wrapper expired while the analyzer child continued; a fresh run completed conclusively in 56.9 s).
-3. Full machine suite: `flutter test --machine --concurrency=1 --no-pub` — PASS, JSON `done.success=true`, `testDone=507`, failures `0`, skips `10`, parse errors `0`.
+3. Full machine suite: `flutter test --machine --concurrency=1 --no-pub` — PASS, JSON `done.success=true`, `testDone=507`, failures `0`, skips `10`, parse errors `0`. Evidence: `C:\Projekti\OPC\OPC v.1\RUNTIME\OPC_SCENARIO_FINAL_SPACING_CORRECTION_FULL_FLUTTER_TEST_MACHINE_FINAL_20260816.jsonl`.
 4. Final Windows release build.
 5. Final Android release APK build.
 
@@ -56,4 +56,3 @@ The final warm release invocation completed with `√ Built build\\app\\outputs\
 - Android narrow runtime: the owner must still confirm that the spacing finding is resolved after this correction; build success is not runtime acceptance.
 
 Final status: **IMPLEMENTED — MODULE LOCK PENDING OWNER RUNTIME ACCEPTANCE**. This report does not declare the SCENARIO module locked.
-
