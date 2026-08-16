@@ -101,6 +101,24 @@ Final build evidence from source/build SHA `4072ddee3af500f351a661134de9285bd716
 
 Build success is artifact evidence only; it does not establish Windows or Android interactive runtime acceptance.
 
+## WINDOWS RELEASE BUILD HYGIENE
+
+An independent read-only inventory of the pre-clean release directory found 49 files. Twelve were not part of the distributive bundle: eleven same-payload copies named `sqlite3.dll.*-stale` (`final-suite-stale`, `fullsuite-stale`, `pair-stale`, `pair2-stale`, `pair3-stale`, `pair4-stale`, `sequential-stale`, `split-stale`, `split2-stale`, `stale`, and `validation-stale`) plus a top-level `native_assets.json`. Every stale SQLite copy was 1,665,536 bytes, had timestamp `2026-08-15T15:53:07+02:00`, and SHA-256 `15B1E7BEE3FEDE1C90EAB94C7EB9BB36AE29C33AA2D61BDC0DE546326AE6C089`, identical to the active `sqlite3.dll` payload. They were test/diagnostic snapshot copies, not runtime dependencies.
+
+Root-cause evidence: no tracked source, test, build script, or Git history reference generates any of these names; the names and common timestamp correlate with the earlier full-suite/split/pair diagnostic period, while the controlled clean build below never emitted them. Therefore `flutter build windows --release` does not generate these files and the pre-clean build had only retained external diagnostic/stale files in its output directory. The top-level `native_assets.json` was likewise absent from the clean output and has no tracked project reference; the runtime bundle uses `data/flutter_assets/NativeAssetsManifest.json` instead.
+
+The contaminated build output was removed with `flutter clean` (build-output cleanup only), then rebuilt from the unchanged source payload validated at `4072ddee3af500f351a661134de9285bd716e763` (current HEAD differs only by the documentation commit). The clean Windows release build completed PASS. The final release directory contains 37 files in 10 standard Flutter/OPC subdirectories, with zero test-only, debug, diagnostic, backup, sentinel, state, temporary, or stale artefacts.
+
+Final clean-bundle integrity:
+
+- `OPC.exe` — SHA-256 `9640AF33967BFAB4E81A8F738A69BF816C129BFA48863AC1CA4E0024C47AC0A8`
+- `data/app.so` — SHA-256 `FFEA8633FBB12B1F14AD4C78BC5D53C2F928C5CFC02FDC11EF7F45AE031690B1`
+- `sqlite3.dll` — SHA-256 `15B1E7BEE3FEDE1C90EAB94C7EB9BB36AE29C33AA2D61BDC0DE546326AE6C089`
+
+`sqlite3.dll` is the expected runtime DLL and was not replaced or corrupted by a test artefact. No full analyze/test rerun was required because tracked source/test content remained unchanged.
+
+`WINDOWS RELEASE BUNDLE HYGIENE — PASS`
+
 The three active SCENARIO widget tests pass when isolated. Running them together on this Windows Flutter tester instance remained a harness/lifecycle hang; it produced no assertion failure and was not represented as a product PASS. The test teardown now closes nested preview, SCENARIJI and PREDMET dialogs explicitly.
 
 ## WINDOWS RUNTIME ACCEPTANCE
