@@ -238,7 +238,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'USLOVI PRIMENE',
+                  'USLOVI SCENARIJA',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
@@ -250,7 +250,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'DODATNE STAVKE SCENARIJA',
+                  'PRIMENJENE STAVKE',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 if (consequences.isEmpty)
@@ -2205,9 +2205,7 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (widget.existing == null)
-                const _WizardProgress()
-              else
+              if (widget.existing != null)
                 Text(
                   widget.existing!.id.startsWith('MAP_')
                       ? _scenarioBusinessSummary(widget.existing!)
@@ -2502,22 +2500,6 @@ class _ScenarioItemRow extends StatelessWidget {
       },
     );
   }
-}
-
-class _WizardProgress extends StatelessWidget {
-  const _WizardProgress();
-
-  @override
-  Widget build(BuildContext context) => const Wrap(
-    spacing: 8,
-    runSpacing: 4,
-    children: [
-      Chip(label: Text('1 USLOVI')),
-      Chip(label: Text('2 STAVKE')),
-      Chip(label: Text('3 PREGLED')),
-      Chip(label: Text('4 ČUVANJE')),
-    ],
-  );
 }
 
 (String, String) _generatedScenarioIdentity(ScenarioCondition condition) {

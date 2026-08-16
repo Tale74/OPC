@@ -47,6 +47,10 @@ void main() {
     await tester.tap(find.text('PREGLED').first);
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('PREGLED SCENARIJA'), findsOneWidget);
+    expect(find.text('USLOVI SCENARIJA'), findsOneWidget);
+    expect(find.text('PRIMENJENE STAVKE'), findsOneWidget);
+    expect(find.text('USLOVI PRIMENE'), findsNothing);
+    expect(find.text('DODATNE STAVKE SCENARIJA'), findsNothing);
     expect(find.text('Poslovna kombinacija'), findsNothing);
     expect(find.textContaining('SVE'), findsNothing);
     expect(find.textContaining('nije DA'), findsNothing);
@@ -64,6 +68,19 @@ void main() {
     await tester.tap(find.text('ODUSTANI').last);
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.byTooltip('ZATVORI').last);
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.text('DODAJ NOVI SCENARIO').first);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('NOVI SCENARIO'), findsOneWidget);
+    expect(find.text('1 USLOVI'), findsNothing);
+    expect(find.text('2 STAVKE'), findsNothing);
+    expect(find.text('3 PREGLED'), findsNothing);
+    expect(find.text('4 ČUVANJE'), findsNothing);
+    expect(find.text('USLOVI'), findsOneWidget);
+    expect(find.text('DODATNE STAVKE SCENARIJA'), findsOneWidget);
+    expect(find.byType(Chip), findsNothing);
+    await tester.tap(find.text('ODUSTANI').last);
     await tester.pump(const Duration(milliseconds: 500));
   });
 }
