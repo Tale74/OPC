@@ -175,3 +175,29 @@ citation catalogue is deduplicated, and schema-9 clean backup/clean-room
 restore equivalence is proven. Historical PREDMET snapshots are immune to
 later KATALOG changes. The installed protected-folder visual gate remains a
 separate owner deployment concern; no ACL or ownership change was attempted.
+
+## SCENARIO module lock — 2026-08-16
+
+The accepted SCENARIO implementation is now a locked module baseline. The
+locked production source is
+`a8218537c1aa85b61fe5c85c21dbd03672f6e77c`; the lock governance documents are
+`docs/OPC_SCENARIO_MODULE_LOCK.md` and
+`docs/OPC_SCENARIO_MODULE_LOCK_REPORT.md`.
+
+Owner acceptance is recorded for both platforms:
+
+```text
+WINDOWS INTERACTIVE RUNTIME ACCEPTANCE — PASS
+ANDROID NARROW INTERACTIVE ACCEPTANCE — PASS
+```
+
+Future SCENARIO production changes must explicitly cross the lock boundary by
+owner-authorized unlock, proven regression correction or authoritative new
+business policy. The locked regression contract is impact-based: Tier 1 is
+task-targeted, Tier 2 is the documented 12-file SCENARIO contract, and Tier 3
+is full/deep regression for unlocks, shared PREDMET/IRiU/KATALOG/database/JSON
+impact, broad refactors, milestones, release candidates, uncertain impact or
+owner request. Existing tests remain available and none were deleted.
+
+The lock task did not create a backup or restore point. A fresh verified
+post-lock backup/restore-point task is the next separate authorized step.
