@@ -110,10 +110,15 @@ void main() {
       );
       expect(find.text('Scenario za PREDMET 080826-001'), findsNothing);
       expect(find.text('PREDMET 080826-001 · OTVOREN'), findsOneWidget);
-      expect(
-        find.textContaining('NASILNA · STAN · SAHRANA · GRADSKO · GROBNICA'),
-        findsAtLeastNWidgets(1),
-      );
+      for (final condition in [
+        'NASILNA',
+        'STAN',
+        'SAHRANA',
+        'GRADSKO',
+        'GROBNICA',
+      ]) {
+        expect(find.textContaining(condition), findsAtLeastNWidgets(1));
+      }
       if (Platform.environment['OPC_LEGACY_SNAPSHOT_TEST'] == '1') {
         expect(
           find.textContaining('PRIMENJENI SCENARIO SNAPSHOT'),
@@ -125,6 +130,11 @@ void main() {
       expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
       expect(find.textContaining('MAP_NASILNA_'), findsNothing);
       expect(find.text('Zaštitna i dodatna oprema'), findsOneWidget);
+      expect(
+        find.text('Korekcije ovog PREDMETA vrše se izmenom njegovih stavki.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('IRiU'), findsNothing);
       expect(
         find.byKey(const ValueKey('scenario-selected-edit')),
         findsNothing,

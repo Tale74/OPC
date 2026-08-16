@@ -85,6 +85,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
@@ -107,7 +108,8 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                 ),
                 const Divider(height: 1),
                 const SizedBox(height: 8),
-                Expanded(
+                Flexible(
+                  fit: FlexFit.loose,
                   child: SingleChildScrollView(
                     child: _ScenarioPolicyTree(
                       definitions: definitions,
@@ -228,21 +230,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     final edit = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text('PREGLED SCENARIJA'),
-            const SizedBox(height: 4),
-            Text(
-              record.id.startsWith('MAP_')
-                  ? 'Poslovna kombinacija'
-                  : definition.name,
-              style: Theme.of(context).textTheme.bodyMedium,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+        title: const Text('PREGLED SCENARIJA'),
         content: SizedBox(
           width: _dialogWidth(context, 640),
           child: SingleChildScrollView(
@@ -285,11 +273,6 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                           katalog,
                           item.katalogCategoryInternalName,
                         ),
-                      ),
-                      subtitle: Text(
-                        item.reason.trim().isEmpty
-                            ? _statusLabel(item.action)
-                            : '${_statusLabel(item.action)} · ${item.reason.trim()}',
                       ),
                     ),
                   ),
@@ -930,6 +913,13 @@ class _SelectedPredmetScenarioViewState
           );
         }
         final data = snapshot.data;
+        final identityParts = [
+          widget.predmet.uzrokSmrti,
+          widget.predmet.mestoSmrti,
+          widget.predmet.vrstaCeremonije,
+          widget.predmet.tipGroblja,
+          widget.predmet.tipGrobnogMesta,
+        ].where((value) => value.trim().isNotEmpty).toList(growable: false);
         return Card(
           key: const ValueKey('scenario-selected-predmet-view'),
           child: Padding(
@@ -945,16 +935,20 @@ class _SelectedPredmetScenarioViewState
                     'PREDMET ${widget.predmet.brojPredmeta} · OTVOREN',
                   ),
                 ),
-                Text(
-                  [
-                    widget.predmet.uzrokSmrti,
-                    widget.predmet.mestoSmrti,
-                    widget.predmet.vrstaCeremonije,
-                    widget.predmet.tipGroblja,
-                    widget.predmet.tipGrobnogMesta,
-                  ].where((value) => value.trim().isNotEmpty).join(' · '),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                if (identityParts.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (var index = 0; index < identityParts.length; index++)
+                        Text(
+                          index == 0
+                              ? identityParts[index]
+                              : '· ${identityParts[index]}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
                 const Divider(),
                 const Text(
                   'PRIMENJENO NA PREDMET',
@@ -1021,7 +1015,7 @@ class _SelectedPredmetScenarioViewState
                 if (data != null) const SizedBox(height: 10),
                 if (data != null)
                   const Text(
-                    'Korekcije ovog PREDMETA obavljaju se kroz IRiU stavke.',
+                    'Korekcije ovog PREDMETA vrše se izmenom njegovih stavki.',
                     style: TextStyle(fontStyle: FontStyle.italic),
                   ),
                 /*
@@ -1411,23 +1405,34 @@ class _ScenarioResultCard extends StatelessWidget {
     });
     return Card(
       margin: const EdgeInsets.only(top: 8),
-      child: ListTile(
-        title: Text(
-          record.id.startsWith('MAP_') ? 'SCENARIO PRONAĐEN' : record.naziv,
-        ),
-        subtitle: Text('${definition.consequences.length} dodatnih stavki'),
-        trailing: Wrap(
-          spacing: 4,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextButton(
-              key: ValueKey('scenario-preview-${record.id}'),
-              onPressed: () => onPreview(record),
-              child: const Text('PREGLED'),
+            Text(
+              record.id.startsWith('MAP_') ? 'SCENARIO PRONAĐEN' : record.naziv,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
-            TextButton(
-              key: ValueKey('scenario-edit-${record.id}'),
-              onPressed: () => onEdit(record),
-              child: const Text('UREDI'),
+            const SizedBox(height: 2),
+            Text('${definition.consequences.length} dodatnih stavki'),
+            const SizedBox(height: 4),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 4,
+              runSpacing: 2,
+              children: [
+                TextButton(
+                  key: ValueKey('scenario-preview-${record.id}'),
+                  onPressed: () => onPreview(record),
+                  child: const Text('PREGLED'),
+                ),
+                TextButton(
+                  key: ValueKey('scenario-edit-${record.id}'),
+                  onPressed: () => onEdit(record),
+                  child: const Text('UREDI'),
+                ),
+              ],
             ),
           ],
         ),
@@ -2031,9 +2036,7 @@ class _PackageDialogState extends State<_PackageDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (widget.title == 'OSNOVNI PAKET') ...[
-                const Text(
-                  'Izmene OSNOVNOG PAKETA primenjuju se samo na nove PREDMETE. Postojeći PREDMETI ostaju nepromenjeni.',
-                ),
+                const Text('Izmene važe samo za nove PREDMETE.'),
                 const SizedBox(height: 12),
               ],
               const Text(
@@ -2229,9 +2232,6 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'OSNOVNI PAKET se primenjuje automatski iz SCENARIO politike.',
-              ),
               if (selected.isEmpty)
                 const Padding(
                   padding: EdgeInsets.only(top: 4),
@@ -2239,25 +2239,19 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 )
               else
                 ...selected.map(
-                  (item) => CheckboxListTile(
+                  (item) => _ScenarioItemRow(
                     key: ValueKey('scenario-selected-${item.interniNaziv}'),
-                    contentPadding: EdgeInsets.zero,
-                    value: true,
-                    title: Text(
+                    selected: true,
+                    label: _scenarioDisplayName(
+                      item.interniNaziv,
+                      item.nazivPrikaz,
+                    ),
+                    status: _statusLabel(
+                      _consequences[item.interniNaziv]!.action,
+                    ),
+                    onEdit: () => _editConsequenceBusiness(
+                      item.interniNaziv,
                       _scenarioDisplayName(item.interniNaziv, item.nazivPrikaz),
-                    ),
-                    subtitle: Text(
-                      _statusLabel(_consequences[item.interniNaziv]!.action),
-                    ),
-                    secondary: TextButton(
-                      onPressed: () => _editConsequenceBusiness(
-                        item.interniNaziv,
-                        _scenarioDisplayName(
-                          item.interniNaziv,
-                          item.nazivPrikaz,
-                        ),
-                      ),
-                      child: const Text('UREDI'),
                     ),
                     onChanged: (_) =>
                         setState(() => _consequences.remove(item.interniNaziv)),
@@ -2269,12 +2263,12 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               ...available.map(
-                (item) => CheckboxListTile(
+                (item) => _ScenarioItemRow(
                   key: ValueKey('scenario-available-${item.interniNaziv}'),
-                  contentPadding: EdgeInsets.zero,
-                  value: false,
-                  title: Text(
-                    _scenarioDisplayName(item.interniNaziv, item.nazivPrikaz),
+                  selected: false,
+                  label: _scenarioDisplayName(
+                    item.interniNaziv,
+                    item.nazivPrikaz,
                   ),
                   onChanged: (value) => setState(() {
                     if (value == true) {
@@ -2428,6 +2422,84 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
         description: existing?.description ?? '',
         activate: true,
       ),
+    );
+  }
+}
+
+class _ScenarioItemRow extends StatelessWidget {
+  const _ScenarioItemRow({
+    super.key,
+    required this.selected,
+    required this.label,
+    required this.onChanged,
+    this.status,
+    this.onEdit,
+  });
+
+  final bool selected;
+  final String label;
+  final String? status;
+  final VoidCallback? onEdit;
+  final ValueChanged<bool?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 420;
+        final checkbox = Checkbox(value: selected, onChanged: onChanged);
+        final title = Text(label);
+        final statusText = status == null ? null : Text(status!);
+        final statusWidget = statusText == null
+            ? null
+            : Expanded(child: statusText);
+        final edit = onEdit == null
+            ? null
+            : TextButton(onPressed: onEdit, child: const Text('UREDI'));
+
+        if (narrow) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    checkbox,
+                    Expanded(child: title),
+                  ],
+                ),
+                if (statusText != null || edit != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 48),
+                    child: Row(children: [?statusWidget, ?edit]),
+                  ),
+              ],
+            ),
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              checkbox,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [title, ?statusText],
+                  ),
+                ),
+              ),
+              ?edit,
+            ],
+          ),
+        );
+      },
     );
   }
 }

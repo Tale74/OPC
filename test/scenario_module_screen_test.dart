@@ -96,12 +96,7 @@ void main() {
     );
     await tester.tap(find.widgetWithText(FilledButton, 'UREDI').first);
     await tester.pump(const Duration(seconds: 1));
-    expect(
-      find.text(
-        'Izmene OSNOVNOG PAKETA primenjuju se samo na nove PREDMETE. Postojeći PREDMETI ostaju nepromenjeni.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Izmene važe samo za nove PREDMETE.'), findsOneWidget);
     expect(find.text('Spremanje preminulog lica'), findsOneWidget);
     expect(find.text('Spremanje pokojnika'), findsNothing);
     await tester.tap(find.text('ODUSTANI'));
