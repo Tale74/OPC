@@ -55,7 +55,7 @@ The observed failure was architectural presentation state, not an IRiU ordering 
 
 The predecessor handoff built Windows and Android artifacts before a demonstrated full-suite Flutter gate. That was a validation-sequence violation: the artifacts were diagnostic/preliminary and are not treated as the final validation artifacts for this continuation.
 
-For this continuation, the owner issued a one-time decision: when the required full analyze and full test are green, do not create new builds; create new builds only if validation exposes findings that must be fixed. That decision applies only to this validation continuation.
+For the preceding validation continuation, the owner issued a one-time decision not to create new builds when the required full analyze and full test were green. That decision has now been superseded by an explicit owner instruction to create new final builds from the clean, post-gate source HEAD below. The superseding instruction applies only to this final build continuation.
 
 The corrected sequence was:
 
@@ -84,7 +84,22 @@ Full machine-readable evidence:
 
 The first full run reached 500 successful test completions but never emitted `done.success`; it was correctly classified as NOT PASS. Root cause was a test-isolate lifecycle conflict: multiple widget tests in one file created sequential `NativeDatabase.memory()` instances, and the next test blocked at `createTestDatabase()`. The narrow responsive and bounded open-PREDMET tests were moved to isolated test files; the historical inline test is retained as an explicit skipped characterization. The split validation passed, and the corrected full run then reached `done.success=true`.
 
-Per the one-time owner decision, no new Windows or Android builds were run after the green analyze/test gates. The earlier `flutter build windows --release` and `flutter build apk --release` outputs remain diagnostic/pre-gate results only and are not claimed as final validation artifacts for this continuation.
+The final build continuation used the already-proven green gates above without rerunning analyze/test because source and test state were unchanged. The owner then explicitly authorized new final builds from source HEAD `4072ddee3af500f351a661134de9285bd716e763`, run strictly in this order: Windows release, then Android release. These artifacts are distinct from the earlier pre-gate diagnostic build outputs.
+
+Final build evidence from source/build SHA `4072ddee3af500f351a661134de9285bd716e763`:
+
+- Windows: `flutter build windows --release` — PASS.
+  - `C:\Projekti\OPC\OPC v.1\SOURCE\build\windows\x64\runner\Release\OPC.exe`
+  - SHA-256: `DCB784346DA415ED19FE6AD458E5917A1E83F5F58F2363A8400E68F1F5115A7C`
+  - `C:\Projekti\OPC\OPC v.1\SOURCE\build\windows\x64\runner\Release\data\app.so`
+  - SHA-256: `FFEA8633FBB12B1F14AD4C78BC5D53C2F928C5CFC02FDC11EF7F45AE031690B1`
+- Android: `flutter build apk --release` — PASS.
+  - APK: `C:\Projekti\OPC\OPC v.1\SOURCE\build\app\outputs\flutter-apk\app-release.apk`
+  - SHA-256: `D3364C46438B4FB165FD735938BB3DC0E1889F178B95F658F03676E392C6B514`
+  - Size: `78,403,503` bytes (74.8 MB reported by Flutter)
+  - Build timestamp: `2026-08-16` (filesystem timestamp recorded at artifact verification)
+
+Build success is artifact evidence only; it does not establish Windows or Android interactive runtime acceptance.
 
 The three active SCENARIO widget tests pass when isolated. Running them together on this Windows Flutter tester instance remained a harness/lifecycle hang; it produced no assertion failure and was not represented as a product PASS. The test teardown now closes nested preview, SCENARIJI and PREDMET dialogs explicitly.
 
