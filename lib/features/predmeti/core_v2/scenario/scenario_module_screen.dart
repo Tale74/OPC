@@ -2218,6 +2218,11 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               if (widget.existing == null)
+                const SizedBox(
+                  key: ValueKey('scenario-new-condition-section-gap'),
+                  height: 8,
+                ),
+              if (widget.existing == null)
                 _BusinessConditionPicker(
                   onChanged: (condition) =>
                       setState(() => _condition = condition),

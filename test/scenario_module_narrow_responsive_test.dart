@@ -80,6 +80,10 @@ void main() {
     expect(find.text('USLOVI'), findsOneWidget);
     expect(find.text('DODATNE STAVKE SCENARIJA'), findsOneWidget);
     expect(find.byType(Chip), findsNothing);
+    final conditionSectionGap = tester.widget<SizedBox>(
+      find.byKey(const ValueKey('scenario-new-condition-section-gap')),
+    );
+    expect(conditionSectionGap.height, greaterThan(0));
     await tester.tap(find.text('ODUSTANI').last);
     await tester.pump(const Duration(milliseconds: 500));
   });
