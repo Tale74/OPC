@@ -2,11 +2,25 @@
 
 OPC is a Flutter application for organizing funeral-ceremony business workflows. The same product is implemented for Windows and Android; neither platform is assigned a separate operational role.
 
-This repository is the sanitized public source baseline used for project continuity, controlled changes, review, and rollback. It intentionally excludes real case databases, customer or personal data, generated exports, credentials, local machine configuration, build artifacts, and other private runtime material.
+This repository is the sanitized Git-visible source and engineering-documentation baseline used for controlled changes, review, and rollback. OPC is currently maintained through both this public GitHub repository and the local project environment; local runtime/evidence material is classified separately and is not automatically promoted or deleted. The repository intentionally excludes real case databases, customer or personal data, generated exports, credentials, local machine configuration, build artifacts, and other private runtime material.
 
 Current OPC data is stored locally for each user/firma. A possible future OPC Web access model is documented as an additional runtime form for the same product logic, not as a replacement for Windows/Android parity and not as a server-master `PREDMET` database.
 
-See:
+## Current documentation map
+
+Start with:
+
+- [Product and domain authority](docs/OPC_PRODUCT_AND_DOMAIN.md)
+- [Current architecture and deployment](docs/OPC_ARCHITECTURE.md)
+- [Development and validation workflow](docs/OPC_DEVELOPMENT.md)
+- [Quality and release guidance](docs/OPC_QUALITY_RELEASE.md)
+- [Adopted OPC engineering profile](docs/OPC_ENGINEERING_PROFILE.md)
+- [Phase 1 migration/authority manifest](docs/OPC_PHASE1_DOCUMENTATION_MIGRATION_AUTHORITY_MANIFEST.csv)
+- [Phase 1 archive and internal-governance classification](docs/OPC_PHASE1_ARCHIVE_AND_INTERNAL_GOVERNANCE_CLASSIFICATION.md)
+- [Internal development-control boundary register](docs/OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md)
+- [Phase 1 implementation report](docs/OPC_PHASE1_IMPLEMENTATION_REPORT.md)
+
+Supporting authority and evidence:
 
 - [Purpose and anti-drift manifest](docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md)
 - [Product direction](docs/PRODUCT_DIRECTION.md)

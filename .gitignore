@@ -99,6 +99,9 @@ backups/
 backup/
 restore_points/
 *.csv
+!docs/OPC_PHASE1_DOCUMENTATION_MIGRATION_AUTHORITY_MANIFEST.csv
+INTERNAL_DEVELOPMENT_CONTROL/
+/REVIEW/CURRENT_TASK/
 *.xlsx
 *.xls
 

@@ -2,7 +2,8 @@
 
 **Status:** `CURRENT RECONCILED CONTINUITY SUMMARY`
 
-**Baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
+**Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
+**Current documentation baseline:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
 **Reconciled:** 2026-08-12
 
@@ -10,6 +11,24 @@ This is the concise current-state entry point. Detailed dependency ordering is
 in `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`; forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
+
+## Phase 1 documentation navigation
+
+The current product/engineering information homes are:
+
+- `docs/OPC_PRODUCT_AND_DOMAIN.md` — product purpose, PREDMET authority, derivatives and invariants;
+- `docs/OPC_ARCHITECTURE.md` — current architecture, deployment and source responsibility boundaries;
+- `docs/OPC_DEVELOPMENT.md` — development, local+GitHub authority and validation workflow;
+- `docs/OPC_QUALITY_RELEASE.md` — quality, regression, runtime and release gaps;
+- `docs/OPC_ENGINEERING_PROFILE.md` — adopted tailored engineering profile;
+- `docs/OPC_PHASE1_DOCUMENTATION_MIGRATION_AUTHORITY_MANIFEST.csv` — per-file migration/authority evidence.
+- `docs/OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md` — public boundary record for local-only pseudocode control;
+
+This document remains a detailed continuity/dependency summary. The Phase 1
+homes are the compact navigation layer; older chronology and supporting reports
+remain classified by the migration manifest and are not silently deleted. Task
+review indexes remain local, non-authoritative convenience layers and are not
+part of the current product-documentation navigation.
 
 The application/product name is `OPC`. `OPC Srbija` is internal shorthand only
 for the stable Serbian-market product-line gate and is not a rename.
@@ -19,8 +38,11 @@ for the stable Serbian-market product-line gate and is not a rename.
 - OPC is a functional Windows/Android Flutter application with local
   Drift/SQLite and user-controlled JSON transfer.
 - `PREDMET` remains the sole business truth.
-- Architecture decision: retain the codebase; use progressive/bounded refactor
-  only where evidence proves a need. Full rewrite is not supported.
+- Architecture decision: retain the codebase as the current baseline; evidence may
+  justify retain, move, split, merge, refactor, partial rewrite, full
+  reconstruction or removal while preserving business truth, verified behavior,
+  compatibility, migrations, interoperability contracts and regression
+  guarantees.
 - Automatic `ZAVRŠEN` is retired. The implemented transition is explicit
   `OTVOREN → ZATVOREN → ZAVRŠEN`; final state is immutable for direct edits and
   reopening. Focused tests pass; separate final platform runtime acceptance is
@@ -98,8 +120,12 @@ release gates. See
 
 No current authority permits application renaming, Web implementation,
 international localization, automatic exchange rates, tax/VAT/fiscalization,
-package restriction restoration, isolated PODSETNIK status patching, broad
-rewrite, or canonical database replacement.
+package restriction restoration, isolated PODSETNIK status patching or
+canonical database replacement. Any future structural choice, including
+retain/move/split/merge/refactor/partial rewrite/full reconstruction/removal,
+requires evidence and an authorized scope that preserves business truth,
+verified behavior, compatibility, migrations, interoperability contracts and
+regression guarantees.
 
 ## Documentation truth recovery — 2026-08-14
 
