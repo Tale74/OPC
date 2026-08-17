@@ -5,7 +5,7 @@
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Current documentation baseline:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-08-12
+**Reconciled:** 2026-08-17
 
 This is the concise current-state entry point. Detailed dependency ordering is
 in `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`; forensic
@@ -78,7 +78,7 @@ for the stable Serbian-market product-line gate and is not a rename.
 | PODSETNIK | Prior orphan/restore corrections exist; complete signal/informed-reminder model does not. | Full lifecycle-aware program after owner-confirmed signal model. The Android notification for a `ZAVRŠEN` PREDMET belongs here, not in an isolated patch. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
 | Documents | RAČUN PDF exists; NALOG CVEĆARI standalone generator is not proven; standard PDF typography refinement remains. | Owner decisions for RAČUN availability/default and NALOG content/scope; bounded document work. |
-| Theme/UI/UX | Shared source uses `ThemeMode.system`; only bounded runtime/UI impressions exist. | Verify theme parity and perform full Windows/Android UI/UX audit. Contextual help is a later design direction. |
+| Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
 | MODUL DVE VALUTE | Not implemented. | Mandatory before stable OPC v.1 and before `OPC_v.1_Int`. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
 
@@ -87,7 +87,7 @@ for the stable Serbian-market product-line gate and is not a rename.
 Documentation reconciliation → Windows single-instance and remaining
 release-risk integrity closure → evidence-first performance closure → SCENARIO
 continuity carrier/order/KATALOG/PDF fidelity closure → complete signal model and full PODSETNIK upgrade →
-remaining JSON/document/theme/UI work → MODUL DVE VALUTE → final
+remaining JSON/document/UI work → MODUL DVE VALUTE → final
 Windows/Android semantic parity and backup/restore rehearsal → app
 identity/version/update channel → stable OPC v.1 product-line gate → optional
 non-blocking debt → `OPC_v.1_Int` → signing/professional handover.
@@ -101,6 +101,11 @@ non-blocking debt → `OPC_v.1_Int` → signing/professional handover.
 - EUR activation timing and eligible open-PREDMET treatment;
 - final app version/update channel and release baseline;
 - publisher/signing-key custody.
+
+Windows light/dark theme is not an active owner decision or roadmap dependency.
+Its previous partial/pending wording is superseded by the explicit owner runtime
+authority `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. This closure
+does not claim that the broader Windows/Android UI/UX audit is complete.
 
 Already decided and not returned to the active queue: explicit completion
 lifecycle, SCENARIO ownership/placement/application, application name `OPC`,

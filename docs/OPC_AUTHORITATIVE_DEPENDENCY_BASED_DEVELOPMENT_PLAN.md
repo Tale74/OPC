@@ -91,7 +91,7 @@ explicit new owner business decision.
 single-instance and remaining PREDMET/referential acceptance) → evidence-first
 performance closure → SCENARIO continuity carrier/order/KATALOG/PDF fidelity
 closure → Windows real-runtime/canonical closure → complete signal/lifecycle
-model and full PODSETNIK upgrade → remaining JSON/document/theme/UI work →
+model and full PODSETNIK upgrade → remaining JSON/document/UI work →
 MODUL DVE VALUTE → final Windows/Android business-semantic parity and
 backup/restore rehearsal → app identity/version/update-channel decision → First
 Product-Line Gate for stable OPC v.1 → optional non-blocking debt/Stage 2
@@ -129,13 +129,13 @@ SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
 | NALOG CVEĆARI | `OPEN — OWNER DECISION REQUIRED` | No standalone generator proven | No standalone generator proven | Source/business inventory, owner content and PDF/DOCX scope, then implementation/acceptance if required | “Nearly complete” is unsupported |
 | Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
 | PDF RAČUN availability/business scope | `PARTIAL — OWNER DECISION REQUIRED` | RAČUN PDF currently available under standard document entitlement | Same shared product behavior | Decide FIRMA availability/default and confirm present limited business scope; no VAT/tax/fiscal inference | “RAČUN absent” is false; availability-policy work remains |
-| System theme parity | `PARTIAL` | Shared `ThemeMode.system` exists; Windows runtime parity audit not closed | System theme path exists | Verify runtime changes/contrast/accessibility; no Windows-only selector without proved obstacle + owner decision | “Implement theme” is false; verify existing behavior |
+| Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS` | Shared `ThemeMode.system` and owner runtime acceptance prove the supported light/dark behavior is closed | Owner runtime authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED` | No further theme implementation, audit or roadmap dependency; reopen only for a proven regression or new owner decision | Older partial/pending theme wording is superseded |
 | Full UI/UX audit | `OPEN` | Only short SCENARIO impression | Only bounded runtime impressions | Full Windows/Android audit; concise working screens; hierarchy/terminology/interaction carry clarity | Runtime smoke is not full UX acceptance |
 | Contextual Help/User Guide | `DEFERRED PRODUCT DIRECTION` | Not designed | Not designed | Evaluate screen-contextual `Pomoć`/`Uputstvo` after UX audit; no immediate implementation authority | New direction, not current task |
 | MODUL DVE VALUTE | `OPEN — BLOCKING FOR OPC v.1` | Not implemented | Not implemented | Implement and prove contract in section 7 before product-line gate | Moving it to Int is prohibited |
 | Progressive refactor / partial rewrite | `DEFERRED / EVIDENCE-GATED` | Some bounded refactors already landed | Shared | Only where stability, maintainability, parity or localization evidence requires it | Roadmap-wide refactor predecessor is superseded |
 | Stage 2 package/licensing cleanup | `NON-BLOCKING BEFORE OPC v.1` | Dead compatibility code may remain | Same | Optional exact-scope cleanup; never restore restrictions | Not a gate predecessor |
-| Final platform business-semantic parity | `OPEN — BLOCKING FOR GATE` | Separate final acceptance required | Separate final acceptance required | Release-candidate matrix including lifecycle, JSON, reminders, documents, currency and theme | Scenario parity alone is insufficient |
+| Final platform business-semantic parity | `OPEN — BLOCKING FOR GATE` | Separate final acceptance required | Separate final acceptance required | Release-candidate matrix including lifecycle, JSON, reminders, documents and currency; theme closure is already recorded | Scenario parity alone is insufficient |
 | App identity/version/update channel | `OWNER DECISION REQUIRED — BLOCKING FOR GATE` | Installer/update identity unresolved | Current technical identity `com.tale.opc_v4`, `4.0.0+1` is fact, not final owner policy | Decide release identity/version/update channel; product name stays OPC | `OPC Srbija` must not become app name |
 | First Product-Line Gate | `OPEN` | Required | Required | Close checklist in section 9 | Old gate wording was not actionable enough |
 | `OPC_v.1_Int` and international profiles | `DEFERRED` | Not started | Not started | Begins only after First Product-Line Gate | No early localization implementation |
@@ -219,7 +219,6 @@ for this program.
 - refine standard PDF typography document by document;
 - decide RAČUN FIRMA availability/default while preserving its current limited
   scope and avoiding VAT/tax/fiscal/legal inference;
-- verify shared system-theme runtime parity;
 - perform a full Windows/Android UI/UX audit;
 - evaluate, but do not automatically implement, contextual `Pomoć`/`Uputstvo`.
 
@@ -255,8 +254,10 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
 - NALOG CVEĆARI remains unproven as a standalone generator and needs an owner
   content decision.
 - Standard PDF typography work excludes PARTE and preserves document formation.
-- Shared source already uses `ThemeMode.system`; close by runtime verification
-  or a proven bounded correction, not by adding a Windows-only selector.
+- Windows light/dark theme is closed by explicit owner runtime authority:
+  `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. Do not add a
+  Windows-only selector or reopen a theme gate unless a new regression is
+  proven or the owner issues a new decision.
 - Working screens remain concise. Do not add explanatory prose to compensate
   for weak hierarchy, grouping, terminology or interactions.
 - Contextual help is a future design direction, not implementation authority.
@@ -336,8 +337,8 @@ The gate closes only when every required item is evidenced:
 - [ ] explicit completion and the full signal/PODSETNIK lifecycle pass;
 - [ ] MODUL DVE VALUTE passes Windows, Android, JSON and document formation;
 - [ ] remaining required documents/policies are closed or explicitly classified;
-- [ ] system-theme and final business-semantic parity pass separately on Windows
-      and Android;
+- [x] Windows light/dark theme runtime behavior is owner-confirmed closed;
+      final business-semantic parity remains a separate gate;
 - [ ] final backup/restore rehearsal passes on release-candidate artifacts;
 - [ ] analyze, full tests and release builds pass successively;
 - [ ] known issues are divided into blockers and non-blocking debt;
