@@ -1,7 +1,7 @@
 # OPC Development Guide
 
 **Status:** `CURRENT AUTHORITATIVE DEVELOPMENT INFORMATION HOME`
-**Baseline:** branch `task/OPC-SCENARIO-MODULE-LOCK`, commit `4e74772f72da921a2c94207a48c5530bfcc59e61`
+**Baseline:** branch `task/OPC-SCENARIO-MODULE-LOCK`, published Phase 3 baseline `336552ff40eaa72321670cb554ebd1d6d784d30c`
 **Scope:** how to understand, validate and document current OPC work. This guide does not authorize production changes outside an explicitly scoped task.
 
 ## 1. Product and authority entry points
@@ -42,7 +42,7 @@ For documentation changes, update the Git current-state home and record any requ
 ## 4. Branch and task discipline
 
 - Do not infer the active operational baseline from public `main`; use the exact branch and SHA named by the current handover/task.
-- Current Phase 1 baseline is `task/OPC-SCENARIO-MODULE-LOCK` at `4e74772f72da921a2c94207a48c5530bfcc59e61`.
+- The published Phase 3 baseline is `task/OPC-SCENARIO-MODULE-LOCK` at `336552ff40eaa72321670cb554ebd1d6d784d30c`; use the exact handover/task SHA for later work.
 - Start from a clean worktree and keep unrelated work out of the branch.
 - Use descriptive focused commits and review status, staged names and staged diff before commit.
 - Do not change canonical/default branch in documentation work.
@@ -70,6 +70,10 @@ For tasks changing source, tests, generated source, schema/migrations, assets, r
 Analyzer and full test commands are sequential, never parallel. A timeout, hang, incomplete output or missing final exit code is not PASS. Flutter tests on the current Windows machine use `--concurrency=1` when the workflow requires it.
 
 Documentation-only changes that do not affect source/tests/configuration/build behavior use documentation/repository validation rather than an automatic expensive Flutter suite. Phase 1 therefore validates links, references, manifest coverage and protected-state integrity.
+
+## 6A. Permanent post-scenario completeness control
+
+Every future phase starts with a **FULL POST-SCENARIO CONTINUITY INTAKE**. Before Logos review or phase closure, run the **CROSS-PHASE CONTINUITY CHECK**, **SOURCE COVERAGE CHECK** and **ORPHAN/GAP SCAN** against actual file-level evidence. Closure requires both a phase-specific pass and a **POST-SCENARIO COMPLETENESS PASS**. The persistent ledger and inventories in `OPC_POST_SCENARIO_REVIEW_COMPLETENESS_LEDGER.csv` and `OPC_POST_SCENARIO_SOURCE_COVERAGE_INVENTORY.csv` are the canonical control/index for this process. A review index remains a local non-authoritative convenience layer; it cannot replace source, test, platform or closure proof.
 
 ## 7. Generated code and data rules
 
@@ -113,8 +117,8 @@ The following remain visible and are not silently closed by this guide:
 - signing/version/provenance gaps;
 - explicit IP/repository-use/distribution status and third-party license inventory;
 - JSON interoperability hotspot;
-- KATALOG ownership ambiguity;
-- PODSETNIK signal model;
-- pseudocode drift and later Phase 2 synchronization;
-- forensic dead-code/superseded-implementation audit;
+- KATALOG edge-case characterization;
+- PODSETNIK signal model (owner-gated);
+- pseudocode drift (continuously compared with current authority and roadmap);
+- Phase 4 forensic dead-code/superseded-implementation closure review;
 - future Web/`OPC_v.1_Int`/multicurrency scope.
