@@ -1,0 +1,16 @@
+# OPC Phase 3 Target Inter-Module Contract Matrix
+
+| Contract | Caller → provider | Contract shape | Prohibited shortcut | Protected invariant / acceptance evidence |
+|---|---|---|---|---|
+| PREDMET ↔ SCENARIO | PREDMET application → SCENARIO evaluator/editor | Versioned definitions, evaluation result, snapshot candidate, reconciliation result, transfer envelope | SCENARIO writing PREDMET tables or retroactively mutating applied snapshots | Locked SCENARIO contracts, non-retroactivity, explicit unlock required for implementation change |
+| PREDMET ↔ IRiU | PREDMET snapshot/application → IRiU workflow | PREDMET-scoped selection command and ordered package result | UI or IRiU repository inventing lifecycle/identity | IRiU ordering/provenance and lifecycle tests |
+| IRiU ↔ KATALOG | IRiU selection → KATALOG query port | Article/category/label/current-price lookup and immutable selection snapshot | IRiU direct catalog table access or catalog rewriting selected PREDMET rows | KATALOG picker, price and snapshot tests |
+| IRiU ↔ STANJE ROBE | Stock workflow ← IRiU/PREDMET projection | Applied-effect command with stable row/provenance identity | Stock mutating PREDMET or KATALOG master records | Stock effects/delete/restore tests |
+| PREDMET ↔ PODSETNIK | Reminder workflow reads PREDMET facts/events; PODSETNIK stores derived state | Fact projection plus derived schedule/delivery/confirmation result | PODSETNIK writing lifecycle/business facts or inventing unresolved signal semantics | Current reminder runtime evidence; owner semantic gate |
+| PREDMET ↔ PARTE | PARTE preparation ← immutable PREDMET snapshot | Preparation input, authorization result, rendered artifact request | PARTE changing PREDMET truth | PARTE domain/schema/print tests |
+| PREDMET ↔ documents | Document workflow ← snapshot/projection ports | Document-specific data builder input and artifact result | Exporter querying tables or applying business rules | PDF/DOCX fidelity and identity tests |
+| PREDMET ↔ interoperability workflows | PREDMET application ↔ transfer/backup/restore coordinators | Versioned serialize/validate/apply/restore plans and workflow results | Workflow bypassing PREDMET authority or mutating before validation | JSON regression, carrier, migration/recovery tests |
+| Interoperability workflows ↔ technical adapters | Workflow ports → codecs/filesystem/persistence adapters | Codec, transport, transaction and adapter ports | Workflow importing Drift/filesystem implementations directly | Compatibility and full-backup/recovery workflow tests |
+| App shell ↔ modules | Composition root → module factories/ports | `AppServices`, navigation intents, lifecycle and capability context | Screens constructing repositories or global mutable service locators | Startup/composition smoke tests |
+| Platform ↔ application | Application services → platform ports | Filesystem, notification, window/lifecycle, permission results | Domain importing OS APIs | Windows/Android parity and release acceptance |
+| Persistence ↔ features | Repository ports ↔ infrastructure implementations | Typed repositories, transaction and recovery results | Feature SQL/Drift table access | Migration/recovery and repository contract suites |
