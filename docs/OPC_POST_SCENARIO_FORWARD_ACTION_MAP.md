@@ -4,14 +4,19 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 
 | Successor type | Explicit successor | Scope |
 |---|---|---|
-| Characterization task | Phase 5 JSON interoperability characterization | JSON codecs, versioning, round-trip, conflict/rollback |
-| Characterization task | Phase 5 database migration/recovery characterization | schema, migrations, repair, restore, generated output |
-| Characterization task | Phase 5 PARTE characterization wave | preparation, workspace, media, PDF/DOCX/layout/print, transfer |
-| Characterization task | Phase 5 KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
-| Characterization task | Phase 5 STANJE ROBE derived-state task | effects, reversal, deletion, restore/import/reconciliation |
-| Characterization task | Phase 5 IRiU characterization task | ordering/provenance/finance/stock seams |
-| Compatibility test task | Phase 5 restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
-| Release/security work | Phase 5 identity/recovery acceptance | auth, PIN, local identity and entitlement compatibility |
+| Characterization task | JSON interoperability characterization | JSON codecs, versioning, round-trip, conflict/rollback |
+| Characterization task | Database migration/recovery characterization | schema, migrations, repair, restore, generated output |
+| Characterization task | PARTE characterization/acceptance wave | preparation, workspace, media, PDF/DOCX/layout/print, transfer |
+| Characterization task | KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
+| Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
+| Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
+| Release-risk integrity successor | Windows singleton / second-launch integrity implementation + safe disposable-lane runtime acceptance | source-level singleton defect is proven; concurrent runtime/database effect remains unmeasured |
+| Release-risk characterization successor | Disposable current-tip migration/recovery rehearsal | canonical SHA/copy integrity established; current-tip migration behavior remains inconclusive |
+| Release-risk acceptance successor | Current-tip Windows startup/login/exit measurement | historical timing exists; current-tip measurement remains inconclusive |
+| Release-risk acceptance successor | Android PREDMET lifecycle/referential parity acceptance | shared Dart flows characterized; physical parity remains inconclusive |
+| Owner business decision | Derived reminder/PARTE replacement-state semantic acceptance | observed local-ID replacement retention remains owner-gated/inconclusive |
+| Compatibility test task | Restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
+| Release/security work | Identity/recovery acceptance | auth, PIN, local identity and entitlement compatibility |
 | Owner business decision | PODSETNIK signal owner decision task | unresolved signal taxonomy/business meaning |
 | Owner business decision | policy/finance product semantics decision | package/entitlement and policy meaning |
 | Explicit SCENARIO unlock prerequisite | Separate SCENARIO unlock task | only if physical movement or implementation change is requested |
@@ -19,4 +24,3 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Documentation/control work | Next-phase FULL POST-SCENARIO CONTINUITY INTAKE | repeat this control before closure |
 
 No row ends in later, future, TBD, blank or unowned TODO.
-

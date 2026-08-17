@@ -17,14 +17,18 @@ This named register is the file-level companion to the completeness ledger.
 
 ## Open with one successor
 
-- JSON/backup and database: Phase 5 characterization/parity and restore rehearsal.
+- Windows singleton / second-launch integrity: **source contract defect proven**; concurrent runtime/database effect not measured. Successor is Windows singleton implementation plus safe disposable-lane runtime acceptance.
+- PREDMET lifecycle/referential: characterized for tested flows (`OTVOREN → ZATVOREN → ZAVRŠEN`, invalid-transition rejection, final immutability, tested hard-delete and restore cleanup); broader Windows/Android runtime, replacement-derived-state semantics and migration obligations remain open.
+- Canonical database migration/recovery: canonical SHA and disposable-copy integrity are proven; current-tip migration/recovery remains inconclusive. Successor is disposable current-tip migration/recovery rehearsal.
+- Release-risk timing/parity: historical Windows startup/exit evidence remains baseline only; current-tip Windows timing and Android physical parity remain inconclusive successors.
+- JSON/backup and database: JSON interoperability characterization, database migration/recovery characterization, and restore/cross-platform release rehearsal.
 - JSON interoperability and transfer/backup/restore remain a separate successor from database schema/migration/repair/recovery characterization.
-- PARTE: Phase 5 sub-responsibility acceptance, including physical print and external DOCX editing.
-- KATALOG: Phase 5 acceptance matrix for identity, values, seed, delete, snapshots and relationships.
-- STANJE ROBE: Phase 5 stock lifecycle/derived-state/reconciliation characterization.
-- IRiU: Phase 5 ordering/provenance/finance/stock seam characterization.
+- PARTE: PARTE characterization/acceptance wave, including physical print and external DOCX editing.
+- KATALOG: KATALOG acceptance matrix for identity, values, seed, delete, snapshots and relationships.
+- STANJE ROBE: STANJE ROBE derived-state/reconciliation characterization.
+- IRiU: IRiU seam characterization for ordering/provenance/finance/stock.
 - IRiU ordering/auth lanes are bounded; remaining mixed seams retain their own characterization successor.
-- Auth/recovery/release: Phase 5 security and cross-platform acceptance.
+- Auth/recovery/release: identity/recovery acceptance and cross-platform release rehearsal.
 - PODSETNIK signal taxonomy and policy/finance semantics: owner decision tasks.
 - Phase 4 publication: Logos closure review and authorized publication task.
 
