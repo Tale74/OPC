@@ -6,7 +6,7 @@
 | RR-002 | CONTRACT CONFIRMED — canonical path/name | `app_config.dart`, `database.dart` | No | Release-candidate path recheck |
 | RR-003 | CONTRACT CONFIRMED — test lane rejects canonical aliases | Selector source + 9 passing tests | No | Keep release gate |
 | RR-004 | CONTRACT CONFIRMED — disposable-copy integrity | SHA/integrity check and unchanged canonical hash | No | Repeat before recovery rehearsal |
-| RR-005 | INCONCLUSIVE — current-tip migration/recovery relational-integrity risk remains unresolved | Disposable current-tip no-op/reopen 1/1; historical migration/recovery 40/40; package-downgrade 6/6; selector 9/9; canonical/copy SHA unchanged; identical 36-row foreign_key_check baseline remains unreconciled | No | Current-tip migration/recovery relational-integrity closure rehearsal |
+| RR-005 | DEFECT PROVEN — current-tip referential-integrity violation | Canonical 34 provenance + 2 snapshot findings; current FK mode=0; current hard-delete omits both child tables; disposable current-flow reproduction 2/2 creates equivalent orphans; no parent reconstruction authorized | No | RR-005 provenance/snapshot orphan cleanup and hard-delete contract correction with disposable acceptance |
 | RR-006 | CONTRACT CONFIRMED — explicit PREDMET lifecycle | 5 passing completion tests | No | Windows/Android runtime acceptance |
 | RR-007 | CONTRACT CONFIRMED — tested delete/restore referential flows | 5 + 4 + 8 passing tests | No | Release acceptance with representative data |
 | RR-008 | INCONCLUSIVE — replacement-derived-state semantics | 5 passing tests expose retention, but no release oracle | No | Business-meaning acceptance for derived reminder/PARTE state |
