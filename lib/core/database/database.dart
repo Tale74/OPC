@@ -232,6 +232,7 @@ class AppDatabase extends _$AppDatabase {
       final existingCatalogArticles = await select(katalogArtikli).get();
       await _seedIriuKatalog(loadPhotos: existingCatalogArticles.isEmpty);
       await repairKnownCatalogIntegrity();
+      await repairKnownReferentialIntegrity();
       await _backfillBuiltInIriuBasicPolicy();
       await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
       await _ensureKatalogStableArticleIdUniqueIndex();
@@ -1630,6 +1631,31 @@ class AppDatabase extends _$AppDatabase {
     for (final duplicate in duplicates) {
       await _mergeCatalogCategory(duplicate, canonical.interniNaziv);
     }
+  }
+
+  /// Removes only the two published RR-005 orphan classes.
+  ///
+  /// This remains inside the existing AppDatabase startup/repair authority;
+  /// it does not infer business truth, reconstruct parents, or touch any
+  /// unrelated dependent table. The predicates deliberately preserve every
+  /// child row whose referenced PREDMET/IRiU still exists.
+  Future<void> repairKnownReferentialIntegrity() async {
+    await transaction(() async {
+      await customStatement('''
+        DELETE FROM iriu_provenance
+        WHERE NOT EXISTS (
+          SELECT 1 FROM iriu
+          WHERE iriu.id = iriu_provenance.iriu_id
+        )
+      ''');
+      await customStatement('''
+        DELETE FROM predmet_scenario_snapshots
+        WHERE NOT EXISTS (
+          SELECT 1 FROM predmeti
+          WHERE predmeti.id = predmet_scenario_snapshots.predmet_id
+        )
+      ''');
+    });
   }
 
   String? _catalogBusinessKey(String value) {

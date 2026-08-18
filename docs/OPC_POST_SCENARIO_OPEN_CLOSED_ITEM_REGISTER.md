@@ -19,7 +19,7 @@ This named register is the file-level companion to the completeness ledger.
 ## Open with one successor
 
 - PREDMET lifecycle/referential: characterized for tested flows (`OTVOREN → ZATVOREN → ZAVRŠEN`, invalid-transition rejection, final immutability, tested hard-delete and restore cleanup); broader Windows/Android runtime, replacement-derived-state semantics and migration obligations remain open.
-- Canonical database migration/recovery: RR-005 relational-integrity closure classified all 34 provenance and 2 snapshot findings as invalid current data; the current hard-delete path reproduces equivalent orphans with FK enforcement disabled. Successor is RR-005 provenance/snapshot orphan cleanup and hard-delete contract correction with disposable acceptance.
+- Canonical database migration/recovery: RR-005 relational-integrity closure classified all 34 provenance and 2 snapshot findings as invalid current data. The bounded hard-delete, replacement and startup correction passes disposable acceptance, migration/recovery 40/40, analyzer, full-suite and Android release validation; canonical SHA is unchanged. RR-005 correction is closed with no successor.
 - Release-risk timing/parity: historical Windows startup/exit evidence remains baseline only; current-tip Windows timing and Android physical parity remain inconclusive successors.
 - JSON/backup and database: JSON interoperability characterization, database migration/recovery characterization, and restore/cross-platform release rehearsal.
 - JSON interoperability and transfer/backup/restore remain a separate successor from database schema/migration/repair/recovery characterization.

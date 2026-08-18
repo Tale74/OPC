@@ -209,6 +209,16 @@ class PredmetiRepository {
     await (_db.delete(
       _db.kontaktLica,
     )..where((k) => k.predmetId.equals(id))).go();
+    await _db.customStatement(
+      '''
+      DELETE FROM iriu_provenance
+      WHERE iriu_id IN (SELECT id FROM iriu WHERE predmet_id = ?)
+      ''',
+      [id],
+    );
+    await (_db.delete(
+      _db.predmetScenarioSnapshots,
+    )..where((snapshot) => snapshot.predmetId.equals(id))).go();
     await (_db.delete(_db.iriu)..where((i) => i.predmetId.equals(id))).go();
     await _db.customStatement(
       'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
@@ -609,6 +619,13 @@ class PredmetiRepository {
     await (_db.delete(
       _db.kontaktLica,
     )..where((k) => k.predmetId.equals(lokalniPredmetId))).go();
+    await _db.customStatement(
+      '''
+      DELETE FROM iriu_provenance
+      WHERE iriu_id IN (SELECT id FROM iriu WHERE predmet_id = ?)
+      ''',
+      [lokalniPredmetId],
+    );
     await (_db.delete(
       _db.iriu,
     )..where((i) => i.predmetId.equals(lokalniPredmetId))).go();

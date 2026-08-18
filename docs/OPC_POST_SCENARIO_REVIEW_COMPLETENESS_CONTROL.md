@@ -14,10 +14,10 @@ The machine-checkable control ledger is [OPC_POST_SCENARIO_REVIEW_COMPLETENESS_L
 
 - 152 handwritten production Dart files under `lib/**/*.dart`.
 - 1 generated production Dart file (`lib/core/database/database.g.dart`), separately bounded.
-- 70 test Dart files under `test/**/*.dart`.
+- 71 test Dart files under `test/**/*.dart`.
 - 113 files under `android/`, `windows/`, `scripts/` and `tool/`, including platform, build, generated, script and tool surfaces.
-- The inventory has 38 columns and 336 rows. All 152 handwritten Dart rows are `DIRECTLY ANALYZED`; zero rely only on a block invariant. Each row now includes sub-responsibility, dependencies, writes/controls, runtime/regression protection and migration prerequisite. The generated Drift row uses explicit `GEN-DB-001` invariant evidence.
-- All 70 test rows identify protected behavior, target test taxonomy, characterization role, production block, migration relevance, future action and compatibility/migration protection.
+- The inventory has 38 columns and 337 rows after adding the directly analyzed RR-005 correction regression suite. All 152 handwritten production Dart rows remain `DIRECTLY ANALYZED`; zero rely only on a block invariant. Each row now includes sub-responsibility, dependencies, writes/controls, runtime/regression protection and migration prerequisite. The generated Drift row uses explicit `GEN-DB-001` invariant evidence.
+- All 71 test rows identify protected behavior, target test taxonomy, characterization role, production block, migration relevance, future action and compatibility/migration protection.
 - All 113 platform/build/script/tool rows identify support class, responsibility, target/future action and compatibility obligation; homogeneous generated toolchain files use explicit `PLAT-GEN-001` grouping only.
 - The 66 unique platform/support surfaces are individually analyzed; 47 mechanically generated/toolchain rows use explicit `PLAT-GEN-001` grouping.
 - 37 ledger controls covering coverage, authority, architecture, compatibility, gaps, closure and review gates.
@@ -28,20 +28,20 @@ The machine-checkable control ledger is [OPC_POST_SCENARIO_REVIEW_COMPLETENESS_L
 | Area | Evidence boundary | Result | Successor when not closed |
 |---|---|---|---|
 | App shell/navigation | `lib/app.dart`, `lib/main.dart`, tests | Covered | None |
-| PREDMET lifecycle/identity/business facts | PREDMET source, tables, contracts, tests | Covered with characterization seams | Phase 5 PREDMET characterization |
+| PREDMET lifecycle/identity/business facts | PREDMET source, tables, contracts, tests | Covered with characterization seams | PREDMET runtime/lifecycle acceptance |
 | SCENARIO contracts/implementation | `core_v2/scenario/**`, lock SHA | Protected and unchanged | Explicit SCENARIO unlock task only |
-| IRiU truth/order/lifecycle | IRiU services/repository/tests | Bounded lanes plus mixed seams | Phase 5 IRiU characterization |
-| KATALOG | catalog identity, settings UI, IRiU pipeline, provenance tables/tests | Depth checked; edge characterization open | Phase 5 KATALOG acceptance matrix |
+| IRiU truth/order/lifecycle | IRiU services/repository/tests | Bounded lanes plus mixed seams | IRiU seam characterization |
+| KATALOG | catalog identity, settings UI, IRiU pipeline, provenance tables/tests | Depth checked; edge characterization open | KATALOG acceptance matrix |
 | OSNOVNI PAKET/entitlements | entitlement source and policy docs | Covered; business meaning owner-gated | Owner decision task |
-| PARTE | state, authorization, media, templates, PDF, DOCX, print, JSON, DB, platform/export, tests | Depth checked; acceptance characterization open | Phase 5 PARTE characterization |
-| Policy/finance/statistics | policy source, financial truth, statistics aggregator/snapshots, tests | Mapped; policy semantics owner-gated | Owner decision / Phase 5 characterization |
-| STANJE ROBE | lifecycle, availability, effects, consequences, DB tables/callers/tests | Depth checked; derived-state proof open | Phase 5 derived-state/recovery characterization |
+| PARTE | state, authorization, media, templates, PDF, DOCX, print, JSON, DB, platform/export, tests | Depth checked; acceptance characterization open | PARTE characterization/acceptance wave |
+| Policy/finance/statistics | policy source, financial truth, statistics aggregator/snapshots, tests | Mapped; policy semantics owner-gated | Policy/finance product semantics decision |
+| STANJE ROBE | lifecycle, availability, effects, consequences, DB tables/callers/tests | Depth checked; derived-state proof open | STANJE ROBE derived-state characterization |
 | Reminders/PODSETNIK | reminder model/repository/coordinator/gateway/text and pseudocode | Derived boundary covered; signal taxonomy owner-gated | Owner decision task |
-| Auth/users/recovery | auth data/domain/presentation, users table/tests | Covered; recovery acceptance open | Phase 5 security acceptance |
+| Auth/users/recovery | auth data/domain/presentation, users table/tests | Covered; recovery acceptance open | Identity/recovery acceptance |
 | FIRMA/settings/config | firm/settings source/tables/config/tests | Covered | None |
-| Transfer/full backup/restore | coordinator, JSON, transfer envelope, recovery docs/tests | Boundary covered; rehearsal open | Phase 5 compatibility/recovery rehearsal |
-| DB/schema/migrations/seed/repair/recovery | database, generated file, migrations, schema recovery, tables | Inventory complete; characterization open | Phase 5 DB characterization |
-| Platform/notifications/filesystem/Windows/Android | 113 platform/build/script/tool files and runtime reports | Covered; release rehearsal open | Phase 5 release acceptance |
+| Transfer/full backup/restore | coordinator, JSON, transfer envelope, recovery docs/tests | Boundary covered; rehearsal open | Restore and cross-platform release rehearsal |
+| DB/schema/migrations/seed/repair/recovery | database, generated file, migrations, schema recovery, tables | Inventory complete; characterization open | Database migration/recovery characterization |
+| Platform/notifications/filesystem/Windows/Android | 113 platform/build/script/tool files and runtime reports | Covered; release rehearsal open | Current-tip release acceptance |
 | Release/build/tests/pseudocode/docs/runtime acceptance | inventories, reports, 14 pseudocode views, docs | Covered with explicit review gate | Logos closure review |
 
 ### Depth checks
@@ -60,9 +60,9 @@ The orphan/gap scan found zero unassigned orphans and zero unresolved successor-
 
 All 23 Phase 4 matrix rows were checked against the file-level inventory, target mapping, dependency graph and characterization register. The proven-dead candidate `lib/core/utils/export_utils_replacement.dart` remains **PROVEN DEAD â€” REMOVAL NOT EXECUTED** after global source/test/platform/script/tool/history checks. No candidate was deleted. See [OPC_POST_SCENARIO_PHASE4_CLASSIFICATION_REVALIDATION.md](OPC_POST_SCENARIO_PHASE4_CLASSIFICATION_REVALIDATION.md).
 
-## Phase 5 readiness
+## Program readiness
 
-**READY WITH PRE-IMPLEMENTATION CHARACTERIZATION.** Source and test coverage, target mappings, ownership boundaries, protected SCENARIO state and forward successors are proven. Implementation remains gated by seam-specific characterization (JSON, database/recovery, PARTE, KATALOG, STANJE ROBE, IRiU, auth and release rehearsal), owner decisions where semantics are not technical facts, and Logos review/publication of Phase 4 artifacts.
+**READY WITH PRE-IMPLEMENTATION CHARACTERIZATION.** Source and test coverage, target mappings, ownership boundaries, protected SCENARIO state and forward successors are proven. Implementation remains gated by seam-specific characterization (JSON, database/recovery, PARTE, KATALOG, STANJE ROBE, IRiU, auth and release rehearsal), owner decisions where semantics are not technical facts, and Logos review/publication of Phase 4 artifacts. No successor is assigned to an unopened phase.
 
 ## Required closure sequence
 

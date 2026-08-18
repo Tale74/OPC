@@ -6,7 +6,7 @@
 | RR-002 | CONTRACT CONFIRMED — canonical path/name | `app_config.dart`, `database.dart` | No | Release-candidate path recheck |
 | RR-003 | CONTRACT CONFIRMED — test lane rejects canonical aliases | Selector source + 9 passing tests | No | Keep release gate |
 | RR-004 | CONTRACT CONFIRMED — disposable-copy integrity | SHA/integrity check and unchanged canonical hash | No | Repeat before recovery rehearsal |
-| RR-005 | DEFECT PROVEN — current-tip referential-integrity violation | Canonical 34 provenance + 2 snapshot findings; current FK mode=0; current hard-delete omits both child tables; disposable current-flow reproduction 2/2 creates equivalent orphans; no parent reconstruction authorized | No | RR-005 provenance/snapshot orphan cleanup and hard-delete contract correction with disposable acceptance |
+| RR-005 | CORRECTION CLOSED — FULL ACCEPTANCE PASS | Bounded hard-delete, replacement and startup cleanup pass focused/disposable evidence; migration/recovery 40/40, analyzer no issues, full suite 422 passed/10 skipped and Android release build pass; Windows build evidence remains valid; canonical SHA unchanged. | No | None — RR-005 correction closed |
 | RR-006 | CONTRACT CONFIRMED — explicit PREDMET lifecycle | 5 passing completion tests | No | Windows/Android runtime acceptance |
 | RR-007 | CONTRACT CONFIRMED — tested delete/restore referential flows | 5 + 4 + 8 passing tests | No | Release acceptance with representative data |
 | RR-008 | INCONCLUSIVE — replacement-derived-state semantics | 5 passing tests expose retention, but no release oracle | No | Business-meaning acceptance for derived reminder/PARTE state |

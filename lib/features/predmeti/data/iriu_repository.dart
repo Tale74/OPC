@@ -1072,10 +1072,16 @@ class IriuRepository {
   }
 
   Future<void> obrisiStavku(int id) async {
-    final row = await (_db.select(
-      _db.iriu,
-    )..where((i) => i.id.equals(id))).getSingleOrNull();
-    await (_db.delete(_db.iriu)..where((i) => i.id.equals(id))).go();
+    final row = await _db.transaction(() async {
+      final existing = await (_db.select(
+        _db.iriu,
+      )..where((i) => i.id.equals(id))).getSingleOrNull();
+      await (_db.delete(
+        _db.iriuProvenance,
+      )..where((item) => item.iriuId.equals(id))).go();
+      await (_db.delete(_db.iriu)..where((i) => i.id.equals(id))).go();
+      return existing;
+    });
     if (row != null) {
       await _rebuildBusinessOrdering(row.predmetId);
     }
@@ -1091,6 +1097,9 @@ class IriuRepository {
     )..where((item) => item.iriuId.equals(row.id))).getSingleOrNull();
     await _db.transaction(() async {
       await _restoreStockEffectForDeletedCatalogSelection(row);
+      await (_db.delete(
+        _db.iriuProvenance,
+      )..where((item) => item.iriuId.equals(row.id))).go();
       await (_db.delete(_db.iriu)..where((i) => i.id.equals(row.id))).go();
       if (rememberManualDeletion) {
         if (scenarioProvenance?.moduleId == ScenarioModuleRepository.moduleId) {
@@ -1193,12 +1202,24 @@ class IriuRepository {
 
   /// Briše stavku po internom nazivu (za uklanjanje auto-predloženih).
   Future<void> obrisiPoNazivu(int predmetId, String interniNaziv) async {
-    await (_db.delete(_db.iriu)..where(
-          (i) =>
-              i.predmetId.equals(predmetId) &
-              i.interniNaziv.equals(interniNaziv),
-        ))
-        .go();
+    await _db.transaction(() async {
+      await _db.customStatement(
+        '''
+        DELETE FROM iriu_provenance
+        WHERE iriu_id IN (
+          SELECT id FROM iriu
+          WHERE predmet_id = ? AND interni_naziv = ?
+        )
+        ''',
+        [predmetId, interniNaziv],
+      );
+      await (_db.delete(_db.iriu)..where(
+            (i) =>
+                i.predmetId.equals(predmetId) &
+                i.interniNaziv.equals(interniNaziv),
+          ))
+          .go();
+    });
     await _rebuildBusinessOrdering(predmetId);
   }
 

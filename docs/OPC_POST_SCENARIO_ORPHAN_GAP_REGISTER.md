@@ -11,7 +11,7 @@
 | SUPERSESSION GAP | 0 | Maintain exact successor links |
 | AUTHORITY CONFLICT | 0 | PREDMET remains source authority; owner gates remain visible |
 | ROADMAP GAP | 0 | Phase 2 reconciliation is successor |
-| MIGRATION GAP | 1 controlled | RR-005 provenance/snapshot orphan cleanup and hard-delete contract correction with disposable acceptance |
+| MIGRATION GAP | 0 | No RR-005 orphan-cleanup gap remains after full acceptance |
 | TEST/CHARACTERIZATION GAP | 1 controlled | Seam-specific characterization |
 | OWNER-GATE LEAK | 0 | No technical decision delegated to owner |
 | OWNER-GATE LOSS | 0 | PODSETNIK/policy gates preserved |
@@ -24,5 +24,5 @@ Controlled gaps each have one ledger row, one next action and one expected succe
 - Successor-less inconclusive outcomes: **0**.
 - Owner-gate leak: **0**.
 - Owner-gate loss: **0**.
-- The Windows singleton source defect is **CLOSED — FULL ACCEPTANCE PASS — NO SINGLETON-SPECIFIC SUCCESSOR**. The RR-005 referential-integrity defect retains its bounded correction successor; current-tip Windows timing, Android parity and replacement-derived-state semantic gaps retain their explicit existing successors in the Forward Action Map.
+- The Windows singleton source defect is **CLOSED — FULL ACCEPTANCE PASS — NO SINGLETON-SPECIFIC SUCCESSOR**. RR-005 orphan-cleanup correction is **CLOSED — FULL ACCEPTANCE PASS — NO RR-005-SPECIFIC SUCCESSOR**; current-tip Windows timing, Android parity and replacement-derived-state semantic gaps retain their explicit existing successors in the Forward Action Map.
 - This reconciliation removes only the stale singleton-successor wording; no unrelated JSON, backup/restore, database, KATALOG, STANJE ROBE, PARTE, IRiU, policy/finance, auth or release successor was removed.
