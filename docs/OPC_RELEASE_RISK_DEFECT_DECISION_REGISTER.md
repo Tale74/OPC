@@ -11,5 +11,5 @@
 | RR-007 | CONTRACT CONFIRMED — tested delete/restore referential flows | 5 + 4 + 8 passing tests | No | Release acceptance with representative data |
 | RR-008 | INCONCLUSIVE — replacement-derived-state semantics | 5 passing tests expose retention, but no release oracle | No | Business-meaning acceptance for derived reminder/PARTE state |
 | RR-009 | WINDOWS SINGLETON DEFECT — FULL ACCEPTANCE PASS | Disposable-lane W2/W3/W4/W5/W6 evidence proves duplicate safety, normal release/reacquisition and disposable integrity; exact analyzer reports no issues; exact full suite passes 419 tests | No | None — acceptance complete; remaining release/migration work is tracked separately |
-| RR-010 | INCONCLUSIVE — current-tip Windows runtime timings | Historical baseline only | No | Reproducible current-tip startup/exit measurement |
+| RR-010 | CURRENT-TIP WINDOWS STARTUP / LOGIN / EXIT ACCEPTANCE — FULL ACCEPTANCE PASS | Five owner-authorized login transitions reached `OPC — LISTA PREDMETA`; five normal exits; three relaunch cycles; singleton regression pass; disposable `user_version=27`, `integrity_check=ok`, `foreign_key_check=0`; canonical SHA unchanged | No | None — Windows timing acceptance complete |
 | RR-011 | INCONCLUSIVE — Android physical parity | Shared Dart evidence only | No | Android device/emulator lifecycle/referential acceptance |

@@ -10,7 +10,6 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Characterization task | KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
 | Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
 | Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
-| Release-risk acceptance successor | Current-tip Windows startup/login/exit measurement | historical timing exists; current-tip measurement remains inconclusive |
 | Release-risk acceptance successor | Android PREDMET lifecycle/referential parity acceptance | shared Dart flows characterized; physical parity remains inconclusive |
 | Owner business decision | Derived reminder/PARTE replacement-state semantic acceptance | observed local-ID replacement retention remains owner-gated/inconclusive |
 | Compatibility test task | Restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
@@ -22,3 +21,7 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Documentation/control work | Next-phase FULL POST-SCENARIO CONTINUITY INTAKE | repeat this control before closure |
 
 No row ends in later, future, TBD, blank or unowned TODO.
+
+Closed release-risk acceptance: RR-010 current-tip Windows startup/login/exit
+measurement and owner-authorized login transition acceptance completed with five
+successful transitions; no Windows-timing-specific successor remains.
