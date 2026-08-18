@@ -4,7 +4,7 @@ Every remaining defect or inconclusive result has one bounded successor. The Win
 
 | Decision IDs | Bounded successor | Completion evidence |
 |---|---|---|
-| RR-005 | Disposable current-tip migration/recovery rehearsal | Pre/post canonical SHA; schema/integrity result; recovery log; no canonical replacement |
+| RR-005 | Current-tip migration/recovery relational-integrity closure rehearsal | Explicit treatment of the 36 baseline FK findings; disposable before/after SHA, integrity/FK result, protected counts and no canonical replacement |
 | RR-008 | Derived reminder/PARTE replacement-state acceptance | Explicit semantic oracle; replacement and restore cases; owner-gated meaning recorded without delegating technical design |
 | RR-010 | Current-tip Windows startup/login/exit measurement | Timestamped reproducible runs on disposable/copy-safe lane; target decision recorded |
 | RR-011 | Android physical parity acceptance | Device/emulator evidence for lifecycle, referential cleanup, backup/restore and startup/exit |
