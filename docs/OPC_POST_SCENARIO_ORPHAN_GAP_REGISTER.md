@@ -24,5 +24,5 @@ Controlled gaps each have one ledger row, one next action and one expected succe
 - Successor-less inconclusive outcomes: **0**.
 - Owner-gate leak: **0**.
 - Owner-gate loss: **0**.
-- The Windows singleton source defect, canonical migration/recovery inconclusive result, current-tip Windows timing gap, Android parity gap and replacement-derived-state semantic gap each have an explicit successor in the Forward Action Map.
-- These additions refine existing open control state; no unrelated JSON, backup/restore, database, KATALOG, STANJE ROBE, PARTE, IRiU, policy/finance, auth or release successor was removed.
+- The Windows singleton source defect is **CLOSED — FULL ACCEPTANCE PASS — NO SINGLETON-SPECIFIC SUCCESSOR**. The canonical migration/recovery inconclusive result, current-tip Windows timing gap, Android parity gap and replacement-derived-state semantic gap each retain their explicit existing successor in the Forward Action Map.
+- This reconciliation removes only the stale singleton-successor wording; no unrelated JSON, backup/restore, database, KATALOG, STANJE ROBE, PARTE, IRiU, policy/finance, auth or release successor was removed.

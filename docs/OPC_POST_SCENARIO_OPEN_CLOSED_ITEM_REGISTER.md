@@ -14,10 +14,10 @@ This named register is the file-level companion to the completeness ledger.
 - Phase 4 classification revalidation: 23 rows checked; no classification changed.
 - Proven-dead candidate: global production/test/tool/platform/history/documentation search; retained, not deleted.
 - Orphan scan: zero unassigned rows.
+- Windows singleton / second-launch integrity: closed with proof; W1/W2/W3/W4/W5/W6 disposable-lane evidence passes, exact analyzer reports no issues, and the exact full suite passes 419 tests. The earlier apparent tooling hang was characterized as slow historical-schema migration work.
 
 ## Open with one successor
 
-- Windows singleton / second-launch integrity: **source contract defect proven**; concurrent runtime/database effect not measured. Successor is Windows singleton implementation plus safe disposable-lane runtime acceptance.
 - PREDMET lifecycle/referential: characterized for tested flows (`OTVOREN → ZATVOREN → ZAVRŠEN`, invalid-transition rejection, final immutability, tested hard-delete and restore cleanup); broader Windows/Android runtime, replacement-derived-state semantics and migration obligations remain open.
 - Canonical database migration/recovery: canonical SHA and disposable-copy integrity are proven; current-tip migration/recovery remains inconclusive. Successor is disposable current-tip migration/recovery rehearsal.
 - Release-risk timing/parity: historical Windows startup/exit evidence remains baseline only; current-tip Windows timing and Android physical parity remain inconclusive successors.

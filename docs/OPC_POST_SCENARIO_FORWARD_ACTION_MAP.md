@@ -10,7 +10,6 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Characterization task | KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
 | Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
 | Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
-| Release-risk integrity successor | Windows singleton / second-launch integrity implementation + safe disposable-lane runtime acceptance | source-level singleton defect is proven; concurrent runtime/database effect remains unmeasured |
 | Release-risk characterization successor | Disposable current-tip migration/recovery rehearsal | canonical SHA/copy integrity established; current-tip migration behavior remains inconclusive |
 | Release-risk acceptance successor | Current-tip Windows startup/login/exit measurement | historical timing exists; current-tip measurement remains inconclusive |
 | Release-risk acceptance successor | Android PREDMET lifecycle/referential parity acceptance | shared Dart flows characterized; physical parity remains inconclusive |
