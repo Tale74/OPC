@@ -10,7 +10,6 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Characterization task | KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
 | Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
 | Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
-| Release-risk acceptance successor | RR-011 Android scenario-snapshot precondition and single-PREDMET replacement structural acceptance completion | Device connectivity, `run-as`, schema/integrity/FK, provenance cleanup and supported full-backup restore are complete; use the synthetic/disposable `ANDROID_TEST` lane to establish a real scenario snapshot precondition and exercise the separately scoped replacement case while retaining PRODUCTION evidence for release/runtime behavior |
 | Owner business decision | Derived reminder/PARTE replacement-state semantic acceptance | observed local-ID replacement retention remains owner-gated/inconclusive |
 | Compatibility test task | Restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
 | Release/security work | Identity/recovery acceptance | auth, PIN, local identity and entitlement compatibility |
@@ -25,3 +24,6 @@ No row ends in later, future, TBD, blank or unowned TODO.
 Closed release-risk acceptance: RR-010 current-tip Windows startup/login/exit
 measurement and owner-authorized login transition acceptance completed with five
 successful transitions; no Windows-timing-specific successor remains.
+
+RR-011 is closed by full Android structural acceptance; scenario-snapshot cleanup
+and single-PREDMET replacement passed, and no RR-011 successor remains.

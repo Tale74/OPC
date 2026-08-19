@@ -15,12 +15,13 @@ This named register is the file-level companion to the completeness ledger.
 - Proven-dead candidate: global production/test/tool/platform/history/documentation search; retained, not deleted.
 - Orphan scan: zero unassigned rows.
 - Windows singleton / second-launch integrity: closed with proof; W1/W2/W3/W4/W5/W6 disposable-lane evidence passes, exact analyzer reports no issues, and the exact full suite passes 419 tests. The earlier apparent tooling hang was characterized as slow historical-schema migration work.
+- RR-011 physical Android structural acceptance: closed with proof; scenario-snapshot cleanup and single-PREDMET replacement passed with stable identity, dependent-row recreation, relaunch persistence and integrity/FK evidence. No RR-011 successor remains.
 
 ## Open with one successor
 
 - PREDMET lifecycle/referential: characterized for tested flows (`OTVOREN → ZATVOREN → ZAVRŠEN`, invalid-transition rejection, final immutability, tested hard-delete and restore cleanup); broader Windows/Android runtime, replacement-derived-state semantics and migration obligations remain open.
 - Canonical database migration/recovery: RR-005 relational-integrity closure classified all 34 provenance and 2 snapshot findings as invalid current data. The bounded hard-delete, replacement and startup correction passes disposable acceptance, migration/recovery 40/40, analyzer, full-suite and Android release validation; canonical SHA is unchanged. RR-005 correction is closed with no successor.
-- Release-risk timing/parity: current-tip Windows startup/login/exit acceptance is closed with five owner-authorized login transitions, five normal exits and three relaunch cycles. RR-011 initialization correction and Android_TEST structural integrity/provenance/full-backup evidence now pass on the disposable lane; scenario-snapshot precondition and separate single-PREDMET replacement acceptance remain incomplete with exactly one concrete successor.
+- Release-risk timing/parity: current-tip Windows startup/login/exit acceptance is closed with five owner-authorized login transitions, five normal exits and three relaunch cycles. RR-011 initialization correction and Android_TEST structural integrity/provenance/full-backup evidence remain valid; the final physical wave proves real scenario-snapshot cleanup plus single-PREDMET replacement, and RR-011 is now closed with no successor.
 - JSON/backup and database: JSON interoperability characterization, database migration/recovery characterization, and restore/cross-platform release rehearsal.
 - JSON interoperability and transfer/backup/restore remain a separate successor from database schema/migration/repair/recovery characterization.
 - PARTE: PARTE characterization/acceptance wave, including physical print and external DOCX editing.
@@ -30,6 +31,6 @@ This named register is the file-level companion to the completeness ledger.
 - IRiU ordering/auth lanes are bounded; remaining mixed seams retain their own characterization successor.
 - Auth/recovery/release: identity/recovery acceptance and cross-platform release rehearsal.
 - PODSETNIK signal taxonomy and policy/finance semantics: owner decision tasks.
-- Phase 4 publication: Logos closure review and authorized publication task.
+- Phase 4 publication: completed through the authorized RR-011 closure publication.
 
 Each open item is linked to exactly one successor in the ledger and forward-action map.
