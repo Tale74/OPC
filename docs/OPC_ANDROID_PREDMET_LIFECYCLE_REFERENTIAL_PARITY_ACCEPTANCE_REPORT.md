@@ -2,17 +2,23 @@
 
 ## Result
 
-`RR-011 EMPTY-BUSINESS-KATALOG CORRECTION PASS — PHYSICAL RE-ACCEPTANCE INCOMPLETE — BOUNDED RR-011 SUCCESSOR RETAINED — READY FOR LOGOS REVIEW`
+`RR-011 PHYSICAL ACCEPTANCE INCOMPLETE — ANDROID_TEST EXECUTION DEVICE OFFLINE — BOUNDED SUCCESSOR RETAINED — READY FOR LOGOS REVIEW`
 
-The Android initialization defect was corrected by removing automatic business-KATALOG creation from fresh lifecycle paths while preserving existing-data repair and normalization. The fresh disposable Android lane now completes first-run setup and reaches the authenticated main screen. Physical lifecycle evidence is positive for disposable PREDMET create, normal close, reopen, relaunch and hard-delete, but the full RR-011 referential/provenance, replacement, bounded backup/restore and direct Android DB-integrity evidence set was not completed in this wave.
+The Android initialization defect was corrected by removing automatic business-KATALOG creation from fresh lifecycle paths while preserving existing-data repair and normalization. The fresh disposable Android lane reaches the authenticated main screen, and prior accepted PRODUCTION release evidence remains preserved. The current execution wave formalized the inspectable `ANDROID_TEST` lane and built its debug artifact successfully, but the full RR-011 referential/provenance, replacement, bounded backup/restore and direct Android DB-integrity evidence set could not begin because the designated device was ADB `offline`; reconnect to `192.168.100.74:38765` failed with Windows error `10060`.
 
 ## Baseline and protected surfaces
 
 - Branch: `task/OPC-RR011-ANDROID-TEST-LANE-INITIALIZATION-CORRECTION`
-- HEAD / published base: `9a25c114e4f01175c871cf4f8383a3b0ca69d478`
+- Published RR-011 correction commit: `91a0b6f6567966d15d6d6c5d93430594f207aaf5`; parent: `9a25c114e4f01175c871cf4f8383a3b0ca69d478`.
 - Windows canonical database SHA-256 pre/post: `8A69AE0EA873EA8B994A882F83D0A49171AA58723E8CA1279BCDFD66EB99BCBB` (unchanged).
 - `windows/runner/main.cpp` SHA-256: `FFD03CCA5821FB1813CDF2D9CAADB687C79DB1E8AFA0CB27976EE8C379885863` (unchanged).
 - SCENARIO, database schema/migrations, dependencies, Windows/Android platform behavior and private data were not changed.
+
+## Evidence-source separation
+
+PRODUCTION remains authoritative for release APK identity, packaging, first-admin setup, authentication and end-user runtime behavior. The formally accepted `ANDROID_TEST` lane is the dedicated synthetic, disposable and inspectable physical structural-acceptance environment. Because the representativeness audit proved shared `AppDatabase`, schema version 27, migrations, repair, RR-005 cleanup, PREDMET/IRiU/SCENARIO persistence and JSON backup/restore authority, direct structural database evidence from `opc_v4_android_test` may complete the remaining RR-011 invariants without weakening PRODUCTION protection. No owner data, credentials, owner backup or private export may enter that lane.
+
+The existing `ANDROID_TEST` debug artifact built successfully with `flutter build apk --debug --no-pub --dart-define=BUILD_VARIANT=ANDROID_TEST` (natural completion, 839.3 seconds). It is package `com.tale.opc_v4`, `debuggable=true`, signed by the accepted Android Debug certificate (`787B56DCD4650B4B33EDE6CC7A32C09CC5A4E45AB006E58064B728652A8F531A`). Physical installation and `run-as` inspection could not begin because the wireless device entered ADB `offline`; reconnect to `192.168.100.74:38765` failed with error `10060`. No package, database or device data was mutated.
 
 ## Correction boundary
 
@@ -37,9 +43,12 @@ The Android initialization defect was corrected by removing automatic business-K
 ## Android physical evidence
 
 - Device: LGN LX1, Android 15/API 35, ADB state `device`; package `com.tale.opc_v4`.
-- APK SHA-256: `6CA9F6F0C44C195FA1A0950539F0D8CD6968E6366C75CF82181D86884F6FE15C`.
+- Accepted release APK SHA-256: `C7A0A2CB9B98516838F41DA7DE51E50C4D0287C493195F2F88CF0372612C2DD4`.
+- Build identity: default/no-define PRODUCTION (`com.tale.opc_v4`, database `opc_v4_release.sqlite`); this was not the ANDROID_TEST variant.
+- Release certificate: Android debug signing certificate, SHA-256 `787B56DCD4650B4B33EDE6CC7A32C09CC5A4E45AB006E58064B728652A8F531A`.
 - Fresh disposable lane after uninstall/install showed `Korak 1 od 2 — Administrator`, then `Korak 2 od 2 — Postavite PIN`, and after the owner-entered private PIN plus `POTVRDI`, `OPC — LISTA PREDMETA` with no schema/index error.
-- Disposable PREDMET `Test Lice` was created, normally closed to `ZATVOREN`, reopened, relaunched to the authenticated main screen, then permanently deleted through the supported UI. The list returned to `Nema predmeta`.
+- Synthetic PREDMETs `Test_A` and `Test_B` were created and saved through the supported UI. Normal exit confirmation (`Izlaz iz aplikacije` -> `IZAĐI`) was exercised; after relaunch and private owner authentication, `OPC — LISTA PREDMETA` showed both records (`Prikazano 2 od 2`). The final instance was normally exited and force-stopped only after UI close for evidence capture.
+- An earlier authorized debug inspection attempt did not produce an APK and remains historical tooling-hang evidence: the Gradle client main thread remained in `SocketInputStream.read`/`DaemonClient.monitorBuild` for approximately 1,850 seconds while the Gradle daemon main thread was in `DaemonStateCoordinator.awaitStop`, worker queues were waiting, no `app-debug.apk` existed, and Gradle output ceased updating at 07:39. A later authorized `ANDROID_TEST` debug build completed successfully and produced the verified inspectable APK; physical installation and inspection were then blocked by the device-offline condition recorded above.
 - No personal name, PIN, database copy or private business data was collected.
 
 ## Acceptance matrix state
@@ -49,10 +58,10 @@ The Android initialization defect was corrected by removing automatic business-K
 | Fresh business KATALOG | PASS | Fresh/reopen disposable DB remains empty; no lifecycle seed path writes business rows. |
 | Existing KATALOG preservation | PASS | Existing rows survive reopen; repair/normalization and unique stable-ID index preserved. |
 | Android setup/authentication | PASS | Clean disposable lane reaches authenticated `OPC — LISTA PREDMETA`. |
-| PREDMET create/close/reopen/hard-delete | PASS (bounded) | Disposable `Test Lice` lifecycle and supported hard-delete completed; list returned empty. |
+| PREDMET create/close/reopen/relaunch | PASS (bounded) | Synthetic `Test_A` and `Test_B` created/saved; normal exit confirmation exercised; release relaunch/authentication returned to `OPC — LISTA PREDMETA` with `Prikazano 2 od 2`. |
 | Referential/provenance/snapshot cleanup | INCOMPLETE | Automated contract evidence exists; full physical Android representative-data proof not completed. |
 | Replacement and bounded backup/restore | INCOMPLETE | Not executed in this correction wave. |
-| Android DB integrity (`user_version=27`, integrity/FK) | INCONCLUSIVE | Release APK is not debuggable; direct disposable-lane query was not available without protected-data access. |
+| Android DB integrity (`user_version=27`, integrity/FK) | INCOMPLETE — DEVICE OFFLINE | Release APK is not debuggable; the later authorized ANDROID_TEST inspection build produced a debuggable APK, but the target device was offline before installation, so no protected sandbox or database copy was accessed. |
 | Background/relaunch | PASS (bounded) | Home/background and normal relaunch returned to authenticated main state. |
 | Canonical Windows DB / protected source | PASS | Canonical and runner hashes unchanged; no protected implementation surfaces changed. |
 

@@ -77,6 +77,10 @@ Every future phase starts with a **FULL POST-SCENARIO CONTINUITY INTAKE**. Befor
 
 ## 7. Generated code and data rules
 
+### 7A. Android physical structural-acceptance lane
+
+`ANDROID_TEST` is the dedicated synthetic, disposable and inspectable physical structural-acceptance environment during OPC development. It uses the shared database, migration, repair, lifecycle, referential-cleanup and backup/restore implementation authority with a separate `opc_v4_android_test` database identity. Direct read-only inspection of that disposable database is permitted through the debuggable test package. PRODUCTION remains the authority for release packaging, end-user behavior, authentication and production data protection. The dedicated test device must not contain owner production data, credentials, owner backups or private owner exports; structural evidence may be reused only where shared implementation authority has been proven.
+
 - Treat Drift-generated `database.g.dart` as generated output; do not edit it as hand-written architecture.
 - Protect schema/migration history, runtime data compatibility and backup/restore contracts.
 - Treat a fresh test/runtime database as empty of user/business KATALOG content. Tests that need catalogue data must insert an explicit fixture; production startup, reopen and migrations must not hide business bootstrap.
