@@ -66,6 +66,8 @@ Owner runtime evidence is authority for observed end-product behavior, not autom
 
 Release/runtime evidence remains PRODUCTION-specific. For shared database invariants, `ANDROID_TEST` is the dedicated synthetic, disposable and intentionally inspectable physical acceptance lane: its `opc_v4_android_test` database may be copied read-only through the debuggable test package for schema, integrity, referential-cleanup, replacement and backup/restore evidence. This lane does not relax PRODUCTION protection and must contain no owner production data, credentials, backups or private exports. ANDROID_TEST evidence is authoritative only for invariants whose implementation equivalence with PRODUCTION has been explicitly proven.
 
+RR-011 current-fact status: the physical ANDROID_TEST wave completed with bounded PASS evidence for device connectivity, schema/integrity/FK, provenance cleanup and full-backup restore. The earlier ADB-offline/10060 attempt is historical. RR-011 remains open only for the absent scenario-snapshot precondition and the separately scoped single-PREDMET replacement acceptance, tracked by `RR-011 Android scenario-snapshot precondition and single-PREDMET replacement structural acceptance completion`.
+
 Current architecture/deployment concerns include Windows single-instance protection, repaired-state/canonical closure, Android transfer/runtime parity, notification lifecycle, filesystem/storage behavior and installer/signing readiness.
 
 ## 6. Backup, restore and interoperability

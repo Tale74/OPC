@@ -81,6 +81,8 @@ Every future phase starts with a **FULL POST-SCENARIO CONTINUITY INTAKE**. Befor
 
 `ANDROID_TEST` is the dedicated synthetic, disposable and inspectable physical structural-acceptance environment during OPC development. It uses the shared database, migration, repair, lifecycle, referential-cleanup and backup/restore implementation authority with a separate `opc_v4_android_test` database identity. Direct read-only inspection of that disposable database is permitted through the debuggable test package. PRODUCTION remains the authority for release packaging, end-user behavior, authentication and production data protection. The dedicated test device must not contain owner production data, credentials, owner backups or private owner exports; structural evidence may be reused only where shared implementation authority has been proven.
 
+RR-011 current fact after the physical Android wave is `PHYSICAL ACCEPTANCE INCOMPLETE — ANDROID_TEST STRUCTURAL EVIDENCE PARTIAL — BOUNDED SUCCESSOR RETAINED`: connectivity and bounded structural/provenance/backup-restore evidence pass; the earlier ADB-offline attempt is historical. Scenario-snapshot precondition and single-PREDMET replacement remain incomplete under the sole successor `RR-011 Android scenario-snapshot precondition and single-PREDMET replacement structural acceptance completion`.
+
 - Treat Drift-generated `database.g.dart` as generated output; do not edit it as hand-written architecture.
 - Protect schema/migration history, runtime data compatibility and backup/restore contracts.
 - Treat a fresh test/runtime database as empty of user/business KATALOG content. Tests that need catalogue data must insert an explicit fixture; production startup, reopen and migrations must not hide business bootstrap.

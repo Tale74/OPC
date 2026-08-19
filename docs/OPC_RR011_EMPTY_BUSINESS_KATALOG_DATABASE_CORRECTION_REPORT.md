@@ -1,5 +1,7 @@
 # RR-011 Empty-Business-KATALOG Database Correction Report
 
+> **HISTORICAL / EVIDENCE ONLY — SUPERSEDED CURRENT-STATE REPORT.** This report records the earlier empty-business-KATALOG correction wave. Its incomplete physical-acceptance wording and successor are preserved as historical evidence; the later RR-011 current-fact reconciliation and physical ANDROID_TEST evidence define the current state.
+
 ## Outcome
 
 `RR-011 EMPTY-BUSINESS-KATALOG CORRECTION PASS — PHYSICAL RE-ACCEPTANCE INCOMPLETE — BOUNDED RR-011 SUCCESSOR RETAINED — READY FOR LOGOS REVIEW`

@@ -81,6 +81,12 @@ operative roadmap and release controls.
 
 ## Important partial/open state
 
+### RR-011 current-fact reconciliation — 2026-08-19
+
+The current RR-011 fact is: `PHYSICAL ACCEPTANCE INCOMPLETE — ANDROID_TEST STRUCTURAL EVIDENCE PARTIAL — BOUNDED SUCCESSOR RETAINED`. Device connectivity, authenticated synthetic execution, direct schema/integrity/FK checks, bounded provenance cleanup and supported full-backup export/import/restore are proven on the disposable `ANDROID_TEST` lane. The earlier ADB `offline` / Windows `10060` attempt is historical evidence only and is not the current blocker.
+
+Two structural gaps remain explicitly open: the scenario-snapshot cleanup precondition was absent, and a separate single-PREDMET replacement path was not exercised. The sole successor is `RR-011 Android scenario-snapshot precondition and single-PREDMET replacement structural acceptance completion`. RR-011 remains open; no SCENARIO or owner semantic state is changed.
+
 | Area | Current state | Next evidence/action |
 | --- | --- | --- |
 | SCENARIO JSON | Production `OPC_PREDMET` now carries an optional hashed Single-PREDMET snapshot/provenance block; `OPC_BACKUP` carries snapshot/provenance sections. Legacy schema 6/7 remains readable without falsely claiming imported continuity. | Complete full analyze/build and Windows/Android round-trip acceptance; Android physical transfer remains deferred. |
