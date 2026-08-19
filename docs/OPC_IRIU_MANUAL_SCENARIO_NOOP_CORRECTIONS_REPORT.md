@@ -87,8 +87,8 @@ untouched. A second initialization after repair is a true no-op.
   `Izmene OSNOVNOG PAKETA primenjuju se samo na nove PREDMETE. Postojeći PREDMETI ostaju nepromenjeni.`
 - Added focused manual-row, no-op/legacy-repair and notice regression tests.
 - Added the runtime-observation/root-cause evidence rule to
-  `docs/OPC_TECHNICAL_EXECUTION_STANDARD.md` and
-  `docs/templates/OPC_TASK_TEMPLATE.md`.
+  the external Layer 3 execution-standard and task-template originals preserved
+  in the internal know-how provenance map.
 
 No package-ordering logic, owner kernel definitions, PREDMET snapshots,
 canonical database or unrelated business data was changed.

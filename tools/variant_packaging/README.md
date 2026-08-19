@@ -1,7 +1,7 @@
 # Variant Packaging Lane
 
 Any manual build that follows workspace preparation is blocked until the
-authoritative [successive validation gate](../../docs/GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate)
+authoritative [successive validation gate](../../docs/OPC_DEVELOPMENT.md#6-validation-workflow)
 has conclusively passed. Analyze and the complete test suite are successive,
 never parallel; a timeout or incomplete result does not open the build gate.
 

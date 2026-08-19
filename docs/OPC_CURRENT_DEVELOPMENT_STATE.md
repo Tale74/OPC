@@ -12,6 +12,11 @@ in `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`; forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 
+README is navigation only. The five substantive current OPC authority homes
+are Product/Domain, Architecture, Development, Quality/Release and the
+Engineering Profile. Supporting reports and historical records remain
+subordinate evidence and must not create parallel mutable current authority.
+
 ## Phase 1 documentation navigation
 
 The current product/engineering information homes are:
@@ -64,6 +69,15 @@ for the stable Serbian-market product-line gate and is not a rename.
   technically implemented and tested.
 - Latest inherited technical baseline: analyzer PASS; complete suite 393
   passed, 7 skipped, 0 failed; Windows and Android release builds PASS.
+
+## RR-005 closure reconciliation
+
+RR-005 correction is `CLOSED — FULL ACCEPTANCE PASS — NO RR-005-SPECIFIC
+SUCCESSOR`. Earlier disposable migration/recovery rehearsal records that say
+`ACCEPTANCE INCONCLUSIVE` remain historical/separately scoped evidence; they
+do not reopen RR-005 or create a competing current fact. Broader database,
+JSON, migration or recovery work remains separately classified by the
+operative roadmap and release controls.
 
 ## Important partial/open state
 

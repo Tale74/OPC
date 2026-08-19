@@ -255,7 +255,7 @@ PASS is not allowed unless this block is completed.
 
 Every source/test/generated/configuration change is governed by the single
 authoritative procedure in
-[`GIT_WORKFLOW_ARC.md`](GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate).
+[`OPC_DEVELOPMENT.md`](OPC_DEVELOPMENT.md#6-validation-workflow).
 Analyze must conclusively PASS before the complete test suite starts; both must
 conclusively PASS before any Windows or Android build. Parallel execution,
 timeouts, hangs, incomplete logs, missing exit codes, and focused-only suites

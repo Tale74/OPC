@@ -8,17 +8,25 @@ Current OPC data is stored locally for each user/firma. A possible future OPC We
 
 ## Current documentation map
 
-Start with:
+README is the repository entry point and navigation surface; it is not a
+co-equal detailed content authority. The five substantive current OPC homes
+are the only compact homes for live product meaning:
 
 - [Product and domain authority](docs/OPC_PRODUCT_AND_DOMAIN.md)
 - [Current architecture and deployment](docs/OPC_ARCHITECTURE.md)
 - [Development and validation workflow](docs/OPC_DEVELOPMENT.md)
 - [Quality and release guidance](docs/OPC_QUALITY_RELEASE.md)
 - [Adopted OPC engineering profile](docs/OPC_ENGINEERING_PROFILE.md)
+
+These five homes are authoritative by subject. Other documents below are
+supporting evidence, transition records or historical provenance and must not
+silently compete with them for materially mutable current state.
+
+### Transition and supporting records
 - [Phase 1 migration/authority manifest](docs/OPC_PHASE1_DOCUMENTATION_MIGRATION_AUTHORITY_MANIFEST.csv)
 - [Phase 1 archive and internal-governance classification](docs/OPC_PHASE1_ARCHIVE_AND_INTERNAL_GOVERNANCE_CLASSIFICATION.md)
-- [Internal development-control boundary register](docs/OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md)
-- [Phase 1 implementation report](docs/OPC_PHASE1_IMPLEMENTATION_REPORT.md)
+- [Internal development-control boundary register](docs/OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md) — boundary pointer only; local pseudocode remains outside the product documentation surface.
+- [Phase 1 implementation report](docs/OPC_PHASE1_IMPLEMENTATION_REPORT.md) — transition evidence, not a competing current home.
 
 Supporting authority and evidence:
 
@@ -30,11 +38,10 @@ Supporting authority and evidence:
 - [Implementation stop-list](docs/OPC_IMPLEMENTATION_STOP_LIST.md)
 - [Current development state](docs/OPC_CURRENT_DEVELOPMENT_STATE.md)
 - [Architecture overview](docs/ARCHITECTURE_OVERVIEW.md)
-- [Git and ARC workflow](docs/GIT_WORKFLOW_ARC.md)
 - [Public visibility test](docs/LOGOS_ACCESS_TEST.md)
 
-The authoritative pre-build rule is the [successive validation and build
-gate](docs/GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate):
+The authoritative pre-build rule is the successive validation and build
+gate in [OPC Development](docs/OPC_DEVELOPMENT.md#6-validation-workflow):
 `flutter analyze` must finish green before the complete `flutter test` starts,
 and no Windows/Android build is accepted before both final green exits.
 

@@ -1,6 +1,6 @@
 # OPC Internal Development-Control Register
 
-**Status:** `CURRENT INTERNAL DEVELOPMENT-CONTROL REGISTER`
+**Status:** `CURRENT INTERNAL-DEVELOPMENT BOUNDARY POINTER`
 **Publication boundary:** This register is a public boundary record only. The internal artifacts listed here are not market-facing SOURCE documentation, handover documentation or production specifications.
 
 ## Purpose and authority boundary
@@ -33,6 +33,16 @@ That directory is explicitly ignored by the repository and is not a public Git/G
 | `docs/OPC_WINDOWS_IDENTITY_PERSISTENCE_AUDIT_PSEUDOCODE.md` | `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_WINDOWS_IDENTITY_PERSISTENCE_AUDIT_PSEUDOCODE.md` | `DDC1128827C5B83EC97C5717797FA61EB9746D7C5B2FA041E8CF9435872C970D` | Phase 2 synchronization header and entitlement supersession; body current with explicit Windows deltas | Internal development control |
 
 The separate task report `docs/tasks/OPC_TASK_BUSINESS_CRITICAL_SOURCE_TO_PSEUDOCODE_MAP_LOGOS_LEARNING_LAYER_REPORT.md` remains historical task evidence; it is not part of the moved pseudocode content.
+
+## Why this SOURCE-side pointer remains
+
+This short register is retained only to preserve discoverability, local-path
+boundaries and byte/hash verification for the already separated pseudocode
+artifacts during active OPC maintenance. It is not a reusable operating manual,
+product specification or co-equal current authority. If the local continuity
+set is formally retired, this pointer may be archived with the same no-loss
+controls; no methodology depends on keeping it in the product documentation
+surface.
 
 ## Operating rule
 

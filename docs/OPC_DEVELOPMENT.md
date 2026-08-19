@@ -98,7 +98,13 @@ Ordinary technical decisions may follow the evidence and adopted profile. Owner/
 - resolve a conflict between current business authorities;
 - change protected database/data ownership or release acceptance.
 
-The HUMAN GATE, Logos↔Codex role separation, anti-drift method, forensic evidence discipline and pseudocode/roadmap comparison are internal development/governance know-how. They support active OPC/OPC Int development but are not required market-facing product documentation.
+The owner confirmation gate is an OPC project control for protected decisions;
+it does not delegate business meaning to a tool or report. Protected decisions
+include PREDMET semantics, SCENARIO unlocks, database ownership, release
+acceptance and other gates listed above. The reusable mechanics for task
+framing, evidence packaging and human/AI collaboration are maintained outside
+the product documentation surface; this home retains only the OPC-specific
+constraints and required evidence outcomes.
 
 ## 9. Contribution and documentation rules
 
@@ -111,6 +117,11 @@ Current-state documentation is maintained as docs-as-code:
 - use ADRs only for durable technical structure, interfaces, dependencies, construction or NFR decisions;
 - keep business authority in the product/domain home, not in ADRs or task reports;
 - for a substantial task with multiple review artifacts, create one task-scoped review handoff index in the local review area. It must identify each artifact, authoritative path, state, hashes where useful, changed-file scope, validation and unresolved decisions. The index is a non-authoritative convenience layer, is not a current product-documentation home and is not added to README/current-state navigation.
+
+Every OPC task records the project manifest start/end compliance fields,
+branch/base identity, changed paths, validation results, protected surfaces and
+known risks. These are project evidence requirements; reusable task-writing and
+collaboration method is not a SOURCE authority.
 
 ## 10. Current protected/open areas
 

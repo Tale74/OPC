@@ -171,7 +171,7 @@ documentation update.
 
 ## P. Technical execution standard
 
-`OPC_TECHNICAL_EXECUTION_STANDARD.md` consolidates authority, production-path
+The former `OPC_TECHNICAL_EXECUTION_STANDARD.md` consolidated authority, production-path
 proof, canonical DB protection, validation sequencing, runtime/artifact
 classification, Git public verification, test authority, owner-gate rules and
 the technical debt register. It also separates external public best practices

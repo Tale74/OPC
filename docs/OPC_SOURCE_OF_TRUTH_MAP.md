@@ -2,9 +2,10 @@
 
 Status: current Phase 1 authority/navigation baseline.
 
-## Phase 1 current-state information homes
+## Active current-state information homes
 
-The compact current-state product/engineering homes are now:
+The compact current-state product/engineering surface is README navigation
+plus five substantive homes. README is not a co-equal detailed authority:
 
 | Information purpose | Current home |
 |---|---|
@@ -13,15 +14,23 @@ The compact current-state product/engineering homes are now:
 | Development, authority and validation workflow | `docs/OPC_DEVELOPMENT.md` |
 | Quality, regression, runtime and release gaps | `docs/OPC_QUALITY_RELEASE.md` |
 | Adopted OPC engineering profile | `docs/OPC_ENGINEERING_PROFILE.md` |
-| Per-file migration/authority evidence | `docs/OPC_PHASE1_DOCUMENTATION_MIGRATION_AUTHORITY_MANIFEST.csv` |
-| Archive/internal-governance separation | `docs/OPC_PHASE1_ARCHIVE_AND_INTERNAL_GOVERNANCE_CLASSIFICATION.md` |
-| Internal development-control boundary | `docs/OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md` (local artifacts are outside the market-facing `docs/` surface) |
-| Phase 1 implementation evidence | `docs/OPC_PHASE1_IMPLEMENTATION_REPORT.md` |
 
-These homes are the normal reading surface. Every detailed row below is
+The manifest, archive classification, internal-control register and Phase 1
+implementation report are transition/supporting records. They remain useful
+and linked, but do not add current authority homes.
+
+These five homes are the normal reading surface. Every detailed row below is
 subordinate supporting authority/evidence, owner provenance, governance,
 historical, internal or private material; none is a co-equal compact current
 authority home.
+
+## RR-005 closure reconciliation
+
+The current correction authority is `RR-005 CORRECTION CLOSED — FULL
+ACCEPTANCE PASS — NO RR-005-SPECIFIC SUCCESSOR` in the release-risk and
+open/closed control records. Earlier disposable migration/recovery rehearsal
+records that report `ACCEPTANCE INCONCLUSIVE` are historical/separately scoped
+evidence only. They must not reopen RR-005 or become a second current fact.
 
 | Area | Current source of truth | Supporting sources | Status / caution |
 | --- | --- | --- | --- |
@@ -31,10 +40,10 @@ authority home.
 | Current development dependency order | `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md` | `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`, current state, latest scoped reports, source/tests | CURRENT SUPPORTING EVIDENCE — operative dependency-map input subordinate to the compact homes. Historical chronology in the pre-reconciliation plan remains Git evidence, not current sequencing. |
 | Plan reality evidence | `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md` | Exact reviewed reports, source/test cross-check and Git history | CURRENT SUPPORTING EVIDENCE — reconciliation provenance for completed work, blockers, debt, owner queue and product-line boundary. |
 | Core purpose | `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md` | Post-zero authority, `README.md`, `docs/PRODUCT_DIRECTION.md` | CURRENT SUPPORTING EVIDENCE — governance input subordinate to post-zero owner authority and the compact homes. |
-| IRiU business composition and ordering | Owner-approved generic invariant recorded in `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md` and `docs/OPC_TECHNICAL_EXECUTION_STANDARD.md` | Applied SCENARIO snapshot, package configuration, technical projections and local internal development-control material | CURRENT SUPPORTING EVIDENCE — invariant surfaced in `OPC_PRODUCT_AND_DOMAIN.md`: ordered OSNOVNI PAKET → ordered applied SCENARIO PAKET → manual/unpredicted items. Package contents are editable; concrete item lists, persisted `redosled`, provenance, source output and golden fixtures are not authority. |
+| IRiU business composition and ordering | Owner-approved invariant recorded in `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md` and surfaced in `docs/OPC_PRODUCT_AND_DOMAIN.md` | Applied SCENARIO snapshot, package configuration, technical projections and local internal development-control material | CURRENT SUPPORTING EVIDENCE — ordered OSNOVNI PAKET → ordered applied SCENARIO PAKET → manual/unpredicted items. Package contents are editable; concrete item lists, persisted `redosled`, provenance, source output and golden fixtures are not authority. |
 | Pre-zero owner decisions | None | `docs/OPC_OWNER_DECISION_*.md`, pre-zero task reports | HISTORICAL EVIDENCE ONLY unless explicitly reconfirmed post-zero. |
 | Terminology | `docs/OPC_CANONICAL_TERMINOLOGY_GLOSSARY.md` | Manifest and source-code evidence | CURRENT SUPPORTING EVIDENCE — terminology/continuity reference subordinate to the compact product/domain home; business-policy changes require post-zero owner confirmation. |
-| Source-of-truth hierarchy | This document | `docs/GIT_WORKFLOW_ARC.md`, task reports | CURRENT SUPPORTING EVIDENCE — hierarchy record; the compact homes are the normal reading surface. |
+| Source-of-truth hierarchy | This document | `docs/OPC_DEVELOPMENT.md`, task reports | CURRENT SUPPORTING EVIDENCE — hierarchy record; the compact homes are the normal reading surface. |
 | Stop boundaries | `docs/OPC_IMPLEMENTATION_STOP_LIST.md` | Manifest special gates | CURRENT SUPPORTING EVIDENCE — stop/control record; the compact homes are the normal reading surface. |
 | Locked-rule summary | `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md` | Manifest, current source/tests and Git history | PRE-ZERO/TECHNICAL EVIDENCE; not current owner authority. |
 | Backup/restore policy | `docs/OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md` | Post-zero canonical-data boundary, current source/tests and Git history | TECHNICAL/RECOVERY EVIDENCE; identity guard remains a technical-audit item. |
@@ -61,8 +70,6 @@ authority home.
 | SCENARIO locked module baseline | `docs/OPC_SCENARIO_MODULE_LOCK.md` | `docs/OPC_SCENARIO_MODULE_LOCK_REPORT.md`, locked source SHA, predecessor runtime/build evidence and existing Tier 2 tests | CURRENT SUPPORTING EVIDENCE — SCENARIO lock governance evidence subordinate to the compact homes. SCENARIO is locked; production changes require explicit unlock or proven regression correction. |
 | Cross-device continuity final closure | `docs/OPC_CROSS_DEVICE_CONTINUITY_FINAL_CLOSURE_REPORT.md` | Final-closure source/tests, fresh forensic-copy SQL proof and validation logs | CURRENT SUPPORTING EVIDENCE — scoped closure evidence subordinate to the compact homes; canonical DB mutation and Android physical acceptance remain separately gated. |
 | Windows KATALOG→IRiU pipeline / runtime closure | `docs/OPC_CANONICAL_KATALOG_IRIU_PIPELINE_WINDOWS_CLOSURE_REPORT.md` (supersedes the prior Windows visual-closure report for this scope) | Source inventory, canonical snapshot repair, focused tests/analyzer/build, owner runtime evidence and deployment blocker | CURRENT SUPPORTING EVIDENCE — Windows gate evidence subordinate to the compact homes; repaired-build deployment and installed visual/SCENARIO/LISTA proof remain deferred. |
-| Git workflow | `docs/GIT_WORKFLOW_ARC.md` | GitHub branch/commit/report handoffs | CURRENT SUPPORTING EVIDENCE — workflow/control record subordinate to `OPC_DEVELOPMENT.md`. |
-| Task report format | `docs/templates/OPC_TASK_TEMPLATE.md` | Manifest gate script | CURRENT SUPPORTING EVIDENCE — task/governance template subordinate to `OPC_DEVELOPMENT.md`. |
 | Public task reports | `docs/tasks/*.md` | Git history | AUDIT EVIDENCE; latest report wins only inside its scope. |
 | Legacy/parallel project-doc locations | None currently present in the known tree | Git history, protected backups, local Phase 1 inventory and surviving local evidence | Legacy `SOURCE/PROJECT_DOCS` and external `PROJECT_DOCS` locations are not automatically current authority; any surviving local material remains classified by the Phase 1 manifest and is not deleted or ignored merely because it is outside Git. |
 | Promoted pre-zero summaries | Inventory-classified Git documents | Current source/tests and Git history | PRE-ZERO OR TECHNICAL EVIDENCE ONLY; no raw local source remains active. |

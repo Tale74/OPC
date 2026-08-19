@@ -13,7 +13,7 @@ Read:
 - `docs/OPC_OWNER_DECISION_REPORT.md`
 - `docs/OPC_SOURCE_OF_TRUTH_MAP.md`
 - `docs/OPC_IMPLEMENTATION_STOP_LIST.md`
-- `docs/GIT_WORKFLOW_ARC.md`
+- external Layer 3 workflow know-how (SOURCE provenance map)
 
 Purpose: learn the non-negotiable OPC boundaries.
 What Logos must learn: PREDMET is master truth; firma owns database; Windows/Android parity; future Web is complementary; implementation gates.

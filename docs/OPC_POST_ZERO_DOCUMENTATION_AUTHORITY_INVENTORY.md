@@ -70,10 +70,9 @@ approval of a business change.
   evidence matrix and reconciliation provenance;
 - `docs/OPC_CURRENT_DEVELOPMENT_STATE.md`;
 - `docs/OPC_SOURCE_OF_TRUTH_MAP.md`;
-- `docs/GIT_WORKFLOW_ARC.md`;
+- external Layer 3 workflow know-how (provenance recorded outside SOURCE);
 - `docs/OPC_IMPLEMENTATION_STOP_LIST.md`;
-- `docs/templates/OPC_TASK_TEMPLATE.md`;
-- `docs/OPC_TECHNICAL_EXECUTION_STANDARD.md`;
+- external Layer 3 task-template and execution-standard originals (provenance recorded outside SOURCE);
 - `docs/OPC_DOCUMENTATION_TRUTH_RECOVERY_REPORT.md` within this exact
   reconciliation scope;
 - `docs/OPC_DOCUMENTATION_TRUTH_RECOVERY_CORRECTION_MATRIX.md`;

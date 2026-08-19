@@ -3,7 +3,7 @@
 This lane prepares a standard Inno Setup installer for the Windows build of OPC.
 
 Before step 1, the authoritative
-[`flutter analyze` -> complete `flutter test` -> build gate](../../docs/GIT_WORKFLOW_ARC.md#authoritative-successive-validation-and-build-gate)
+[`flutter analyze` -> complete `flutter test` -> build gate](../../docs/OPC_DEVELOPMENT.md#6-validation-workflow)
 must be conclusively green. A pre-gate build must not be used as installer
 input or runtime-validation evidence.
 

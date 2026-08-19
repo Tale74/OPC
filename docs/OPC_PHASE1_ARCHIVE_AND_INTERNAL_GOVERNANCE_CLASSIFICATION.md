@@ -1,6 +1,6 @@
 # OPC Phase 1 Archive and Internal Governance Classification
 
-**Status:** `CURRENT TRANSITIONAL CLASSIFICATION`
+**Status:** `CURRENT CONSOLIDATION EXECUTION CLASSIFICATION`
 **Purpose:** separate final market-facing product/engineering information from internal development/governance know-how and historical evidence. Closure Correction physically separates only the byte-preserved internal pseudocode set; it does not refresh content or retire historical evidence.
 
 ## 1. Final market-facing OPC product/engineering package
@@ -91,3 +91,13 @@ A document may move from active documentation only when all are proven:
 7. a replacement information home exists and is verified.
 
 If any condition is incomplete, keep it temporarily.
+
+## 7. Bounded consolidation execution rule
+
+The active reading surface is README navigation plus five substantive homes:
+Product/Domain, Architecture, Development, Quality/Release and Engineering
+Profile. Historical and supporting rows remain in place until a wave proves
+replacement coverage, link safety, hash preservation and no-loss. This
+classification does not authorize blind bulk movement or deletion. RR-005
+correction is closed; older inconclusive migration/recovery rehearsal records
+remain evidence only and do not reopen that fact.
