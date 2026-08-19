@@ -82,8 +82,6 @@ class AppDatabase extends _$AppDatabase {
       await _prepareAuthSecuritySchema();
       await _createIriuLifecycleDecisionTable();
       await _createCeremonyReminderSettingsTable();
-      await _seedIriuKatalog();
-      await repairKnownCatalogIntegrity();
       await _backfillBuiltInIriuBasicPolicy();
       await _seedPredlosciDokumenata();
       await _seedSingletons();
@@ -188,7 +186,8 @@ class AppDatabase extends _$AppDatabase {
           iriuKatalogConfig,
           iriuKatalogConfig.osnovnaUSvakomPredmetu,
         );
-        await _seedIriuKatalog();
+        // Business KATALOG content is never recreated by migration. Existing
+        // rows remain authoritative; only the schema column is added here.
         await _backfillBuiltInIriuBasicPolicy();
       }
       if (from < 23) {
@@ -229,8 +228,6 @@ class AppDatabase extends _$AppDatabase {
       }
       final migrator = createMigrator();
       await _recoverSupportedAdditiveSchema(migrator);
-      final existingCatalogArticles = await select(katalogArtikli).get();
-      await _seedIriuKatalog(loadPhotos: existingCatalogArticles.isEmpty);
       await repairKnownCatalogIntegrity();
       await repairKnownReferentialIntegrity();
       await _backfillBuiltInIriuBasicPolicy();
@@ -853,6 +850,8 @@ class AppDatabase extends _$AppDatabase {
 
   // ── IRIU katalog — predefinisane stavke (sloj 1) ─────────────────────────
 
+  // Kept as a legacy forensic helper; no lifecycle path invokes it.
+  // ignore: unused_element
   Future<void> _seedIriuKatalog({bool loadPhotos = true}) async {
     final stavke = [
       (naziv: 'SANDUK', prikaz: 'Sanduk', tip: 'KATALOSKA', red: 1),

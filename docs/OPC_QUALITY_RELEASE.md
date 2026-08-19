@@ -17,7 +17,7 @@ For any authorized task changing source, tests, generated source, schema/migrati
 4. Only after both green gates, run an authorized Windows or Android release build.
 5. Only after the relevant build, perform disposable/runtime acceptance when authorized.
 
-Analyzer and full tests must be sequential. Timeout, hang, interrupted output or missing final exit code is not PASS. Focused tests are useful evidence but do not replace the complete suite when the task requires it.
+Analyzer and full tests must be sequential, with one Flutter/Dart/Gradle process chain active at a time. They are allowed to run to natural completion on the OPC Windows environment; elapsed time alone is not evidence of a hang. Only affirmative technical evidence (such as a demonstrated deadlock, permanently blocked child process, unrecoverable tooling/file lock or explicit tooling failure) may classify a genuine hang. A command without a conclusive final summary and exit code is not PASS. Focused tests are useful evidence but do not replace the complete suite when the task requires it.
 
 Documentation-only Phase 1 changes do not change Flutter behavior, so no full Flutter suite is required solely to validate this documentation implementation. Validation for this phase is documented in the Phase 1 report.
 
@@ -75,6 +75,8 @@ Single-PREDMET transfer and full-backup JSON remain distinct. Release acceptance
 - malformed/legacy input behavior;
 - isolated-copy migration and restore evidence;
 - Windows/Android artifact and runtime scope.
+
+Release/data-integrity acceptance also protects the empty-business-KATALOG contract: a fresh database may create structural/auth singleton state, but must not invent user/business categories or articles. Existing KATALOG content must survive reopen and migration without automatic reseeding; tests must provide explicit catalogue fixtures when required.
 
 Prior successful incidents are scoped evidence, not the final product-line rehearsal. A release-candidate backup/restore rehearsal remains open in the current development plan.
 

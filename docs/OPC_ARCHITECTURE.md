@@ -53,7 +53,7 @@ OPC is one in-process Flutter application. “Containers” here are logical run
 | Reminders/PODSETNIK | `features/podsetnik/presentation`, `features/predmeti/reminders` | Reminder UI, scheduling and notification integration | PREDMET lifecycle, settings, platform notifications |
 | Stock/effects | `features/stanje_robe/**`, stock tables | Inventory and consequence/effect lifecycle | PREDMET/IRiU, KATALOG identity, settings/entitlements |
 | Identity/settings/access | `features/auth/**`, `features/podesavanja/**`, `core/entitlements/**` | Session, users, firm/settings and technical access context | Persistence, crypto, platform/runtime context |
-| Persistence/data platform | `core/database/**`, Drift generated code | Schema, migrations, seed/repair/recovery, database identity and tables | Drift/SQLite, filesystem/test selectors |
+| Persistence/data platform | `core/database/**`, Drift generated code | Schema, migrations, repair, recovery, database identity and tables; fresh databases contain no user/business KATALOG content | Drift/SQLite, filesystem/test selectors |
 | Interoperability/backup | `core/json_transfer/**`, `core/utils/json_export_import.dart`, format utilities | Single-PREDMET transfer, full backup, validation, serialization and mutation coordination | Nearly every feature and persistence |
 | Platform/deployment adapters | `android/**`, `windows/**`, Flutter plugins | Native runner, permissions, notifications, filesystem, packaging and installation | Flutter SDK, OS APIs, installer/build tools |
 
@@ -93,7 +93,7 @@ No complete file-level circular import claim is made here. The relevant finding 
 
 ## 6. Persistence and data architecture
 
-`AppDatabase` is created at startup. Drift tables cover PREDMET, users/firma/settings, IRiU/KATALOG/provenance, SCENARIO definitions/modules/snapshots, PARTE, stock/effects/consequences, logs, contacts and document-related state. Schema migrations are versioned through the current schema version 27 with recovery/seed/identity protections documented in source and tests.
+`AppDatabase` is created at startup. Drift tables cover PREDMET, users/firma/settings, IRiU/KATALOG/provenance, SCENARIO definitions/modules/snapshots, PARTE, stock/effects/consequences, logs, contacts and document-related state. Schema migrations are versioned through the current schema version 27 with recovery/repair/identity protections documented in source and tests. A fresh database creates structural singleton/auth state only: user/business KATALOG rows are not automatically created. Existing KATALOG rows remain authoritative across reopen and migration; repair and legacy normalization remain explicit integrity operations.
 
 The generated `database.g.dart` is generated output and is not hand-written architecture debt. Database schema/migration history, user data compatibility and recovery behavior must remain protected during any later restructuring.
 

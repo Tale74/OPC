@@ -16,6 +16,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final moduleRepository = ScenarioModuleRepository(db);
 
       final module = await moduleRepository.ensureModuleAndDefaults();
@@ -34,6 +35,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final predmetRepository = PredmetiRepository(db);
       final scenarioRepository = ScenarioModuleRepository(db);
       final iriuRepository = IriuRepository(db);
@@ -135,6 +137,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final predmeti = PredmetiRepository(db);
       final scenarios = ScenarioModuleRepository(db);
       final iriu = IriuRepository(db);

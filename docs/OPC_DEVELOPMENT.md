@@ -67,7 +67,7 @@ For tasks changing source, tests, generated source, schema/migrations, assets, r
 4. only after both green gates, authorized Windows/Android builds;
 5. only after builds, disposable/runtime evidence where authorized.
 
-Analyzer and full test commands are sequential, never parallel. A timeout, hang, incomplete output or missing final exit code is not PASS. Flutter tests on the current Windows machine use `--concurrency=1` when the workflow requires it.
+Analyzer and full test commands are sequential, never parallel, with one Flutter/Dart/Gradle process chain active at a time. On the OPC Windows environment, `flutter analyze` and the complete `flutter test` suite must be allowed to reach natural completion; elapsed time alone is not evidence of a hang. Only affirmative technical evidence such as a demonstrated deadlock, permanently blocked child process, unrecoverable tooling/file lock or explicit tooling failure may classify a genuine hang. A command without a conclusive final summary and exit code is not PASS. Flutter tests on the current Windows machine use `--concurrency=1` when the workflow requires it.
 
 Documentation-only changes that do not affect source/tests/configuration/build behavior use documentation/repository validation rather than an automatic expensive Flutter suite. Phase 1 therefore validates links, references, manifest coverage and protected-state integrity.
 
@@ -79,6 +79,7 @@ Every future phase starts with a **FULL POST-SCENARIO CONTINUITY INTAKE**. Befor
 
 - Treat Drift-generated `database.g.dart` as generated output; do not edit it as hand-written architecture.
 - Protect schema/migration history, runtime data compatibility and backup/restore contracts.
+- Treat a fresh test/runtime database as empty of user/business KATALOG content. Tests that need catalogue data must insert an explicit fixture; production startup, reopen and migrations must not hide business bootstrap.
 - Use isolated/forensic copies for risky data work; never replace a designated user database with a prepared/test database.
 - Keep single-PREDMET JSON and full-backup JSON distinct.
 - Do not commit runtime databases, customer data, exports, private backups, credentials or machine-local configuration.

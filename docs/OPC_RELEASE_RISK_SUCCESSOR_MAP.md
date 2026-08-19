@@ -5,10 +5,6 @@ Every remaining defect or inconclusive result has one bounded successor. The Win
 | Decision IDs | Bounded successor | Completion evidence |
 |---|---|---|
 | RR-008 | Derived reminder/PARTE replacement-state acceptance | Explicit semantic oracle; replacement and restore cases; owner-gated meaning recorded without delegating technical design |
-| RR-011 | Android test-lane database initialization/schema-version correction + physical RR-011 re-acceptance | Correct the disposable-lane initialization mismatch without touching production data, then repeat startup/login, lifecycle, referential cleanup, replacement, bounded backup/restore, background/relaunch and Android DB-integrity evidence |
+| RR-011 | Android physical RR-011 referential/backup/DB-integrity acceptance completion | Disposable Android lane completes representative provenance/snapshot cleanup, replacement, bounded backup/restore and direct Android integrity evidence while preserving canonical Windows data |
 
-The singleton prerequisite, RR-005 correction and RR-010 current-tip Windows
-startup/login/exit acceptance are closed by full acceptance. RR-010 has no
-Windows-timing-specific successor. RR-008 remains an owner-gated acceptance
-successor. RR-011 is a bounded Android initialization correction successor and
-is not a reason to alter current source in this wave.
+The singleton prerequisite, RR-005 correction and RR-010 current-tip Windows startup/login/exit acceptance are closed by full acceptance. RR-010 has no Windows-timing-specific successor. RR-008 remains an owner-gated acceptance successor. RR-011 initialization correction is complete; the bounded successor covers only the acceptance evidence that remained incomplete or inconclusive in this wave.

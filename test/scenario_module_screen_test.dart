@@ -19,6 +19,7 @@ void main() {
     tester,
   ) async {
     final db = createTestDatabase();
+    await seedScenarioCatalogForTest(db);
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

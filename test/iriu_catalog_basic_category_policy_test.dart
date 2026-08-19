@@ -40,7 +40,7 @@ void main() {
       );
     });
 
-    test('fresh schema seeds fixed categories once with policy NE', () async {
+    test('fresh schema starts without business categories', () async {
       final db = createTestDatabase();
       addTearDown(db.close);
 
@@ -49,9 +49,7 @@ void main() {
         final rows = await (db.select(
           db.iriuKatalogConfig,
         )..where((row) => row.interniNaziv.equals(internalName))).get();
-        expect(rows, hasLength(1));
-        expect(rows.single.tip, 'FIKSNA');
-        expect(rows.single.osnovnaUSvakomPredmetu, isFalse);
+        expect(rows, isEmpty);
       }
     });
 

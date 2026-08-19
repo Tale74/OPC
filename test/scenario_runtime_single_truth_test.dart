@@ -20,6 +20,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       await (db.update(db.iriuKatalogConfig)
             ..where((row) => row.interniNaziv.equals(IriuK.peskirZaKrst)))
           .write(const IriuKatalogConfigCompanion(cena: Value(42.5)));
@@ -43,6 +44,7 @@ void main() {
   test('SCENARIO is the only source of the basic package', () async {
     final db = createTestDatabase();
     addTearDown(db.close);
+    await seedScenarioCatalogForTest(db);
     final scenarios = ScenarioModuleRepository(
       db,
       loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -72,6 +74,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final scenarios = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),

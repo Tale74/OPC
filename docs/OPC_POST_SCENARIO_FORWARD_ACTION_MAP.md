@@ -10,7 +10,7 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Characterization task | KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
 | Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
 | Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
-| Release-risk defect successor | Android test-lane database initialization/schema-version correction + physical RR-011 re-acceptance | current-tip Android setup reproduces `user_version 0` with existing `app_podesavanja`; complete physical lifecycle/referential acceptance only after safe lane correction |
+| Release-risk acceptance successor | Android physical RR-011 referential/backup/DB-integrity acceptance completion | Initialization correction is complete; remaining disposable-lane physical referential, replacement, backup/restore and direct Android integrity evidence is still required |
 | Owner business decision | Derived reminder/PARTE replacement-state semantic acceptance | observed local-ID replacement retention remains owner-gated/inconclusive |
 | Compatibility test task | Restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
 | Release/security work | Identity/recovery acceptance | auth, PIN, local identity and entitlement compatibility |

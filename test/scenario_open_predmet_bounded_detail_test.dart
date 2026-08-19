@@ -19,6 +19,7 @@ void main() {
     'bounded open-PREDMET detail keeps one selection and package semantics',
     (tester) async {
       final db = createTestDatabase();
+      await seedScenarioCatalogForTest(db);
       final scenarioRepository = ScenarioModuleRepository(db);
       await scenarioRepository.ensureModule();
       await scenarioRepository.saveDefinition(

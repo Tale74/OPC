@@ -71,6 +71,12 @@ void main() {
         final repo = PodesavanjaRepository(db);
         final predmet = await _insertPredmet(db);
         final iriuId = await _insertIriu(db, predmetId: predmet.id);
+        await _insertCatalogArticle(
+          db,
+          stableId: 'catalog-preservation',
+          category: 'SANDUK',
+          name: 'Catalog preservation',
+        );
         await _insertStock(db, stableId: 'stock-stable-toggle', quantity: 3);
         await _insertAppliedEffect(
           db,
@@ -426,6 +432,7 @@ void main() {
         category: 'SANDUK',
         name: 'Managed sanduk',
       );
+      await _insertCatalogCategory(db, 'SANDUK');
       await db
           .into(db.stanjeRobeStavke)
           .insert(
@@ -551,6 +558,11 @@ void main() {
       );
       session.prijavi(admin);
       await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
+      await _insertCatalogCategories(db, const [
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+      ]);
       await _insertCatalogArticle(
         db,
         stableId: 'stock-init-sanduk',
@@ -644,6 +656,7 @@ void main() {
         );
         session.prijavi(admin);
         await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
+        await _insertCatalogCategory(db, 'SANDUK');
         await _insertCatalogArticle(
           db,
           stableId: StockCatalogIdentity.sandukV0StableId,
@@ -692,6 +705,11 @@ void main() {
       addTearDown(db.close);
 
       final repo = PodesavanjaRepository(db);
+      await _insertCatalogCategories(db, const [
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+      ]);
       await _insertCatalogArticle(
         db,
         stableId: 'stock-read-sanduk',
@@ -746,6 +764,11 @@ void main() {
         addTearDown(db.close);
 
         final repo = PodesavanjaRepository(db);
+        await _insertCatalogCategories(db, const [
+          'SANDUK',
+          'OBELEZJE',
+          'POKROV_GARNITURA',
+        ]);
         await _insertCatalogArticle(
           db,
           stableId: 'visible-sanduk',
@@ -1415,6 +1438,27 @@ Future<int> _insertCatalogArticle(
           cena: const Value(100),
         ),
       );
+}
+
+Future<void> _insertCatalogCategory(AppDatabase db, String category) async {
+  await db
+      .into(db.iriuKatalogConfig)
+      .insert(
+        IriuKatalogConfigCompanion.insert(
+          interniNaziv: category,
+          nazivPrikaz: category,
+          tip: const Value('KATALOSKA'),
+        ),
+      );
+}
+
+Future<void> _insertCatalogCategories(
+  AppDatabase db,
+  Iterable<String> categories,
+) async {
+  for (final category in categories) {
+    await _insertCatalogCategory(db, category);
+  }
 }
 
 Future<void> _insertAppliedEffect(

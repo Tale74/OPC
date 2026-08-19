@@ -19,6 +19,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final scenarios = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),

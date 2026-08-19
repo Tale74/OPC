@@ -375,6 +375,48 @@ void main() {
     expect(await _userVersion(retried), 27);
     await retried.close();
   });
+
+  test(
+    'migration does not recreate absent historical business KATALOG rows',
+    () async {
+      final fixture = await _fixture(
+        currentTemplate,
+        'missing_business_defaults',
+      );
+      addTearDown(fixture.dispose);
+      final migrated = fixture.openAtVersion(
+        21,
+        mutateBeforeOpen: (raw) {
+          raw.execute('''
+            DELETE FROM iriu_katalog_config
+            WHERE interni_naziv IN (
+              'AGENCIJSKE_USLUGE',
+              'DORADA_POGREBNE_OPREME',
+              'KUCANJE_OBELEZJA',
+              'SLOVA_I_BROJEVI'
+            )
+          ''');
+        },
+      );
+      addTearDown(migrated.close);
+
+      await _open(migrated);
+      expect(await _count(migrated, 'iriu_katalog_config'), 1);
+      expect(
+        await migrated
+            .customSelect('''SELECT COUNT(*) AS count FROM iriu_katalog_config
+                 WHERE interni_naziv IN (
+                   'AGENCIJSKE_USLUGE',
+                   'DORADA_POGREBNE_OPREME',
+                   'KUCANJE_OBELEZJA',
+                   'SLOVA_I_BROJEVI'
+                 )''')
+            .getSingle()
+            .then((row) => row.read<int>('count')),
+        0,
+      );
+    },
+  );
 }
 
 Future<OpcDatabaseMigrationFixture> _fixture(File template, String name) =>

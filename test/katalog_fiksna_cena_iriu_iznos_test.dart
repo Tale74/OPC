@@ -15,6 +15,7 @@ void main() {
     final db = createTestDatabase();
     addTearDown(db.close);
     final repo = PodesavanjaRepository(db);
+    await _insertConfig(db, IriuK.limeniUlozak);
 
     await repo.azurirajKatalogStavku(
       IriuK.limeniUlozak,
@@ -35,6 +36,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await _insertConfig(db, IriuK.crnina, tip: 'KATALOSKA');
       final before = await (db.select(
         db.iriuKatalogConfig,
       )..where((row) => row.interniNaziv.equals(IriuK.crnina))).getSingle();
@@ -57,6 +59,7 @@ void main() {
     final db = createTestDatabase();
     addTearDown(db.close);
     final i = IriuRepository(db);
+    await _insertConfig(db, IriuK.limeniUlozak);
     final predmetId = await db
         .into(db.predmeti)
         .insert(
@@ -133,6 +136,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await _insertConfig(db, IriuK.limeniUlozak);
       final config =
           await (db.select(db.iriuKatalogConfig)
                 ..where((row) => row.interniNaziv.equals(IriuK.limeniUlozak)))
@@ -260,4 +264,20 @@ void main() {
       expect(reopened.cena, 120);
     },
   );
+}
+
+Future<void> _insertConfig(
+  AppDatabase db,
+  String interniNaziv, {
+  String tip = 'FIKSNA',
+}) async {
+  await db
+      .into(db.iriuKatalogConfig)
+      .insert(
+        IriuKatalogConfigCompanion.insert(
+          interniNaziv: interniNaziv,
+          nazivPrikaz: interniNaziv,
+          tip: Value(tip),
+        ),
+      );
 }

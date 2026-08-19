@@ -13,6 +13,7 @@ void main() {
   test('OSNOVNI package read/save preserves configured order', () async {
     final db = createTestDatabase();
     addTearDown(db.close);
+    await seedScenarioCatalogForTest(db);
     final repository = ScenarioModuleRepository(db);
 
     await repository.ensureModule();
@@ -28,6 +29,7 @@ void main() {
   test('SCENARIO module seeds defaults as editable data', () async {
     final db = createTestDatabase();
     addTearDown(db.close);
+    await seedScenarioCatalogForTest(db);
     final repository = ScenarioModuleRepository(
       db,
       loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -95,6 +97,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(db);
       final key = const OwnerScenarioPolicyKernel().allKeys().singleWhere(
         (item) =>
@@ -137,6 +140,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -177,6 +181,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -280,6 +285,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -351,6 +357,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -486,6 +493,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(
         db,
         loadAsset: (_) => File('assets/scenario_defaults.json').readAsString(),
@@ -506,6 +514,7 @@ void main() {
   test('SCENARIO module persists the base package and a user rule', () async {
     final db = createTestDatabase();
     addTearDown(db.close);
+    await seedScenarioCatalogForTest(db);
     final repository = ScenarioModuleRepository(db);
 
     final module = await repository.ensureModule();
@@ -557,6 +566,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final repository = ScenarioModuleRepository(db);
       await repository.ensureModule();
       const kernel = OwnerScenarioPolicyKernel();

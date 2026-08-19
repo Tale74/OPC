@@ -52,6 +52,20 @@ final class OpcDatabaseMigrationFixture {
       )
     ''');
     await database.customStatement('''
+      INSERT INTO iriu_katalog_config (
+        interni_naziv, naziv_prikaz, vidljiv, uvek_prikazati,
+        tip, je_korisnicka, osnovna_u_svakom_predmetu, redosled
+      ) VALUES
+        ('AGENCIJSKE_USLUGE', 'Agencijske usluge', 1, 0,
+         'FIKSNA', 0, 1, 15),
+        ('DORADA_POGREBNE_OPREME', 'Dorada pogrebne opreme', 1, 0,
+         'FIKSNA', 0, 0, 1001),
+        ('KUCANJE_OBELEZJA', 'Kucanje obelezja', 1, 0,
+         'FIKSNA', 0, 0, 1002),
+        ('SLOVA_I_BROJEVI', 'Slova i brojevi', 1, 0,
+         'FIKSNA', 0, 0, 1003)
+    ''');
+    await database.customStatement('''
       INSERT INTO iriu (
         predmet_id, katalog_stable_article_id, interni_naziv,
         naziv_prikaz, kom, iznos, cekiran, redosled
@@ -185,14 +199,6 @@ final class OpcDatabaseMigrationFixture {
       db.execute('DROP TABLE IF EXISTS scenario_modules');
     }
     if (version < 22) {
-      db.execute('''
-        DELETE FROM iriu_katalog_config
-        WHERE interni_naziv IN (
-          'DORADA_POGREBNE_OPREME',
-          'KUCANJE_OBELEZJA',
-          'SLOVA_I_BROJEVI'
-        )
-      ''');
       _dropColumn(db, 'iriu_katalog_config', 'osnovna_u_svakom_predmetu');
     }
     if (version < 21) {

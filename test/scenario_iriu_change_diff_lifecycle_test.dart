@@ -19,6 +19,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final predmetRepository = PredmetiRepository(db);
       final scenarioRepository = ScenarioModuleRepository(db);
       final iriuRepository = IriuRepository(db);
@@ -115,6 +116,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final predmetRepository = PredmetiRepository(db);
       final scenarioRepository = ScenarioModuleRepository(db);
       final iriuRepository = IriuRepository(db);
@@ -184,6 +186,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final predmetRepository = PredmetiRepository(db);
       final scenarioRepository = ScenarioModuleRepository(db);
       final iriuRepository = IriuRepository(db);
@@ -260,6 +263,7 @@ void main() {
     () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await seedScenarioCatalogForTest(db);
       final predmetRepository = PredmetiRepository(db);
       final scenarioRepository = ScenarioModuleRepository(db);
       final iriuRepository = IriuRepository(db);
@@ -353,6 +357,7 @@ void main() {
     });
     final file = File('${root.path}${Platform.pathSeparator}opc.sqlite');
     final firstDb = AppDatabase.forTesting(NativeDatabase(file));
+    await seedScenarioCatalogForTest(firstDb);
     final predmetRepository = PredmetiRepository(firstDb);
     final scenarioRepository = ScenarioModuleRepository(firstDb);
     final iriuRepository = IriuRepository(firstDb);
