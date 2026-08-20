@@ -256,8 +256,9 @@ post-lock backup/restore-point task is the next separate authorized step.
 
 The accepted owner oracle is `CURRENT PREDMET TRUTH → CURRENT DERIVED STATE`.
 The single-PREDMET replacement seam now stages and purges app-owned PARTE media,
-removes stale PARTE preparation state, cancels old reminder IDs, preserves the
-local reminder configuration, and reschedules only from the replaced PREDMET.
-Focused replacement integration, analyzer, full-suite and Windows release-build
-evidence pass. Broader PARTE/notification product characterization remains a
+removes stale PARTE preparation state, cancels old reminder IDs, and preserves
+the local reminder configuration while reconciling stale reminder state against
+current PREDMET truth. RR-008 does not define future PODSETNIK trigger,
+scheduling or recreation semantics. Focused replacement integration, analyzer,
+full-suite and Windows release-build evidence pass. Broader PARTE/notification product characterization remains a
 separate concern; no SCENARIO or canonical-data behavior was changed.

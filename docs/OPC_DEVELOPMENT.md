@@ -131,9 +131,10 @@ collaboration method is not a SOURCE authority.
 
 Same-identity replacement is governed by `CURRENT PREDMET TRUTH → CURRENT
 DERIVED STATE`. The replacement seam invalidates stale PARTE preparation/media
-and rebuilds reminder scheduling from the newly current PREDMET while preserving
-the user's reminder configuration. The focused integration contract and full
-serialized QA suite are the current implementation evidence.
+and reconciles stale reminder state against current PREDMET truth while
+preserving the user's reminder configuration. RR-008 does not define future
+PODSETNIK trigger, scheduling or recreation semantics. The focused integration
+contract and full serialized QA suite are the current implementation evidence.
 
 ## 10. Current protected/open areas
 
