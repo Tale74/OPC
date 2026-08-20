@@ -1,5 +1,8 @@
 # OPC Full Post-Scenario Continuity Intake
 
+**Document classification:** `HISTORICAL / PRE-RR012 INTAKE SNAPSHOT — NOT CURRENT RR-012 AUTHORITY`
+Current RR-012 authority is `CLOSED — INSTALLER/UPDATE RUNNING-APP PROTECTION FULL ACCEPTANCE PASS` with successor `NONE`; later closure evidence supersedes the intake-era release-risk recommendations below.
+
 **Status:** `FULL POST-SCENARIO CONTINUITY INTAKE — ANALYSIS / READINESS ONLY`  
 **Baseline HEAD:** `0aada93c8090e6dd075a656b7ea60cad7376e986`  
 **Parent:** `336552ff40eaa72321670cb554ebd1d6d784d30c`  
@@ -49,9 +52,13 @@ The active installed completeness control (PSC-001) is **PARALLEL-SAFE** governa
 
 ## 3. Current authority and roadmap reconciliation
 
+The first bullet below preserves historical intake state; it is not a current RR-012 status claim. Current RR-012 authority is CLOSED with no successor.
+
+RR-012 current-state reconciliation: the intake-era installer acceptance blocker was closed by the later Inno Setup compile and I1/I2/I3 evidence. The current RR-012 fact is `CLOSED — INSTALLER/UPDATE RUNNING-APP PROTECTION FULL ACCEPTANCE PASS`; successor `NONE`.
+
 The current development state and authoritative dependency plan remain the operative sequencing authority. They preserve the following product-roadmap work even though it is not the immediate characterization wave:
 
-- Windows single-instance ownership, installer coordination and canonical-database safety remain open and blocking for the stable product gate.
+- At intake, Windows single-instance ownership and installer coordination were recorded as open and blocking. The native singleton is now closed by the published W1-W6 evidence; installer running-app protection was subsequently closed by the bounded RR-012 I1/I2/I3 acceptance. Canonical-database safety remains protected.
 - Current-tip Windows startup/exit and Android PARTE/IRiU performance require measurement before correction; no presumed refactor is justified.
 - SCENARIO carrier parity, KATALOG/IRiU rendered/runtime proof, final JSON/backup/restore rehearsal and document fidelity remain release or migration obligations.
 - Complete signal semantics and the full PODSETNIK program remain owner-gated; the existing Android notification is evidence for that program, not an isolated patch target.
@@ -65,7 +72,7 @@ The current roadmap also contains active concerns that are not separate ledger c
 
 | Authority-reported concern | Class | Successor |
 |---|---|---|
-| Windows single-instance and installer/canonical-DB contract | FOUNDATIONAL BLOCKER | Current-tip characterization, then a separately authorized bounded implementation and Windows runtime acceptance |
+| Windows single-instance and installer/canonical-DB contract | CLOSED — EVIDENCE VERIFIED | Native singleton W1–W6 and RR-012 installer I1/I2/I3 evidence are accepted; no successor |
 | Windows startup/exit, Android PARTE and IRiU/KATALOG performance | PREREQUISITE | Evidence-first measurement, owner target where required, then correction only if measured gate fails |
 | Broader Windows/Android UI/UX and document typography | PRODUCT-ROADMAP WORK | Full cross-platform UX audit and document artifact/print acceptance |
 | NALOG CVEĆARI scope and RAČUN FIRMA availability/default | DEFERRED BY OWNER GATE | Owner scope/availability decision, then bounded document implementation/acceptance if required |

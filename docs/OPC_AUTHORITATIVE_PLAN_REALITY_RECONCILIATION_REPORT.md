@@ -179,7 +179,7 @@ forensic evidence was copied into the authoritative plan.
 | Architecture decision | Choose correction/refactor/rewrite strategy | Retain + progressive evidence-gated refactor; full rewrite rejected | N/A | N/A | Reassess only on evidence | Complete; no longer predecessor |
 | PREDMET authority | Sole business truth and protected dependencies | Preserved; SCENARIO applied state is PREDMET-owned | Proven in live scenario path | Proven in live scenario path | Referentials/carriers/final parity | Continues as invariant |
 | Referential integrity | Coordinated dependent lifecycle | Hard-delete and scoped restore slices pass; FK remains off; some RI gates remain | Hard-delete PASS | Hard-delete persistence/isolation PASS; prior scoped restore PASS | Classify/close only release-required RI work | Before final gate where risk remains |
-| Windows single-instance | Prevent concurrent canonical DB access | Audit complete, implementation absent | OPEN | N/A | Native mutex + installer coordination + runtime | Early blocker |
+| Windows single-instance / installer | Prevent concurrent canonical DB access and unsafe program-file replacement | Native mutex implementation and W1–W6 acceptance are complete; Inno Setup `AppMutex`/`CloseApplications=no` is implemented and I1/I2/I3 passed | CLOSED — native singleton and installer protection full acceptance PASS | Native singleton PASS; installer compile/I1/I2/I3 PASS | None — RR-012 closed | Reopen only for proven regression or new owner decision |
 | Windows performance | Measurable acceptable startup/exit | Approx. 8–9 s login and slow exit observed; no current-tip acceptance | PARTIAL | N/A | Instrument, target, correct only if needed | Before release gate |
 | Android PARTE performance | Smooth representative runtime | Source risk map exists; current focused profiler absent | N/A | PARTIAL | Profile representative devices | Evidence gate before any fix |
 | IRiU/KATALOG performance | Acceptable picker/open behavior | Characterized but owner slowdown not decomposed | PARTIAL | PARTIAL | Timing trace | Evidence gate before any fix |
@@ -254,7 +254,7 @@ forensic evidence was copied into the authoritative plan.
 
 Current dependency order:
 
-1. Windows single-instance/installer running-app data-integrity contract.
+1. Remaining referential/lifecycle and repaired-state release obligations; the Windows installer contract is closed by RR-012.
 2. Close or explicitly defer remaining referential/lifecycle items based on
    release risk; include explicit completion in platform runtime acceptance.
 3. Current-tip performance measurement and bounded correction only where an

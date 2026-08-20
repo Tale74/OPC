@@ -79,7 +79,7 @@ The following materially define the current product or remain explicitly open:
 - PAKETI restrictions are retired for the current native product; retained entitlement/licensing payloads are compatibility/diagnostic material, not current business restriction authority.
 - Windows and Android remain equal standalone local applications; no mandatory network sync is introduced.
 - PODSETNIK's complete signal/informed-reminder model is open. The Android notification for a `ZAVRŠEN` PREDMET belongs to the lifecycle-aware program, not an isolated patch.
-- Windows single-instance protection, current release-risk integrity and final backup/restore rehearsal remain open technical gates.
+- Native Windows single-instance protection and installer/update running-app protection are closed by full acceptance; remaining release-risk integrity and final backup/restore work remain separately controlled.
 - NALOG CVEĆARI scope, RAČUN availability/default, performance acceptance targets, app identity/version/update channel and future distribution/IP model remain owner decisions or owner/legal decisions as applicable.
 - `MODUL DVE VALUTE`, Web, `OPC_v.1_Int` and broader synchronization are future scope.
 

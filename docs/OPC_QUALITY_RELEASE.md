@@ -68,7 +68,7 @@ Release/runtime evidence remains PRODUCTION-specific. For shared database invari
 
 RR-011 current-fact status: `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`. The final physical ANDROID_TEST wave completed PASS evidence for device connectivity, schema/integrity/FK, provenance cleanup, real scenario-snapshot cleanup and the separately scoped single-PREDMET replacement with stable identity and relaunch persistence. The single-PREDMET `OPC_PREDMET` JSON format does not carry scenario snapshot/provenance rows; that boundary is documented. The earlier ADB-offline/10060 attempt is historical. No RR-011 successor remains.
 
-Current architecture/deployment concerns include Windows single-instance protection, repaired-state/canonical closure, Android transfer/runtime parity, notification lifecycle, filesystem/storage behavior and installer/signing readiness.
+Current architecture/deployment concerns include repaired-state/canonical closure, Android transfer/runtime parity, notification lifecycle, filesystem/storage behavior and installer/signing readiness. Native Windows single-instance protection is closed by the accepted mutex/W1–W6 evidence; installer running-app protection is also closed by the accepted Inno Setup compile and I1/I2/I3 evidence. No RR-012 successor remains.
 
 ## 6. Backup, restore and interoperability
 

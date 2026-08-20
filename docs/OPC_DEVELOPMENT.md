@@ -83,6 +83,8 @@ Every future phase starts with a **FULL POST-SCENARIO CONTINUITY INTAKE**. Befor
 
 RR-011 current fact after the final physical Android wave is `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`: connectivity, scenario-snapshot cleanup, single-PREDMET replacement, stable identity, dependent-row recreation, relaunch persistence and integrity/FK evidence pass in the disposable `ANDROID_TEST` lane. The single-PREDMET `OPC_PREDMET` JSON format does not carry scenario snapshot/provenance rows; that boundary is documented. RR-011 has no remaining successor; the earlier ADB-offline attempt is historical.
 
+Windows native singleton authority is `CLOSED — FULL ACCEPTANCE PASS` from the published `070ea5e476441cb44ad9cac424c6b90a73da5a72` implementation and W1–W6 evidence. Installer/update running-app protection is a separate control: the actual Inno Setup script uses the accepted mutex through `AppMutex` and sets `CloseApplications=no`; Inno Setup 6.7.3 compile and I1/I2/I3 runtime acceptance are `PASS`, with no installation completed. RR-012 is closed with no successor.
+
 - Treat Drift-generated `database.g.dart` as generated output; do not edit it as hand-written architecture.
 - Protect schema/migration history, runtime data compatibility and backup/restore contracts.
 - Treat a fresh test/runtime database as empty of user/business KATALOG content. Tests that need catalogue data must insert an explicit fixture; production startup, reopen and migrations must not hide business bootstrap.
@@ -131,7 +133,7 @@ The following remain visible and are not silently closed by this guide:
 
 - stale/default-branch authority;
 - missing automated analyze/test gates;
-- Windows single-instance and release-risk closure;
+- remaining release-risk closure outside the closed native singleton and installer controls;
 - signing/version/provenance gaps;
 - explicit IP/repository-use/distribution status and third-party license inventory;
 - JSON interoperability hotspot;

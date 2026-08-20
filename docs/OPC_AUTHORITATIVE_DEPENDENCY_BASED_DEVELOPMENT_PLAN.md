@@ -87,8 +87,7 @@ explicit new owner business decision.
 
 ### 2.2 Current one-line dependency order
 
-**Documentation reconciliation → release-risk integrity closure (Windows
-single-instance and remaining PREDMET/referential acceptance) → evidence-first
+**Documentation reconciliation → remaining PREDMET/referential acceptance → evidence-first
 performance closure → SCENARIO continuity carrier/order/KATALOG/PDF fidelity
 closure → Windows real-runtime/canonical closure → complete signal/lifecycle
 model and full PODSETNIK upgrade → remaining JSON/document/UI work →
@@ -109,7 +108,7 @@ SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
 | Code/architecture review | `COMPLETED — TECHNICAL PASS` | N/A | N/A | Refactor only where evidence proves need | Mandatory broad rewrite/refactor is false |
 | PREDMET authority/dependency protection | `PARTIAL` | Core truth and SCENARIO hand-off proven | Core truth and SCENARIO hand-off proven | Finish referential/lifecycle acceptance and carrier parity; do not reopen proven scenario ownership | Future snapshot/provenance premise is superseded |
 | Database/referential integrity | `PARTIAL` | Hard-delete runtime PASS; scoped restore history exists | Hard-delete DB/isolation PASS; scoped restore PASS on prior artifact | Remaining RI owner gates, FK/orphan strategy if pursued, current-tip final rehearsal | Isolated PODSETNIK orphan patch is superseded by coordinated program |
-| Windows single-instance | `OPEN — BLOCKING FOR OPC v.1` | No native guard | N/A | Implement locked named-mutex/installer coordination contract; runtime accept | “Audit pending” is false; audit done, implementation open |
+| Windows single-instance | Native singleton and installer/update protection `CLOSED — FULL ACCEPTANCE PASS` | Native `Local\\OPC_ORGANIZATOR_POGREBNE_CEREMONIJE_SINGLE_INSTANCE` guard is published and accepted; Inno Setup declares the same mutex with `CloseApplications=no` | Native W1–W6 PASS; Inno Setup compile and I1/I2/I3 PASS | None — RR-012 closed; reopen only for proven regression | Native singleton and installer protection remain separate controls |
 | Windows startup/exit performance | `PARTIAL` | Installed baseline about 8–9 s to login; slow exit observed; current-tip instrumented acceptance absent | N/A | Measure current release lane, agree target, correct only proven bottlenecks if gate fails | Later runtime work does not prove performance closure |
 | Android PARTE performance | `PARTIAL` | N/A | Source risks known; latest focused profiler/acceptance not performed | Reproduce/profile on representative devices; fix only if measured | No full/partial rewrite is authorized by source audit alone |
 | IRiU/KATALOG performance | `PARTIAL` | Repository characterization exists; owner slowdown not decomposed | Same shared path; no measured platform acceptance | Separate repository, first-frame, photo read/decode timing before correction | Synthetic timing is diagnostic only |
@@ -145,11 +144,9 @@ SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
 
 ### 4.1 Release-risk integrity closure
 
-1. Implement Windows process-level single-instance ownership before Flutter,
-   plugins and SQLite initialize. A second launch focuses the existing instance
-   where reliable or exits safely with a clear message. Installer/update must
-   refuse program-file replacement while OPC is running and must never modify
-   canonical database identity/content.
+1. Preserve the published Windows process-level single-instance ownership
+   guard, which acquires the named mutex before Flutter, plugins and SQLite
+   initialize. Its W1–W6 acceptance is closed. The separate installer/update protection is also closed by accepted Inno Setup AppMutex and I1/I2/I3 evidence; preserve its refusal of program-file replacement while OPC is running and non-mutation of canonical database identity/content. Reopen only for a proven regression or new owner decision.
 2. Consolidate the remaining PREDMET dependency/referential work actually
    required for release. Do not reopen completed hard-delete or scoped restore
    work without a finding. Explicitly classify deferred anonymization,
@@ -333,7 +330,7 @@ The gate closes only when every required item is evidenced:
 - [ ] 1,008 golden and production E2E remain green;
 - [ ] Single-PREDMET and full-backup JSON carry SCENARIO state/provenance with
       legacy/fail-closed compatibility;
-- [ ] Windows single-instance and installer/update database protection pass;
+- [x] Installer/update running-app program-file protection passes I1–I3; native Windows single-instance is already closed by full acceptance;
 - [ ] explicit completion and the full signal/PODSETNIK lifecycle pass;
 - [ ] MODUL DVE VALUTE passes Windows, Android, JSON and document formation;
 - [ ] remaining required documents/policies are closed or explicitly classified;

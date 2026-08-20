@@ -10,6 +10,7 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Characterization task | KATALOG acceptance matrix | identity, picker, seed, delete, snapshots, pricing, relationships |
 | Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
 | Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
+| Closed release-risk acceptance | RR-012 Inno Setup running-app protection | CLOSED — compile PASS; I1/I2/I3 PASS; no installation completed; no RR-012 successor |
 | Owner business decision | Derived reminder/PARTE replacement-state semantic acceptance | observed local-ID replacement retention remains owner-gated/inconclusive |
 | Compatibility test task | Restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
 | Release/security work | Identity/recovery acceptance | auth, PIN, local identity and entitlement compatibility |

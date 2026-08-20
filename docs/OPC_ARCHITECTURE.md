@@ -106,7 +106,7 @@ The generated `database.g.dart` is generated output and is not hand-written arch
 | Persistence | Local SQLite/Drift files; filesystem/install path behavior differs | Local SQLite/Drift files; Android storage/runtime behavior differs |
 | Platform services | Window lifecycle, filesystem, installer, notifications and single-instance concern | Notifications, storage permissions, lifecycle and device runtime |
 | Acceptance | Owner/technical Windows runtime evidence by named artifact | Owner/technical physical-device evidence by named artifact |
-| Open release risks | Native single-instance guard, signing, installer/repaired-state closure | Signing/transfer/runtime parity and physical transfer/release rehearsal |
+| Open release risks | Signing, repaired-state closure | Signing/transfer/runtime parity and physical transfer/release rehearsal |
 
 The Deployment view is necessary because platform behavior is part of the current architecture, not an implementation detail hidden from documentation.
 
@@ -167,7 +167,7 @@ Current quality concerns are functional suitability/data integrity, reliability,
 - absent explicit IP/repository-use/distribution status and third-party license inventory;
 - JSON interoperability monolith and cross-feature coupling;
 - KATALOG ownership ambiguity;
-- Windows single-instance/repaired-state closure;
+- Repaired-state closure (installer running-app protection is closed by RR-012);
 - incomplete PODSETNIK signal model;
 - pseudocode drift (internal control concern, not product-doc gap alone);
 - technical debt and dead-code/superseded-implementation audit still required.

@@ -110,3 +110,12 @@ OPC_Setup_<version>.exe
 - The current Windows executable name expected by this lane is `OPC.exe`.
 - The lane does not hardcode a single local development path.
 - Input and output locations are controlled by script parameters or Inno Setup defines.
+
+## Running-app protection
+
+The installer declares the accepted native singleton through `AppMutex` and
+sets `CloseApplications=no`. If OPC owns
+`Local\\OPC_ORGANIZATOR_POGREBNE_CEREMONIJE_SINGLE_INSTANCE`, Inno Setup must
+refuse to proceed with program-file replacement and must not terminate OPC.
+This program-file protection is separate from the canonical SQLite database;
+the installer never uses or replaces the database as a lock.

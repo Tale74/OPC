@@ -91,7 +91,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | --- | --- | --- |
 | SCENARIO JSON | Production `OPC_PREDMET` now carries an optional hashed Single-PREDMET snapshot/provenance block; `OPC_BACKUP` carries snapshot/provenance sections. Legacy schema 6/7 remains readable without falsely claiming imported continuity. | Complete full analyze/build and Windows/Android round-trip acceptance; Android physical transfer remains deferred. |
 | PREDMET/referential lifecycle | Hard-delete and scoped restore work have technical/runtime evidence; FK remains off and some RI owner gates remain. | Close only release-required risks; classify deferred RI work explicitly. |
-| Windows single-instance | Audit proved concurrent canonical DB risk; no native process guard exists. | Implement the locked named-mutex and installer running-app contract; runtime accept. |
+| Windows single-instance / installer | Native singleton and Inno Setup running-app protection are `CLOSED — FULL ACCEPTANCE PASS`; I1/I2/I3 passed with the accepted compiled installer. | No RR-012 successor; reopen only for a proven regression or new owner decision. |
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |
 | Android PARTE performance | Source risks are mapped; focused current-device profiling acceptance is absent. | Reproduce/profile before choosing a correction. |
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
@@ -104,8 +104,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 
 ## Current dependency order
 
-Documentation reconciliation → Windows single-instance and remaining
-release-risk integrity closure → evidence-first performance closure → SCENARIO
+Documentation reconciliation → remaining PREDMET/referential/release obligations → evidence-first performance closure → SCENARIO
 continuity carrier/order/KATALOG/PDF fidelity closure → complete signal model and full PODSETNIK upgrade →
 remaining JSON/document/UI work → MODUL DVE VALUTE → final
 Windows/Android semantic parity and backup/restore rehearsal → app

@@ -16,6 +16,7 @@ This named register is the file-level companion to the completeness ledger.
 - Orphan scan: zero unassigned rows.
 - Windows singleton / second-launch integrity: closed with proof; W1/W2/W3/W4/W5/W6 disposable-lane evidence passes, exact analyzer reports no issues, and the exact full suite passes 419 tests. The earlier apparent tooling hang was characterized as slow historical-schema migration work.
 - RR-011 physical Android structural acceptance: closed with proof; scenario-snapshot cleanup and single-PREDMET replacement passed with stable identity, dependent-row recreation, relaunch persistence and integrity/FK evidence. No RR-011 successor remains.
+- Windows native singleton: closed with proof; the published early named-mutex guard and W1–W6 acceptance remain authoritative. Installer/update running-app protection is implemented separately and is also closed by the accepted Inno Setup compile and I1/I2/I3 evidence.
 
 ## Open with one successor
 
@@ -31,6 +32,7 @@ This named register is the file-level companion to the completeness ledger.
 - IRiU ordering/auth lanes are bounded; remaining mixed seams retain their own characterization successor.
 - Auth/recovery/release: identity/recovery acceptance and cross-platform release rehearsal.
 - PODSETNIK signal taxonomy and policy/finance semantics: owner decision tasks.
+- Installer/update running-app protection: implemented through the actual Inno Setup `AppMutex` and `CloseApplications=no` configuration; compiler and I1/I2/I3 acceptance PASS under RR-012. RR-012 is closed with no successor.
 - Phase 4 publication: completed through the authorized RR-011 closure publication.
 
 Each open item is linked to exactly one successor in the ledger and forward-action map.
