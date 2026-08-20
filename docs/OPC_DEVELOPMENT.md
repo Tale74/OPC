@@ -127,6 +127,14 @@ branch/base identity, changed paths, validation results, protected surfaces and
 known risks. These are project evidence requirements; reusable task-writing and
 collaboration method is not a SOURCE authority.
 
+## RR-008 replacement invariant
+
+Same-identity replacement is governed by `CURRENT PREDMET TRUTH → CURRENT
+DERIVED STATE`. The replacement seam invalidates stale PARTE preparation/media
+and rebuilds reminder scheduling from the newly current PREDMET while preserving
+the user's reminder configuration. The focused integration contract and full
+serialized QA suite are the current implementation evidence.
+
 ## 10. Current protected/open areas
 
 The following remain visible and are not silently closed by this guide:

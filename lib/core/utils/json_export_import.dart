@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show InsertMode, OrderingTerm, Value;
+import 'package:drift/drift.dart'
+    show InsertMode, OrderingTerm, Value, Variable;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,7 +23,9 @@ import '../../features/predmeti/core_v2/scenario/single_predmet_scenario_carrier
 import '../../features/predmeti/parte/data/parte_media_store.dart';
 import '../../features/predmeti/parte/domain/parte_models.dart';
 import '../../features/predmeti/reminders/ceremony_notification_gateway.dart';
+import '../../features/predmeti/reminders/ceremony_reminder_coordinator.dart';
 import '../../features/predmeti/reminders/ceremony_reminder_model.dart';
+import '../../features/predmeti/reminders/ceremony_reminder_repository.dart';
 import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
@@ -943,32 +946,204 @@ Map<String, dynamic> _partePripremeToBackupMap(PartePripremeData row) {
   return map;
 }
 
-Future<void> _zameniPredmetUBazi({
+Future<String?> _zameniPredmetUBazi({
   required AppDatabase db,
   required int lokalniPredmetId,
   required Map<String, dynamic> json,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
 }) async {
   final payload = _procitajPredmetTransferPayload(json);
-  await db.transaction(() async {
-    await PredmetiRepository(db).zameniPredmetSaPovezanimPodacima(
-      lokalniPredmetId: lokalniPredmetId,
-      predmet: payload.predmet,
-      iriu: payload.iriu,
-      kontaktLica: payload.kontaktLica,
+  final gateway = notificationGateway ?? AndroidCeremonyNotificationGateway();
+  final store = mediaStore ?? ParteMediaStore();
+  final oldPredmet = await (db.select(
+    db.predmeti,
+  )..where((row) => row.id.equals(lokalniPredmetId))).getSingle();
+  final oldPreparation = await (db.select(
+    db.partePripreme,
+  )..where((row) => row.predmetId.equals(lokalniPredmetId))).getSingleOrNull();
+  final oldReminder = await CeremonyReminderRepository(
+    db,
+  ).getForPredmet(lokalniPredmetId);
+  final hadReminderConfiguration =
+      await db
+          .customSelect(
+            'SELECT 1 FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            variables: [Variable.withInt(lokalniPredmetId)],
+          )
+          .getSingleOrNull() !=
+      null;
+  final stagedMedia = await store.stageOwnedDeletion([
+    oldPreparation?.photoMediaKey ?? '',
+    oldPreparation?.customSymbolMediaKey ?? '',
+  ]);
+  var committed = false;
+  try {
+    for (final id in oldReminder.scheduledNotificationIds) {
+      await gateway.cancel(id);
+    }
+    await db.transaction(() async {
+      await PredmetiRepository(db).zameniPredmetSaPovezanimPodacima(
+        lokalniPredmetId: lokalniPredmetId,
+        predmet: payload.predmet,
+        iriu: payload.iriu,
+        kontaktLica: payload.kontaktLica,
+      );
+      await _restoreImportedScenarioCarrier(
+        db: db,
+        predmetId: lokalniPredmetId,
+        importedIriu: payload.iriu,
+        carrier: payload.scenarioCarrier,
+      );
+      await _attachImportedStanjeRobeConsequences(
+        db: db,
+        predmetId: lokalniPredmetId,
+        importedIriu: payload.iriu,
+        consequenceItems: payload.stanjeRobeConsequences,
+      );
+      await (db.delete(
+        db.partePripreme,
+      )..where((row) => row.predmetId.equals(lokalniPredmetId))).go();
+      if (hadReminderConfiguration) {
+        await CeremonyReminderRepository(
+          db,
+        ).saveScheduledIds(lokalniPredmetId, const []);
+      }
+    });
+    committed = true;
+    String? postCommitWarning;
+    PredmetiData? current;
+    try {
+      current = await (db.select(
+        db.predmeti,
+      )..where((row) => row.id.equals(lokalniPredmetId))).getSingle();
+    } catch (_) {
+      postCommitWarning =
+          'PREDMET replacement committed, but post-commit verification failed.';
+    }
+    if (hadReminderConfiguration && current != null) {
+      final trackingGateway = _TrackingNotificationGateway(gateway);
+      try {
+        await CeremonyReminderCoordinator(
+          repository: CeremonyReminderRepository(db),
+          gateway: trackingGateway,
+        ).reschedule(
+          predmetId: current.id,
+          ceremonyType: current.vrstaCeremonije,
+          deceasedFirstName: current.ime,
+          deceasedLastName: current.prezime,
+          ceremonyDate: current.datumCeremonije,
+          ceremonyTime: current.vremeCeremonije,
+          ceremonyAt: parseCeremonyReminderDateTime(
+            current.datumCeremonije,
+            current.vremeCeremonije,
+          ),
+        );
+      } catch (_) {
+        for (final id in trackingGateway.attemptedScheduleIds) {
+          try {
+            await gateway.cancel(id);
+          } catch (_) {
+            // The persisted empty inventory remains authoritative; the
+            // warning makes an external cleanup failure visible to the user.
+          }
+        }
+        try {
+          await CeremonyReminderRepository(
+            db,
+          ).saveScheduledIds(lokalniPredmetId, const []);
+        } catch (_) {
+          // Preserve the committed PREDMET truth and surface the auxiliary
+          // persistence failure through the import warning.
+        }
+        postCommitWarning =
+            'PREDMET replacement committed, but PODSETNIK state '
+            'reconciliation failed. Review PODSETNIK.';
+      }
+    }
+    try {
+      await stagedMedia.purge();
+    } catch (_) {
+      try {
+        await stagedMedia.purge();
+      } catch (_) {
+        postCommitWarning = postCommitWarning == null
+            ? 'PREDMET replacement committed, but staged PARTE media '
+                'cleanup did not complete.'
+            : '$postCommitWarning Staged PARTE media cleanup did not '
+                'complete.';
+      }
+    }
+    if (postCommitWarning != null) {
+      // The replacement transaction is committed. Do not throw a failure that
+      // would falsely imply that the business replacement was rolled back.
+      return postCommitWarning;
+    }
+  } catch (_) {
+    if (!committed) {
+      try {
+        await stagedMedia.restore();
+      } catch (_) {
+        // Preserve the primary failure; the staged media remains recoverable.
+      }
+      try {
+        if (hadReminderConfiguration) {
+          await CeremonyReminderCoordinator(
+            repository: CeremonyReminderRepository(db),
+            gateway: gateway,
+          ).reschedule(
+            predmetId: oldPredmet.id,
+            ceremonyType: oldPredmet.vrstaCeremonije,
+            deceasedFirstName: oldPredmet.ime,
+            deceasedLastName: oldPredmet.prezime,
+            ceremonyDate: oldPredmet.datumCeremonije,
+            ceremonyTime: oldPredmet.vremeCeremonije,
+            ceremonyAt: parseCeremonyReminderDateTime(
+              oldPredmet.datumCeremonije,
+              oldPredmet.vremeCeremonije,
+            ),
+          );
+        }
+      } catch (_) {
+        // Preserve the primary failure; reminder recovery remains explicit.
+      }
+    }
+    rethrow;
+  }
+  return null;
+}
+
+class _TrackingNotificationGateway implements CeremonyNotificationGateway {
+  _TrackingNotificationGateway(this._delegate);
+
+  final CeremonyNotificationGateway _delegate;
+  final attemptedScheduleIds = <int>[];
+
+  @override
+  Future<void> initialize({required bool requestPermission}) {
+    return _delegate.initialize(requestPermission: requestPermission);
+  }
+
+  @override
+  Future<void> cancel(int id) => _delegate.cancel(id);
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required DateTime scheduledAt,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    attemptedScheduleIds.add(id);
+    await _delegate.schedule(
+      id: id,
+      scheduledAt: scheduledAt,
+      title: title,
+      body: body,
+      payload: payload,
     );
-    await _restoreImportedScenarioCarrier(
-      db: db,
-      predmetId: lokalniPredmetId,
-      importedIriu: payload.iriu,
-      carrier: payload.scenarioCarrier,
-    );
-    await _attachImportedStanjeRobeConsequences(
-      db: db,
-      predmetId: lokalniPredmetId,
-      importedIriu: payload.iriu,
-      consequenceItems: payload.stanjeRobeConsequences,
-    );
-  });
+  }
 }
 
 Future<void> _restoreImportedScenarioCarrier({
@@ -2519,19 +2694,23 @@ Future<String> serializePredmetJsonForTest({
 }
 
 @visibleForTesting
-Future<void> importPredmetJsonMapForTest({
+Future<String?> importPredmetJsonMapForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
   int? replaceLocalPredmetId,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
 }) {
   if (replaceLocalPredmetId != null) {
     return _zameniPredmetUBazi(
       db: db,
       lokalniPredmetId: replaceLocalPredmetId,
       json: json,
+      notificationGateway: notificationGateway,
+      mediaStore: mediaStore,
     );
   }
-  return _uvoziPredmetUBazu(db, json);
+  return _uvoziPredmetUBazu(db, json).then((_) => null);
 }
 
 @visibleForTesting
@@ -2724,7 +2903,7 @@ Future<void> uvoziIzFajla({
             return;
           }
 
-          await _zameniPredmetUBazi(
+          final replacementWarning = await _zameniPredmetUBazi(
             db: db,
             lokalniPredmetId: existingP.id,
             json: json,
@@ -2732,7 +2911,8 @@ Future<void> uvoziIzFajla({
           if (!ctx.mounted) return;
           _prikaziSnackBar(
             ctx,
-            'PREDMET je uspešno zamenjen uvoznim podacima.',
+            replacementWarning ?? 'PREDMET replacement completed.',
+            greska: replacementWarning != null,
           );
           return;
         }

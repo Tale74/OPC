@@ -441,3 +441,11 @@ canonical DB is FK/integrity-clean, live PREDMET/IRiU business truth is
 preserved, CITULJE deduplication and restore recurrence closure are proven,
 and schema-9 clean backup/restore is semantically idempotent. Future work must
 not reintroduce startup snapshot repair or category-specific KATALOG writers.
+
+## RR-008 same-identity replacement completion
+
+The replacement dependency seam now enforces `CURRENT PREDMET TRUTH → CURRENT
+DERIVED STATE`: stale PARTE preparation/media is invalidated with recoverable
+staging, reminder IDs are cancelled, and schedules are rebuilt from the current
+PREDMET. Focused integration, analyzer, full-suite and Windows release-build
+evidence pass; no architecture migration or SCENARIO change is implied.

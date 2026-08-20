@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/core/utils/json_export_import.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_notification_gateway.dart';
+import 'package:opc_v4/features/predmeti/parte/data/parte_media_store.dart';
 
 import 'test_bootstrap.dart';
 
@@ -127,7 +131,7 @@ void main() {
     );
 
     test(
-      'replacement currently keeps stale reminder and PARTE state on local id',
+      'same-identity replacement invalidates stale PARTE and reminder state',
       () async {
         final db = createTestDatabase();
         addTearDown(db.close);
@@ -143,30 +147,38 @@ void main() {
           local.brojPredmeta,
           draftJson: '{"source":"old-local-predmet"}',
         );
-        final incoming = local.copyWith(
-          id: 9001,
-          ime: 'Novi',
-          sourceIdentity: 'ri1_import_characterization',
-        );
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final transferPredmet = (transfer['predmet'] as Map)
+            .cast<String, dynamic>();
+        transferPredmet['ime'] = 'Novi';
+        transferPredmet['sourceIdentity'] = 'ri1_import_characterization';
+        final gateway = _RecordingNotificationGateway();
 
-        await PredmetiRepository(db).zameniPredmetSaPovezanimPodacima(
-          lokalniPredmetId: local.id,
-          predmet: incoming,
-          iriu: const [],
-          kontaktLica: const [],
+        await importPredmetJsonMapForTest(
+          db: db,
+          json: transfer,
+          replaceLocalPredmetId: local.id,
+          notificationGateway: gateway,
         );
 
         final replaced = await PredmetiRepository(db).getPredmet(local.id);
         expect(replaced.ime, 'Novi');
         expect(replaced.sourceIdentity, 'ri1_import_characterization');
         expect(
-          await _singleText(
-            db,
-            'SELECT draft_json AS value FROM parte_pripreme '
-            'WHERE predmet_id = ?',
-            local.id,
-          ),
-          contains('old-local-predmet'),
+          await db
+              .customSelect(
+                'SELECT 1 FROM parte_pripreme WHERE predmet_id = ?',
+                variables: [Variable.withInt(local.id)],
+              )
+              .getSingleOrNull(),
+          null,
         );
         expect(
           await _singleText(
@@ -175,7 +187,18 @@ void main() {
             'FROM ceremony_reminder_settings WHERE predmet_id = ?',
             local.id,
           ),
-          '[43001]',
+          '[]',
+        );
+        expect(gateway.cancelledIds, contains(43001));
+        expect(gateway.scheduledIds, isEmpty);
+        expect(
+          await _singleText(
+            db,
+            'SELECT delivery_times AS value FROM ceremony_reminder_settings '
+            'WHERE predmet_id = ?',
+            local.id,
+          ),
+          '["09:00"]',
         );
         expect(await _foreignKeyViolationTables(db), isEmpty);
       },
@@ -224,7 +247,258 @@ void main() {
         expect(await _foreignKeyViolationTables(targetDb), isEmpty);
       },
     );
+
+    test(
+      'replacement stages and purges app-owned PARTE media after commit',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final mediaRoot = await Directory.systemTemp.createTemp('rr008-media-');
+        addTearDown(() => mediaRoot.delete(recursive: true));
+        final local = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-REPLACE-MEDIA-001/2026',
+        );
+        await _insertParte(
+          db,
+          local.id,
+          local.brojPredmeta,
+          draftJson: '{"source":"old"}',
+        );
+        final mediaFile = File(p.join(mediaRoot.path, 'old.png'));
+        await mediaFile.writeAsBytes(const [1, 2, 3]);
+        await db.customStatement(
+          'UPDATE parte_pripreme SET photo_media_key = ? WHERE predmet_id = ?',
+          ['old.png', local.id],
+        );
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+
+        await importPredmetJsonMapForTest(
+          db: db,
+          json: transfer,
+          replaceLocalPredmetId: local.id,
+          notificationGateway: _RecordingNotificationGateway(),
+          mediaStore: ParteMediaStore(rootDirectory: () async => mediaRoot),
+        );
+
+        expect(await mediaFile.exists(), isFalse);
+        expect(
+          await db
+              .customSelect(
+                'SELECT 1 FROM parte_pripreme WHERE predmet_id = ?',
+                variables: [Variable.withInt(local.id)],
+              )
+              .getSingleOrNull(),
+          null,
+        );
+      },
+    );
+
+    test(
+      'replacement without reminder configuration does not create default reminders',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final local = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-REPLACE-NO-REMINDER-001/2026',
+        );
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final gateway = _RecordingNotificationGateway();
+
+        await importPredmetJsonMapForTest(
+          db: db,
+          json: transfer,
+          replaceLocalPredmetId: local.id,
+          notificationGateway: gateway,
+        );
+
+        expect(
+          await db
+              .customSelect(
+                'SELECT 1 FROM ceremony_reminder_settings '
+                'WHERE predmet_id = ?',
+                variables: [Variable.withInt(local.id)],
+              )
+              .getSingleOrNull(),
+          null,
+        );
+        expect(gateway.cancelledIds, isEmpty);
+        expect(gateway.scheduledIds, isEmpty);
+      },
+    );
+
+    test(
+      'post-commit reminder initialization failure reports committed replacement without stranded media',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final mediaRoot = await Directory.systemTemp.createTemp(
+          'rr008-post-commit-init-failure-',
+        );
+        addTearDown(() => mediaRoot.delete(recursive: true));
+        final local = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-POST-COMMIT-INIT-FAIL-001/2026',
+        );
+        await _insertReminder(db, local.id, '[45001]');
+        await _insertParte(
+          db,
+          local.id,
+          local.brojPredmeta,
+          draftJson: '{"source":"old"}',
+        );
+        final mediaFile = File(p.join(mediaRoot.path, 'old.png'));
+        await mediaFile.writeAsBytes(const [1, 2, 3]);
+        await db.customStatement(
+          'UPDATE parte_pripreme SET photo_media_key = ? WHERE predmet_id = ?',
+          ['old.png', local.id],
+        );
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final transferPredmet = (transfer['predmet'] as Map)
+            .cast<String, dynamic>();
+        transferPredmet['ime'] = 'PostCommitInit';
+        transferPredmet['datumCeremonije'] = '30.07.2099';
+        transferPredmet['vremeCeremonije'] = '12:00';
+        final gateway = _RecordingNotificationGateway(failInitialize: true);
+
+        final warning = await importPredmetJsonMapForTest(
+          db: db,
+          json: transfer,
+          replaceLocalPredmetId: local.id,
+          notificationGateway: gateway,
+          mediaStore: ParteMediaStore(rootDirectory: () async => mediaRoot),
+        );
+
+        expect(warning, isNot(null));
+        expect((await PredmetiRepository(db).getPredmet(local.id)).ime, 'PostCommitInit');
+        expect(
+          await _singleText(
+            db,
+            'SELECT scheduled_notification_ids AS value '
+                'FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            local.id,
+          ),
+          '[]',
+        );
+        expect(await mediaFile.exists(), isFalse);
+        final trash = Directory(p.join(mediaRoot.path, '.delete_trash'));
+        var trashEmpty = true;
+        if (await trash.exists()) {
+          trashEmpty = await trash.list(recursive: true).isEmpty;
+        }
+        expect(trashEmpty, isTrue);
+      },
+    );
+
+    test(
+      'post-commit scheduling failure cancels attempted notifications and keeps persisted ids empty',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final local = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-POST-COMMIT-SCHEDULE-FAIL-001/2026',
+        );
+        await _insertReminder(db, local.id, '[46001]');
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final transferPredmet = (transfer['predmet'] as Map)
+            .cast<String, dynamic>();
+        transferPredmet['ime'] = 'PostCommitSchedule';
+        transferPredmet['datumCeremonije'] = '30.07.2099';
+        transferPredmet['vremeCeremonije'] = '12:00';
+        final gateway = _RecordingNotificationGateway(failScheduleAt: 2);
+
+        final warning = await importPredmetJsonMapForTest(
+          db: db,
+          json: transfer,
+          replaceLocalPredmetId: local.id,
+          notificationGateway: gateway,
+        );
+
+        expect(warning, isNot(null));
+        expect((await PredmetiRepository(db).getPredmet(local.id)).ime, 'PostCommitSchedule');
+        expect(gateway.scheduledIds, isNotEmpty);
+        expect(
+          gateway.cancelledIds,
+          containsAll(gateway.scheduledIds),
+        );
+        expect(
+          await _singleText(
+            db,
+            'SELECT scheduled_notification_ids AS value '
+                'FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            local.id,
+          ),
+          '[]',
+        );
+      },
+    );
   });
+}
+
+class _RecordingNotificationGateway implements CeremonyNotificationGateway {
+  _RecordingNotificationGateway({this.failInitialize = false, this.failScheduleAt});
+
+  bool failInitialize;
+  final int? failScheduleAt;
+  int _scheduleCalls = 0;
+  final cancelledIds = <int>[];
+  final scheduledIds = <int>[];
+
+  @override
+  Future<void> initialize({required bool requestPermission}) async {
+    if (failInitialize) {
+      failInitialize = false;
+      throw StateError('synthetic notification initialization failure');
+    }
+  }
+
+  @override
+  Future<void> cancel(int id) async => cancelledIds.add(id);
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required DateTime scheduledAt,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    _scheduleCalls++;
+    scheduledIds.add(id);
+    if (failScheduleAt == _scheduleCalls) {
+      throw StateError('synthetic notification scheduling failure');
+    }
+  }
 }
 
 const _predmetDependentTables = [

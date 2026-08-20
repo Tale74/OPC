@@ -113,6 +113,12 @@ Before commercial distribution or formal external handover, the release should i
 - source/artifact hashes and build record;
 - signing/version/channel decisions.
 
+RR-008 same-identity replacement is accepted for the implemented seam: focused
+replacement integration tests, `flutter analyze --no-pub`, the serialized full
+`flutter test --no-pub --concurrency=1` suite, and a Windows release build all
+pass. Runtime device/platform acceptance and broader notification taxonomy are
+not silently inferred from this technical evidence.
+
 ## 9. Current quality/release risks
 
 - stale/default-branch authority;

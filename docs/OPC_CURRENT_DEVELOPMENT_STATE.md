@@ -251,3 +251,13 @@ owner request. Existing tests remain available and none were deleted.
 
 The lock task did not create a backup or restore point. A fresh verified
 post-lock backup/restore-point task is the next separate authorized step.
+
+## RR-008 same-identity replacement — implemented acceptance
+
+The accepted owner oracle is `CURRENT PREDMET TRUTH → CURRENT DERIVED STATE`.
+The single-PREDMET replacement seam now stages and purges app-owned PARTE media,
+removes stale PARTE preparation state, cancels old reminder IDs, preserves the
+local reminder configuration, and reschedules only from the replaced PREDMET.
+Focused replacement integration, analyzer, full-suite and Windows release-build
+evidence pass. Broader PARTE/notification product characterization remains a
+separate concern; no SCENARIO or canonical-data behavior was changed.

@@ -11,7 +11,8 @@ Every non-closed ledger or file-level concern has exactly one named successor.
 | Characterization task | STANJE ROBE derived-state characterization | effects, reversal, deletion, restore/import/reconciliation |
 | Characterization task | IRiU seam characterization | ordering/provenance/finance/stock seams |
 | Closed release-risk acceptance | RR-012 Inno Setup running-app protection | CLOSED — compile PASS; I1/I2/I3 PASS; no installation completed; no RR-012 successor |
-| Owner business decision | Derived reminder/PARTE replacement-state semantic acceptance | observed local-ID replacement retention remains owner-gated/inconclusive |
+| Completed correction | RR-008 same-identity replacement derived-state reconciliation | CURRENT PREDMET TRUTH → CURRENT DERIVED STATE; stale PARTE/reminder state no longer remains current after replacement; PODSETNIK trigger/scheduling policy remains separate |
+| Compatibility/acceptance task | PREDMET replacement audit-history preservation | Preserve local `logIzmena` history and append the owner-required replacement event; separate from RR-008 current-derived-state closure |
 | Compatibility test task | Restore and cross-platform release rehearsal | backup, transfer, Android/Windows and release evidence |
 | Release/security work | Identity/recovery acceptance | auth, PIN, local identity and entitlement compatibility |
 | Owner business decision | PODSETNIK signal owner decision task | unresolved signal taxonomy/business meaning |
