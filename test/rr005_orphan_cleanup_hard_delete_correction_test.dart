@@ -47,6 +47,7 @@ void main() {
     test('replacement removes provenance for replaced IRiU rows', () async {
       final db = createTestDatabase();
       addTearDown(db.close);
+      await _insertUser(db, 1);
 
       final local = await _insertPredmet(db, 'RR005-REPLACE-001/2026');
       final oldIriu = await _insertIriu(db, local.id, 'RR005-OLD');
@@ -132,6 +133,18 @@ Future<PredmetiData> _insertPredmet(AppDatabase db, String broj) async {
   return (db.select(
     db.predmeti,
   )..where((row) => row.id.equals(id))).getSingle();
+}
+
+Future<void> _insertUser(AppDatabase db, int id) {
+  return db.into(db.korisnici).insert(
+    KorisniciCompanion.insert(
+      id: Value(id),
+      imePrezime: 'RR005 User $id',
+      uloga: 'SAVETNIK',
+      pinHash: 'rr005-hash-$id',
+      datumKreiranja: '2026-08-18T10:00:00.000',
+    ),
+  );
 }
 
 Future<int> _insertIriu(AppDatabase db, int predmetId, String name) {

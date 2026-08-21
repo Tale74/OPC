@@ -64,12 +64,14 @@ void main() {
         interniNaziv: 'SANDUK',
         nazivPrikaz: 'Uvozni sanduk',
       );
+      final actorId = await _ensureActiveActor(db);
 
       final newId = await PredmetiRepository(db)
           .uveziPredmetSaPovezanimPodacima(
             predmet: importedPredmet,
             iriu: [importedIriu],
             kontaktLica: const [],
+            localActorKorisnikId: actorId,
           );
 
       final savedPredmet = await _getPredmet(db, newId);
@@ -135,6 +137,7 @@ void main() {
           predmetId: replacementPredmet.id,
           imePrezime: 'Uvozni kontakt',
         );
+        await _ensureActiveActor(db);
 
         await PredmetiRepository(db).zameniPredmetSaPovezanimPodacima(
           lokalniPredmetId: local.id,
@@ -202,7 +205,11 @@ void main() {
         final predmetJson = json['predmet'] as Map<String, dynamic>;
         predmetJson.remove('docekDatum');
 
-        await importPredmetJsonMapForTest(db: targetDb, json: json);
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        );
 
         final importedPredmeti = await targetDb.select(targetDb.predmeti).get();
         final importedIriu = await _getIriuForPredmet(
@@ -242,7 +249,11 @@ void main() {
         '19.07.2026.',
       );
 
-      await importPredmetJsonMapForTest(db: targetDb, json: json);
+      await importPredmetJsonMapForTest(
+        db: targetDb,
+        json: json,
+        localActorKorisnikId: await _ensureActiveActor(targetDb),
+      );
       final imported = await targetDb.select(targetDb.predmeti).getSingle();
       expect(imported.docekDatum, '19.07.2026.');
     });
@@ -299,7 +310,12 @@ void main() {
               root: json,
             );
 
-        await importPredmetJsonMapForTest(db: targetDb, json: json);
+        final actorId = await _ensureActiveActor(targetDb);
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: actorId,
+        );
 
         final importedPredmeti = await targetDb.select(targetDb.predmeti).get();
         final importedPredmet = importedPredmeti.single;
@@ -328,16 +344,19 @@ void main() {
         );
         expect(
           candidateNormalized['createdByKorisnikId'],
-          importedPredmet.createdByKorisnikId,
+          equals(null),
         );
         expect(
           candidateNormalized['lastBusinessModifiedByKorisnikId'],
-          importedPredmet.lastBusinessModifiedByKorisnikId,
+          equals(null),
         );
         expect(
           candidateNormalized['lastBusinessModifiedAt'],
-          importedPredmet.lastBusinessModifiedAt,
+          equals(null),
         );
+        expect(importedPredmet.createdByKorisnikId, actorId);
+        expect(importedPredmet.lastBusinessModifiedByKorisnikId, actorId);
+        expect(importedPredmet.lastBusinessModifiedAt, isNotEmpty);
         expect(importedPredmet.id, isNot(99999));
         expect(
           importedIriu.single.katalogStableArticleId,
@@ -705,7 +724,11 @@ void main() {
                 as Map<String, dynamic>;
 
         await _insertStock(targetDb, stableId: 'stock-stable-002', quantity: 5);
-        await importPredmetJsonMapForTest(db: targetDb, json: json);
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        );
 
         final importedPredmet =
             (await targetDb.select(targetDb.predmeti).get()).single;
@@ -760,7 +783,11 @@ void main() {
                 )
                 as Map<String, dynamic>;
 
-        await importPredmetJsonMapForTest(db: targetDb, json: json);
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        );
 
         final importedPredmet =
             (await targetDb.select(targetDb.predmeti).get()).single;
@@ -819,7 +846,11 @@ void main() {
                 as Map<String, dynamic>;
 
         await _insertStock(targetDb, stableId: 'stock-stable-004', quantity: 2);
-        await importPredmetJsonMapForTest(db: targetDb, json: json);
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        );
 
         final importedPredmet =
             (await targetDb.select(targetDb.predmeti).get()).single;
@@ -871,7 +902,11 @@ void main() {
                 as Map<String, dynamic>;
 
         await _insertStock(targetDb, stableId: 'stock-stable-005', quantity: 0);
-        await importPredmetJsonMapForTest(db: targetDb, json: json);
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        );
 
         final importedPredmet =
             (await targetDb.select(targetDb.predmeti).get()).single;
@@ -946,6 +981,7 @@ void main() {
           db: targetDb,
           json: json,
           replaceLocalPredmetId: local.id,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
         );
 
         final consequences = await _getActiveConsequences(targetDb, local.id);
@@ -1004,7 +1040,11 @@ void main() {
           throwsA(isA<PredmetJsonTransferValidationException>()),
         );
         await expectLater(
-          importPredmetJsonMapForTest(db: targetDb, json: json),
+          importPredmetJsonMapForTest(
+            db: targetDb,
+            json: json,
+            localActorKorisnikId: await _ensureActiveActor(targetDb),
+          ),
           throwsA(anything),
         );
         expect(await targetDb.select(targetDb.predmeti).get(), isEmpty);
@@ -1055,7 +1095,11 @@ void main() {
         throwsA(isA<PredmetJsonTransferValidationException>()),
       );
       await expectLater(
-        importPredmetJsonMapForTest(db: targetDb, json: json),
+        importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        ),
         throwsA(anything),
       );
       expect(await targetDb.select(targetDb.predmeti).get(), isEmpty);
@@ -1103,7 +1147,11 @@ void main() {
         throwsA(isA<PredmetJsonTransferValidationException>()),
       );
       await expectLater(
-        importPredmetJsonMapForTest(db: targetDb, json: json),
+        importPredmetJsonMapForTest(
+          db: targetDb,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        ),
         throwsA(anything),
       );
       expect(await targetDb.select(targetDb.predmeti).get(), isEmpty);
@@ -1276,6 +1324,25 @@ Future<void> _insertStock(
           datumAzuriranja: const Value('2026-05-17T08:00:00.000'),
         ),
       );
+}
+
+Future<int> _ensureActiveActor(AppDatabase db, {int id = 1}) async {
+  final existing = await (db.select(
+    db.korisnici,
+  )..where((k) => k.id.equals(id))).getSingleOrNull();
+  if (existing != null) return id;
+  await db
+      .into(db.korisnici)
+      .insert(
+        KorisniciCompanion.insert(
+          id: Value(id),
+          imePrezime: 'Test actor $id',
+          uloga: 'ADMINISTRATOR',
+          pinHash: 'test-hash-$id',
+          datumKreiranja: '2026-08-21T00:00:00.000',
+        ),
+      );
+  return id;
 }
 
 Future<StanjeRobeStavkeData> _getStock(AppDatabase db, String stableId) {

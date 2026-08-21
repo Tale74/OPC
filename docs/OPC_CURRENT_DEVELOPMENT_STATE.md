@@ -262,3 +262,23 @@ current PREDMET truth. RR-008 does not define future PODSETNIK trigger,
 scheduling or recreation semantics. Focused replacement integration, analyzer,
 full-suite and Windows release-build evidence pass. Broader PARTE/notification product characterization remains a
 separate concern; no SCENARIO or canonical-data behavior was changed.
+
+## PREDMET local identity / recovery correction — bounded implementation
+
+Individual PREDMET transfer now requires an active local ADMINISTRATOR or
+SAVETNIK. New imports bind local adviser, creator and last modifier fields to
+that actor; replacement preserves the destination adviser, creator and local
+history while recording the active local replacement actor. Source-database
+numeric user IDs remain non-portable. Permanent deletion checks adviser,
+creator, last modifier and `logIzmena` references. Full-backup identity now has
+four explicit states: matching PIB/MB proceeds; mismatch blocks; a fresh local
+database may establish a complete backup identity; and missing/incomplete
+backup identity is fail-closed when local business state exists. Case 2 is not
+treated as a match and remains owned by `FULL-BACKUP MISSING/INCOMPLETE FIRMA
+IDENTITY — USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`;
+Case 3 remains a legitimate fresh-install recovery path. Minute-based local
+creation resolves collisions transactionally with suffixes and preserves
+legacy duplicates. Focused acceptance is 44/44 PASS, analyzer PASS and the
+full Flutter suite is 443 PASS with 10 expected skips. Windows and Android
+release builds also PASS. Broader migration/recovery and runtime parity remain
+separate successors.

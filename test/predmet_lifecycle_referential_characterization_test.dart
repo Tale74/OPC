@@ -165,6 +165,7 @@ void main() {
           db: db,
           json: transfer,
           replaceLocalPredmetId: local.id,
+          localActorKorisnikId: await _ensureActiveActor(db),
           notificationGateway: gateway,
         );
 
@@ -240,7 +241,7 @@ void main() {
           db: db,
           json: transfer,
           replaceLocalPredmetId: local.id,
-          auditKorisnikId: 7,
+          localActorKorisnikId: await _ensureActiveActor(db, id: 7),
           notificationGateway: _RecordingNotificationGateway(),
         );
 
@@ -302,7 +303,7 @@ void main() {
             db: db,
             json: transfer,
             replaceLocalPredmetId: local.id,
-            auditKorisnikId: 7,
+            localActorKorisnikId: await _ensureActiveActor(db, id: 7),
             notificationGateway: _RecordingNotificationGateway(),
           ),
           throwsA(anything),
@@ -327,6 +328,16 @@ void main() {
         final targetDb = createTestDatabase();
         addTearDown(sourceDb.close);
         addTearDown(targetDb.close);
+        const sharedFirma = FirmaPodaciCompanion(
+          pib: Value('RI1-PIB'),
+          mb: Value('RI1-MB'),
+        );
+        await (sourceDb.update(
+          sourceDb.firmaPodaci,
+        )..where((row) => row.id.equals(1))).write(sharedFirma);
+        await (targetDb.update(
+          targetDb.firmaPodaci,
+        )..where((row) => row.id.equals(1))).write(sharedFirma);
         final source = await _insertPredmet(
           sourceDb,
           brojPredmeta: 'RI1-RESTORED-001/2026',
@@ -400,6 +411,7 @@ void main() {
           db: db,
           json: transfer,
           replaceLocalPredmetId: local.id,
+          localActorKorisnikId: await _ensureActiveActor(db),
           notificationGateway: _RecordingNotificationGateway(),
           mediaStore: ParteMediaStore(rootDirectory: () async => mediaRoot),
         );
@@ -440,6 +452,7 @@ void main() {
           db: db,
           json: transfer,
           replaceLocalPredmetId: local.id,
+          localActorKorisnikId: await _ensureActiveActor(db),
           notificationGateway: gateway,
         );
 
@@ -503,6 +516,7 @@ void main() {
           db: db,
           json: transfer,
           replaceLocalPredmetId: local.id,
+          localActorKorisnikId: await _ensureActiveActor(db),
           notificationGateway: gateway,
           mediaStore: ParteMediaStore(rootDirectory: () async => mediaRoot),
         );
@@ -560,6 +574,7 @@ void main() {
           db: db,
           json: transfer,
           replaceLocalPredmetId: local.id,
+          localActorKorisnikId: await _ensureActiveActor(db),
           notificationGateway: gateway,
         );
 
@@ -708,6 +723,25 @@ Future<PredmetiData> _insertPredmet(
   return (db.select(
     db.predmeti,
   )..where((row) => row.id.equals(id))).getSingle();
+}
+
+Future<int> _ensureActiveActor(AppDatabase db, {int id = 1}) async {
+  final existing = await (db.select(
+    db.korisnici,
+  )..where((k) => k.id.equals(id))).getSingleOrNull();
+  if (existing != null) return id;
+  await db
+      .into(db.korisnici)
+      .insert(
+        KorisniciCompanion.insert(
+          id: Value(id),
+          imePrezime: 'Lifecycle actor $id',
+          uloga: 'ADMINISTRATOR',
+          pinHash: 'lifecycle-test-hash-$id',
+          datumKreiranja: '2026-08-21T00:00:00.000',
+        ),
+      );
+  return id;
 }
 
 Future<void> _insertReminder(

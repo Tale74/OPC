@@ -159,4 +159,19 @@ A future authorized implementation task must cover:
 
 ## 8. Result
 
+## 9. Current implementation reconciliation — 2026-08-21
+
+The bounded correction described by this audit is now implemented: new and
+replacement individual transfers require an active destination-local actor;
+replacement preserves destination ownership and local history; deletion guards
+cover adviser, creator, last modifier and `logIzmena`; and four-state full-backup
+identity plus collision controls are covered by the current acceptance report.
+Case 2 (existing local state plus missing/incomplete backup identity) remains
+fail-closed and out of scope for merge/reconciliation, with successor
+`FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE
+MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`; Case 3 fresh recovery is supported.
+The original pre-implementation findings below remain historical evidence.
+Focused proof is 44/44 PASS; analyzer and the full Flutter suite are PASS (443
+tests, 10 expected skips), and both release-build gates passed serially.
+
 `LOCAL USER IDS ARE DATABASE-LOCAL — INDIVIDUAL PREDMET TRANSFER MUST REBIND TO LOCAL AUTHORITY — FULL BACKUP PRESERVES THE COMPLETE USER/PREDMET FAMILY — NO NEW OWNER DECISION OR SCHEMA REWRITE IS REQUIRED`

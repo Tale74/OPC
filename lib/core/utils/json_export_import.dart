@@ -912,6 +912,7 @@ T _procitajBackupRed<T>(
 Future<void> _uvoziPredmetUBazu(
   AppDatabase db,
   Map<String, dynamic> json,
+  int localActorKorisnikId,
 ) async {
   final payload = _procitajPredmetTransferPayload(json);
   await db.transaction(() async {
@@ -919,6 +920,7 @@ Future<void> _uvoziPredmetUBazu(
       predmet: payload.predmet,
       iriu: payload.iriu,
       kontaktLica: payload.kontaktLica,
+      localActorKorisnikId: localActorKorisnikId,
     );
     await _restoreImportedScenarioCarrier(
       db: db,
@@ -955,6 +957,7 @@ Future<String?> _zameniPredmetUBazi({
   ParteMediaStore? mediaStore,
 }) async {
   final payload = _procitajPredmetTransferPayload(json);
+  await PredmetiRepository(db).zahtevajAktivnogLokalnogAktora(auditKorisnikId);
   final gateway = notificationGateway ?? AndroidCeremonyNotificationGateway();
   final store = mediaStore ?? ParteMediaStore();
   final oldPredmet = await (db.select(
@@ -1071,9 +1074,9 @@ Future<String?> _zameniPredmetUBazi({
       } catch (_) {
         postCommitWarning = postCommitWarning == null
             ? 'PREDMET replacement committed, but staged PARTE media '
-                'cleanup did not complete.'
+                  'cleanup did not complete.'
             : '$postCommitWarning Staged PARTE media cleanup did not '
-                'complete.';
+                  'complete.';
       }
     }
     if (postCommitWarning != null) {
@@ -1251,6 +1254,74 @@ Future<List<IriuData>> _listIriuForImportedPredmet(
 
 String _normalizedIdentityPart(Object? value) => value?.toString().trim() ?? '';
 
+const String _kBuiltInParteTemplateId = 'builtin_parte_standard_v1';
+
+Future<bool> _localDatabaseHasBusinessState(
+  AppDatabase db,
+  FirmaPodaciData? localFirma,
+) async {
+  if (localFirma != null) {
+    final firmaFields = <String>[
+      localFirma.naziv,
+      localFirma.adresa,
+      localFirma.pib,
+      localFirma.mb,
+      localFirma.sifraDelatnosti,
+      localFirma.telefon,
+      localFirma.odgovornoLice,
+      localFirma.email,
+      localFirma.sajt,
+    ];
+    if (firmaFields.any((value) => value.trim().isNotEmpty) ||
+        localFirma.logo != null ||
+        localFirma.parteDefaultTemplateId != _kBuiltInParteTemplateId) {
+      return true;
+    }
+  }
+
+  final populated = await Future.wait<bool>([
+    (db.select(db.korisnici)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(db.predmeti)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(db.logIzmena)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(db.kontaktLica)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.partePripreme,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.iriuProvenance,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.predmetScenarioSnapshots,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.scenarioModules,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.scenarioDefinitions,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.katalogArtikli,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.partePredlosci,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.stanjeRobeStavke,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.stanjeRobeAppliedEffects,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.stanjeRobePosledice,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    db
+        .customSelect('SELECT 1 FROM ceremony_reminder_settings LIMIT 1')
+        .get()
+        .then((rows) => rows.isNotEmpty),
+  ]);
+  return populated.any((value) => value);
+}
+
 /// Non-destructive FULL-backup identity preflight. An uninitialised local
 /// installation has blank identity fields and is allowed to receive a backup;
 /// two established, non-blank identities must match before any destructive
@@ -1260,12 +1331,12 @@ Future<void> _validateBackupFirmIdentityPreflight(
   Map<String, dynamic> json,
 ) async {
   final incoming = json['firmaPodaci'];
-  if (incoming is! Map) return;
   final local = await db.select(db.firmaPodaci).getSingleOrNull();
-  if (local == null) return;
-  final localPib = _normalizedIdentityPart(local.pib);
-  final localMb = _normalizedIdentityPart(local.mb);
-  final incomingMap = incoming.cast<String, dynamic>();
+  final localPib = _normalizedIdentityPart(local?.pib);
+  final localMb = _normalizedIdentityPart(local?.mb);
+  final incomingMap = incoming is Map
+      ? incoming.cast<String, dynamic>()
+      : const <String, dynamic>{};
   final incomingPib = _normalizedIdentityPart(incomingMap['pib']);
   final incomingMb = _normalizedIdentityPart(incomingMap['mb']);
   final pibMismatch =
@@ -1278,13 +1349,246 @@ Future<void> _validateBackupFirmIdentityPreflight(
       'lokalnoj instalaciji. Lokalni podaci nisu promenjeni.',
     );
   }
+
+  final backupIdentityComplete =
+      incomingPib.isNotEmpty && incomingMb.isNotEmpty;
+  if (!backupIdentityComplete &&
+      await _localDatabaseHasBusinessState(db, local)) {
+    throw const _ImportBlokiranException(
+      'Uvoz cele baze je blokiran: backup nema potpunu FIRMA identifikaciju, '
+      'a lokalna baza sadrzi postojece podatke. Nedostajaca identifikacija '
+      'nije dokaz podudaranja; lokalni podaci nisu promenjeni. Za ovaj '
+      'backup potreban je eksplicitan fallback za spajanje/rekonciliaciju.',
+    );
+  }
+}
+
+/// Parses every supported full-backup section without writing to the local
+/// database. The destructive confirmation must not be shown until this
+/// structural pass and the FIRMA identity comparison both succeed.
+Future<void> _validateBackupBeforeDestructiveConfirmation(
+  AppDatabase db,
+  Map<String, dynamic> json,
+) async {
+  _zahtevajPodrzanuJsonSchemaVerziju(json);
+  await _validateBackupFirmIdentityPreflight(db, json);
+  final users = _requiredMapList(json, 'korisnici');
+  final firme = json['firmaPodaci'];
+  if (firme is! Map) {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran jer backup nema validnu FIRMA sekciju.',
+    );
+  }
+  final firmMap = _withDecodedBlob(
+    _normalizujBackupFirmaPodaciMap(firme.cast<String, dynamic>()),
+    'logo',
+  );
+  _procitajBackupRed(
+    'firmaPodaci',
+    firmMap,
+    (row) => FirmaPodaciData.fromJson(row),
+  );
+  for (final row in users) {
+    _zahtevajBackupTekstPolja(row, 'korisnici', const [
+      'imePrezime',
+      'uloga',
+      'pinHash',
+      'datumKreiranja',
+    ]);
+    _procitajBackupRed(
+      'korisnici',
+      row,
+      (value) => KorisniciData.fromJson(value),
+    );
+  }
+  for (final row in _requiredMapList(json, 'katalogArtikli')) {
+    _zahtevajBackupTekstPolja(row, 'katalogArtikli', const [
+      'interniNazivKategorije',
+      'naziv',
+    ]);
+    _procitajBackupRed(
+      'katalogArtikli',
+      _withDecodedBlob(row, 'fotografija'),
+      (value) => KatalogArtikliData.fromJson(value),
+    );
+  }
+  for (final row in _requiredMapList(json, 'iriuKatalogConfig')) {
+    final normalized = _normalizujBackupIriuKatalogConfigMap(row);
+    _zahtevajBackupTekstPolja(normalized, 'iriuKatalogConfig', const [
+      'interniNaziv',
+      'nazivPrikaz',
+      'tip',
+    ]);
+    _procitajBackupRed(
+      'iriuKatalogConfig',
+      normalized,
+      (value) => IriuKatalogConfigData.fromJson(value),
+    );
+  }
+  final app = _normalizujBackupAppPodesavanjaMap(
+    (json['appPodesavanja'] as Map).cast<String, dynamic>(),
+  );
+  _zahtevajBackupTekstPolja(app, 'appPodesavanja', const [
+    'qrSifraPlacanja',
+    'pozivNaBrojTip',
+  ]);
+  _procitajBackupRed(
+    'appPodesavanja',
+    app,
+    (value) => AppPodesavanjaData.fromJson(value),
+  );
+  for (final row in _requiredMapList(json, 'predlosciDokumenata')) {
+    _zahtevajBackupTekstPolja(row, 'predlosciDokumenata', const [
+      'naziv',
+      'segmenti',
+      'format',
+    ]);
+    _procitajBackupRed(
+      'predlosciDokumenata',
+      row,
+      (value) => PredlosciDokumenataData.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(json, 'partePredlosci')) {
+    try {
+      _zahtevajBackupTekstPolja(row, 'partePredlosci', const [
+        'id',
+        'naziv',
+        'configJson',
+        'createdAt',
+        'updatedAt',
+      ]);
+      final parsed = PartePredlosciData.fromJson(row);
+      final config =
+          (jsonDecode(parsed.configJson) as Map).cast<String, dynamic>()
+            ..['id'] = parsed.id
+            ..['name'] = parsed.naziv;
+      ParteTemplate.fromJson(config);
+    } catch (_) {
+      // Keep the existing compatibility rule: malformed optional templates
+      // fall back to the built-in template during restore.
+    }
+  }
+  final scenarioPresent =
+      json['scenarioModules'] is List || json['scenarioDefinitions'] is List;
+  if (scenarioPresent) {
+    for (final row in _optionalMapList(json, 'scenarioModules')) {
+      _procitajBackupRed(
+        'scenarioModules',
+        row,
+        (value) => ScenarioModule.fromJson(value),
+      );
+    }
+    for (final row in _optionalMapList(json, 'scenarioDefinitions')) {
+      _procitajBackupRed(
+        'scenarioDefinitions',
+        row,
+        (value) => ScenarioDefinitionRecord.fromJson(value),
+      );
+    }
+  }
+  final predmetRows = _requiredMapList(json, 'predmeti');
+  final predmetIds = predmetRows.map((row) {
+    final normalized = _normalizujBackupPredmetMap(row);
+    final parsed = _procitajBackupRed(
+      'predmeti',
+      normalized,
+      (value) => PredmetiData.fromJson(value),
+    );
+    return parsed.id;
+  }).toSet();
+  final iriuRows = _requiredMapList(json, 'iriu');
+  for (final row in iriuRows) {
+    final normalized = _normalizujBackupPrazanTekst(
+      row,
+      'iriu',
+      _kIriuBlankTextFields,
+    );
+    _zahtevajBackupTekstPolja(normalized, 'iriu', const ['interniNaziv']);
+    _procitajBackupRed(
+      'iriu',
+      normalized,
+      (value) => iriuDataFromCompatibleJson(value),
+    );
+  }
+  for (final row in _requiredMapList(json, 'kontaktLica')) {
+    final normalized = _normalizujBackupPrazanTekst(
+      row,
+      'kontaktLica',
+      _kKontaktLicaBlankTextFields,
+    );
+    _zahtevajBackupTekstPolja(normalized, 'kontaktLica', const ['blok']);
+    _procitajBackupRed(
+      'kontaktLica',
+      normalized,
+      (value) => KontaktLicaData.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(json, 'predmetScenarioSnapshots')) {
+    _procitajBackupRed(
+      'predmetScenarioSnapshots',
+      row,
+      (value) => PredmetScenarioSnapshot.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(json, 'iriuProvenance')) {
+    _procitajBackupRed(
+      'iriuProvenance',
+      row,
+      (value) => IriuProvenanceData.fromJson(value),
+    );
+  }
+  for (final row
+      in (json['iriuLifecycleDecisions'] as List? ?? const [])
+          .cast<Map<String, dynamic>>()) {
+    _requiredInt(row, 'id', 'iriuLifecycleDecisions');
+    _requiredInt(row, 'predmet_id', 'iriuLifecycleDecisions');
+    _requiredString(row, 'interni_naziv', 'iriuLifecycleDecisions');
+    _requiredString(row, 'scope_key', 'iriuLifecycleDecisions');
+    _requiredString(row, 'decision_key', 'iriuLifecycleDecisions');
+    _requiredString(row, 'created_at', 'iriuLifecycleDecisions');
+  }
+  for (final row in _requiredMapList(json, 'logIzmena')) {
+    final normalized = _normalizujBackupPrazanTekst(
+      row,
+      'logIzmena',
+      _kLogIzmenaBlankTextFields,
+    );
+    _zahtevajBackupTekstPolja(normalized, 'logIzmena', const [
+      'datumVreme',
+      'polje',
+    ]);
+    final parsed = _procitajBackupRed(
+      'logIzmena',
+      normalized,
+      (value) => LogIzmenaData.fromJson(value),
+    );
+    if (!predmetIds.contains(parsed.predmetId)) continue;
+  }
+  for (final row in _optionalMapList(json, 'partePripreme')) {
+    final portable = Map<String, dynamic>.from(row)
+      ..['photoMediaKey'] = null
+      ..['customSymbolMediaKey'] = null;
+    _procitajBackupRed(
+      'partePripreme',
+      portable,
+      (value) => PartePripremeData.fromJson(value),
+    );
+  }
+  await _procitajStanjeRobeBackupPayload(db, json);
+  _procitajBackupReminderSettings(json);
+  final mediaPolicy = json['parteMediaPolicy'];
+  if (mediaPolicy != null && mediaPolicy != _kParteMediaBackupPolicy) {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran jer PARTE media politika kopije nije podrzana.',
+    );
+  }
 }
 
 Future<_BackupImportResult> _uvoziBackupUBazu(
   AppDatabase db,
   Map<String, dynamic> json,
 ) async {
-  await _validateBackupFirmIdentityPreflight(db, json);
   final stockPayload = await _procitajStanjeRobeBackupPayload(db, json);
   final reminderPayload = _procitajBackupReminderSettings(json);
   final backupPredmetIds = _requiredMapList(
@@ -2510,7 +2814,7 @@ Widget _buildConflictSection(String title, PredmetiData predmet) {
       _buildConflictField('verzija', predmet.verzija),
       _buildConflictField('exportVerzija', predmet.exportVerzija),
       _buildConflictField(
-        'lastBusinessModifiedByKorisnikId',
+        'lastBusinessModifiedByKorisnikId (lokalni ID)',
         predmet.lastBusinessModifiedByKorisnikId,
       ),
       _buildConflictField(
@@ -2520,7 +2824,7 @@ Widget _buildConflictSection(String title, PredmetiData predmet) {
       _buildConflictField('businessScenarioId', predmet.businessScenarioId),
       _buildConflictField('sourceIdentity', predmet.sourceIdentity),
       _buildConflictField('datumKreiranja', predmet.datumKreiranja),
-      _buildConflictField('savetnikId', predmet.savetnikId),
+      _buildConflictField('savetnikId (lokalni ID)', predmet.savetnikId),
     ],
   );
 }
@@ -2700,21 +3004,26 @@ Future<String?> importPredmetJsonMapForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
   int? replaceLocalPredmetId,
-  int auditKorisnikId = 1,
+  required int? localActorKorisnikId,
   CeremonyNotificationGateway? notificationGateway,
   ParteMediaStore? mediaStore,
 }) {
+  if (localActorKorisnikId == null) {
+    return Future.error(
+      StateError('Active local user is required for PREDMET transfer.'),
+    );
+  }
   if (replaceLocalPredmetId != null) {
     return _zameniPredmetUBazi(
       db: db,
       lokalniPredmetId: replaceLocalPredmetId,
       json: json,
-      auditKorisnikId: auditKorisnikId,
+      auditKorisnikId: localActorKorisnikId,
       notificationGateway: notificationGateway,
       mediaStore: mediaStore,
     );
   }
-  return _uvoziPredmetUBazu(db, json).then((_) => null);
+  return _uvoziPredmetUBazu(db, json, localActorKorisnikId).then((_) => null);
 }
 
 @visibleForTesting
@@ -2731,6 +3040,9 @@ Future<String?> importBackupJsonMapForTest({
   bool coordinateExternalState = false,
 }) async {
   _zahtevajPodrzanuJsonSchemaVerziju(json);
+  if (!coordinateExternalState) {
+    await _validateBackupBeforeDestructiveConfirmation(db, json);
+  }
   if (coordinateExternalState) {
     final result = await _uvoziBackupSaLifecycleKoordinacijom(
       db: db,
@@ -2880,6 +3192,9 @@ Future<void> uvoziIzFajla({
 
     if (format == _kPredmetTransferFormat ||
         format == _kLegacyBeleznicaTransferFormat) {
+      final localActor = await PredmetiRepository(
+        db,
+      ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
       final payload = _procitajPredmetTransferPayload(json);
       final uvozniPredmet = payload.predmet;
       final brojPredmeta = uvozniPredmet.brojPredmeta.trim();
@@ -2914,18 +3229,11 @@ Future<void> uvoziIzFajla({
             return;
           }
 
-          final actorId = localActorKorisnikId;
-          if (actorId == null) {
-            throw StateError(
-              'Active local user is required for PREDMET replacement audit.',
-            );
-          }
-
           final replacementWarning = await _zameniPredmetUBazi(
             db: db,
             lokalniPredmetId: existingP.id,
             json: json,
-            auditKorisnikId: actorId,
+            auditKorisnikId: localActor.id,
           );
           if (!ctx.mounted) return;
           _prikaziSnackBar(
@@ -2937,11 +3245,11 @@ Future<void> uvoziIzFajla({
         }
       }
 
-      await _uvoziPredmetUBazu(db, json);
+      await _uvoziPredmetUBazu(db, json, localActor.id);
       if (!ctx.mounted) return;
       _prikaziSnackBar(ctx, 'PREDMET uspešno uvezen kao novi lokalni predmet.');
     } else if (format == _kBackupTransferFormat && allowBackupImport) {
-      _zahtevajPodrzanuJsonSchemaVerziju(json);
+      await _validateBackupBeforeDestructiveConfirmation(db, json);
 
       if (!ctx.mounted) return;
       final potvrda = await showDialog<bool>(

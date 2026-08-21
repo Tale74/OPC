@@ -131,19 +131,53 @@ class PredmetiRepository {
   /// Kreira novi predmet sa generisanim brojem i vraća njegov ID.
   Future<int> kreirajPredmet({required int savetnikId}) {
     final sada = DateTime.now();
-    return _db
-        .into(_db.predmeti)
-        .insert(
-          PredmetiCompanion(
-            brojPredmeta: Value(kreirajBrojPredmeta(sada)),
-            datumKreiranja: Value(sada.toIso8601String()),
-            savetnikId: Value(savetnikId),
-            businessScenarioId: Value(_defaultBusinessScenarioId),
-            sourceIdentity: const Value(_localSourceIdentity),
-            createdByKorisnikId: Value(savetnikId),
-            pismo: const Value('CIRILICA'),
-          ),
-        );
+    return _db.transaction(() async {
+      final brojPredmeta = await _alocirajJedinstveniBrojPredmeta(sada);
+      return _db
+          .into(_db.predmeti)
+          .insert(
+            PredmetiCompanion(
+              brojPredmeta: Value(brojPredmeta),
+              datumKreiranja: Value(sada.toIso8601String()),
+              savetnikId: Value(savetnikId),
+              businessScenarioId: Value(_defaultBusinessScenarioId),
+              sourceIdentity: const Value(_localSourceIdentity),
+              createdByKorisnikId: Value(savetnikId),
+              pismo: const Value('CIRILICA'),
+            ),
+          );
+    });
+  }
+
+  Future<String> _alocirajJedinstveniBrojPredmeta(DateTime sada) async {
+    final base = kreirajBrojPredmeta(sada);
+    var candidate = base;
+    var suffix = 1;
+    while ((await (_db.select(_db.predmeti)
+            ..where((p) => p.brojPredmeta.equals(candidate)))
+          .get())
+        .isNotEmpty) {
+      suffix++;
+      candidate = '$base-$suffix';
+    }
+    return candidate;
+  }
+
+  Future<KorisniciData> zahtevajAktivnogLokalnogAktora(int? korisnikId) async {
+    if (korisnikId == null) {
+      throw StateError('Active local user is required for PREDMET transfer.');
+    }
+    final korisnik = await (_db.select(_db.korisnici)
+          ..where((k) => k.id.equals(korisnikId)))
+        .getSingleOrNull();
+    if (korisnik == null ||
+        !korisnik.aktivan ||
+        (korisnik.uloga != 'ADMINISTRATOR' && korisnik.uloga != 'SAVETNIK')) {
+      throw StateError(
+        'An active local ADMINISTRATOR or SAVETNIK is required for PREDMET transfer.',
+      );
+    }
+    return korisnik;
   }
 
   /// Materijalizuje osnovne IRIU redove samo za nov PREDMET.
@@ -576,10 +610,21 @@ class PredmetiRepository {
     required PredmetiData predmet,
     required List<IriuData> iriu,
     required List<KontaktLicaData> kontaktLica,
+    required int localActorKorisnikId,
   }) => _db.transaction(() async {
+    final actor = await zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+    final sada = DateTime.now().toIso8601String();
+    final localPredmet = predmet.copyWith(
+      savetnikId: Value(actor.id),
+      createdByKorisnikId: Value(actor.id),
+      lastBusinessModifiedByKorisnikId: Value(actor.id),
+      lastBusinessModifiedAt: Value(sada),
+    );
     final newId = await _db
         .into(_db.predmeti)
-        .insert(predmet.toCompanion(true).copyWith(id: const Value.absent()));
+        .insert(
+          localPredmet.toCompanion(true).copyWith(id: const Value.absent()),
+        );
 
     for (final stavka in iriu) {
       await _db
@@ -611,6 +656,8 @@ class PredmetiRepository {
     required List<KontaktLicaData> kontaktLica,
     required int auditKorisnikId,
   }) => _db.transaction(() async {
+    final existing = await getPredmet(lokalniPredmetId);
+    await zahtevajAktivnogLokalnogAktora(auditKorisnikId);
     await StanjeRobeLifecycleService(
       db: _db,
     ).reconcilePredmetReplacement(lokalniPredmetId);
@@ -635,9 +682,15 @@ class PredmetiRepository {
       [lokalniPredmetId],
     );
 
-    await _db
-        .update(_db.predmeti)
-        .replace(predmet.copyWith(id: lokalniPredmetId));
+    await _db.update(_db.predmeti).replace(
+      predmet.copyWith(
+        id: lokalniPredmetId,
+        savetnikId: Value(existing.savetnikId),
+        createdByKorisnikId: Value(existing.createdByKorisnikId),
+        lastBusinessModifiedByKorisnikId: Value(auditKorisnikId),
+        lastBusinessModifiedAt: Value(DateTime.now().toIso8601String()),
+      ),
+    );
 
     for (final stavka in iriu) {
       await _db

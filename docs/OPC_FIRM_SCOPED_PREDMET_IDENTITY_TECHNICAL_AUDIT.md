@@ -170,4 +170,20 @@ PODSETNIK completion and stronger import/version rules must preserve the same PR
 
 ## 9. Corrected Audit Result
 
+## 10. Current implementation reconciliation — 2026-08-21
+
+The bounded implementation now applies the audit conclusion: individual
+transfer/replacement rebinds local authority without adding a FIRMA identity
+block, four-state full-backup PIB/MB and structural preflight precedes
+destructive confirmation/write, and local number collisions are resolved
+transactionally without renumbering legacy duplicates. Missing/incomplete
+backup identity with existing local business state is Case 2 and fails closed;
+merge/reconciliation remains out of scope with successor
+`FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE
+MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`. A fresh local database with a
+complete identity remains a legitimate Case-3 recovery path. The
+pre-implementation matrix remains historical evidence; current status is in
+`docs/OPC_PREDMET_LOCAL_IDENTITY_RECOVERY_ACCEPTANCE_REPORT.md`. Broader
+Web/sync identity, migration/recovery and runtime parity remain separate.
+
 `PREDMET ALREADY BELONGS TO THE LOCAL FIRMA THROUGH ITS ADMINISTRATOR-APPROVED USER CONTEXT — INDIVIDUAL JSON NEEDS TECHNICAL LOCAL-USER REBINDING, NOT A NEW FIRMA IDENTITY CONCEPT OR OWNER ATTESTATION`

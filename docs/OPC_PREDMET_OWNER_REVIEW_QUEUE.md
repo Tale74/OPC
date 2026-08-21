@@ -181,7 +181,7 @@ Pseudocode docs unchanged; previous PREDMET pseudocode updates remain intact.
 - [ ] Technical audit required: Windows/Android lifecycle and JSON parity.
 - [ ] Technical audit required: Web/sync identity and conflict readiness.
 - [ ] Implementation remains blocked until OWNER DECISION / TECHNICAL AUDIT / CHARACTERIZATION / TEST EVIDENCE / RUNTIME EVIDENCE: JSON conflict warnings and overwrite guards.
-- [ ] Implementation remains blocked until TECHNICAL DESIGN / TEST EVIDENCE / RUNTIME EVIDENCE: local-user rebinding, full-backup PIB/MB preflight and collision-safe `brojPredmeta`.
+- [x] Bounded implementation and full QA evidence complete: local-user rebinding, four-state full-backup PIB/MB preflight and collision-safe `brojPredmeta`; Case 2 remains fail-closed with the explicit user-fallback/merge successor, while release/runtime parity remain separate.
 - [ ] Implementation remains blocked until OWNER DECISION / TECHNICAL AUDIT / CHARACTERIZATION / RUNTIME EVIDENCE: Web/sync identity and conflict readiness.
 - [ ] Evidence gap acknowledged: full lifecycle tests.
 - [ ] Evidence gap acknowledged: business version increment tests.

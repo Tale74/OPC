@@ -2507,13 +2507,24 @@ class AppDatabase extends _$AppDatabase {
   Future<KorisnikReferenceSummary> korisnikReferenceSummary(
     int korisnikId,
   ) async {
-    final brojPredmetaExpr = predmeti.id.count();
-    final brojPredmeta =
-        await (selectOnly(predmeti)
-              ..addColumns([brojPredmetaExpr])
-              ..where(predmeti.savetnikId.equals(korisnikId)))
-            .map((row) => row.read(brojPredmetaExpr) ?? 0)
-            .getSingle();
+    Future<int> countPredmeti(Expression<bool> Function(Predmeti p) where) {
+      final count = predmeti.id.count();
+      return (selectOnly(predmeti)
+            ..addColumns([count])
+            ..where(where(predmeti)))
+          .map((row) => row.read(count) ?? 0)
+          .getSingle();
+    }
+
+    final brojPredmeta = await countPredmeti(
+      (p) => p.savetnikId.equals(korisnikId),
+    );
+    final brojPredmetaKreatora = await countPredmeti(
+      (p) => p.createdByKorisnikId.equals(korisnikId),
+    );
+    final brojPredmetaIzmena = await countPredmeti(
+      (p) => p.lastBusinessModifiedByKorisnikId.equals(korisnikId),
+    );
 
     final brojLogovaExpr = logIzmena.id.count();
     final brojLogova =
@@ -2525,6 +2536,8 @@ class AppDatabase extends _$AppDatabase {
 
     return KorisnikReferenceSummary(
       brojPredmeta: brojPredmeta,
+      brojPredmetaKreatora: brojPredmetaKreatora,
+      brojPredmetaIzmena: brojPredmetaIzmena,
       brojLogova: brojLogova,
     );
   }
@@ -2575,18 +2588,34 @@ class AppDatabase extends _$AppDatabase {
 class KorisnikReferenceSummary {
   const KorisnikReferenceSummary({
     required this.brojPredmeta,
+    required this.brojPredmetaKreatora,
+    required this.brojPredmetaIzmena,
     required this.brojLogova,
   });
 
   final int brojPredmeta;
+  final int brojPredmetaKreatora;
+  final int brojPredmetaIzmena;
   final int brojLogova;
 
-  bool get imaVezanePodatke => brojPredmeta > 0 || brojLogova > 0;
+  bool get imaVezanePodatke =>
+      brojPredmeta > 0 ||
+      brojPredmetaKreatora > 0 ||
+      brojPredmetaIzmena > 0 ||
+      brojLogova > 0;
 
   List<String> get blokirajuceReference {
     final reference = <String>[];
     if (brojPredmeta > 0) {
       reference.add('predmeti ($brojPredmeta)');
+    }
+    if (brojPredmetaKreatora > 0) {
+      reference.add('creator PREDMET references ($brojPredmetaKreatora)');
+    }
+    if (brojPredmetaIzmena > 0) {
+      reference.add(
+        'last modifier PREDMET references ($brojPredmetaIzmena)',
+      );
     }
     if (brojLogova > 0) {
       reference.add('log izmena ($brojLogova)');
