@@ -70,6 +70,22 @@ for the stable Serbian-market product-line gate and is not a rename.
 - Latest inherited technical baseline: analyzer PASS; complete suite 393
   passed, 7 skipped, 0 failed; Windows and Android release builds PASS.
 
+## Case-2 full-backup fallback closure
+
+The former Case-2 successor is now closed by a bounded selective fallback.
+When an established local database receives a schema-9 `OPC_BACKUP` whose
+FIRMA identity is incomplete, destructive replacement remains blocked. After
+explicit user confirmation, only new and unambiguous PREDMET families are
+imported through the existing single-PREDMET transfer seam, with destination-
+local actor rebinding and one outer transaction. Same-identity, duplicate and
+ambiguous rows remain local. FIRMA, users, catalog/configuration/templates,
+PARTE, reminders, `logIzmena` and SCENARIO global/snapshot/provenance state are
+not merged. Case 1 and fresh Case 3 recovery remain unchanged.
+
+Evidence home: `docs/OPC_FULL_BACKUP_CASE2_RECONCILIATION_ACCEPTANCE_REPORT.md`
+and its acceptance matrix. The explicit Case-2 successor is closed; broader
+migration, recovery and cross-platform rehearsal remain separate.
+
 ## RR-005 closure reconciliation
 
 RR-005 correction is `CLOSED — FULL ACCEPTANCE PASS — NO RR-005-SPECIFIC
@@ -274,11 +290,13 @@ creator, last modifier and `logIzmena` references. Full-backup identity now has
 four explicit states: matching PIB/MB proceeds; mismatch blocks; a fresh local
 database may establish a complete backup identity; and missing/incomplete
 backup identity is fail-closed when local business state exists. Case 2 is not
-treated as a match and remains owned by `FULL-BACKUP MISSING/INCOMPLETE FIRMA
-IDENTITY — USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`;
-Case 3 remains a legitimate fresh-install recovery path. Minute-based local
-creation resolves collisions transactionally with suffixes and preserves
-legacy duplicates. Focused acceptance is 44/44 PASS, analyzer PASS and the
-full Flutter suite is 443 PASS with 10 expected skips. Windows and Android
-release builds also PASS. Broader migration/recovery and runtime parity remain
-separate successors.
+treated as a match. The former `FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY
+— USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE` successor
+is historical context and is closed by the bounded, user-confirmed selective
+fallback documented above; it is not a current open successor. Case 3 remains
+a legitimate fresh-install recovery path. Minute-based local creation resolves
+collisions transactionally with suffixes and preserves legacy duplicates.
+Focused acceptance is 44/44 PASS, analyzer PASS and the latest full Flutter
+suite is 445 PASS with 10 expected skips. Windows and Android release builds
+also PASS. Broader migration/recovery and runtime parity remain separate
+successors.

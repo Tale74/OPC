@@ -178,6 +178,8 @@ block, four-state full-backup PIB/MB and structural preflight precedes
 destructive confirmation/write, and local number collisions are resolved
 transactionally without renumbering legacy duplicates. Missing/incomplete
 backup identity with existing local business state is Case 2 and fails closed;
+The next successor wording is historical pre-implementation evidence and is
+superseded by the current Case-2 closure addendum below.
 merge/reconciliation remains out of scope with successor
 `FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE
 MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`. A fresh local database with a
@@ -187,3 +189,14 @@ pre-implementation matrix remains historical evidence; current status is in
 Web/sync identity, migration/recovery and runtime parity remain separate.
 
 `PREDMET ALREADY BELONGS TO THE LOCAL FIRMA THROUGH ITS ADMINISTRATOR-APPROVED USER CONTEXT — INDIVIDUAL JSON NEEDS TECHNICAL LOCAL-USER REBINDING, NOT A NEW FIRMA IDENTITY CONCEPT OR OWNER ATTESTATION`
+## Current Case-2 closure addendum
+
+The previously open Case-2 successor is closed by a bounded selective fallback:
+destructive full-backup replacement remains fail-closed when FIRMA identity is
+incomplete, while a user-confirmed plan may import only new/unambiguous
+PREDMET families through the existing destination-local transfer seam. The
+fallback does not merge FIRMA, users, catalog/configuration, PARTE, reminders,
+history or SCENARIO state. See
+`docs/OPC_FULL_BACKUP_CASE2_RECONCILIATION_ACCEPTANCE_REPORT.md` for current
+implementation and acceptance evidence. Earlier sections retain their
+historical pre-implementation classification.

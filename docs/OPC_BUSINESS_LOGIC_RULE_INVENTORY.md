@@ -225,18 +225,18 @@ Windows/Android parity: Shared database model.
 JSON/PDF/UI relevance: Firm data appears in settings, PDFs, and full backup.
 Future Web/sync relevance: Critical.
 Risk if changed: Server-master drift and unsafe restore/sync assumptions.
-Open questions: Broader recovery/runtime parity remains separate. The bounded cross-database local-user mapping and four-state full-backup identity preflight are implemented with focused and full-QA proof; Case 2 remains fail-closed and owned by the explicit fallback/merge successor.
+Open questions: Broader recovery/runtime parity remains separate. The bounded cross-database local-user mapping, four-state full-backup identity preflight and Case-2 selective fallback are implemented with focused and full-QA proof; destructive restore remains fail-closed when identity is incomplete.
 Recommended next action: Preserve the local one-database/one-FIRMA boundary; no new owner decision or identity subsystem.
 
 ## RULE-ID: OPC-RULE-FIRMA-002
 
 Name: Firm-scoped PREDMET identity
-Status: OWNER DECISION / POLICY EXISTS / TECHNICAL AUDIT COMPLETE / BOUNDED IMPLEMENTATION COMPLETE — FULL QA PASS / CASE-2 SUCCESSOR RETAINED
+Status: OWNER DECISION / POLICY EXISTS / TECHNICAL AUDIT COMPLETE / BOUNDED IMPLEMENTATION COMPLETE — FULL QA PASS / CASE-2 CLOSED
 Domain: Identity / conflict
 Rule statement: `brojPredmeta` is unique only within the same firm. Future-safe identity/conflict scope is `PIB + Matični broj + brojPredmeta`; `brojPredmeta` alone is not global identity.
 Evidence classification: OWNER DECISION / POLICY EXISTS / SOURCE-CONFIRMED GAP / TECHNICAL AUDIT COMPLETE
 Evidence locations: owner decision report; locked rules summary; `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`; `lib/core/utils/json_export_import.dart`; `lib/core/format/app_format.dart`; auth/user source
-Current implementation state: Existing local-user/FIRMA ownership remains authoritative. Single-PREDMET import/replacement now rebinds to an active destination-local actor, preserves destination ownership/history, four-state full-backup identity preflight validates structure and PIB/MB before destructive confirmation/write, and minute-level creation resolves collisions transactionally without renumbering legacy duplicates. Case 2 missing/incomplete backup identity with existing local state fails closed; merge/reconciliation is not implemented.
+Current implementation state: Existing local-user/FIRMA ownership remains authoritative. Single-PREDMET import/replacement rebinds to an active destination-local actor, preserves destination ownership/history, four-state full-backup identity preflight validates structure and PIB/MB before destructive confirmation/write, minute-level creation resolves collisions transactionally without renumbering legacy duplicates, and Case 2 provides an explicit selective fallback for only new/unambiguous PREDMET families. Same-identity and ambiguous rows remain local; no generic merge is performed.
 Windows/Android parity: Shared source; not implemented.
 JSON/PDF/UI relevance: JSON import/export and backup/restore.
 Future Web/sync relevance: Critical.
@@ -295,18 +295,18 @@ Recommended next action: Keep transfer boundary explicit.
 ## RULE-ID: OPC-RULE-JSON-002
 
 Name: Full backup / restore boundary
-Status: PARTIALLY IMPLEMENTED / POLICY EXISTS / BOUNDED FOUR-STATE PREFLIGHT IMPLEMENTED — CASE-2 MERGE/RECONCILIATION OUT OF SCOPE
+Status: BOUNDED IMPLEMENTATION COMPLETE / POLICY EXISTS / CASE-2 SELECTIVE FALLBACK ACCEPTED
 Domain: Backup / restore
 Rule statement: Full backup JSON is broader recovery behavior and is destructive on import; PIB/Matični broj mismatch must block import/restore by owner decision.
 Evidence classification: SOURCE-CONFIRMED / DOCUMENTED POLICY / POLICY EXISTS / IMPLEMENTATION NOT FOUND
 Evidence locations: backup/restore public summary; `lib/core/utils/json_export_import.dart`; JSON regression tests
-Current implementation state: Full backup contains broad database sections and destructive import confirmation only after supported structural parsing and FIRMA PIB/MB identity preflight. Matching identity proceeds, mismatch blocks, fresh local state can establish a complete identity, and missing/incomplete identity blocks before destructive write when local business state exists. Missing identity is not treated as a match; the Case-2 fallback/merge successor remains open.
+Current implementation state: Full backup contains broad database sections and destructive import confirmation only after supported structural parsing and FIRMA PIB/MB identity preflight. Matching identity proceeds, mismatch blocks, fresh local state can establish a complete identity, and missing/incomplete identity keeps destructive restore blocked when local business state exists. The explicit fallback then offers only new/unambiguous PREDMET families through the existing transfer seam; local FIRMA/users/global families remain unchanged.
 Windows/Android parity: Shared source; runtime not freshly confirmed.
 JSON/PDF/UI relevance: Full backup only, not single-PREDMET transfer.
 Future Web/sync relevance: Critical.
 Risk if changed: Destructive wrong-firm restore.
 Open questions: Guard source fields and history model.
-Recommended next action: Keep broader database migration/recovery and cross-platform rehearsal separate; preserve the explicit Case-2 successor and do not introduce a merge engine in this bounded correction.
+Recommended next action: Keep broader database migration/recovery and cross-platform rehearsal separate; preserve this bounded selective boundary and do not introduce a generic merge engine.
 
 ## RULE-ID: OPC-RULE-STOCK-001
 

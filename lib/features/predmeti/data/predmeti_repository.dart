@@ -611,7 +611,24 @@ class PredmetiRepository {
     required List<IriuData> iriu,
     required List<KontaktLicaData> kontaktLica,
     required int localActorKorisnikId,
-  }) => _db.transaction(() async {
+  }) => _db.transaction(
+    () => uveziPredmetSaPovezanimPodacimaUnutarTransakcije(
+      predmet: predmet,
+      iriu: iriu,
+      kontaktLica: kontaktLica,
+      localActorKorisnikId: localActorKorisnikId,
+    ),
+  );
+
+  /// Imports one PREDMET while the caller owns the surrounding transaction.
+  /// This keeps bounded multi-PREDMET fallback imports atomic without creating
+  /// a second database-merge abstraction.
+  Future<int> uveziPredmetSaPovezanimPodacimaUnutarTransakcije({
+    required PredmetiData predmet,
+    required List<IriuData> iriu,
+    required List<KontaktLicaData> kontaktLica,
+    required int localActorKorisnikId,
+  }) async {
     final actor = await zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
     final sada = DateTime.now().toIso8601String();
     final localPredmet = predmet.copyWith(
@@ -647,7 +664,7 @@ class PredmetiRepository {
     }
 
     return newId;
-  });
+  }
 
   Future<void> zameniPredmetSaPovezanimPodacima({
     required int lokalniPredmetId,

@@ -65,7 +65,7 @@ No new owner business decision remains.
 ## GAP-ID: OPC-PREDMET-LIV-GAP-005
 
 Area: firm-scoped PREDMET identity.
-Current evidence: corrected firm audit and dedicated local-user audit confirm the existing `PREDMET -> savetnikId/creator -> local user -> local database -> singleton FIRMA` ownership boundary. The bounded local-identity/recovery correction now binds individual new import and replacement to an active destination-local actor, preserves destination ownership/history, covers all four deletion-reference classes, applies four-state full-backup identity preflight before destructive confirmation/write, and allocates collision suffixes transactionally without renumbering legacy duplicates. Focused acceptance is 44/44 PASS, analyzer PASS and the full Flutter suite is 443 PASS with 10 expected skips. Case 2 remains fail-closed with its explicit fallback/merge successor; Case 3 fresh recovery is supported.
+Current evidence: corrected firm audit and dedicated local-user audit confirm the existing `PREDMET -> savetnikId/creator -> local user -> local database -> singleton FIRMA` ownership boundary. The bounded local-identity/recovery correction now binds individual new import and replacement to an active destination-local actor, preserves destination ownership/history, covers all four deletion-reference classes, applies four-state full-backup identity preflight before destructive confirmation/write, allocates collision suffixes transactionally without renumbering legacy duplicates, and provides a selective Case-2 fallback for only new/unambiguous PREDMET families. Focused acceptance is 44/44 PASS plus 13/13 Case-2 proof; Case 3 fresh recovery is supported.
 Risk if misunderstood: a source-local user ID may be attributed to the wrong destination user, restore may replace another FIRMA database, or duplicate numbers may be created.
 Blocked behavior changes: identity guard, duplicate detection, sync identity, restore identity.
 Classification: `OWNER POLICY EXISTS / TECHNICAL DESIGN COMPLETE / IMPLEMENTED — FULL ACCEPTANCE PASS`.
@@ -74,7 +74,7 @@ Technical audit closure reference: `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNI
 
 Local-user transfer closure reference: `docs/OPC_LOCAL_USER_IDENTITY_AND_PREDMET_TRANSFER_REBIND_AUDIT.md`.
 
-Correction: a new single-PREDMET FIRMA identity block and same-firm owner attestation are not required. The bounded local-user rebinding, four-state full-backup preflight and collision handling are implemented. Case 2 merge/reconciliation remains out of scope with successor `FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`; broader Web/sync identity, migration/recovery and runtime parity remain separate successors.
+Correction: a new single-PREDMET FIRMA identity block and same-firm owner attestation are not required. The bounded local-user rebinding, four-state full-backup preflight, collision handling and selective Case-2 fallback are implemented. Broader Web/sync identity, migration/recovery and runtime parity remain separate successors.
 
 ## GAP-ID: OPC-PREDMET-LIV-GAP-006
 

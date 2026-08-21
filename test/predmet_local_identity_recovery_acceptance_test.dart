@@ -277,6 +277,105 @@ void main() {
     );
 
     test(
+      'case-2 fallback imports only new unambiguous PREDMET families',
+      () async {
+        final source = createTestDatabase();
+        final target = createTestDatabase();
+        addTearDown(source.close);
+        addTearDown(target.close);
+        await _insertPredmet(
+          source,
+          broj: 'CASE2-CONFLICT-001/2026',
+          savetnikId: 91,
+          createdBy: 91,
+          lastModifier: 91,
+        );
+        await _insertPredmet(
+          source,
+          broj: 'CASE2-NEW-001/2026',
+          savetnikId: 91,
+          createdBy: 91,
+          lastModifier: 91,
+        );
+        await _insertUser(target, id: 7, role: 'ADMINISTRATOR');
+        final localConflict = await _insertPredmet(
+          target,
+          broj: 'CASE2-CONFLICT-001/2026',
+          savetnikId: 7,
+          createdBy: 7,
+          lastModifier: 7,
+        );
+        final backup =
+            jsonDecode(await serializeBackupJsonForTest(db: source))
+                as Map<String, dynamic>;
+
+        final plan = await buildCase2FallbackPlanForTest(
+          db: target,
+          json: backup,
+        );
+        expect(plan.newPredmetCount, 1);
+        expect(plan.sameIdentityConflictCount, 1);
+        expect(plan.ambiguousCount, 0);
+        expect(plan.retainedFamilyCount, greaterThan(0));
+
+        final outcome = await applyCase2FallbackForTest(
+          db: target,
+          json: backup,
+          localActorKorisnikId: 7,
+        );
+        expect(outcome.importedPredmetCount, 1);
+        expect(outcome.skippedConflictCount, 1);
+        final rows = await target.select(target.predmeti).get();
+        expect(rows, hasLength(2));
+        final unchanged = rows.singleWhere(
+          (row) => row.brojPredmeta == localConflict.brojPredmeta,
+        );
+        expect(unchanged.id, localConflict.id);
+        expect(unchanged.savetnikId, 7);
+        final imported = rows.singleWhere(
+          (row) => row.brojPredmeta == 'CASE2-NEW-001/2026',
+        );
+        expect(imported.savetnikId, 7);
+        expect(imported.createdByKorisnikId, 7);
+        expect(imported.lastBusinessModifiedByKorisnikId, 7);
+      },
+    );
+
+    test(
+      'case-2 duplicate incoming identity is ambiguous and non-mutating',
+      () async {
+        final source = createTestDatabase();
+        final target = createTestDatabase();
+        addTearDown(source.close);
+        addTearDown(target.close);
+        await _insertPredmet(source, broj: 'CASE2-AMBIGUOUS-001/2026');
+        await _insertUser(target, id: 7, role: 'ADMINISTRATOR');
+        await _insertPredmet(target, broj: 'CASE2-LOCAL-001/2026');
+        final backup =
+            jsonDecode(await serializeBackupJsonForTest(db: source))
+                as Map<String, dynamic>;
+        final predmetRows = (backup['predmeti'] as List)
+            .cast<Map<String, dynamic>>();
+        predmetRows.add(Map<String, dynamic>.from(predmetRows.single));
+
+        final plan = await buildCase2FallbackPlanForTest(
+          db: target,
+          json: backup,
+        );
+        expect(plan.newPredmetCount, 0);
+        expect(plan.ambiguousCount, 2);
+        final before = await target.select(target.predmeti).get();
+        final outcome = await applyCase2FallbackForTest(
+          db: target,
+          json: backup,
+          localActorKorisnikId: 7,
+        );
+        expect(outcome.importedPredmetCount, 0);
+        expect(await target.select(target.predmeti).get(), before);
+      },
+    );
+
+    test(
       'same-minute creation resolves collision without renumbering legacy rows',
       () async {
         final db = createTestDatabase();

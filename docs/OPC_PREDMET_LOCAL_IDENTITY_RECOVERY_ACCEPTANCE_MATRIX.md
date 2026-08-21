@@ -21,6 +21,12 @@
 
 Focused sequence: `flutter test --no-pub --concurrency=1 test/predmet_local_identity_recovery_acceptance_test.dart test/json_transfer_regression_test.dart test/predmet_lifecycle_referential_characterization_test.dart` — 44/44 PASS. `flutter analyze --no-pub` PASS (31.1s). Full suite: 443 PASS, 10 expected skips. Windows release PASS; Android release PASS, SHA-256 `001A9B948A2BE835C158D40BF3B37869B81A21EBB031F4BF3E3F1B0FB8FDC283`.
 
-Case 2 remains explicitly owned by the single successor `FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`; no merge engine or automatic fallback is implemented. Case 3 is a supported fresh-install recovery path.
+The former Case-2 successor is superseded by the selective fallback matrix in
+`docs/OPC_FULL_BACKUP_CASE2_RECONCILIATION_ACCEPTANCE_MATRIX.md`; no generic
+merge engine or automatic scheduling/anonymization policy is implemented.
+Case 3 is a supported fresh-install recovery path.
 
 The implementation preserves the one-database/one-FIRMA architecture and does not make local numeric user IDs portable.
+
+Case-2 completion: the former fail-closed successor is closed by the selective
+fallback matrix in `docs/OPC_FULL_BACKUP_CASE2_RECONCILIATION_ACCEPTANCE_MATRIX.md`.

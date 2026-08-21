@@ -6,7 +6,7 @@ This bounded implementation pass applies the existing one-local-database / one-F
 
 Implementation state: `IMPLEMENTED — FOCUSED ACCEPTANCE PASS`.
 
-Overall review state: `PREDMET LOCAL-IDENTITY / RECOVERY ACCEPTANCE COMPLETE — CASE-2 MERGE/RECONCILIATION SUCCESSOR RETAINED — READY FOR LOGOS REVIEW`.
+Overall review state: `PREDMET LOCAL-IDENTITY / RECOVERY ACCEPTANCE COMPLETE — CASE-2 SELECTIVE FALLBACK SUCCESSOR CLOSED — READY FOR LOGOS REVIEW`.
 
 The focused acceptance evidence is complete. The full Flutter suite then reached natural completion with `443 PASS` and `10` expected skips, with no test failure or tooling hang. Release-build gates completed serially.
 
@@ -28,7 +28,7 @@ The focused acceptance evidence is complete. The full Flutter suite then reached
 | Actor gate | Missing, inactive or ineligible actor fails before individual-import mutation. |
 | Permanent deletion guard | `savetnikId`, `createdByKorisnikId`, `lastBusinessModifiedByKorisnikId` and `logIzmena.korisnikId` all block permanent deletion; deactivation/role change does not rewrite attribution. |
 | Full-backup identity preflight | Four states are explicit: matching PIB/MB proceeds; mismatching PIB/MB is blocked; a fresh local database may establish a complete backup identity; missing/incomplete backup FIRMA identity is fail-closed when local business state exists. Missing identity is never treated as a match. |
-| Case-2 boundary | `EXISTING LOCAL STATE + BACKUP FIRMA IDENTITY MISSING/INCOMPLETE` is safely blocked before destructive write. Merge/reconciliation is out of scope and remains owned by `FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`. |
+| Case-2 boundary | `EXISTING LOCAL STATE + BACKUP FIRMA IDENTITY MISSING/INCOMPLETE` remains blocked for destructive write; explicit user-confirmed selective fallback imports only new/unambiguous PREDMET families. |
 | Case-3 fresh recovery | A fresh local database can be initialized from a complete backup identity; this is a legitimate recovery path and is independently covered by focused proof. |
 | Collision-safe creation | Existing minute-based candidate is checked and deterministic `-2`, `-3`, … suffixes are allocated inside the creation transaction. Existing legacy duplicates are preserved and not renumbered. |
 | Conflict presentation | Local-ID labels make adviser/modifier fields non-portable identity claims without redesigning the dialog. |
@@ -55,10 +55,20 @@ The prior targeted tests, replacement failure-path tests and JSON compatibility 
 
 ## Authority reconciliation
 
-The current authority set now records destination-local rebinding, deletion-reference coverage, collision-safe creation and bounded full-backup identity preflight as implemented. Case 2 (existing local state plus missing/incomplete backup FIRMA identity) is intentionally fail-closed and remains out of scope for merge/reconciliation; its single successor is `FULL-BACKUP MISSING/INCOMPLETE FIRMA IDENTITY — USER FALLBACK + SAFE MERGE/RECONCILIATION DESIGN AND ACCEPTANCE`. Case 3 (fresh local state plus complete backup identity) remains a legitimate recovery path. Historical audits retain their original pre-implementation findings and are superseded for current state by this report and the updated current registers. Broader JSON/database migration, platform parity, PARTE, KATALOG, STANJE ROBE, IRiU, PODSETNIK and policy/finance successors remain separate and unchanged.
+The current authority set records destination-local rebinding, deletion-reference coverage, collision-safe creation, four-state full-backup identity preflight and the accepted Case-2 selective fallback. Destructive Case-2 restore remains fail-closed; only new/unambiguous PREDMET families can be imported explicitly, while Case 3 remains a legitimate fresh recovery path. Historical audits retain their original pre-implementation findings and are superseded for current state by this report and the updated current registers. Broader JSON/database migration, platform parity, PARTE, KATALOG, STANJE ROBE, IRiU, PODSETNIK and policy/finance successors remain separate and unchanged.
 
 ## Review handoff
 
 The external Layer-4 package is `OPC_PREDMET_LOCAL_IDENTITY_RECOVERY_LOGOS_REVIEW.zip` under the repository-level `REVIEW` directory. It contains the defect map, implementation/report evidence, changed-file list, hashes, validation summary and no database, private data or build artifacts.
 
 No commit, push or successor task was started. The package is ready for Logos review; the full-suite natural PASS and expected skips remain visible to the reviewer.
+
+## Case-2 successor completion addendum
+
+The former Case-2 fail-closed successor is superseded by the bounded selective
+fallback documented in `docs/OPC_FULL_BACKUP_CASE2_RECONCILIATION_DESIGN.md`.
+Destructive full restore still requires complete FIRMA identity. With explicit
+user confirmation, only new and unambiguous PREDMET families may be imported
+using destination-local actor rebinding and one outer transaction. Same-
+identity and ambiguous rows remain local; no FIRMA/user/catalog/PARTE/reminder/
+history/SCENARIO merge is performed. Case 1 and Case 3 remain unchanged.

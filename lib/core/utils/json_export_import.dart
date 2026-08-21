@@ -278,6 +278,65 @@ enum _BackupImportStatus {
   nonStockImportedWithoutStockRestore,
 }
 
+enum _BackupFirmIdentityState {
+  sufficientlyConsistent,
+  freshLocalIdentity,
+  incompleteExistingLocalState,
+}
+
+/// Read-only preview of the bounded Case-2 fallback. It never represents a
+/// generic database merge: only new, unambiguous PREDMET families are eligible
+/// for selective import.
+class Case2FallbackPlan {
+  const Case2FallbackPlan({
+    required this.newPredmetCount,
+    required this.sameIdentityConflictCount,
+    required this.ambiguousCount,
+    required this.retainedFamilyCount,
+  });
+
+  final int newPredmetCount;
+  final int sameIdentityConflictCount;
+  final int ambiguousCount;
+  final int retainedFamilyCount;
+
+  bool get hasImportablePredmeti => newPredmetCount > 0;
+}
+
+class Case2FallbackOutcome {
+  const Case2FallbackOutcome({
+    required this.importedPredmetCount,
+    required this.skippedConflictCount,
+    required this.skippedAmbiguousCount,
+  });
+
+  final int importedPredmetCount;
+  final int skippedConflictCount;
+  final int skippedAmbiguousCount;
+
+  String get message {
+    if (importedPredmetCount == 0) {
+      return 'Nijedan novi PREDMET nije uvezen. Lokalni podaci su zadržani; '
+          'konflikti zahtevaju pojedinačni uvoz sa eksplicitnim izborom.';
+    }
+    return 'Uvezeno novih PREDMETA: $importedPredmetCount. Lokalna FIRMA, '
+        'korisnici i konfliktni PREDMETI nisu menjani.';
+  }
+}
+
+class _Case2ImportCandidate {
+  const _Case2ImportCandidate({required this.payload});
+
+  final _PredmetTransferPayload payload;
+}
+
+class _Case2FallbackAnalysis {
+  const _Case2FallbackAnalysis({required this.plan, required this.importable});
+
+  final Case2FallbackPlan plan;
+  final List<_Case2ImportCandidate> importable;
+}
+
 class _ImportBlokiranException implements Exception {
   const _ImportBlokiranException(this.message);
 
@@ -915,26 +974,40 @@ Future<void> _uvoziPredmetUBazu(
   int localActorKorisnikId,
 ) async {
   final payload = _procitajPredmetTransferPayload(json);
-  await db.transaction(() async {
-    final newId = await PredmetiRepository(db).uveziPredmetSaPovezanimPodacima(
-      predmet: payload.predmet,
-      iriu: payload.iriu,
-      kontaktLica: payload.kontaktLica,
+  await db.transaction(
+    () => _uvoziPredmetPayloadUBazu(
+      db: db,
+      payload: payload,
       localActorKorisnikId: localActorKorisnikId,
-    );
-    await _restoreImportedScenarioCarrier(
-      db: db,
-      predmetId: newId,
-      importedIriu: payload.iriu,
-      carrier: payload.scenarioCarrier,
-    );
-    await _attachImportedStanjeRobeConsequences(
-      db: db,
-      predmetId: newId,
-      importedIriu: payload.iriu,
-      consequenceItems: payload.stanjeRobeConsequences,
-    );
-  });
+    ),
+  );
+}
+
+Future<int> _uvoziPredmetPayloadUBazu({
+  required AppDatabase db,
+  required _PredmetTransferPayload payload,
+  required int localActorKorisnikId,
+}) async {
+  final newId = await PredmetiRepository(db)
+      .uveziPredmetSaPovezanimPodacimaUnutarTransakcije(
+        predmet: payload.predmet,
+        iriu: payload.iriu,
+        kontaktLica: payload.kontaktLica,
+        localActorKorisnikId: localActorKorisnikId,
+      );
+  await _restoreImportedScenarioCarrier(
+    db: db,
+    predmetId: newId,
+    importedIriu: payload.iriu,
+    carrier: payload.scenarioCarrier,
+  );
+  await _attachImportedStanjeRobeConsequences(
+    db: db,
+    predmetId: newId,
+    importedIriu: payload.iriu,
+    consequenceItems: payload.stanjeRobeConsequences,
+  );
+  return newId;
 }
 
 /// Schema-9 is a logical database backup. App-owned PARTE PNG bytes live in
@@ -1326,10 +1399,11 @@ Future<bool> _localDatabaseHasBusinessState(
 /// installation has blank identity fields and is allowed to receive a backup;
 /// two established, non-blank identities must match before any destructive
 /// restore transaction starts.
-Future<void> _validateBackupFirmIdentityPreflight(
+Future<_BackupFirmIdentityState> _validateBackupFirmIdentityPreflight(
   AppDatabase db,
-  Map<String, dynamic> json,
-) async {
+  Map<String, dynamic> json, {
+  bool allowIncompleteExistingLocalState = false,
+}) async {
   final incoming = json['firmaPodaci'];
   final local = await db.select(db.firmaPodaci).getSingleOrNull();
   final localPib = _normalizedIdentityPart(local?.pib);
@@ -1352,26 +1426,40 @@ Future<void> _validateBackupFirmIdentityPreflight(
 
   final backupIdentityComplete =
       incomingPib.isNotEmpty && incomingMb.isNotEmpty;
-  if (!backupIdentityComplete &&
-      await _localDatabaseHasBusinessState(db, local)) {
-    throw const _ImportBlokiranException(
-      'Uvoz cele baze je blokiran: backup nema potpunu FIRMA identifikaciju, '
-      'a lokalna baza sadrzi postojece podatke. Nedostajaca identifikacija '
-      'nije dokaz podudaranja; lokalni podaci nisu promenjeni. Za ovaj '
-      'backup potreban je eksplicitan fallback za spajanje/rekonciliaciju.',
-    );
+  if (backupIdentityComplete) {
+    return localPib.isEmpty && localMb.isEmpty
+        ? _BackupFirmIdentityState.freshLocalIdentity
+        : _BackupFirmIdentityState.sufficientlyConsistent;
   }
+  final hasLocalBusinessState = await _localDatabaseHasBusinessState(db, local);
+  if (!hasLocalBusinessState) {
+    return _BackupFirmIdentityState.freshLocalIdentity;
+  }
+  if (allowIncompleteExistingLocalState) {
+    return _BackupFirmIdentityState.incompleteExistingLocalState;
+  }
+  throw const _ImportBlokiranException(
+    'Uvoz cele baze je blokiran: backup nema potpunu FIRMA identifikaciju, '
+    'a lokalna baza sadrzi postojece podatke. Nedostajaca identifikacija '
+    'nije dokaz podudaranja; lokalni podaci nisu promenjeni. Za ovaj '
+    'backup potreban je eksplicitan fallback za spajanje/rekonciliaciju.',
+  );
 }
 
 /// Parses every supported full-backup section without writing to the local
 /// database. The destructive confirmation must not be shown until this
 /// structural pass and the FIRMA identity comparison both succeed.
-Future<void> _validateBackupBeforeDestructiveConfirmation(
+Future<_BackupFirmIdentityState> _validateBackupBeforeDestructiveConfirmation(
   AppDatabase db,
-  Map<String, dynamic> json,
-) async {
+  Map<String, dynamic> json, {
+  bool allowIncompleteExistingLocalState = false,
+}) async {
   _zahtevajPodrzanuJsonSchemaVerziju(json);
-  await _validateBackupFirmIdentityPreflight(db, json);
+  final identityState = await _validateBackupFirmIdentityPreflight(
+    db,
+    json,
+    allowIncompleteExistingLocalState: allowIncompleteExistingLocalState,
+  );
   final users = _requiredMapList(json, 'korisnici');
   final firme = json['firmaPodaci'];
   if (firme is! Map) {
@@ -1583,6 +1671,143 @@ Future<void> _validateBackupBeforeDestructiveConfirmation(
       'Uvoz je blokiran jer PARTE media politika kopije nije podrzana.',
     );
   }
+  return identityState;
+}
+
+const int _kCase2RetainedFamilyCount = 8;
+
+Future<_Case2FallbackAnalysis> _analizujCase2Fallback({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+}) async {
+  final identityState = await _validateBackupBeforeDestructiveConfirmation(
+    db,
+    json,
+    allowIncompleteExistingLocalState: true,
+  );
+  if (identityState != _BackupFirmIdentityState.incompleteExistingLocalState) {
+    throw const _ImportBlokiranException(
+      'Case-2 fallback je dozvoljen samo kada backup nema potpunu FIRMA '
+      'identifikaciju, a lokalna baza već sadrži podatke.',
+    );
+  }
+
+  final destination = await db.select(db.predmeti).get();
+  final incomingRows = _requiredMapList(json, 'predmeti');
+  final incomingNumberCounts = <String, int>{};
+  for (final raw in incomingRows) {
+    final normalized = _normalizujBackupPredmetMap(raw);
+    final predmet = _procitajBackupRed(
+      'predmeti',
+      normalized,
+      (row) => PredmetiData.fromJson(row),
+    );
+    final broj = predmet.brojPredmeta.trim();
+    if (broj.isNotEmpty) {
+      incomingNumberCounts.update(
+        broj,
+        (count) => count + 1,
+        ifAbsent: () => 1,
+      );
+    }
+  }
+  final importable = <_Case2ImportCandidate>[];
+  var conflictCount = 0;
+  var ambiguousCount = 0;
+
+  for (final raw in incomingRows) {
+    final normalized = _normalizujBackupPredmetMap(raw);
+    final predmet = _procitajBackupRed(
+      'predmeti',
+      normalized,
+      (row) => PredmetiData.fromJson(row),
+    );
+    final broj = predmet.brojPredmeta.trim();
+    if (broj.isEmpty || incomingNumberCounts[broj] != 1) {
+      ambiguousCount++;
+      continue;
+    }
+
+    final matches = destination
+        .where((local) => local.brojPredmeta.trim() == broj)
+        .toList(growable: false);
+    if (matches.length == 1) {
+      conflictCount++;
+      continue;
+    }
+    if (matches.length > 1) {
+      ambiguousCount++;
+      continue;
+    }
+
+    final iriu = _requiredMapList(json, 'iriu')
+        .where((row) => row['predmetId'] == predmet.id)
+        .map(
+          (row) => iriuDataFromCompatibleJson(
+            _normalizujBackupPrazanTekst(row, 'iriu', _kIriuBlankTextFields),
+          ),
+        )
+        .toList(growable: false);
+    final kontaktLica = _requiredMapList(json, 'kontaktLica')
+        .where((row) => row['predmetId'] == predmet.id)
+        .map(
+          (row) => KontaktLicaData.fromJson(
+            _normalizujBackupPrazanTekst(
+              row,
+              'kontaktLica',
+              _kKontaktLicaBlankTextFields,
+            ),
+          ),
+        )
+        .toList(growable: false);
+    final posledice = _optionalMapList(json, 'stanjeRobePosledice')
+        .where((row) => row['predmetId'] == predmet.id)
+        .map(StanjeRobePoslediceData.fromJson)
+        .toList(growable: false);
+    final transferJson = jsonDecode(
+      await _serijalizujPredmet(predmet, iriu, kontaktLica, posledice),
+    );
+    final payload = _procitajPredmetTransferPayload(
+      (transferJson as Map).cast<String, dynamic>(),
+    );
+    importable.add(_Case2ImportCandidate(payload: payload));
+  }
+
+  return _Case2FallbackAnalysis(
+    plan: Case2FallbackPlan(
+      newPredmetCount: importable.length,
+      sameIdentityConflictCount: conflictCount,
+      ambiguousCount: ambiguousCount,
+      retainedFamilyCount: _kCase2RetainedFamilyCount,
+    ),
+    importable: importable,
+  );
+}
+
+Future<Case2FallbackOutcome> _primeniCase2Fallback({
+  required AppDatabase db,
+  required _Case2FallbackAnalysis analysis,
+  required int localActorKorisnikId,
+}) async {
+  var imported = 0;
+  await db.transaction(() async {
+    await PredmetiRepository(
+      db,
+    ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+    for (final candidate in analysis.importable) {
+      await _uvoziPredmetPayloadUBazu(
+        db: db,
+        payload: candidate.payload,
+        localActorKorisnikId: localActorKorisnikId,
+      );
+      imported++;
+    }
+  });
+  return Case2FallbackOutcome(
+    importedPredmetCount: imported,
+    skippedConflictCount: analysis.plan.sameIdentityConflictCount,
+    skippedAmbiguousCount: analysis.plan.ambiguousCount,
+  );
 }
 
 Future<_BackupImportResult> _uvoziBackupUBazu(
@@ -2885,6 +3110,40 @@ Future<_PredmetConflictChoice?> _prikaziPredmetConflictDialog({
   );
 }
 
+Future<bool?> _prikaziCase2FallbackDialog({
+  required BuildContext ctx,
+  required Case2FallbackPlan plan,
+}) {
+  return showDialog<bool>(
+    context: ctx,
+    builder: (dlgCtx) => AlertDialog(
+      title: const Text('Backup nema potpunu FIRMA identifikaciju'),
+      content: Text(
+        'Lokalni podaci neće biti zamenjeni. Mogu se uvesti samo novi i '
+        'nedvosmisleni PREDMETI koji nemaju lokalni konflikt.\n\n'
+        'Novi PREDMETI za uvoz: ${plan.newPredmetCount}\n'
+        'Konflikti istog identiteta: ${plan.sameIdentityConflictCount}\n'
+        'Dvosmisleni zapisi: ${plan.ambiguousCount}\n\n'
+        'Lokalna FIRMA, korisnici, katalog, šabloni, PARTE, podsetnici, '
+        'istorija i SCENARIO podaci ostaju lokalni. Konflikte obradite '
+        'pojedinačnim uvozom sa eksplicitnim izborom.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dlgCtx, false),
+          child: const Text('ODUSTANI'),
+        ),
+        FilledButton(
+          onPressed: plan.hasImportablePredmeti
+              ? () => Navigator.pop(dlgCtx, true)
+              : null,
+          child: const Text('UVEZI SAMO NOVE PREDMETE'),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<Map<String, dynamic>?> _ucitajJsonMapuIzRezultata(
   FilePickerResult result, {
   required bool preferDiskPath,
@@ -3054,6 +3313,28 @@ Future<String?> importBackupJsonMapForTest({
   }
   await _uvoziBackupUBazu(db, json);
   return null;
+}
+
+@visibleForTesting
+Future<Case2FallbackPlan> buildCase2FallbackPlanForTest({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+}) async {
+  return (await _analizujCase2Fallback(db: db, json: json)).plan;
+}
+
+@visibleForTesting
+Future<Case2FallbackOutcome> applyCase2FallbackForTest({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+  required int localActorKorisnikId,
+}) async {
+  final analysis = await _analizujCase2Fallback(db: db, json: json);
+  return _primeniCase2Fallback(
+    db: db,
+    analysis: analysis,
+    localActorKorisnikId: localActorKorisnikId,
+  );
 }
 
 /// Legacy entrypoint za izvoz jednog PREDMETA kao JSON transfera.
@@ -3249,7 +3530,32 @@ Future<void> uvoziIzFajla({
       if (!ctx.mounted) return;
       _prikaziSnackBar(ctx, 'PREDMET uspešno uvezen kao novi lokalni predmet.');
     } else if (format == _kBackupTransferFormat && allowBackupImport) {
-      await _validateBackupBeforeDestructiveConfirmation(db, json);
+      final identityState = await _validateBackupBeforeDestructiveConfirmation(
+        db,
+        json,
+        allowIncompleteExistingLocalState: true,
+      );
+      if (identityState ==
+          _BackupFirmIdentityState.incompleteExistingLocalState) {
+        final analysis = await _analizujCase2Fallback(db: db, json: json);
+        if (!ctx.mounted) return;
+        final potvrda = await _prikaziCase2FallbackDialog(
+          ctx: ctx,
+          plan: analysis.plan,
+        );
+        if (potvrda != true) return;
+        final localActor = await PredmetiRepository(
+          db,
+        ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+        final result = await _primeniCase2Fallback(
+          db: db,
+          analysis: analysis,
+          localActorKorisnikId: localActor.id,
+        );
+        if (!ctx.mounted) return;
+        _prikaziSnackBar(ctx, result.message);
+        return;
+      }
 
       if (!ctx.mounted) return;
       final potvrda = await showDialog<bool>(
