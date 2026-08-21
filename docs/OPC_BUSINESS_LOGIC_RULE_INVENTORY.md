@@ -44,13 +44,13 @@ Domain: Single-PREDMET JSON import
 Rule statement: When a single-PREDMET JSON has the same non-empty trimmed `brojPredmeta` as exactly one local PREDMET, explicit keep / replace / cancel user choice is intentional business behavior, not a defect. It exists because real business truth may change when `Platilac` or other parties change their mind. Individual PREDMET JSON does not transfer `logIzmena`; import and replacement are recorded as local audit events. Replacement preserves the existing local log and appends a replacement event.
 Evidence classification: OWNER CLARIFICATION / SOURCE-CONFIRMED
 Evidence locations: `lib/core/utils/json_export_import.dart`; `docs/tasks/OPC_TASK_BUSINESS_LOGIC_EXTRACTION_SINGLE_PREDMET_JSON_IMPORT_FRESHNESS_AND_OVERWRITE_GUARD_REPORT.md`
-Current implementation state: UI conflict dialog offers cancel, keep local, or replace imported. Multiple local matches block replacement. New/replacement import event logging is not implemented; current replacement deletes the local `logIzmena`, contrary to the approved target rule.
+Current implementation state: UI conflict dialog offers cancel, keep local, or replace imported. Multiple local matches block replacement. Same-identity replacement now preserves destination-local `logIzmena` and appends one local `IMPORT_REPLACE` event in the replacement transaction with the active local actor. New-import event logging remains a separately bounded gap; individual PREDMET JSON still does not carry local history.
 Windows/Android parity: Shared import code; Android layout differs only by dialog sizing/file-read adapter.
 JSON/PDF/UI relevance: Conflict UI displays local/imported metadata and deceased name.
 Future Web/sync relevance: Critical; automatic hard-blocking must not remove owner-approved user choice unless a future owner decision changes the rule.
 Risk if changed: User may be unable to select the correct business version after a legitimate case change.
 Open questions: Which future version warning or guard should accompany the choice. Current snapshot-log privacy/retention remains a technical audit item.
-Recommended next action: Preserve user choice and local log; design local import events and any future freshness warnings under a separate authorized task.
+Recommended next action: Preserve user choice and local replacement history; define any future new-import events or freshness warnings under a separate authorized task.
 
 ## RULE-ID: OPC-RULE-FILENAME-001
 

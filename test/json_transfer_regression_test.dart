@@ -141,6 +141,7 @@ void main() {
           predmet: replacementPredmet,
           iriu: [replacementIriu],
           kontaktLica: [replacementContact],
+          auditKorisnikId: 1,
         );
 
         final savedPredmeti = await db.select(db.predmeti).get();

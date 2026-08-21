@@ -1,5 +1,11 @@
 # OPC PREDMET Lifecycle Identity Version Characterization
 
+Current-authority reconciliation (2026-08-21): replacement-log deletion
+statements in this characterization are historical baseline evidence. The
+current bounded seam preserves destination-local `logIzmena` and appends one
+local `IMPORT_REPLACE` event transactionally; identity rebinding and broader
+version/change-log work remain separately scoped.
+
 Status: docs-only characterization.
 
 Base commit: `7c24d6399077499f78f963a737cd95560493e49d`

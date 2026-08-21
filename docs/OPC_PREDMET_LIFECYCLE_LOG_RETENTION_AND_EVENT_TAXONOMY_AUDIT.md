@@ -1,5 +1,11 @@
 # OPC PREDMET lifecycle, log retention and event taxonomy audit
 
+Current-authority reconciliation (2026-08-21): this document records the
+pre-implementation baseline. The bounded same-identity replacement seam now
+preserves destination-local `logIzmena` and appends `IMPORT_REPLACE`
+transactionally; checkpoint/event-store separation, privacy migration and
+new-import event work remain future scope.
+
 Status: `CODE-FIRST TECHNICAL AUDIT PASS — IMPLEMENTATION NOT AUTHORIZED`
 
 Audit date: 2026-07-26

@@ -57,6 +57,7 @@ void main() {
         predmet: local.copyWith(id: 900001, ime: 'Replacement'),
         iriu: const [],
         kontaktLica: const [],
+        auditKorisnikId: 1,
       );
 
       expect(await _exists(db, 'iriu', oldIriu), isFalse);

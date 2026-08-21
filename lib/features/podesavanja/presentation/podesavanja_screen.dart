@@ -83,7 +83,11 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   }
 
   Future<void> _uvoziBazu() async {
-    await uvoziIzFajla(ctx: context, db: widget.repo.db);
+    await uvoziIzFajla(
+      ctx: context,
+      db: widget.repo.db,
+      localActorKorisnikId: widget.session.korisnik?.id,
+    );
   }
 
   Future<String?> _prikaziDijalog() {

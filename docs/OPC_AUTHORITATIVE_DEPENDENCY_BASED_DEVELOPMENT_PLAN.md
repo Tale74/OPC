@@ -148,9 +148,9 @@ SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
    guard, which acquires the named mutex before Flutter, plugins and SQLite
    initialize. Its W1–W6 acceptance is closed. The separate installer/update protection is also closed by accepted Inno Setup AppMutex and I1/I2/I3 evidence; preserve its refusal of program-file replacement while OPC is running and non-mutation of canonical database identity/content. Reopen only for a proven regression or new owner decision.
 2. Consolidate the remaining PREDMET dependency/referential work actually
-   required for release. Do not reopen completed hard-delete or scoped restore
-   work without a finding. Explicitly classify deferred anonymization,
-   replacement, RI-3 recovery and FK enablement.
+   required for release. Do not reopen completed hard-delete, scoped restore or
+   same-identity audit-history preservation work without a finding. Explicitly
+   classify deferred anonymization, RI-3 recovery and FK enablement.
 3. Include the explicit `ZAVRŠEN` lifecycle in final Windows and Android runtime
    semantic acceptance; focused tests alone do not create platform PASS.
 

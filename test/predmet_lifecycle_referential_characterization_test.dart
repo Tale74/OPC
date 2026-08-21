@@ -205,6 +205,122 @@ void main() {
     );
 
     test(
+      'same-identity replacement preserves local history and appends one event',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final local = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-REPLACE-LOG-001/2026',
+          ime: 'Stari',
+        );
+        await db
+            .into(db.logIzmena)
+            .insert(
+              LogIzmenaCompanion.insert(
+                predmetId: local.id,
+                korisnikId: 1,
+                datumVreme: '2026-07-30T10:00:00.000',
+                polje: 'radni_ciklus',
+                staraVrednost: const Value('v1:OTVOREN'),
+                novaVrednost: const Value('v1:ZATVOREN'),
+              ),
+            );
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        (transfer['predmet'] as Map<String, dynamic>)['ime'] = 'Novi';
+
+        await importPredmetJsonMapForTest(
+          db: db,
+          json: transfer,
+          replaceLocalPredmetId: local.id,
+          auditKorisnikId: 7,
+          notificationGateway: _RecordingNotificationGateway(),
+        );
+
+        final logs =
+            await (db.select(db.logIzmena)
+                  ..where((row) => row.predmetId.equals(local.id))
+                  ..orderBy([(row) => OrderingTerm.asc(row.id)]))
+                .get();
+        expect(logs, hasLength(2));
+        expect(logs.first.polje, 'radni_ciklus');
+        expect(logs.first.novaVrednost, 'v1:ZATVOREN');
+        expect(logs.last.korisnikId, 7);
+        expect(logs.last.polje, 'IMPORT_REPLACE');
+        expect(logs.last.staraVrednost, isEmpty);
+        expect(logs.last.novaVrednost, isEmpty);
+      },
+    );
+
+    test(
+      'failed replacement commit leaves prior history and business truth intact',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final local = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-REPLACE-LOG-FAIL-001/2026',
+          ime: 'Stari',
+        );
+        await db
+            .into(db.logIzmena)
+            .insert(
+              LogIzmenaCompanion.insert(
+                predmetId: local.id,
+                korisnikId: 1,
+                datumVreme: '2026-07-30T10:00:00.000',
+                polje: 'radni_ciklus',
+                staraVrednost: const Value('v1:OTVOREN'),
+                novaVrednost: const Value('v1:ZATVOREN'),
+              ),
+            );
+        await db.customStatement('''
+          CREATE TRIGGER fail_import_replace_log
+          BEFORE INSERT ON log_izmena
+          WHEN NEW.polje = 'IMPORT_REPLACE'
+          BEGIN SELECT RAISE(ABORT, 'characterized audit failure'); END;
+          ''');
+        final transfer =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: db,
+                    predmetId: local.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        (transfer['predmet'] as Map<String, dynamic>)['ime'] = 'Neuspesno';
+
+        await expectLater(
+          importPredmetJsonMapForTest(
+            db: db,
+            json: transfer,
+            replaceLocalPredmetId: local.id,
+            auditKorisnikId: 7,
+            notificationGateway: _RecordingNotificationGateway(),
+          ),
+          throwsA(anything),
+        );
+
+        expect(
+          (await PredmetiRepository(db).getPredmet(local.id)).ime,
+          'Stari',
+        );
+        final logs = await (db.select(
+          db.logIzmena,
+        )..where((row) => row.predmetId.equals(local.id))).get();
+        expect(logs, hasLength(1));
+        expect(logs.single.polje, 'radni_ciklus');
+      },
+    );
+
+    test(
       'full restore clears stale reminder before reusing a local predmet id',
       () async {
         final sourceDb = createTestDatabase();
@@ -392,12 +508,15 @@ void main() {
         );
 
         expect(warning, isNot(null));
-        expect((await PredmetiRepository(db).getPredmet(local.id)).ime, 'PostCommitInit');
+        expect(
+          (await PredmetiRepository(db).getPredmet(local.id)).ime,
+          'PostCommitInit',
+        );
         expect(
           await _singleText(
             db,
             'SELECT scheduled_notification_ids AS value '
-                'FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            'FROM ceremony_reminder_settings WHERE predmet_id = ?',
             local.id,
           ),
           '[]',
@@ -445,17 +564,17 @@ void main() {
         );
 
         expect(warning, isNot(null));
-        expect((await PredmetiRepository(db).getPredmet(local.id)).ime, 'PostCommitSchedule');
-        expect(gateway.scheduledIds, isNotEmpty);
         expect(
-          gateway.cancelledIds,
-          containsAll(gateway.scheduledIds),
+          (await PredmetiRepository(db).getPredmet(local.id)).ime,
+          'PostCommitSchedule',
         );
+        expect(gateway.scheduledIds, isNotEmpty);
+        expect(gateway.cancelledIds, containsAll(gateway.scheduledIds));
         expect(
           await _singleText(
             db,
             'SELECT scheduled_notification_ids AS value '
-                'FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            'FROM ceremony_reminder_settings WHERE predmet_id = ?',
             local.id,
           ),
           '[]',
@@ -466,7 +585,10 @@ void main() {
 }
 
 class _RecordingNotificationGateway implements CeremonyNotificationGateway {
-  _RecordingNotificationGateway({this.failInitialize = false, this.failScheduleAt});
+  _RecordingNotificationGateway({
+    this.failInitialize = false,
+    this.failScheduleAt,
+  });
 
   bool failInitialize;
   final int? failScheduleAt;

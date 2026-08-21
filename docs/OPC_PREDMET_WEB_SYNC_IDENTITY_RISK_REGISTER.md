@@ -51,7 +51,7 @@ Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED PARTIAL / OWNER DECISION`.
 ## RISK-ID: OPC-PREDMET-WEB-ID-007
 
 Risk: current change-log data is overclaimed as a complete sync audit trail.
-Current evidence: log rows exist for snapshots, version changes, and working cycles; full review change-log overview is not implemented; replacement deletes local logs for replaced PREDMET.
+Current evidence: log rows exist for snapshots, version changes and working cycles; same-identity replacement preserves destination-local logs and appends `IMPORT_REPLACE`; a full review change-log overview is not implemented.
 Boundary: current logs are source-confirmed local behavior, not a complete Web/sync audit model.
 Classification: `SOURCE-CONFIRMED / TECHNICAL AUDIT REQUIRED`.
 

@@ -131,7 +131,7 @@ This is a consolidation pass, not a new source audit. It cites the characterizat
 | WSI-005 | `exportDatum` metadata only | `exportDatum` is export metadata and not freshness authority. | How metadata is shown without becoming authority. | YES for changed import warnings. | YES. | YES for import warning changes. | `OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md` `OPC-PREDMET-WEB-ID-004` |
 | WSI-006 | Same-PREDMET conflict behavior | Current UI offers keep/replace/cancel; explicit choice is protected. | Whether any future hard block is owner-approved. | YES. | YES. | YES for behavior changes. | `OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md` `OPC-PREDMET-WEB-ID-006` |
 | WSI-007 | Replace/local-id preservation | Replacement keeps local technical id and imports business state. Owner requires local log preservation and a local replacement event; individual JSON does not transfer foreign logs. | How any future sync respects the local-audit boundary without inventing transferable history. | YES only for future Web/sync policy. | YES. | YES for sync lineage work. | `OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_CHARACTERIZATION.md` section 9 |
-| WSI-008 | Change-log as sync/audit trail | Current logs exist; full change-log overview is not implemented; current replacement deletion conflicts with owner policy. | Whether current logs are technically suitable after snapshot privacy/retention audit. | NO for individual JSON policy; YES for future Web/sync meaning. | YES. | YES. | `OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md` `OPC-PREDMET-WEB-ID-007` |
+| WSI-008 | Change-log as sync/audit trail | Current logs exist; full change-log overview is not implemented; same-identity replacement now preserves destination-local history and appends `IMPORT_REPLACE`. | Whether current logs are technically suitable after snapshot privacy/retention audit and for future Web/sync meaning. | NO for individual JSON policy; YES for future Web/sync meaning. | YES. | YES. | `OPC_PREDMET_WEB_SYNC_IDENTITY_RISK_REGISTER.md` `OPC-PREDMET-WEB-ID-007` |
 | WSI-009 | Derivative module boundary | PREDMET is master truth; modules are derivative/operational/transfer/finance/support. | How future Web preserves module boundaries. | YES for architecture changes. | YES. | YES. | `docs/OPC_MODULE_RELATIONSHIP_MAP.md`; `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md` |
 
 ## 10. Pseudocode Learning-Layer Status
@@ -177,7 +177,7 @@ Pseudocode docs unchanged; previous PREDMET pseudocode updates remain intact.
 - [ ] Follow-up design proof required: canonical aggregate fingerprint, legacy checkpoint migration and tests.
 - [x] Initial technical audit complete: checkpoint/audit responsibility split, snapshot privacy, local import events and replacement-log gap characterized.
 - [ ] Follow-up implementation-design proof required: migration, legacy-row treatment, event schema and tests.
-- [x] Code-first technical audits complete: existing FIRMA/user ownership boundary and destination-local individual-transfer rebinding.
+- [x] Code-first technical audits complete: existing FIRMA/user ownership boundary and the destination-local individual-transfer rebinding design; implementation proof remains open.
 - [ ] Technical audit required: Windows/Android lifecycle and JSON parity.
 - [ ] Technical audit required: Web/sync identity and conflict readiness.
 - [ ] Implementation remains blocked until OWNER DECISION / TECHNICAL AUDIT / CHARACTERIZATION / TEST EVIDENCE / RUNTIME EVIDENCE: JSON conflict warnings and overwrite guards.

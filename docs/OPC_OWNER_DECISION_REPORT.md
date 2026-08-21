@@ -131,7 +131,7 @@ Owner decision:
 - foreign `korisnikId` values and foreign log history are not imported through individual PREDMET JSON;
 - the log must not become a parallel PREDMET business truth.
 
-Current source does not yet satisfy the replacement rule: it deletes the existing local `logIzmena` and does not append a replacement event. This is an `OWNER DECISION / IMPLEMENTATION REQUIRED / TECHNICAL AUDIT REQUIRED` gap. No application behavior is changed by this documentation addendum.
+Current source satisfies the replacement rule at the bounded seam: it preserves existing destination-local `logIzmena` rows and appends one local `IMPORT_REPLACE` event with the active local actor and timestamp inside the replacement transaction. New-import event logging remains separately scoped; this correction does not broaden audit policy.
 
 Technical audit must also classify current snapshot entries in `staraVrednost` / `novaVrednost`, their privacy and retention implications, and the minimum event metadata needed without treating raw PREDMET snapshots as a second source of truth.
 

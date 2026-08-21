@@ -1,11 +1,17 @@
 # OPC `logIzmena` technical audit
 
-**Status:** SOURCE-CONFIRMED TECHNICAL AUDIT — OWNER POLICY BOUNDARY IDENTIFIED — NO IMPLEMENTATION
+**Status:** HISTORICAL PRE-IMPLEMENTATION TECHNICAL AUDIT — replacement seam superseded by bounded `logIzmena` correction; checkpoint/event separation remains open
 **Datum:** 26. jul 2026.
 **Base SHA:** `1168ccd41b1133daec77ce71ef0966ce937ccc0a`
 **Task branch:** `task/OPC-GATE-0-LOGIZMENA-TECHNICAL-AUDIT`
 
 ## 1. Scope
+
+Current-authority reconciliation (2026-08-21): the historical replacement
+baseline below is superseded for the bounded seam. Same-identity replacement
+now preserves destination-local `logIzmena` rows and appends one local
+`IMPORT_REPLACE` event transactionally. New-import events, checkpoint privacy
+and a future user-facing change-log remain outside this correction.
 
 Read-only review obuhvatio je:
 

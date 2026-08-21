@@ -568,7 +568,7 @@ Classification: `SOURCE-CONFIRMED / OWNER DECISION / IMPLEMENTATION REQUIRED`.
 
 ## 18. Lifecycle / Version / Log Role
 
-Save writes save snapshots. Close writes confirmed-close snapshots and increments `verzija` only when business data changed after a prior confirmed state. Reopen writes work-cycle logs. Delete/replacement clears logs for that PREDMET. Future change-log overview remains missing.
+Save writes save snapshots. Close writes confirmed-close snapshots and increments `verzija` only when business data changed after a prior confirmed state. Reopen writes work-cycle logs. Hard delete clears logs with the PREDMET; same-identity replacement preserves destination-local logs and appends one `IMPORT_REPLACE` event transactionally. Future new-import event coverage and change-log overview remain separately scoped.
 
 Evidence: `predmeti_repository.dart`; `log_izmena_table.dart`; `json_transfer_regression_test.dart` for replacement side effects.
 

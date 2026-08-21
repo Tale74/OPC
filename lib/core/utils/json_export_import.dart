@@ -950,6 +950,7 @@ Future<String?> _zameniPredmetUBazi({
   required AppDatabase db,
   required int lokalniPredmetId,
   required Map<String, dynamic> json,
+  required int auditKorisnikId,
   CeremonyNotificationGateway? notificationGateway,
   ParteMediaStore? mediaStore,
 }) async {
@@ -988,6 +989,7 @@ Future<String?> _zameniPredmetUBazi({
         predmet: payload.predmet,
         iriu: payload.iriu,
         kontaktLica: payload.kontaktLica,
+        auditKorisnikId: auditKorisnikId,
       );
       await _restoreImportedScenarioCarrier(
         db: db,
@@ -2698,6 +2700,7 @@ Future<String?> importPredmetJsonMapForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
   int? replaceLocalPredmetId,
+  int auditKorisnikId = 1,
   CeremonyNotificationGateway? notificationGateway,
   ParteMediaStore? mediaStore,
 }) {
@@ -2706,6 +2709,7 @@ Future<String?> importPredmetJsonMapForTest({
       db: db,
       lokalniPredmetId: replaceLocalPredmetId,
       json: json,
+      auditKorisnikId: auditKorisnikId,
       notificationGateway: notificationGateway,
       mediaStore: mediaStore,
     );
@@ -2853,14 +2857,21 @@ Future<void> izvoziBackup({
 Future<void> uveziPredmetIzJson({
   required BuildContext ctx,
   required AppDatabase db,
+  int? localActorKorisnikId,
 }) async {
-  await uvoziIzFajla(ctx: ctx, db: db, allowBackupImport: false);
+  await uvoziIzFajla(
+    ctx: ctx,
+    db: db,
+    allowBackupImport: false,
+    localActorKorisnikId: localActorKorisnikId,
+  );
 }
 
 Future<void> uvoziIzFajla({
   required BuildContext ctx,
   required AppDatabase db,
   bool allowBackupImport = true,
+  int? localActorKorisnikId,
 }) async {
   try {
     final json = await _izaberiJsonMapu(preferDiskPath: Platform.isAndroid);
@@ -2903,10 +2914,18 @@ Future<void> uvoziIzFajla({
             return;
           }
 
+          final actorId = localActorKorisnikId;
+          if (actorId == null) {
+            throw StateError(
+              'Active local user is required for PREDMET replacement audit.',
+            );
+          }
+
           final replacementWarning = await _zameniPredmetUBazi(
             db: db,
             lokalniPredmetId: existingP.id,
             json: json,
+            auditKorisnikId: actorId,
           );
           if (!ctx.mounted) return;
           _prikaziSnackBar(

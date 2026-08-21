@@ -45,11 +45,11 @@ parity, not a new owner decision.
 ## GAP-ID: OPC-PREDMET-LIV-GAP-004
 
 Area: replacement import log retention.
-Current evidence: replacement import deletes local `logIzmena` and inserts imported business state under the preserved local id.
+Current evidence: replacement import preserves destination-local `logIzmena` and inserts imported business state under the preserved local id; one local `IMPORT_REPLACE` event is appended transactionally.
 Owner decision: individual PREDMET JSON does not transfer `logIzmena`; replacement must preserve the local log and append a local replacement event with local actor/time authority.
-Risk if misunderstood: current runtime deletion may be mistaken for approved behavior, or foreign history may be imported as local audit authority.
-Blocked behavior changes: implementation of local import/replacement event logging, snapshot privacy/retention correction, tests and migration safety.
-Classification: `SOURCE-CONFIRMED CURRENT CONFLICT / OWNER DECISION / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION GAP`.
+Risk if misunderstood: foreign history may be imported as local audit authority, or retained raw checkpoint rows may be mistaken for a complete user-facing change log.
+Blocked behavior changes: new-import event coverage, snapshot privacy/retention correction, checkpoint migration and broader audit UI remain separately scoped.
+Classification: `SOURCE-CONFIRMED / OWNER DECISION / REPLACEMENT IMPLEMENTATION CLOSED / BROADER AUDIT MODEL OPEN`.
 
 Technical audit closure reference: `docs/OPC_LOGIZMENA_TECHNICAL_AUDIT.md`.
 
@@ -65,7 +65,7 @@ No new owner business decision remains.
 ## GAP-ID: OPC-PREDMET-LIV-GAP-005
 
 Area: firm-scoped PREDMET identity.
-Current evidence: corrected firm audit and dedicated local-user audit confirm the existing `PREDMET -> savetnikId/creator -> local user -> local database -> singleton FIRMA` ownership boundary. The exact technical disposition is source-confirmed: new individual import binds to the authenticated active local importer; replacement preserves local adviser/creator and records the local actor; foreign numeric user IDs are never destination authority. Full-backup import still has no PIB/MB preflight and minute-level local number generation has no unique guard.
+Current evidence: corrected firm audit and dedicated local-user audit confirm the existing `PREDMET -> savetnikId/creator -> local user -> local database -> singleton FIRMA` ownership boundary. The bounded `logIzmena` seam is source-confirmed, but identity/rebinding is not closed: new individual import does not currently bind source-local ownership to the authenticated active local importer, and replacement may carry imported adviser/creator/modifier IDs. The local actor is recorded for the bounded `IMPORT_REPLACE` audit event; foreign numeric user IDs remain a separate technical successor concern. Full-backup import still has no PIB/MB preflight and minute-level local number generation has no unique guard.
 Risk if misunderstood: a source-local user ID may be attributed to the wrong destination user, restore may replace another FIRMA database, or duplicate numbers may be created.
 Blocked behavior changes: identity guard, duplicate detection, sync identity, restore identity.
 Classification: `OWNER POLICY EXISTS / TECHNICAL DESIGN COMPLETE / NO NEW OWNER DECISION / IMPLEMENTATION BLOCKED`.

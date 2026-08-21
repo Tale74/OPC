@@ -48,7 +48,7 @@ Owner je zaključio:
 - full database backup/restore ostaje odvojena operacija;
 - log ne sme postati paralelna poslovna istina PREDMETA.
 
-Current replacement source briše lokalni log i ne beleži događaj zamene. Korekcija je budući tehnički/implementacioni dug, bez izmene aplikacije u Gate 0 dokumentacionom tasku.
+Current replacement source now preserves the destination-local log and records one local `IMPORT_REPLACE` event transactionally with the replacement. New-import event logging remains a separate bounded implementation gap; no PODSETNIK or broader audit policy is implied.
 
 ### `ODQ-PREDMET-HISTORY-VISIBILITY-003` — korisnički change-log — `CLOSED`
 
@@ -75,7 +75,7 @@ Owner je zaključio:
 
 ## 3. Preostale odluke koje se donose u odgovarajućoj planiranoj etapi
 
-### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope — `CLOSED / TECHNICAL CORRECTION COMPLETE`
+### `ODQ-PREDMET-IDENTITY-001` — `brojPredmeta` i FIRMA scope — `OWNER POLICY CLOSED / REBINDING IMPLEMENTATION OPEN`
 
 Već zaključano owner odlukom i potvrđeno code-first auditom:
 
@@ -94,13 +94,13 @@ Korekcija: povučeni su predlog novog source-FIRMA identity bloka, same-firm kor
 
 Local-user transfer audit: `docs/OPC_LOCAL_USER_IDENTITY_AND_PREDMET_TRANSFER_REBIND_AUDIT.md`.
 
-Code-first closure:
+Code-first policy boundary and partial audit-history closure:
 
 - source-local `savetnikId`/creator/modifier brojevi nisu prenosivi autoritet;
-- novi individualni import vezuje lokalni ownership za aktivnog prijavljenog lokalnog korisnika;
-- replacement zadržava lokalnog savetnika/creator-a i beleži lokalnog replacement actor-a;
+- novi individualni import trenutno ne radi destination-local rebinding; to ostaje zaseban tehnički successor;
+- replacement čuva lokalni tehnički PREDMET id i beleži lokalnog replacement actor-a za `logIzmena`, ali imported adviser/creator/modifier IDs ostaju zasebno otvorena identity/rebinding obaveza;
 - full backup ostaje zaseban transfer cele FIRMA/user/PREDMET porodice;
-- nema preostalog owner pitanja za ovaj tehnički mapping.
+- ovo nije owner-semantic pitanje za `logIzmena`, ali identity/rebinding tehnička provera nije zatvorena ovim taskom.
 
 ### `ODQ-PREDMET-HISTORY-004` — retention i završni lifecycle detalji
 

@@ -609,13 +609,11 @@ class PredmetiRepository {
     required PredmetiData predmet,
     required List<IriuData> iriu,
     required List<KontaktLicaData> kontaktLica,
+    required int auditKorisnikId,
   }) => _db.transaction(() async {
     await StanjeRobeLifecycleService(
       db: _db,
     ).reconcilePredmetReplacement(lokalniPredmetId);
-    await (_db.delete(
-      _db.logIzmena,
-    )..where((l) => l.predmetId.equals(lokalniPredmetId))).go();
     await (_db.delete(
       _db.kontaktLica,
     )..where((k) => k.predmetId.equals(lokalniPredmetId))).go();
@@ -666,6 +664,17 @@ class PredmetiRepository {
                 ),
           );
     }
+
+    // Local audit history belongs to the stable destination PREDMET identity.
+    // Preserve prior entries and append one truthful replacement event inside
+    // the same transaction as the accepted business replacement.
+    await _upisiLogIzmene(
+      predmetId: lokalniPredmetId,
+      korisnikId: auditKorisnikId,
+      polje: 'IMPORT_REPLACE',
+      staraVrednost: '',
+      novaVrednost: '',
+    );
   });
 
   /// Svi predmeti — za izveštaje.
