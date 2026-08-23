@@ -15,22 +15,22 @@ This document summarizes policy only. It does not implement backup, restore, imp
 | Docs-only tasks | Small docs-only tasks usually do not require a new local backup unless they touch core truth lanes or the task explicitly requires a backup milestone. | PUBLIC SUMMARY |
 | User-controlled local app transfer | Current local model includes user-controlled single `PREDMET` JSON transfer and full database/backup JSON transfer. | CURRENT BASELINE |
 | Single `PREDMET` JSON | Transfers one case/business state boundary and remains distinct from full database backup/import. | CURRENT BASELINE / TECHNICAL AUDIT REQUIRED |
-| Full database/backup JSON | Represents broader local backup/import recovery behavior. Current public evidence says destructive restore confirmation exists, but firm identity mismatch guard is not yet implemented. | PARTIALLY REALIZED / NEEDS GUARD |
-| Firm identity guard | Owner decision: PIB/Matični broj mismatch must block restore/import with no exception inside the import/restore guard. | OWNER DECISION / NOT YET IMPLEMENTED |
+| Full database/backup JSON | Represents broader local backup/import recovery behavior. Current source/tests prove normalized firm identity preflight before destructive restore; owner-facing runtime acceptance remains separate. | SOURCE/TEST PROVEN / OWNER RUNTIME OPEN |
+| Firm identity guard | Owner decision: PIB/Matični broj mismatch must block restore/import with no exception inside the import/restore guard; current source/tests prove the pre-destructive block. | SOURCE/TEST PROVEN / OWNER RUNTIME OPEN |
 | Web/sync future | Any Web/sync/offline-replica use of backup/restore or JSON transfer requires identity, repository, conflict, and data-ownership audits first. | TECHNICAL AUDIT REQUIRED |
 
 ## Current Mismatch To Track
 
 | Decision / policy | Current implementation evidence | Required future action |
 | --- | --- | --- |
-| PIB/Matični broj mismatch must block restore/import. | Public owner report says full backup/database JSON is realized/partially guarded and lacks firm identity mismatch guard. | Design and implement guarded identity comparison in a separate task. |
+| PIB/Matični broj mismatch must block restore/import. | Current source/tests prove normalized identity comparison and non-destructive mismatch rejection before restore mutation. | Record owner-facing runtime acceptance separately; do not infer final release readiness from source/tests alone. |
 | `FirmaPodaci` changes must preserve credible history. | `FirmaPodaci` exists as editable local firm data; history is not public-baseline implemented. | Technical identity/history audit before implementation. |
 | Single `PREDMET` JSON and full database/backup JSON must remain distinct. | Evidence supports separate `OPC_PREDMET` and `OPC_BACKUP` formats. | Keep distinction explicit in all future Web/sync/restore tasks. |
 | Full backup/import stock handling and broader consequence transfer must be explicit. | Local locked rules mark parts of STANJE ROBE/JSON/full backup behavior as future/audit-sensitive. | Extract current rules before changing import/restore. |
 
 ## Public-Safe Known Risks
 
-- Identity guard is conceptually decided but not implemented.
+- Identity guard is source/test proven; owner-facing runtime acceptance remains separate.
 - Editable `FirmaPodaci` cannot be treated as a stable identity mechanism by itself.
 - Same-`PREDMET` conflict rules and related-data reconciliation need extraction before Web/sync.
 - Old local docs contain stale SaaS and local process wording; public manifest/owner decisions supersede them.
@@ -62,7 +62,7 @@ PARTE media archive.
 ## Technical-Audit Required
 
 - repository/firma identity model;
-- PIB/Matični broj comparison and failure UX;
+- PIB/Matični broj failure UX and owner-facing runtime acceptance;
 - `FirmaPodaci` history model;
 - single `PREDMET` JSON vs full backup/database JSON compatibility matrix;
 - same-`PREDMET` conflict and related-data reconciliation;

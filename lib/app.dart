@@ -212,7 +212,14 @@ class _StartRouterState extends State<_StartRouter> {
     super.dispose();
   }
 
-  void _onSessionChange() => setState(() {});
+  void _onSessionChange() {
+    // User existence can change while this process is alive (for example,
+    // after a full backup restore). Refresh the route guard when the session
+    // changes so logout reflects the current database rather than a startup
+    // snapshot captured before restore.
+    _hasKorisnika = widget.authRepo.hasKorisnika();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
