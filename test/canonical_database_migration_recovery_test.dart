@@ -38,7 +38,7 @@ void main() {
       final db = AppDatabase.forTesting(NativeDatabase(file));
       addTearDown(db.close);
 
-      expect(await _userVersion(db), 27);
+      expect(await _userVersion(db), 28);
       expect(
         await _tableNames(db),
         containsAll(['predmeti', 'parte_pripreme']),
@@ -196,12 +196,38 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 27);
+        expect(await _userVersion(second), 28);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
       });
     }
+  });
+
+  test('schema 27 migration keeps historical responsibility unknown', () async {
+    final fixture = await _fixture(
+      currentTemplate,
+      'schema_27_unknown_responsibility',
+    );
+    addTearDown(fixture.dispose);
+    final first = fixture.openAtVersion(
+      27,
+      mutateBeforeOpen: (raw) {
+        raw.execute('''
+            UPDATE predmeti
+            SET savetnik_id = 1,
+                created_by_korisnik_id = 1,
+                last_business_modified_by_korisnik_id = 1
+            WHERE id = 1
+          ''');
+      },
+    );
+    addTearDown(first.close);
+
+    final migrated = await first.select(first.predmeti).getSingle();
+    expect(migrated.savetnikId, 1);
+    expect(migrated.businessResponsibleName, equals(null));
+    expect(migrated.businessResponsibleRole, equals(null));
   });
 
   group('malformed and unsupported states stop safely', () {
@@ -311,9 +337,9 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      // Schema 27 is the current supported version (KATALOG pricing fields);
+      // Schema 28 is the current supported version (portable responsibility);
       // use the next checkpoint to exercise the future-version guard.
-      final db = fixture.openAtVersion(28, physicalVersion: 27);
+      final db = fixture.openAtVersion(29, physicalVersion: 28);
       addTearDown(db.close);
 
       await expectLater(
@@ -322,7 +348,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 28 -> 27'),
+            contains('unsupported migration checkpoint 29 -> 28'),
           ),
         ),
       );
@@ -372,7 +398,7 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 27);
+    expect(await _userVersion(retried), 28);
     await retried.close();
   });
 
@@ -433,7 +459,7 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 27);
+  expect(await _userVersion(db), 28);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);

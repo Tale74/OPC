@@ -6,6 +6,7 @@ import '../../../core/utils/document_text_codec.dart';
 import '../core_v2/models/iriu_truth_models.dart';
 import '../core_v2/services/financial_truth_service.dart';
 import '../core_v2/services/predmet_iriu_truth_service.dart';
+import 'memorandum_logo.dart';
 
 class ListaPdfPreparedData {
   const ListaPdfPreparedData({
@@ -112,6 +113,7 @@ class ListaPdfDataBuilder {
     required FirmaPodaciData firma,
     required AppPodesavanjaData app,
     required KorisniciData? savetnik,
+    String? portableSavetnikName,
   }) {
     final truthSnapshot = const PredmetIriuTruthService().evaluate(
       predmet: predmet,
@@ -122,9 +124,10 @@ class ListaPdfDataBuilder {
       truthSnapshot,
     );
     final savetnikIme = documentTextCodec.normalize(
-      savetnik?.imePrezime.trim().isNotEmpty == true
-          ? savetnik!.imePrezime.trim()
-          : '',
+      resolveSavetnikDisplayName(
+        localUser: savetnik,
+        portableName: portableSavetnikName,
+      ),
     );
     final iriuItems = _buildListaIriuItems(truthSnapshot)
         .map(

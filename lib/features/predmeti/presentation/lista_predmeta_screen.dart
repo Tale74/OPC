@@ -1025,7 +1025,10 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
               separatorBuilder: (context, i) => const SizedBox(height: 8),
               itemBuilder: (context, i) => _PredmetListItem(
                 predmet: lista[i],
-                savetnikIme: _savetnici[lista[i].savetnikId] ?? '',
+                savetnikIme:
+                    lista[i].businessResponsibleName?.trim().isNotEmpty == true
+                    ? lista[i].businessResponsibleName!.trim()
+                    : _savetnici[lista[i].savetnikId] ?? '',
                 hasUnresolvedStockConsequence: unresolvedStockPredmetIds
                     .contains(lista[i].id),
                 onTap: () => _otvoriPredmet(lista[i]),

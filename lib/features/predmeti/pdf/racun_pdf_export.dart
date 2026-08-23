@@ -121,6 +121,7 @@ Future<Uint8List> _buildRacunPdf({
     firma: firma,
     app: app,
     savetnik: savetnik,
+    portableSavetnikName: predmet.businessResponsibleName,
   );
   final snapshot = _RacunPdfSnapshot.fromPreparedData(preparedData);
 

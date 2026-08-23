@@ -342,18 +342,12 @@ void main() {
           candidateNormalized['sourceIdentity'],
           importedPredmet.sourceIdentity,
         );
-        expect(
-          candidateNormalized['createdByKorisnikId'],
-          equals(null),
-        );
+        expect(candidateNormalized['createdByKorisnikId'], equals(null));
         expect(
           candidateNormalized['lastBusinessModifiedByKorisnikId'],
           equals(null),
         );
-        expect(
-          candidateNormalized['lastBusinessModifiedAt'],
-          equals(null),
-        );
+        expect(candidateNormalized['lastBusinessModifiedAt'], equals(null));
         expect(importedPredmet.createdByKorisnikId, actorId);
         expect(importedPredmet.lastBusinessModifiedByKorisnikId, actorId);
         expect(importedPredmet.lastBusinessModifiedAt, isNotEmpty);
@@ -536,7 +530,7 @@ void main() {
         final items = block['items'] as List<dynamic>;
         final item = items.single as Map<String, dynamic>;
 
-        expect(json['schemaVersion'], 7);
+        expect(json['schemaVersion'], 8);
         expect(block['schemaVersion'], 1);
         expect(block['policy'], 'single_predmet_unresolved_consequence_v1');
         expect(item['iriuTransferIndex'], 0);
@@ -608,7 +602,7 @@ void main() {
         expect(candidateMap, runtimeMap);
         expect(encodedFromRuntimeMap, runtimeMap);
         expect(candidateDocument.consequenceTransfer?.items, hasLength(1));
-        expect(candidateMap['schemaVersion'], 7);
+        expect(candidateMap['schemaVersion'], 8);
         _expectNoSinglePredmetStockOwnershipPayload(candidateMap);
         expect(candidateItem['iriuTransferIndex'], 0);
         expect(
@@ -1157,80 +1151,88 @@ void main() {
       expect(await targetDb.select(targetDb.predmeti).get(), isEmpty);
     });
 
-    test('full backup restore deduplicates citation rows and preserves snapshots',
-        () async {
-      final sourceDb = createTestDatabase();
-      final targetDb = createTestDatabase();
-      addTearDown(sourceDb.close);
-      addTearDown(targetDb.close);
+    test(
+      'full backup restore deduplicates citation rows and preserves snapshots',
+      () async {
+        final sourceDb = createTestDatabase();
+        final targetDb = createTestDatabase();
+        addTearDown(sourceDb.close);
+        addTearDown(targetDb.close);
 
-      final firstId = await sourceDb.into(sourceDb.katalogArtikli).insert(
-            KatalogArtikliCompanion.insert(
-              stableArticleId: const Value('restore-citulje-a'),
-              interniNazivKategorije: 'CITULJA_POLITIKA',
-              naziv: 'ČITULJA POLITIKA I/90 mm — Cela zemlja',
-              cena: const Value(3500.0),
-            ),
-          );
-      final secondId = await sourceDb.into(sourceDb.katalogArtikli).insert(
-            KatalogArtikliCompanion.insert(
-              stableArticleId: const Value('restore-citulje-b'),
-              interniNazivKategorije: 'CITULJA_POLITIKA',
-              naziv: 'ČITULJA POLITIKA I/90 mm — Cela zemlja',
-              cena: const Value(3500.0),
-            ),
-          );
-      expect(secondId, greaterThan(firstId));
-      final predmet = await _insertPredmet(
-        sourceDb,
-        brojPredmeta: 'RESTORE-CITULJE/2026',
-        ime: 'Istorijski',
-      );
-      await _insertIriu(
-        sourceDb,
-        predmetId: predmet.id,
-        stableId: 'restore-citulje-b',
-        interniNaziv: 'CITULJA_POLITIKA',
-        nazivPrikaz: 'Stari snapshot naziv',
-        iznos: 7777,
-      );
+        final firstId = await sourceDb
+            .into(sourceDb.katalogArtikli)
+            .insert(
+              KatalogArtikliCompanion.insert(
+                stableArticleId: const Value('restore-citulje-a'),
+                interniNazivKategorije: 'CITULJA_POLITIKA',
+                naziv: 'ČITULJA POLITIKA I/90 mm — Cela zemlja',
+                cena: const Value(3500.0),
+              ),
+            );
+        final secondId = await sourceDb
+            .into(sourceDb.katalogArtikli)
+            .insert(
+              KatalogArtikliCompanion.insert(
+                stableArticleId: const Value('restore-citulje-b'),
+                interniNazivKategorije: 'CITULJA_POLITIKA',
+                naziv: 'ČITULJA POLITIKA I/90 mm — Cela zemlja',
+                cena: const Value(3500.0),
+              ),
+            );
+        expect(secondId, greaterThan(firstId));
+        final predmet = await _insertPredmet(
+          sourceDb,
+          brojPredmeta: 'RESTORE-CITULJE/2026',
+          ime: 'Istorijski',
+        );
+        await _insertIriu(
+          sourceDb,
+          predmetId: predmet.id,
+          stableId: 'restore-citulje-b',
+          interniNaziv: 'CITULJA_POLITIKA',
+          nazivPrikaz: 'Stari snapshot naziv',
+          iznos: 7777,
+        );
 
-      final backup = await _backupJsonFromDb(sourceDb);
-      expect(backup['schemaVersion'], 9);
-      expect(backup['scenarioModules'], isA<List<dynamic>>());
-      expect(backup['scenarioDefinitions'], isA<List<dynamic>>());
-      expect(backup['partePripreme'], isA<List<dynamic>>());
+        final backup = await _backupJsonFromDb(sourceDb);
+        expect(backup['schemaVersion'], 9);
+        expect(backup['scenarioModules'], isA<List<dynamic>>());
+        expect(backup['scenarioDefinitions'], isA<List<dynamic>>());
+        expect(backup['partePripreme'], isA<List<dynamic>>());
 
-      await importBackupJsonMapForTest(db: targetDb, json: backup);
+        await importBackupJsonMapForTest(db: targetDb, json: backup);
 
-      final catalogRows = await (targetDb.select(targetDb.katalogArtikli)
-            ..where(
-              (row) =>
-                  row.interniNazivKategorije.equals('CITULJA_POLITIKA') &
-                  row.naziv.equals('ČITULJA POLITIKA I/90 mm — Cela zemlja') &
-                  row.cena.equals(3500.0),
-            ))
-          .get();
-      expect(catalogRows, hasLength(1));
-      final restoredIriu = await (targetDb.select(targetDb.iriu)
-            ..where((row) => row.predmetId.equals(predmet.id)))
-          .getSingle();
-      expect(restoredIriu.nazivPrikaz, 'Stari snapshot naziv');
-      expect(restoredIriu.iznos, 7777);
-      expect(
-        restoredIriu.katalogStableArticleId,
-        catalogRows.single.stableArticleId,
-      );
-      expect(
-        (await targetDb.customSelect('PRAGMA integrity_check').getSingle())
-            .read<String>('integrity_check'),
-        'ok',
-      );
-      expect(
-        await targetDb.customSelect('PRAGMA foreign_key_check').get(),
-        isEmpty,
-      );
-    });
+        final catalogRows =
+            await (targetDb.select(targetDb.katalogArtikli)..where(
+                  (row) =>
+                      row.interniNazivKategorije.equals('CITULJA_POLITIKA') &
+                      row.naziv.equals(
+                        'ČITULJA POLITIKA I/90 mm — Cela zemlja',
+                      ) &
+                      row.cena.equals(3500.0),
+                ))
+                .get();
+        expect(catalogRows, hasLength(1));
+        final restoredIriu = await (targetDb.select(
+          targetDb.iriu,
+        )..where((row) => row.predmetId.equals(predmet.id))).getSingle();
+        expect(restoredIriu.nazivPrikaz, 'Stari snapshot naziv');
+        expect(restoredIriu.iznos, 7777);
+        expect(
+          restoredIriu.katalogStableArticleId,
+          catalogRows.single.stableArticleId,
+        );
+        expect(
+          (await targetDb.customSelect('PRAGMA integrity_check').getSingle())
+              .read<String>('integrity_check'),
+          'ok',
+        );
+        expect(
+          await targetDb.customSelect('PRAGMA foreign_key_check').get(),
+          isEmpty,
+        );
+      },
+    );
   });
 }
 

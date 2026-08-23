@@ -117,9 +117,10 @@ Future<Uint8List> _buildNalogZaOpremanjePdf({
     iriuStavke: iriuStavke,
   );
   final savetnikIme = documentTextCodec.normalize(
-    savetnik?.imePrezime.trim().isNotEmpty == true
-        ? savetnik!.imePrezime.trim()
-        : '',
+    resolveSavetnikDisplayName(
+      localUser: savetnik,
+      portableName: predmet.businessResponsibleName,
+    ),
   );
   final dokumentVerzija = 'v${predmet.verzija}';
 

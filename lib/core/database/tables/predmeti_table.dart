@@ -8,6 +8,11 @@ class Predmeti extends Table {
   TextColumn get status => text().withDefault(const Constant('OTVOREN'))();
   TextColumn get datumKreiranja => text().withDefault(const Constant(''))();
   IntColumn get savetnikId => integer().nullable()();
+
+  /// Portable PREDMET business truth for the SAVETNIK. The local
+  /// [savetnikId] remains a destination-database binding/cache.
+  TextColumn get businessResponsibleName => text().nullable()();
+  TextColumn get businessResponsibleRole => text().nullable()();
   IntColumn get verzija => integer().withDefault(const Constant(1))();
   TextColumn get businessScenarioId =>
       text().withDefault(const Constant('default_funeral_ceremony_policy'))();

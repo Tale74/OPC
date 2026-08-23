@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-const int predmetTransferSchemaVersion = 6;
-const int maxSupportedPredmetTransferSchemaVersion = 7;
+const int predmetTransferSchemaVersion = 8;
+const int maxSupportedPredmetTransferSchemaVersion = 8;
 const int predmetTransferSchemaVersionWithConsequenceTransfer = 7;
 const String predmetTransferFormat = 'OPC_PREDMET';
 const String legacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
@@ -99,6 +99,8 @@ abstract final class PredmetJsonTransferCore {
     normalized.putIfAbsent('createdByKorisnikId', () => null);
     normalized.putIfAbsent('lastBusinessModifiedByKorisnikId', () => null);
     normalized.putIfAbsent('lastBusinessModifiedAt', () => null);
+    normalized.putIfAbsent('businessResponsibleName', () => null);
+    normalized.putIfAbsent('businessResponsibleRole', () => null);
     normalized.putIfAbsent('partePotrebna', () => false);
     return normalized;
   }

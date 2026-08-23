@@ -72,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 27;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -217,6 +217,10 @@ class AppDatabase extends _$AppDatabase {
         await _ensureColumn(m, iriuKatalogConfig, iriuKatalogConfig.cena);
         await _ensureColumn(m, iriu, iriu.cena);
       }
+      if (from < 28) {
+        await _ensureColumn(m, predmeti, predmeti.businessResponsibleName);
+        await _ensureColumn(m, predmeti, predmeti.businessResponsibleRole);
+      }
     },
     beforeOpen: (details) async {
       final versionBefore = details.versionBefore;
@@ -353,6 +357,8 @@ class AppDatabase extends _$AppDatabase {
       predmeti.lastBusinessModifiedByKorisnikId,
     );
     await _ensureColumn(migrator, predmeti, predmeti.lastBusinessModifiedAt);
+    await _ensureColumn(migrator, predmeti, predmeti.businessResponsibleName);
+    await _ensureColumn(migrator, predmeti, predmeti.businessResponsibleRole);
     await _ensureColumn(
       migrator,
       katalogArtikli,
@@ -2613,9 +2619,7 @@ class KorisnikReferenceSummary {
       reference.add('creator PREDMET references ($brojPredmetaKreatora)');
     }
     if (brojPredmetaIzmena > 0) {
-      reference.add(
-        'last modifier PREDMET references ($brojPredmetaIzmena)',
-      );
+      reference.add('last modifier PREDMET references ($brojPredmetaIzmena)');
     }
     if (brojLogova > 0) {
       reference.add('log izmena ($brojLogova)');

@@ -119,6 +119,7 @@ Future<Uint8List> _buildListaPdf({
     firma: firma,
     app: app,
     savetnik: savetnik,
+    portableSavetnikName: predmet.businessResponsibleName,
   );
   final snapshot = _ListaPdfSnapshot.fromPreparedData(preparedData);
 

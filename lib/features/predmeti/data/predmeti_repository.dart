@@ -133,6 +133,9 @@ class PredmetiRepository {
     final sada = DateTime.now();
     return _db.transaction(() async {
       final brojPredmeta = await _alocirajJedinstveniBrojPredmeta(sada);
+      final responsibleUser = await (_db.select(
+        _db.korisnici,
+      )..where((k) => k.id.equals(savetnikId))).getSingleOrNull();
       return _db
           .into(_db.predmeti)
           .insert(
@@ -140,6 +143,8 @@ class PredmetiRepository {
               brojPredmeta: Value(brojPredmeta),
               datumKreiranja: Value(sada.toIso8601String()),
               savetnikId: Value(savetnikId),
+              businessResponsibleName: Value(responsibleUser?.imePrezime),
+              businessResponsibleRole: Value(responsibleUser?.uloga),
               businessScenarioId: Value(_defaultBusinessScenarioId),
               sourceIdentity: const Value(_localSourceIdentity),
               createdByKorisnikId: Value(savetnikId),
@@ -153,10 +158,9 @@ class PredmetiRepository {
     final base = kreirajBrojPredmeta(sada);
     var candidate = base;
     var suffix = 1;
-    while ((await (_db.select(_db.predmeti)
-            ..where((p) => p.brojPredmeta.equals(candidate)))
-          .get())
-        .isNotEmpty) {
+    while ((await (_db.select(
+      _db.predmeti,
+    )..where((p) => p.brojPredmeta.equals(candidate))).get()).isNotEmpty) {
       suffix++;
       candidate = '$base-$suffix';
     }
@@ -167,9 +171,9 @@ class PredmetiRepository {
     if (korisnikId == null) {
       throw StateError('Active local user is required for PREDMET transfer.');
     }
-    final korisnik = await (_db.select(_db.korisnici)
-          ..where((k) => k.id.equals(korisnikId)))
-        .getSingleOrNull();
+    final korisnik = await (_db.select(
+      _db.korisnici,
+    )..where((k) => k.id.equals(korisnikId))).getSingleOrNull();
     if (korisnik == null ||
         !korisnik.aktivan ||
         (korisnik.uloga != 'ADMINISTRATOR' && korisnik.uloga != 'SAVETNIK')) {
@@ -178,6 +182,32 @@ class PredmetiRepository {
       );
     }
     return korisnik;
+  }
+
+  /// Resolves only a portable human-readable SAVETNIK snapshot. Numeric
+  /// source IDs are deliberately ignored. Ambiguous or missing local matches
+  /// remain unbound while the PREDMET snapshot stays authoritative.
+  Future<int?> _resolvePortableSavetnikId({
+    required String? name,
+    required String? role,
+  }) async {
+    final normalizedName = name?.trim().toLowerCase();
+    final normalizedRole = role?.trim().toUpperCase();
+    if (normalizedName == null ||
+        normalizedName.isEmpty ||
+        normalizedRole == null ||
+        normalizedRole.isEmpty) {
+      return null;
+    }
+    final users = await _db.select(_db.korisnici).get();
+    final matches = users
+        .where(
+          (user) =>
+              user.imePrezime.trim().toLowerCase() == normalizedName &&
+              user.uloga.trim().toUpperCase() == normalizedRole,
+        )
+        .toList(growable: false);
+    return matches.length == 1 ? matches.single.id : null;
   }
 
   /// Materijalizuje osnovne IRIU redove samo za nov PREDMET.
@@ -631,8 +661,22 @@ class PredmetiRepository {
   }) async {
     final actor = await zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
     final sada = DateTime.now().toIso8601String();
+    final portableName = predmet.businessResponsibleName?.trim();
+    final portableRole = predmet.businessResponsibleRole?.trim();
+    final resolvedSavetnikId = await _resolvePortableSavetnikId(
+      name: portableName,
+      role: portableRole,
+    );
     final localPredmet = predmet.copyWith(
-      savetnikId: Value(actor.id),
+      // The importer is the local creator/modifier, never the business
+      // responsible SAVETNIK merely because it performed the import.
+      savetnikId: Value(resolvedSavetnikId),
+      businessResponsibleName: Value(
+        portableName == null || portableName.isEmpty ? null : portableName,
+      ),
+      businessResponsibleRole: Value(
+        portableRole == null || portableRole.isEmpty ? null : portableRole,
+      ),
       createdByKorisnikId: Value(actor.id),
       lastBusinessModifiedByKorisnikId: Value(actor.id),
       lastBusinessModifiedAt: Value(sada),
@@ -675,6 +719,22 @@ class PredmetiRepository {
   }) => _db.transaction(() async {
     final existing = await getPredmet(lokalniPredmetId);
     await zahtevajAktivnogLokalnogAktora(auditKorisnikId);
+    final incomingName = predmet.businessResponsibleName?.trim();
+    final incomingRole = predmet.businessResponsibleRole?.trim();
+    final hasIncomingResponsibility =
+        incomingName != null && incomingName.isNotEmpty;
+    final responsibleName = hasIncomingResponsibility
+        ? incomingName
+        : existing.businessResponsibleName;
+    final responsibleRole = hasIncomingResponsibility
+        ? incomingRole
+        : existing.businessResponsibleRole;
+    final resolvedSavetnikId = hasIncomingResponsibility
+        ? await _resolvePortableSavetnikId(
+            name: responsibleName,
+            role: responsibleRole,
+          )
+        : existing.savetnikId;
     await StanjeRobeLifecycleService(
       db: _db,
     ).reconcilePredmetReplacement(lokalniPredmetId);
@@ -699,13 +759,29 @@ class PredmetiRepository {
       [lokalniPredmetId],
     );
 
-    await _db.update(_db.predmeti).replace(
-      predmet.copyWith(
-        id: lokalniPredmetId,
-        savetnikId: Value(existing.savetnikId),
-        createdByKorisnikId: Value(existing.createdByKorisnikId),
-        lastBusinessModifiedByKorisnikId: Value(auditKorisnikId),
-        lastBusinessModifiedAt: Value(DateTime.now().toIso8601String()),
+    await _db
+        .update(_db.predmeti)
+        .replace(
+          predmet.copyWith(
+            id: lokalniPredmetId,
+            savetnikId: Value(resolvedSavetnikId),
+            businessResponsibleName: Value(responsibleName),
+            businessResponsibleRole: Value(responsibleRole),
+            createdByKorisnikId: Value(existing.createdByKorisnikId),
+            lastBusinessModifiedByKorisnikId: Value(auditKorisnikId),
+            lastBusinessModifiedAt: Value(DateTime.now().toIso8601String()),
+          ),
+        );
+    // Keep the portable responsibility binding explicit after replacing the
+    // complete row. This is the business-truth field; it must not be lost
+    // through legacy nullable companion handling.
+    await (_db.update(
+      _db.predmeti,
+    )..where((p) => p.id.equals(lokalniPredmetId))).write(
+      PredmetiCompanion(
+        savetnikId: Value(resolvedSavetnikId),
+        businessResponsibleName: Value(responsibleName),
+        businessResponsibleRole: Value(responsibleRole),
       ),
     );
 

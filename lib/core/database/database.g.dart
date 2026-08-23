@@ -1746,6 +1746,28 @@ class $PredmetiTable extends Predmeti
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _businessResponsibleNameMeta =
+      const VerificationMeta('businessResponsibleName');
+  @override
+  late final GeneratedColumn<String> businessResponsibleName =
+      GeneratedColumn<String>(
+        'business_responsible_name',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _businessResponsibleRoleMeta =
+      const VerificationMeta('businessResponsibleRole');
+  @override
+  late final GeneratedColumn<String> businessResponsibleRole =
+      GeneratedColumn<String>(
+        'business_responsible_role',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _verzijaMeta = const VerificationMeta(
     'verzija',
   );
@@ -3280,6 +3302,8 @@ class $PredmetiTable extends Predmeti
     status,
     datumKreiranja,
     savetnikId,
+    businessResponsibleName,
+    businessResponsibleRole,
     verzija,
     businessScenarioId,
     sourceIdentity,
@@ -3451,6 +3475,24 @@ class $PredmetiTable extends Predmeti
       context.handle(
         _savetnikIdMeta,
         savetnikId.isAcceptableOrUnknown(data['savetnik_id']!, _savetnikIdMeta),
+      );
+    }
+    if (data.containsKey('business_responsible_name')) {
+      context.handle(
+        _businessResponsibleNameMeta,
+        businessResponsibleName.isAcceptableOrUnknown(
+          data['business_responsible_name']!,
+          _businessResponsibleNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('business_responsible_role')) {
+      context.handle(
+        _businessResponsibleRoleMeta,
+        businessResponsibleRole.isAcceptableOrUnknown(
+          data['business_responsible_role']!,
+          _businessResponsibleRoleMeta,
+        ),
       );
     }
     if (data.containsKey('verzija')) {
@@ -4448,6 +4490,14 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.int,
         data['${effectivePrefix}savetnik_id'],
       ),
+      businessResponsibleName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_responsible_name'],
+      ),
+      businessResponsibleRole: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_responsible_role'],
+      ),
       verzija: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}verzija'],
@@ -4971,6 +5021,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String status;
   final String datumKreiranja;
   final int? savetnikId;
+
+  /// Portable PREDMET business truth for the SAVETNIK. The local
+  /// [savetnikId] remains a destination-database binding/cache.
+  final String? businessResponsibleName;
+  final String? businessResponsibleRole;
   final int verzija;
   final String businessScenarioId;
   final String sourceIdentity;
@@ -5108,6 +5163,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.status,
     required this.datumKreiranja,
     this.savetnikId,
+    this.businessResponsibleName,
+    this.businessResponsibleRole,
     required this.verzija,
     required this.businessScenarioId,
     required this.sourceIdentity,
@@ -5245,6 +5302,16 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['datum_kreiranja'] = Variable<String>(datumKreiranja);
     if (!nullToAbsent || savetnikId != null) {
       map['savetnik_id'] = Variable<int>(savetnikId);
+    }
+    if (!nullToAbsent || businessResponsibleName != null) {
+      map['business_responsible_name'] = Variable<String>(
+        businessResponsibleName,
+      );
+    }
+    if (!nullToAbsent || businessResponsibleRole != null) {
+      map['business_responsible_role'] = Variable<String>(
+        businessResponsibleRole,
+      );
     }
     map['verzija'] = Variable<int>(verzija);
     map['business_scenario_id'] = Variable<String>(businessScenarioId);
@@ -5397,6 +5464,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       savetnikId: savetnikId == null && nullToAbsent
           ? const Value.absent()
           : Value(savetnikId),
+      businessResponsibleName: businessResponsibleName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessResponsibleName),
+      businessResponsibleRole: businessResponsibleRole == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessResponsibleRole),
       verzija: Value(verzija),
       businessScenarioId: Value(businessScenarioId),
       sourceIdentity: Value(sourceIdentity),
@@ -5545,6 +5618,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       status: serializer.fromJson<String>(json['status']),
       datumKreiranja: serializer.fromJson<String>(json['datumKreiranja']),
       savetnikId: serializer.fromJson<int?>(json['savetnikId']),
+      businessResponsibleName: serializer.fromJson<String?>(
+        json['businessResponsibleName'],
+      ),
+      businessResponsibleRole: serializer.fromJson<String?>(
+        json['businessResponsibleRole'],
+      ),
       verzija: serializer.fromJson<int>(json['verzija']),
       businessScenarioId: serializer.fromJson<String>(
         json['businessScenarioId'],
@@ -5707,6 +5786,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'status': serializer.toJson<String>(status),
       'datumKreiranja': serializer.toJson<String>(datumKreiranja),
       'savetnikId': serializer.toJson<int?>(savetnikId),
+      'businessResponsibleName': serializer.toJson<String?>(
+        businessResponsibleName,
+      ),
+      'businessResponsibleRole': serializer.toJson<String?>(
+        businessResponsibleRole,
+      ),
       'verzija': serializer.toJson<int>(verzija),
       'businessScenarioId': serializer.toJson<String>(businessScenarioId),
       'sourceIdentity': serializer.toJson<String>(sourceIdentity),
@@ -5849,6 +5934,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? status,
     String? datumKreiranja,
     Value<int?> savetnikId = const Value.absent(),
+    Value<String?> businessResponsibleName = const Value.absent(),
+    Value<String?> businessResponsibleRole = const Value.absent(),
     int? verzija,
     String? businessScenarioId,
     String? sourceIdentity,
@@ -5982,6 +6069,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     status: status ?? this.status,
     datumKreiranja: datumKreiranja ?? this.datumKreiranja,
     savetnikId: savetnikId.present ? savetnikId.value : this.savetnikId,
+    businessResponsibleName: businessResponsibleName.present
+        ? businessResponsibleName.value
+        : this.businessResponsibleName,
+    businessResponsibleRole: businessResponsibleRole.present
+        ? businessResponsibleRole.value
+        : this.businessResponsibleRole,
     verzija: verzija ?? this.verzija,
     businessScenarioId: businessScenarioId ?? this.businessScenarioId,
     sourceIdentity: sourceIdentity ?? this.sourceIdentity,
@@ -6131,6 +6224,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       savetnikId: data.savetnikId.present
           ? data.savetnikId.value
           : this.savetnikId,
+      businessResponsibleName: data.businessResponsibleName.present
+          ? data.businessResponsibleName.value
+          : this.businessResponsibleName,
+      businessResponsibleRole: data.businessResponsibleRole.present
+          ? data.businessResponsibleRole.value
+          : this.businessResponsibleRole,
       verzija: data.verzija.present ? data.verzija.value : this.verzija,
       businessScenarioId: data.businessScenarioId.present
           ? data.businessScenarioId.value
@@ -6430,6 +6529,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('status: $status, ')
           ..write('datumKreiranja: $datumKreiranja, ')
           ..write('savetnikId: $savetnikId, ')
+          ..write('businessResponsibleName: $businessResponsibleName, ')
+          ..write('businessResponsibleRole: $businessResponsibleRole, ')
           ..write('verzija: $verzija, ')
           ..write('businessScenarioId: $businessScenarioId, ')
           ..write('sourceIdentity: $sourceIdentity, ')
@@ -6570,6 +6671,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     status,
     datumKreiranja,
     savetnikId,
+    businessResponsibleName,
+    businessResponsibleRole,
     verzija,
     businessScenarioId,
     sourceIdentity,
@@ -6707,6 +6810,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.status == this.status &&
           other.datumKreiranja == this.datumKreiranja &&
           other.savetnikId == this.savetnikId &&
+          other.businessResponsibleName == this.businessResponsibleName &&
+          other.businessResponsibleRole == this.businessResponsibleRole &&
           other.verzija == this.verzija &&
           other.businessScenarioId == this.businessScenarioId &&
           other.sourceIdentity == this.sourceIdentity &&
@@ -6843,6 +6948,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> status;
   final Value<String> datumKreiranja;
   final Value<int?> savetnikId;
+  final Value<String?> businessResponsibleName;
+  final Value<String?> businessResponsibleRole;
   final Value<int> verzija;
   final Value<String> businessScenarioId;
   final Value<String> sourceIdentity;
@@ -6976,6 +7083,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.status = const Value.absent(),
     this.datumKreiranja = const Value.absent(),
     this.savetnikId = const Value.absent(),
+    this.businessResponsibleName = const Value.absent(),
+    this.businessResponsibleRole = const Value.absent(),
     this.verzija = const Value.absent(),
     this.businessScenarioId = const Value.absent(),
     this.sourceIdentity = const Value.absent(),
@@ -7110,6 +7219,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.status = const Value.absent(),
     this.datumKreiranja = const Value.absent(),
     this.savetnikId = const Value.absent(),
+    this.businessResponsibleName = const Value.absent(),
+    this.businessResponsibleRole = const Value.absent(),
     this.verzija = const Value.absent(),
     this.businessScenarioId = const Value.absent(),
     this.sourceIdentity = const Value.absent(),
@@ -7244,6 +7355,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? status,
     Expression<String>? datumKreiranja,
     Expression<int>? savetnikId,
+    Expression<String>? businessResponsibleName,
+    Expression<String>? businessResponsibleRole,
     Expression<int>? verzija,
     Expression<String>? businessScenarioId,
     Expression<String>? sourceIdentity,
@@ -7378,6 +7491,10 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (status != null) 'status': status,
       if (datumKreiranja != null) 'datum_kreiranja': datumKreiranja,
       if (savetnikId != null) 'savetnik_id': savetnikId,
+      if (businessResponsibleName != null)
+        'business_responsible_name': businessResponsibleName,
+      if (businessResponsibleRole != null)
+        'business_responsible_role': businessResponsibleRole,
       if (verzija != null) 'verzija': verzija,
       if (businessScenarioId != null)
         'business_scenario_id': businessScenarioId,
@@ -7527,6 +7644,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? status,
     Value<String>? datumKreiranja,
     Value<int?>? savetnikId,
+    Value<String?>? businessResponsibleName,
+    Value<String?>? businessResponsibleRole,
     Value<int>? verzija,
     Value<String>? businessScenarioId,
     Value<String>? sourceIdentity,
@@ -7661,6 +7780,10 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       status: status ?? this.status,
       datumKreiranja: datumKreiranja ?? this.datumKreiranja,
       savetnikId: savetnikId ?? this.savetnikId,
+      businessResponsibleName:
+          businessResponsibleName ?? this.businessResponsibleName,
+      businessResponsibleRole:
+          businessResponsibleRole ?? this.businessResponsibleRole,
       verzija: verzija ?? this.verzija,
       businessScenarioId: businessScenarioId ?? this.businessScenarioId,
       sourceIdentity: sourceIdentity ?? this.sourceIdentity,
@@ -7814,6 +7937,16 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     }
     if (savetnikId.present) {
       map['savetnik_id'] = Variable<int>(savetnikId.value);
+    }
+    if (businessResponsibleName.present) {
+      map['business_responsible_name'] = Variable<String>(
+        businessResponsibleName.value,
+      );
+    }
+    if (businessResponsibleRole.present) {
+      map['business_responsible_role'] = Variable<String>(
+        businessResponsibleRole.value,
+      );
     }
     if (verzija.present) {
       map['verzija'] = Variable<int>(verzija.value);
@@ -8223,6 +8356,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('status: $status, ')
           ..write('datumKreiranja: $datumKreiranja, ')
           ..write('savetnikId: $savetnikId, ')
+          ..write('businessResponsibleName: $businessResponsibleName, ')
+          ..write('businessResponsibleRole: $businessResponsibleRole, ')
           ..write('verzija: $verzija, ')
           ..write('businessScenarioId: $businessScenarioId, ')
           ..write('sourceIdentity: $sourceIdentity, ')
@@ -9379,10 +9514,11 @@ class IriuData extends DataClass implements Insertable<IriuData> {
   /// Naziv za prikaz — vidljiv korisniku, editabilan.
   final String nazivPrikaz;
 
-  /// Količina — slobodan tekst (informativno, ne ulazi u formulu).
+  /// Količina — slobodan tekst; when a unit price is applied it drives IZNOS.
   final String kom;
 
-  /// Applied unit-price snapshot used by the automatic amount formula.
+  /// Applied unit-price snapshot. KATALOG changes never rewrite an existing
+  /// PREDMET row; the row keeps the price that was applied at selection time.
   final double cena;
 
   /// Iznos se čuva kao REAL (float sa tačkom). Konverzija u srpski format SAMO pri prikazu.
@@ -9491,7 +9627,7 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       interniNaziv: serializer.fromJson<String>(json['interniNaziv']),
       nazivPrikaz: serializer.fromJson<String>(json['nazivPrikaz']),
       kom: serializer.fromJson<String>(json['kom']),
-      cena: serializer.fromJson<double>(json['cena'] ?? 0.0),
+      cena: serializer.fromJson<double>(json['cena']),
       iznos: serializer.fromJson<double>(json['iznos']),
       cekiran: serializer.fromJson<bool>(json['cekiran']),
       redosled: serializer.fromJson<int>(json['redosled']),
@@ -10752,6 +10888,9 @@ class IriuKatalogConfigData extends DataClass
   /// true = štampa se čak i ako je prazno; false = samo ako je popunjeno.
   final bool uvekPrikazati;
   final String tip;
+
+  /// Category-level unit price used by FIKSNA entries. KATALOSKA prices live
+  /// on their KatalogArtikli rows and this field remains unused for them.
   final double cena;
   final bool jeKorisnicka;
 
@@ -10810,7 +10949,7 @@ class IriuKatalogConfigData extends DataClass
       vidljiv: serializer.fromJson<bool>(json['vidljiv']),
       uvekPrikazati: serializer.fromJson<bool>(json['uvekPrikazati']),
       tip: serializer.fromJson<String>(json['tip']),
-      cena: serializer.fromJson<double>(json['cena'] ?? 0.0),
+      cena: serializer.fromJson<double>(json['cena']),
       jeKorisnicka: serializer.fromJson<bool>(json['jeKorisnicka']),
       osnovnaUSvakomPredmetu: serializer.fromJson<bool>(
         json['osnovnaUSvakomPredmetu'],
@@ -19095,6 +19234,8 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> status,
       Value<String> datumKreiranja,
       Value<int?> savetnikId,
+      Value<String?> businessResponsibleName,
+      Value<String?> businessResponsibleRole,
       Value<int> verzija,
       Value<String> businessScenarioId,
       Value<String> sourceIdentity,
@@ -19230,6 +19371,8 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String> datumKreiranja,
       Value<int?> savetnikId,
+      Value<String?> businessResponsibleName,
+      Value<String?> businessResponsibleRole,
       Value<int> verzija,
       Value<String> businessScenarioId,
       Value<String> sourceIdentity,
@@ -19523,6 +19666,16 @@ class $$PredmetiTableFilterComposer
 
   ColumnFilters<int> get savetnikId => $composableBuilder(
     column: $table.savetnikId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessResponsibleName => $composableBuilder(
+    column: $table.businessResponsibleName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessResponsibleRole => $composableBuilder(
+    column: $table.businessResponsibleRole,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20348,6 +20501,16 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get businessResponsibleName => $composableBuilder(
+    column: $table.businessResponsibleName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessResponsibleRole => $composableBuilder(
+    column: $table.businessResponsibleRole,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get verzija => $composableBuilder(
     column: $table.verzija,
     builder: (column) => ColumnOrderings(column),
@@ -21012,6 +21175,16 @@ class $$PredmetiTableAnnotationComposer
 
   GeneratedColumn<int> get savetnikId => $composableBuilder(
     column: $table.savetnikId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get businessResponsibleName => $composableBuilder(
+    column: $table.businessResponsibleName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get businessResponsibleRole => $composableBuilder(
+    column: $table.businessResponsibleRole,
     builder: (column) => column,
   );
 
@@ -21751,6 +21924,8 @@ class $$PredmetiTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String> datumKreiranja = const Value.absent(),
                 Value<int?> savetnikId = const Value.absent(),
+                Value<String?> businessResponsibleName = const Value.absent(),
+                Value<String?> businessResponsibleRole = const Value.absent(),
                 Value<int> verzija = const Value.absent(),
                 Value<String> businessScenarioId = const Value.absent(),
                 Value<String> sourceIdentity = const Value.absent(),
@@ -21885,6 +22060,8 @@ class $$PredmetiTableTableManager
                 status: status,
                 datumKreiranja: datumKreiranja,
                 savetnikId: savetnikId,
+                businessResponsibleName: businessResponsibleName,
+                businessResponsibleRole: businessResponsibleRole,
                 verzija: verzija,
                 businessScenarioId: businessScenarioId,
                 sourceIdentity: sourceIdentity,
@@ -22021,6 +22198,8 @@ class $$PredmetiTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String> datumKreiranja = const Value.absent(),
                 Value<int?> savetnikId = const Value.absent(),
+                Value<String?> businessResponsibleName = const Value.absent(),
+                Value<String?> businessResponsibleRole = const Value.absent(),
                 Value<int> verzija = const Value.absent(),
                 Value<String> businessScenarioId = const Value.absent(),
                 Value<String> sourceIdentity = const Value.absent(),
@@ -22155,6 +22334,8 @@ class $$PredmetiTableTableManager
                 status: status,
                 datumKreiranja: datumKreiranja,
                 savetnikId: savetnikId,
+                businessResponsibleName: businessResponsibleName,
+                businessResponsibleRole: businessResponsibleRole,
                 verzija: verzija,
                 businessScenarioId: businessScenarioId,
                 sourceIdentity: sourceIdentity,
@@ -22846,6 +23027,7 @@ typedef $$IriuTableCreateCompanionBuilder =
       required String interniNaziv,
       Value<String> nazivPrikaz,
       Value<String> kom,
+      Value<double> cena,
       Value<double> iznos,
       Value<bool> cekiran,
       Value<int> redosled,
@@ -22867,6 +23049,7 @@ typedef $$IriuTableUpdateCompanionBuilder =
       Value<String> interniNaziv,
       Value<String> nazivPrikaz,
       Value<String> kom,
+      Value<double> cena,
       Value<double> iznos,
       Value<bool> cekiran,
       Value<int> redosled,
@@ -22978,6 +23161,11 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
 
   ColumnFilters<String> get kom => $composableBuilder(
     column: $table.kom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cena => $composableBuilder(
+    column: $table.cena,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23148,6 +23336,11 @@ class $$IriuTableOrderingComposer extends Composer<_$AppDatabase, $IriuTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get cena => $composableBuilder(
+    column: $table.cena,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get iznos => $composableBuilder(
     column: $table.iznos,
     builder: (column) => ColumnOrderings(column),
@@ -23261,6 +23454,9 @@ class $$IriuTableAnnotationComposer
 
   GeneratedColumn<String> get kom =>
       $composableBuilder(column: $table.kom, builder: (column) => column);
+
+  GeneratedColumn<double> get cena =>
+      $composableBuilder(column: $table.cena, builder: (column) => column);
 
   GeneratedColumn<double> get iznos =>
       $composableBuilder(column: $table.iznos, builder: (column) => column);
@@ -23429,6 +23625,7 @@ class $$IriuTableTableManager
                 Value<String> interniNaziv = const Value.absent(),
                 Value<String> nazivPrikaz = const Value.absent(),
                 Value<String> kom = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<double> iznos = const Value.absent(),
                 Value<bool> cekiran = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
@@ -23448,6 +23645,7 @@ class $$IriuTableTableManager
                 interniNaziv: interniNaziv,
                 nazivPrikaz: nazivPrikaz,
                 kom: kom,
+                cena: cena,
                 iznos: iznos,
                 cekiran: cekiran,
                 redosled: redosled,
@@ -23469,6 +23667,7 @@ class $$IriuTableTableManager
                 required String interniNaziv,
                 Value<String> nazivPrikaz = const Value.absent(),
                 Value<String> kom = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<double> iznos = const Value.absent(),
                 Value<bool> cekiran = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
@@ -23488,6 +23687,7 @@ class $$IriuTableTableManager
                 interniNaziv: interniNaziv,
                 nazivPrikaz: nazivPrikaz,
                 kom: kom,
+                cena: cena,
                 iznos: iznos,
                 cekiran: cekiran,
                 redosled: redosled,
@@ -24013,6 +24213,7 @@ typedef $$IriuKatalogConfigTableCreateCompanionBuilder =
       Value<bool> vidljiv,
       Value<bool> uvekPrikazati,
       Value<String> tip,
+      Value<double> cena,
       Value<bool> jeKorisnicka,
       Value<bool> osnovnaUSvakomPredmetu,
       Value<int> redosled,
@@ -24025,6 +24226,7 @@ typedef $$IriuKatalogConfigTableUpdateCompanionBuilder =
       Value<bool> vidljiv,
       Value<bool> uvekPrikazati,
       Value<String> tip,
+      Value<double> cena,
       Value<bool> jeKorisnicka,
       Value<bool> osnovnaUSvakomPredmetu,
       Value<int> redosled,
@@ -24062,6 +24264,11 @@ class $$IriuKatalogConfigTableFilterComposer
 
   ColumnFilters<String> get tip => $composableBuilder(
     column: $table.tip,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cena => $composableBuilder(
+    column: $table.cena,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -24115,6 +24322,11 @@ class $$IriuKatalogConfigTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get cena => $composableBuilder(
+    column: $table.cena,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
     builder: (column) => ColumnOrderings(column),
@@ -24160,6 +24372,9 @@ class $$IriuKatalogConfigTableAnnotationComposer
 
   GeneratedColumn<String> get tip =>
       $composableBuilder(column: $table.tip, builder: (column) => column);
+
+  GeneratedColumn<double> get cena =>
+      $composableBuilder(column: $table.cena, builder: (column) => column);
 
   GeneratedColumn<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
@@ -24220,6 +24435,7 @@ class $$IriuKatalogConfigTableTableManager
                 Value<bool> vidljiv = const Value.absent(),
                 Value<bool> uvekPrikazati = const Value.absent(),
                 Value<String> tip = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<bool> jeKorisnicka = const Value.absent(),
                 Value<bool> osnovnaUSvakomPredmetu = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
@@ -24230,6 +24446,7 @@ class $$IriuKatalogConfigTableTableManager
                 vidljiv: vidljiv,
                 uvekPrikazati: uvekPrikazati,
                 tip: tip,
+                cena: cena,
                 jeKorisnicka: jeKorisnicka,
                 osnovnaUSvakomPredmetu: osnovnaUSvakomPredmetu,
                 redosled: redosled,
@@ -24242,6 +24459,7 @@ class $$IriuKatalogConfigTableTableManager
                 Value<bool> vidljiv = const Value.absent(),
                 Value<bool> uvekPrikazati = const Value.absent(),
                 Value<String> tip = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<bool> jeKorisnicka = const Value.absent(),
                 Value<bool> osnovnaUSvakomPredmetu = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
@@ -24252,6 +24470,7 @@ class $$IriuKatalogConfigTableTableManager
                 vidljiv: vidljiv,
                 uvekPrikazati: uvekPrikazati,
                 tip: tip,
+                cena: cena,
                 jeKorisnicka: jeKorisnicka,
                 osnovnaUSvakomPredmetu: osnovnaUSvakomPredmetu,
                 redosled: redosled,

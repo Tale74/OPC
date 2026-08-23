@@ -30,11 +30,10 @@ import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
 
-const int _kSchemaVersion = 6;
+const int _kPortableResponsibilitySchemaVersion = 8;
 const int _kBackupSchemaVersion = 9;
-const int _kMaxSupportedPredmetSchemaVersion = 7;
+const int _kMaxSupportedPredmetSchemaVersion = 8;
 const int _kMaxSupportedBackupSchemaVersion = 9;
-const int _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer = 7;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
 const String _kBackupTransferFormat = 'OPC_BACKUP';
@@ -209,6 +208,11 @@ const Set<String> _kPredmetOptionalIntFields = {
   'savetnikId',
   'createdByKorisnikId',
   'lastBusinessModifiedByKorisnikId',
+};
+
+const Set<String> _kPredmetOptionalResponsibilityTextFields = {
+  'businessResponsibleName',
+  'businessResponsibleRole',
 };
 
 const Set<String> _kPredmetRequiredBoolFields = {
@@ -590,9 +594,10 @@ Future<String> _serijalizujPredmet(
   ];
   final map = <String, dynamic>{
     'format': _kPredmetTransferFormat,
-    'schemaVersion': hasConsequenceTransfer
-        ? _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer
-        : _kSchemaVersion,
+    // Current writers use the responsibility-aware root contract. The
+    // consequence block keeps its own schema and remains compatible inside
+    // the newer root contract.
+    'schemaVersion': _kPortableResponsibilitySchemaVersion,
     'entityType': 'PREDMET',
     'documentSourceIdentity': 'PREDMET',
     'encoding': 'utf-8',
@@ -889,6 +894,9 @@ Map<String, dynamic> _normalizujBackupPredmetMap(Map<String, dynamic> row) {
     _kPredmetRequiredTextFields,
   );
   _optionalString(normalized, 'lastBusinessModifiedAt', 'predmeti');
+  for (final key in _kPredmetOptionalResponsibilityTextFields) {
+    _optionalString(normalized, key, 'predmeti');
+  }
 
   for (final key in _kPredmetRequiredIntFields) {
     _requiredInt(normalized, key, 'predmeti');
@@ -2751,6 +2759,8 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
   normalized.putIfAbsent('createdByKorisnikId', () => null);
   normalized.putIfAbsent('lastBusinessModifiedByKorisnikId', () => null);
   normalized.putIfAbsent('lastBusinessModifiedAt', () => null);
+  normalized.putIfAbsent('businessResponsibleName', () => null);
+  normalized.putIfAbsent('businessResponsibleRole', () => null);
   normalized.putIfAbsent('docekDatum', () => '');
   normalized.putIfAbsent('grobljePolaganjaUrne', () => '');
   normalized.putIfAbsent('promenaSanduka', () => false);

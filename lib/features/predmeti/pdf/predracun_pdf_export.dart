@@ -113,6 +113,7 @@ Future<Uint8List> _buildPredracunPdf({
     firma: firma,
     app: app,
     savetnik: savetnik,
+    portableSavetnikName: predmet.businessResponsibleName,
   );
   final snapshot = _PredracunPdfSnapshot.fromPreparedData(preparedData);
 

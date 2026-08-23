@@ -117,7 +117,10 @@ Future<Uint8List> _buildPredmetPdfSnapshot({
   final datumIzvoza = DateTime.now();
   final dokumentVerzija = 'v${predmet.verzija}';
   final savetnikIme = documentTextCodec.normalize(
-    savetnik?.imePrezime.trim().isNotEmpty == true ? savetnik!.imePrezime : '',
+    resolveSavetnikDisplayName(
+      localUser: savetnik,
+      portableName: predmet.businessResponsibleName,
+    ),
   );
 
   final doc = pw.Document(

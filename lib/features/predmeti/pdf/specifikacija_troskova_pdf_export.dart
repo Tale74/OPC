@@ -120,6 +120,7 @@ Future<Uint8List> _buildSpecifikacijaPdf({
     firma: firma,
     app: app,
     savetnik: savetnik,
+    portableSavetnikName: predmet.businessResponsibleName,
   );
   final snapshot = _SpecifikacijaPdfSnapshot.fromPreparedData(preparedData);
 

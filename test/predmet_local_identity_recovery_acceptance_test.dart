@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/database/database.dart';
@@ -38,7 +38,10 @@ void main() {
       );
 
       final imported = (await target.select(target.predmeti).get()).single;
-      expect(imported.savetnikId, 7);
+      // Legacy JSON without the portable responsibility snapshot keeps the
+      // business responsible person unknown; importer identity remains only
+      // creator/modifier attribution.
+      expect(imported.savetnikId, isNull);
       expect(imported.createdByKorisnikId, 7);
       expect(imported.lastBusinessModifiedByKorisnikId, 7);
       expect(imported.ime, sourcePredmet.ime);
@@ -65,7 +68,10 @@ void main() {
         localActorKorisnikId: 7,
       );
 
-      expect((await target.select(target.predmeti).get()).single.savetnikId, 7);
+      expect(
+        (await target.select(target.predmeti).get()).single.savetnikId,
+        isNull,
+      );
     });
 
     test(
@@ -335,7 +341,7 @@ void main() {
         final imported = rows.singleWhere(
           (row) => row.brojPredmeta == 'CASE2-NEW-001/2026',
         );
-        expect(imported.savetnikId, 7);
+        expect(imported.savetnikId, isNull);
         expect(imported.createdByKorisnikId, 7);
         expect(imported.lastBusinessModifiedByKorisnikId, 7);
       },

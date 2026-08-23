@@ -2,9 +2,21 @@ import 'dart:typed_data';
 
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../core/database/database.dart';
+
 const memorandumLogoWidth = 192.0;
 const memorandumLogoHeight = 120.0;
 const memorandumLogoLeftMargin = 8.0;
+
+String resolveSavetnikDisplayName({
+  required KorisniciData? localUser,
+  required String? portableName,
+}) {
+  final portable = portableName?.trim();
+  if (portable != null && portable.isNotEmpty) return portable;
+  final local = localUser?.imePrezime.trim();
+  return local ?? '';
+}
 
 List<String> buildMemorandumIdentityRows({
   required String pib,

@@ -177,6 +177,11 @@ final class OpcDatabaseMigrationFixture {
       db.execute('DROP INDEX IF EXISTS $index');
     }
 
+    if (version < 28) {
+      _dropColumn(db, 'predmeti', 'business_responsible_name');
+      _dropColumn(db, 'predmeti', 'business_responsible_role');
+    }
+
     if (version < 24) {
       for (final column in const [
         'poslovni_status',
