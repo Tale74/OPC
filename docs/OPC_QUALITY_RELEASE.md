@@ -111,7 +111,7 @@ Single-PREDMET transfer and full-backup JSON remain distinct. Release acceptance
 
 Release/data-integrity acceptance also protects the empty-business-KATALOG contract: a fresh database may create structural/auth singleton state, but must not invent user/business categories or articles. Existing KATALOG content must survive reopen and migration without automatic reseeding; tests must provide explicit catalogue fixtures when required.
 
-Prior successful incidents are scoped evidence, not the final product-line rehearsal. A release-candidate backup/restore rehearsal remains open in the current development plan.
+Prior successful incidents are scoped evidence, not the final product-line rehearsal. The Windows owner-facing backup/restore acceptance is now `PASS — BOUNDED DISPOSABLE LANE`; the direct post-restore back/logout observation remains an evidence-incomplete, non-blocking successor. A release-candidate backup/restore rehearsal remains open in the current development plan.
 
 ## 7. Build and release matrix
 
