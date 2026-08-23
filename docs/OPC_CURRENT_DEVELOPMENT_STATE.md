@@ -1,4 +1,4 @@
-# OPC current development state
+﻿# OPC current development state
 
 **Status:** `CURRENT RECONCILED CONTINUITY SUMMARY`
 
@@ -282,10 +282,10 @@ separate concern; no SCENARIO or canonical-data behavior was changed.
 ## PREDMET local identity / recovery correction — bounded implementation
 
 Individual PREDMET transfer now requires an active local ADMINISTRATOR or
-SAVETNIK. New imports bind local adviser, creator and last modifier fields to
-that actor; replacement preserves the destination adviser, creator and local
-history while recording the active local replacement actor. Source-database
-numeric user IDs remain non-portable. Permanent deletion checks adviser,
+SAVETNIK. New imports preserve the portable business responsible SAVETNIK
+snapshot and bind a local adviser only on a unique name+role match; creator and
+last modifier remain destination-local actor fields. Source-database numeric
+user IDs remain non-portable. Permanent deletion checks adviser,
 creator, last modifier and `logIzmena` references. Full-backup identity now has
 four explicit states: matching PIB/MB proceeds; mismatch blocks; a fresh local
 database may establish a complete backup identity; and missing/incomplete
@@ -296,7 +296,72 @@ is historical context and is closed by the bounded, user-confirmed selective
 fallback documented above; it is not a current open successor. Case 3 remains
 a legitimate fresh-install recovery path. Minute-based local creation resolves
 collisions transactionally with suffixes and preserves legacy duplicates.
-Focused acceptance is 44/44 PASS, analyzer PASS and the latest full Flutter
-suite is 445 PASS with 10 expected skips. Windows and Android release builds
-also PASS. Broader migration/recovery and runtime parity remain separate
+Focused acceptance is 44/44 PASS, analyzer PASS and the historical pre-task
+full Flutter suite was 445 PASS with 10 expected skips. Windows and Android
+release builds also PASS. The later portable-responsibility runtime claim is
+superseded by the incident forensic audit and must not be read as current
+acceptance. Broader migration/recovery and runtime parity remain separate
 successors.
+
+## Portable responsibility correction — source-learned and implemented
+
+The prior schema-28 / PREDMET JSON-8 portable-responsibility experiment and its
+synthetic bidirectional runtime claim are withdrawn. The evidence freeze
+`OPC_TRANSFER_INTEGRITY_INCIDENT_FREEZE_20260822` established that `PERSON A`
+was written by a direct test-fixture insertion without a registered
+`Korisnici` row, serialized through the test-only JSON seam with
+`exportVerzija=0`, and transported outside the normal KORICE production export
+path. The Android and Windows captures showed no registered `PERSON A`; the
+native local users were `SYNTHETIC_ADMIN` and `SAŠA ANDONOV`.
+
+The experiment also created a derivative truth split: PREDMET UI/STATISTIKA
+preferred the free-text snapshot while LISTA PDF continued to resolve
+`savetnikId`. The
+schema/fields, serializer extension, repository snapshotting, UI/statistics
+preference and synthetic test fixture were removed as incident cleanup. Native
+PREDMET `savetnikId`/creator/modifier and `logIzmena` semantics remain. The
+historical incident snapshot used database schema 27 and individual PREDMET
+JSON compatibility at the published 6/7 boundary. A clean SAME-FIRMA identical-database baseline
+is a future acceptance prerequisite; no transfer acceptance was executed by
+the forensic recovery task.
+
+Current authority supersedes the historical incident wording above: the
+accepted owner oracle requires portable SAVETNIK business truth across equal
+OPC devices. The implemented correction uses additive schema 28 fields
+`businessResponsibleName`/`businessResponsibleRole`, JSON root schema 8,
+unique local name+role binding, replacement preservation and portable-name-first
+PREDMET/detail UI, LISTA PDF, PREDMET PDF and relevant STATISTIKA resolution.
+There is no separate business derivative named `LISTA`. Numeric local IDs never become portable
+authority; legacy schema 6/7 JSON remains readable with unknown responsibility
+when the fields are absent, and full-backup schema 9 is unchanged.
+
+The 2026-08-23 V1 harness continuation closed two source defects in that
+correction: schema/startup no longer infers portable responsibility from a
+legacy local `savetnikId`, and destination binding requires both name and role
+with exactly one exact match. The schema migration fixture now removes the
+schema-28 columns when simulating older physical schemas. Focused responsibility
+and migration tests, analyzer, the full serialized suite, and both release
+builds pass.
+
+Subsequent normal-product physical acceptance closed the bounded runtime gate:
+
+`PHYSICAL SAME-FIRMA WINDOWS ↔ ANDROID PEER RESPONSIBILITY TRANSFER ACCEPTANCE — PASS`
+
+Android → Windows passed with no destination local name+role binding: the
+portable `SYNTHETIC_ADMIN / SAVETNIK` snapshot remained responsible while
+`SAŠA ANDONOV / ADMINISTRATOR` remained the distinct importer and local audit
+actor. Windows → Android passed with the unique exact
+`SAŠA ANDONOV / ADMINISTRATOR` match bound locally while
+`SYNTHETIC_ADMIN / ADMINISTRATOR` remained the distinct importer and local
+creator/modifier. The owner's clarification that SAVETNIK cannot import is
+accepted role policy and not a defect. PREDMET/detail UI, LISTA PDF, PREDMET PDF
+and relevant STATISTIKA remained consistent with PREDMET responsibility truth
+in both directions.
+
+This closes only same-FIRMA peer responsibility-transfer acceptance. It does
+not establish general database ownership, global user identity, full-backup
+acceptance, all Windows/Android runtime parity or overall release readiness.
+The controlling boundary classifications remain:
+
+- `DATABASE OWNERSHIP — NOT EXPLICITLY MODELED`
+- `FIRMA BUSINESS-NAMESPACE HYPOTHESIS — PARTIALLY SUPPORTED`

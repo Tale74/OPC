@@ -68,7 +68,34 @@ Release/runtime evidence remains PRODUCTION-specific. For shared database invari
 
 RR-011 current-fact status: `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`. The final physical ANDROID_TEST wave completed PASS evidence for device connectivity, schema/integrity/FK, provenance cleanup, real scenario-snapshot cleanup and the separately scoped single-PREDMET replacement with stable identity and relaunch persistence. The single-PREDMET `OPC_PREDMET` JSON format does not carry scenario snapshot/provenance rows; that boundary is documented. The earlier ADB-offline/10060 attempt is historical. No RR-011 successor remains.
 
-Current architecture/deployment concerns include repaired-state/canonical closure, Android transfer/runtime parity, notification lifecycle, filesystem/storage behavior and installer/signing readiness. Native Windows single-instance protection is closed by the accepted mutex/W1–W6 evidence; installer running-app protection is also closed by the accepted Inno Setup compile and I1/I2/I3 evidence. No RR-012 successor remains.
+Current architecture/deployment concerns include repaired-state/canonical closure, Android transfer/runtime parity outside the bounded responsibility-transfer acceptance below, notification lifecycle, filesystem/storage behavior and installer/signing readiness. Native Windows single-instance protection is closed by the accepted mutex/W1–W6 evidence; installer running-app protection is also closed by the accepted Inno Setup compile and I1/I2/I3 evidence. No RR-012 successor remains.
+
+### 5B. PREDMET responsibility peer-transfer acceptance
+
+Current bounded status:
+
+`PHYSICAL SAME-FIRMA WINDOWS ↔ ANDROID PEER RESPONSIBILITY TRANSFER ACCEPTANCE — PASS`
+
+The traceability chain is closed for this scope: the owner business rule makes
+portable PREDMET responsibility a name+role snapshot; schema 28 and individual
+PREDMET JSON schema 8 implement it without legacy local-ID backfill; automated
+responsibility/migration tests, analyzer, the serialized full suite and both
+release builds pass; Android → Windows and Windows → Android normal-product
+physical transfers both pass.
+
+Android → Windows proved preservation with a missing local binding. Windows
+→ Android proved the unique exact name+role binding path. In both cases the
+importer remained distinct from the responsible SAVETNIK, and PREDMET/detail
+UI, LISTA PDF, PREDMET PDF and relevant STATISTIKA remained consistent. There
+is no separate business derivative named `LISTA`.
+
+This closes only the same-FIRMA peer responsibility-transfer acceptance
+condition. It does not close unrelated transfer, backup/restore, notification,
+storage, signing, provenance or general release-readiness gaps. It also does
+not establish broader identity or database semantics:
+
+- `DATABASE OWNERSHIP — NOT EXPLICITLY MODELED`
+- `FIRMA BUSINESS-NAMESPACE HYPOTHESIS — PARTIALLY SUPPORTED`
 
 ## 6. Backup, restore and interoperability
 
