@@ -17,6 +17,12 @@ supersedes stale status and sequencing statements in its pre-reconciliation
 version while preserving their owner decisions and audit provenance through
 Git history at the baseline SHA above and through section 12 below.
 
+It is an ordering and release-control document, not an authority to create new
+owner product requirements. Product scope comes from the reconstructed owner
+roadmap and later explicit owner decisions; technical findings must remain
+attached to a named owner-planned item or be classified outside the active
+roadmap.
+
 `OPC Srbija` is planning shorthand only for the Serbian-market product-line
 gate. It is not the product name and must not be added to application UI,
 package-facing identity, installer identity or documentation as a rename.
@@ -64,6 +70,27 @@ rewrite a locked business decision.
 - OPC Web and `OPC_v.1_Int` are outside current implementation scope.
 - The application/product name remains `OPC`.
 
+### 1.4 Permanent owner-roadmap provenance control
+
+The owner-planned OPC roadmap is the primary development roadmap. Additional
+technical, standards, QA, documentation, incident, acceptance or release work
+is permitted only when it is demonstrably necessary, safe and proportionate
+to execute, verify or release a named owner-planned item, or to apply the
+adopted engineering standardization decision.
+
+Every additional active item must therefore have a provenance class and, where
+it is a technical prerequisite or control, an explicit owner-roadmap parent.
+Release/acceptance controls are gates attached to product work, not product
+features. Non-blocking debt remains outside the critical path. A new product
+meaning or scope question stops at `OWNER DECISION REQUIRED`; Codex/Logos may
+not promote an observation into business authority. Standards govern how
+planned work is performed and proven, not what the owner must build.
+
+Avoid speculative, weakly justified or recursively generated successor chains.
+Proportionality, time/token/rework efficiency and unattended evidence capture
+are governance goals alongside correctness. Historical and superseded evidence
+is preserved but cannot silently remain active roadmap instruction.
+
 ## 2. Current state at a glance
 
 ### 2.1 Completed work that must not be repeated
@@ -87,18 +114,45 @@ explicit new owner business decision.
 
 ### 2.2 Current one-line dependency order
 
-**Documentation reconciliation → remaining PREDMET/referential acceptance → evidence-first
-performance closure → SCENARIO continuity carrier/order/KATALOG/PDF fidelity
-closure → Windows real-runtime/canonical closure → complete signal/lifecycle
-model and full PODSETNIK upgrade → remaining JSON/document/UI work →
-MODUL DVE VALUTE → final Windows/Android business-semantic parity and
-backup/restore rehearsal → app identity/version/update-channel decision → First
-Product-Line Gate for stable OPC v.1 → optional non-blocking debt/Stage 2
-cleanup → `OPC_v.1_Int` architecture/localization/country/multicurrency work →
-signing and professional handover.**
+The owner-roadmap-first order is now:
 
-This order replaces every older “next dependency” statement, including future
-SCENARIO application wiring and SCENARIO-under-PODEŠAVANJA wording.
+**PODSETNIK/completion-signal owner decision and contract → lifecycle-aware
+PODSETNIK implementation and acceptance → remaining approved JSON/document/UI
+work → MODUL DVE VALUTE → Serbian-market OPC v.1 product-line gate → later
+`OPC_v.1_Int` work → signing and professional handover.**
+
+PREDMET/referential/lifecycle, SCENARIO-carrier, performance, parity,
+backup/restore, identity and other technical/release items are attached
+controls only when necessary for one of those owner-planned parents. The full
+provenance matrix and reverse-coverage record are in
+`docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md`.
+
+This owner-roadmap order replaces every older “next dependency” statement that
+promoted technical preparation or acceptance controls into product scope,
+while preserving the underlying evidence and history.
+
+### 2.3 Owner roadmap — now
+
+`PODSETNIK / completion-signal model owner-decision and contract package`
+
+The current authority and subordinate pseudocode agree that complete signal
+meanings remain owner-open. No reminder implementation or isolated notification
+patch is authorized before that contract.
+
+### 2.4 Owner roadmap — next
+
+After the signal contract is owner-approved: lifecycle-aware PODSETNIK;
+remaining Single-PREDMET JSON/document/UI work; MODUL DVE VALUTE; then the
+Serbian-market product-line gate with its attached release controls.
+
+### 2.5 Later, non-blocking and historical classifications
+
+`OPC_v.1_Int`, app identity/version/update decisions, signing/handover,
+contextual help and Stage 2 cleanup retain their later/deferred status. Broad
+RI-3/FK expansion, broad rewrite, isolated PODSETNIK patches and other
+unparented technical chains are not active roadmap items. Historical withdrawn
+transfer claims and obsolete Gate 0/future-SCENARIO wording remain provenance
+only.
 
 ## 3. Reality matrix
 

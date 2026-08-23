@@ -34,6 +34,7 @@ evidence only. They must not reopen RR-005 or become a second current fact.
 
 | Area | Current source of truth | Supporting sources | Status / caution |
 | --- | --- | --- | --- |
+| Owner roadmap provenance and reverse coverage | `docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md` | Original post-zero plan drafts/candidate, owner-review findings, current authority, Git history and accepted closures | CURRENT SUPPORTING EVIDENCE — provenance matrix and zero-orphan reverse check; not a competing roadmap authority. |
 | Post-zero owner authority | `docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md` | Later explicitly owner-confirmed Git records | OWNER AUTHORITY RECORD; interpreted through the compact Phase 1 homes. Pre-zero owner decisions are not current authority. |
 | Incident and anti-drift evidence | `docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md` | Linked historical reports and Git history | PERMANENT EVIDENCE; does not revive pre-zero policy. |
 | Documentation classification | `docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md` | Git tree and history | CURRENT SUPPORTING EVIDENCE — classification register subordinate to the compact Phase 1 homes; separates active, technical, historical and future-scope documents. |

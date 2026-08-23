@@ -35,6 +35,26 @@ to fill a checklist. The Context Harness, HUMAN GATE, internal pseudocode and
 external task `REVIEW` handoff help establish and evidence applicability; they
 do not replace the engineering profile or any authoritative information home.
 
+### 1B. Owner-roadmap supremacy
+
+The owner-planned OPC roadmap is the primary control for product scope. The
+dependency plan organizes work only after provenance and necessity are
+established; it cannot create a new owner product requirement.
+
+Additional technical work must be demonstrably necessary, safe and
+proportionate for a named owner-planned item, its verification or its release,
+or for the later owner decision to standardize OPC engineering and
+documentation. Such work records its parent and class. Build/test/runtime,
+parity, backup, signing, version and handover items are release controls
+attached to their parent, not standalone product features. Valid but
+non-blocking debt stays outside the critical path.
+
+If a finding changes business meaning or introduces new product scope, stop at
+`OWNER DECISION REQUIRED`; observation alone never creates authority. Avoid
+speculative or recursively generated successor chains. Apply standards
+proportionately and optimize owner time, execution time and token/rework cost
+without weakening correctness, traceability or evidence retention.
+
 ## 2. Environment and bootstrap
 
 OPC is a Flutter/Dart application. From a configured Flutter environment:

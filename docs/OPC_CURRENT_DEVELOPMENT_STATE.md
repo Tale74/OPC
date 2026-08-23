@@ -118,14 +118,33 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | MODUL DVE VALUTE | Not implemented. | Mandatory before stable OPC v.1 and before `OPC_v.1_Int`. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
 
-## Current dependency order
+## Owner-roadmap control and current dependency order
 
-Documentation reconciliation → remaining PREDMET/referential/release obligations → evidence-first performance closure → SCENARIO
-continuity carrier/order/KATALOG/PDF fidelity closure → complete signal model and full PODSETNIK upgrade →
-remaining JSON/document/UI work → MODUL DVE VALUTE → final
-Windows/Android semantic parity and backup/restore rehearsal → app
-identity/version/update channel → stable OPC v.1 product-line gate → optional
-non-blocking debt → `OPC_v.1_Int` → signing/professional handover.
+The owner-planned roadmap is the primary development roadmap. The dependency
+plan may order prerequisites and release controls, but it may not create new
+product requirements. Technical findings must name their owner-planned parent;
+release/acceptance controls are attached gates, standards govern execution, and
+non-blocking debt stays outside the critical path.
+
+The next owner-planned package is:
+
+`PODSETNIK / completion-signal model owner-decision and contract package`
+
+Current authority and the local owner-decision pseudocode leave signal
+meanings unresolved. The next package must establish the PREDMET/SCENARIO/IRiU
+signal contract and owner decision matrix; it must not implement reminders or
+infer business completion.
+
+After that contract is approved, the owner roadmap proceeds through the
+lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
+VALUTE, and the Serbian-market OPC v.1 product-line gate. SCENARIO carrier,
+referential/lifecycle, performance, parity, backup/restore, identity and
+signing work remain attached technical/release controls only when necessary for
+those parents.
+
+The provenance matrix, reverse-coverage result and demotion of unparented
+technical chains are recorded in
+`docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md`.
 
 ## Active owner decisions
 
