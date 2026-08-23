@@ -24,6 +24,34 @@ This profile is a pragmatic composite. It improves clarity, traceability, mainta
 | ISO/IEC/IEEE 12207, 42010, 24748-5 | **REFERENCE ONLY** | Vocabulary/completeness checks; no parallel lifecycle, architecture-description or roadmap bureaucracy |
 | OpenSSF / SLSA | **REFERENCE / LATER MATURITY** | Heuristic and incremental provenance references; simple build records/hashes before formal levels where justified |
 
+## Permanent cross-cutting application
+
+This adopted engineering profile is a permanent cross-cutting development
+control for the remainder of OPC development, not a temporary documentation
+cleanup phase. Every substantive change is interpreted, implemented, verified
+and closed through the parts of the profile relevant to its scope and risk:
+
+`business/domain authority → requirements/traceability → architecture/data contract → implementation → verification → runtime/acceptance where applicable → quality/release → authoritative current-state documentation`
+
+Applicability must be explicit and proportional. A task records which links in
+this chain are material, the evidence or acceptance needed for them, and why a
+link is not applicable when it is omitted. The profile does not require an
+artifact for every link, a standards-named document per activity, or work that
+does not improve task truth, safety or reviewability.
+
+The Context Harness, HUMAN GATE, internal pseudocode and task-local `REVIEW`
+evidence support application of this profile; they are internal control and
+evidence mechanisms, not replacements for engineering standards, product
+authority or current-state documentation. Task-local review evidence remains
+non-authoritative until relevant current facts are reconciled into the
+appropriate information home.
+
+This permanent use reduces dependence on chronology archaeology, chat/session
+memory and manual reconstruction so OPC remains current-state understandable,
+traceable, architecturally explicit, verifiable, maintainable, handover-ready,
+progressively release/distribution-ready and finishable in reasonable time. It
+does not create a formal certification or conformance claim.
+
 ## Operating principles
 
 1. Current documentation describes current OPC, not the chronology of how it was built.
@@ -47,4 +75,8 @@ This profile is a pragmatic composite. It improves clarity, traceability, mainta
 - [`OPC_PHASE1_ARCHIVE_AND_INTERNAL_GOVERNANCE_CLASSIFICATION.md`](OPC_PHASE1_ARCHIVE_AND_INTERNAL_GOVERNANCE_CLASSIFICATION.md): transitional archive and internal-method separation.
 - [`OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md`](OPC_INTERNAL_DEVELOPMENT_CONTROL_REGISTER.md): public boundary record for local-only pseudocode control.
 
-This profile governs later documentation and code evolution only after the applicable task scope, owner authority, tests, data compatibility and release gates are established. It does not authorize Phase 2 pseudocode refresh, SOURCE restructuring, dead-code removal, CI/security/release implementation or SCENARIO unlock.
+This profile governs documentation and code evolution throughout the remainder
+of OPC development after the applicable task scope, owner authority, tests,
+data compatibility and release gates are established. It does not itself
+authorize pseudocode refresh, SOURCE restructuring, dead-code removal,
+CI/security/release implementation or SCENARIO unlock.

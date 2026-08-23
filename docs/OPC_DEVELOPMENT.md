@@ -16,6 +16,25 @@ Start with:
 
 Detailed current evidence remains linked from [`OPC_SOURCE_OF_TRUTH_MAP.md`](OPC_SOURCE_OF_TRUTH_MAP.md). Task reports are scoped evidence, not a substitute for current-state navigation.
 
+### 1A. Permanent engineering-profile application
+
+The adopted [`OPC_ENGINEERING_PROFILE.md`](OPC_ENGINEERING_PROFILE.md) applies
+to every substantive OPC task for the remainder of development. At task intake
+and closure, determine proportionately:
+
+- the applicable business/domain authority and requirements/traceability impact;
+- architecture, dependency, persistence and data-contract impact;
+- implementation boundaries and protected compatibility surfaces;
+- verification and platform/runtime acceptance obligations;
+- quality, security, release and distribution implications; and
+- current-state documentation that must be reconciled when the task evidence changes current truth.
+
+An implication may be `NOT_APPLICABLE` when the reason is explicit and
+evidence-backed. Do not manufacture an artifact or standards activity merely
+to fill a checklist. The Context Harness, HUMAN GATE, internal pseudocode and
+external task `REVIEW` handoff help establish and evidence applicability; they
+do not replace the engineering profile or any authoritative information home.
+
 ## 2. Environment and bootstrap
 
 OPC is a Flutter/Dart application. From a configured Flutter environment:
@@ -121,6 +140,11 @@ Current-state documentation is maintained as docs-as-code:
 - use ADRs only for durable technical structure, interfaces, dependencies, construction or NFR decisions;
 - keep business authority in the product/domain home, not in ADRs or task reports;
 - for a substantial task with multiple review artifacts, create one task-scoped review handoff index in the local review area. It must identify each artifact, authoritative path, state, hashes where useful, changed-file scope, validation and unresolved decisions. The index is a non-authoritative convenience layer, is not a current product-documentation home and is not added to README/current-state navigation.
+
+Task closure records both the local authoritative-documentation state and its
+public Git synchronization state. Local reconciliation is not
+documentation-complete publication until the authorized public Git update is
+also synchronized.
 
 Every OPC task records the project manifest start/end compliance fields,
 branch/base identity, changed paths, validation results, protected surfaces and
