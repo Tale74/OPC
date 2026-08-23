@@ -41,6 +41,7 @@ not replace it or current authority.
 - Canonical/private runtime databases are read-only unless an explicitly approved disposable-copy workflow says otherwise.
 - `REVIEW` stays outside SOURCE. `SOURCE/REVIEW` must remain absent.
 - Internal pseudocode is continuity/logical-functional material, not product runtime data or product authority.
+- A material incidental finding discovered inside an approved task must be captured in task-local review evidence, classified, assessed for current-task impact and given a non-orphan disposition. It must not expand scope or become business authority by observation. Owner attention is required only for an authority/business decision, blocking condition, new authorization boundary or another explicit HUMAN GATE event.
 - Do not commit/push unless explicitly authorized.
 
 ## Task flow

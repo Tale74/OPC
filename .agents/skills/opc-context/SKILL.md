@@ -22,7 +22,7 @@ Replace manual context reconstruction with an evidence-backed, bounded task cont
    - SOURCE-PROVEN IMPLEMENTED BEHAVIOR
    - RUNTIME EVIDENCE
    - INFERENCE / UNKNOWN
-8. Run `tools/opc_context/build_context.ps1` and `validate_context.ps1` when available.
+8. Run `tools/opc_context/build_context.ps1` and `validate_context.ps1` when available. Preserve the harness-initialized task-local `INCIDENTAL_FINDINGS.json`; it is completion evidence, not a new authority or parallel ledger.
 9. Produce the mandatory HUMAN GATE blocks and STOP.
 
 The Context Harness and HUMAN GATE support application of the engineering

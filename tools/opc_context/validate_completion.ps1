@@ -13,6 +13,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
 
 function Invoke-Git([string[]]$GitArgs) {
     $out = & git @GitArgs 2>&1
@@ -28,7 +29,8 @@ function Read-EvidenceJson([string]$Path, [string]$Name, [System.Collections.Gen
         return $null
     }
     try {
-        return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
+        $text = [System.IO.File]::ReadAllText($Path, $script:Utf8Strict)
+        return ($text | ConvertFrom-Json)
     } catch {
         $Errors.Add("Invalid JSON for $Name evidence: $Path")
         return $null
@@ -130,6 +132,59 @@ if (-not (Test-Path -LiteralPath $reviewIndex)) {
     $errors.Add("Missing REVIEW_INDEX.md.")
 }
 
+$incidental = Read-EvidenceJson (Join-Path $TaskReviewRoot "INCIDENTAL_FINDINGS.json") "incidental findings" $errors
+if ($null -ne $incidental) {
+    if ($incidental.schema -ne "opc-incidental-findings-v1") {
+        $errors.Add("Unsupported incidental findings schema.")
+    }
+    if ($incidental.unattendedCaptureEnabled -ne $true) {
+        $errors.Add("Incidental finding unattended capture must be enabled.")
+    }
+
+    $validClassifications = @("IN_SCOPE", "OUT_OF_SCOPE", "AUTHORITY_GAP", "EVIDENCE_INCOMPLETE", "OBSERVATION")
+    $validScopeEffects = @("WITHIN_APPROVED_SCOPE", "NO_SCOPE_CHANGE", "NEW_AUTHORIZATION_REQUIRED")
+    $validDispositions = @("RESOLVED_CURRENT_TASK", "PRESERVED_EXISTING_CONTROL", "NO_FUTURE_ACTION", "OWNER_GATE_REQUIRED", "BLOCKED")
+    foreach ($finding in @($incidental.findings)) {
+        $id = [string]$finding.id
+        if ([string]::IsNullOrWhiteSpace($id)) { $errors.Add("Incidental finding id is missing.") }
+        if ([string]::IsNullOrWhiteSpace([string]$finding.summary)) { $errors.Add("Incidental finding '$id' summary is missing.") }
+        if ($validClassifications -notcontains [string]$finding.classification) { $errors.Add("Incidental finding '$id' classification is invalid.") }
+        if ([string]::IsNullOrWhiteSpace([string]$finding.currentTaskImpact)) { $errors.Add("Incidental finding '$id' current-task impact is missing.") }
+        if ($validScopeEffects -notcontains [string]$finding.scopeEffect) { $errors.Add("Incidental finding '$id' scope effect is invalid.") }
+        if ($validDispositions -notcontains [string]$finding.disposition) { $errors.Add("Incidental finding '$id' disposition is invalid.") }
+        if ([string]$finding.authorityEffect -ne "DOES_NOT_CREATE_AUTHORITY") { $errors.Add("Incidental finding '$id' must not create business authority.") }
+        if ([string]$finding.orphanStatus -ne "NOT_ORPHANED") { $errors.Add("Incidental finding '$id' is orphaned or lacks an explicit orphan check.") }
+        if (@($finding.evidence).Count -eq 0) { $errors.Add("Incidental finding '$id' has no concrete evidence.") }
+        foreach ($evidence in @($finding.evidence)) {
+            if ([string]::IsNullOrWhiteSpace([string]$evidence.path) -or [string]::IsNullOrWhiteSpace([string]$evidence.detail)) {
+                $errors.Add("Incidental finding '$id' evidence requires path and detail.")
+            }
+        }
+
+        switch ([string]$finding.disposition) {
+            "RESOLVED_CURRENT_TASK" {
+                if ([string]::IsNullOrWhiteSpace([string]$finding.resolution)) { $errors.Add("Incidental finding '$id' resolution is missing.") }
+            }
+            "PRESERVED_EXISTING_CONTROL" {
+                if ([string]::IsNullOrWhiteSpace([string]$finding.destination) -or [string]::IsNullOrWhiteSpace([string]$finding.successor)) {
+                    $errors.Add("Incidental finding '$id' requires an existing-control destination and successor.")
+                }
+            }
+            "NO_FUTURE_ACTION" {
+                if ([string]::IsNullOrWhiteSpace([string]$finding.reason)) { $errors.Add("Incidental finding '$id' requires a no-action reason.") }
+            }
+            "OWNER_GATE_REQUIRED" {
+                if ([string]::IsNullOrWhiteSpace([string]$finding.ownerGateReason)) { $errors.Add("Incidental finding '$id' owner-gate reason is missing.") }
+                $errors.Add("Incidental finding '$id' requires an explicit owner HUMAN GATE.")
+            }
+            "BLOCKED" { $errors.Add("Incidental finding '$id' is blocking completion.") }
+        }
+        if ([string]$finding.scopeEffect -eq "NEW_AUTHORIZATION_REQUIRED") {
+            $errors.Add("Incidental finding '$id' requires a new authorization boundary.")
+        }
+    }
+}
+
 $currentBranch = Invoke-Git @("-C", $RepoRoot, "branch", "--show-current")
 $currentHead = Invoke-Git @("-C", $RepoRoot, "rev-parse", "HEAD")
 $currentStatus = Invoke-Git @("-C", $RepoRoot, "status", "--porcelain=v1", "--untracked-files=all")
@@ -141,8 +196,13 @@ $finalState = [ordered]@{
     worktreeDirty = -not [string]::IsNullOrWhiteSpace($currentStatus)
     worktreeStatus = $currentStatus
 }
-$finalState | ConvertTo-Json -Depth 4 |
-    Set-Content -LiteralPath (Join-Path $TaskReviewRoot "FINAL_REPOSITORY_STATE.json") -Encoding UTF8
+$finalStateJson = $finalState | ConvertTo-Json -Depth 4
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText(
+    (Join-Path $TaskReviewRoot "FINAL_REPOSITORY_STATE.json"),
+    ($finalStateJson + [Environment]::NewLine),
+    $utf8NoBom
+)
 
 # Every JSON evidence artifact under the task review root must be parseable;
 # a package cannot be reported PASS when any expected JSON is malformed.

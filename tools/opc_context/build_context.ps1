@@ -26,6 +26,11 @@ function Get-Sha256([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash
 }
 
+function Write-Utf8NoBom([string]$Path, [string]$Text) {
+    $encoding = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $Text, $encoding)
+}
+
 function Get-RelativePathCompat([string]$BasePath, [string]$TargetPath) {
     $baseFull = [System.IO.Path]::GetFullPath($BasePath)
     if (-not $baseFull.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
@@ -58,6 +63,21 @@ if ([string]::IsNullOrWhiteSpace($SafeTask)) { $SafeTask = "TASK" }
 $TaskReview = Join-Path $ReviewRoot ("CURRENT_TASK\" + $SafeTask)
 $ContextRoot = Join-Path $TaskReview "context"
 New-Item -ItemType Directory -Force -Path $ContextRoot | Out-Null
+
+# This task-local evidence file is not a new ledger. It is initialized by the
+# existing harness so material incidental findings can be retained without the
+# owner continuously monitoring an already approved task. Completion validation
+# fails closed if a recorded finding has no evidence or durable disposition.
+$incidentalPath = Join-Path $TaskReview "INCIDENTAL_FINDINGS.json"
+if (-not (Test-Path -LiteralPath $incidentalPath)) {
+    $incidental = [ordered]@{
+        schema = "opc-incidental-findings-v1"
+        task = $TaskName
+        unattendedCaptureEnabled = $true
+        findings = @()
+    }
+    Write-Utf8NoBom $incidentalPath (($incidental | ConvertTo-Json -Depth 8) + [Environment]::NewLine)
+}
 
 $branch = Invoke-Git @("-C", $RepoRoot, "branch", "--show-current")
 $head = Invoke-Git @("-C", $RepoRoot, "rev-parse", "HEAD")
