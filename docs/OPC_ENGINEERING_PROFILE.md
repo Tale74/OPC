@@ -62,6 +62,10 @@ does not create a formal certification or conformance claim.
 6. Human/owner controls remain for semantics and acceptance that automation cannot decide.
 7. Future gaps are stated as gaps and are not represented as implemented controls.
 8. Internal Tale/Logos/Codex development-control methods remain separate from final market-facing product documentation.
+9. Every material business/data-flow design explicitly reasons about required
+   presence and required absence. Defaults, repairs, migrations, imports and
+   reconcilers must not recreate state that a later human/business decision
+   intentionally removed.
 
 ## Required information homes
 

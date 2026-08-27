@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-const int predmetTransferSchemaVersion = 8;
-const int maxSupportedPredmetTransferSchemaVersion = 8;
+const int predmetTransferSchemaVersion = 9;
+const int maxSupportedPredmetTransferSchemaVersion = 9;
 const int predmetTransferSchemaVersionWithConsequenceTransfer = 7;
 const String predmetTransferFormat = 'OPC_PREDMET';
 const String legacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
@@ -10,6 +10,12 @@ const String stanjeRobeConsequenceTransferBlockKey =
 const int stanjeRobeConsequenceTransferSchemaVersion = 1;
 const String stanjeRobeConsequenceTransferPolicy =
     'single_predmet_unresolved_consequence_v1';
+const String singlePredmetScenarioCarrierBlockKey = 'singlePredmetScenario';
+const String iRiuLifecycleDecisionTransferBlockKey =
+    'iriuLifecycleDecisions';
+const int iRiuLifecycleDecisionTransferSchemaVersion = 1;
+const String iRiuLifecycleDecisionTransferPolicy =
+    'single_predmet_lifecycle_decisions_v1';
 const String defaultPredmetBusinessScenarioId =
     'default_funeral_ceremony_policy';
 const String defaultPredmetSourceIdentity = 'local_opc';
@@ -40,11 +46,9 @@ const Set<String> forbiddenStanjeRobeConsequenceTransferItemFields = {
   'effectStatus',
 };
 
-/// Pure candidate for the single-PREDMET JSON transfer boundary.
-///
-/// This file is intentionally not wired into runtime. It models the transfer
-/// shape and validation seams so future work can compare it against the
-/// current mixed UI/file/repository implementation without changing behavior.
+/// Shared contract and validation for the single-PREDMET JSON transfer
+/// boundary. Database-local identifiers remain non-portable; lifecycle
+/// decisions are carried by business keys only.
 abstract final class PredmetJsonTransferCore {
   static String encode(PredmetJsonTransferDocument document) {
     return const JsonEncoder.withIndent('  ').convert(document.toJsonMap());
@@ -120,6 +124,8 @@ class PredmetJsonTransferDocument {
     required this.iriu,
     required this.kontaktLica,
     this.consequenceTransfer,
+    this.lifecycleDecisionTransfer,
+    this.scenarioCarrier,
   });
 
   factory PredmetJsonTransferDocument.fromJsonMap(Map<String, dynamic> root) {
@@ -138,6 +144,20 @@ class PredmetJsonTransferDocument {
                 .map(PredmetJsonIriuBoundary.fromJsonMap)
                 .toList(growable: false),
           );
+    final rawLifecycleDecisionTransfer =
+        root[iRiuLifecycleDecisionTransferBlockKey];
+    final lifecycleDecisionTransfer = rawLifecycleDecisionTransfer == null
+        ? null
+        : IriuLifecycleDecisionTransferBlock.fromJsonMap(
+            _castStringMap(
+              rawLifecycleDecisionTransfer,
+              iRiuLifecycleDecisionTransferBlockKey,
+            ),
+          );
+    final rawScenarioCarrier = root[singlePredmetScenarioCarrierBlockKey];
+    final scenarioCarrier = rawScenarioCarrier is Map
+        ? _copyJsonMap(rawScenarioCarrier.cast<String, dynamic>())
+        : null;
 
     return PredmetJsonTransferDocument(
       format:
@@ -157,6 +177,8 @@ class PredmetJsonTransferDocument {
       iriu: iriu,
       kontaktLica: _optionalMapList(root, 'kontaktLica'),
       consequenceTransfer: consequenceTransfer,
+      lifecycleDecisionTransfer: lifecycleDecisionTransfer,
+      scenarioCarrier: scenarioCarrier,
     );
   }
 
@@ -172,6 +194,8 @@ class PredmetJsonTransferDocument {
   final List<Map<String, dynamic>> iriu;
   final List<Map<String, dynamic>> kontaktLica;
   final StanjeRobeConsequenceTransferBlock? consequenceTransfer;
+  final IriuLifecycleDecisionTransferBlock? lifecycleDecisionTransfer;
+  final Map<String, dynamic>? scenarioCarrier;
 
   bool get isCurrentPredmetFormat => format == predmetTransferFormat;
 
@@ -199,8 +223,125 @@ class PredmetJsonTransferDocument {
       map[stanjeRobeConsequenceTransferBlockKey] = transfer.toJsonMap();
     }
 
+    final lifecycle = lifecycleDecisionTransfer;
+    if (lifecycle != null && lifecycle.items.isNotEmpty) {
+      map[iRiuLifecycleDecisionTransferBlockKey] = lifecycle.toJsonMap();
+    }
+    if (scenarioCarrier != null) {
+      map[singlePredmetScenarioCarrierBlockKey] = _copyJsonMap(scenarioCarrier!);
+    }
+
     return map;
   }
+}
+
+/// Portable PREDMET-scoped lifecycle decisions. Database IDs are deliberately
+/// excluded; the destination remaps only the PREDMET parent identity.
+class IriuLifecycleDecisionTransferBlock {
+  const IriuLifecycleDecisionTransferBlock({
+    required this.schemaVersion,
+    required this.policy,
+    required this.items,
+  });
+
+  factory IriuLifecycleDecisionTransferBlock.fromJsonMap(
+    Map<String, dynamic> json,
+  ) {
+    final schemaVersion = _requiredInt(
+      json,
+      'schemaVersion',
+      iRiuLifecycleDecisionTransferBlockKey,
+    );
+    if (schemaVersion != iRiuLifecycleDecisionTransferSchemaVersion) {
+      throw const PredmetJsonTransferValidationException(
+        'PREDMET lifecycle-decision transfer schema is not recognized.',
+      );
+    }
+    final policy = _requiredNonEmptyString(
+      json,
+      'policy',
+      iRiuLifecycleDecisionTransferBlockKey,
+    );
+    if (policy != iRiuLifecycleDecisionTransferPolicy) {
+      throw const PredmetJsonTransferValidationException(
+        'PREDMET lifecycle-decision transfer policy is not supported.',
+      );
+    }
+    final rawItems = json['items'];
+    if (rawItems is! List) {
+      throw const PredmetJsonTransferValidationException(
+        'PREDMET lifecycle-decision transfer items must be a list.',
+      );
+    }
+    final items = rawItems.map((raw) {
+      final item = _castStringMap(
+        raw,
+        iRiuLifecycleDecisionTransferBlockKey,
+      );
+      return IriuLifecycleDecisionTransferItem.fromJsonMap(item);
+    }).toList(growable: false);
+    return IriuLifecycleDecisionTransferBlock(
+      schemaVersion: schemaVersion,
+      policy: policy,
+      items: items,
+    );
+  }
+
+  final int schemaVersion;
+  final String policy;
+  final List<IriuLifecycleDecisionTransferItem> items;
+
+  Map<String, dynamic> toJsonMap() => <String, dynamic>{
+    'schemaVersion': schemaVersion,
+    'policy': policy,
+    'items': items.map((item) => item.toJsonMap()).toList(growable: false),
+  };
+}
+
+class IriuLifecycleDecisionTransferItem {
+  const IriuLifecycleDecisionTransferItem({
+    required this.interniNaziv,
+    required this.scopeKey,
+    required this.decisionKey,
+    required this.createdAt,
+  });
+
+  factory IriuLifecycleDecisionTransferItem.fromJsonMap(
+    Map<String, dynamic> json,
+  ) => IriuLifecycleDecisionTransferItem(
+    interniNaziv: _requiredNonEmptyString(
+      json,
+      'interniNaziv',
+      iRiuLifecycleDecisionTransferBlockKey,
+    ),
+    scopeKey: _requiredNonEmptyString(
+      json,
+      'scopeKey',
+      iRiuLifecycleDecisionTransferBlockKey,
+    ),
+    decisionKey: _requiredNonEmptyString(
+      json,
+      'decisionKey',
+      iRiuLifecycleDecisionTransferBlockKey,
+    ),
+    createdAt: _requiredNonEmptyString(
+      json,
+      'createdAt',
+      iRiuLifecycleDecisionTransferBlockKey,
+    ),
+  );
+
+  final String interniNaziv;
+  final String scopeKey;
+  final String decisionKey;
+  final String createdAt;
+
+  Map<String, dynamic> toJsonMap() => <String, dynamic>{
+    'interniNaziv': interniNaziv,
+    'scopeKey': scopeKey,
+    'decisionKey': decisionKey,
+    'createdAt': createdAt,
+  };
 }
 
 class PredmetJsonIriuBoundary {

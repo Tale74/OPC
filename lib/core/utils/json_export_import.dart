@@ -30,9 +30,10 @@ import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
 
-const int _kPortableResponsibilitySchemaVersion = 8;
+const int _kPortableResponsibilitySchemaVersion = predmetTransferSchemaVersion;
 const int _kBackupSchemaVersion = 9;
-const int _kMaxSupportedPredmetSchemaVersion = 8;
+const int _kMaxSupportedPredmetSchemaVersion =
+    maxSupportedPredmetTransferSchemaVersion;
 const int _kMaxSupportedBackupSchemaVersion = 9;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
@@ -41,6 +42,8 @@ const String _kParteMediaBackupPolicy = 'bounded-exclusion-v1';
 const String _kStanjeRobeConsequenceTransferBlock =
     'stanjeRobeConsequenceTransfer';
 const String _kSinglePredmetScenarioCarrierBlock = 'singlePredmetScenario';
+const String _kSinglePredmetLifecycleDecisionBlock =
+    iRiuLifecycleDecisionTransferBlockKey;
 const int _kStanjeRobeConsequenceTransferSchemaVersion = 1;
 const String _kStanjeRobeConsequenceTransferPolicy =
     'single_predmet_unresolved_consequence_v1';
@@ -357,6 +360,7 @@ class _PredmetTransferPayload {
     required this.kontaktLica,
     required this.stanjeRobeConsequences,
     required this.scenarioCarrier,
+    required this.lifecycleDecisions,
   });
 
   final PredmetiData predmet;
@@ -364,6 +368,7 @@ class _PredmetTransferPayload {
   final List<KontaktLicaData> kontaktLica;
   final List<_StanjeRobeConsequenceTransferItem> stanjeRobeConsequences;
   final SinglePredmetScenarioCarrierBlock? scenarioCarrier;
+  final IriuLifecycleDecisionTransferBlock? lifecycleDecisions;
 }
 
 class _StanjeRobeConsequenceTransferItem {
@@ -574,12 +579,44 @@ Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
   );
 }
 
+Future<IriuLifecycleDecisionTransferBlock?> _lifecycleDecisionsForExport({
+  required AppDatabase db,
+  required int predmetId,
+}) async {
+  final rows = await db.customSelect(
+    '''
+      SELECT interni_naziv, scope_key, decision_key, created_at
+      FROM iriu_lifecycle_decisions
+      WHERE predmet_id = ?
+      ORDER BY id
+    ''',
+    variables: [Variable.withInt(predmetId)],
+    readsFrom: {},
+  ).get();
+  if (rows.isEmpty) return null;
+  return IriuLifecycleDecisionTransferBlock(
+    schemaVersion: iRiuLifecycleDecisionTransferSchemaVersion,
+    policy: iRiuLifecycleDecisionTransferPolicy,
+    items: rows
+        .map(
+          (row) => IriuLifecycleDecisionTransferItem(
+            interniNaziv: row.read<String>('interni_naziv'),
+            scopeKey: row.read<String>('scope_key'),
+            decisionKey: row.read<String>('decision_key'),
+            createdAt: row.read<String>('created_at'),
+          ),
+        )
+        .toList(growable: false),
+  );
+}
+
 Future<String> _serijalizujPredmet(
   PredmetiData p,
   List<IriuData> iriu,
   List<KontaktLicaData> kl,
   List<StanjeRobePoslediceData> stanjeRobePosledice, {
   SinglePredmetScenarioCarrierBlock? scenarioCarrier,
+  IriuLifecycleDecisionTransferBlock? lifecycleDecisions,
 }) {
   final consequenceTransferItems = _stanjeRobeConsequenceTransferItemsForExport(
     iriu: iriu,
@@ -618,7 +655,8 @@ Future<String> _serijalizujPredmet(
         'identity': 'single-PREDMET',
         'includes': [
           ...jsonTransferIncludes,
-          if (scenarioCarrier != null) _kSinglePredmetScenarioCarrierBlock,
+    if (scenarioCarrier != null) _kSinglePredmetScenarioCarrierBlock,
+    if (lifecycleDecisions != null) _kSinglePredmetLifecycleDecisionBlock,
         ],
       },
     },
@@ -633,6 +671,8 @@ Future<String> _serijalizujPredmet(
       },
     if (scenarioCarrier != null)
       _kSinglePredmetScenarioCarrierBlock: scenarioCarrier.toJsonMap(),
+    if (lifecycleDecisions != null)
+      _kSinglePredmetLifecycleDecisionBlock: lifecycleDecisions.toJsonMap(),
   };
   return Future.value(
     PredmetJsonTransferCore.encodeMap(
@@ -1009,6 +1049,11 @@ Future<int> _uvoziPredmetPayloadUBazu({
     importedIriu: payload.iriu,
     carrier: payload.scenarioCarrier,
   );
+  await _restoreImportedLifecycleDecisions(
+    db: db,
+    predmetId: newId,
+    decisions: payload.lifecycleDecisions,
+  );
   await _attachImportedStanjeRobeConsequences(
     db: db,
     predmetId: newId,
@@ -1016,6 +1061,30 @@ Future<int> _uvoziPredmetPayloadUBazu({
     consequenceItems: payload.stanjeRobeConsequences,
   );
   return newId;
+}
+
+Future<void> _restoreImportedLifecycleDecisions({
+  required AppDatabase db,
+  required int predmetId,
+  required IriuLifecycleDecisionTransferBlock? decisions,
+}) async {
+  if (decisions == null) return;
+  for (final item in decisions.items) {
+    await db.customStatement(
+      '''
+        INSERT OR IGNORE INTO iriu_lifecycle_decisions (
+          predmet_id, interni_naziv, scope_key, decision_key, created_at
+        ) VALUES (?, ?, ?, ?, ?)
+      ''',
+      [
+        predmetId,
+        item.interniNaziv,
+        item.scopeKey,
+        item.decisionKey,
+        item.createdAt,
+      ],
+    );
+  }
 }
 
 /// Schema-9 is a logical database backup. App-owned PARTE PNG bytes live in
@@ -1080,6 +1149,11 @@ Future<String?> _zameniPredmetUBazi({
         predmetId: lokalniPredmetId,
         importedIriu: payload.iriu,
         carrier: payload.scenarioCarrier,
+      );
+      await _restoreImportedLifecycleDecisions(
+        db: db,
+        predmetId: lokalniPredmetId,
+        decisions: payload.lifecycleDecisions,
       );
       await _attachImportedStanjeRobeConsequences(
         db: db,
@@ -1773,7 +1847,16 @@ Future<_Case2FallbackAnalysis> _analizujCase2Fallback({
         .map(StanjeRobePoslediceData.fromJson)
         .toList(growable: false);
     final transferJson = jsonDecode(
-      await _serijalizujPredmet(predmet, iriu, kontaktLica, posledice),
+      await _serijalizujPredmet(
+        predmet,
+        iriu,
+        kontaktLica,
+        posledice,
+        lifecycleDecisions: await _lifecycleDecisionsForExport(
+          db: db,
+          predmetId: predmet.id,
+        ),
+      ),
     );
     final payload = _procitajPredmetTransferPayload(
       (transferJson as Map).cast<String, dynamic>(),
@@ -2812,6 +2895,12 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
       ? null
       : SinglePredmetScenarioCarrierBlock.fromJsonMap(
           (rawScenarioCarrier as Map).cast<String, dynamic>(),
+          );
+  final rawLifecycleDecisions = json[_kSinglePredmetLifecycleDecisionBlock];
+  final lifecycleDecisions = rawLifecycleDecisions == null
+      ? null
+      : IriuLifecycleDecisionTransferBlock.fromJsonMap(
+          (rawLifecycleDecisions as Map).cast<String, dynamic>(),
         );
   return _PredmetTransferPayload(
     predmet: PredmetiData.fromJson(predmetMap),
@@ -2819,6 +2908,7 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     kontaktLica: klList,
     stanjeRobeConsequences: stanjeRobeConsequences,
     scenarioCarrier: scenarioCarrier,
+    lifecycleDecisions: lifecycleDecisions,
   );
 }
 
@@ -3265,6 +3355,10 @@ Future<String> serializePredmetJsonForTest({
       predmetId: predmetId,
       iriu: iriuList,
     ),
+    lifecycleDecisions: await _lifecycleDecisionsForExport(
+      db: db,
+      predmetId: predmetId,
+    ),
   );
 }
 
@@ -3387,6 +3481,10 @@ Future<void> izvoziBeleznica({
         db: db,
         predmetId: predmetId,
         iriu: iriuList,
+      ),
+      lifecycleDecisions: await _lifecycleDecisionsForExport(
+        db: db,
+        predmetId: predmetId,
       ),
     );
     final naziv = predmetFajlNaziv(pFresh);

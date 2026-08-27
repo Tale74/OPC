@@ -76,6 +76,9 @@ These are current documented invariants. They are not a new policy proposal.
 The following materially define the current product or remain explicitly open:
 
 - SCENARIO is an operational module under `MODULI`, not `PODEŠAVANJA`, and remains locked.
+- For transfer and restore, current PREDMET state includes intentional absence:
+  scenario/package defaults may initialize a new PREDMET, but must not recreate
+  a dependent row removed by a later SAVETNIK decision.
 - PAKETI restrictions are retired for the current native product; retained entitlement/licensing payloads are compatibility/diagnostic material, not current business restriction authority.
 - Windows and Android remain equal standalone local applications; no mandatory network sync is introduced.
 - PODSETNIK's complete signal/informed-reminder model is open. The Android notification for a `ZAVRŠEN` PREDMET belongs to the lifecycle-aware program, not an isolated patch.

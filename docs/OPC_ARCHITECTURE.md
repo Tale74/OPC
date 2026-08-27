@@ -135,6 +135,12 @@ PREDMET facts + editable module definitions
         → locked regression/runtime contract
 ```
 
+Individual PREDMET import is a restoration boundary, not a new-case
+initialization boundary. The transferred IRiU set and PREDMET-scoped lifecycle
+decisions are authoritative for the imported case; SCENARIO definitions remain
+available for genuinely new PREDMET initialization and explicit user-approved
+reconciliation only.
+
 ### Backup/restore
 
 ```text

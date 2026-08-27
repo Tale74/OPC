@@ -66,7 +66,7 @@ Owner runtime evidence is authority for observed end-product behavior, not autom
 
 Release/runtime evidence remains PRODUCTION-specific. For shared database invariants, `ANDROID_TEST` is the dedicated synthetic, disposable and intentionally inspectable physical acceptance lane: its `opc_v4_android_test` database may be copied read-only through the debuggable test package for schema, integrity, referential-cleanup, replacement and backup/restore evidence. This lane does not relax PRODUCTION protection and must contain no owner production data, credentials, backups or private exports. ANDROID_TEST evidence is authoritative only for invariants whose implementation equivalence with PRODUCTION has been explicitly proven.
 
-RR-011 current-fact status: `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`. The final physical ANDROID_TEST wave completed PASS evidence for device connectivity, schema/integrity/FK, provenance cleanup, real scenario-snapshot cleanup and the separately scoped single-PREDMET replacement with stable identity and relaunch persistence. The single-PREDMET `OPC_PREDMET` JSON format does not carry scenario snapshot/provenance rows; that boundary is documented. The earlier ADB-offline/10060 attempt is historical. No RR-011 successor remains.
+RR-011 current-fact status: `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`. The final physical ANDROID_TEST wave completed PASS evidence for device connectivity, schema/integrity/FK, provenance cleanup, real scenario-snapshot cleanup and the separately scoped single-PREDMET replacement with stable identity and relaunch persistence. The single-PREDMET `OPC_PREDMET` JSON format carries current SCENARIO snapshot/provenance and PREDMET-scoped lifecycle decisions without local database IDs; intentionally absent dependent state is preserved. The earlier ADB-offline/10060 attempt is historical. No RR-011 successor remains.
 
 Current architecture/deployment concerns include repaired-state/canonical closure, Android transfer/runtime parity outside the bounded responsibility-transfer acceptance below, notification lifecycle, filesystem/storage behavior and installer/signing readiness. Native Windows single-instance protection is closed by the accepted mutex/W1–W6 evidence; installer running-app protection is also closed by the accepted Inno Setup compile and I1/I2/I3 evidence. No RR-012 successor remains.
 
@@ -78,7 +78,7 @@ Current bounded status:
 
 The traceability chain is closed for this scope: the owner business rule makes
 portable PREDMET responsibility a name+role snapshot; schema 28 and individual
-PREDMET JSON schema 8 implement it without legacy local-ID backfill; automated
+PREDMET JSON schema 9 implement it without legacy local-ID backfill; automated
 responsibility/migration tests, analyzer, the serialized full suite and both
 release builds pass; Android → Windows and Windows → Android normal-product
 physical transfers both pass.
@@ -88,6 +88,11 @@ Android → Windows proved preservation with a missing local binding. Windows
 importer remained distinct from the responsible SAVETNIK, and PREDMET/detail
 UI, LISTA PDF, PREDMET PDF and relevant STATISTIKA remained consistent. There
 is no separate business derivative named `LISTA`.
+
+Transfer fidelity requires preservation of both presence and intentional
+absence. Schema-9 lifecycle-decision transfer data is restored against the
+destination PREDMET identity and does not authorize reconstruction from live
+SCENARIO defaults.
 
 This closes only the same-FIRMA peer responsibility-transfer acceptance
 condition. It does not close unrelated transfer, backup/restore, notification,

@@ -101,7 +101,7 @@ operative roadmap and release controls.
 
 The current RR-011 fact is: `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`. Device connectivity, authenticated synthetic execution, direct schema/integrity/FK checks, provenance cleanup, scenario-snapshot cleanup and supported full-backup export/import/restore are proven on the disposable `ANDROID_TEST` lane. The earlier ADB `offline` / Windows `10060` attempt is historical evidence only.
 
-The final physical wave also exercised the separate single-PREDMET replacement path with a real snapshot/provenance precondition, stable PREDMET identity, dependent-row recreation, relaunch persistence and integrity/FK pass. The `OPC_PREDMET` JSON format does not carry scenario snapshot/provenance rows; that boundary is documented. RR-011 has no remaining successor; no SCENARIO or owner semantic state is changed.
+The final physical wave also exercised the separate single-PREDMET replacement path with a real snapshot/provenance precondition, stable PREDMET identity, dependent-row recreation, relaunch persistence and integrity/FK pass. The current `OPC_PREDMET` JSON format carries scenario snapshot/provenance context plus PREDMET-scoped lifecycle decisions without local database IDs; intentionally absent state is preserved. RR-011 has no remaining successor; no SCENARIO or owner semantic state is changed.
 
 | Area | Current state | Next evidence/action |
 | --- | --- | --- |
@@ -347,12 +347,17 @@ the forensic recovery task.
 Current authority supersedes the historical incident wording above: the
 accepted owner oracle requires portable SAVETNIK business truth across equal
 OPC devices. The implemented correction uses additive schema 28 fields
-`businessResponsibleName`/`businessResponsibleRole`, JSON root schema 8,
+`businessResponsibleName`/`businessResponsibleRole`, JSON root schema 9,
 unique local name+role binding, replacement preservation and portable-name-first
 PREDMET/detail UI, LISTA PDF, PREDMET PDF and relevant STATISTIKA resolution.
 There is no separate business derivative named `LISTA`. Numeric local IDs never become portable
 authority; legacy schema 6/7 JSON remains readable with unknown responsibility
 when the fields are absent, and full-backup schema 9 is unchanged.
+
+The subsequent transfer-fidelity correction carries PREDMET-scoped lifecycle
+decisions in the individual JSON contract. This preserves intentionally absent
+SCENARIO/package-dependent rows on import while leaving new-PREDMET
+initialization and explicit SCENARIO reconciliation behavior unchanged.
 
 The 2026-08-23 V1 harness continuation closed two source defects in that
 correction: schema/startup no longer infers portable responsibility from a
@@ -384,3 +389,15 @@ The controlling boundary classifications remain:
 
 - `DATABASE OWNERSHIP — NOT EXPLICITLY MODELED`
 - `FIRMA BUSINESS-NAMESPACE HYPOTHESIS — PARTIALLY SUPPORTED`
+
+The owner subsequently supplied two separate real-world production-peer
+runtime observations: Windows → Android PREDMET `270826_2038` was GREEN, and
+Android → Windows PREDMET `270826_2046` was GREEN. These are distinct runtime
+acceptance cases and are authoritative owner evidence. Independent
+retrospective source/destination reconstruction is recorded separately as
+`EVIDENCE INCOMPLETE — NON-BLOCKING` because source-side pre-export and
+readable Android private snapshots were not preserved. The distinction does
+not downgrade the owner runtime acceptance. Future independent comparison
+should preserve source JSON identity, destination re-export/readable state and
+explicit direction/platform provenance; this is a methodological lesson, not
+a new mandatory process or successor.

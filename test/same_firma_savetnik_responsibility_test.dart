@@ -58,7 +58,7 @@ void main() {
                 )
                 as Map<String, dynamic>;
 
-        expect(json['schemaVersion'], 8);
+        expect(json['schemaVersion'], 9);
         final wirePredmet = json['predmet'] as Map<String, dynamic>;
         expect(wirePredmet['businessResponsibleName'], 'SYNTHETIC_ADMIN');
         expect(wirePredmet['businessResponsibleRole'], 'SAVETNIK');

@@ -530,7 +530,7 @@ void main() {
         final items = block['items'] as List<dynamic>;
         final item = items.single as Map<String, dynamic>;
 
-        expect(json['schemaVersion'], 8);
+        expect(json['schemaVersion'], 9);
         expect(block['schemaVersion'], 1);
         expect(block['policy'], 'single_predmet_unresolved_consequence_v1');
         expect(item['iriuTransferIndex'], 0);
@@ -602,7 +602,7 @@ void main() {
         expect(candidateMap, runtimeMap);
         expect(encodedFromRuntimeMap, runtimeMap);
         expect(candidateDocument.consequenceTransfer?.items, hasLength(1));
-        expect(candidateMap['schemaVersion'], 8);
+        expect(candidateMap['schemaVersion'], 9);
         _expectNoSinglePredmetStockOwnershipPayload(candidateMap);
         expect(candidateItem['iriuTransferIndex'], 0);
         expect(

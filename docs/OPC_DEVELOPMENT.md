@@ -108,6 +108,17 @@ For tasks changing source, tests, generated source, schema/migrations, assets, r
 
 Analyzer and full test commands are sequential, never parallel, with one Flutter/Dart/Gradle process chain active at a time. On the OPC Windows environment, `flutter analyze` and the complete `flutter test` suite must be allowed to reach natural completion; elapsed time alone is not evidence of a hang. Only affirmative technical evidence such as a demonstrated deadlock, permanently blocked child process, unrecoverable tooling/file lock or explicit tooling failure may classify a genuine hang. A command without a conclusive final summary and exit code is not PASS. Flutter tests on the current Windows machine use `--concurrency=1` when the workflow requires it.
 
+### 6B. Positive/negative business-state reasoning
+
+For every transfer, restore, migration, default, repair, synchronization or
+derived-state change, source-learning and review must record both sides of the
+business invariant: what must exist or be propagated, and what must remain
+absent, deleted, unchanged, local or forbidden. An absent dependent row is not
+automatically corruption; its business meaning must be established before
+ensure/rebuild logic can recreate it. Individual PREDMET JSON is an
+authoritative current-state restoration boundary: lifecycle decisions travel
+without database-local IDs, while new-PREDMET initialization remains separate.
+
 Documentation-only changes that do not affect source/tests/configuration/build behavior use documentation/repository validation rather than an automatic expensive Flutter suite. Phase 1 therefore validates links, references, manifest coverage and protected-state integrity.
 
 ## 6A. Permanent post-scenario completeness control
@@ -120,7 +131,7 @@ Every future phase starts with a **FULL POST-SCENARIO CONTINUITY INTAKE**. Befor
 
 `ANDROID_TEST` is the dedicated synthetic, disposable and inspectable physical structural-acceptance environment during OPC development. It uses the shared database, migration, repair, lifecycle, referential-cleanup and backup/restore implementation authority with a separate `opc_v4_android_test` database identity. Direct read-only inspection of that disposable database is permitted through the debuggable test package. PRODUCTION remains the authority for release packaging, end-user behavior, authentication and production data protection. The dedicated test device must not contain owner production data, credentials, owner backups or private owner exports; structural evidence may be reused only where shared implementation authority has been proven.
 
-RR-011 current fact after the final physical Android wave is `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`: connectivity, scenario-snapshot cleanup, single-PREDMET replacement, stable identity, dependent-row recreation, relaunch persistence and integrity/FK evidence pass in the disposable `ANDROID_TEST` lane. The single-PREDMET `OPC_PREDMET` JSON format does not carry scenario snapshot/provenance rows; that boundary is documented. RR-011 has no remaining successor; the earlier ADB-offline attempt is historical.
+RR-011 current fact after the final physical Android wave is `CLOSED — FULL ANDROID STRUCTURAL ACCEPTANCE PASS`: connectivity, scenario-snapshot cleanup, single-PREDMET replacement, stable identity, dependent-row recreation, relaunch persistence and integrity/FK evidence pass in the disposable `ANDROID_TEST` lane. The current single-PREDMET `OPC_PREDMET` JSON format carries the scenario carrier and PREDMET-scoped lifecycle decisions without local database IDs; intentionally absent state is preserved. RR-011 has no remaining successor; the earlier ADB-offline attempt is historical.
 
 Windows native singleton authority is `CLOSED — FULL ACCEPTANCE PASS` from the published `070ea5e476441cb44ad9cac424c6b90a73da5a72` implementation and W1–W6 evidence. Installer/update running-app protection is a separate control: the actual Inno Setup script uses the accepted mutex through `AppMutex` and sets `CloseApplications=no`; Inno Setup 6.7.3 compile and I1/I2/I3 runtime acceptance are `PASS`, with no installation completed. RR-012 is closed with no successor.
 
