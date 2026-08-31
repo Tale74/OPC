@@ -152,6 +152,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       );
       await _ceremonyReminderCoordinator.reschedule(
         predmetId: predmet.id,
+        predmetStatus: predmet.status,
         ceremonyType: predmet.vrstaCeremonije,
         deceasedFirstName: predmet.ime,
         deceasedLastName: predmet.prezime,

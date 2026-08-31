@@ -74,6 +74,7 @@ class PredmetHardDeleteCoordinator {
             gateway: notificationGateway,
           ).reschedule(
             predmetId: predmet.id,
+            predmetStatus: predmet.status,
             ceremonyType: predmet.vrstaCeremonije,
             deceasedFirstName: predmet.ime,
             deceasedLastName: predmet.prezime,

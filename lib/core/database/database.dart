@@ -25,6 +25,7 @@ import 'tables/parte_predlosci_table.dart';
 import 'tables/parte_pripreme_table.dart';
 import 'tables/predlosci_dokumenata_table.dart';
 import 'tables/predmeti_table.dart';
+import 'tables/podsetnik_obaveze_table.dart';
 import 'tables/predmet_scenario_snapshots_table.dart';
 import 'tables/scenario_definitions_table.dart';
 import 'tables/scenario_modules_table.dart';
@@ -40,6 +41,7 @@ part 'database.g.dart';
     FirmaPodaci,
     AppPodesavanja,
     Predmeti,
+    PodsetnikObaveze,
     KontaktLica,
     Iriu,
     IriuProvenance,
@@ -72,7 +74,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -221,6 +223,12 @@ class AppDatabase extends _$AppDatabase {
         await _ensureColumn(m, predmeti, predmeti.businessResponsibleName);
         await _ensureColumn(m, predmeti, predmeti.businessResponsibleRole);
       }
+      if (from < 29) {
+        await _ensureTable(m, podsetnikObaveze);
+      }
+      if (from < 30) {
+        await _ensureColumn(m, predmeti, predmeti.obavestitiSvestenika);
+      }
     },
     beforeOpen: (details) async {
       final versionBefore = details.versionBefore;
@@ -359,6 +367,8 @@ class AppDatabase extends _$AppDatabase {
     await _ensureColumn(migrator, predmeti, predmeti.lastBusinessModifiedAt);
     await _ensureColumn(migrator, predmeti, predmeti.businessResponsibleName);
     await _ensureColumn(migrator, predmeti, predmeti.businessResponsibleRole);
+    await _ensureTable(migrator, podsetnikObaveze);
+    await _ensureColumn(migrator, predmeti, predmeti.obavestitiSvestenika);
     await _ensureColumn(
       migrator,
       katalogArtikli,

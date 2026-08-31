@@ -67,7 +67,7 @@ The logical blocks above are real but not equally visible in the tree:
 - `core/database/database.dart` combines schema, migration, seed, repair and recovery concerns and is oversized.
 - `core/utils/json_export_import.dart` is a 2,792-line integration/application monolith under a generic utility path. It depends back into auth, PREDMET, SCENARIO, PARTE/reminder, stock and persistence.
 - IRiU/KATALOG responsibility is split among database seed/configuration, core catalogue identity, settings and feature consumers.
-- PODSETNIK presentation and reminder implementation are separated while signal semantics remain unresolved.
+- PODSETNIK presentation and reminder implementation are separated. The recovered owner-authority contract remains the business boundary; Task 1 now provides the bounded domain/persistence foundation, while Task 2/3 presentation, primary notification and urn/ashes behavior remain open. Technical design in readiness/pseudocode is subordinate and cannot create new business semantics.
 - Many presentation screens are composition-heavy and import multiple feature areas. The audit identified large screens/repositories as maintainability hotspots, not as permission for an automatic rewrite.
 
 These are current architecture facts and risks. The later Target SOURCE Architecture phase must decide whether each block is retained, renamed, moved, split, merged, refactored, partially rewritten, reconstructed or removed as proven dead.
@@ -93,7 +93,7 @@ No complete file-level circular import claim is made here. The relevant finding 
 
 ## 6. Persistence and data architecture
 
-`AppDatabase` is created at startup. Drift tables cover PREDMET, users/firma/settings, IRiU/KATALOG/provenance, SCENARIO definitions/modules/snapshots, PARTE, stock/effects/consequences, logs, contacts and document-related state. Schema migrations are versioned through the current schema version 27 with recovery/repair/identity protections documented in source and tests. A fresh database creates structural singleton/auth state only: user/business KATALOG rows are not automatically created. Existing KATALOG rows remain authoritative across reopen and migration; repair and legacy normalization remain explicit integrity operations.
+`AppDatabase` is created at startup. Drift tables cover PREDMET, users/firma/settings, IRiU/KATALOG/provenance, SCENARIO definitions/modules/snapshots, PARTE, stock/effects/consequences, logs, contacts and document-related state. Schema migrations are versioned through the current schema version 30 with recovery/repair/identity protections documented in source and tests. A fresh database creates structural singleton/auth state only: user/business KATALOG rows are not automatically created. Existing KATALOG rows remain authoritative across reopen and migration; repair and legacy normalization remain explicit integrity operations.
 
 The generated `database.g.dart` is generated output and is not hand-written architecture debt. Database schema/migration history, user data compatibility and recovery behavior must remain protected during any later restructuring.
 
@@ -174,7 +174,7 @@ Current quality concerns are functional suitability/data integrity, reliability,
 - JSON interoperability monolith and cross-feature coupling;
 - KATALOG ownership ambiguity;
 - Repaired-state closure (installer running-app protection is closed by RR-012);
-- incomplete PODSETNIK signal model;
+- bounded structured PODSETNIK obligation/signal foundation is implemented, including the F-LOGOS-001…007 correction; Task 2 UI/primary-notification and Task 3 urn/ashes behavior remain open;
 - pseudocode drift (internal control concern, not product-doc gap alone);
 - technical debt and dead-code/superseded-implementation audit still required.
 

@@ -1,5 +1,6 @@
 import '../../../core/database/database.dart';
 import '../../../core/format/app_date_format.dart';
+import 'podsetnik_eligibility.dart';
 
 class ReminderMvpEntry {
   const ReminderMvpEntry({
@@ -36,9 +37,6 @@ class ReminderMvpEntry {
 class ReminderMvpService {
   ReminderMvpService();
 
-  bool _isEligibleStatus(String status) =>
-      status == 'OTVOREN' || status == 'ZATVOREN';
-
   DateTime? _ceremonyDate(PredmetiData predmet) =>
       parseDateValue(predmet.datumCeremonije);
 
@@ -53,7 +51,7 @@ class ReminderMvpService {
     final entries = <ReminderMvpEntry>[];
 
     for (final predmet in predmeti) {
-      if (!_isEligibleStatus(predmet.status)) continue;
+      if (!isPodsetnikEligibleStatus(predmet.status)) continue;
       final ceremonyDate = _ceremonyDate(predmet);
       if (ceremonyDate == null) continue;
 

@@ -46,17 +46,21 @@ void main() {
         status: 'ANONIMIZOVAN',
         createdAt: '2026-07-15T10:00:00.000',
       );
+      await _insert(
+        db,
+        ime: 'Nepoznat',
+        status: 'NEPOZNAT',
+        createdAt: '2026-07-16T10:00:00.000',
+      );
 
       final candidates = await repo.getPodsetnikKandidate();
 
       expect(candidates.map((predmet) => predmet.ime), [
         'Najnoviji',
-        'DrugiStatus',
         'Stariji',
       ]);
       expect(candidates.map((predmet) => predmet.status), [
         'ZATVOREN',
-        'U_OBRADI',
         'OTVOREN',
       ]);
     },
@@ -69,7 +73,9 @@ void main() {
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 1));
       await db.close();
+      await tester.pump(const Duration(milliseconds: 1));
     });
     final id = await _insert(
       db,
@@ -98,6 +104,9 @@ void main() {
       find.byKey(const Key('podsetnik-reminders-enabled')),
       findsOneWidget,
     );
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
   });
 
   testWidgets('PODSETNIK renders an empty candidate list safely', (
@@ -107,7 +116,9 @@ void main() {
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 1));
       await db.close();
+      await tester.pump(const Duration(milliseconds: 1));
     });
     await _insert(
       db,
@@ -131,6 +142,9 @@ void main() {
 
     expect(find.text('Nema PREDMETA dostupnih za PODSETNIK.'), findsOneWidget);
     expect(tester.takeException(), null);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
   });
 }
 

@@ -11,7 +11,7 @@ void main() {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
-    expect(await _userVersion(db), 28);
+    expect(await _userVersion(db), 30);
     expect(await db.select(db.iriuKatalogConfig).get(), isEmpty);
     expect(await db.select(db.katalogArtikli).get(), isEmpty);
     expect(

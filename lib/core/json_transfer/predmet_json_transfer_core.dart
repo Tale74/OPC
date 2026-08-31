@@ -11,8 +11,8 @@ const int stanjeRobeConsequenceTransferSchemaVersion = 1;
 const String stanjeRobeConsequenceTransferPolicy =
     'single_predmet_unresolved_consequence_v1';
 const String singlePredmetScenarioCarrierBlockKey = 'singlePredmetScenario';
-const String iRiuLifecycleDecisionTransferBlockKey =
-    'iriuLifecycleDecisions';
+const String iRiuLifecycleDecisionTransferBlockKey = 'iriuLifecycleDecisions';
+const String podsetnikObligationTransferBlockKey = 'podsetnikObaveze';
 const int iRiuLifecycleDecisionTransferSchemaVersion = 1;
 const String iRiuLifecycleDecisionTransferPolicy =
     'single_predmet_lifecycle_decisions_v1';
@@ -106,6 +106,7 @@ abstract final class PredmetJsonTransferCore {
     normalized.putIfAbsent('businessResponsibleName', () => null);
     normalized.putIfAbsent('businessResponsibleRole', () => null);
     normalized.putIfAbsent('partePotrebna', () => false);
+    normalized.putIfAbsent('obavestitiSvestenika', () => '');
     return normalized;
   }
 }
@@ -126,6 +127,7 @@ class PredmetJsonTransferDocument {
     this.consequenceTransfer,
     this.lifecycleDecisionTransfer,
     this.scenarioCarrier,
+    this.podsetnikObaveze,
   });
 
   factory PredmetJsonTransferDocument.fromJsonMap(Map<String, dynamic> root) {
@@ -158,6 +160,10 @@ class PredmetJsonTransferDocument {
     final scenarioCarrier = rawScenarioCarrier is Map
         ? _copyJsonMap(rawScenarioCarrier.cast<String, dynamic>())
         : null;
+    final rawPodsetnik = root[podsetnikObligationTransferBlockKey];
+    final podsetnikObaveze = rawPodsetnik is Map
+        ? _copyJsonMap(rawPodsetnik.cast<String, dynamic>())
+        : null;
 
     return PredmetJsonTransferDocument(
       format:
@@ -179,6 +185,7 @@ class PredmetJsonTransferDocument {
       consequenceTransfer: consequenceTransfer,
       lifecycleDecisionTransfer: lifecycleDecisionTransfer,
       scenarioCarrier: scenarioCarrier,
+      podsetnikObaveze: podsetnikObaveze,
     );
   }
 
@@ -196,6 +203,7 @@ class PredmetJsonTransferDocument {
   final StanjeRobeConsequenceTransferBlock? consequenceTransfer;
   final IriuLifecycleDecisionTransferBlock? lifecycleDecisionTransfer;
   final Map<String, dynamic>? scenarioCarrier;
+  final Map<String, dynamic>? podsetnikObaveze;
 
   bool get isCurrentPredmetFormat => format == predmetTransferFormat;
 
@@ -228,7 +236,14 @@ class PredmetJsonTransferDocument {
       map[iRiuLifecycleDecisionTransferBlockKey] = lifecycle.toJsonMap();
     }
     if (scenarioCarrier != null) {
-      map[singlePredmetScenarioCarrierBlockKey] = _copyJsonMap(scenarioCarrier!);
+      map[singlePredmetScenarioCarrierBlockKey] = _copyJsonMap(
+        scenarioCarrier!,
+      );
+    }
+    if (podsetnikObaveze != null) {
+      map[podsetnikObligationTransferBlockKey] = _copyJsonMap(
+        podsetnikObaveze!,
+      );
     }
 
     return map;
@@ -273,13 +288,15 @@ class IriuLifecycleDecisionTransferBlock {
         'PREDMET lifecycle-decision transfer items must be a list.',
       );
     }
-    final items = rawItems.map((raw) {
-      final item = _castStringMap(
-        raw,
-        iRiuLifecycleDecisionTransferBlockKey,
-      );
-      return IriuLifecycleDecisionTransferItem.fromJsonMap(item);
-    }).toList(growable: false);
+    final items = rawItems
+        .map((raw) {
+          final item = _castStringMap(
+            raw,
+            iRiuLifecycleDecisionTransferBlockKey,
+          );
+          return IriuLifecycleDecisionTransferItem.fromJsonMap(item);
+        })
+        .toList(growable: false);
     return IriuLifecycleDecisionTransferBlock(
       schemaVersion: schemaVersion,
       policy: policy,

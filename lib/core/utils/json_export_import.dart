@@ -26,6 +26,8 @@ import '../../features/predmeti/reminders/ceremony_notification_gateway.dart';
 import '../../features/predmeti/reminders/ceremony_reminder_coordinator.dart';
 import '../../features/predmeti/reminders/ceremony_reminder_model.dart';
 import '../../features/predmeti/reminders/ceremony_reminder_repository.dart';
+import '../../features/podsetnik/data/podsetnik_obligation_repository.dart';
+import '../../features/podsetnik/domain/podsetnik_obligation_transfer.dart';
 import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
@@ -143,6 +145,7 @@ const Set<String> _kPredmetBlankTextFields = {
   'groblje',
   'grobljePolaganjaUrne',
   'opeloMesto',
+  'obavestitiSvestenika',
   'parcela',
   'grobBroj',
   'redGrob',
@@ -361,6 +364,7 @@ class _PredmetTransferPayload {
     required this.stanjeRobeConsequences,
     required this.scenarioCarrier,
     required this.lifecycleDecisions,
+    required this.podsetnikObaveze,
   });
 
   final PredmetiData predmet;
@@ -369,6 +373,7 @@ class _PredmetTransferPayload {
   final List<_StanjeRobeConsequenceTransferItem> stanjeRobeConsequences;
   final SinglePredmetScenarioCarrierBlock? scenarioCarrier;
   final IriuLifecycleDecisionTransferBlock? lifecycleDecisions;
+  final PodsetnikObligationTransferBlock? podsetnikObaveze;
 }
 
 class _StanjeRobeConsequenceTransferItem {
@@ -583,16 +588,18 @@ Future<IriuLifecycleDecisionTransferBlock?> _lifecycleDecisionsForExport({
   required AppDatabase db,
   required int predmetId,
 }) async {
-  final rows = await db.customSelect(
-    '''
+  final rows = await db
+      .customSelect(
+        '''
       SELECT interni_naziv, scope_key, decision_key, created_at
       FROM iriu_lifecycle_decisions
       WHERE predmet_id = ?
       ORDER BY id
     ''',
-    variables: [Variable.withInt(predmetId)],
-    readsFrom: {},
-  ).get();
+        variables: [Variable.withInt(predmetId)],
+        readsFrom: {},
+      )
+      .get();
   if (rows.isEmpty) return null;
   return IriuLifecycleDecisionTransferBlock(
     schemaVersion: iRiuLifecycleDecisionTransferSchemaVersion,
@@ -617,6 +624,7 @@ Future<String> _serijalizujPredmet(
   List<StanjeRobePoslediceData> stanjeRobePosledice, {
   SinglePredmetScenarioCarrierBlock? scenarioCarrier,
   IriuLifecycleDecisionTransferBlock? lifecycleDecisions,
+  PodsetnikObligationTransferBlock? podsetnikObaveze,
 }) {
   final consequenceTransferItems = _stanjeRobeConsequenceTransferItemsForExport(
     iriu: iriu,
@@ -628,6 +636,7 @@ Future<String> _serijalizujPredmet(
     'iriu',
     'kontaktLica',
     if (hasConsequenceTransfer) _kStanjeRobeConsequenceTransferBlock,
+    if (podsetnikObaveze != null) podsetnikObligationTransferKey,
   ];
   final map = <String, dynamic>{
     'format': _kPredmetTransferFormat,
@@ -655,8 +664,8 @@ Future<String> _serijalizujPredmet(
         'identity': 'single-PREDMET',
         'includes': [
           ...jsonTransferIncludes,
-    if (scenarioCarrier != null) _kSinglePredmetScenarioCarrierBlock,
-    if (lifecycleDecisions != null) _kSinglePredmetLifecycleDecisionBlock,
+          if (scenarioCarrier != null) _kSinglePredmetScenarioCarrierBlock,
+          if (lifecycleDecisions != null) _kSinglePredmetLifecycleDecisionBlock,
         ],
       },
     },
@@ -673,6 +682,8 @@ Future<String> _serijalizujPredmet(
       _kSinglePredmetScenarioCarrierBlock: scenarioCarrier.toJsonMap(),
     if (lifecycleDecisions != null)
       _kSinglePredmetLifecycleDecisionBlock: lifecycleDecisions.toJsonMap(),
+    if (podsetnikObaveze != null)
+      podsetnikObligationTransferKey: podsetnikObaveze.toJsonMap(),
   };
   return Future.value(
     PredmetJsonTransferCore.encodeMap(
@@ -740,6 +751,13 @@ _stanjeRobeConsequenceTransferItemsForExport({
   return items;
 }
 
+PodsetnikObligationTransferBlock? _podsetnikTransferBlockForExport(
+  List<PodsetnikObligationTransferState> states,
+) {
+  if (states.isEmpty) return null;
+  return PodsetnikObligationTransferBlock(items: states);
+}
+
 Future<String> _serijalizujBackup(AppDatabase db) async {
   final predmeti = await db.select(db.predmeti).get();
   final iriu = await db.select(db.iriu).get();
@@ -784,6 +802,12 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
       FROM iriu_lifecycle_decisions
       ORDER BY id
     ''', readsFrom: {}).get();
+  final podsetnikObaveze = await db.customSelect('''
+      SELECT predmet_id, stable_rule_id, phase, kind, parent_rule_id,
+             source_fingerprint, completed, completed_at
+      FROM podsetnik_obaveze
+      ORDER BY predmet_id, stable_rule_id
+    ''').get();
 
   final map = <String, dynamic>{
     'format': _kBackupTransferFormat,
@@ -838,6 +862,25 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
             'predmetId': row.read<int>('predmet_id'),
             'enabled': row.read<int>('enabled') == 1,
             'deliveryTimes': jsonDecode(row.read<String>('delivery_times')),
+          },
+        )
+        .toList(),
+    'podsetnikObaveze': podsetnikObaveze
+        .where(
+          (row) => exportedPredmetIds.contains(row.read<int>('predmet_id')),
+        )
+        .map(
+          (row) => <String, dynamic>{
+            'predmetId': row.read<int>('predmet_id'),
+            'stableRuleId': row.read<String>('stable_rule_id'),
+            'phase': row.read<String>('phase'),
+            'kind': row.read<String>('kind'),
+            if (row.readNullable<String>('parent_rule_id') != null)
+              'parentRuleId': row.readNullable<String>('parent_rule_id'),
+            'sourceFingerprint': row.read<String>('source_fingerprint'),
+            'completed': row.read<int>('completed') == 1,
+            if (row.readNullable<String>('completed_at') != null)
+              'completedAt': row.readNullable<String>('completed_at'),
           },
         )
         .toList(),
@@ -1054,6 +1097,11 @@ Future<int> _uvoziPredmetPayloadUBazu({
     predmetId: newId,
     decisions: payload.lifecycleDecisions,
   );
+  await _restoreImportedPodsetnikState(
+    db: db,
+    predmetId: newId,
+    state: payload.podsetnikObaveze,
+  );
   await _attachImportedStanjeRobeConsequences(
     db: db,
     predmetId: newId,
@@ -1061,6 +1109,17 @@ Future<int> _uvoziPredmetPayloadUBazu({
     consequenceItems: payload.stanjeRobeConsequences,
   );
   return newId;
+}
+
+Future<void> _restoreImportedPodsetnikState({
+  required AppDatabase db,
+  required int predmetId,
+  required PodsetnikObligationTransferBlock? state,
+}) async {
+  if (state == null) return;
+  await PodsetnikObligationRepository(
+    db,
+  ).importPortableState(predmetId: predmetId, states: state.items);
 }
 
 Future<void> _restoreImportedLifecycleDecisions({
@@ -1155,6 +1214,11 @@ Future<String?> _zameniPredmetUBazi({
         predmetId: lokalniPredmetId,
         decisions: payload.lifecycleDecisions,
       );
+      await _restoreImportedPodsetnikState(
+        db: db,
+        predmetId: lokalniPredmetId,
+        state: payload.podsetnikObaveze,
+      );
       await _attachImportedStanjeRobeConsequences(
         db: db,
         predmetId: lokalniPredmetId,
@@ -1189,6 +1253,7 @@ Future<String?> _zameniPredmetUBazi({
           gateway: trackingGateway,
         ).reschedule(
           predmetId: current.id,
+          predmetStatus: current.status,
           ceremonyType: current.vrstaCeremonije,
           deceasedFirstName: current.ime,
           deceasedLastName: current.prezime,
@@ -1253,6 +1318,7 @@ Future<String?> _zameniPredmetUBazi({
             gateway: gateway,
           ).reschedule(
             predmetId: oldPredmet.id,
+            predmetStatus: oldPredmet.status,
             ceremonyType: oldPredmet.vrstaCeremonije,
             deceasedFirstName: oldPredmet.ime,
             deceasedLastName: oldPredmet.prezime,
@@ -1856,6 +1922,11 @@ Future<_Case2FallbackAnalysis> _analizujCase2Fallback({
           db: db,
           predmetId: predmet.id,
         ),
+        podsetnikObaveze: _podsetnikTransferBlockForExport(
+          await PodsetnikObligationRepository(
+            db,
+          ).exportPortableState(predmet.id),
+        ),
       ),
     );
     final payload = _procitajPredmetTransferPayload(
@@ -1907,6 +1978,7 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
 ) async {
   final stockPayload = await _procitajStanjeRobeBackupPayload(db, json);
   final reminderPayload = _procitajBackupReminderSettings(json);
+  final podsetnikPayload = _procitajBackupPodsetnikSettings(json);
   final backupPredmetIds = _requiredMapList(
     json,
     'predmeti',
@@ -1922,6 +1994,7 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.customStatement('DELETE FROM iriu_lifecycle_decisions');
     await db.delete(db.logIzmena).go();
     await db.customStatement('DELETE FROM ceremony_reminder_settings');
+    await db.delete(db.podsetnikObaveze).go();
     await db.delete(db.partePripreme).go();
     await db.delete(db.kontaktLica).go();
     await db.delete(db.predmetScenarioSnapshots).go();
@@ -2147,6 +2220,26 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
           DateTime.now().toIso8601String(),
         ],
       );
+    }
+
+    for (final item in podsetnikPayload) {
+      if (!backupPredmetIds.contains(item.predmetId)) continue;
+      await db
+          .into(db.podsetnikObaveze)
+          .insert(
+            PodsetnikObavezeCompanion(
+              predmetId: Value(item.predmetId),
+              stableRuleId: Value(item.state.stableRuleId),
+              phase: Value(item.state.phase),
+              kind: Value(item.state.kind),
+              parentRuleId: Value(item.state.parentRuleId),
+              sourceFingerprint: Value(item.state.sourceFingerprint),
+              completed: Value(item.state.completed),
+              completedAt: Value(item.state.completedAt),
+              updatedAt: Value(DateTime.now().toIso8601String()),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
     }
 
     for (final i in _requiredMapList(json, 'iriu')) {
@@ -2847,6 +2940,7 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
   normalized.putIfAbsent('docekDatum', () => '');
   normalized.putIfAbsent('grobljePolaganjaUrne', () => '');
   normalized.putIfAbsent('promenaSanduka', () => false);
+  normalized.putIfAbsent('obavestitiSvestenika', () => '');
   return documentTextCodec.normalizeMap(normalized);
 }
 
@@ -2895,12 +2989,18 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
       ? null
       : SinglePredmetScenarioCarrierBlock.fromJsonMap(
           (rawScenarioCarrier as Map).cast<String, dynamic>(),
-          );
+        );
   final rawLifecycleDecisions = json[_kSinglePredmetLifecycleDecisionBlock];
   final lifecycleDecisions = rawLifecycleDecisions == null
       ? null
       : IriuLifecycleDecisionTransferBlock.fromJsonMap(
           (rawLifecycleDecisions as Map).cast<String, dynamic>(),
+        );
+  final rawPodsetnik = json[podsetnikObligationTransferKey];
+  final podsetnikObaveze = rawPodsetnik == null
+      ? null
+      : PodsetnikObligationTransferBlock.fromJsonMap(
+          (rawPodsetnik as Map).cast<String, dynamic>(),
         );
   return _PredmetTransferPayload(
     predmet: PredmetiData.fromJson(predmetMap),
@@ -2909,7 +3009,50 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     stanjeRobeConsequences: stanjeRobeConsequences,
     scenarioCarrier: scenarioCarrier,
     lifecycleDecisions: lifecycleDecisions,
+    podsetnikObaveze: podsetnikObaveze,
   );
+}
+
+class _BackupPodsetnikSetting {
+  const _BackupPodsetnikSetting({required this.predmetId, required this.state});
+  final int predmetId;
+  final PodsetnikObligationTransferState state;
+}
+
+List<_BackupPodsetnikSetting> _procitajBackupPodsetnikSettings(
+  Map<String, dynamic> json,
+) {
+  final raw = json['podsetnikObaveze'];
+  if (raw == null) return const [];
+  if (raw is! List) {
+    throw const _ImportBlokiranException(
+      'Neispravan backup: PODSETNIK obaveze nisu lista.',
+    );
+  }
+  final seen = <(int, String)>{};
+  final result = <_BackupPodsetnikSetting>[];
+  for (final item in raw) {
+    if (item is! Map) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: PODSETNIK obaveza nije validna.',
+      );
+    }
+    final row = item.cast<String, dynamic>();
+    final predmetId = row['predmetId'];
+    if (predmetId is! int) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: PODSETNIK obaveza nema PREDMET identitet.',
+      );
+    }
+    final state = PodsetnikObligationTransferState.fromJsonMap(row);
+    if (!seen.add((predmetId, state.stableRuleId))) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: duplirana PODSETNIK obaveza.',
+      );
+    }
+    result.add(_BackupPodsetnikSetting(predmetId: predmetId, state: state));
+  }
+  return result;
 }
 
 List<_StanjeRobeConsequenceTransferItem>
@@ -3359,6 +3502,9 @@ Future<String> serializePredmetJsonForTest({
       db: db,
       predmetId: predmetId,
     ),
+    podsetnikObaveze: _podsetnikTransferBlockForExport(
+      await PodsetnikObligationRepository(db).exportPortableState(predmetId),
+    ),
   );
 }
 
@@ -3485,6 +3631,9 @@ Future<void> izvoziBeleznica({
       lifecycleDecisions: await _lifecycleDecisionsForExport(
         db: db,
         predmetId: predmetId,
+      ),
+      podsetnikObaveze: _podsetnikTransferBlockForExport(
+        await PodsetnikObligationRepository(db).exportPortableState(predmetId),
       ),
     );
     final naziv = predmetFajlNaziv(pFresh);

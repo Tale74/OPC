@@ -111,9 +111,9 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |
 | Android PARTE performance | Source risks are mapped; focused current-device profiling acceptance is absent. | Reproduce/profile before choosing a correction. |
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
-| PODSETNIK | Prior orphan/restore corrections exist; complete signal/informed-reminder model does not. | Full lifecycle-aware program after owner-confirmed signal model. The Android notification for a `ZAVRŠEN` PREDMET belongs here, not in an isolated patch. |
+| PODSETNIK | Task 1 domain/persistence foundation is implemented and independently reviewed PASS: lifecycle eligibility, stable obligation identity, atomic/group completion, current-source reconciliation and portable PREDMET/full-backup state are present. Task 2 UI/primary notification work and Task 3 urn/ashes blocker/cycle remain open. | Task 1 recovery publication closure and owner publication gate; do not infer Task 2/3 completion or release readiness. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
-| Documents | RAČUN PDF exists; NALOG CVEĆARI standalone generator is not proven; standard PDF typography refinement remains. | Owner decisions for RAČUN availability/default and NALOG content/scope; bounded document work. |
+| Documents | RAČUN PDF exists; NALOG CVEĆARI content and ceremony parity are OWNER-resolved, with output scope PDF only; standalone generator/acceptance is not proven. Standard PDF typography refinement remains separate. | Owner decision for RAČUN availability/default and bounded NALOG CVEĆARI PDF implementation/acceptance; no DOCX scope. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
 | MODUL DVE VALUTE | Not implemented. | Mandatory before stable OPC v.1 and before `OPC_v.1_Int`. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
@@ -128,12 +128,14 @@ non-blocking debt stays outside the critical path.
 
 The next owner-planned package is:
 
-`PODSETNIK / completion-signal model owner-decision and contract package`
+`Task 1 recovery publication closure`
 
-Current authority and the local owner-decision pseudocode leave signal
-meanings unresolved. The next package must establish the PREDMET/SCENARIO/IRiU
-signal contract and owner decision matrix; it must not implement reminders or
-infer business completion.
+The recovered owner-authority restoration established the PREDMET/IRiU signal
+and obligation contract, and the bounded Task 1 foundation plus F-LOGOS-001…007
+correction is now implemented and independently reviewed PASS. Publication
+remains pending owner authorization; after that, work may proceed only through
+the exact three-task order and must not
+reopen recovered decisions or infer additional business completion.
 
 After that contract is approved, the owner roadmap proceeds through the
 lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
@@ -149,8 +151,6 @@ technical chains are recorded in
 ## Active owner decisions
 
 - performance acceptance targets after measurement;
-- complete signal meanings for PODSETNIK;
-- NALOG CVEĆARI content and PDF/DOCX scope;
 - RAČUN FIRMA availability/default;
 - EUR activation timing and eligible open-PREDMET treatment;
 - final app version/update channel and release baseline;

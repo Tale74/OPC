@@ -22,22 +22,22 @@ class PodsetnikModuleScreen extends StatefulWidget {
 }
 
 class _PodsetnikModuleScreenState extends State<PodsetnikModuleScreen> {
-  late Future<List<PredmetiData>> _predmetiFuture;
+  late Stream<List<PredmetiData>> _predmetiStream;
   int? _selectedPredmetId;
 
   @override
   void initState() {
     super.initState();
     _selectedPredmetId = widget.predmetId;
-    _predmetiFuture = widget.predmetiRepository.getPodsetnikKandidate();
+    _predmetiStream = widget.predmetiRepository.watchPodsetnikKandidate();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('MODULI / PODSETNIK')),
-      body: FutureBuilder<List<PredmetiData>>(
-        future: _predmetiFuture,
+      body: StreamBuilder<List<PredmetiData>>(
+        stream: _predmetiStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -151,6 +151,7 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
     setState(() => _config = config);
     await _coordinator.reschedule(
       predmetId: widget.predmet.id,
+      predmetStatus: widget.predmet.status,
       ceremonyType: widget.predmet.vrstaCeremonije,
       deceasedFirstName: widget.predmet.ime,
       deceasedLastName: widget.predmet.prezime,

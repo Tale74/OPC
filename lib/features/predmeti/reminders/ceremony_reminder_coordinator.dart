@@ -3,6 +3,7 @@ import 'ceremony_notification_gateway.dart';
 import 'ceremony_reminder_model.dart';
 import 'ceremony_reminder_repository.dart';
 import 'ceremony_reminder_text.dart';
+import 'podsetnik_eligibility.dart';
 
 DateTime? parseCeremonyReminderDateTime(String date, String time) {
   final parsedDate = parseDateValue(date);
@@ -31,6 +32,7 @@ class CeremonyReminderCoordinator {
 
   Future<List<CeremonyReminderOccurrence>> reschedule({
     required int predmetId,
+    required String predmetStatus,
     required String ceremonyType,
     required String deceasedFirstName,
     required String deceasedLastName,
@@ -41,10 +43,23 @@ class CeremonyReminderCoordinator {
     bool requestPermission = false,
   }) async {
     final stored = await repository.getForPredmet(predmetId);
-    await gateway.initialize(requestPermission: requestPermission);
-    for (final id in stored.scheduledNotificationIds) {
-      await gateway.cancel(id);
+
+    // Historical reminder rows may be retained, but current PREDMET status is
+    // the only authority for active scheduling. Fail closed for every status
+    // outside the owner-controlled OTVOREN/ZATVOREN allow-list.
+    if (!isPodsetnikEligibleStatus(predmetStatus)) {
+      if (stored.scheduledNotificationIds.isNotEmpty) {
+        await gateway.initialize(requestPermission: false);
+      }
+      await _cancelStoredIds(stored.scheduledNotificationIds);
+      if (stored.scheduledNotificationIds.isNotEmpty) {
+        await repository.saveScheduledIds(predmetId, const []);
+      }
+      return const <CeremonyReminderOccurrence>[];
     }
+
+    await gateway.initialize(requestPermission: requestPermission);
+    await _cancelStoredIds(stored.scheduledNotificationIds);
 
     final occurrences = ceremonyAt == null
         ? const <CeremonyReminderOccurrence>[]
@@ -74,5 +89,11 @@ class CeremonyReminderCoordinator {
       occurrences.map((item) => item.notificationId).toList(),
     );
     return occurrences;
+  }
+
+  Future<void> _cancelStoredIds(Iterable<int> ids) async {
+    for (final id in ids) {
+      await gateway.cancel(id);
+    }
   }
 }

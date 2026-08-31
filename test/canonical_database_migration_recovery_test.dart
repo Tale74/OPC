@@ -38,7 +38,7 @@ void main() {
       final db = AppDatabase.forTesting(NativeDatabase(file));
       addTearDown(db.close);
 
-      expect(await _userVersion(db), 28);
+      expect(await _userVersion(db), 30);
       expect(
         await _tableNames(db),
         containsAll(['predmeti', 'parte_pripreme']),
@@ -196,7 +196,7 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 28);
+        expect(await _userVersion(second), 30);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
@@ -337,9 +337,9 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      // Schema 28 is the current supported version (portable responsibility);
+      // Schema 30 is the current supported version (OPELO responsibility);
       // use the next checkpoint to exercise the future-version guard.
-      final db = fixture.openAtVersion(29, physicalVersion: 28);
+      final db = fixture.openAtVersion(31, physicalVersion: 30);
       addTearDown(db.close);
 
       await expectLater(
@@ -348,7 +348,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 29 -> 28'),
+            contains('unsupported migration checkpoint 31 -> 30'),
           ),
         ),
       );
@@ -398,7 +398,7 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 28);
+    expect(await _userVersion(retried), 30);
     await retried.close();
   });
 
@@ -459,7 +459,7 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 28);
+  expect(await _userVersion(db), 30);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);

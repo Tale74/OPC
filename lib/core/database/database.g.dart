@@ -2847,6 +2847,18 @@ class $PredmetiTable extends Predmeti
     requiredDuringInsert: false,
     defaultValue: const Constant('NE'),
   );
+  static const VerificationMeta _obavestitiSvestenikaMeta =
+      const VerificationMeta('obavestitiSvestenika');
+  @override
+  late final GeneratedColumn<String> obavestitiSvestenika =
+      GeneratedColumn<String>(
+        'obavestiti_svestenika',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
   static const VerificationMeta _opeloMestoMeta = const VerificationMeta(
     'opeloMesto',
   );
@@ -3394,6 +3406,7 @@ class $PredmetiTable extends Predmeti
     datumCeremonije,
     vremeCeremonije,
     opelo,
+    obavestitiSvestenika,
     opeloMesto,
     vremeOpela,
     vremeIspracaja,
@@ -4197,6 +4210,15 @@ class $PredmetiTable extends Predmeti
         opelo.isAcceptableOrUnknown(data['opelo']!, _opeloMeta),
       );
     }
+    if (data.containsKey('obavestiti_svestenika')) {
+      context.handle(
+        _obavestitiSvestenikaMeta,
+        obavestitiSvestenika.isAcceptableOrUnknown(
+          data['obavestiti_svestenika']!,
+          _obavestitiSvestenikaMeta,
+        ),
+      );
+    }
     if (data.containsKey('opelo_mesto')) {
       context.handle(
         _opeloMestoMeta,
@@ -4858,6 +4880,10 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.string,
         data['${effectivePrefix}opelo'],
       )!,
+      obavestitiSvestenika: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}obavestiti_svestenika'],
+      )!,
       opeloMesto: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}opelo_mesto'],
@@ -5116,6 +5142,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String datumCeremonije;
   final String vremeCeremonije;
   final String opelo;
+
+  /// DA / NE when OPELO is active; empty means legacy/unknown and is fail-safe.
+  final String obavestitiSvestenika;
   final String opeloMesto;
   final String vremeOpela;
   final String vremeIspracaja;
@@ -5255,6 +5284,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.datumCeremonije,
     required this.vremeCeremonije,
     required this.opelo,
+    required this.obavestitiSvestenika,
     required this.opeloMesto,
     required this.vremeOpela,
     required this.vremeIspracaja,
@@ -5415,6 +5445,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['datum_ceremonije'] = Variable<String>(datumCeremonije);
     map['vreme_ceremonije'] = Variable<String>(vremeCeremonije);
     map['opelo'] = Variable<String>(opelo);
+    map['obavestiti_svestenika'] = Variable<String>(obavestitiSvestenika);
     map['opelo_mesto'] = Variable<String>(opeloMesto);
     map['vreme_opela'] = Variable<String>(vremeOpela);
     map['vreme_ispracaja'] = Variable<String>(vremeIspracaja);
@@ -5567,6 +5598,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       datumCeremonije: Value(datumCeremonije),
       vremeCeremonije: Value(vremeCeremonije),
       opelo: Value(opelo),
+      obavestitiSvestenika: Value(obavestitiSvestenika),
       opeloMesto: Value(opeloMesto),
       vremeOpela: Value(vremeOpela),
       vremeIspracaja: Value(vremeIspracaja),
@@ -5736,6 +5768,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       datumCeremonije: serializer.fromJson<String>(json['datumCeremonije']),
       vremeCeremonije: serializer.fromJson<String>(json['vremeCeremonije']),
       opelo: serializer.fromJson<String>(json['opelo']),
+      obavestitiSvestenika: serializer.fromJson<String>(
+        json['obavestitiSvestenika'],
+      ),
       opeloMesto: serializer.fromJson<String>(json['opeloMesto']),
       vremeOpela: serializer.fromJson<String>(json['vremeOpela']),
       vremeIspracaja: serializer.fromJson<String>(json['vremeIspracaja']),
@@ -5888,6 +5923,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'datumCeremonije': serializer.toJson<String>(datumCeremonije),
       'vremeCeremonije': serializer.toJson<String>(vremeCeremonije),
       'opelo': serializer.toJson<String>(opelo),
+      'obavestitiSvestenika': serializer.toJson<String>(obavestitiSvestenika),
       'opeloMesto': serializer.toJson<String>(opeloMesto),
       'vremeOpela': serializer.toJson<String>(vremeOpela),
       'vremeIspracaja': serializer.toJson<String>(vremeIspracaja),
@@ -6026,6 +6062,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? datumCeremonije,
     String? vremeCeremonije,
     String? opelo,
+    String? obavestitiSvestenika,
     String? opeloMesto,
     String? vremeOpela,
     String? vremeIspracaja,
@@ -6172,6 +6209,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     datumCeremonije: datumCeremonije ?? this.datumCeremonije,
     vremeCeremonije: vremeCeremonije ?? this.vremeCeremonije,
     opelo: opelo ?? this.opelo,
+    obavestitiSvestenika: obavestitiSvestenika ?? this.obavestitiSvestenika,
     opeloMesto: opeloMesto ?? this.opeloMesto,
     vremeOpela: vremeOpela ?? this.vremeOpela,
     vremeIspracaja: vremeIspracaja ?? this.vremeIspracaja,
@@ -6441,6 +6479,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ? data.vremeCeremonije.value
           : this.vremeCeremonije,
       opelo: data.opelo.present ? data.opelo.value : this.opelo,
+      obavestitiSvestenika: data.obavestitiSvestenika.present
+          ? data.obavestitiSvestenika.value
+          : this.obavestitiSvestenika,
       opeloMesto: data.opeloMesto.present
           ? data.opeloMesto.value
           : this.opeloMesto,
@@ -6623,6 +6664,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('datumCeremonije: $datumCeremonije, ')
           ..write('vremeCeremonije: $vremeCeremonije, ')
           ..write('opelo: $opelo, ')
+          ..write('obavestitiSvestenika: $obavestitiSvestenika, ')
           ..write('opeloMesto: $opeloMesto, ')
           ..write('vremeOpela: $vremeOpela, ')
           ..write('vremeIspracaja: $vremeIspracaja, ')
@@ -6763,6 +6805,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     datumCeremonije,
     vremeCeremonije,
     opelo,
+    obavestitiSvestenika,
     opeloMesto,
     vremeOpela,
     vremeIspracaja,
@@ -6903,6 +6946,7 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.datumCeremonije == this.datumCeremonije &&
           other.vremeCeremonije == this.vremeCeremonije &&
           other.opelo == this.opelo &&
+          other.obavestitiSvestenika == this.obavestitiSvestenika &&
           other.opeloMesto == this.opeloMesto &&
           other.vremeOpela == this.vremeOpela &&
           other.vremeIspracaja == this.vremeIspracaja &&
@@ -7040,6 +7084,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> datumCeremonije;
   final Value<String> vremeCeremonije;
   final Value<String> opelo;
+  final Value<String> obavestitiSvestenika;
   final Value<String> opeloMesto;
   final Value<String> vremeOpela;
   final Value<String> vremeIspracaja;
@@ -7175,6 +7220,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.datumCeremonije = const Value.absent(),
     this.vremeCeremonije = const Value.absent(),
     this.opelo = const Value.absent(),
+    this.obavestitiSvestenika = const Value.absent(),
     this.opeloMesto = const Value.absent(),
     this.vremeOpela = const Value.absent(),
     this.vremeIspracaja = const Value.absent(),
@@ -7311,6 +7357,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.datumCeremonije = const Value.absent(),
     this.vremeCeremonije = const Value.absent(),
     this.opelo = const Value.absent(),
+    this.obavestitiSvestenika = const Value.absent(),
     this.opeloMesto = const Value.absent(),
     this.vremeOpela = const Value.absent(),
     this.vremeIspracaja = const Value.absent(),
@@ -7447,6 +7494,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? datumCeremonije,
     Expression<String>? vremeCeremonije,
     Expression<String>? opelo,
+    Expression<String>? obavestitiSvestenika,
     Expression<String>? opeloMesto,
     Expression<String>? vremeOpela,
     Expression<String>? vremeIspracaja,
@@ -7596,6 +7644,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (datumCeremonije != null) 'datum_ceremonije': datumCeremonije,
       if (vremeCeremonije != null) 'vreme_ceremonije': vremeCeremonije,
       if (opelo != null) 'opelo': opelo,
+      if (obavestitiSvestenika != null)
+        'obavestiti_svestenika': obavestitiSvestenika,
       if (opeloMesto != null) 'opelo_mesto': opeloMesto,
       if (vremeOpela != null) 'vreme_opela': vremeOpela,
       if (vremeIspracaja != null) 'vreme_ispracaja': vremeIspracaja,
@@ -7736,6 +7786,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? datumCeremonije,
     Value<String>? vremeCeremonije,
     Value<String>? opelo,
+    Value<String>? obavestitiSvestenika,
     Value<String>? opeloMesto,
     Value<String>? vremeOpela,
     Value<String>? vremeIspracaja,
@@ -7879,6 +7930,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       datumCeremonije: datumCeremonije ?? this.datumCeremonije,
       vremeCeremonije: vremeCeremonije ?? this.vremeCeremonije,
       opelo: opelo ?? this.opelo,
+      obavestitiSvestenika: obavestitiSvestenika ?? this.obavestitiSvestenika,
       opeloMesto: opeloMesto ?? this.opeloMesto,
       vremeOpela: vremeOpela ?? this.vremeOpela,
       vremeIspracaja: vremeIspracaja ?? this.vremeIspracaja,
@@ -8232,6 +8284,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     if (opelo.present) {
       map['opelo'] = Variable<String>(opelo.value);
     }
+    if (obavestitiSvestenika.present) {
+      map['obavestiti_svestenika'] = Variable<String>(
+        obavestitiSvestenika.value,
+      );
+    }
     if (opeloMesto.present) {
       map['opelo_mesto'] = Variable<String>(opeloMesto.value);
     }
@@ -8450,6 +8507,7 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('datumCeremonije: $datumCeremonije, ')
           ..write('vremeCeremonije: $vremeCeremonije, ')
           ..write('opelo: $opelo, ')
+          ..write('obavestitiSvestenika: $obavestitiSvestenika, ')
           ..write('opeloMesto: $opeloMesto, ')
           ..write('vremeOpela: $vremeOpela, ')
           ..write('vremeIspracaja: $vremeIspracaja, ')
@@ -8487,6 +8545,624 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('napomenaPlacanja: $napomenaPlacanja, ')
           ..write('napomena: $napomena, ')
           ..write('exportVerzija: $exportVerzija')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PodsetnikObavezeTable extends PodsetnikObaveze
+    with TableInfo<$PodsetnikObavezeTable, PodsetnikObavezeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PodsetnikObavezeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _stableRuleIdMeta = const VerificationMeta(
+    'stableRuleId',
+  );
+  @override
+  late final GeneratedColumn<String> stableRuleId = GeneratedColumn<String>(
+    'stable_rule_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phaseMeta = const VerificationMeta('phase');
+  @override
+  late final GeneratedColumn<String> phase = GeneratedColumn<String>(
+    'phase',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('PRE_CEREMONY'),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('ATOMIC'),
+  );
+  static const VerificationMeta _parentRuleIdMeta = const VerificationMeta(
+    'parentRuleId',
+  );
+  @override
+  late final GeneratedColumn<String> parentRuleId = GeneratedColumn<String>(
+    'parent_rule_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceFingerprintMeta = const VerificationMeta(
+    'sourceFingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> sourceFingerprint =
+      GeneratedColumn<String>(
+        'source_fingerprint',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _completedMeta = const VerificationMeta(
+    'completed',
+  );
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
+    'completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    predmetId,
+    stableRuleId,
+    phase,
+    kind,
+    parentRuleId,
+    sourceFingerprint,
+    completed,
+    completedAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'podsetnik_obaveze';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PodsetnikObavezeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetIdMeta);
+    }
+    if (data.containsKey('stable_rule_id')) {
+      context.handle(
+        _stableRuleIdMeta,
+        stableRuleId.isAcceptableOrUnknown(
+          data['stable_rule_id']!,
+          _stableRuleIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_stableRuleIdMeta);
+    }
+    if (data.containsKey('phase')) {
+      context.handle(
+        _phaseMeta,
+        phase.isAcceptableOrUnknown(data['phase']!, _phaseMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('parent_rule_id')) {
+      context.handle(
+        _parentRuleIdMeta,
+        parentRuleId.isAcceptableOrUnknown(
+          data['parent_rule_id']!,
+          _parentRuleIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_fingerprint')) {
+      context.handle(
+        _sourceFingerprintMeta,
+        sourceFingerprint.isAcceptableOrUnknown(
+          data['source_fingerprint']!,
+          _sourceFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed')) {
+      context.handle(
+        _completedMeta,
+        completed.isAcceptableOrUnknown(data['completed']!, _completedMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {predmetId, stableRuleId},
+  ];
+  @override
+  PodsetnikObavezeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PodsetnikObavezeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      stableRuleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}stable_rule_id'],
+      )!,
+      phase: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phase'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      parentRuleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_rule_id'],
+      ),
+      sourceFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_fingerprint'],
+      )!,
+      completed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}completed'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PodsetnikObavezeTable createAlias(String alias) {
+    return $PodsetnikObavezeTable(attachedDatabase, alias);
+  }
+}
+
+class PodsetnikObavezeData extends DataClass
+    implements Insertable<PodsetnikObavezeData> {
+  final int id;
+  final int predmetId;
+  final String stableRuleId;
+  final String phase;
+  final String kind;
+  final String? parentRuleId;
+  final String sourceFingerprint;
+  final bool completed;
+  final String? completedAt;
+  final String updatedAt;
+  const PodsetnikObavezeData({
+    required this.id,
+    required this.predmetId,
+    required this.stableRuleId,
+    required this.phase,
+    required this.kind,
+    this.parentRuleId,
+    required this.sourceFingerprint,
+    required this.completed,
+    this.completedAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['stable_rule_id'] = Variable<String>(stableRuleId);
+    map['phase'] = Variable<String>(phase);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || parentRuleId != null) {
+      map['parent_rule_id'] = Variable<String>(parentRuleId);
+    }
+    map['source_fingerprint'] = Variable<String>(sourceFingerprint);
+    map['completed'] = Variable<bool>(completed);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  PodsetnikObavezeCompanion toCompanion(bool nullToAbsent) {
+    return PodsetnikObavezeCompanion(
+      id: Value(id),
+      predmetId: Value(predmetId),
+      stableRuleId: Value(stableRuleId),
+      phase: Value(phase),
+      kind: Value(kind),
+      parentRuleId: parentRuleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentRuleId),
+      sourceFingerprint: Value(sourceFingerprint),
+      completed: Value(completed),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PodsetnikObavezeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PodsetnikObavezeData(
+      id: serializer.fromJson<int>(json['id']),
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      stableRuleId: serializer.fromJson<String>(json['stableRuleId']),
+      phase: serializer.fromJson<String>(json['phase']),
+      kind: serializer.fromJson<String>(json['kind']),
+      parentRuleId: serializer.fromJson<String?>(json['parentRuleId']),
+      sourceFingerprint: serializer.fromJson<String>(json['sourceFingerprint']),
+      completed: serializer.fromJson<bool>(json['completed']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'predmetId': serializer.toJson<int>(predmetId),
+      'stableRuleId': serializer.toJson<String>(stableRuleId),
+      'phase': serializer.toJson<String>(phase),
+      'kind': serializer.toJson<String>(kind),
+      'parentRuleId': serializer.toJson<String?>(parentRuleId),
+      'sourceFingerprint': serializer.toJson<String>(sourceFingerprint),
+      'completed': serializer.toJson<bool>(completed),
+      'completedAt': serializer.toJson<String?>(completedAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  PodsetnikObavezeData copyWith({
+    int? id,
+    int? predmetId,
+    String? stableRuleId,
+    String? phase,
+    String? kind,
+    Value<String?> parentRuleId = const Value.absent(),
+    String? sourceFingerprint,
+    bool? completed,
+    Value<String?> completedAt = const Value.absent(),
+    String? updatedAt,
+  }) => PodsetnikObavezeData(
+    id: id ?? this.id,
+    predmetId: predmetId ?? this.predmetId,
+    stableRuleId: stableRuleId ?? this.stableRuleId,
+    phase: phase ?? this.phase,
+    kind: kind ?? this.kind,
+    parentRuleId: parentRuleId.present ? parentRuleId.value : this.parentRuleId,
+    sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+    completed: completed ?? this.completed,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PodsetnikObavezeData copyWithCompanion(PodsetnikObavezeCompanion data) {
+    return PodsetnikObavezeData(
+      id: data.id.present ? data.id.value : this.id,
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      stableRuleId: data.stableRuleId.present
+          ? data.stableRuleId.value
+          : this.stableRuleId,
+      phase: data.phase.present ? data.phase.value : this.phase,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      parentRuleId: data.parentRuleId.present
+          ? data.parentRuleId.value
+          : this.parentRuleId,
+      sourceFingerprint: data.sourceFingerprint.present
+          ? data.sourceFingerprint.value
+          : this.sourceFingerprint,
+      completed: data.completed.present ? data.completed.value : this.completed,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PodsetnikObavezeData(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('stableRuleId: $stableRuleId, ')
+          ..write('phase: $phase, ')
+          ..write('kind: $kind, ')
+          ..write('parentRuleId: $parentRuleId, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('completed: $completed, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    predmetId,
+    stableRuleId,
+    phase,
+    kind,
+    parentRuleId,
+    sourceFingerprint,
+    completed,
+    completedAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PodsetnikObavezeData &&
+          other.id == this.id &&
+          other.predmetId == this.predmetId &&
+          other.stableRuleId == this.stableRuleId &&
+          other.phase == this.phase &&
+          other.kind == this.kind &&
+          other.parentRuleId == this.parentRuleId &&
+          other.sourceFingerprint == this.sourceFingerprint &&
+          other.completed == this.completed &&
+          other.completedAt == this.completedAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PodsetnikObavezeCompanion extends UpdateCompanion<PodsetnikObavezeData> {
+  final Value<int> id;
+  final Value<int> predmetId;
+  final Value<String> stableRuleId;
+  final Value<String> phase;
+  final Value<String> kind;
+  final Value<String?> parentRuleId;
+  final Value<String> sourceFingerprint;
+  final Value<bool> completed;
+  final Value<String?> completedAt;
+  final Value<String> updatedAt;
+  const PodsetnikObavezeCompanion({
+    this.id = const Value.absent(),
+    this.predmetId = const Value.absent(),
+    this.stableRuleId = const Value.absent(),
+    this.phase = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.parentRuleId = const Value.absent(),
+    this.sourceFingerprint = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  PodsetnikObavezeCompanion.insert({
+    this.id = const Value.absent(),
+    required int predmetId,
+    required String stableRuleId,
+    this.phase = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.parentRuleId = const Value.absent(),
+    this.sourceFingerprint = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : predmetId = Value(predmetId),
+       stableRuleId = Value(stableRuleId);
+  static Insertable<PodsetnikObavezeData> custom({
+    Expression<int>? id,
+    Expression<int>? predmetId,
+    Expression<String>? stableRuleId,
+    Expression<String>? phase,
+    Expression<String>? kind,
+    Expression<String>? parentRuleId,
+    Expression<String>? sourceFingerprint,
+    Expression<bool>? completed,
+    Expression<String>? completedAt,
+    Expression<String>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (stableRuleId != null) 'stable_rule_id': stableRuleId,
+      if (phase != null) 'phase': phase,
+      if (kind != null) 'kind': kind,
+      if (parentRuleId != null) 'parent_rule_id': parentRuleId,
+      if (sourceFingerprint != null) 'source_fingerprint': sourceFingerprint,
+      if (completed != null) 'completed': completed,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  PodsetnikObavezeCompanion copyWith({
+    Value<int>? id,
+    Value<int>? predmetId,
+    Value<String>? stableRuleId,
+    Value<String>? phase,
+    Value<String>? kind,
+    Value<String?>? parentRuleId,
+    Value<String>? sourceFingerprint,
+    Value<bool>? completed,
+    Value<String?>? completedAt,
+    Value<String>? updatedAt,
+  }) {
+    return PodsetnikObavezeCompanion(
+      id: id ?? this.id,
+      predmetId: predmetId ?? this.predmetId,
+      stableRuleId: stableRuleId ?? this.stableRuleId,
+      phase: phase ?? this.phase,
+      kind: kind ?? this.kind,
+      parentRuleId: parentRuleId ?? this.parentRuleId,
+      sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+      completed: completed ?? this.completed,
+      completedAt: completedAt ?? this.completedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (stableRuleId.present) {
+      map['stable_rule_id'] = Variable<String>(stableRuleId.value);
+    }
+    if (phase.present) {
+      map['phase'] = Variable<String>(phase.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (parentRuleId.present) {
+      map['parent_rule_id'] = Variable<String>(parentRuleId.value);
+    }
+    if (sourceFingerprint.present) {
+      map['source_fingerprint'] = Variable<String>(sourceFingerprint.value);
+    }
+    if (completed.present) {
+      map['completed'] = Variable<bool>(completed.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PodsetnikObavezeCompanion(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('stableRuleId: $stableRuleId, ')
+          ..write('phase: $phase, ')
+          ..write('kind: $kind, ')
+          ..write('parentRuleId: $parentRuleId, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('completed: $completed, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -18265,6 +18941,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FirmaPodaciTable firmaPodaci = $FirmaPodaciTable(this);
   late final $AppPodesavanjaTable appPodesavanja = $AppPodesavanjaTable(this);
   late final $PredmetiTable predmeti = $PredmetiTable(this);
+  late final $PodsetnikObavezeTable podsetnikObaveze = $PodsetnikObavezeTable(
+    this,
+  );
   late final $KontaktLicaTable kontaktLica = $KontaktLicaTable(this);
   late final $IriuTable iriu = $IriuTable(this);
   late final $IriuProvenanceTable iriuProvenance = $IriuProvenanceTable(this);
@@ -18299,6 +18978,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     firmaPodaci,
     appPodesavanja,
     predmeti,
+    podsetnikObaveze,
     kontaktLica,
     iriu,
     iriuProvenance,
@@ -18317,6 +18997,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('podsetnik_obaveze', kind: UpdateKind.delete)],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'predmeti',
@@ -19326,6 +20013,7 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> datumCeremonije,
       Value<String> vremeCeremonije,
       Value<String> opelo,
+      Value<String> obavestitiSvestenika,
       Value<String> opeloMesto,
       Value<String> vremeOpela,
       Value<String> vremeIspracaja,
@@ -19463,6 +20151,7 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> datumCeremonije,
       Value<String> vremeCeremonije,
       Value<String> opelo,
+      Value<String> obavestitiSvestenika,
       Value<String> opeloMesto,
       Value<String> vremeOpela,
       Value<String> vremeIspracaja,
@@ -19505,6 +20194,29 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
 final class $$PredmetiTableReferences
     extends BaseReferences<_$AppDatabase, $PredmetiTable, PredmetiData> {
   $$PredmetiTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$PodsetnikObavezeTable, List<PodsetnikObavezeData>>
+  _podsetnikObavezeRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.podsetnikObaveze,
+    aliasName: $_aliasNameGenerator(
+      db.predmeti.id,
+      db.podsetnikObaveze.predmetId,
+    ),
+  );
+
+  $$PodsetnikObavezeTableProcessedTableManager get podsetnikObavezeRefs {
+    final manager = $$PodsetnikObavezeTableTableManager(
+      $_db,
+      $_db.podsetnikObaveze,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _podsetnikObavezeRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$KontaktLicaTable, List<KontaktLicaData>>
   _kontaktLicaRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -20129,6 +20841,11 @@ class $$PredmetiTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get obavestitiSvestenika => $composableBuilder(
+    column: $table.obavestitiSvestenika,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get opeloMesto => $composableBuilder(
     column: $table.opeloMesto,
     builder: (column) => ColumnFilters(column),
@@ -20313,6 +21030,31 @@ class $$PredmetiTableFilterComposer
     column: $table.exportVerzija,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> podsetnikObavezeRefs(
+    Expression<bool> Function($$PodsetnikObavezeTableFilterComposer f) f,
+  ) {
+    final $$PodsetnikObavezeTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.podsetnikObaveze,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PodsetnikObavezeTableFilterComposer(
+            $db: $db,
+            $table: $db.podsetnikObaveze,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> kontaktLicaRefs(
     Expression<bool> Function($$KontaktLicaTableFilterComposer f) f,
@@ -20962,6 +21704,11 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get obavestitiSvestenika => $composableBuilder(
+    column: $table.obavestitiSvestenika,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get opeloMesto => $composableBuilder(
     column: $table.opeloMesto,
     builder: (column) => ColumnOrderings(column),
@@ -21579,6 +22326,11 @@ class $$PredmetiTableAnnotationComposer
   GeneratedColumn<String> get opelo =>
       $composableBuilder(column: $table.opelo, builder: (column) => column);
 
+  GeneratedColumn<String> get obavestitiSvestenika => $composableBuilder(
+    column: $table.obavestitiSvestenika,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get opeloMesto => $composableBuilder(
     column: $table.opeloMesto,
     builder: (column) => column,
@@ -21729,6 +22481,31 @@ class $$PredmetiTableAnnotationComposer
     column: $table.exportVerzija,
     builder: (column) => column,
   );
+
+  Expression<T> podsetnikObavezeRefs<T extends Object>(
+    Expression<T> Function($$PodsetnikObavezeTableAnnotationComposer a) f,
+  ) {
+    final $$PodsetnikObavezeTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.podsetnikObaveze,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PodsetnikObavezeTableAnnotationComposer(
+            $db: $db,
+            $table: $db.podsetnikObaveze,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<T> kontaktLicaRefs<T extends Object>(
     Expression<T> Function($$KontaktLicaTableAnnotationComposer a) f,
@@ -21898,6 +22675,7 @@ class $$PredmetiTableTableManager
           (PredmetiData, $$PredmetiTableReferences),
           PredmetiData,
           PrefetchHooks Function({
+            bool podsetnikObavezeRefs,
             bool kontaktLicaRefs,
             bool iriuRefs,
             bool stanjeRobePoslediceRefs,
@@ -22017,6 +22795,7 @@ class $$PredmetiTableTableManager
                 Value<String> datumCeremonije = const Value.absent(),
                 Value<String> vremeCeremonije = const Value.absent(),
                 Value<String> opelo = const Value.absent(),
+                Value<String> obavestitiSvestenika = const Value.absent(),
                 Value<String> opeloMesto = const Value.absent(),
                 Value<String> vremeOpela = const Value.absent(),
                 Value<String> vremeIspracaja = const Value.absent(),
@@ -22153,6 +22932,7 @@ class $$PredmetiTableTableManager
                 datumCeremonije: datumCeremonije,
                 vremeCeremonije: vremeCeremonije,
                 opelo: opelo,
+                obavestitiSvestenika: obavestitiSvestenika,
                 opeloMesto: opeloMesto,
                 vremeOpela: vremeOpela,
                 vremeIspracaja: vremeIspracaja,
@@ -22291,6 +23071,7 @@ class $$PredmetiTableTableManager
                 Value<String> datumCeremonije = const Value.absent(),
                 Value<String> vremeCeremonije = const Value.absent(),
                 Value<String> opelo = const Value.absent(),
+                Value<String> obavestitiSvestenika = const Value.absent(),
                 Value<String> opeloMesto = const Value.absent(),
                 Value<String> vremeOpela = const Value.absent(),
                 Value<String> vremeIspracaja = const Value.absent(),
@@ -22427,6 +23208,7 @@ class $$PredmetiTableTableManager
                 datumCeremonije: datumCeremonije,
                 vremeCeremonije: vremeCeremonije,
                 opelo: opelo,
+                obavestitiSvestenika: obavestitiSvestenika,
                 opeloMesto: opeloMesto,
                 vremeOpela: vremeOpela,
                 vremeIspracaja: vremeIspracaja,
@@ -22475,6 +23257,7 @@ class $$PredmetiTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                podsetnikObavezeRefs = false,
                 kontaktLicaRefs = false,
                 iriuRefs = false,
                 stanjeRobePoslediceRefs = false,
@@ -22485,6 +23268,7 @@ class $$PredmetiTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (podsetnikObavezeRefs) db.podsetnikObaveze,
                     if (kontaktLicaRefs) db.kontaktLica,
                     if (iriuRefs) db.iriu,
                     if (stanjeRobePoslediceRefs) db.stanjeRobePosledice,
@@ -22496,6 +23280,27 @@ class $$PredmetiTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (podsetnikObavezeRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          PodsetnikObavezeData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._podsetnikObavezeRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).podsetnikObavezeRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (kontaktLicaRefs)
                         await $_getPrefetchedData<
                           PredmetiData,
@@ -22639,6 +23444,7 @@ typedef $$PredmetiTableProcessedTableManager =
       (PredmetiData, $$PredmetiTableReferences),
       PredmetiData,
       PrefetchHooks Function({
+        bool podsetnikObavezeRefs,
         bool kontaktLicaRefs,
         bool iriuRefs,
         bool stanjeRobePoslediceRefs,
@@ -22646,6 +23452,435 @@ typedef $$PredmetiTableProcessedTableManager =
         bool logIzmenaRefs,
         bool predmetScenarioSnapshotsRefs,
       })
+    >;
+typedef $$PodsetnikObavezeTableCreateCompanionBuilder =
+    PodsetnikObavezeCompanion Function({
+      Value<int> id,
+      required int predmetId,
+      required String stableRuleId,
+      Value<String> phase,
+      Value<String> kind,
+      Value<String?> parentRuleId,
+      Value<String> sourceFingerprint,
+      Value<bool> completed,
+      Value<String?> completedAt,
+      Value<String> updatedAt,
+    });
+typedef $$PodsetnikObavezeTableUpdateCompanionBuilder =
+    PodsetnikObavezeCompanion Function({
+      Value<int> id,
+      Value<int> predmetId,
+      Value<String> stableRuleId,
+      Value<String> phase,
+      Value<String> kind,
+      Value<String?> parentRuleId,
+      Value<String> sourceFingerprint,
+      Value<bool> completed,
+      Value<String?> completedAt,
+      Value<String> updatedAt,
+    });
+
+final class $$PodsetnikObavezeTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PodsetnikObavezeTable,
+          PodsetnikObavezeData
+        > {
+  $$PodsetnikObavezeTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(db.podsetnikObaveze.predmetId, db.predmeti.id),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PodsetnikObavezeTableFilterComposer
+    extends Composer<_$AppDatabase, $PodsetnikObavezeTable> {
+  $$PodsetnikObavezeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stableRuleId => $composableBuilder(
+    column: $table.stableRuleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phase => $composableBuilder(
+    column: $table.phase,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentRuleId => $composableBuilder(
+    column: $table.parentRuleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PodsetnikObavezeTableOrderingComposer
+    extends Composer<_$AppDatabase, $PodsetnikObavezeTable> {
+  $$PodsetnikObavezeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stableRuleId => $composableBuilder(
+    column: $table.stableRuleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phase => $composableBuilder(
+    column: $table.phase,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentRuleId => $composableBuilder(
+    column: $table.parentRuleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PodsetnikObavezeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PodsetnikObavezeTable> {
+  $$PodsetnikObavezeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get stableRuleId => $composableBuilder(
+    column: $table.stableRuleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phase =>
+      $composableBuilder(column: $table.phase, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get parentRuleId => $composableBuilder(
+    column: $table.parentRuleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get completed =>
+      $composableBuilder(column: $table.completed, builder: (column) => column);
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PodsetnikObavezeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PodsetnikObavezeTable,
+          PodsetnikObavezeData,
+          $$PodsetnikObavezeTableFilterComposer,
+          $$PodsetnikObavezeTableOrderingComposer,
+          $$PodsetnikObavezeTableAnnotationComposer,
+          $$PodsetnikObavezeTableCreateCompanionBuilder,
+          $$PodsetnikObavezeTableUpdateCompanionBuilder,
+          (PodsetnikObavezeData, $$PodsetnikObavezeTableReferences),
+          PodsetnikObavezeData,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$PodsetnikObavezeTableTableManager(
+    _$AppDatabase db,
+    $PodsetnikObavezeTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PodsetnikObavezeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PodsetnikObavezeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PodsetnikObavezeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> predmetId = const Value.absent(),
+                Value<String> stableRuleId = const Value.absent(),
+                Value<String> phase = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> parentRuleId = const Value.absent(),
+                Value<String> sourceFingerprint = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+              }) => PodsetnikObavezeCompanion(
+                id: id,
+                predmetId: predmetId,
+                stableRuleId: stableRuleId,
+                phase: phase,
+                kind: kind,
+                parentRuleId: parentRuleId,
+                sourceFingerprint: sourceFingerprint,
+                completed: completed,
+                completedAt: completedAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int predmetId,
+                required String stableRuleId,
+                Value<String> phase = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> parentRuleId = const Value.absent(),
+                Value<String> sourceFingerprint = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+              }) => PodsetnikObavezeCompanion.insert(
+                id: id,
+                predmetId: predmetId,
+                stableRuleId: stableRuleId,
+                phase: phase,
+                kind: kind,
+                parentRuleId: parentRuleId,
+                sourceFingerprint: sourceFingerprint,
+                completed: completed,
+                completedAt: completedAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PodsetnikObavezeTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable:
+                                    $$PodsetnikObavezeTableReferences
+                                        ._predmetIdTable(db),
+                                referencedColumn:
+                                    $$PodsetnikObavezeTableReferences
+                                        ._predmetIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PodsetnikObavezeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PodsetnikObavezeTable,
+      PodsetnikObavezeData,
+      $$PodsetnikObavezeTableFilterComposer,
+      $$PodsetnikObavezeTableOrderingComposer,
+      $$PodsetnikObavezeTableAnnotationComposer,
+      $$PodsetnikObavezeTableCreateCompanionBuilder,
+      $$PodsetnikObavezeTableUpdateCompanionBuilder,
+      (PodsetnikObavezeData, $$PodsetnikObavezeTableReferences),
+      PodsetnikObavezeData,
+      PrefetchHooks Function({bool predmetId})
     >;
 typedef $$KontaktLicaTableCreateCompanionBuilder =
     KontaktLicaCompanion Function({
@@ -28778,6 +30013,8 @@ class $AppDatabaseManager {
       $$AppPodesavanjaTableTableManager(_db, _db.appPodesavanja);
   $$PredmetiTableTableManager get predmeti =>
       $$PredmetiTableTableManager(_db, _db.predmeti);
+  $$PodsetnikObavezeTableTableManager get podsetnikObaveze =>
+      $$PodsetnikObavezeTableTableManager(_db, _db.podsetnikObaveze);
   $$KontaktLicaTableTableManager get kontaktLica =>
       $$KontaktLicaTableTableManager(_db, _db.kontaktLica);
   $$IriuTableTableManager get iriu => $$IriuTableTableManager(_db, _db.iriu);

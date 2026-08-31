@@ -116,6 +116,7 @@ void main() {
 
     await coordinator.reschedule(
       predmetId: 7,
+      predmetStatus: 'OTVOREN',
       ceremonyType: 'SAHRANA',
       deceasedFirstName: 'Petar',
       deceasedLastName: 'Petrović',
@@ -127,6 +128,7 @@ void main() {
     final firstIds = Set<int>.from(store.ids);
     await coordinator.reschedule(
       predmetId: 7,
+      predmetStatus: 'OTVOREN',
       ceremonyType: 'SAHRANA',
       deceasedFirstName: 'Petar',
       deceasedLastName: 'Petrović',

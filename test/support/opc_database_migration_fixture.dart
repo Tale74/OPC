@@ -161,6 +161,15 @@ final class OpcDatabaseMigrationFixture {
   }
 
   static void _downgradePhysicalSchema(dynamic db, int version) {
+    if (version < 30) {
+      _dropColumn(db, 'predmeti', 'obavestiti_svestenika');
+    }
+    if (version < 29) {
+      db.execute('DROP TABLE IF EXISTS podsetnik_obaveze');
+    }
+    if (version < 29) {
+      db.execute('DROP TABLE IF EXISTS podsetnik_obaveze');
+    }
     for (final index in const [
       'idx_katalog_artikli_stable_article_id',
       'idx_stanje_robe_stavke_stable_article_id',

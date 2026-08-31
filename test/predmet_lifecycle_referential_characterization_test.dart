@@ -124,7 +124,7 @@ void main() {
             'FROM ceremony_reminder_settings WHERE predmet_id = ?',
             predmet.id,
           ),
-          '[42001,42002]',
+          '[]',
         );
         expect(await _foreignKeyViolationTables(db), isEmpty);
       },

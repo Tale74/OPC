@@ -350,6 +350,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _lastReminderSource = source;
     await _reminderCoordinator.reschedule(
       predmetId: widget.predmetId,
+      predmetStatus: widget.initialData.status,
       ceremonyType: _vrstaCeremonije,
       deceasedFirstName: widget.initialData.ime,
       deceasedLastName: widget.initialData.prezime,
