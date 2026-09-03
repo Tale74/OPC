@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_PRODUCT_DOMAIN.md`](current/OPC_PRODUCT_DOMAIN.md) first. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-**Status:** `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`
-Read [`docs/current/OPC_PRODUCT_DOMAIN.md`](current/OPC_PRODUCT_DOMAIN.md) for
-the re-baselined current product/domain boundary. This body is preserved as
-provenance and must not be used as the active authority surface.
+**Status:** `CURRENT AUTHORITATIVE PRODUCT/DOMAIN INFORMATION HOME`
 **Phase 1 baseline:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 **Scope:** current product meaning, business truth, derivatives, invariants and owner decisions. This document is not an implementation plan and does not authorize source, schema, UI, runtime or business-policy changes.
 

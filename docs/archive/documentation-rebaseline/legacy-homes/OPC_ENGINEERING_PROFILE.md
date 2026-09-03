@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_AUTHORITY_MANIFEST.md`](current/OPC_AUTHORITY_MANIFEST.md) for the active cutover boundary. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-**Status:** `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`
-Read [`docs/current/OPC_DEVELOPMENT_AND_ENGINEERING_BOUNDARY.md`](current/OPC_DEVELOPMENT_AND_ENGINEERING_BOUNDARY.md)
-for the active engineering boundary. This body is preserved as provenance and
-must not be used as the active authority surface.
+**Status:** `CURRENT AUTHORITATIVE PROJECT POLICY`
 **Adoption:** Logos↔Codex technical consensus, owner-approved for the Phase 1 documentation baseline
 **Conformance statement:** OPC claims no formal ISO/IEC/IEEE, NIST, C4, arc42, SPDX, OpenSSF or SLSA certification/conformance by publishing this profile.
 

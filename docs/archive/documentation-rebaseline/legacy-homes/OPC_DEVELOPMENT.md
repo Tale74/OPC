@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_AUTHORITY_MANIFEST.md`](current/OPC_AUTHORITY_MANIFEST.md) and [`docs/current/OPC_QUALITY_RELEASE_AND_EVIDENCE.md`](current/OPC_QUALITY_RELEASE_AND_EVIDENCE.md) first. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-**Status:** `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`
-Read [`docs/current/OPC_DEVELOPMENT_AND_ENGINEERING_BOUNDARY.md`](current/OPC_DEVELOPMENT_AND_ENGINEERING_BOUNDARY.md)
-for the re-baselined development boundary. This body is preserved as
-provenance and must not be used as the active authority surface.
+**Status:** `CURRENT AUTHORITATIVE DEVELOPMENT INFORMATION HOME`
 **Baseline:** branch `task/OPC-SCENARIO-MODULE-LOCK`, published Phase 3 baseline `336552ff40eaa72321670cb554ebd1d6d784d30c`
 **Scope:** how to understand, validate and document current OPC work. This guide does not authorize production changes outside an explicitly scoped task.
 

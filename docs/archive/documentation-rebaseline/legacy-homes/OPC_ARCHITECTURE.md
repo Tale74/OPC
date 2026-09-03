@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_AS_BUILT_ARCHITECTURE.md`](current/OPC_AS_BUILT_ARCHITECTURE.md) first. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-**Status:** `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`
-Read [`docs/current/OPC_AS_BUILT_ARCHITECTURE.md`](current/OPC_AS_BUILT_ARCHITECTURE.md)
-for the re-baselined recovered as-built architecture. This body is preserved
-as provenance and must not be used as the active authority surface.
+**Status:** `CURRENT AUTHORITATIVE ARCHITECTURE INFORMATION HOME`
 **Architecture baseline:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 **Description type:** current-state architecture description, not a target SOURCE tree and not authorization for restructuring.
 

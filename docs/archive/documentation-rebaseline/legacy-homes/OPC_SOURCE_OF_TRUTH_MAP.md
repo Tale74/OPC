@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_AUTHORITY_MANIFEST.md`](current/OPC_AUTHORITY_MANIFEST.md) first. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-Status: `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`.
-Read [`docs/current/OPC_AUTHORITY_MANIFEST.md`](current/OPC_AUTHORITY_MANIFEST.md)
-for the active navigation and authority map. This body is preserved as
-provenance; its historical “current” labels do not activate those paths.
+Status: current Phase 1 authority/navigation baseline.
 
 ## Active current-state information homes
 
@@ -24,7 +21,7 @@ The manifest, archive classification, internal-control register and Phase 1
 implementation report are transition/supporting records. They remain useful
 and linked, but do not add current authority homes.
 
-The five former homes are historical compatibility surfaces. Every detailed row below is
+These five homes are the normal reading surface. Every detailed row below is
 subordinate supporting authority/evidence, owner provenance, governance,
 historical, internal or private material; none is a co-equal compact current
 authority home.

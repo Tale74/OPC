@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_CURRENT_IMPLEMENTATION_STATE.md`](current/OPC_CURRENT_IMPLEMENTATION_STATE.md) first. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-**Status:** `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`
-Read [`docs/current/OPC_CURRENT_IMPLEMENTATION_STATE.md`](current/OPC_CURRENT_IMPLEMENTATION_STATE.md)
-for the re-baselined current implementation state. This body is preserved as
-provenance and must not be used as the active authority surface.
+**Status:** `CURRENT RECONCILED CONTINUITY SUMMARY`
 
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Current documentation baseline:** `4e74772f72da921a2c94207a48c5530bfcc59e61`

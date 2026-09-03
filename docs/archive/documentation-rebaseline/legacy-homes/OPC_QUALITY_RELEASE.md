@@ -2,10 +2,7 @@
 
 > **Superseded current surface for documentation re-baseline:** Read [`docs/current/OPC_QUALITY_RELEASE_AND_EVIDENCE.md`](current/OPC_QUALITY_RELEASE_AND_EVIDENCE.md) first. This file is retained as provenance/compatibility and does not compete with the re-baselined current authority.
 
-**Status:** `HISTORICAL / COMPATIBILITY / NOT CURRENT AUTHORITY`
-Read [`docs/current/OPC_QUALITY_RELEASE_AND_EVIDENCE.md`](current/OPC_QUALITY_RELEASE_AND_EVIDENCE.md)
-for the re-baselined quality/release boundary. This body is preserved as
-provenance and must not be used as the active authority surface.
+**Status:** `CURRENT AUTHORITATIVE QUALITY/RELEASE INFORMATION HOME`
 **Scope:** current validation practice, regression contracts, platform evidence and release gaps. This document records controls and gaps; it does not claim that unimplemented release controls already exist.
 
 ## 1. Quality vocabulary
