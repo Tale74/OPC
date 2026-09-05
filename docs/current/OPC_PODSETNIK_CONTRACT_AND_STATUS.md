@@ -1,5 +1,20 @@
 # PODSETNIK / URNA-PEPEO Contract and Status Separation
 
+## Current Stage C status overlay
+
+The latest OWNER-authorized presentation correction removes the botanical
+section-label pattern completely from `NALOG CVEĆARI`; no substitute decoration
+is introduced. The sage/ivory-green label palette and all accepted business,
+item, image, ribbon and pagination semantics remain unchanged. `P2-VIS-005`
+and `P2-VIS-006` are preserved. Final GUI acceptance is closed for NALOG
+CVEĆARI; broader Phase 2 review remains pending.
+
+The `P2-VIS-001/002` presentation-only refinement remains technically
+complete. The separately authorized `P2-VIS-004/005/006` correction is now
+implemented and renderer-verified; `P2-VIS-003` remains viewer-state-only.
+No business contract, PODSETNIK semantics or other Phase 2 capability was
+changed. `P2-GAP-003` is final-owner accepted for the NALOG CVEĆARI scope.
+
 **Status:** `LOCKED BUSINESS CONTRACT / AS-BUILT STATUS UNDER REVIEW`
 
 ## Contract
@@ -192,11 +207,31 @@ The recovered source has:
 - configured `deliveryTimes`, deterministic notification IDs and duplicate-cycle protection through cancellation plus per-session dialog keys;
 - Windows in-app startup/resume evaluation and Android gateway scheduling.
 
-These are implementation facts, not proof of owner runtime acceptance. `WINDOWS SECONDARY DELIVERY` is therefore classified as `AS-BUILT SOURCE PATH PRESENT; INDEPENDENT WINDOWS DELIVERY ACCEPTANCE NOT ESTABLISHED` in this re-baseline.
+These are implementation facts. The bounded Windows runtime evidence also
+records the existing in-app startup/login modal for `PREDOJEVIĆ LJUBOMIR`;
+Android scheduling is not used as Windows evidence. `WINDOWS SECONDARY DELIVERY`
+is a non-correction re-acceptance item and is recorded separately from the
+eight-capability correction denominator.
 
 ## Status language
 
 `URNA/PEPEO business contract je zaključan; implementation, runtime acceptance, release i publication status moraju se voditi zasebno prema stvarno završenom stanju.`
+
+## Stage B status — contract unchanged
+
+The OWNER-authorized Stage B correction is limited to the `NALOG CVEĆARI`
+presentation artifact. It does not change the locked PODSETNIK/URNA/PEPEO
+business contract, completion semantics, reminder cadence, obligation
+projection or `WINDOWS SECONDARY DELIVERY` classification. The four PDF
+artifact findings are resolved at source/test/render level and remain
+separate from runtime, release and publication status.
+
+## Phase 2 artifact-review status (contract unchanged; historical pre-correction wording)
+
+The preceding paragraph records the pre-correction artifact-review state.
+The current bounded correction status is recorded in the current-state
+addendum below and does not alter the locked business contract wording. The
+other seven capabilities are not reopened.
 
 Cancellation evidence alone does not prove the `ZAVRŠEN` blocker. The blocker is separately source-traceable through the repository hook described above; a future implementation correction would still require targeted tests, analyzer, full suite, build and runtime evidence under a separately authorized task.
 
@@ -214,6 +249,27 @@ delivery configuration and presentation text. `enabled` controls delivery;
 `deliveryTimes` controls configured slots. There is no frequency selector and
 no `frequency_hours`. Completion is independent from generating a PDF or
 opening a document action.
+
+## Phase 2 runtime status (separate from contract)
+
+The URNA/PEPEO business contract above is `CONFIRMED` and unchanged. Phase 2
+runtime evidence is recorded separately:
+
+- semantic wording for existing PREDMET `PREDOJEVIĆ LJUBOMIR` and disposable
+  test PREDMET `PHASE2 TEST URNA` was consistent with the contract;
+- manual completion persistence was observed as `completed = 1`;
+- the corrected UI completion hook persists the same completion signal and
+  invokes the existing reminder cancellation/deactivation path;
+- `TEST URNA PHASE2` remained completed after reopening and LISTA displayed
+  `OBAVEZE ISPUNJENE`;
+- the protecting UI test passed, while the separate `ZAVRŠEN` blocker remains
+  repository-derived through `PredmetiRepository.zavrsiPredmet()`;
+- `P2-DEF-001` is therefore an implemented correction candidate, not a new
+  business rule.
+
+The automated coordinator and UI protecting tests are technical evidence. The
+runtime screenshots establish completion persistence and the LISTA projection;
+they do not convert the business contract into implementation authority.
 
 ## Exact URNA/PEPEO presentation contract
 
@@ -242,9 +298,9 @@ deceased/dynamic ceremony data, and the exact ceremony labels `Datum:` and
 `Vreme:`. It uses current IRiU CVEĆE
 order, optional/blank `TEKST TRAKE`, catalogue/article image with preserved
 aspect, and the shared PDF identity/helper, font, geometry and motif. It does
-not complete CVEĆE. Current source inventory did not establish this action as
-implemented, so the current status is `OWNER CONTRACT — IMPLEMENTATION NOT
-ESTABLISHED`.
+not complete CVEĆE. The bounded current path provides the exporter, document
+action, route and UI path; blank and non-empty `TEKST TRAKE` outputs were
+generated and visually reviewed. The business contract remains unchanged.
 
 ## Status separation
 
@@ -255,3 +311,44 @@ ESTABLISHED`.
 | Tests | Evidence of technical characterization, not business authority |
 | Windows/Android runtime | Artifact/platform-specific observations only |
 | Release/publication | Separate gates; not implied by current candidate |
+
+## Current-state synchronization addendum — 2026-09-04
+
+The locked PODSETNIK/URNA-PEPEO contract is unchanged. The current Cvećari
+technical state includes the shared memorandum/header/footer and typography
+correction, ceremony grammar correction, sage/ivory-green labels, removed
+three-dot treatment, no botanical ornament, rendered flower images and row
+ribbon values without the literal `TEKST TRAKE`.
+
+The four bounded PDF technical findings remain closed as GUI evidence. Current
+status is `P2-GAP-003 — IMPLEMENTED / AUTOMATED QA PASS / TECHNICAL ARTIFACT
+PASS / FINAL OWNER VISUAL ACCEPTANCE PASS — NALOG CVEĆARI SCOPE`. `P2-VIS-003` remains
+`VIEWER-STATE CAUSE INDICATED — NO OPC ARTIFACT CORRECTION AUTHORIZED`;
+`P2-VIS-004/005` are implemented with renderer evidence and `P2-VIS-006` is
+corrected with renderer evidence. Full detail and hashes are in
+`REVIEW_EVIDENCE/P2_VIS_004_006_CORRECTION_EVIDENCE.md`. Broader Phase 2
+review remains pending. P2-RUN-001 is separately resolved as Codex sandbox desktop
+isolation, while current Computer Use `apps=[]` remains a tooling state. No
+business contract semantics changed.
+
+Current presentation synchronization: `P2-VIS-004` is implemented and
+renderer-verified with no decoration, `P2-VIS-005` retains the inset-safe image
+frame and value-only ribbon output, and `P2-VIS-006` remains preserved. This is
+not a business-contract change. The bounded evidence is
+`REVIEW_EVIDENCE/P2_VIS_007_DECORATION_REMOVAL_EVIDENCE.md`; OWNER GUI export
+and NALOG CVEĆARI acceptance are now closed; broader Phase 2 acceptance remains pending.
+
+## Final NALOG CVEĆARI documentation closure — 2026-09-05
+
+The final accepted output is PDF-only. `PREDMET` remains the sole business and
+content source of truth; `NALOG ZA OPREMANJE` is only a visual comparator.
+The final GUI artifact is the two-page export
+`C:\Users\Steva\Downloads\KORICE\PREDMET_PROBNI_040926_2318_NALOG_CVECARI_v1.pdf`
+with SHA-256
+`6257C3BB1E082EFA7CE043DED059753D5DD0725F8E8D0EF61D00250E3795551A`.
+The later page count reflects added CVEĆE items in the same PREDMET. The
+accepted presentation has sage/ivory-green labels, no botanical or replacement
+decoration, value-only ribbon output and one coherent name/value/image block
+per current CVEĆE item.
+
+`NALOG CVEĆARI CLOSED — BROADER PHASE 2 OWNER REVIEW STILL PENDING`.

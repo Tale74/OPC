@@ -61,3 +61,42 @@ as as-built behavior.
 This map is a technical as-built description. `OPC_LOGICAL_SYSTEM_MAP.md`
 provides the subordinate rule-to-side-effect logical map; neither replaces
 direct OWNER authority.
+
+## Current-state synchronization addendum — 2026-09-04
+
+The recovered implementation and the OWNER-supplied GUI-exported artifact
+establish the bounded prior as-built NALOG CVEĆARI path. That earlier artifact
+is historical/superseded for the latest candidate. The current corrected path
+uses the neutral sage/ivory-green section-label palette, has no three-dot
+markers and no botanical ornament, preserves the ceremony heading and shared
+memorandum/header/footer treatment, and emits row ribbon values without the
+storage-field label. The accepted final GUI artifact is the later two-page
+export `C:\Users\Steva\Downloads\KORICE\PREDMET_PROBNI_040926_2318_NALOG_CVECARI_v1.pdf`
+with SHA-256
+`6257C3BB1E082EFA7CE043DED059753D5DD0725F8E8D0EF61D00250E3795551A`.
+
+The preceding statement that a bounded NALOG CVEĆARI source implementation
+was not established is historical inventory wording and is superseded for
+this bounded current-state record by the recovered implementation plus GUI
+evidence. `P2-VIS-003` remains viewer-state-only; `P2-VIS-004/005` are
+implemented with renderer evidence and `P2-VIS-006` is corrected with
+renderer evidence. Final OWNER GUI visual acceptance is closed for the NALOG
+CVEĆARI scope; broader Phase 2 remains pending separate OWNER review.
+
+Latest as-built refinement: the current Cvećari section-label path returns the
+pastel label container with no decoration; the image frame owns a continuous
+border outside a 2pt inset and centered `BoxFit.contain` image; and ribbon
+presentation emits the row value without
+the storage-field label. `P2-VIS-006` tuple structure is unchanged. See
+`REVIEW_EVIDENCE/P2_VIS_007_DECORATION_REMOVAL_EVIDENCE.md` for exact source,
+render and verification evidence.
+
+## Final NALOG CVEĆARI evidence closure — 2026-09-05
+
+The accepted final GUI artifact is the later two-page export
+`C:\Users\Steva\Downloads\KORICE\PREDMET_PROBNI_040926_2318_NALOG_CVECARI_v1.pdf`
+with SHA-256
+`6257C3BB1E082EFA7CE043DED059753D5DD0725F8E8D0EF61D00250E3795551A`.
+The page-count change is explained by added CVEĆE items in the same PREDMET;
+the earlier one-page export remains historical. This is as-built/evidence
+state only and does not accept the broader Phase 2.
