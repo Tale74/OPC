@@ -21,9 +21,9 @@ image frame, ribbon value, page-break behavior or ceremony wording changed.
 ## Identity
 
 - Recovery worktree: `C:\Projekti\OPC\OPC v.1\RECOVERY\OPC-PODSETNIK-URNA-PEPEO-SECONDARY-CYCLE`.
-- Recovery HEAD: `74809d08136e5350d2b848a341fd0d1e6f598d09`, detached; this is the last documentation zero-state publication commit.
+- Recovery HEAD at the current publication observation: `18099d448e7b71d2bfb875a671c1f9d9e845b187`, detached; this is the current published documentation/evidence closure commit. It contains exactly the 11-file documentation/evidence publication set. The previous baseline was `74809d08136e5350d2b848a341fd0d1e6f598d09`.
 - Recovery worktree evidence at final documentation closure: `0 staged / 43 unstaged / 50 untracked` (historical snapshot retained for provenance; no worktree normalization was performed). The snapshot includes pre-existing implementation delta plus this bounded correction's test/artifact/documentation evidence.
-- Current read-only Recovery worktree observation during publication reconciliation (2026-09-05): `0 staged / 46 unstaged / 50 untracked`; this is the live continuity value for this reconciliation and no worktree normalization was performed.
+- Historical read-only Recovery worktree observation during the earlier publication reconciliation (2026-09-05): `0 staged / 46 unstaged / 50 untracked`; it is retained for provenance and is not the current live count. Current observation after this exact 9-file documentation staging is `9 staged / 39 unstaged tracked / 45 untracked`; no worktree normalization was performed.
 - Windows executable: `build/windows/x64/runner/Release/OPC.exe`, SHA-256 `99ED7DB0A07DF74D6249B088DD0B3D63777A6DDE97CF2C14ABF83A107CBEB5E6`.
 - Previous Stage B Windows `data/app.so`: `build/windows/x64/runner/Release/data/app.so`, SHA-256 `2078406D0E8FD737C074CED4A0C5112A0A491CEB4AE8E786A4AF35EC0317E425`.
 - Previous pre-visual-correction Stage C Windows `data/app.so`: `build/windows/x64/runner/Release/data/app.so`, SHA-256 `9E90B61C8223922EA2CA5F06962FB072A3C4F66CECF4ECFB8D01E3FE00B62EF0`.
@@ -69,7 +69,7 @@ These are implementation and verification facts only. They do not change the loc
 | WINDOWS SECONDARY DELIVERY | Startup/login in-app modal observed; no claim that Android scheduling proves Windows behavior |
 | ANDROID RUNTIME | Earlier APK/build identity only; no physical runtime acceptance |
 | RELEASE | Separate gate; build output does not imply release acceptance |
-| PUBLICATION | Last documentation publication commit `74809d08136e5350d2b848a341fd0d1e6f598d09` on `origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`; current Phase 2 changes are uncommitted and unpublished |
+| PUBLICATION | Current published documentation baseline is `18099d448e7b71d2bfb875a671c1f9d9e845b187` on `origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`; previous baseline `74809d08136e5350d2b848a341fd0d1e6f598d09`; remaining local Phase 2 implementation/source/test/evidence dirty state was not included and remains unpublished |
 
 ## OWNER/LOGOS artifact review status
 

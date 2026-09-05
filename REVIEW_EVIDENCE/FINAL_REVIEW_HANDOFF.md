@@ -16,23 +16,26 @@ not business authority and not a publication.
 - Tests and runtime observations prove technical behavior only.
 - The canonical runtime DB was the OWNER-authorized target, with normal OPC UI writes only.
 - No direct SQL business write, migration repair, reset, import/restore or SQL cleanup occurred.
-- No Android physical acceptance, commit, push or publication occurred.
+- No Android physical acceptance occurred. The following commit/push/
+  publication statements describe the historical pre-publication handoff state.
 - No ninth capability, whole-donor restore or unrelated cleanup occurred.
 
 ## Continuity
 
 - Recovery: `C:\Projekti\OPC\OPC v.1\RECOVERY\OPC-PODSETNIK-URNA-PEPEO-SECONDARY-CYCLE`.
-- Recovery HEAD: `74809d08136e5350d2b848a341fd0d1e6f598d09`, detached.
+- Historical handoff Recovery HEAD: `74809d08136e5350d2b848a341fd0d1e6f598d09`, detached.
 - Historical recovery Git snapshot at handoff: `0 staged / 43 unstaged / 5
   untracked` (superseded; not the current publication-reconciliation state).
 - Primary SOURCE: branch `task/OPC-RR011-ANDROID-TEST-LANE-INITIALIZATION-CORRECTION`,
   HEAD `fa6fedd6deb100c3a3b7f30892f85f7b5ab5737f`, read-only observed state
   historical read-only observed state `0 staged / 43 unstaged / 31 untracked`;
   it was not modified or normalized.
-- Last documentation publication fact: commit
-  `74809d08136e5350d2b848a341fd0d1e6f598d09` on
-  `origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`. Current Phase 2 changes are not
-  committed or published.
+- Current published documentation baseline: commit
+  `18099d448e7b71d2bfb875a671c1f9d9e845b187` on
+  `origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`; previous baseline
+  `74809d08136e5350d2b848a341fd0d1e6f598d09`. Exactly 11 documentation/evidence
+  files were published. Remaining local Phase 2 implementation/source/test/
+  evidence changes are not included and remain uncommitted/unpublished.
 
 ## Source-learning findings
 
@@ -98,8 +101,9 @@ After normal application shutdown, read-only canonical DB identity was:
 - Verification/acceptance: targeted tests, analyzer, full suite, Windows build
   and bounded Windows evidence are recorded; Android physical acceptance is
   explicitly not applicable under this authorization.
-- Quality/release: release and publication are separate gates; no commit/push/
-  publication action was performed.
+- Quality/release: release and publication are separate gates; at the
+  historical handoff snapshot no commit/push/publication action had been
+  performed. The later documentation-only publication is recorded above.
 - Incidental findings: the prior native-assets `PathExistsException` is closed
   by bounded generated-state repair evidence; the canonical DB hash change is
   retained as expected runtime data-state observation, not a migration defect.
@@ -136,13 +140,15 @@ release build PASS. Current Windows build identity is:
 The later two-page GUI export was subsequently accepted by OWNER for the
 NALOG CVEĆARI scope. This does not claim broader Phase 2 acceptance.
 
-Current continuity is recovery detached HEAD
+Historical pre-publication continuity was recovery detached HEAD
 `74809d08136e5350d2b848a341fd0d1e6f598d09`, `0 staged / 46 unstaged / 50
-untracked` as observed during the 2026-09-05 publication reconciliation;
-primary SOURCE remains branch
+untracked` as observed during the 2026-09-05 publication reconciliation.
+After publication, current local HEAD is detached at
+`18099d448e7b71d2bfb875a671c1f9d9e845b187`; only the 11 documentation/evidence
+files were published and the remaining dirty state stays local. Primary SOURCE remains branch
 `task/OPC-RR011-ANDROID-TEST-LANE-INITIALIZATION-CORRECTION`, HEAD
 `fa6fedd6deb100c3a3b7f30892f85f7b5ab5737f`, `0 staged / 43 unstaged / 32
-untracked`. No commit, push, publication, primary SOURCE mutation or
+untracked`; it was not modified or normalized. No primary SOURCE mutation or
 canonical DB mutation occurred.
 
 ## Review conclusion

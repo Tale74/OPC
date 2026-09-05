@@ -49,8 +49,11 @@ Phase 2.
 
 **Boundary:** business contract unchanged. Implementation is limited to the
 recovery worktree. Primary SOURCE remains forensic-only; canonical DB was used
-only through normal OWNER-authorized OPC UI runtime actions; no commit, push or
-publication was performed.
+only through normal OWNER-authorized OPC UI runtime actions. The implementation-
+task snapshot had no commit, push or publication at task time; that historical
+state is superseded for the documentation closure by the separately published
+`18099d448e7b71d2bfb875a671c1f9d9e845b187` commit containing only the 11
+documentation/evidence files. Broader Phase 2 remains pending.
 
 | ID | Capability | Current implementation evidence | Current runtime/evidence result | Status |
 |---|---|---|---|---|

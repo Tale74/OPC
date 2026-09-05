@@ -11,7 +11,19 @@
 - Primary mixed SOURCE: preserved, forensic-only.
 - Canonical/private database: used only through OWNER-authorized normal OPC UI runtime; final identity was inspected read-only.
 - Task-local incidental findings: no newly orphaned findings; build outputs are evidence artifacts only.
-- Commit/push/publication: none.
+- Historical task-time disposition: no commit/push/publication at closure
+  evidence creation. Current publication: documentation-only commit
+  `18099d448e7b71d2bfb875a671c1f9d9e845b187` on
+  `origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`.
+
+## Current GitHub publication baseline
+
+- Current published commit: `18099d448e7b71d2bfb875a671c1f9d9e845b187`.
+- Previous baseline: `74809d08136e5350d2b848a341fd0d1e6f598d09`.
+- Published content: exactly the 11-file documentation/evidence set.
+- `NALOG CVEĆARI CLOSED — BROADER PHASE 2 OWNER REVIEW STILL PENDING`.
+- Remaining local implementation/source/test/evidence dirty state was not
+  included in the publication.
 
 ## Stage B bounded correction evidence
 

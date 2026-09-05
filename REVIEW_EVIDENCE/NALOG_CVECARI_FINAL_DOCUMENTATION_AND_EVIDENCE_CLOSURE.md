@@ -78,6 +78,12 @@ evidence:
 
 Renderer references remain in `REVIEW_EVIDENCE/P2_VIS_007_DECORATION_REMOVAL_EVIDENCE.md`.
 
+## PRE-PUBLICATION CLOSURE SNAPSHOT
+
+The following continuity and no-publication facts describe the closure-time
+state before the subsequent documentation-only publication. They are preserved
+for provenance and are not the current publication state.
+
 ## Continuity and protected boundaries
 
 - Recovery HEAD: `74809d08136e5350d2b848a341fd0d1e6f598d09`, detached.
@@ -89,7 +95,16 @@ Renderer references remain in `REVIEW_EVIDENCE/P2_VIS_007_DECORATION_REMOVAL_EVI
 - Canonical DB was not touched by this closure.
 - No source, test, build, QA, runtime, migration or database mutation was
   performed by this closure.
-- No staging, commit, push or publication was performed.
+- No staging, commit, push or publication was performed at closure-time.
+
+## Post-publication current state
+
+- Published branch: `recovery/OPC-TASK1-CLEAN-FA6FEDD`.
+- Current published commit: `18099d448e7b71d2bfb875a671c1f9d9e845b187`.
+- Previous baseline: `74809d08136e5350d2b848a341fd0d1e6f598d09`.
+- Exactly 11 documentation/evidence files were published; remaining local
+  Phase 2 implementation/source/test/evidence dirty state was not included.
+- `NALOG CVEĆARI CLOSED — BROADER PHASE 2 OWNER REVIEW STILL PENDING`.
 
 ## Historical evidence and future review boundary
 

@@ -59,12 +59,12 @@ manifest is the only navigation root for this cutover.
 - `REVIEW` is outside `SOURCE` and is non-authoritative review evidence.
 - The Phase 2 authorization permits only the eight locked correction capabilities, their protecting tests, sequential QA/build and bounded Windows runtime evidence; no source/test/DB/build change outside that denominator is authorized.
 - No commit, push or publication is authorized by the Phase 2 implementation task.
-- `DOCUMENTATION ZERO-STATE PUBLISHED` remains a prior publication fact; current Phase 2 documentation/evidence changes remain uncommitted.
+- The separately authorized documentation publication completed at `18099d448e7b71d2bfb875a671c1f9d9e845b187`; exactly 11 documentation/evidence files were published. Remaining Phase 2 implementation/source/test/evidence dirty state is local and unpublished.
 
 ## Evidence identity
 
 - Recovery worktree: `C:\Projekti\OPC\OPC v.1\RECOVERY\OPC-PODSETNIK-URNA-PEPEO-SECONDARY-CYCLE`
-- Recovery HEAD: `74809d08136e5350d2b848a341fd0d1e6f598d09` (detached; documentation zero-state publication commit)
+- Recovery HEAD: `18099d448e7b71d2bfb875a671c1f9d9e845b187` (detached; current published documentation/evidence closure commit); previous baseline: `74809d08136e5350d2b848a341fd0d1e6f598d09`
 - Publication remote: `origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`
 - Windows executable SHA-256: `99ED7DB0A07DF74D6249B088DD0B3D63777A6DDE97CF2C14ABF83A107CBEB5E6`
 - Historical Windows `data\app.so` SHA-256: `50D18CF0C8584CE88F321D344C207F0C40E947985E93CC760C2DC33A0F7E6A87`
@@ -98,8 +98,9 @@ CORRECTION AUTHORIZED`. `P2-VIS-004/005` are implemented with renderer
 evidence PASS, and `P2-VIS-006` is corrected with renderer evidence PASS.
 The evidence and current build hashes are recorded in
 `REVIEW_EVIDENCE/P2_VIS_004_006_CORRECTION_EVIDENCE.md`. Final OWNER GUI
-visual acceptance remains required; this does not change business authority,
-release or publication status.
+visual acceptance is PASS/CLOSED for the accepted `NALOG CVEĆARI` scope; this
+does not change business authority, release status or the broader Phase 2
+boundary.
 
 The preceding botanical-pattern refinement is historical and superseded by
 the latest `P2-VIS-007` correction. Current evidence is recorded in

@@ -78,11 +78,14 @@ defect.
 
 ## Release/publication separation
 
-The documentation zero-state publication commit is the prior fact
-`74809d08136e5350d2b848a341fd0d1e6f598d09` on
-`origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`. Current Phase 2 source, test,
-documentation and evidence changes are uncommitted and unpublished. No release
-or publication acceptance is implied by this candidate.
+The current published documentation baseline is commit
+`18099d448e7b71d2bfb875a671c1f9d9e845b187` on
+`origin/recovery/OPC-TASK1-CLEAN-FA6FEDD`, a clean fast-forward from previous
+baseline `74809d08136e5350d2b848a341fd0d1e6f598d09`. It contains exactly the
+11-file documentation/evidence publication set. Remaining local Phase 2
+implementation/source/test/evidence dirty state was not included and remains
+uncommitted/unpublished. No release acceptance or broader Phase 2 acceptance is
+implied.
 
 ## Stage B bounded evidence update (historical)
 

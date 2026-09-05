@@ -27,10 +27,11 @@ ACCEPTANCE PASS` for the NALOG CVEĆARI scope; broader Phase 2 remains pending.
 
 **Scope:** the OWNER-authorized aggregated correction package only.
 
-**Current review state:** Stage B resolves the four bounded `NALOG CVEĆARI`
-artifact findings at source/test/render level. The candidate remains subject
-to independent final Windows GUI re-export evidence; this Stage B record does
-not reopen the other seven capabilities.
+**Current review state:** Stage B and the final GUI evidence are complete for
+the bounded `NALOG CVEĆARI` scope; the accepted two-page artifact closes this
+scope. The documentation closure was published at
+`18099d448e7b71d2bfb875a671c1f9d9e845b187`; this record does not reopen the
+other seven capabilities or imply broader Phase 2 acceptance.
 
 **Correction denominator:** exactly `8/8` — `P2-DEF-001`, `P2-GAP-002A`,
 `P2-GAP-002B`, `P2-GAP-002C`, `P2-GAP-003`, `P2-GAP-004A`, `P2-GAP-004B`,
@@ -39,8 +40,10 @@ not reopen the other seven capabilities.
 **Authority boundary:** the business contract is locked and unchanged. The
 recovery source is as-built implementation evidence; tests are technical
 evidence; runtime is observed platform behavior. No source/test/DB/build file
-outside the denominator was authorized, and no commit, push or publication was
-performed.
+outside the denominator was authorized. At implementation-task time no
+commit/push/publication was performed; subsequent documentation closure was
+published at `18099d448e7b71d2bfb875a671c1f9d9e845b187` and contains only the
+approved documentation/evidence set.
 
 | ID | Current source path | Protecting test/evidence | Runtime result | Classification |
 |---|---|---|---|---|
