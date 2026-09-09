@@ -42,10 +42,17 @@ The accepted active-source hygiene result records:
 - `SOURCE/runtime_data` and `SOURCE/.audit_tmp` as
   `UNRESOLVED – DO NOT USE`.
 
-The accepted hygiene package is external evidence, SHA-256
+The prior hygiene package remains preserved as historical evidence, with ZIP
+SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
+The current active control package is external and local-only at
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-LIFECYCLE-CONTROLLED-REBASELINE-20260909\`,
+with enclosing ZIP SHA-256
+`33E494DA67AFE694DCF81214ED9A08764F085F9F96EE811A9300DEFB107A6F37`.
+Its current 27-row high-risk baseline is
+`6A5488CF84E5FD2372985AAEB957A3CF9C674E10A10D6E7BC2AFD9D81A5B2017`.
 Quarantine was copy/hash/remove verified without changing active source
-content; protected high-risk active hashes remained matched.
+content; the current controlled rebaseline now verifies all protected rows.
 
 ## Mandatory active-source authority control gate
 

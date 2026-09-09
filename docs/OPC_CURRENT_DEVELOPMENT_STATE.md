@@ -540,25 +540,31 @@ commit, push and publication remain pending/separately gated.
 
 ## Recovered baseline and active-source authority hygiene – 2026-09-09
 
-The recovered current implementation state is protected by the external
+The recovered current implementation state remains protected by the external
 baseline package with SHA-256
 `5241576752D8F3954D741A3AC0CEEF089863F5AAC2E30F72354264C4FE9ABE5A`.
-Active-source authority hygiene and stale implementation quarantine passed in
-the external package with SHA-256
+The prior active-source hygiene/quarantine package remains preserved as
+historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
-At this current-state observation, the verified package resolved to
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-ACTIVE-SOURCE-AUTHORITY-HYGIENE-STALE-QUARANTINE\`.
+The current active control package is the external local-only package at
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-LIFECYCLE-CONTROLLED-REBASELINE-20260909\`,
+with enclosing ZIP SHA-256
+`33E494DA67AFE694DCF81214ED9A08764F085F9F96EE811A9300DEFB107A6F37` and
+27-row baseline SHA-256
+`6A5488CF84E5FD2372985AAEB957A3CF9C674E10A10D6E7BC2AFD9D81A5B2017`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
 filenames. The package remains current local-only control evidence, not
-implementation authority or a donor.
+implementation authority or a donor. The controlled rebaseline verifies all
+27 protected rows with zero mismatches; the five earlier documentation
+evolutions are now represented by the current baseline.
 The protected active inventory covers 748 files with zero unexpected missing
-files and zero high-risk hash mismatches; proven obsolete staging/evidence
-roots were moved to quarantine without changing active implementation
-content. The active-source manifest, stale donor denylist and future-task
-precheck are now durable controls. `SOURCE/runtime_data` and
-`SOURCE/.audit_tmp` remain `UNRESOLVED – DO NOT USE`.
+files; proven obsolete staging/evidence roots were moved to quarantine without
+changing active implementation content. The active-source manifest, stale
+donor denylist, future-task precheck and high-risk baseline lifecycle are now
+durable controls. `SOURCE/runtime_data` and `SOURCE/.audit_tmp` remain
+`UNRESOLVED – DO NOT USE`.
 
 The current SOURCE remains a mixed dirty working state on the named task
 branch and is not yet a coherent published implementation baseline. The
