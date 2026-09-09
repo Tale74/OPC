@@ -102,6 +102,44 @@ not establish broader identity or database semantics:
 - `DATABASE OWNERSHIP — NOT EXPLICITLY MODELED`
 - `FIRMA BUSINESS-NAMESPACE HYPOTHESIS — PARTIALLY SUPPORTED`
 
+### 5C. PODSETNIK active-eligibility invariant
+
+The bounded PODSETNIK correction is source- and test-confirmed: active
+PODSETNIK candidates and scheduling are fail-closed to the exact status
+allow-list `OTVOREN || ZATVOREN`. `ZAVRŠEN`, `ANONIMIZOVAN`, `U_OBRADI` and
+unknown statuses are not active candidates; any stored delivery IDs for those
+statuses are cancelled while logical reminder configuration is retained as
+history. The invariant is applied through selector, shortcut, coordinator,
+detail re-entry, startup, restore and import/replacement paths. This is a
+bounded technical eligibility result, not closure of the broader PODSETNIK
+signal model or a release-readiness claim.
+
+### 5D. Current-state restoration technical gate
+
+The 2026-09-08 bounded restoration has source/test evidence for the restored
+document, ČITULJE, URNA/PEPEO, contextual PODSETNIK, REVIEW BAR and
+compatibility boundaries. The relevant serial evidence is `217 PASS / 0 FAIL`
+for targeted/regression checks, `flutter analyze --no-pub` PASS and the full
+serial suite `528 PASS / 10 SKIP / 0 FAIL`. Existing environment-gated skips
+remain explicitly categorized and are not equivalent to execution.
+
+This is not runtime or release acceptance. Windows and Android runtime,
+release build/signing/version/provenance, cross-device acceptance and Git
+publication remain pending and separately authorized. No canonical production
+database write is implied by this technical result.
+
+The latest Windows observation is classified as
+`CODEX SANDBOX DESKTOP BINDING RECURRENCE – OWNER-DESKTOP RUNTIME ACCEPTANCE
+REQUIRED`: a running process without an OWNER-visible window is not, by
+itself, an OPC startup defect when the process is bound to the Codex sandbox
+desktop. Domains 1–5 therefore remain OWNER evidence required. Build/source
+identity remains separate from runtime acceptance.
+
+The accepted active-source hygiene result is documented externally and does
+not convert the protected mixed local SOURCE into a published coherent
+implementation baseline. See
+[`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
+
 ## 6. Backup, restore and interoperability
 
 Single-PREDMET transfer and full-backup JSON remain distinct. Release acceptance must cover:
@@ -158,7 +196,7 @@ not silently inferred from this technical evidence.
 - no final signing/version/provenance process;
 - incomplete Windows/Android release parity proof;
 - JSON/restore and migration complexity;
-- unresolved PODSETNIK signal model;
+- URNA/PEPEO business contract is locked; implementation, runtime acceptance, release and publication status must be tracked separately according to the actually completed state and do not establish release readiness by implication;
 - KATALOG/IRiU runtime closure and performance evidence;
 - dead-code/superseded-implementation audit not yet performed;
 - internal pseudocode drift, which is a development-control gap rather than a product-documentation requirement.

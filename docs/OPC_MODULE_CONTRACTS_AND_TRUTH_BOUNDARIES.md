@@ -8,6 +8,21 @@ This document records module contracts and truth boundaries. It does not authori
 
 Classification labels follow the current OPC public docs.
 
+Later source-confirmed contract IDs 028–032 are the active detailed ČITULJE
+and PODSETNIK contracts for the current implementation. They refine and, where
+necessary, supersede the broad historical classifications above without
+changing PREDMET authority or authorizing unrelated work. The current-state
+restoration additionally records native NALOG CVEĆARI document ownership,
+shared URNA/PEPEO presentation and general relevant-parent REVIEW BAR
+projection as bounded source/test evidence; runtime and release acceptance
+remain separate.
+
+The current implementation/documentation publication boundary is governed by
+[`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
+External REVIEW, recovery, backup and quarantine material remains evidence or
+provenance; it is not a second implementation authority and cannot be used as
+a donor without bounded OWNER-authorized reconciliation.
+
 ## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-001
 
 Module name: PREDMET core
@@ -185,10 +200,10 @@ Reads from PREDMET: case id and policy-relevant facts.
 Reads from other modules: KATALOG, evaluator, IRiU truth rules.
 May write to: IRiU rows and lifecycle decisions.
 Must not write to: PREDMET truth except through explicit PREDMET workflow.
-Outputs: service rows, finance inputs, stock consequences, documents, JSON rows.
+Outputs: service rows, finance inputs, stock consequences, documents, JSON rows with portable occurrence identity.
 Allowed side effects: managed row state changes under current rules.
 Forbidden side effects: retroactive overwrite from current KATALOG or hidden finance changes.
-Truth boundary: selected case rows are PREDMET-scoped operational/business snapshot; KATALOG owns catalog truth.
+Truth boundary: selected case rows are PREDMET-scoped operational/business snapshot; KATALOG owns catalog truth. `portableOccurrenceId` is a technical per-PREDMET transfer/reconciliation anchor; local database ids, labels and identity values are not business authority.
 Pseudocode sections: `OPC-PSEUDO-006`, `OPC-PSEUDO-007`, `OPC-PSEUDO-018`.
 Characterization evidence needed: full category/rule map.
 Web readiness relevance: high.
@@ -311,9 +326,9 @@ Reads from PREDMET: PREDMET row, IRiU, contacts, metadata, unresolved stock cons
 Reads from other modules: repositories and transfer core.
 May write to: imported/replaced PREDMET and related rows through explicit import path.
 Must not write to: local state through silent overwrite.
-Outputs: single-PREDMET JSON file and import result.
+Outputs: single-PREDMET JSON file and import result, including preserved portable IRiU occurrence identities.
 Allowed side effects: create/replace by user choice.
-Forbidden side effects: filename/export date authority; automatic overwrite.
+Forbidden side effects: filename/export date authority; automatic overwrite; remapping or silently accepting duplicate portable IRiU occurrence identities.
 Truth boundary: transfer layer; not identity authority.
 Pseudocode sections: `OPC-PSEUDO-004`, `OPC-PSEUDO-012`, `OPC-PSEUDO-019`, `OPC-PSEUDO-021`.
 Characterization evidence needed: version/freshness/conflict matrix.
@@ -332,9 +347,9 @@ Reads from PREDMET: broad local database sections.
 Reads from other modules: DB/repositories and backup payload.
 May write to: broad local data during restore.
 Must not write to: wrong firm database without guard; no behavior change in this task.
-Outputs: backup JSON and restore result.
+Outputs: backup JSON and restore result, including preserved portable IRiU occurrence identities.
 Allowed side effects: destructive restore only through an authorized exact-family clear/import/recovery flow.
-Forbidden side effects: hidden cross-firm restore or sync substitute.
+Forbidden side effects: hidden cross-firm restore or sync substitute; remapping or silently accepting duplicate portable IRiU occurrence identities.
 Truth boundary: recovery layer; not product center.
 Pseudocode sections: `OPC-PSEUDO-013`, `OPC-PSEUDO-019`, `OPC-PSEUDO-021`.
 Characterization evidence needed: destructive dependent-table behavior is characterized; PIB/MB guard, implementation/migration and restore rehearsal remain.
@@ -496,21 +511,32 @@ Classification: `OWNER DECISION / SOURCE-CONFIRMED`.
 Module name: PODSETNIK
 Module class: operational / add-on/package
 Business purpose: local in-app reminder UX around PREDMET-related work.
-Reads from PREDMET: future/reminder-relevant case facts if implemented.
-Reads from other modules: package entitlement and local notification/reminder support if approved.
-May write to: reminder state only where implemented/approved.
+Reads from PREDMET: current reminder-relevant facts and PREDMET-owned
+obligation completion state.
+Reads from other modules: package entitlement, current IRiU membership and
+local notification/reminder support if approved.
+May write to: PREDMET-owned obligation completion rows and local reminder
+delivery state through bounded repository flows.
 Must not write to: PREDMET truth or lifecycle truth.
 Outputs: reminders/signals.
-Allowed side effects: local reminder notification state if separately implemented.
+Allowed side effects: current obligation projection, completion actions and
+local reminder notification state within the approved module boundaries.
 Forbidden side effects: OS/background/sync behavior without architecture approval.
 Truth boundary: operational derivative.
+Current ČITULJA completion integration retains only a valid completed concrete
+child attributable by `portableOccurrenceId` when current membership is
+temporarily absent. Incomplete, invalid, orphaned and parent-only ČITULJA
+state is not durable history; the parent is derived from current children.
 Pseudocode sections: `OPC-PSEUDO-018`, `OPC-PSEUDO-021`.
 Characterization evidence needed: current implementation status and notification architecture.
 Web readiness relevance: medium.
 Upgrade risk: runtime/platform drift.
-Implementation blocked until: explicit task and notification architecture decision.
-Evidence: `PROJECT_DOCS/OPC_v1_ARCHITECTURE_DECISIONS.md`; `PROJECT_DOCS/OPC_v1_ZAKLJUCANA_PRAVILA.md`.
-Classification: `POLICY EXISTS / IMPLEMENTATION NOT FOUND`.
+Implementation blocked until: none for the bounded R5 ČITULJA integration;
+runtime notification/release acceptance remains separately tracked.
+Evidence: `lib/features/podsetnik/domain/podsetnik_obligation.dart`,
+`lib/features/podsetnik/data/podsetnik_obligation_repository.dart`,
+`test/r5_podsetnik_citulja_integration_test.dart`.
+Classification: `SOURCE-CONFIRMED / R5 IMPLEMENTED BOUNDED INTEGRATION`.
 
 ## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-025
 
@@ -529,9 +555,14 @@ Pseudocode sections: `OPC-PSEUDO-011`, `OPC-PSEUDO-014`, `OPC-PSEUDO-018`.
 Characterization evidence needed: document/add-on boundary and data contract.
 Web readiness relevance: low/medium.
 Upgrade risk: document output becoming policy source.
-Implementation blocked until: document boundary audit.
-Evidence: `PROJECT_DOCS/OPC_v1_ARCHITECTURE_DECISIONS.md`; `PROJECT_DOCS/OPC_v1_ZAKLJUCANA_PRAVILA.md`.
-Classification: `DOCUMENTED POLICY / TECHNICAL AUDIT REQUIRED`.
+Implementation blocked until: none for the bounded native PDF route; runtime
+and release acceptance remain separately tracked.
+Evidence: `lib/features/predmeti/pdf/nalog_cvecari_pdf_export.dart`,
+`lib/features/predmeti/pdf/opc_pdf_shared.dart`,
+`lib/features/predmeti/presentation/predmet_screen.dart`,
+`test/nalog_cvecari_pdf_contract_test.dart`,
+`test/nalog_cvecari_pdf_multi_item_test.dart`.
+Classification: `SOURCE-CONFIRMED / RESTORATION IMPLEMENTED / RUNTIME ACCEPTANCE PENDING`.
 
 ## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-026
 
@@ -574,6 +605,174 @@ Upgrade risk: personal-data and identity corruption.
 Implementation blocked until: explicit v2/future owner-approved task.
 Evidence: `PROJECT_DOCS/OPC_v1_ARCHITECTURE_DECISIONS.md`; `PROJECT_DOCS/OPC_v1_ZAKLJUCANA_PRAVILA.md`.
 Classification: `DOCUMENTED POLICY / NOT IMPLEMENTED / IMPLEMENTATION BLOCKED`.
+
+## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-028
+
+Module name: ČITULJE domain/persistence foundation
+Module class: PREDMET-scoped preparation / transfer foundation
+Business purpose: maintain one independent POLITIKA or NOVOSTI article preparation for each current applicable ČITULJA IRiU occurrence.
+Reads from PREDMET: current IRiU membership, portable occurrence identity and article category.
+Reads from other modules: confirmed PARTE render plan only when `PARTE TEKST=DA`.
+May write to: `CituljePripreme` preparation state belonging to the PREDMET.
+Must not write to: PARTE content/confirmation, IRiU membership/order, PODSETNIK completion, PDF output or NALOG CVEĆARI.
+Outputs: transferable mode/date/text/note/finalization state and, for `DA`, the current confirmed PARTE proposal with source fingerprint.
+Allowed side effects: create/resume preparation rows, refresh from a valid confirmed PARTE iteration while the ČITULJA preparation is not finalized, and explicitly finalize the ČITULJA preparation.
+Forbidden side effects: reverse PARTE writes, refresh from an unconfirmed/invalid plan, refresh after ČITULJA finalization, PDF parsing/OCR, stale-current projection, or local-id-based occurrence identity.
+Truth boundary: PREDMET business state with technical PARTE provenance; current IRiU membership controls applicability.
+Pseudocode sections: `OPC-PSEUDO-010`, `OPC-PSEUDO-021` and the R2 local ČITULJE persistence contract.
+Characterization evidence needed: source-confirmed PARTE plan text, persistent/transfer round trips and current-occurrence filtering.
+Web readiness relevance: critical because the payload is cross-platform PREDMET state.
+Upgrade risk: lost article text or rebinding same-category occurrences.
+Implementation blocked until: none for the bounded R2 foundation; later UI,
+PDF and PODSETNIK layers are separately evidenced below.
+Evidence: `lib/features/predmeti/citulje/**`, `test/citulje_domain_persistence_test.dart`.
+Classification: `SOURCE-CONFIRMED / R2 IMPLEMENTED FOUNDATION / UI-PDF FUTURE`.
+
+## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-029
+
+Module name: ČITULJE user-facing module
+Module class: PREDMET-scoped operational preparation UI
+Business purpose: expose current ČITULJA preparations for a PREDMET and allow
+per-occurrence preparation, confirmed PARTE proposal capture, independent text,
+notes, publication date and explicit finalization.
+Reads from PREDMET: current ČITULJA IRiU membership and PREDMET identity.
+Reads from other modules: the existing ČITULJE repository and, for `DA`, the
+confirmed PARTE adapter.
+May write to: `CituljePripreme` through its repository/domain operations and
+request a per-occurrence ČITULJA PDF export from the dedicated PDF generator.
+Must not write to: PARTE content/confirmation, IRiU membership/order, PODSETNIK,
+PDF output or NALOG CVEĆARI.
+Outputs: current per-occurrence preparation state; word count is derived from
+the displayed publication text and is presentation-only.
+Allowed side effects: configure/save the applicable preparation before
+finalization, edit the DA confirmed proposal locally without writing back to
+PARTE, request a valid confirmed PARTE refresh, and finalize one occurrence.
+DA proposal edits remain replaceable by later valid confirmed PARTE iterations
+until ČITULJA finalization.
+Finalization is allowed only for a non-empty prepared text in the applicable
+DA snapshot or NE independent-text state. The finalization operation receives
+the current visible mode/date/text/note and persists those fields together
+with `finalized`/`finalizedAt`; it must not finalize stale stored state while
+the UI shows unsaved values.
+Forbidden side effects: UI-only finalization enforcement, reverse PARTE sync,
+unconfirmed refresh, post-finalization writes, finalization without prepared
+text, PDF generation from UI-controller/PARTE/PDF-parsed data, or PODSETNIK
+completion projection.
+Truth boundary: repository/domain remains authoritative for write guards and
+transferable PREDMET state; the UI does not recreate those rules.
+Evidence: `lib/features/predmeti/citulje/presentation/citulje_module_screen.dart`,
+`lib/features/predmeti/presentation/moduli_screen.dart`,
+`test/citulje_module_screen_test.dart`,
+`test/citulje_finalized_write_guard_test.dart`.
+Classification: `SOURCE-CONFIRMED / R3 UI + R4 PDF OUTPUT / R5 PODSETNIK INTEGRATION`.
+
+## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-030
+
+Module name: ČITULJA PDF generation
+Module class: persisted ČITULJE output derivative
+Business purpose: produce one canonical PDF for one concrete current or
+finalized ČITULJA preparation.
+Reads from PREDMET: none directly; the persisted ČITULJE row is already
+PREDMET-owned business state.
+Reads from other modules: none at generation time. PARTE remains upstream
+only through the persisted R2/R2B proposal snapshot.
+May write to: the existing cross-platform KORICE document destination.
+Must not write to: ČITULJE preparation state, PARTE, PREDMET, IRiU,
+PODSETNIK or finalization state.
+Outputs: a PDF containing only `Format čitulje:`, `Datum objave:` and the full
+persisted publication text. The technical `portableOccurrenceId` is used only
+to keep same-type filenames distinct and is not rendered in document content.
+Allowed side effects: save the generated bytes through the existing KORICE
+export path and offer the existing document-open action.
+Forbidden side effects: memorandum/PREDMET header injection, `Broj predmeta`,
+signatures, unrelated PREDMET data, UI-controller reads, direct PARTE reads,
+OCR/PDF parsing, mutation or implicit finalization.
+Truth boundary: `CituljePripreme` is the sole input truth for this derivative;
+article label and formatted date are presentation derivations.
+Pseudocode: `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_CITULJA_PDF_GENERATION_PSEUDOCODE.md`.
+Evidence: `lib/features/predmeti/citulje/pdf/citulja_pdf_export.dart`,
+`test/citulje_pdf_export_test.dart` and the R4 review handoff.
+Classification: `SOURCE-CONFIRMED / R4 IMPLEMENTED OUTPUT / FUTURE DESIGN OUTSIDE SCOPE`.
+
+## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-031
+
+Module name: PODSETNIK ČITULJA parent/child integration
+Module class: PREDMET-scoped obligation projection
+Business purpose: expose one current grouped ČITULJA parent and one atomic
+child per applicable concrete ČITULJA IRiU occurrence.
+Reads from PREDMET: current IRiU membership, portable occurrence identity and
+the PREDMET-owned obligation completion rows.
+Reads from other modules: persisted ČITULJE preparation only for the child PDF
+request; no PARTE read is performed by PODSETNIK.
+May write to: PREDMET-owned parent/child obligation completion rows through the
+existing PODSETNIK repository boundary.
+Must not write to: ČITULJE preparation content, PARTE, IRiU membership/order,
+PREDMET status or unrelated obligation families.
+Outputs: human-facing `ČITULJA` parent/child checklist, current relevant-parent
+overview-bar participation and a request to the canonical ČITULJA PDF generator.
+Allowed side effects: complete/reopen atomic children, issue the generic parent
+mark-all command over relevant children, and request the existing per-occurrence
+PDF export. Parent state is derived from relevant children.
+Forbidden side effects: raw technical identity in ordinary display, an
+independently authoritative parent completion fact, stale-current projection,
+PDF regeneration logic in PODSETNIK, numeric overview-bar count or visual
+redesign.
+Truth boundary: current IRiU membership determines applicability; minimal
+completed child state is PREDMET-owned and bound to portable occurrence identity,
+while parent state is derived and transferable through existing PREDMET JSON and
+Backup JSON obligation rows; PODSETNIK is the projection/action surface.
+Pseudocode sections: `OPC-PSEUDO-010`, `OPC-PSEUDO-021` and the R5 task-local
+review handoff.
+Evidence: `lib/features/podsetnik/domain/podsetnik_obligation.dart`,
+`lib/features/podsetnik/data/podsetnik_obligation_repository.dart`,
+`lib/features/podsetnik/presentation/podsetnik_module_screen.dart`,
+`test/r5_podsetnik_citulja_integration_test.dart`.
+Classification: `SOURCE-CONFIRMED / R5 IMPLEMENTED / IMPLEMENTATION-SOURCE-TEST-DOC REVIEW PASS / INDEPENDENT LOGOS REVIEW PASS / RUNTIME ACCEPTANCE PENDING`.
+
+## Current-state restoration boundary — 2026-09-08
+
+The restoration keeps these truth boundaries explicit: `PREDMET` remains the
+business source; ČITULJE writes only its PREDMET-owned preparation; PARTE is
+read upstream only through the confirmed-plan adapter; PODSETNIK and REVIEW
+BAR project current obligations; PDF/document generators emit derivatives;
+local notification identifiers remain technical. The restored Cvećari route
+uses the native PREDMET document surface and the same canonical output helper
+used by the operational route. No restoration change creates a schema or
+transfer redesign, changes R1 occurrence identity, changes IRiU order/membership
+or introduces a reverse module write.
+
+The source/test gate is PASS as recorded in the current quality home. Windows
+and Android runtime, build/signing and publication remain pending and are not
+claimed by these contracts.
+
+## MODULE-CONTRACT-ID: OPC-MODULE-CONTRACT-032
+
+Module name: PODSETNIK URNA/PEPEO lifecycle and F-06 manual obligations
+Module class: PREDMET-scoped obligation projection and delivery coordination
+Business purpose: express the owner-locked urn/ashes obligation and support
+atomic text-only `POSEBNE OBAVEZE` rows without creating a second business
+truth.
+Reads from PREDMET: ceremony type/date, urn placement type, urn cemetery,
+lifecycle status and PREDMET-owned obligation state. Reads from settings:
+selected PODSETNIK delivery clock times.
+May write to: PREDMET-owned obligation completion/manual rows and technical
+notification scheduling state through the existing repository/coordinator.
+Must not write to: unrelated obligation families, PARTE, IRiU membership/order,
+ČITULJE content, responsibility facts or arbitrary PREDMET status.
+Contract: both cremation types with `tipPolaganja != NAKNADNO` create the
+immediate manually completable URNA/PEPEO obligation; its secondary cycle is
+eligible at ceremony date +3, uses selected delivery times, reads only
+`grobljePolaganjaUrne`, and ends on completion. Only this unfinished
+obligation blocks `ZAVRŠEN`. SAVETNIK and ADMINISTRATOR may add atomic manual
+text rows under derived `POSEBNE OBAVEZE`; there is no edit-in-place or delete.
+Parent state is derived from children. PREDMET JSON and Backup JSON preserve
+the portable manual business state.
+Evidence: `lib/features/predmeti/reminders/urna_ashes_reminder_model.dart`,
+`lib/features/predmeti/reminders/ceremony_reminder_coordinator.dart`,
+`lib/features/podsetnik/domain/podsetnik_obligation.dart`,
+`lib/features/podsetnik/data/podsetnik_obligation_repository.dart`,
+`test/podsetnik_urna_f06_milestone_test.dart`.
+Classification: `SOURCE-CONFIRMED / IMPLEMENTED — TARGETED AND RELEVANT QA PASS — FULL SUITE PASS (518 PASS / 10 SKIP / 0 FAIL, SERIAL) — RUNTIME ACCEPTANCE PENDING`.
 
 ## Contract Summary
 

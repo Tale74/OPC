@@ -53,6 +53,33 @@ for the stable Serbian-market product-line gate and is not a rename.
   reopening. Focused tests pass; separate final platform runtime acceptance is
   still required.
 - SCENARIO is an operational module under `MODULI`, not `PODEŠAVANJA`.
+
+## R1–R5 current-state reconciliation — 2026-09-06
+
+The consolidated current-state record is
+[`OPC_R1_R5_CURRENT_STATE_RECONCILIATION.md`](OPC_R1_R5_CURRENT_STATE_RECONCILIATION.md).
+It records the accepted R1–R5 implementation/source/test/documentation
+baseline, records the R5 independent Logos review PASS and separates it from
+runtime/release acceptance, classifies the remaining ČITULJE/PODSETNIK capabilities, and
+provides the next bounded-work sequence. No R1–R5 item is release complete on
+bounded evidence alone.
+
+## R1 portable IRiU identity and transfer foundation — 2026-09-05
+
+The additive schema-32 foundation gives every persisted IRiU occurrence a
+portable per-PREDMET `portableOccurrenceId`. Production creation, legacy
+backfill, single-PREDMET JSON and full OPC Backup JSON preserve this identity.
+Legacy missing/blank identity is normalized once on import/backfill, while
+duplicate explicit identities fail closed before mutation. Local database row
+ids remain non-portable, and the foundation does not alter IRiU membership,
+package authority, display order, responsibility or NALOG CVEĆARI.
+
+Evidence: `test/iriu_portable_occurrence_identity_test.dart`,
+`test/json_transfer_regression_test.dart`,
+`test/iriu_ordering_partition_test.dart`,
+`test/iriu_shared_derived_ordering_test.dart`,
+`test/iriu_confirmed_business_alignment_test.dart` and
+`test/podsetnik_obligation_foundation_test.dart`.
 - SCENARIO implements user-editable OSNOVNI PAKET + additional scenario package,
   1,008 owner-map combinations, PREDMET-derived conditions, PREDMET-owned
   snapshot/provenance, controlled reconciliation, manual/legacy row protection
@@ -111,7 +138,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |
 | Android PARTE performance | Source risks are mapped; focused current-device profiling acceptance is absent. | Reproduce/profile before choosing a correction. |
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
-| PODSETNIK | Prior orphan/restore corrections exist; complete signal/informed-reminder model does not. | Full lifecycle-aware program after owner-confirmed signal model. The Android notification for a `ZAVRŠEN` PREDMET belongs here, not in an isolated patch. |
+| PODSETNIK | The URNA/PEPEO contract and F-06 `POSEBNE OBAVEZE` are implemented at source/test/documentation level, including the scoped `ZAVRŠEN` blocker and transfer paths. Runtime/device acceptance, release and publication remain separate claims. | Complete integrated runtime/build/release gates when separately authorized. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
 | Documents | RAČUN PDF exists; NALOG CVEĆARI standalone generator is not proven; standard PDF typography refinement remains. | Owner decisions for RAČUN availability/default and NALOG content/scope; bounded document work. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
@@ -128,12 +155,14 @@ non-blocking debt stays outside the critical path.
 
 The next owner-planned package is:
 
-`PODSETNIK / completion-signal model owner-decision and contract package`
+`independent Logos review of the bounded PODSETNIK presentation/primary-notification correction`
 
-Current authority and the local owner-decision pseudocode leave signal
-meanings unresolved. The next package must establish the PREDMET/SCENARIO/IRiU
-signal contract and owner decision matrix; it must not implement reminders or
-infer business completion.
+The recovered owner-authority restoration established the PREDMET/IRiU signal
+and obligation contract. The URNA/PEPEO business contract is locked. Current
+implementation, runtime acceptance, release and publication status are
+separate claims governed by the actually completed evidence; recovered
+decisions must not be reopened or used to infer additional business
+completion.
 
 After that contract is approved, the owner roadmap proceeds through the
 lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
@@ -146,10 +175,34 @@ The provenance matrix, reverse-coverage result and demotion of unparented
 technical chains are recorded in
 `docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md`.
 
+## URNA/PEPEO + F-06 PODSETNIK milestone — current source state
+
+The bounded follow-on milestone implements the locked URNA/PEPEO lifecycle and
+F-06 `POSEBNE OBAVEZE` on the existing PREDMET-owned obligation infrastructure.
+For `KREMACIJA` and `KREMACIJA_EKSPRES`, with `TIP POLAGANJA URNE != NAKNADNO`,
+the URNA/PEPEO obligation exists immediately, is manually completable, and
+starts its secondary notification cycle at ceremony date +3. The cycle uses
+the existing selected PODSETNIK delivery times, uses only
+`GROBLJE POLAGANJA URNE`, stops on completion, and is the only PODSETNIK
+obligation that blocks `ZAVRŠEN`. Manual `POSEBNE OBAVEZE` rows are atomic,
+text-only, role-gated to SAVETNIK/ADMINISTRATOR, grouped under a derived parent,
+and transferred through PREDMET/Backup JSON. Schema version is 35 with an
+additive manual-obligation table and URNA scheduled-id column.
+
+Targeted and relevant milestone tests are green and final
+`flutter analyze --no-pub` reports no issues. An initial default-concurrency
+full-suite run exposed three timeout failures in existing migration/startup
+tests; each failed file passed in isolation. The authorized explicit serial
+run, `flutter test --no-pub --concurrency=1`, completed with 518 passes, 10
+skips and 0 failures. The responsive MODULI correction and robust STANJE ROBE
+widget-test interactions therefore have a full-suite PASS at source/test level;
+Windows/Android runtime acceptance, builds, release and publication remain
+deferred.
+
 ## Active owner decisions
 
 - performance acceptance targets after measurement;
-- complete signal meanings for PODSETNIK;
+- implementation of the recovered PODSETNIK contract (business meanings are no longer an owner-decision gap);
 - NALOG CVEĆARI content and PDF/DOCX scope;
 - RAČUN FIRMA availability/default;
 - EUR activation timing and eligible open-PREDMET treatment;
@@ -401,3 +454,110 @@ not downgrade the owner runtime acceptance. Future independent comparison
 should preserve source JSON identity, destination re-export/readable state and
 explicit direction/platform provenance; this is a methodological lesson, not
 a new mandatory process or successor.
+
+## R2 ČITULJE domain/persistence foundation — current source state
+
+R2 adds `CituljePripreme`, keyed by PREDMET and the accepted IRiU
+`portableOccurrenceId`. It persists POLITIKA/NOVOSTI category, PARTE TEKST
+mode, publication date/text, note, explicit preparation state, ČITULJA
+finalization state and the PARTE confirmed-plan fingerprint when a snapshot exists. Current IRiU membership
+controls applicability; non-current preparation rows are not projected as
+current articles.
+
+The bounded PARTE adapter reads the confirmed `ParteRenderPlan` text directly.
+For `DA` it remains waiting until the current plan is `PREVIEW POTVRĐEN`, then
+stores the current confirmed proposal; later confirmed iterations may refresh
+it until that ČITULJA preparation is explicitly finalized. For `NE` it stores independent text. The state is
+included in single-PREDMET JSON and full Backup JSON, with legacy omission
+supported. R3 adds the dedicated ČITULJE module from MODULI with current
+occurrence filtering, per-occurrence DA/NE editing, date/note fields, derived
+informational word count and explicit finalization. A confirmed DA proposal is
+editable inside ČITULJE before finalization; those edits remain local and a
+later valid confirmed PARTE iteration may replace the proposal. The repository
+write guard protects finalized rows for configure, publication text and PARTE
+capture, including an in-flight SQL write that reaches the database after
+finalization. Domain/UI finalization also requires non-empty prepared text in
+the valid DA snapshot or NE independent-text state. The finalization action
+persists the current visible mode/date/text/note atomically with the lock, so
+an unsaved form edit is not replaced by an older stored value.
+R4 adds a bounded canonical per-occurrence ČITULJA PDF output. The generator
+re-reads persisted `CituljePripreme` state and emits only the article format
+label, publication date and full publication text; it does not inject a
+memorandum/PREDMET header, `Broj predmeta`, signatures or unrelated data. The
+existing KORICE export path serves Windows and Android. PDF generation is
+output-only and does not mutate preparation, PARTE, finalization, IRiU or
+PODSETNIK state. Final ČITULJA visual design, broader PODSETNIK presentation
+work, plus F-06/F-09 remain outside the bounded R2–R4 work described here;
+R5 separately implements the bounded ČITULJA parent/child completion
+integration.
+
+## R5 PODSETNIK ČITULJA parent/child integration — current source state
+
+R5 derives a current `ČITULJA` parent from applicable `CITULJA_POLITIKA` and
+`CITULJA_NOVOSTI` IRiU occurrences and one atomic child per concrete
+`portableOccurrenceId`. The parent follows the generic grouped-obligation
+semantics: its state is derived from relevant children and its checkbox marks
+all relevant children. Same-type occurrences remain independent and technical
+occurrence identity is not rendered as ordinary UI.
+
+The existing PREDMET-owned PODSETNIK rows retain minimal completed child state
+by portable occurrence identity when current IRiU membership temporarily
+removes that child; the child is not projected while non-current and the same
+identity regains its completion if it returns. A new identity is independent.
+Incomplete, invalid, orphaned and parent-only ČITULJA rows are not retained
+merely as history; the parent is derived rather than persisted as independent
+business truth. Single-PREDMET JSON and full Backup JSON preserve the concrete
+completed child state only when it remains attributable to the same PREDMET
+and exactly one ČITULJA occurrence, without a schema change. Import accepts
+that exception only when the canonical child identity matches exactly one
+ČITULJA IRiU occurrence in the same PREDMET; unrelated unknown or stale
+obligation identities are not imported through this path. The child PDF action delegates to the canonical R4
+persisted-state generator. The overview bar derives from the general relevant
+unfinished parent set, so applicable ČITULJA participates; its placement,
+styling, no-count rule and `OBAVEZE ISPUNJENE` zero-state are unchanged.
+Current LISTA output consumes the same derived parent/child labels and retains
+empty paper checkboxes. No parent/child action alters PREDMET status, PARTE,
+IRiU membership/order or unrelated obligation families.
+
+## Current-state restoration implementation — 2026-09-08
+
+The bounded current-state restoration is source-, test- and documentation-
+complete for Domains 1–6. It restores the native `NALOG CVEĆARI` document
+route, ČITULJE current-status/capture safety, shared URNA/PEPEO presentation
+and Windows secondary adapter, contextual PODSETNIK assistance, the general
+REVIEW BAR root/rotation projection, and compatibility/anti-drift evidence.
+The implementation preserves accepted R1–R5/F-06 behavior, schema 35,
+PREDMET JSON/Backup transfer, responsibility/SAVETNIK semantics, IRiU
+membership/order, MODULI responsive layout and STANJE ROBE behavior.
+
+Evidence is the external restoration implementation handoff and the current
+source/tests. Relevant checks are `217 PASS / 0 FAIL` targeted/regression
+tests, `flutter analyze --no-pub` PASS, and the serial full suite
+`528 PASS / 10 SKIP / 0 FAIL`. The skips are existing environment-gated or
+forensic tests and are not treated as execution evidence. Windows/Android
+runtime acceptance, release build/signing, canonical-DB writes, Git staging,
+commit, push and publication remain pending/separately gated.
+
+## Recovered baseline and active-source authority hygiene – 2026-09-09
+
+The recovered current implementation state is protected by the external
+baseline package with SHA-256
+`5241576752D8F3954D741A3AC0CEEF089863F5AAC2E30F72354264C4FE9ABE5A`.
+Active-source authority hygiene and stale implementation quarantine passed in
+the external package with SHA-256
+`2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
+The protected active inventory covers 748 files with zero unexpected missing
+files and zero high-risk hash mismatches; proven obsolete staging/evidence
+roots were moved to quarantine without changing active implementation
+content. The active-source manifest, stale donor denylist and future-task
+precheck are now durable controls. `SOURCE/runtime_data` and
+`SOURCE/.audit_tmp` remain `UNRESOLVED – DO NOT USE`.
+
+The current SOURCE remains a mixed dirty working state on the named task
+branch and is not yet a coherent published implementation baseline. The
+latest Windows process/window observation remains the known Codex sandbox
+desktop-binding recurrence; OWNER-visible desktop runtime acceptance is still
+required. Documentation authority and implementation-source publication are
+separate gates. Residual OWNER findings remain preserved for later
+OWNER-gated corrective work and are not claimed as resolved by this
+documentation synchronization.

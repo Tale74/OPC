@@ -22,7 +22,7 @@ When current documents differ, use this order:
 
 An owner runtime PASS proves observed end-product behavior for its platform/artifact. It does not by itself prove internal root cause. A technical contract or report does not override owner business authority.
 
-The active maintenance model is **local project environment + public GitHub** until the owner defines a future transition, acquisition or distribution model. Local material outside Git remains relevant when this document or the Phase 1 manifest identifies it as current/supporting evidence; no uncontrolled duplicate authority is created.
+The active maintenance model is **local project environment + public GitHub** until the owner defines a future transition, acquisition or distribution model. Local material outside Git remains relevant when this document or the Phase 1 manifest identifies it as current/supporting evidence; no uncontrolled duplicate authority is created. Active-source and donor classification is governed by [`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md); documentation synchronization does not imply publication of a coherent implementation SOURCE baseline.
 
 ## 3. PREDMET is the master business truth
 
@@ -37,9 +37,10 @@ No derivative may silently become a parallel business authority:
 | IRiU | Selected goods/services attached to a PREDMET; operational and financial case snapshot | PREDMET-scoped rows are the selected case truth; KATALOG owns catalogue truth |
 | KATALOG | Stable article identity, catalogue labels/configuration and prices | Catalogue truth only; a current label must not overwrite a stored selected-article snapshot |
 | PARTE | Technical preparation/print derivative | Derived from PREDMET; never a second case authority |
+| ČITULJE | PREDMET-scoped article preparation for current ČITULJA IRiU occurrences | Persistent mode/date/text/note/finalization state is PREDMET business state; confirmed PARTE iterations may refresh the proposal until ČITULJE finalization, after which PARTE may no longer auto-refresh or overwrite it; authorized human correction/removal remains distinct from PARTE influence |
 | PDF/DOCX and other documents | Rendered derivatives | Render PREDMET/IRiU/FirmaPodaci/user data; do not define business meaning |
 | Finance/statistics | Calculations and projections over PREDMET/IRiU | Derived outputs; no independent totals authority |
-| PODSETNIK/reminders | Operational reminders and notification scheduling | Derived/operational layer; final signal/trigger semantics remain an owner decision |
+| PODSETNIK/reminders | Operational reminders and notification scheduling | Derived/operational layer; recovered owner signal/trigger semantics are defined, while implementation, runtime acceptance, release and publication status are tracked separately by proven state |
 | STANJE ROBE | Inventory and effect/consequence lifecycle | Operational consequences over selected PREDMET/IRiU rows; must not rewrite PREDMET truth or KATALOG truth |
 | JSON single-PREDMET transfer and full backup | Interoperability representations | Preserve master/derivative boundaries; single-PREDMET and full-backup formats remain distinct |
 | Auth, users, settings and entitlements | Session, firm/user/configuration and technical access context | May supply context; must not redefine PREDMET meaning |
@@ -81,7 +82,11 @@ The following materially define the current product or remain explicitly open:
   a dependent row removed by a later SAVETNIK decision.
 - PAKETI restrictions are retired for the current native product; retained entitlement/licensing payloads are compatibility/diagnostic material, not current business restriction authority.
 - Windows and Android remain equal standalone local applications; no mandatory network sync is introduced.
-- PODSETNIK's complete signal/informed-reminder model is open. The Android notification for a `ZAVRŠEN` PREDMET belongs to the lifecycle-aware program, not an isolated patch.
+- PODSETNIK's recovered owner contract, including the URNA/PEPEO contract, is
+  locked. Current source includes the bounded URNA/PEPEO cycle and F-06 manual
+  obligation integration; implementation/source evidence, runtime acceptance,
+  release and publication status must be tracked separately. The scoped URNA
+  completion blocker is not generalized to other obligations.
 - Native Windows single-instance protection and installer/update running-app protection are closed by full acceptance; remaining release-risk integrity and final backup/restore work remain separately controlled.
 - NALOG CVEĆARI scope, RAČUN availability/default, performance acceptance targets, app identity/version/update channel and future distribution/IP model remain owner decisions or owner/legal decisions as applicable.
 - `MODUL DVE VALUTE`, Web, `OPC_v.1_Int` and broader synchronization are future scope.
@@ -97,7 +102,7 @@ If two documents assign different business meaning, retain both as evidence, rec
 | KATALOG | Catalogue identity/configuration/price source |
 | SCENARIO | Locked operational module for editable/default and applied package behavior |
 | PARTE | PREDMET-derived technical preparation/print workflow |
-| PODSETNIK | Reminder/notification operational area; complete signal semantics remain open |
+| PODSETNIK | Reminder/notification operational area; recovered owner contract defines target obligations, while implementation, runtime acceptance, release and publication status remain separate state claims |
 | STANJE ROBE | Inventory and effect/consequence operational layer |
 | Derivative | Any document, projection, reminder, stock effect or transfer representation derived from master truth |
 | Owner runtime evidence | Observed behavior acceptance for a named platform/artifact; not automatic root-cause proof |

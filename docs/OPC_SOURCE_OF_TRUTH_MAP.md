@@ -15,6 +15,11 @@ plus five substantive homes. README is not a co-equal detailed authority:
 | Quality, regression, runtime and release gaps | `docs/OPC_QUALITY_RELEASE.md` |
 | Adopted OPC engineering profile | `docs/OPC_ENGINEERING_PROFILE.md` |
 
+Active-source authority and donor classification are governed by
+`docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`. It is a durable
+control document, not a sixth product/domain authority home and not a source
+of new business meaning.
+
 The manifest, archive classification, internal-control register and Phase 1
 implementation report are transition/supporting records. They remain useful
 and linked, but do not add current authority homes.
@@ -35,6 +40,8 @@ evidence only. They must not reopen RR-005 or become a second current fact.
 | Area | Current source of truth | Supporting sources | Status / caution |
 | --- | --- | --- | --- |
 | Owner roadmap provenance and reverse coverage | `docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md` | Original post-zero plan drafts/candidate, owner-review findings, current authority, Git history and accepted closures | CURRENT SUPPORTING EVIDENCE — provenance matrix and zero-orphan reverse check; not a competing roadmap authority. |
+| Recovered PODSETNIK owner authority | Recovery baseline and traceability ledger supplied in the recovered-owner restoration review package | `docs/OPC_OWNER_DECISION_GUIDE.md` section 9, `docs/OPC_OWNER_DECISION_INDEX.md`, current source/audit evidence | OWNER TARGET AUTHORITY — restored decisions POD-001…POD-074; no re-decision. Current source remains separate; foundation, bounded UI/primary-notification work, R5 ČITULJA integration, URNA/PEPEO lifecycle and F-06 manual obligations are implemented at source/test/documentation level; runtime/release acceptance remains pending. |
+| PODSETNIK implementation readiness | `docs/OPC_PODSETNIK_IMPLEMENTATION_READINESS_CONTRACT.md` | Recovered owner baseline, source/audit evidence, internal pseudocode | SUBORDINATE TECHNICAL DESIGN — exact three-task order; cannot create business semantics or claim implementation. |
 | Post-zero owner authority | `docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md` | Later explicitly owner-confirmed Git records | OWNER AUTHORITY RECORD; interpreted through the compact Phase 1 homes. Pre-zero owner decisions are not current authority. |
 | Incident and anti-drift evidence | `docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md` | Linked historical reports and Git history | PERMANENT EVIDENCE; does not revive pre-zero policy. |
 | Documentation classification | `docs/OPC_POST_ZERO_DOCUMENTATION_AUTHORITY_INVENTORY.md` | Git tree and history | CURRENT SUPPORTING EVIDENCE — classification register subordinate to the compact Phase 1 homes; separates active, technical, historical and future-scope documents. |
@@ -68,6 +75,7 @@ evidence only. They must not reopen RR-005 or become a second current fact.
 | Characterization coverage and gaps | `docs/OPC_CHARACTERIZATION_COVERAGE_MATRIX.md`, `docs/OPC_CHARACTERIZATION_GAP_REGISTER.md`, `docs/OPC_CHARACTERIZATION_BEFORE_CHANGE_RULES.md` | Module contracts, grouped safe upgrade plan, current tests, source/docs evidence | CURRENT SUPPORTING EVIDENCE — characterization controls subordinate to the compact homes; gaps are blockers/evidence buckets, not roadmap or priority order. |
 | PREDMET lifecycle identity version characterization | `docs/OPC_PREDMET_LIFECYCLE_IDENTITY_VERSION_CHARACTERIZATION.md` | PREDMET lifecycle coverage matrix, identity/version/change-log gap register, Web/sync identity risk register, source/test evidence | CURRENT SUPPORTING EVIDENCE — PREDMET characterization detail subordinate to the compact product/domain home; not implementation authorization. |
 | Current development state | `docs/OPC_CURRENT_DEVELOPMENT_STATE.md` | Reconciled plan/report, current source/tests, post-zero reports and Git history | CURRENT SUPPORTING EVIDENCE — concise continuity detail subordinate to the compact homes; detailed ordering remains in the operative plan. |
+| R1–R5 current-state reconciliation | `docs/OPC_R1_R5_CURRENT_STATE_RECONCILIATION.md` | Accepted R1–R5 review packages, current source/tests and the compact current-state homes | CURRENT SUPPORTING EVIDENCE — consolidated implementation/review/runtime classification and next-work roadmap; not a new owner authority or implementation plan. |
 | SCENARIO locked module baseline | `docs/OPC_SCENARIO_MODULE_LOCK.md` | `docs/OPC_SCENARIO_MODULE_LOCK_REPORT.md`, locked source SHA, predecessor runtime/build evidence and existing Tier 2 tests | CURRENT SUPPORTING EVIDENCE — SCENARIO lock governance evidence subordinate to the compact homes. SCENARIO is locked; production changes require explicit unlock or proven regression correction. |
 | Cross-device continuity final closure | `docs/OPC_CROSS_DEVICE_CONTINUITY_FINAL_CLOSURE_REPORT.md` | Final-closure source/tests, fresh forensic-copy SQL proof and validation logs | CURRENT SUPPORTING EVIDENCE — scoped closure evidence subordinate to the compact homes; canonical DB mutation and Android physical acceptance remain separately gated. |
 | Windows KATALOG→IRiU pipeline / runtime closure | `docs/OPC_CANONICAL_KATALOG_IRIU_PIPELINE_WINDOWS_CLOSURE_REPORT.md` (supersedes the prior Windows visual-closure report for this scope) | Source inventory, canonical snapshot repair, focused tests/analyzer/build, owner runtime evidence and deployment blocker | CURRENT SUPPORTING EVIDENCE — Windows gate evidence subordinate to the compact homes; repaired-build deployment and installed visual/SCENARIO/LISTA proof remain deferred. |
@@ -98,3 +106,54 @@ data; it is not silently deleted or made irrelevant merely because it is outside
 Git. No uncontrolled mirror or automatic network synchronization mechanism is
 implied. Source/tests prove implemented behavior; only post-zero owner records
 approve business policy.
+
+Active-source and donor classification, including `UNRESOLVED – DO NOT USE`,
+is governed by `OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`.
+
+## Active-source authority hygiene and publication boundary
+
+The accepted hygiene evidence records the active SOURCE/document roots,
+generated roots, evidence-only roots, historical donors, quarantined obsolete
+roots and unresolved roots. The hygiene package is external evidence with
+SHA-256 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
+The active-source high-risk hash baseline remained matched and no active
+implementation content was changed by quarantine.
+
+This map distinguishes documentation authority from implementation
+publication: local/GitHub documentation may be synchronized while a mixed
+dirty local SOURCE remains not yet published as the coherent current-source
+baseline. Review and quarantine material remains evidence, not implementation
+authority.
+
+| Area | Current source of truth | Supporting sources | Status / caution |
+| --- | --- | --- | --- |
+| Active-source authority and donor control | `docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md` | Active-source manifest, stale donor denylist, high-risk hash baseline and external hygiene handoff | CURRENT AUTHORITATIVE CONTROL – donor reuse requires bounded reconciliation and explicit OWNER authorization; unresolved roots remain `UNRESOLVED – DO NOT USE`. |
+
+## R2 implementation traceability
+
+The current R2/R2B/R3/R4 implementation evidence is `lib/core/database/tables/citulje_pripreme_table.dart`, `lib/features/predmeti/citulje/**`, `lib/features/predmeti/presentation/moduli_screen.dart`, `lib/core/json_transfer/predmet_json_transfer_core.dart`, `lib/core/utils/json_export_import.dart`, `test/citulje_domain_persistence_test.dart`, `test/citulje_finalized_write_guard_test.dart`, `test/citulje_module_screen_test.dart` and `test/citulje_pdf_export_test.dart`. These sources establish the bounded ČITULJE persistence/transfer foundation plus the dedicated current-occurrence UI, locally editable DA proposal, valid-text finalization guard, atomic current-form-state finalization, repository write guard, derived word count and canonical per-occurrence PDF output from persisted state. They do not supersede owner authority or claim ČITULJE PODSETNIK completion, final visual design, F-06 or F-09 work.
+
+## R5 implementation traceability
+
+R5 implementation evidence is `lib/features/podsetnik/domain/podsetnik_obligation.dart`, `lib/features/podsetnik/data/podsetnik_obligation_repository.dart`, `lib/features/podsetnik/presentation/podsetnik_module_screen.dart`, `lib/features/predmeti/pdf/lista_pdf_data_builder.dart`, `lib/features/predmeti/presentation/lista_predmeta_screen.dart`, `test/r5_podsetnik_citulja_integration_test.dart` and the adjusted `test/lista_predmeta_screen_smoke_test.dart`. These sources establish current-occurrence grouped parent/atomic-child derivation, portable child completion preservation across temporary membership absence, per-occurrence PDF routing, shared LISTA labels and the bounded general-parent overview-bar correction. The MODULI responsive presentation and STANJE ROBE test-recovery evidence additionally use `lib/features/predmeti/presentation/moduli_screen.dart`, `test/moduli_screen_responsive_test.dart` and `test/stanje_robe_operational_toggle_test.dart`; the correction is presentation/test-interaction only. The later milestone evidence additionally covers URNA/PEPEO and F-06 in `lib/features/predmeti/reminders/urna_ashes_reminder_model.dart`, the reminder coordinator/repository, `lib/features/podsetnik/**`, `lib/core/database/database.dart`, `lib/core/utils/json_export_import.dart` and `test/podsetnik_urna_f06_milestone_test.dart`.
+
+## Current-state restoration implementation traceability — 2026-09-08
+
+The restoration source truth is the current `lib/` and `test/` tree. Domain 1
+uses `lib/features/predmeti/pdf/opc_pdf_shared.dart`,
+`lib/features/predmeti/pdf/nalog_cvecari_pdf_export.dart`,
+`lib/features/predmeti/presentation/predmet_screen.dart` and the entitlement
+policy; Domain 2 uses the ČITULJE repository/module sources and
+`test/citulje_domain_persistence_test.dart`; Domain 3 uses the URNA/PEPEO
+model, reminder coordinator and LISTA adapter; Domain 4 uses the contextual
+PODSETNIK screen; Domain 5 uses the shared obligation roots and LISTA
+overview-bar; Domain 6 is protected by the existing database recovery,
+transfer and full-backup contracts. Added/affected tests include the Cvećari
+PDF/entitlement tests, ČITULJE race coverage, URNA secondary-cycle coverage
+and PODSETNIK root coverage.
+
+The implementation evidence is technical only: targeted/regression checks
+`217 PASS / 0 FAIL`, analyzer PASS and full serial suite
+`528 PASS / 10 SKIP / 0 FAIL`. Build/runtime/device acceptance and GitHub
+publication are not inferred from these results. `SOURCE/REVIEW` remains
+prohibited; review evidence belongs under the external `REVIEW` layer.

@@ -13,6 +13,7 @@ Start with:
 3. This document for development workflow and protected boundaries.
 4. [`OPC_QUALITY_RELEASE.md`](OPC_QUALITY_RELEASE.md) for validation, runtime evidence and release gaps.
 5. [`OPC_ENGINEERING_PROFILE.md`](OPC_ENGINEERING_PROFILE.md) for the adopted standards profile.
+6. [`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md) for active-source, evidence and donor boundaries.
 
 Detailed current evidence remains linked from [`OPC_SOURCE_OF_TRUTH_MAP.md`](OPC_SOURCE_OF_TRUTH_MAP.md). Task reports are scoped evidence, not a substitute for current-state navigation.
 
@@ -77,6 +78,21 @@ OPC remains maintained through both:
 This is a transitional local + GitHub model. It is not a Git-only authority model and it is not permission to create uncontrolled duplicate copies. The Phase 1 migration manifest records which local materials remain supporting/current, internal, historical or private. Future synchronization/distribution rules remain owner-controlled.
 
 For documentation changes, update the Git current-state home and record any required local counterpart or local evidence relationship in the manifest. Do not promote private databases, backups, credentials or raw runtime artifacts.
+
+The current local implementation may be a protected mixed dirty working state.
+Synchronizing documentation to GitHub does not publish that implementation as
+a coherent source baseline. The active-source and donor rules in
+[`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md)
+are mandatory for future corrective work.
+
+### 3A. Active-source precheck
+
+Every future substantive task must load the active-source manifest and stale
+donor denylist, check relevant high-risk hashes, verify that write targets are
+authorized active roots, and confirm that no donor or
+`UNRESOLVED – DO NOT USE` material is being used. Donor reuse requires a
+separate bounded reconciliation and explicit OWNER authorization. This is a
+control boundary, not an implementation or cleanup authorization.
 
 ## 4. Branch and task discipline
 

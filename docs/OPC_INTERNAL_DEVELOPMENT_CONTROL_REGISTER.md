@@ -13,6 +13,11 @@ The full pseudocode artifacts were physically separated from the Git-visible `do
 
 That directory is explicitly ignored by the repository and is not a public Git/GitHub publication target. The original Git paths remain as short boundary pointers so historical links and Git history remain discoverable without shipping the pseudocode content.
 
+The durable active-source and donor boundary is maintained separately in
+[`docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
+That document governs implementation/evidence classification and donor-use
+prechecks; this register continues to govern the internal pseudocode boundary.
+
 ## Preserved artifact register
 
 | Original Git path | Local internal artifact | SHA-256 after separation | Content action | Authority role |
