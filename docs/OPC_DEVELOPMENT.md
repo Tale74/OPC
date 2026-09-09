@@ -108,6 +108,26 @@ reuse requires a separate bounded reconciliation and explicit OWNER
 authorization. This is a control boundary, not an implementation or cleanup
 authorization.
 
+### 3B. High-risk active-baseline closure
+
+At closure of every substantive task, determine whether any file protected by
+`HIGH_RISK_ACTIVE_HASH_BASELINE.csv` changed. Report
+`HIGH-RISK BASELINE — STILL MATCHED` when none changed. When an authorized
+protected file changed, report
+`HIGH-RISK BASELINE — CONTROLLED REBASELINE REQUIRED` and do not treat the
+task as control-complete until the authorized final state is represented by a
+valid current baseline or an explicit OWNER decision defers rebaseline while
+blocking subsequent substantive implementation.
+
+Controlled rebaseline may occur only after the protected change is accepted
+and authorized. It must hash the actual final protected state, provide
+provenance evidence for every changed protected row, preserve unchanged rows
+unless mechanical regeneration produces the same verified value, regenerate
+dependent package/integrity metadata as required, and complete verification
+against current SOURCE. An unexplained mismatch must be reconciled before it
+can be included in a new baseline. Rebaseline is control maintenance, not an
+implementation donor mechanism.
+
 ## 4. Branch and task discipline
 
 - Do not infer the active operational baseline from public `main`; use the exact branch and SHA named by the current handover/task.

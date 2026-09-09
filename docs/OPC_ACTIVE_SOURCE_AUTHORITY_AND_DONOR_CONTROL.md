@@ -140,6 +140,34 @@ implementation material. Its precheck must confirm:
 The precheck is an authority-hygiene control. It does not authorize source
 changes, donor promotion, cleanup, schema changes or publication by itself.
 
+## High-risk active-baseline lifecycle
+
+`HIGH_RISK_ACTIVE_HASH_BASELINE.csv` is a current control input, not a
+historical snapshot that may be silently carried forward. At task closure,
+every substantive task that may have changed a protected high-risk file must
+determine whether any protected row changed.
+
+Report exactly one of:
+
+- `HIGH-RISK BASELINE — STILL MATCHED` when every applicable protected row
+  still matches the current protected SOURCE;
+- `HIGH-RISK BASELINE — CONTROLLED REBASELINE REQUIRED` when an authorized
+  protected file changed.
+
+The task is not control-complete until the authorized final state is
+represented by a valid current baseline, or an explicit OWNER decision
+defers rebaseline while blocking subsequent substantive implementation. A
+stale baseline must never be silently treated as current.
+
+Controlled rebaseline is permitted only after the protected change itself has
+been accepted and authorized. It must target the actual final protected state,
+prove provenance for every changed protected row, preserve unchanged rows
+unless mechanical regeneration produces the same verified value, regenerate
+dependent package/integrity metadata as required, and finish with a complete
+verification against current SOURCE. Hashing an unexplained mismatch does not
+legitimize it. Rebaseline is control maintenance, not an implementation donor
+mechanism.
+
 ## Bounded donor-use gate
 
 If current active source is incomplete, the task must identify the exact
