@@ -47,10 +47,88 @@ The accepted hygiene package is external evidence, SHA-256
 Quarantine was copy/hash/remove verified without changing active source
 content; protected high-risk active hashes remained matched.
 
+## Mandatory active-source authority control gate
+
+This is a permanent, non-optional gate for every substantive OPC development,
+corrective-development, implementation, source-learning, architecture or
+data-contract, migration, implementation-review, QA-remediation or other task
+that may analyze implementation causality or modify `SOURCE` or tests.
+
+Before implementation causality is analyzed and before any `SOURCE` or test
+file is modified, the task must resolve the current physical location of the
+current active-source control package from this document, the current
+source-of-truth map and the current-state/handoff record. The package location
+shown in a current-state record is a location fact, not an eternal path
+invariant. If the location changes, the current authoritative record controls.
+The five logical inputs remain mandatory even when a package uses generated
+filename prefixes or another current naming convention:
+
+1. `ACTIVE_SOURCE_AUTHORITY_MANIFEST.json`;
+2. `STALE_DONOR_DENYLIST.json`;
+3. `HIGH_RISK_ACTIVE_HASH_BASELINE.csv`;
+4. `DONOR_USE_GATE.md`; and
+5. `OPC_ACTIVE_SOURCE_PRECHECK.md`.
+
+The task must physically open and read each input during the current task,
+verify current provenance and package integrity according to the current
+manifest/handoff procedure, execute the prescribed precheck against the
+protected active `SOURCE`, and report each input individually. Filename
+recognition, existence-only checks, summaries, prior memory or a previous
+task's PASS do not satisfy this gate. A machine check, if available, supports
+but never replaces semantic reading and reporting.
+
+The required HUMAN GATE evidence is equivalent to:
+
+```text
+ACTIVE SOURCE CONTROL INPUTS
+
+[PASS] ACTIVE_SOURCE_AUTHORITY_MANIFEST.json
+resolved physical path: <current resolved path>
+READ = YES
+current provenance/integrity: PASS
+
+[PASS] STALE_DONOR_DENYLIST.json
+resolved physical path: <current resolved path>
+READ = YES
+current provenance/integrity: PASS
+
+[PASS] HIGH_RISK_ACTIVE_HASH_BASELINE.csv
+resolved physical path: <current resolved path>
+READ = YES
+current provenance/integrity: PASS
+
+[PASS] DONOR_USE_GATE.md
+resolved physical path: <current resolved path>
+READ = YES
+current provenance/integrity: PASS
+
+[PASS] OPC_ACTIVE_SOURCE_PRECHECK.md
+resolved physical path: <current resolved path>
+READ = YES
+current provenance/integrity: PASS
+
+ACTIVE SOURCE AUTHORITY PRECHECK — PASS
+```
+
+The external package is a current local-only verification/control input for
+this purpose. It is not implementation authority, is not a donor, and must
+not be promoted or copied into `SOURCE` merely to satisfy the gate. Historical,
+recovery, review, quarantine, backup and stale material remains non-
+authoritative unless a separate bounded reconciliation and explicit OWNER
+authorization applies.
+
+The gate must stop with
+`ACTIVE SOURCE AUTHORITY PRECHECK — STOP — <reason>` if any input is missing,
+ambiguous, unread, provenance/integrity-unverified or hash-inconsistent; if a
+denylisted/stale donor would be required; if protected `SOURCE` cannot be
+reconciled safely; or if an unresolved forbidden root would need to become
+authority. No implementation source-learning or modification may proceed
+after such a stop.
+
 ## Mandatory precheck for future substantive work
 
-Before a substantive task reads or writes implementation material, it must
-confirm:
+The permanent gate above is applied before a substantive task reads or writes
+implementation material. Its precheck must confirm:
 
 1. the active-source authority manifest is loaded;
 2. the stale donor denylist is loaded;

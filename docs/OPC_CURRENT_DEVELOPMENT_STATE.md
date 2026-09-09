@@ -546,6 +546,13 @@ baseline package with SHA-256
 Active-source authority hygiene and stale implementation quarantine passed in
 the external package with SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
+At this current-state observation, the verified package resolved to
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-ACTIVE-SOURCE-AUTHORITY-HYGIENE-STALE-QUARANTINE\`.
+This is a current location fact, not an eternal path invariant; each future
+substantive task must re-resolve the location from current authority and use the
+current package manifest/handoff to map the five logical inputs to their actual
+filenames. The package remains current local-only control evidence, not
+implementation authority or a donor.
 The protected active inventory covers 748 files with zero unexpected missing
 files and zero high-risk hash mismatches; proven obsolete staging/evidence
 roots were moved to quarantine without changing active implementation

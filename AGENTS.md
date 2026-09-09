@@ -51,7 +51,23 @@ Use these skills as applicable:
 - `.agents/skills/opc-qa/SKILL.md`
 - `.agents/skills/opc-review-handoff/SKILL.md`
 
+## Mandatory active-source authority gate
+Before source-learning, implementation-causality analysis or any `SOURCE` or
+test modification, apply the permanent gate in
+`docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`. Resolve the current
+physical control-package location from current authority, physically read all
+five logical inputs, verify current provenance/integrity and the applicable
+active-source hashes, then report the five inputs individually. The external
+package is current local-only control evidence, not implementation authority
+or a donor; prior memory or a prior PASS is not a substitute. Any missing,
+ambiguous, unread or unverified input requires:
+`ACTIVE SOURCE AUTHORITY PRECHECK — STOP — <reason>`.
+
 For substantive Codex work, the pre-execution HUMAN GATE remains mandatory. After producing:
+- `ACTIVE SOURCE CONTROL INPUTS` with five individual confirmations, each with
+  `resolved physical path`, `READ = YES` and
+  `current provenance/integrity: PASS`
+- `ACTIVE SOURCE AUTHORITY PRECHECK — PASS`
 - `TASK CONTROL INTEGRITY PRECHECK — PASS`
 - `TASK UNDERSTANDING CONFIRMATION`
 - `CONTINUITY ESTABLISHMENT CONFIRMATION`

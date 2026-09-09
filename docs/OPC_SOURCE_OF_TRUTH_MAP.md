@@ -127,7 +127,7 @@ authority.
 
 | Area | Current source of truth | Supporting sources | Status / caution |
 | --- | --- | --- | --- |
-| Active-source authority and donor control | `docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md` | Active-source manifest, stale donor denylist, high-risk hash baseline and external hygiene handoff | CURRENT AUTHORITATIVE CONTROL – donor reuse requires bounded reconciliation and explicit OWNER authorization; unresolved roots remain `UNRESOLVED – DO NOT USE`. |
+| Active-source authority and donor control | `docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md` | Current external/local-only package containing the logical inputs `ACTIVE_SOURCE_AUTHORITY_MANIFEST.json`, `STALE_DONOR_DENYLIST.json`, `HIGH_RISK_ACTIVE_HASH_BASELINE.csv`, `DONOR_USE_GATE.md` and `OPC_ACTIVE_SOURCE_PRECHECK.md`, plus the current hygiene handoff | CURRENT AUTHORITATIVE CONTROL – the task must resolve the package location, physically read and individually report all five inputs before source-learning or modification; donor reuse requires bounded reconciliation and explicit OWNER authorization; unresolved roots remain `UNRESOLVED – DO NOT USE`. |
 
 ## R2 implementation traceability
 

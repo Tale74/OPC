@@ -87,12 +87,26 @@ are mandatory for future corrective work.
 
 ### 3A. Active-source precheck
 
-Every future substantive task must load the active-source manifest and stale
-donor denylist, check relevant high-risk hashes, verify that write targets are
-authorized active roots, and confirm that no donor or
-`UNRESOLVED – DO NOT USE` material is being used. Donor reuse requires a
-separate bounded reconciliation and explicit OWNER authorization. This is a
-control boundary, not an implementation or cleanup authorization.
+Every future substantive task must first apply the permanent mandatory gate in
+[`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
+At task start, resolve the current physical location of the current external
+control package from current authority; do not treat the present
+`CURRENT_TASK` path as an eternal invariant. Physically open and read, and
+individually report, all five logical inputs: the active-source manifest, stale
+donor denylist, high-risk active hash baseline, donor-use gate and active-source
+precheck. Verify current provenance/package integrity, check relevant hashes,
+verify write targets are authorized active roots, and confirm no donor or
+`UNRESOLVED – DO NOT USE` material is being used. A valid report must include
+`READ = YES` and `current provenance/integrity: PASS` for every input before
+`ACTIVE SOURCE AUTHORITY PRECHECK — PASS` may be stated. Missing, ambiguous,
+unread, unverified or hash-inconsistent inputs require
+`ACTIVE SOURCE AUTHORITY PRECHECK — STOP — <reason>` and stop source-learning
+or implementation. Prior memory, filename recognition, existence-only checks
+and earlier PASS statements do not count. The package remains current
+local-only control evidence, never implementation authority or a donor. Donor
+reuse requires a separate bounded reconciliation and explicit OWNER
+authorization. This is a control boundary, not an implementation or cleanup
+authorization.
 
 ## 4. Branch and task discipline
 
