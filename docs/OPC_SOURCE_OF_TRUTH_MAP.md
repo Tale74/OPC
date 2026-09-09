@@ -114,10 +114,11 @@ is governed by `OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`.
 
 The accepted hygiene evidence records the active SOURCE/document roots,
 generated roots, evidence-only roots, historical donors, quarantined obsolete
-roots and unresolved roots. The hygiene package is external evidence with
-SHA-256 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
-The active-source high-risk hash baseline remained matched and no active
-implementation content was changed by quarantine.
+roots and unresolved roots. The prior hygiene package remains preserved as
+historical evidence. The active package identity and hash are recorded by the
+current-state and final handoff records; this map does not duplicate that
+mutable package identity. The active-source high-risk baseline and package
+integrity must be verified from the current package before substantive work.
 
 This map distinguishes documentation authority from implementation
 publication: local/GitHub documentation may be synchronized while a mixed
