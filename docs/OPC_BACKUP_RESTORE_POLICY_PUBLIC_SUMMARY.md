@@ -59,7 +59,35 @@ and clears any legacy keys during restore so a fresh machine cannot retain a
 dangling media reference. This is a logical database backup, not a self-contained
 PARTE media archive.
 
+## R2 ČITULJE transfer boundary — current source state
+
+The R2 foundation adds optional `cituljePripreme` state to both supported
+representations. Single-PREDMET JSON carries the portable occurrence identity,
+article category, PARTE TEKST mode, publication date/text, note, preparation
+state, ČITULJA finalization state and PARTE snapshot fingerprint. Full Backup JSON carries the same fields
+plus the local PREDMET foreign-key context needed by the database restore.
+Missing R2 sections remain valid legacy input. PARTE technical preparation and
+media bytes remain governed by the existing exclusion policy; a transferred
+ČITULJE snapshot does not require a destination-local PARTE row.
+
+R5 PODSETNIK completion remains a minimal PREDMET-owned transfer fact. A
+completed concrete ČITULJA child may remain durable while its IRiU occurrence
+is temporarily non-current and is preserved by PREDMET JSON and full Backup
+JSON. Incomplete, invalid, orphaned and parent-only ČITULJA state is not
+transferred merely for history. The destination accepts this non-current
+exception only when the canonical child identity matches exactly one ČITULJA
+occurrence in the same PREDMET; the child is not projected until current
+membership returns, and a ČITULJA parent is always derived rather than
+transferred as independent truth.
+
 ## Technical-Audit Required
+
+The subsequent PODSETNIK milestone uses the same PREDMET-owned transfer lane
+for manual `POSEBNE OBAVEZE` rows: portable stable rule identity, text and
+completion state are preserved through single-PREDMET JSON and full Backup
+JSON. URNA/PEPEO completion remains the scoped PREDMET-owned blocker state;
+platform notification identifiers are technical delivery state and are not
+business transfer truth.
 
 - repository/firma identity model;
 - PIB/Matični broj failure UX and owner-facing runtime acceptance;
