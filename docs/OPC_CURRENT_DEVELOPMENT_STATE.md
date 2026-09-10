@@ -547,11 +547,11 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-LIFECYCLE-CONTROLLED-REBASELINE-20260909\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260910-REVIEW-BAR-OWNER-ACCEPTED\`,
 with enclosing ZIP SHA-256
-`33E494DA67AFE694DCF81214ED9A08764F085F9F96EE811A9300DEFB107A6F37` and
+`514081754514739DCA971597BAD26EA440C05D63B717DC4ED0DE53C3CC91B0A1` and
 27-row baseline SHA-256
-`6A5488CF84E5FD2372985AAEB957A3CF9C674E10A10D6E7BC2AFD9D81A5B2017`.
+`72BE2EA5CBCD553CF72AC35805DA90EDB2BF513FA5895CA4DE9F3EB1B0D72313`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
