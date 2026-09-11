@@ -51,6 +51,21 @@ Use these skills as applicable:
 - `.agents/skills/opc-qa/SKILL.md`
 - `.agents/skills/opc-review-handoff/SKILL.md`
 
+## Mandatory post-drift recovery-plan continuity
+During the current post-drift recovery phase, every substantive OPC task must
+physically read `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md` before task planning or
+substantive source-learning. The task report must include the resolved path,
+`READ = YES`, the current recovery phase, the immediately preceding accepted
+phase or handoff, the single next plan-authorized action relevant to the task,
+and confirmation that the task does not skip, reorder, reinterpret or silently
+extend the plan. If continuity cannot be established, stop with:
+`STOP — RECOVERY PLAN CONTINUITY NOT ESTABLISHED`.
+
+The recovery plan is a governance and continuity control. It does not replace
+the detailed residual/deferred ledger or matrix, create product requirements,
+or override the engineering-profile, HUMAN GATE, active-source, donor-control,
+Docs-as-Code or anti-drift controls.
+
 ## Mandatory active-source authority gate
 Before source-learning, implementation-causality analysis or any `SOURCE` or
 test modification, apply the permanent gate in
@@ -62,6 +77,19 @@ package is current local-only control evidence, not implementation authority
 or a donor; prior memory or a prior PASS is not a substitute. Any missing,
 ambiguous, unread or unverified input requires:
 `ACTIVE SOURCE AUTHORITY PRECHECK — STOP — <reason>`.
+
+## Independent Logos review control
+For every substantive Codex task, report or review, Logos must independently
+establish task understanding, current continuity and documentation reading
+before writing, approving or assessing the result. The review must compare the
+Codex output with current OWNER authority, current documentation, source/tests/
+runtime evidence where relevant, dependency position and anti-drift controls;
+the latest report or conversational memory alone is never sufficient. Logos
+must recommend STOP/correction on authority, continuity, drift, unsupported
+inference, source/target conflation or insufficient evidence. The reusable
+procedure and handoff evidence requirements live in
+`.agents/skills/opc-review-handoff/SKILL.md`; this entry is navigation, not a
+second governance rulebook.
 
 For substantive Codex work, the pre-execution HUMAN GATE remains mandatory. After producing:
 - `ACTIVE SOURCE CONTROL INPUTS` with five individual confirmations, each with

@@ -35,6 +35,31 @@ remain classified by the migration manifest and are not silently deleted. Task
 review indexes remain local, non-authoritative convenience layers and are not
 part of the current product-documentation navigation.
 
+## Post-drift recovery phase — current continuity marker
+
+The canonical recovery-phase governance plan is
+[`docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`](OPC_POST_DRIFT_RECOVERY_PLAN.md).
+The protected recovered/current continuation baseline is the current mixed
+SOURCE at `C:\Projekti\OPC\OPC v.1\SOURCE`, governed by the current external
+active-source package and its protected baseline. The pre-control-hardening
+published documentation reference at task start was
+`0ec0c7356851f792e53a8198573890cb1274b4e0`; later authorized publication may
+supersede it. Neither that reference nor later documentation publication alone
+represents publication of the complete mixed implementation SOURCE.
+
+The current phase is:
+
+`REVIEW BAR CORRECTIVE IMPLEMENTATION + OWNER RUNTIME ACCEPTANCE — COMPLETE`
+
+The next ordinary plan-authorized action is:
+
+`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — NEXT`
+
+This marker is a governance/continuity correction and does not replace or
+reclassify the detailed residual, deferred or evidence records. The canonical
+plan and existing current homes remain subordinate to OWNER authority and the
+established engineering, active-source, donor-control and anti-drift gates.
+
 The application/product name is `OPC`. `OPC Srbija` is internal shorthand only
 for the stable Serbian-market product-line gate and is not a rename.
 
@@ -140,7 +165,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
 | PODSETNIK | The URNA/PEPEO contract and F-06 `POSEBNE OBAVEZE` are implemented at source/test/documentation level, including the scoped `ZAVRŠEN` blocker and transfer paths. Runtime/device acceptance, release and publication remain separate claims. | Complete integrated runtime/build/release gates when separately authorized. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
-| Documents | RAČUN PDF exists; NALOG CVEĆARI standalone generator is not proven; standard PDF typography refinement remains. | Owner decisions for RAČUN availability/default and NALOG content/scope; bounded document work. |
+| Documents | RAČUN PDF exists. `NALOG CVEĆARI` is an accepted/protected current PDF unit in the native PREDMET → DOKUMENTI route: PREDMET remains the sole content truth, PODSETNIK carries only the shortcut/link, and the accepted item/ribbon/image structure, common shared PDF mechanism, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels are protected. Output scope is PDF only; DOCX is not an open option. | Accepted/protected current NALOG CVEĆARI PDF unit; no NALOG PDF/DOCX scope decision remains open. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
 | MODUL DVE VALUTE | Not implemented. | Mandatory before stable OPC v.1 and before `OPC_v.1_Int`. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
@@ -153,9 +178,15 @@ product requirements. Technical findings must name their owner-planned parent;
 release/acceptance controls are attached gates, standards govern execution, and
 non-blocking debt stays outside the critical path.
 
-The next owner-planned package is:
-
+The earlier roadmap marker
 `independent Logos review of the bounded PODSETNIK presentation/primary-notification correction`
+is superseded as the current next step by the later OWNER-accepted REVIEW BAR
+phase marker and canonical recovery plan. It remains historical roadmap
+context, not the current recovery-phase action.
+
+The current recovery-phase next action is:
+
+`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — NEXT`
 
 The recovered owner-authority restoration established the PREDMET/IRiU signal
 and obligation contract. The URNA/PEPEO business contract is locked. Current
@@ -203,7 +234,6 @@ deferred.
 
 - performance acceptance targets after measurement;
 - implementation of the recovered PODSETNIK contract (business meanings are no longer an owner-decision gap);
-- NALOG CVEĆARI content and PDF/DOCX scope;
 - RAČUN FIRMA availability/default;
 - EUR activation timing and eligible open-PREDMET treatment;
 - final app version/update channel and release baseline;
@@ -430,10 +460,14 @@ portable `SYNTHETIC_ADMIN / SAVETNIK` snapshot remained responsible while
 actor. Windows → Android passed with the unique exact
 `SAŠA ANDONOV / ADMINISTRATOR` match bound locally while
 `SYNTHETIC_ADMIN / ADMINISTRATOR` remained the distinct importer and local
-creator/modifier. The owner's clarification that SAVETNIK cannot import is
-accepted role policy and not a defect. PREDMET/detail UI, LISTA PDF, PREDMET PDF
-and relevant STATISTIKA remained consistent with PREDMET responsibility truth
-in both directions.
+creator/modifier. The earlier wording that SAVETNIK cannot import is
+superseded. The current transfer boundary permits an active local
+ADMINISTRATOR or SAVETNIK to perform the import; the importing local actor
+remains local operational history, while the incoming portable SAVETNIK
+business responsibility is preserved and bound only on an exact unique local
+name+role match. PREDMET/detail UI, LISTA PDF, PREDMET PDF and relevant
+STATISTIKA remained consistent with PREDMET responsibility truth in both
+directions.
 
 This closes only same-FIRMA peer responsibility-transfer acceptance. It does
 not establish general database ownership, global user identity, full-backup
@@ -569,8 +603,10 @@ durable controls. `SOURCE/runtime_data` and `SOURCE/.audit_tmp` remain
 The current SOURCE remains a mixed dirty working state on the named task
 branch and is not yet a coherent published implementation baseline. The
 latest Windows process/window observation remains the known Codex sandbox
-desktop-binding recurrence; OWNER-visible desktop runtime acceptance is still
-required. Documentation authority and implementation-source publication are
-separate gates. Residual OWNER findings remain preserved for later
-OWNER-gated corrective work and are not claimed as resolved by this
-documentation synchronization.
+desktop-binding recurrence; OWNER-visible desktop runtime acceptance remains
+required for the broader restoration package. The separately scoped REVIEW BAR
+runtime acceptance is recorded by the current phase marker above.
+Documentation authority and implementation-source publication are separate
+gates. Residual OWNER findings remain preserved for later OWNER-gated
+corrective work and are not claimed as resolved by this documentation
+synchronization.

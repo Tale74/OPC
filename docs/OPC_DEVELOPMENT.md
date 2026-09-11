@@ -1,7 +1,7 @@
 # OPC Development Guide
 
 **Status:** `CURRENT AUTHORITATIVE DEVELOPMENT INFORMATION HOME`
-**Baseline:** branch `task/OPC-SCENARIO-MODULE-LOCK`, published Phase 3 baseline `336552ff40eaa72321670cb554ebd1d6d784d30c`
+**Baseline reference:** historical Phase 3 branch `task/OPC-SCENARIO-MODULE-LOCK`, published Phase 3 SHA `336552ff40eaa72321670cb554ebd1d6d784d30c`; this is not the current operational task baseline. Current work must use the exact branch/SHA established by the current handoff and recovery plan; this guide does not invent a replacement baseline.
 **Scope:** how to understand, validate and document current OPC work. This guide does not authorize production changes outside an explicitly scoped task.
 
 ## 1. Product and authority entry points
@@ -85,7 +85,23 @@ a coherent source baseline. The active-source and donor rules in
 [`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md)
 are mandatory for future corrective work.
 
-### 3A. Active-source precheck
+### 3A. Post-drift recovery-plan continuity
+
+While the post-drift recovery phase remains open, every substantive OPC task
+must physically read [`OPC_POST_DRIFT_RECOVERY_PLAN.md`](OPC_POST_DRIFT_RECOVERY_PLAN.md)
+before task planning or substantive source-learning. The task report must
+state the resolved path, `READ = YES`, the current recovery phase, the
+immediately preceding accepted phase or handoff, the single next
+plan-authorized action relevant to the task, and that the task does not skip,
+reorder, reinterpret or silently extend the recovery plan. If any item cannot
+be established, stop with `STOP — RECOVERY PLAN CONTINUITY NOT ESTABLISHED`.
+
+The plan governs continuity and ordering only. It does not create product
+requirements or replace the detailed residual/deferred/evidence ledger and
+matrix. Existing engineering-profile, HUMAN GATE, Docs-as-Code, active-source,
+donor-control and anti-drift controls remain in force.
+
+### 3B. Active-source precheck
 
 Every future substantive task must first apply the permanent mandatory gate in
 [`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
@@ -108,7 +124,7 @@ reuse requires a separate bounded reconciliation and explicit OWNER
 authorization. This is a control boundary, not an implementation or cleanup
 authorization.
 
-### 3B. High-risk active-baseline closure
+### 3C. High-risk active-baseline closure
 
 At closure of every substantive task, determine whether any file protected by
 `HIGH_RISK_ACTIVE_HASH_BASELINE.csv` changed. Report
@@ -132,7 +148,12 @@ implementation donor mechanism.
 
 - Do not infer the active operational baseline from public `main`; use the exact branch and SHA named by the current handover/task.
 - The published Phase 3 baseline is `task/OPC-SCENARIO-MODULE-LOCK` at `336552ff40eaa72321670cb554ebd1d6d784d30c`; use the exact handover/task SHA for later work.
-- Start from a clean worktree and keep unrelated work out of the branch.
+- For ordinary development outside the open post-drift recovery phase, start from
+  a clean worktree and keep unrelated work out of the branch. During the
+  current recovery phase, the protected mixed SOURCE is the continuation
+  baseline: do not clean, reset, stash, restore, move or normalize it. Preserve
+  its unrelated delta and follow the canonical recovery plan and current
+  handoff instead.
 - Use descriptive focused commits and review status, staged names and staged diff before commit.
 - Do not change canonical/default branch in documentation work.
 - A task report must contain the required manifest start/end compliance blocks when the repository gate applies.
