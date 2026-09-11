@@ -90,11 +90,22 @@ The preceding accepted recovery phase was:
 
 The next ordinary plan-authorized action is:
 
-`OWNER SEQUENCING DECISION REQUIRED`
+`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`
 
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
 does not reorder or reinterpret the existing residual work.
+
+The resolved OWNER recovery sequence is:
+
+1. `PHASE 1 — PROVEN DEVIATIONS AND DEFECTS`;
+2. `PHASE 2 — OMITTED PRE-CEREMONY OBLIGATIONS`;
+3. `PHASE 3 — OMITTED POST-CEREMONY OBLIGATIONS`.
+
+Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
+3 begins only after Phases 1 and 2 are completed, accepted and documented.
+Evidence, runtime and release gates remain separate where required. No internal
+Phase 1 implementation order is selected by this documentation task.
 
 ## 3A. Docs-as-Code progression control
 
@@ -115,10 +126,13 @@ detailed residual/deferred/evidence authority:
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
 
 The FINAL9 ledger/matrix remain immutable predecessor provenance only; they are
-not a competing current authority. No unique next residual correction is
-established by the current records. Therefore the next action remains
-`OWNER SEQUENCING DECISION REQUIRED`; historical readiness/dependency
-sequences must not be promoted to current sequencing authority.
+not a competing current authority. The current successor records the three
+additional Phase 1 phase-classification defects `POD-08`, `POD-09` and `POD-10`.
+The current audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE FOUND` and
+`PHASE 3 PROVEN OMITTED OBLIGATIONS — NONE FOUND`; those phases remain reserved
+for future source-proven omissions and create no implementation work here.
+Historical readiness/dependency sequences must not be promoted to current
+sequencing authority.
 
 Those records retain the established distinctions, including accepted/protect,
 partial residual correction, OWNER refinement, future direction, evidence gap,

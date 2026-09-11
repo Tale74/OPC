@@ -12,9 +12,11 @@ This is the concise current-state entry point. The dependency plan
 dependency information, not current recovery sequencing authority. The current
 post-drift recovery phase and task sequencing are governed by
 `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; detailed current residual status and
-backlog are governed by the sole current successor residual ledger/matrix. If
-no unique next residual is established, the result is
-`OWNER SEQUENCING DECISION REQUIRED`. Forensic evidence and the full reality matrix are in
+backlog are governed by the sole current successor residual ledger/matrix. The
+resolved current next recovery phase is
+`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`; Phase 2 and Phase 3 remain
+reserved for proven omitted obligations, currently with none found. Forensic
+evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 
 README is navigation only. The five substantive current OPC authority homes
@@ -62,16 +64,27 @@ The immediately preceding accepted phase was:
 
 The next ordinary plan-authorized action is:
 
-`OWNER SEQUENCING DECISION REQUIRED`
+`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`
+
+The resolved OWNER recovery sequence is:
+
+1. `PHASE 1 — PROVEN DEVIATIONS AND DEFECTS`;
+2. `PHASE 2 — OMITTED PRE-CEREMONY OBLIGATIONS`;
+3. `PHASE 3 — OMITTED POST-CEREMONY OBLIGATIONS`.
 
 The sole current detailed residual authority is the successor pair:
 
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\10_CURRENT_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
 
-FINAL9 remains immutable predecessor provenance only. No unique next residual
-correction is established, and historical readiness/dependency sequences are
-not current sequencing authority.
+FINAL9 remains immutable predecessor provenance only. The current Phase 1
+defect set includes the established residuals plus `POD-08`, `POD-09` and
+`POD-10`, each recording an implemented but incorrectly pre-ceremonial phase
+assignment. `PIO-01` remains unchanged and locked. Phase 2 is
+`OMITTED PRE-CEREMONY OBLIGATIONS — NO CURRENTLY PROVEN OMISSIONS`; Phase 3 is
+`OMITTED POST-CEREMONY OBLIGATIONS — NO CURRENTLY PROVEN OMISSIONS`. No
+internal Phase 1 implementation order is selected. Historical
+readiness/dependency sequences are not current sequencing authority.
 
 This marker is a governance/continuity correction and does not replace or
 reclassify the detailed residual, deferred or evidence records. The canonical
@@ -207,7 +220,7 @@ context, not the current recovery-phase action.
 The prior current-state record's next-action wording is superseded by the
 completed closure marker above. The current recovery-phase next action is:
 
-`OWNER SEQUENCING DECISION REQUIRED`
+`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`
 
 The recovered owner-authority restoration established the PREDMET/IRiU signal
 and obligation contract. The URNA/PEPEO business contract is locked. Current
@@ -216,8 +229,10 @@ separate claims governed by the actually completed evidence; recovered
 decisions must not be reopened or used to infer additional business
 completion.
 
-After that contract is approved, the owner roadmap proceeds through the
-lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
+The broader owner roadmap remains supporting roadmap context. Current recovery
+sequencing is governed by the canonical recovery plan and successor residual
+authority. After the current recovery sequence is completed, the owner roadmap
+may proceed through the lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
 VALUTE, and the Serbian-market OPC v.1 product-line gate. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
 signing work remain attached technical/release controls only when necessary for
@@ -258,8 +273,6 @@ deferred.
 - EUR activation timing and eligible open-PREDMET treatment;
 - final app version/update channel and release baseline;
 - publisher/signing-key custody.
-- sequencing of the remaining residual groups after the completed REVIEW BAR
-  documentation closure.
 
 Windows light/dark theme is not an active owner decision or roadmap dependency.
 Its previous partial/pending wording is superseded by the explicit owner runtime
