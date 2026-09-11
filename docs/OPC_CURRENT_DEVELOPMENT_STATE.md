@@ -7,9 +7,14 @@
 
 **Reconciled:** 2026-08-17
 
-This is the concise current-state entry point. Detailed dependency ordering is
-in `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`; forensic
-evidence and the full reality matrix are in
+This is the concise current-state entry point. The dependency plan
+(`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
+dependency information, not current recovery sequencing authority. The current
+post-drift recovery phase and task sequencing are governed by
+`docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; detailed current residual status and
+backlog are governed by the sole current successor residual ledger/matrix. If
+no unique next residual is established, the result is
+`OWNER SEQUENCING DECISION REQUIRED`. Forensic evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 
 README is navigation only. The five substantive current OPC authority homes
@@ -49,11 +54,24 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
+`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — COMPLETE`
+
+The immediately preceding accepted phase was:
+
 `REVIEW BAR CORRECTIVE IMPLEMENTATION + OWNER RUNTIME ACCEPTANCE — COMPLETE`
 
 The next ordinary plan-authorized action is:
 
-`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — NEXT`
+`OWNER SEQUENCING DECISION REQUIRED`
+
+The sole current detailed residual authority is the successor pair:
+
+- `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\10_CURRENT_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
+- `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
+
+FINAL9 remains immutable predecessor provenance only. No unique next residual
+correction is established, and historical readiness/dependency sequences are
+not current sequencing authority.
 
 This marker is a governance/continuity correction and does not replace or
 reclassify the detailed residual, deferred or evidence records. The canonical
@@ -85,9 +103,11 @@ The consolidated current-state record is
 [`OPC_R1_R5_CURRENT_STATE_RECONCILIATION.md`](OPC_R1_R5_CURRENT_STATE_RECONCILIATION.md).
 It records the accepted R1–R5 implementation/source/test/documentation
 baseline, records the R5 independent Logos review PASS and separates it from
-runtime/release acceptance, classifies the remaining ČITULJE/PODSETNIK capabilities, and
-provides the next bounded-work sequence. No R1–R5 item is release complete on
-bounded evidence alone.
+runtime/release acceptance, and classifies the remaining ČITULJE/PODSETNIK
+capabilities. It is supporting current-state/evidence material, not current
+recovery sequencing authority. Current sequencing is governed by
+`OPC_POST_DRIFT_RECOVERY_PLAN.md` and the current successor residual authority.
+No R1–R5 item is release complete on bounded evidence alone.
 
 ## R1 portable IRiU identity and transfer foundation — 2026-09-05
 
@@ -184,9 +204,10 @@ is superseded as the current next step by the later OWNER-accepted REVIEW BAR
 phase marker and canonical recovery plan. It remains historical roadmap
 context, not the current recovery-phase action.
 
-The current recovery-phase next action is:
+The prior current-state record's next-action wording is superseded by the
+completed closure marker above. The current recovery-phase next action is:
 
-`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — NEXT`
+`OWNER SEQUENCING DECISION REQUIRED`
 
 The recovered owner-authority restoration established the PREDMET/IRiU signal
 and obligation contract. The URNA/PEPEO business contract is locked. Current
@@ -233,11 +254,12 @@ deferred.
 ## Active owner decisions
 
 - performance acceptance targets after measurement;
-- implementation of the recovered PODSETNIK contract (business meanings are no longer an owner-decision gap);
 - RAČUN FIRMA availability/default;
 - EUR activation timing and eligible open-PREDMET treatment;
 - final app version/update channel and release baseline;
 - publisher/signing-key custody.
+- sequencing of the remaining residual groups after the completed REVIEW BAR
+  documentation closure.
 
 Windows light/dark theme is not an active owner decision or roadmap dependency.
 Its previous partial/pending wording is superseded by the explicit owner runtime
@@ -581,11 +603,11 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260910-REVIEW-BAR-OWNER-ACCEPTED\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260911-REVIEW-BAR-DOCUMENTATION-CLOSURE\`,
 with enclosing ZIP SHA-256
-`514081754514739DCA971597BAD26EA440C05D63B717DC4ED0DE53C3CC91B0A1` and
+`B8CAD0F815194AF1F158D23B0BEA7889D8C613AC7E552098271B641AA553E2A7` and
 27-row baseline SHA-256
-`72BE2EA5CBCD553CF72AC35805DA90EDB2BF513FA5895CA4DE9F3EB1B0D72313`.
+`290B5E7498DE6D9D4FBF0E513A603EDDF9529F332BB2165DE00881303733E210`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual

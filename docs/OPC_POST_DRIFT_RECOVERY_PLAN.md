@@ -20,9 +20,17 @@ protected recovered-baseline package SHA is:
 `5241576752D8F3954D741A3AC0CEEF089863F5AAC2E30F72354264C4FE9ABE5A`
 
 The current active 27-row high-risk baseline SHA is a separate control-file
-identity:
+identity, resolved from the current external package/current-state authority:
 
-`72BE2EA5CBCD553CF72AC35805DA90EDB2BF513FA5895CA4DE9F3EB1B0D72313`
+`290B5E7498DE6D9D4FBF0E513A603EDDF9529F332BB2165DE00881303733E210`
+
+The current external active control package is:
+
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260911-REVIEW-BAR-DOCUMENTATION-CLOSURE\`
+
+Its enclosing ZIP SHA-256 is:
+
+`B8CAD0F815194AF1F158D23B0BEA7889D8C613AC7E552098271B641AA553E2A7`
 
 These are distinct artifacts and identities. The pre-control-hardening
 published documentation reference at task start was:
@@ -74,11 +82,15 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
+`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — COMPLETE`
+
+The preceding accepted recovery phase was:
+
 `REVIEW BAR CORRECTIVE IMPLEMENTATION + OWNER RUNTIME ACCEPTANCE — COMPLETE`
 
 The next ordinary plan-authorized action is:
 
-`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — NEXT`
+`OWNER SEQUENCING DECISION REQUIRED`
 
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
@@ -96,11 +108,17 @@ publication remains a separate gate from documentation synchronization.
 
 ## 4. Residual and deferred authority
 
-The plan references, and does not duplicate or replace, the detailed
-residual/deferred/evidence authority:
+The plan references, and does not duplicate or replace, the sole current
+detailed residual/deferred/evidence authority:
 
-- `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-CURRENT-RECOVERED-BASELINE-PROTECTION_FINAL9\10_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
-- `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-CURRENT-RECOVERED-BASELINE-PROTECTION_FINAL9\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
+- `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\10_CURRENT_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
+- `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
+
+The FINAL9 ledger/matrix remain immutable predecessor provenance only; they are
+not a competing current authority. No unique next residual correction is
+established by the current records. Therefore the next action remains
+`OWNER SEQUENCING DECISION REQUIRED`; historical readiness/dependency
+sequences must not be promoted to current sequencing authority.
 
 Those records retain the established distinctions, including accepted/protect,
 partial residual correction, OWNER refinement, future direction, evidence gap,
@@ -127,8 +145,11 @@ must report:
 3. the current recovery phase;
 4. the immediately preceding accepted phase or handoff;
 5. the single next plan-authorized action relevant to that task; and
-6. confirmation that the task does not skip, reorder, reinterpret or silently
-   extend the recovery plan.
+6. the current residual ID/group, its current classification, the predecessor
+   authority and the plan authorization for the task; and
+7. confirmation that the task does not skip, reorder, reinterpret or silently
+   extend the recovery plan or use a historical sequence as current sequencing
+   authority.
 
 If any item cannot be established, the task must stop with:
 

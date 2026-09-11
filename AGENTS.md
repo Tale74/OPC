@@ -57,8 +57,13 @@ physically read `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md` before task planning or
 substantive source-learning. The task report must include the resolved path,
 `READ = YES`, the current recovery phase, the immediately preceding accepted
 phase or handoff, the single next plan-authorized action relevant to the task,
-and confirmation that the task does not skip, reorder, reinterpret or silently
-extend the plan. If continuity cannot be established, stop with:
+the current residual ID/group, its current classification, the predecessor
+authority and the plan authorization for the task, and confirmation that the
+task does not skip, reorder, reinterpret or silently extend the plan or use a
+historical sequence as current sequencing authority. This task-to-plan
+conformance check is part of the existing recovery-plan continuity control; it
+does not create a parallel governance regime. If continuity cannot be
+established, stop with:
 `STOP — RECOVERY PLAN CONTINUITY NOT ESTABLISHED`.
 
 The recovery plan is a governance and continuity control. It does not replace

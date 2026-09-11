@@ -45,14 +45,16 @@ The accepted active-source hygiene result records:
 The prior hygiene package remains preserved as historical evidence, with ZIP
 SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
-The current active control package is external and local-only at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260910-REVIEW-BAR-OWNER-ACCEPTED\`,
-with enclosing ZIP SHA-256
-`514081754514739DCA971597BAD26EA440C05D63B717DC4ED0DE53C3CC91B0A1`.
-Its current 27-row high-risk baseline is
-`72BE2EA5CBCD553CF72AC35805DA90EDB2BF513FA5895CA4DE9F3EB1B0D72313`.
+The current active control package is external and local-only. Its physical
+location, manifest identity, enclosing-package identity and current 27-row
+baseline identity must be resolved from current authority, current-state and
+the accepted handoff for each substantive task; this durable control document
+does not hard-code mutable package or baseline identities. The resolved package
+must be physically verified before use, including its manifest, five logical
+inputs, package/integrity metadata and applicable active-source hashes.
 Quarantine was copy/hash/remove verified without changing active source
-content; the current controlled rebaseline now verifies all protected rows.
+content; the current controlled rebaseline procedure verifies all protected
+rows.
 
 ## Mandatory active-source authority control gate
 

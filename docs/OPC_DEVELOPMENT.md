@@ -50,6 +50,16 @@ parity, backup, signing, version and handover items are release controls
 attached to their parent, not standalone product features. Valid but
 non-blocking debt stays outside the critical path.
 
+During the current post-drift recovery phase, this existing owner-roadmap
+control also requires every substantive task to identify its current residual
+ID/group, classification, predecessor authority and plan authorization. The
+task must confirm that it does not skip, reorder, reinterpret or silently
+extend the canonical recovery plan, and that no historical readiness or
+dependency sequence is being promoted to current sequencing authority. This
+is the recovery plan's task-to-plan conformance rule, not a parallel
+governance regime. If current authority does not establish one next residual
+correction, the result is `OWNER SEQUENCING DECISION REQUIRED`.
+
 If a finding changes business meaning or introduces new product scope, stop at
 `OWNER DECISION REQUIRED`; observation alone never creates authority. Avoid
 speculative or recursively generated successor chains. Apply standards

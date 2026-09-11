@@ -49,7 +49,7 @@ The review layers are kept separate:
 | Dedicated module/UI | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R3 source/tests; current occurrences only, editable DA proposal, independent NE text, date/note and derived word count. |
 | Canonical ČITULJA PDF | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R4 generator reads persisted preparation state and produces one PDF per occurrence. |
 | PODSETNIK parent/child integration | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R5 source/tests; parent derived from relevant children, child identity portable, no independent parent truth. |
-| REVIEW BAR participation | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R5 general relevant-parent derivation; zero-state and no-count behavior preserved. |
+| REVIEW BAR participation | `IMPLEMENTED + OWNER RUNTIME ACCEPTANCE PASS — scoped REVIEW BAR behavior protected` | Current REVIEW BAR coverage, cadence, contrast, wording and live-refresh behavior are accepted for the scoped correction; broader integrated R1–R5 runtime/device and release acceptance remains separate. |
 | LISTA integration | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R5 source/tests; shared human-facing projection and empty paper checkboxes. |
 | Single-PREDMET JSON transfer | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R2/R2B/R5 transfer evidence; legacy omission remains importable. |
 | OPC Backup transfer | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R2/R2B/R5 backup evidence; minimal valid state only. |
@@ -65,13 +65,13 @@ claim that every owner-planned future surface is complete.
 | F-01 NALOG ZA OPREMANJE placement/action | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | Current PODSETNIK screen exposes the equipment action; bounded callback/output tests pass. Full owner runtime placement acceptance remains pending. |
 | F-02 NAPOMENA separation | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | Current screen has a separate general note field below the checklist; integrated visual/runtime acceptance remains pending. |
 | F-03 completed/incomplete distinction | `PARTIALLY IMPLEMENTED` | `lib/features/podsetnik/presentation/podsetnik_module_screen.dart` renders `completed` through checked/unchecked `CheckboxListTile` values for groups, children and standalone items. Current tests (`test/podsetnik_task2_ui_integration_test.dart`, `test/podsetnik_module_screen_test.dart`, `test/podsetnik_task2_bounded_correction_test.dart` and `test/podsetnik_obligation_foundation_test.dart`) cover checklist/state behavior but do not prove an explicit completed-vs-incomplete visual treatment beyond checkbox state; that evidence/runtime gap remains open. |
-| F-04 REVIEW BAR semantics | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R5 correction derives the general relevant unfinished-parent set; placement/style/zero-state/no-count are preserved. |
+| F-04 REVIEW BAR semantics | `IMPLEMENTED + OWNER RUNTIME ACCEPTANCE PASS — scoped REVIEW BAR behavior protected` | General relevant unfinished-parent projection, cadence, placement/style, zero-state and live completion refresh are accepted for the scoped REVIEW BAR correction; broader integrated runtime/release boundary remains. |
 | F-05 ČITULJA | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R1–R5 baseline; see the ČITULJE matrix. |
-| F-06 manual / `POSEBNE OBAVEZE` | `OPEN` | Owner contract is known, but no bounded implementation is included in R1–R5. |
+| F-06 manual / `POSEBNE OBAVEZE` | `IMPLEMENTED + OWNER RUNTIME ACCEPTANCE PASS — scoped REVIEW BAR participation protected` | The accepted REVIEW BAR correction covers active `POSEBNE OBAVEZE`; broader F-06 manual-child/transfer/runtime/release scope remains governed by the current residual authority. |
 | F-07 PODSETNIK transfer | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | PREDMET-owned obligation rows and R5 minimal ČITULJA state use existing JSON/Backup paths; physical cross-device acceptance remains pending. |
 | F-08 IMENIK | `DEFERRED` | Outside the R1–R5 dependency chain; no new implementation is authorized by this reconciliation. |
 | F-09 FINANSIJE | `DEFERRED` | Existing FINANSIJE segment and focused formatting behavior are separate; broader owner-planned F-09 work is outside R1–R5 and not implemented here. |
-| URNA/PEPEO obligation/notification lifecycle | `OPEN` | Business contract is locked; implementation of specialization, sole blocker, +3 cycle and termination is not closed. |
+| URNA/PEPEO obligation/notification lifecycle | `IMPLEMENTED + SOURCE/TEST/DOCUMENTATION COMPLETE — RUNTIME/EVIDENCE/RELEASE BOUNDARY OPEN` | Specialization, scoped `ZAVRŠEN` blocker, transfer paths and source/test/documentation behavior are current; remaining runtime/device evidence and integrated release acceptance are separate gates. |
 | PODSETNIK UI/PDF/LISTA consistency | `PARTIALLY IMPLEMENTED` | R5 ČITULJA/LISTA/PDF route is implemented; broader PODSETNIK visual redesign and full runtime consistency remain open. |
 | Windows/Android runtime acceptance | `OPEN` | Integrated R1–R5 runtime/device evidence is still pending. |
 
@@ -104,13 +104,14 @@ The following remain pending:
 
 No R1–R5 item is marked `RELEASE COMPLETE`.
 
-## 7. Open items and recommended next sequence
+## 7. Open items and current sequencing consequence
 
 ### Open items
 
-1. `OPEN / implementation`: bounded F-06 `POSEBNE OBAVEZE` work.
-2. `OPEN / implementation`: URNA/PEPEO specialization and the centralized
-   `ZAVRŠEN` blocker/cycle.
+1. `EVIDENCE GAP`: broader F-06 manual-child, grouped-state, reopen/transfer
+   and runtime evidence remains governed by the current residual authority.
+2. `EVIDENCE GAP`: broader URNA/PEPEO Windows secondary-cycle and integrated
+   runtime evidence remains governed by the current residual authority.
 3. `DEFERRED / feature`: broader F-09 FINANSIJE work.
 4. `DEFERRED / feature`: IMENIK when its dependency position is selected.
 5. `PARTIALLY IMPLEMENTED / UI-UX`: F-03 explicit completed/incomplete visual
@@ -120,16 +121,15 @@ No R1–R5 item is marked `RELEASE COMPLETE`.
    acceptance.
 7. `OPEN / release`: final full QA/build/signing/version/Git/publication gates.
 
-### Recommended sequence
+No unique next residual implementation is established by this supporting
+record. Current recovery sequencing is governed by the canonical recovery plan
+and the current successor residual authority:
 
-1. One bounded feature task selected from the owner roadmap, most directly
-   F-06 or URNA/PEPEO according to dependency priority.
-2. Separate integrated QA and runtime acceptance wave for the accumulated
-   R1–R5 state after the relevant source work is complete.
-3. Final documentation closure, then the separately authorized commit/push/
-   publication gate.
+`OWNER SEQUENCING DECISION REQUIRED`
 
-This sequence does not authorize the next task automatically.
+The predecessor recommendation to select F-06 or URNA/PEPEO as the next feature
+is historical and non-authoritative for current recovery ordering. This record
+does not authorize the next task automatically.
 
 ## 8. Documentation reconciliation record
 
