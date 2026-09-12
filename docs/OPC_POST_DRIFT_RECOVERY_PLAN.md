@@ -22,15 +22,15 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`290B5E7498DE6D9D4FBF0E513A603EDDF9529F332BB2165DE00881303733E210`
+`B27C312EDF65FA13115CC58C6276F7B48D3D766BE4DEFE61C130DC3EBE621B35`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260911-REVIEW-BAR-DOCUMENTATION-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260912-PHASE1-FOUNDATION-A-POD11-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`B8CAD0F815194AF1F158D23B0BEA7889D8C613AC7E552098271B641AA553E2A7`
+`DAD5457ADBB475698FE8E6B57CD7C3E2A311AD21E96D9CA91E60AC855E356A3E`
 
 These are distinct artifacts and identities. The pre-control-hardening
 published documentation reference at task start was:
@@ -92,6 +92,10 @@ The next ordinary plan-authorized action is:
 
 `PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`
 
+Within that Phase 1 action, OWNER has selected the next structural/logical
+dependency wave as `FOUNDATION B — CIT-01`. This is sequencing authority only;
+CIT-01 implementation is not authorized by this documentation closure.
+
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
 does not reorder or reinterpret the existing residual work.
@@ -104,8 +108,10 @@ The resolved OWNER recovery sequence is:
 
 Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
 3 begins only after Phases 1 and 2 are completed, accepted and documented.
-Evidence, runtime and release gates remain separate where required. No internal
-Phase 1 implementation order is selected by this documentation task.
+Evidence, runtime and release gates remain separate where required. OWNER has
+selected `FOUNDATION B — CIT-01` as the next structural/logical Phase 1 wave;
+this plan does not authorize its implementation or any internal work within
+that wave.
 
 ## 3A. Docs-as-Code progression control
 
@@ -127,7 +133,12 @@ detailed residual/deferred/evidence authority:
 
 The FINAL9 ledger/matrix remain immutable predecessor provenance only; they are
 not a competing current authority. The current successor records the three
-additional Phase 1 phase-classification defects `POD-08`, `POD-09` and `POD-10`.
+additional Phase 1 phase-classification defects `POD-08`, `POD-09` and `POD-10`,
+the later Windows-owner-runtime acceptance of Foundation A, and `POD-11` as the
+existing grouped-obligation-standard correction accepted on Windows with
+Android parity deferred by OWNER. The duplicated/repeated `ČINJENICE
+CEREMONIJE` presentation remains a separate open Phase 1 presentation defect
+under its existing ceremony/header boundary.
 The current audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE FOUND` and
 `PHASE 3 PROVEN OMITTED OBLIGATIONS — NONE FOUND`; those phases remain reserved
 for future source-proven omissions and create no implementation work here.

@@ -18,6 +18,9 @@ resolved current next recovery phase is
 reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
+Within Phase 1, OWNER has selected `FOUNDATION B — CIT-01` as the next
+structural/logical dependency wave; this is sequencing only and does not
+authorize CIT-01 implementation in the present documentation closure.
 
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
@@ -72,15 +75,26 @@ The resolved OWNER recovery sequence is:
 2. `PHASE 2 — OMITTED PRE-CEREMONY OBLIGATIONS`;
 3. `PHASE 3 — OMITTED POST-CEREMONY OBLIGATIONS`.
 
+Foundation A (`POD-08`, `POD-09`, `POD-10`) is now recorded as
+`WINDOWS OWNER RUNTIME ACCEPTED`, with Android parity deferred until the Phase
+1 Windows defect set is consolidated. `POD-11 — VOJNE POČASTI` is recorded as
+`WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER` and remains
+classified as `PHASE 1 DEFECT — EXISTING GROUPED-OBLIGATION STANDARD MISAPPLIED`.
+Windows and Android remain equal peers; after the consolidated Android parity
+point, development returns to synchronized Windows + Android execution. The
+duplicated/repeated `ČINJENICE CEREMONIJE` presentation remains a separate open
+Phase 1 presentation defect under its existing ceremony/header boundary.
+
 The sole current detailed residual authority is the successor pair:
 
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\10_CURRENT_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
 
 FINAL9 remains immutable predecessor provenance only. The current Phase 1
-defect set includes the established residuals plus `POD-08`, `POD-09` and
-`POD-10`, each recording an implemented but incorrectly pre-ceremonial phase
-assignment. `PIO-01` remains unchanged and locked. Phase 2 is
+defect set includes the established residuals plus `POD-08`, `POD-09`,
+`POD-10` and `POD-11`; the first three are accepted Windows corrections of
+their phase classification, while `POD-11` records the accepted grouped-
+obligation standard correction. `PIO-01` remains unchanged and locked. Phase 2 is
 `OMITTED PRE-CEREMONY OBLIGATIONS — NO CURRENTLY PROVEN OMISSIONS`; Phase 3 is
 `OMITTED POST-CEREMONY OBLIGATIONS — NO CURRENTLY PROVEN OMISSIONS`. No
 internal Phase 1 implementation order is selected. Historical
@@ -616,11 +630,11 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260911-REVIEW-BAR-DOCUMENTATION-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260912-PHASE1-FOUNDATION-A-POD11-CLOSURE\`,
 with enclosing ZIP SHA-256
-`B8CAD0F815194AF1F158D23B0BEA7889D8C613AC7E552098271B641AA553E2A7` and
+`DAD5457ADBB475698FE8E6B57CD7C3E2A311AD21E96D9CA91E60AC855E356A3E` and
 27-row baseline SHA-256
-`290B5E7498DE6D9D4FBF0E513A603EDDF9529F332BB2165DE00881303733E210`.
+`B27C312EDF65FA13115CC58C6276F7B48D3D766BE4DEFE61C130DC3EBE621B35`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
