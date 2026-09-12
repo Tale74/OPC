@@ -18,9 +18,11 @@ resolved current next recovery phase is
 reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
-Within Phase 1, OWNER has selected `FOUNDATION B — CIT-01` as the next
-structural/logical dependency wave; this is sequencing only and does not
-authorize CIT-01 implementation in the present documentation closure.
+Within Phase 1, the completed current wave is
+`FOUNDATION B — CIT-01 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
+DEFERRED BY OWNER`. The next recommended structural/logical wave is
+`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION`; this is a recommendation only
+and does not authorize implementation.
 
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
@@ -59,15 +61,17 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`REVIEW BAR POST-ACCEPTANCE DOCUMENTATION CLOSURE — COMPLETE`
+`PHASE 1 FOUNDATION B / CIT-01 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`REVIEW BAR CORRECTIVE IMPLEMENTATION + OWNER RUNTIME ACCEPTANCE — COMPLETE`
+`PHASE 1 FOUNDATION B — CIT-01 — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
 
-The next ordinary plan-authorized action is:
+The next recommended Phase 1 structural/logical wave is:
 
-`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`
+`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION`
+
+Implementation remains separately OWNER-gated.
 
 The resolved OWNER recovery sequence is:
 
@@ -84,6 +88,22 @@ Windows and Android remain equal peers; after the consolidated Android parity
 point, development returns to synchronized Windows + Android execution. The
 duplicated/repeated `ČINJENICE CEREMONIJE` presentation remains a separate open
 Phase 1 presentation defect under its existing ceremony/header boundary.
+
+CIT-01 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
+DEFERRED BY OWNER`. The accepted behavior permits human correction after
+finalization, preserves finalization and PARTE provenance, blocks later PARTE
+influence, and removes only the preparation while preserving IRiU/PREDMET.
+The later same-occurrence preparation is fresh and is not automatically
+repopulated from old PARTE content.
+
+The OWNER-validated concrete-format rule is that provisional/category-only
+ČITULJA rows retain `ČITULJA POLITIKA` or `ČITULJA NOVOSTI`; selecting a
+concrete KATALOG ARTIKL changes the IRiU row name to the concrete ARTIKL name.
+That transition is the business signal for shared concrete-format projection.
+`IZNOS (RSD)`, price and other derivatives are not the discriminator.
+Finding 1 remains under `CIT-03`; the publication-date picker, ČITULJE PDF
+filename and wide-screen two-column findings remain separate residuals. No
+internal implementation order is selected.
 
 The sole current detailed residual authority is the successor pair:
 
@@ -630,11 +650,11 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260912-PHASE1-FOUNDATION-A-POD11-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260912-PHASE1-FOUNDATION-B-CIT01-CLOSURE\`,
 with enclosing ZIP SHA-256
-`DAD5457ADBB475698FE8E6B57CD7C3E2A311AD21E96D9CA91E60AC855E356A3E` and
+`3EADA0AADA6E72615241C9B63414D600134A8EE8C5A153D7D066A9B2679C8186` and
 27-row baseline SHA-256
-`B27C312EDF65FA13115CC58C6276F7B48D3D766BE4DEFE61C130DC3EBE621B35`.
+`65AB20CC4730A9A352BF4AE830B9D4F909FE024F12A3E4FC8F3ACE7F9DCAD0FA`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
