@@ -22,15 +22,15 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`65AB20CC4730A9A352BF4AE830B9D4F909FE024F12A3E4FC8F3ACE7F9DCAD0FA`
+`FC382BAD884551FDA3CCE2A67274E69B0328683BEEEDC0F81DD20E85732DCE87`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260912-PHASE1-FOUNDATION-B-CIT01-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT02-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`3EADA0AADA6E72615241C9B63414D600134A8EE8C5A153D7D066A9B2679C8186`
+`43CE422BF9933AC002717F5FEE3F4E18259A5A16403EDB30E76F24013454A3AD`
 
 These are distinct artifacts and identities. The pre-control-hardening
 published documentation reference at task start was:
@@ -82,21 +82,34 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 FOUNDATION B / CIT-01 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 CIT-02 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
 `PHASE 1 FOUNDATION B — CIT-01 — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
 
-The REVIEW BAR corrective phase and its post-acceptance documentation closure
-remain complete predecessor milestones. The next recommended Phase 1
-structural/logical wave is:
+The REVIEW BAR corrective phase, its post-acceptance documentation closure,
+Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
+current completed Phase 1 wave is:
 
-`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION`
+`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — OWNER WINDOWS RUNTIME ACCEPTED`
 
-This is a bounded next-wave recommendation, not implementation authorization.
-Its implementation requires a separate OWNER continuation. The current CIT-01
-closure records Windows OWNER runtime acceptance with Android parity deferred.
+The CIT-02 status is `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
+DEFERRED BY OWNER`. Its accepted architecture is the current PREDMET IRiU
+occurrence → canonical IRiU display-name resolution → shared ČITULJE
+concrete-format projection → ČITULJE preparation UI/PDF. `interniNaziv`
+remains stable category/business identity; current `nazivPrikaz` remains the
+user-visible IRiU truth; category-only fallback and the shared POLITIKA/NOVOSTI
+mechanism remain protected. `IZNOS (RSD)`, price and other derivatives are not
+discriminators, and no schema or JSON contract changed.
+
+The next recommended Phase 1 wave, approved as sequencing authority only, is:
+
+`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`
+
+This recommendation does not authorize CIT-03 implementation or any internal
+work within that wave. The CIT-02 closure preserves Android parity as deferred
+by OWNER.
 
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
@@ -111,9 +124,14 @@ The resolved OWNER recovery sequence is:
 Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
 3 begins only after Phases 1 and 2 are completed, accepted and documented.
 Evidence, runtime and release gates remain separate where required. OWNER has
-accepted CIT-01 and the next recommended structural/logical Phase 1 wave is
-`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION`; this plan does not authorize its
-implementation or any internal work within that wave.
+accepted CIT-02 and approved `CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND
+PRESENTATION` as the next recommended Phase 1 wave. This plan does not
+authorize CIT-03 implementation or any internal work within that wave.
+
+The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
+literal/wording, minor presentation, small UX and small bounded usability
+findings deferred without creating CIT-02 regressions or separate micro-tasks.
+Current PODSETNIK ČITULJA child presentation is not a CIT-02 defect.
 
 ## 3A. Docs-as-Code progression control
 

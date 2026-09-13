@@ -19,10 +19,11 @@ reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the completed current wave is
-`FOUNDATION B — CIT-01 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
-DEFERRED BY OWNER`. The next recommended structural/logical wave is
-`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION`; this is a recommendation only
-and does not authorize implementation.
+`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — WINDOWS OWNER RUNTIME
+ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`. The next recommended wave,
+approved as sequencing authority only, is
+`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`; this does not
+authorize implementation.
 
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
@@ -61,17 +62,17 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 FOUNDATION B / CIT-01 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 CIT-02 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 FOUNDATION B — CIT-01 — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
+`PHASE 1 CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
 
 The next recommended Phase 1 structural/logical wave is:
 
-`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION`
+`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`
 
-Implementation remains separately OWNER-gated.
+This is sequencing authority only; implementation remains separately gated.
 
 The resolved OWNER recovery sequence is:
 
@@ -102,8 +103,20 @@ concrete KATALOG ARTIKL changes the IRiU row name to the concrete ARTIKL name.
 That transition is the business signal for shared concrete-format projection.
 `IZNOS (RSD)`, price and other derivatives are not the discriminator.
 Finding 1 remains under `CIT-03`; the publication-date picker, ČITULJE PDF
-filename and wide-screen two-column findings remain separate residuals. No
-internal implementation order is selected.
+filename and wide-screen two-column findings remain separate residuals. CIT-02
+is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED
+BY OWNER`; the accepted shared projection runs from the current PREDMET IRiU
+occurrence through canonical display-name resolution to the ČITULJE UI and
+PDF. `interniNaziv` remains stable category/business identity and
+`nazivPrikaz` remains current user-visible truth. No schema or JSON contract
+changed. CIT-03 is the approved next recommended Phase 1 wave, but no
+internal CIT-03 implementation order is selected.
+
+The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS`
+defers literal/wording issues, minor presentation objections and small bounded
+UX/usability findings without creating CIT-02 regressions or separate
+micro-tasks. Current PODSETNIK ČITULJA child presentation is not a CIT-02
+defect.
 
 The sole current detailed residual authority is the successor pair:
 
@@ -252,9 +265,13 @@ phase marker and canonical recovery plan. It remains historical roadmap
 context, not the current recovery-phase action.
 
 The prior current-state record's next-action wording is superseded by the
-completed closure marker above. The current recovery-phase next action is:
+completed CIT-02 closure marker above. The current recovery-phase next
+recommended action is:
 
-`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`
+`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`
+
+This is sequencing authority only; no internal CIT-03 implementation order or
+implementation scope is selected here.
 
 The recovered owner-authority restoration established the PREDMET/IRiU signal
 and obligation contract. The URNA/PEPEO business contract is locked. Current
@@ -650,11 +667,11 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260912-PHASE1-FOUNDATION-B-CIT01-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT02-CLOSURE\`,
 with enclosing ZIP SHA-256
-`3EADA0AADA6E72615241C9B63414D600134A8EE8C5A153D7D066A9B2679C8186` and
+`43CE422BF9933AC002717F5FEE3F4E18259A5A16403EDB30E76F24013454A3AD` and
 27-row baseline SHA-256
-`65AB20CC4730A9A352BF4AE830B9D4F909FE024F12A3E4FC8F3ACE7F9DCAD0FA`.
+`FC382BAD884551FDA3CCE2A67274E69B0328683BEEEDC0F81DD20E85732DCE87`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
