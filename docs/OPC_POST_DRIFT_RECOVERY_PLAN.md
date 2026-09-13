@@ -22,19 +22,19 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`82F6E66060079C3E8150A74B88617DB2ECC418EB3E29B8000D1BAD111A89C7FA`
+`767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT06-CIT07-PDF03-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-POD03-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`FA04FD16DEEAF1D170168C364EA27339365A9CC18646B72A330F178CF2471A73`
+`0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`
 
 Its PACKAGE_MANIFEST.json SHA-256 is:
 
-`0515F7D4C82ED752FD5D41F9E77DB5B8059D88E4B51B75F3AF3A8E69CDAC0284`
+`45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD`
 
 Predecessor ZIP provenance remains:
 `PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
@@ -89,11 +89,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — PUBLIC GITHUB VERIFICATION PASS — CLOSED`
+`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -140,6 +140,20 @@ QA passed; the serialized suite recorded `545 passed, 10 conditional skips,
 `960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`.
 No schema, database, JSON or business-truth change occurred.
 
+The subsequently completed bounded Phase 1 subphase is:
+
+`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`
+
+Its accepted boundary is one concrete `ČINJENICE CEREMONIJE` presentation with
+the concrete ceremony type and date/time preserved, informational-only behavior
+preserved, and obligations remaining separately presented. POD-03 targeted tests
+passed with 3 tests; relevant PODSETNIK regressions passed with 46 tests;
+`flutter analyze --no-pub` passed; the full serialized suite recorded
+`545 passed, 10 conditional skips, 0 failures`; and the Windows release build
+passed with executable SHA-256
+`960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`.
+The unscheduled-case empty date/time separators are not a new residual.
+
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
 does not reorder or reinterpret the existing residual work.
@@ -167,7 +181,8 @@ The next recovery process marker is:
 
 This is sequencing/process authority only. It selects no batch contents and
 does not authorize PDF-05, PODSETNIK fine-tuning, Android parity or
-implementation of any residual.
+implementation of any residual. The remaining Phase 1 entries retain their
+existing open, deferred, authority-gap and evidence-only classifications.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability
@@ -198,9 +213,10 @@ closure of CIT-06, CIT-07 and PDF-03 in addition to the three
 additional Phase 1 phase-classification defects `POD-08`, `POD-09` and `POD-10`,
 the later Windows-owner-runtime acceptance of Foundation A, and `POD-11` as the
 existing grouped-obligation-standard correction accepted on Windows with
-Android parity deferred by OWNER. The duplicated/repeated `ČINJENICE
-CEREMONIJE` presentation remains a separate open Phase 1 presentation defect
-under its existing ceremony/header boundary.
+Android parity deferred by OWNER. POD-03 is now closed as
+`WINDOWS OWNER RUNTIME ACCEPTED` under its existing ceremony/header boundary.
+Its accepted one-presentation result does not redesign the header or create a
+new residual.
 The current audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE FOUND` and
 `PHASE 3 PROVEN OMITTED OBLIGATIONS — NONE FOUND`; those phases remain reserved
 for future source-proven omissions and create no implementation work here.

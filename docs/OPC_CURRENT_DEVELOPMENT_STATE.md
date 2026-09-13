@@ -18,9 +18,9 @@ resolved current next recovery phase is
 reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
-Within Phase 1, the completed current wave is
-`CIT-06 + CIT-07 + PDF-03 — OWNER WINDOWS RUNTIME ACCEPTED`, following the
-completed CIT-03 wave.
+Within Phase 1, the most recently completed current wave is
+`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`, following the completed
+`CIT-06 + CIT-07 + PDF-03 — OWNER WINDOWS RUNTIME ACCEPTED` wave.
 The next process marker is
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
 does not authorize implementation.
@@ -62,11 +62,11 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — PUBLIC GITHUB VERIFICATION PASS — CLOSED`
+`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The completed preceding Phase 1 wave is:
 
@@ -100,8 +100,10 @@ Foundation A (`POD-08`, `POD-09`, `POD-10`) is now recorded as
 classified as `PHASE 1 DEFECT — EXISTING GROUPED-OBLIGATION STANDARD MISAPPLIED`.
 Windows and Android remain equal peers; after the consolidated Android parity
 point, development returns to synchronized Windows + Android execution. The
-duplicated/repeated `ČINJENICE CEREMONIJE` presentation remains a separate open
-Phase 1 presentation defect under its existing ceremony/header boundary.
+POD-03 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED`: one concrete
+`ČINJENICE CEREMONIJE` presentation remains, with ceremony type and date/time
+preserved, obligations separate, and no broader header redesign. The
+unscheduled-case empty date/time separators are not a new residual.
 
 CIT-01 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
 DEFERRED BY OWNER`. The accepted behavior permits human correction after
@@ -288,7 +290,7 @@ phase marker and canonical recovery plan. It remains historical roadmap
 context, not the current recovery-phase action.
 
 The prior current-state record's next-action wording is superseded by the
-completed CIT-03 closure marker above. The current recovery-phase next process
+completed POD-03 closure marker above. The current recovery-phase next process
 marker is:
 
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
@@ -690,13 +692,13 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT06-CIT07-PDF03-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-POD03-CLOSURE\`,
 with enclosing ZIP SHA-256
-`FA04FD16DEEAF1D170168C364EA27339365A9CC18646B72A330F178CF2471A73`,
+`0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`,
 PACKAGE_MANIFEST.json SHA-256
-`0515F7D4C82ED752FD5D41F9E77DB5B8059D88E4B51B75F3AF3A8E69CDAC0284` and
+`45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD` and
 27-row baseline SHA-256
-`82F6E66060079C3E8150A74B88617DB2ECC418EB3E29B8000D1BAD111A89C7FA`.
+`767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
