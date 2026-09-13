@@ -22,15 +22,15 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`FC382BAD884551FDA3CCE2A67274E69B0328683BEEEDC0F81DD20E85732DCE87`
+`4A00803F36BE12546A63CD7451DBF68521B4B2E47D999654F7AAA5F2814028EF`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT02-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT03-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`43CE422BF9933AC002717F5FEE3F4E18259A5A16403EDB30E76F24013454A3AD`
+`C8893C81D83A30AA5A51F76995B3B3E1B5BC2734CD364285B861AFB0B48BC83D`
 
 These are distinct artifacts and identities. The pre-control-hardening
 published documentation reference at task start was:
@@ -82,11 +82,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 CIT-02 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 FOUNDATION B — CIT-01 — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
+`PHASE 1 CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -103,13 +103,18 @@ user-visible IRiU truth; category-only fallback and the shared POLITIKA/NOVOSTI
 mechanism remain protected. `IZNOS (RSD)`, price and other derivatives are not
 discriminators, and no schema or JSON contract changed.
 
-The next recommended Phase 1 wave, approved as sequencing authority only, is:
+The completed current Phase 1 wave is:
 
-`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`
+`CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`
 
-This recommendation does not authorize CIT-03 implementation or any internal
-work within that wave. The CIT-02 closure preserves Android parity as deferred
-by OWNER.
+The accepted selector/navigation contract is:
+
+`eligible OTVOREN/ZATVOREN candidate` → `human-readable PREDMET identity` →
+`stable local PREDMET ID` → `single direct navigation` → `ČITULJE preparation`.
+
+`ZAVRŠEN` remains excluded. Direct dropdown selection opens the corresponding
+preparation without `OTVORI ČITULJE`; return, refresh and invalidation behavior
+remain protected. Android parity remains deferred by OWNER.
 
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
@@ -124,9 +129,21 @@ The resolved OWNER recovery sequence is:
 Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
 3 begins only after Phases 1 and 2 are completed, accepted and documented.
 Evidence, runtime and release gates remain separate where required. OWNER has
-accepted CIT-02 and approved `CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND
-PRESENTATION` as the next recommended Phase 1 wave. This plan does not
-authorize CIT-03 implementation or any internal work within that wave.
+accepted CIT-03 as the completed current Phase 1 wave. The QA incident
+involving the responsive MODULI test is recorded only as task evidence:
+`RESOLVED — TEST-LIFECYCLE ONLY — NO PRODUCT REQUIREMENT CREATED`.
+
+The prior `OTVOREN-only` assumption is withdrawn; `OTVOREN + ZATVOREN` is
+accepted. `NO TASK REQUIREMENT MAY BE PROMOTED TO OWNER AUTHORITY WITHOUT A
+VERIFIED AUTHORITY SOURCE.`
+
+The next recovery process marker is:
+
+`NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
+
+This is sequencing/process authority only. It selects no batch contents and
+does not authorize CIT-06, CIT-07, PDF-05, PODSETNIK fine-tuning, Android
+parity or implementation of any residual.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability

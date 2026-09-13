@@ -19,11 +19,10 @@ reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the completed current wave is
-`CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — WINDOWS OWNER RUNTIME
-ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`. The next recommended wave,
-approved as sequencing authority only, is
-`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`; this does not
-authorize implementation.
+`CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`.
+The next process marker is
+`NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
+does not authorize implementation.
 
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
@@ -62,17 +61,30 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 CIT-02 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
+`PHASE 1 CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
 
-The next recommended Phase 1 structural/logical wave is:
+The completed current Phase 1 wave is:
 
-`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`
+`CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`
 
-This is sequencing authority only; implementation remains separately gated.
+The accepted selector/navigation contract is:
+
+`eligible OTVOREN/ZATVOREN candidate` → `human-readable PREDMET identity` →
+`stable local PREDMET ID` → `single direct navigation` → `ČITULJE preparation`.
+
+`ZAVRŠEN` remains excluded. Direct dropdown selection opens the corresponding
+preparation without `OTVORI ČITULJE`; return, refresh and invalidation behavior
+remain protected. Android parity remains deferred by OWNER.
+
+The next recovery process marker is:
+
+`NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
+
+This selects no batch contents and does not authorize implementation.
 
 The resolved OWNER recovery sequence is:
 
@@ -102,15 +114,20 @@ The OWNER-validated concrete-format rule is that provisional/category-only
 concrete KATALOG ARTIKL changes the IRiU row name to the concrete ARTIKL name.
 That transition is the business signal for shared concrete-format projection.
 `IZNOS (RSD)`, price and other derivatives are not the discriminator.
-Finding 1 remains under `CIT-03`; the publication-date picker, ČITULJE PDF
-filename and wide-screen two-column findings remain separate residuals. CIT-02
+The prior `OTVOREN-only` assumption is withdrawn; `OTVOREN + ZATVOREN` is
+accepted. `NO TASK REQUIREMENT MAY BE PROMOTED TO OWNER AUTHORITY WITHOUT A
+VERIFIED AUTHORITY SOURCE.` The publication-date picker, ČITULJE PDF filename
+and wide-screen two-column findings remain separate residuals. CIT-02
 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED
 BY OWNER`; the accepted shared projection runs from the current PREDMET IRiU
 occurrence through canonical display-name resolution to the ČITULJE UI and
 PDF. `interniNaziv` remains stable category/business identity and
 `nazivPrikaz` remains current user-visible truth. No schema or JSON contract
-changed. CIT-03 is the approved next recommended Phase 1 wave, but no
-internal CIT-03 implementation order is selected.
+changed. CIT-03 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID
+PARITY DEFERRED BY OWNER`.
+
+The CIT-03 test-lifecycle incident is resolved task evidence only:
+`RESOLVED — TEST-LIFECYCLE ONLY — NO PRODUCT REQUIREMENT CREATED`.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS`
 defers literal/wording issues, minor presentation objections and small bounded
@@ -265,13 +282,13 @@ phase marker and canonical recovery plan. It remains historical roadmap
 context, not the current recovery-phase action.
 
 The prior current-state record's next-action wording is superseded by the
-completed CIT-02 closure marker above. The current recovery-phase next
-recommended action is:
+completed CIT-03 closure marker above. The current recovery-phase next process
+marker is:
 
-`CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION`
+`NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
 
-This is sequencing authority only; no internal CIT-03 implementation order or
-implementation scope is selected here.
+This is sequencing/process authority only; no batch contents or internal
+implementation order is selected here.
 
 The recovered owner-authority restoration established the PREDMET/IRiU signal
 and obligation contract. The URNA/PEPEO business contract is locked. Current
@@ -667,11 +684,11 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT02-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT03-CLOSURE\`,
 with enclosing ZIP SHA-256
-`43CE422BF9933AC002717F5FEE3F4E18259A5A16403EDB30E76F24013454A3AD` and
+`C8893C81D83A30AA5A51F76995B3B3E1B5BC2734CD364285B861AFB0B48BC83D` and
 27-row baseline SHA-256
-`FC382BAD884551FDA3CCE2A67274E69B0328683BEEEDC0F81DD20E85732DCE87`.
+`4A00803F36BE12546A63CD7451DBF68521B4B2E47D999654F7AAA5F2814028EF`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
