@@ -19,7 +19,8 @@ reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the completed current wave is
-`CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`.
+`CIT-06 + CIT-07 + PDF-03 — OWNER WINDOWS RUNTIME ACCEPTED`, following the
+completed CIT-03 wave.
 The next process marker is
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
 does not authorize implementation.
@@ -61,13 +62,13 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
+`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — PUBLIC GITHUB VERIFICATION PASS — CLOSED`
 
-The completed current Phase 1 wave is:
+The completed preceding Phase 1 wave is:
 
 `CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`
 
@@ -116,9 +117,14 @@ That transition is the business signal for shared concrete-format projection.
 `IZNOS (RSD)`, price and other derivatives are not the discriminator.
 The prior `OTVOREN-only` assumption is withdrawn; `OTVOREN + ZATVOREN` is
 accepted. `NO TASK REQUIREMENT MAY BE PROMOTED TO OWNER AUTHORITY WITHOUT A
-VERIFIED AUTHORITY SOURCE.` The publication-date picker, ČITULJE PDF filename
-and wide-screen two-column findings remain separate residuals. CIT-02
-is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED
+VERIFIED AUTHORITY SOURCE.` CIT-06 is now recorded as `WINDOWS OWNER RUNTIME
+ACCEPTED`; CIT-07 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED` for the
+wide-screen layout, while its narrow-runtime evidence remains targeted-test
+evidence with Android parity deferred by OWNER. PDF-03 is recorded as
+`WINDOWS OWNER RUNTIME ACCEPTED` for the accepted SAHRANA/KREMACIJA contract;
+the remaining separate ČITULJE residual is `PDF-05 — ČITULJE PDF filename
+convention`.
+CIT-02 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED
 BY OWNER`; the accepted shared projection runs from the current PREDMET IRiU
 occurrence through canonical display-name resolution to the ČITULJE UI and
 PDF. `interniNaziv` remains stable category/business identity and
@@ -684,11 +690,13 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT03-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT06-CIT07-PDF03-CLOSURE\`,
 with enclosing ZIP SHA-256
-`C8893C81D83A30AA5A51F76995B3B3E1B5BC2734CD364285B861AFB0B48BC83D` and
+`FA04FD16DEEAF1D170168C364EA27339365A9CC18646B72A330F178CF2471A73`,
+PACKAGE_MANIFEST.json SHA-256
+`0515F7D4C82ED752FD5D41F9E77DB5B8059D88E4B51B75F3AF3A8E69CDAC0284` and
 27-row baseline SHA-256
-`4A00803F36BE12546A63CD7451DBF68521B4B2E47D999654F7AAA5F2814028EF`.
+`82F6E66060079C3E8150A74B88617DB2ECC418EB3E29B8000D1BAD111A89C7FA`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual

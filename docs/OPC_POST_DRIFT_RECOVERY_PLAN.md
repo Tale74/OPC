@@ -22,15 +22,22 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`4A00803F36BE12546A63CD7451DBF68521B4B2E47D999654F7AAA5F2814028EF`
+`82F6E66060079C3E8150A74B88617DB2ECC418EB3E29B8000D1BAD111A89C7FA`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT03-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-CIT06-CIT07-PDF03-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`C8893C81D83A30AA5A51F76995B3B3E1B5BC2734CD364285B861AFB0B48BC83D`
+`FA04FD16DEEAF1D170168C364EA27339365A9CC18646B72A330F178CF2471A73`
+
+Its PACKAGE_MANIFEST.json SHA-256 is:
+
+`0515F7D4C82ED752FD5D41F9E77DB5B8059D88E4B51B75F3AF3A8E69CDAC0284`
+
+Predecessor ZIP provenance remains:
+`PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
 
 These are distinct artifacts and identities. The pre-control-hardening
 published documentation reference at task start was:
@@ -82,15 +89,15 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 CIT-03 — PREDMET SELECTOR/LIST IDENTITY AND PRESENTATION — OWNER WINDOWS RUNTIME ACCEPTANCE PASS`
+`PHASE 1 CIT-03 POST-ACCEPTANCE CONTROL CLOSURE — PUBLIC GITHUB VERIFICATION PASS — CLOSED`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
-current completed Phase 1 wave is:
+preceding completed Phase 1 wave was:
 
 `CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — OWNER WINDOWS RUNTIME ACCEPTED`
 
@@ -103,7 +110,7 @@ user-visible IRiU truth; category-only fallback and the shared POLITIKA/NOVOSTI
 mechanism remain protected. `IZNOS (RSD)`, price and other derivatives are not
 discriminators, and no schema or JSON contract changed.
 
-The completed current Phase 1 wave is:
+The immediately preceding completed Phase 1 wave was:
 
 `CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`
 
@@ -115,6 +122,23 @@ The accepted selector/navigation contract is:
 `ZAVRŠEN` remains excluded. Direct dropdown selection opens the corresponding
 preparation without `OTVORI ČITULJE`; return, refresh and invalidation behavior
 remain protected. Android parity remains deferred by OWNER.
+
+The accepted current multi-item package is:
+
+`CIT-06 — WINDOWS OWNER RUNTIME ACCEPTED`
+
+`CIT-07 WIDE — WINDOWS OWNER RUNTIME ACCEPTED`
+
+`CIT-07 NARROW RUNTIME — WINDOWS NOT REACHABLE; TARGETED TEST PASS; ANDROID RUNTIME PARITY OWNER-DEFERRED`
+
+`PDF-03 — WINDOWS OWNER RUNTIME ACCEPTED`
+
+CIT-07 narrow behavior is not represented as Windows runtime acceptance.
+PDF-03 runtime evidence covered SAHRANA and KREMACIJA. Targeted and relevant
+QA passed; the serialized suite recorded `545 passed, 10 conditional skips,
+0 failures`; and the Windows executable SHA-256 is
+`960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`.
+No schema, database, JSON or business-truth change occurred.
 
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
@@ -129,7 +153,7 @@ The resolved OWNER recovery sequence is:
 Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
 3 begins only after Phases 1 and 2 are completed, accepted and documented.
 Evidence, runtime and release gates remain separate where required. OWNER has
-accepted CIT-03 as the completed current Phase 1 wave. The QA incident
+accepted CIT-03 as the immediately preceding completed Phase 1 wave. The QA incident
 involving the responsive MODULI test is recorded only as task evidence:
 `RESOLVED — TEST-LIFECYCLE ONLY — NO PRODUCT REQUIREMENT CREATED`.
 
@@ -142,8 +166,8 @@ The next recovery process marker is:
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
 
 This is sequencing/process authority only. It selects no batch contents and
-does not authorize CIT-06, CIT-07, PDF-05, PODSETNIK fine-tuning, Android
-parity or implementation of any residual.
+does not authorize PDF-05, PODSETNIK fine-tuning, Android parity or
+implementation of any residual.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability
@@ -169,7 +193,8 @@ detailed residual/deferred/evidence authority:
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
 
 The FINAL9 ledger/matrix remain immutable predecessor provenance only; they are
-not a competing current authority. The current successor records the three
+not a competing current authority. The current successor records the accepted
+closure of CIT-06, CIT-07 and PDF-03 in addition to the three
 additional Phase 1 phase-classification defects `POD-08`, `POD-09` and `POD-10`,
 the later Windows-owner-runtime acceptance of Foundation A, and `POD-11` as the
 existing grouped-obligation-standard correction accepted on Windows with
