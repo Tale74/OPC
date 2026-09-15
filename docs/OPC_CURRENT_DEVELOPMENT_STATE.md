@@ -735,8 +735,13 @@ filenames. The package remains current local-only control evidence, not
 implementation authority or a donor. The controlled rebaseline verifies all
 27 protected rows with zero mismatches; 26 rows are unchanged and the accepted
 PODSETNIK source row reflects the POD-02/POD-04 closure. The current residual
-ledger and matrix close only POD-02 and POD-04; other classifications remain
-unchanged.
+ledger and matrix also close POD-01 without a source change: OWNER narrowed it
+to PARENT completion-state visual distinction, already satisfied by the
+accepted POD-02 red/incomplete and green/complete PARENT checkbox state. The
+accepted white check mark remains protected; no CHILD, row/background or text
+recoloring was required or created. POD-01 is `WINDOWS OWNER RUNTIME ACCEPTED —
+CLOSED`; all other residual, deferred, authority-gap and evidence-only
+classifications remain unchanged.
 The protected active inventory covers 748 files with zero unexpected missing
 files; proven obsolete staging/evidence roots were moved to quarantine without
 changing active implementation content. The active-source manifest, stale

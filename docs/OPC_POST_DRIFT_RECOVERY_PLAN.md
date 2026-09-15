@@ -215,8 +215,13 @@ The next recovery process marker is:
 
 This is sequencing/process authority only. It selects no batch contents and
 does not authorize PDF-05, PODSETNIK fine-tuning, Android parity or
-implementation of any residual. The remaining Phase 1 entries retain their
-existing open, deferred, authority-gap and evidence-only classifications.
+implementation of any residual. POD-01 is now `WINDOWS OWNER RUNTIME ACCEPTED —
+CLOSED` without new implementation: OWNER narrowed its scope to PARENT
+completion-state visual distinction already satisfied by accepted POD-02
+(incomplete red, complete green; accepted white check mark protected). No
+CHILD, row/background or text color requirement was created. All other Phase 1
+entries retain their existing open, deferred, authority-gap and evidence-only
+classifications.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability
