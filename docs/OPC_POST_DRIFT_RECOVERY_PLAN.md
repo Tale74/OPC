@@ -22,21 +22,31 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`
+`7BDDA86623930EF6392EB3A10E08F374066FB2A3D88C9223DC90070860630C5F`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-POD03-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260915-PHASE1-POD02-POD04-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`
+`680D3989AF3C3421DB4820CA96D07E24DE6A245BC331E027DB6E07BE5667FD72`
 
 Its PACKAGE_MANIFEST.json SHA-256 is:
 
-`45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD`
+`3CB9316905942CE0BB8AE15740789E9C633B3295270A8182D42ED466D2E901BD`
 
-Predecessor ZIP provenance remains:
+Its 04_ACTIVE_SOURCE_AUTHORITY_MANIFEST.json SHA-256 is:
+
+`0284F30EB4D1AB19A776FF9DEE01D34EB7E1154F3963C7CA155F6469EE8C2827`
+
+The immediate predecessor package was
+`OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-POD03-CLOSURE`,
+with baseline SHA-256 `767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`,
+PACKAGE_MANIFEST.json SHA-256 `45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD`,
+and ZIP SHA-256 `0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`.
+Its predecessor identities remain preserved in the successor handoff. The
+predecessor ZIP physical status remains exactly:
 `PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
 
 These are distinct artifacts and identities. The pre-control-hardening
@@ -89,11 +99,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -112,7 +122,7 @@ discriminators, and no schema or JSON contract changed.
 
 The immediately preceding completed Phase 1 wave was:
 
-`CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`
+`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`
 
 The accepted selector/navigation contract is:
 
@@ -154,6 +164,29 @@ passed with executable SHA-256
 `960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`.
 The unscheduled-case empty date/time separators are not a new residual.
 
+The subsequently completed bounded Phase 1 package is:
+
+`POD-02 — WINDOWS OWNER RUNTIME ACCEPTED`
+
+`POD-04 — WINDOWS OWNER RUNTIME ACCEPTED`
+
+POD-02 preserves responsive PARENT-to-CHILD master/detail presentation,
+presentation-only selection, independent completion controls, accepted order,
+grouping and action placement. POD-04 preserves the PARTE parent and
+`Spremiti parte` child without changing business identity or completion
+semantics. Windows OWNER runtime acceptance passed. Targeted same-parent
+toggle/collapse passed; bounded PODSETNIK regression passed (4), R5 ČITULJA
+regression passed (12), and relevant PODSETNIK regression passed (30).
+`flutter analyze --no-pub` passed; the full serialized suite recorded
+`547 passed, 10 skipped, 0 failures`. Windows release build passed with
+executable SHA-256
+`960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`.
+Android release APK build passed with SHA-256
+`998634EDD95939E879AC20FEC59CCA14FB5AFFDF8302866A24C32FD35229EAB3`;
+this is technical build-parity evidence only and does not establish Android
+runtime acceptance. The successor 27-row baseline records 26 unchanged rows
+and the accepted PODSETNIK source row, with zero current mismatches.
+
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
 does not reorder or reinterpret the existing residual work.
@@ -166,8 +199,9 @@ The resolved OWNER recovery sequence is:
 
 Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
 3 begins only after Phases 1 and 2 are completed, accepted and documented.
-Evidence, runtime and release gates remain separate where required. OWNER has
-accepted CIT-03 as the immediately preceding completed Phase 1 wave. The QA incident
+Evidence, runtime and release gates remain separate where required. The latest
+completed Phase 1 wave is POD-02+POD-04, with Windows OWNER runtime acceptance
+recorded for both members. The QA incident
 involving the responsive MODULI test is recorded only as task evidence:
 `RESOLVED — TEST-LIFECYCLE ONLY — NO PRODUCT REQUIREMENT CREATED`.
 
@@ -216,7 +250,9 @@ existing grouped-obligation-standard correction accepted on Windows with
 Android parity deferred by OWNER. POD-03 is now closed as
 `WINDOWS OWNER RUNTIME ACCEPTED` under its existing ceremony/header boundary.
 Its accepted one-presentation result does not redesign the header or create a
-new residual.
+new residual. The later POD-02/POD-04 package is recorded as
+`WINDOWS OWNER RUNTIME ACCEPTED` for both members; it closes only those two
+implementation residuals and does not advance or reorder the Phase 1 sequence.
 The current audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE FOUND` and
 `PHASE 3 PROVEN OMITTED OBLIGATIONS — NONE FOUND`; those phases remain reserved
 for future source-proven omissions and create no implementation work here.

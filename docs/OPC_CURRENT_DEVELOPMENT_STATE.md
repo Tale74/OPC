@@ -3,9 +3,9 @@
 **Status:** `CURRENT RECONCILED CONTINUITY SUMMARY`
 
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
-**Current documentation baseline:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
+**Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-08-17
+**Reconciled:** 2026-09-15
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
@@ -19,8 +19,8 @@ reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the most recently completed current wave is
-`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`, following the completed
-`CIT-06 + CIT-07 + PDF-03 — OWNER WINDOWS RUNTIME ACCEPTED` wave.
+`POD-02 + POD-04 — WINDOWS OWNER RUNTIME ACCEPTED`, following the completed
+`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED` wave.
 The next process marker is
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
 does not authorize implementation.
@@ -62,15 +62,15 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 MULTI-ITEM PACKAGE CIT-06+CIT-07+PDF-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The completed preceding Phase 1 wave is:
 
-`CIT-03 — WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER`
+`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`
 
 The accepted selector/navigation contract is:
 
@@ -104,6 +104,25 @@ POD-03 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED`: one concrete
 `ČINJENICE CEREMONIJE` presentation remains, with ceremony type and date/time
 preserved, obligations separate, and no broader header redesign. The
 unscheduled-case empty date/time separators are not a new residual.
+
+The latest accepted PODSETNIK package is `POD-02 + POD-04 — WINDOWS OWNER
+RUNTIME ACCEPTED`. POD-02 preserves the responsive PARENT-to-CHILD master/detail
+hierarchy, presentation-only parent selection, independent completion controls,
+accepted order/grouping and action placement. POD-04 preserves `PARTE` as the
+parent/master and `Spremiti parte` as the child/detail obligation; business
+identity and completion semantics are unchanged. Windows OWNER runtime
+acceptance passed. No Android runtime acceptance is claimed; the Android release
+build is technical build-parity evidence only.
+
+Final package evidence: targeted same-parent toggle/collapse PASS; bounded
+PODSETNIK regression 4 passed; R5 ČITULJA regression 12 passed; relevant
+PODSETNIK regression 30 passed; `flutter analyze --no-pub` PASS; full serialized
+`flutter test --no-pub --concurrency=1` recorded `547 passed, 10 skipped,
+0 failures`; Windows release build PASS; Android release APK build PASS. The
+controlled successor baseline verifies 27/27 protected rows with zero
+mismatches: 26 unchanged and the accepted PODSETNIK source row updated.
+The bounded closure evidence and public residual-status delta are recorded in
+[`docs/tasks/OPC_TASK_PHASE1_POD02_POD04_POST_ACCEPTANCE_CLOSURE.md`](tasks/OPC_TASK_PHASE1_POD02_POD04_POST_ACCEPTANCE_CLOSURE.md).
 
 CIT-01 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
 DEFERRED BY OWNER`. The accepted behavior permits human correction after
@@ -290,7 +309,7 @@ phase marker and canonical recovery plan. It remains historical roadmap
 context, not the current recovery-phase action.
 
 The prior current-state record's next-action wording is superseded by the
-completed POD-03 closure marker above. The current recovery-phase next process
+completed POD-02+POD-04 closure marker above. The current recovery-phase next process
 marker is:
 
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
@@ -692,20 +711,32 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-POD03-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260915-PHASE1-POD02-POD04-CLOSURE\`,
 with enclosing ZIP SHA-256
-`0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`,
+`680D3989AF3C3421DB4820CA96D07E24DE6A245BC331E027DB6E07BE5667FD72`,
 PACKAGE_MANIFEST.json SHA-256
-`45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD` and
+`3CB9316905942CE0BB8AE15740789E9C633B3295270A8182D42ED466D2E901BD`,
+04_ACTIVE_SOURCE_AUTHORITY_MANIFEST.json SHA-256
+`0284F30EB4D1AB19A776FF9DEE01D34EB7E1154F3963C7CA155F6469EE8C2827`, and
 27-row baseline SHA-256
-`767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`.
+`7BDDA86623930EF6392EB3A10E08F374066FB2A3D88C9223DC90070860630C5F`.
+Its immediate predecessor was the POD-03 successor package with baseline
+`767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`,
+PACKAGE_MANIFEST.json SHA-256
+`45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD`, and
+ZIP SHA-256
+`0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`.
+Its predecessor ZIP physical status remains exactly
+`PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
 This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
 filenames. The package remains current local-only control evidence, not
 implementation authority or a donor. The controlled rebaseline verifies all
-27 protected rows with zero mismatches; the five earlier documentation
-evolutions are now represented by the current baseline.
+27 protected rows with zero mismatches; 26 rows are unchanged and the accepted
+PODSETNIK source row reflects the POD-02/POD-04 closure. The current residual
+ledger and matrix close only POD-02 and POD-04; other classifications remain
+unchanged.
 The protected active inventory covers 748 files with zero unexpected missing
 files; proven obsolete staging/evidence roots were moved to quarantine without
 changing active implementation content. The active-source manifest, stale
