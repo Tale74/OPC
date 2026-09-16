@@ -22,19 +22,19 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`7BDDA86623930EF6392EB3A10E08F374066FB2A3D88C9223DC90070860630C5F`
+`8018E994401ACC9D0056C05696E8C110FE4458D2263C3EF7071D319B9D7CC3CF`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260915-PHASE1-POD02-POD04-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260916-PHASE1-POD05-NARROW-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`680D3989AF3C3421DB4820CA96D07E24DE6A245BC331E027DB6E07BE5667FD72`
+`B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`
 
 Its PACKAGE_MANIFEST.json SHA-256 is:
 
-`3CB9316905942CE0BB8AE15740789E9C633B3295270A8182D42ED466D2E901BD`
+`BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`
 
 Its 04_ACTIVE_SOURCE_AUTHORITY_MANIFEST.json SHA-256 is:
 
@@ -99,11 +99,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -120,7 +120,7 @@ user-visible IRiU truth; category-only fallback and the shared POLITIKA/NOVOSTI
 mechanism remain protected. `IZNOS (RSD)`, price and other derivatives are not
 discriminators, and no schema or JSON contract changed.
 
-The immediately preceding completed Phase 1 wave was:
+The earlier completed Phase 1 wave was:
 
 `POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`
 
@@ -187,6 +187,23 @@ this is technical build-parity evidence only and does not establish Android
 runtime acceptance. The successor 27-row baseline records 26 unchanged rows
 and the accepted PODSETNIK source row, with zero current mismatches.
 
+The current completed Phase 1 closure is:
+
+`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+
+POD-05 is recorded as `POD-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED` with
+the accepted concise URNA/PEPEO parent/child labels and protected full dynamic
+notification wording. The bounded technical finding is recorded as
+`NARROW RESPONSIVE CHILD PLACEMENT — ANDROID OWNER RUNTIME ACCEPTED — CLOSED`.
+The selected narrow child is immediately below its parent; the WIDE
+master/detail presentation remains `ACCEPTED / PROTECTED / NO CHANGE`. This is
+presentation correction only and does not create a business requirement.
+The final closure QA records include 548 passed, 10 skipped and 0 failures for
+each overlapping full serialized suite execution, Windows release SHA-256
+`960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`, and
+Android release APK SHA-256
+`275B9C5E7AA556DE5C25F77B8CDFF54A2C98D9413CFFF90066038DFF66946AC9`.
+
 The current plan-governance hardening is a control correction over the
 recovery process. It is not a newly inserted substantive recovery phase and
 does not reorder or reinterpret the existing residual work.
@@ -200,8 +217,9 @@ The resolved OWNER recovery sequence is:
 Phase 2 begins only after Phase 1 is completed, accepted and documented. Phase
 3 begins only after Phases 1 and 2 are completed, accepted and documented.
 Evidence, runtime and release gates remain separate where required. The latest
-completed Phase 1 wave is POD-02+POD-04, with Windows OWNER runtime acceptance
-recorded for both members. The QA incident
+completed Phase 1 wave is POD-05 plus the bounded narrow responsive correction,
+with the required Windows and Android OWNER runtime evidence recorded. The QA
+incident
 involving the responsive MODULI test is recorded only as task evidence:
 `RESOLVED — TEST-LIFECYCLE ONLY — NO PRODUCT REQUIREMENT CREATED`.
 

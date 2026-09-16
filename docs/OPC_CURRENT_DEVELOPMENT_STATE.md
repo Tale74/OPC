@@ -5,7 +5,7 @@
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-09-15
+**Reconciled:** 2026-09-16
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
@@ -19,8 +19,8 @@ reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the most recently completed current wave is
-`POD-02 + POD-04 — WINDOWS OWNER RUNTIME ACCEPTED`, following the completed
-`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED` wave.
+`POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`,
+following the completed `POD-02 + POD-04 — WINDOWS OWNER RUNTIME ACCEPTED` wave.
 The next process marker is
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
 does not authorize implementation.
@@ -62,15 +62,37 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 POD-03 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The completed preceding Phase 1 wave is:
 
-`POD-03 — WINDOWS OWNER RUNTIME ACCEPTED`
+`POD-02 + POD-04 — WINDOWS OWNER RUNTIME ACCEPTED`
+
+The current accepted Phase 1 closure records:
+
+- `POD-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`;
+- `NARROW RESPONSIVE CHILD PLACEMENT — ANDROID OWNER RUNTIME ACCEPTED — CLOSED`;
+- `WIDE MASTER/DETAIL PRESENTATION — ACCEPTED / PROTECTED / NO CHANGE`.
+
+POD-05 preserves `POLAGANJE URNE` → `Zakazati polaganje urne` and
+`RASIPANJE PEPELA` → `Zakazati rasipanje pepela`; full dynamic notification and
+reminder wording remains protected. The narrow responsive correction places
+selected child detail immediately below its selected parent, before the next
+parent, while the wide left-parent/right-detail presentation remains unchanged.
+This is a technical presentation correction, not a new business requirement.
+
+The accepted closure evidence includes the POD-05 and narrow-correction QA
+records, each recording `548 passed, 10 skipped, 0 failures`; the final Windows
+release artifact SHA-256 is
+`960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`; and the
+final Android release APK SHA-256 is
+`275B9C5E7AA556DE5C25F77B8CDFF54A2C98D9413CFFF90066038DFF66946AC9`.
+Android narrow runtime acceptance and Windows wide no-regression runtime
+reconfirmation are separate OWNER runtime evidence for this closure.
 
 The accepted selector/navigation contract is:
 
@@ -287,7 +309,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |
 | Android PARTE performance | Source risks are mapped; focused current-device profiling acceptance is absent. | Reproduce/profile before choosing a correction. |
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
-| PODSETNIK | The URNA/PEPEO contract and F-06 `POSEBNE OBAVEZE` are implemented at source/test/documentation level, including the scoped `ZAVRŠEN` blocker and transfer paths. Runtime/device acceptance, release and publication remain separate claims. | Complete integrated runtime/build/release gates when separately authorized. |
+| PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. | Preserve the accepted state; no next PODSETNIK implementation is selected. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
 | Documents | RAČUN PDF exists. `NALOG CVEĆARI` is an accepted/protected current PDF unit in the native PREDMET → DOKUMENTI route: PREDMET remains the sole content truth, PODSETNIK carries only the shortcut/link, and the accepted item/ribbon/image structure, common shared PDF mechanism, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels are protected. Output scope is PDF only; DOCX is not an open option. | Accepted/protected current NALOG CVEĆARI PDF unit; no NALOG PDF/DOCX scope decision remains open. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
@@ -711,21 +733,21 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260915-PHASE1-POD02-POD04-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260916-PHASE1-POD05-NARROW-CLOSURE\`,
 with enclosing ZIP SHA-256
-`680D3989AF3C3421DB4820CA96D07E24DE6A245BC331E027DB6E07BE5667FD72`,
+`B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`,
 PACKAGE_MANIFEST.json SHA-256
-`3CB9316905942CE0BB8AE15740789E9C633B3295270A8182D42ED466D2E901BD`,
+`BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`,
 04_ACTIVE_SOURCE_AUTHORITY_MANIFEST.json SHA-256
 `0284F30EB4D1AB19A776FF9DEE01D34EB7E1154F3963C7CA155F6469EE8C2827`, and
 27-row baseline SHA-256
-`7BDDA86623930EF6392EB3A10E08F374066FB2A3D88C9223DC90070860630C5F`.
-Its immediate predecessor was the POD-03 successor package with baseline
-`767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`,
+`8018E994401ACC9D0056C05696E8C110FE4458D2263C3EF7071D319B9D7CC3CF`.
+Its immediate predecessor was the POD-02/POD-04 successor package with baseline
+`7BDDA86623930EF6392EB3A10E08F374066FB2A3D88C9223DC90070860630C5F`,
 PACKAGE_MANIFEST.json SHA-256
-`45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD`, and
+`3CB9316905942CE0BB8AE15740789E9C633B3295270A8182D42ED466D2E901BD`, and
 ZIP SHA-256
-`0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`.
+`680D3989AF3C3421DB4820CA96D07E24DE6A245BC331E027DB6E07BE5667FD72`.
 Its predecessor ZIP physical status remains exactly
 `PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
 This is a current location fact, not an eternal path invariant; each future
@@ -734,14 +756,16 @@ current package manifest/handoff to map the five logical inputs to their actual
 filenames. The package remains current local-only control evidence, not
 implementation authority or a donor. The controlled rebaseline verifies all
 27 protected rows with zero mismatches; 26 rows are unchanged and the accepted
-PODSETNIK source row reflects the POD-02/POD-04 closure. The current residual
+PODSETNIK source row reflects the POD-05 and narrow responsive closure. The current residual
 ledger and matrix also close POD-01 without a source change: OWNER narrowed it
 to PARENT completion-state visual distinction, already satisfied by the
 accepted POD-02 red/incomplete and green/complete PARENT checkbox state. The
 accepted white check mark remains protected; no CHILD, row/background or text
 recoloring was required or created. POD-01 is `WINDOWS OWNER RUNTIME ACCEPTED —
-CLOSED`; all other residual, deferred, authority-gap and evidence-only
-classifications remain unchanged.
+CLOSED`; POD-05 and the narrow responsive child-placement finding are now
+closed with the accepted runtime evidence. All other residual, deferred,
+authority-gap and evidence-only classifications remain unchanged. Phase 2 has
+not begun.
 The protected active inventory covers 748 files with zero unexpected missing
 files; proven obsolete staging/evidence roots were moved to quarantine without
 changing active implementation content. The active-source manifest, stale
