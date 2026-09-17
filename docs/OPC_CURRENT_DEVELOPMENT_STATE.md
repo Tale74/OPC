@@ -5,7 +5,7 @@
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-09-16
+**Reconciled:** 2026-09-17
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
@@ -19,8 +19,9 @@ reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the most recently completed current wave is
-`POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`,
-following the completed `POD-02 + POD-04 — WINDOWS OWNER RUNTIME ACCEPTED` wave.
+`PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`, following the completed
+`POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`
+wave.
 The next process marker is
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
 does not authorize implementation.
@@ -62,7 +63,7 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
@@ -93,6 +94,23 @@ final Android release APK SHA-256 is
 `275B9C5E7AA556DE5C25F77B8CDFF54A2C98D9413CFFF90066038DFF66946AC9`.
 Android narrow runtime acceptance and Windows wide no-regression runtime
 reconfirmation are separate OWNER runtime evidence for this closure.
+
+The accepted PDF-05 closure preserves singleton `PREZIME_IME_BROJ_PREDMETA_CITULJA_POLITIKA.pdf`
+and `PREZIME_IME_BROJ_PREDMETA_CITULJA_NOVOSTI.pdf` filenames. Multiple current
+same-type occurrences receive deterministic `_A`, `_B`, `_C` suffixes after
+sorting by `portableOccurrenceId`; that technical identity remains hidden and
+the suffix is output-only. Existing filename normalization, PDF content,
+concrete format projection, PARTE, preparation/finalization, persistence,
+schema, JSON and transfer behavior remain unchanged.
+
+PDF-05 evidence: targeted tests `7 PASS`; relevant ČITULJE regressions `27
+PASS`; `flutter analyze --no-pub` PASS; full serialized suite `549 passed, 10
+skipped, 0 failures`; Windows release build SHA-256
+`960FF97FD5D5E6AF778EDCB0FC12C380073665D307E4963A6A594ECB552DD26D`; Android
+release APK SHA-256
+`902F6CE62C4F5681345B8AF2C78F868D295EBD5BEF6EFFBFDAED9FD0F614737B`.
+Windows OWNER runtime acceptance is recorded; Android runtime acceptance is
+not claimed. PDF-05 is `WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`.
 
 The accepted selector/navigation contract is:
 
@@ -733,21 +751,22 @@ The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
 The current active control package is the external local-only package at
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260916-PHASE1-POD05-NARROW-CLOSURE\`,
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260917-PHASE1-PDF05-CLOSURE\`,
 with enclosing ZIP SHA-256
-`B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`,
+`B550645672750630B5403CE5CB404331CCBCAB7538777325E931A66946D6E27E`,
 PACKAGE_MANIFEST.json SHA-256
-`BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`,
+`3F0DF0D85D318B775E886B51D94060817541A3120F01B4DF16F8B1B1DFC1D9EA`,
 04_ACTIVE_SOURCE_AUTHORITY_MANIFEST.json SHA-256
-`0284F30EB4D1AB19A776FF9DEE01D34EB7E1154F3963C7CA155F6469EE8C2827`, and
+`FF38630EC8E10B4B83FDA835B9964024D058E77D00AB6DDF80B6F72CB8ACE694`, and
 27-row baseline SHA-256
-`8018E994401ACC9D0056C05696E8C110FE4458D2263C3EF7071D319B9D7CC3CF`.
-Its immediate predecessor was the POD-02/POD-04 successor package with baseline
-`7BDDA86623930EF6392EB3A10E08F374066FB2A3D88C9223DC90070860630C5F`,
+`4C974501426B2C9713C67AC8A08812651C66C35B2A475DC227B1FB6450D08E93`.
+Its immediate predecessor was the POD-05 + narrow responsive successor package
+with baseline
+`8018E994401ACC9D0056C05696E8C110FE4458D2263C3EF7071D319B9D7CC3CF`,
 PACKAGE_MANIFEST.json SHA-256
-`3CB9316905942CE0BB8AE15740789E9C633B3295270A8182D42ED466D2E901BD`, and
+`BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`, and
 ZIP SHA-256
-`680D3989AF3C3421DB4820CA96D07E24DE6A245BC331E027DB6E07BE5667FD72`.
+`B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`.
 Its predecessor ZIP physical status remains exactly
 `PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
 This is a current location fact, not an eternal path invariant; each future

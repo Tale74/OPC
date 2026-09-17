@@ -22,29 +22,29 @@ protected recovered-baseline package SHA is:
 The current active 27-row high-risk baseline SHA is a separate control-file
 identity, resolved from the current external package/current-state authority:
 
-`8018E994401ACC9D0056C05696E8C110FE4458D2263C3EF7071D319B9D7CC3CF`
+`4C974501426B2C9713C67AC8A08812651C66C35B2A475DC227B1FB6450D08E93`
 
 The current external active control package is:
 
-`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260916-PHASE1-POD05-NARROW-CLOSURE\`
+`C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260917-PHASE1-PDF05-CLOSURE\`
 
 Its enclosing ZIP SHA-256 is:
 
-`B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`
+`B550645672750630B5403CE5CB404331CCBCAB7538777325E931A66946D6E27E`
 
 Its PACKAGE_MANIFEST.json SHA-256 is:
 
-`BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`
+`3F0DF0D85D318B775E886B51D94060817541A3120F01B4DF16F8B1B1DFC1D9EA`
 
 Its 04_ACTIVE_SOURCE_AUTHORITY_MANIFEST.json SHA-256 is:
 
-`0284F30EB4D1AB19A776FF9DEE01D34EB7E1154F3963C7CA155F6469EE8C2827`
+`FF38630EC8E10B4B83FDA835B9964024D058E77D00AB6DDF80B6F72CB8ACE694`
 
 The immediate predecessor package was
-`OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260913-PHASE1-POD03-CLOSURE`,
-with baseline SHA-256 `767DEEF601CA80292C71C8D43B40E2CC0F19EC49D0F03F802F1555B3F2664FB5`,
-PACKAGE_MANIFEST.json SHA-256 `45E51244A20886615794D6DFA4C1FECCAA548BB23A2345EE947426491F26CEFD`,
-and ZIP SHA-256 `0865CADEE3C865FB46DFE914462DFBAD52BA246BD56223821C209422F675B127`.
+`OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260916-PHASE1-POD05-NARROW-CLOSURE`,
+with baseline SHA-256 `8018E994401ACC9D0056C05696E8C110FE4458D2263C3EF7071D319B9D7CC3CF`,
+PACKAGE_MANIFEST.json SHA-256 `BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`,
+and ZIP SHA-256 `B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`.
 Its predecessor identities remain preserved in the successor handoff. The
 predecessor ZIP physical status remains exactly:
 `PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
@@ -99,7 +99,7 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
@@ -227,12 +227,28 @@ The prior `OTVOREN-only` assumption is withdrawn; `OTVOREN + ZATVOREN` is
 accepted. `NO TASK REQUIREMENT MAY BE PROMOTED TO OWNER AUTHORITY WITHOUT A
 VERIFIED AUTHORITY SOURCE.`
 
+The completed PDF-05 closure records:
+
+`PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`
+
+The accepted filename contract preserves unsuffixed singleton POLITIKA and
+NOVOSTI filenames, assigns `_A`, `_B`, `_C` alphabetic suffixes to multiple
+current same-type occurrences after deterministic `portableOccurrenceId` sort,
+keeps that technical identity hidden, and keeps suffix state output-only. PDF
+content, concrete format projection, PARTE, persistence, schema, JSON,
+transfer, preparation and finalization semantics remain unchanged. PDF-05
+targeted tests `7 PASS`, relevant ČITULJE regressions `27 PASS`, analyzer,
+serialized full suite (`549 passed, 10 skipped, 0 failures`), Windows release
+build, Android release build and Windows OWNER runtime acceptance are recorded.
+Android runtime acceptance is not claimed. The residual ledger and matrix are
+reconciled only for PDF-05; no next implementation residual is selected.
+
 The next recovery process marker is:
 
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
 
 This is sequencing/process authority only. It selects no batch contents and
-does not authorize PDF-05, PODSETNIK fine-tuning, Android parity or
+does not authorize PODSETNIK fine-tuning, Android parity or
 implementation of any residual. POD-01 is now `WINDOWS OWNER RUNTIME ACCEPTED —
 CLOSED` without new implementation: OWNER narrowed its scope to PARENT
 completion-state visual distinction already satisfied by accepted POD-02
