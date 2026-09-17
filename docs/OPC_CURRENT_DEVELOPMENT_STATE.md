@@ -67,11 +67,11 @@ The current phase is:
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The completed preceding Phase 1 wave is:
 
-`POD-02 + POD-04 — WINDOWS OWNER RUNTIME ACCEPTED`
+`POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`
 
 The current accepted Phase 1 closure records:
 

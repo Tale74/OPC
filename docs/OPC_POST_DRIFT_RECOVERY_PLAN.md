@@ -103,7 +103,7 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 POD-02+POD-04 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
