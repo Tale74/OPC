@@ -99,11 +99,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
+`PHASE 2 — FORMALLY CLOSED`
+
+The immediately preceding accepted recovery phase was:
+
 `PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
-
-The preceding accepted recovery phase was:
-
-`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -270,10 +270,11 @@ OWNER has confirmed:
 - no Phase 1 implementation residual remains open.
 
 Accordingly, `PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE —
-COMPLETE` is the current recovery state. Phase 2 has not started, no Phase 2
-implementation, omission audit, residual or batch is selected. No next
-implementation member is authorized. The earlier batch-admissibility marker remains preserved
-as completed process history.
+COMPLETE` remains the completed predecessor control state. At that earlier
+Phase 1 closure point, Phase 2 had not started, and no Phase 2 implementation,
+omission audit, residual or batch was selected. No next implementation member
+was authorized. The earlier batch-admissibility marker remains preserved as
+completed process history.
 
 ## 3C. Post-Phase-1 Android parity
 
@@ -290,15 +291,33 @@ The established sequence is now:
 → `POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
 → `SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — RESUMED`
 
-Phase 2 has not started. Earlier item-level acceptance records that describe
-the narrower runtime evidence available at their historical acceptance point
-remain historical evidence scope and do not represent a pending consolidated
-parity gate.
+At the time of this earlier post-Phase-1 parity record, Phase 2 had not started.
+Earlier item-level acceptance records that describe the narrower runtime
+evidence available at their historical acceptance point remain historical
+evidence scope and do not represent a pending consolidated parity gate.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability
 findings deferred without creating CIT-02 regressions or separate micro-tasks.
 Current PODSETNIK ČITULJA child presentation is not a CIT-02 defect.
+
+## 3D. Phase 2 formal no-omission closure
+
+Current Phase 2 state: `PHASE 2 — FORMALLY CLOSED`.
+
+The completed read-only Phase 2 audit established:
+
+`PHASE 2 — NO PROVEN OMITTED PRE-CEREMONY OBLIGATIONS`
+
+All authoritative PRE-CEREMONY obligations reviewed are present in current
+source. `VOJNE POČASTI` is governed by the established OWNER trigger
+`vojniPenzioner == DA AND vojnePocasti == DA` and the grouped structure
+`VOJNE POČASTI` → `OBAVESTITI NADLEŽNU SLUŽBU`. No implementation package,
+residual or batch was required. No source, test, schema, JSON, QA, build or
+baseline change was made by this closure.
+
+`PHASE 3 — NOT STARTED` remains the current next-phase state. No Phase 3
+implementation member, omission or batch is selected.
 
 ## 3A. Docs-as-Code progression control
 
@@ -330,9 +349,10 @@ Its accepted one-presentation result does not redesign the header or create a
 new residual. The later POD-02/POD-04 package is recorded as
 `WINDOWS OWNER RUNTIME ACCEPTED` for both members; it closes only those two
 implementation residuals and does not advance or reorder the Phase 1 sequence.
-The current audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE FOUND` and
-`PHASE 3 PROVEN OMITTED OBLIGATIONS — NONE FOUND`; those phases remain reserved
-for future source-proven omissions and create no implementation work here.
+The completed Phase 2 audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE
+FOUND`; Phase 2 is formally closed and creates no implementation work. Phase 3
+remains reserved for separately proven post-ceremony omissions and is not
+started or selected here.
 Historical readiness/dependency sequences must not be promoted to current
 sequencing authority.
 

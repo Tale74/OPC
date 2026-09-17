@@ -14,8 +14,8 @@ post-drift recovery phase and task sequencing are governed by
 `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; detailed current residual status and
 backlog are governed by the sole current successor residual ledger/matrix. The
 resolved current recovery phase is
-`PHASE 1 — FORMALLY CLOSED`; Phase 2 and Phase 3 remain
-reserved for proven omitted obligations, currently with none found. Forensic
+`PHASE 2 — FORMALLY CLOSED`; Phase 3 remains reserved for proven omitted
+post-ceremony obligations and has not started. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the most recently completed current wave is
@@ -64,11 +64,11 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
+`PHASE 2 — FORMALLY CLOSED`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
 
 The formal Phase 1 exit decision is:
 
@@ -77,9 +77,9 @@ The formal Phase 1 exit decision is:
 OWNER has confirmed that deferred Android parity and EVID-01 through EVID-04
 are not Phase 1 exit blockers. OWNER-deferred PODSETNIK polish remains
 deferred, CIT-04 and PDF-04 remain future direction outside current Phase 1,
-and no Phase 1 implementation residual remains open. Phase 2 has not started;
-no Phase 2 implementation, omission audit, residual or batch is selected by
-this closure.
+and no Phase 1 implementation residual remains open. The earlier Phase 1
+closure record did not select a Phase 2 implementation, omission audit,
+residual or batch.
 
 The post-Phase-1 parity state is:
 
@@ -94,9 +94,24 @@ sequence. The established sequence is:
 → `POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
 → `SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — RESUMED`
 
-Phase 2 has not started. Earlier item-level acceptance records retain their
-historical runtime-evidence scope and do not represent a pending consolidated
-parity gate.
+At the time of this earlier post-Phase-1 parity record, Phase 2 had not
+started. Earlier item-level acceptance records retain their historical
+runtime-evidence scope and do not represent a pending consolidated parity
+gate.
+
+The completed Phase 2 closure is:
+
+`PHASE 2 — NO PROVEN OMITTED PRE-CEREMONY OBLIGATIONS`
+
+All authoritative PRE-CEREMONY obligations reviewed are present in current
+source. `VOJNE POČASTI` is governed by the established OWNER trigger
+`vojniPenzioner == DA AND vojnePocasti == DA` and the grouped structure
+`VOJNE POČASTI` → `OBAVESTITI NADLEŽNU SLUŽBU`. No implementation package,
+residual or batch was required. No source, test, schema, JSON, QA, build or
+baseline change was made by this closure.
+
+`PHASE 3 — NOT STARTED` remains current. No Phase 3 implementation member,
+omission or batch is selected.
 
 The completed preceding Phase 1 wave is:
 
@@ -242,8 +257,8 @@ defect set includes the established residuals plus `POD-08`, `POD-09`,
 `POD-10` and `POD-11`; the first three are accepted Windows corrections of
 their phase classification, while `POD-11` records the accepted grouped-
 obligation standard correction. `PIO-01` remains unchanged and locked. Phase 2 is
-`OMITTED PRE-CEREMONY OBLIGATIONS — NO CURRENTLY PROVEN OMISSIONS`; Phase 3 is
-`OMITTED POST-CEREMONY OBLIGATIONS — NO CURRENTLY PROVEN OMISSIONS`. No
+`PHASE 2 — FORMALLY CLOSED — NO PROVEN OMITTED PRE-CEREMONY OBLIGATIONS`; Phase
+3 is `PHASE 3 — NOT STARTED`. No
 internal Phase 1 implementation order is selected. Historical
 readiness/dependency sequences are not current sequencing authority.
 
@@ -817,8 +832,9 @@ accepted white check mark remains protected; no CHILD, row/background or text
 recoloring was required or created. POD-01 is `WINDOWS OWNER RUNTIME ACCEPTED —
 CLOSED`; POD-05 and the narrow responsive child-placement finding are now
 closed with the accepted runtime evidence. All other residual, deferred,
-authority-gap and evidence-only classifications remain unchanged. Phase 2 has
-not begun.
+authority-gap and evidence-only classifications remain unchanged. Phase 2 is
+formally closed with no proven omitted PRE-CEREMONY obligation; Phase 3 has not
+started.
 The protected active inventory covers 748 files with zero unexpected missing
 files; proven obsolete staging/evidence roots were moved to quarantine without
 changing active implementation content. The active-source manifest, stale
