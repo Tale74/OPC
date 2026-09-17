@@ -159,7 +159,7 @@ PODSETNIK regression 4 passed; R5 ČITULJA regression 12 passed; relevant
 PODSETNIK regression 30 passed; `flutter analyze --no-pub` PASS; full serialized
 `flutter test --no-pub --concurrency=1` recorded `547 passed, 10 skipped,
 0 failures`; Windows release build PASS; Android release APK build PASS. The
-controlled successor baseline verifies 27/27 protected rows with zero
+preceding POD-02/POD-04 controlled successor baseline verifies 27/27 protected rows with zero
 mismatches: 26 unchanged and the accepted PODSETNIK source row updated.
 The bounded closure evidence and public residual-status delta are recorded in
 [`docs/tasks/OPC_TASK_PHASE1_POD02_POD04_POST_ACCEPTANCE_CLOSURE.md`](tasks/OPC_TASK_PHASE1_POD02_POD04_POST_ACCEPTANCE_CLOSURE.md).
@@ -183,8 +183,8 @@ ACCEPTED`; CIT-07 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED` for the
 wide-screen layout, while its narrow-runtime evidence remains targeted-test
 evidence with Android parity deferred by OWNER. PDF-03 is recorded as
 `WINDOWS OWNER RUNTIME ACCEPTED` for the accepted SAHRANA/KREMACIJA contract;
-the remaining separate ČITULJE residual is `PDF-05 — ČITULJE PDF filename
-convention`.
+PDF-05 is recorded as `PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`; no
+open or remaining PDF-05 residual is selected.
 CIT-02 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED
 BY OWNER`; the accepted shared projection runs from the current PREDMET IRiU
 occurrence through canonical display-name resolution to the ČITULJE UI and
@@ -773,9 +773,12 @@ This is a current location fact, not an eternal path invariant; each future
 substantive task must re-resolve the location from current authority and use the
 current package manifest/handoff to map the five logical inputs to their actual
 filenames. The package remains current local-only control evidence, not
-implementation authority or a donor. The controlled rebaseline verifies all
-27 protected rows with zero mismatches; 26 rows are unchanged and the accepted
-PODSETNIK source row reflects the POD-05 and narrow responsive closure. The current residual
+implementation authority or a donor. The current controlled rebaseline is
+`4C974501426B2C9713C67AC8A08812651C66C35B2A475DC227B1FB6450D08E93` and
+verifies all 27 protected rows with zero mismatches: 26 rows are unchanged and
+the sole accepted changed row is
+`lib/features/predmeti/citulje/pdf/citulja_pdf_export.dart` with final hash
+`B06CE7303C6AD9420B9F9AD8DDFACD5212090DF1ABFB23395D30F03A0EA34E89`. The current residual
 ledger and matrix also close POD-01 without a source change: OWNER narrowed it
 to PARENT completion-state visual distinction, already satisfied by the
 accepted POD-02 red/incomplete and green/complete PARENT checkbox state. The
