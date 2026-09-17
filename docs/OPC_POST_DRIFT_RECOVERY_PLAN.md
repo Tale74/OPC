@@ -275,6 +275,26 @@ implementation, omission audit, residual or batch is selected. No next
 implementation member is authorized. The earlier batch-admissibility marker remains preserved
 as completed process history.
 
+## 3C. Post-Phase-1 Android parity
+
+`POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
+
+OWNER has confirmed that the successful Android release build from the
+completed Phase 1 work satisfies the consolidated Android parity gate. No
+additional Android parity scope review, runtime package, build or source work
+is pending for this recovery sequence.
+
+The established sequence is now:
+
+`PHASE 1 — FORMALLY CLOSED`
+→ `POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
+→ `SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — RESUMED`
+
+Phase 2 has not started. Earlier item-level acceptance records that describe
+the narrower runtime evidence available at their historical acceptance point
+remain historical evidence scope and do not represent a pending consolidated
+parity gate.
+
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability
 findings deferred without creating CIT-02 regressions or separate micro-tasks.

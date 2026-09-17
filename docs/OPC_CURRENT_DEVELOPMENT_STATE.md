@@ -78,8 +78,25 @@ OWNER has confirmed that deferred Android parity and EVID-01 through EVID-04
 are not Phase 1 exit blockers. OWNER-deferred PODSETNIK polish remains
 deferred, CIT-04 and PDF-04 remain future direction outside current Phase 1,
 and no Phase 1 implementation residual remains open. Phase 2 has not started;
-no Phase 2 implementation, omission audit or next residual is selected by
+no Phase 2 implementation, omission audit, residual or batch is selected by
 this closure.
+
+The post-Phase-1 parity state is:
+
+`POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
+
+The successful Android release build from the completed Phase 1 work satisfies
+the consolidated Android parity gate. No additional Android parity scope
+review, runtime package, build or source work is pending for this recovery
+sequence. The established sequence is:
+
+`PHASE 1 — FORMALLY CLOSED`
+→ `POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
+→ `SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — RESUMED`
+
+Phase 2 has not started. Earlier item-level acceptance records retain their
+historical runtime-evidence scope and do not represent a pending consolidated
+parity gate.
 
 The completed preceding Phase 1 wave is:
 
