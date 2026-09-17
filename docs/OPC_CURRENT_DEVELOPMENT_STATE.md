@@ -13,8 +13,8 @@ dependency information, not current recovery sequencing authority. The current
 post-drift recovery phase and task sequencing are governed by
 `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; detailed current residual status and
 backlog are governed by the sole current successor residual ledger/matrix. The
-resolved current next recovery phase is
-`PHASE 1 — PROVEN DEVIATIONS AND DEFECTS — NEXT`; Phase 2 and Phase 3 remain
+resolved current recovery phase is
+`PHASE 1 — FORMALLY CLOSED`; Phase 2 and Phase 3 remain
 reserved for proven omitted obligations, currently with none found. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
@@ -22,9 +22,10 @@ Within Phase 1, the most recently completed current wave is
 `PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`, following the completed
 `POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`
 wave.
-The next process marker is
-`NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selects no batch contents and
-does not authorize implementation.
+The completed preceding process marker was
+`NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selected no batch contents and
+authorized no implementation. It is superseded by the formal Phase 1 exit
+record below.
 
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
@@ -63,11 +64,22 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+
+The formal Phase 1 exit decision is:
+
+`PHASE 1 EXIT-READY — NO BLOCKING IMPLEMENTATION OR EVIDENCE GATES REMAIN`
+
+OWNER has confirmed that deferred Android parity and EVID-01 through EVID-04
+are not Phase 1 exit blockers. OWNER-deferred PODSETNIK polish remains
+deferred, CIT-04 and PDF-04 remain future direction outside current Phase 1,
+and no Phase 1 implementation residual remains open. Phase 2 has not started;
+no Phase 2 implementation, omission audit or next residual is selected by
+this closure.
 
 The completed preceding Phase 1 wave is:
 
@@ -121,11 +133,12 @@ The accepted selector/navigation contract is:
 preparation without `OTVORI ČITULJE`; return, refresh and invalidation behavior
 remain protected. Android parity remains deferred by OWNER.
 
-The next recovery process marker is:
+The completed preceding recovery process marker was:
 
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
 
-This selects no batch contents and does not authorize implementation.
+This selected no batch contents and authorized no implementation; it is
+superseded by the formal Phase 1 exit record above.
 
 The resolved OWNER recovery sequence is:
 
@@ -349,13 +362,14 @@ phase marker and canonical recovery plan. It remains historical roadmap
 context, not the current recovery-phase action.
 
 The prior current-state record's next-action wording is superseded by the
-completed POD-02+POD-04 closure marker above. The current recovery-phase next process
-marker is:
+completed POD-02+POD-04 closure marker above. The completed recovery-phase
+process marker was:
 
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
 
-This is sequencing/process authority only; no batch contents or internal
-implementation order is selected here.
+This was sequencing/process authority only; no batch contents or internal
+implementation order was selected. It is superseded by the formal Phase 1
+exit record above.
 
 The recovered owner-authority restoration established the PREDMET/IRiU signal
 and obligation contract. The URNA/PEPEO business contract is locked. Current

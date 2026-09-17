@@ -99,11 +99,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
 
 The preceding accepted recovery phase was:
 
-`PHASE 1 POD-05 + NARROW RESPONSIVE POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
+`PHASE 1 PDF-05 POST-ACCEPTANCE CONTROL CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -243,19 +243,37 @@ build, Android release build and Windows OWNER runtime acceptance are recorded.
 Android runtime acceptance is not claimed. The residual ledger and matrix are
 reconciled only for PDF-05; no next implementation residual is selected.
 
-The next recovery process marker is:
+The completed preceding recovery process marker was:
 
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`
 
-This is sequencing/process authority only. It selects no batch contents and
-does not authorize PODSETNIK fine-tuning, Android parity or
-implementation of any residual. POD-01 is now `WINDOWS OWNER RUNTIME ACCEPTED —
-CLOSED` without new implementation: OWNER narrowed its scope to PARENT
-completion-state visual distinction already satisfied by accepted POD-02
-(incomplete red, complete green; accepted white check mark protected). No
-CHILD, row/background or text color requirement was created. All other Phase 1
-entries retain their existing open, deferred, authority-gap and evidence-only
-classifications.
+This marker is complete and is superseded by the formal Phase 1 exit record
+below. It selected no batch contents and authorized no PODSETNIK fine-tuning,
+Android parity or implementation of any residual. POD-01 is now
+`WINDOWS OWNER RUNTIME ACCEPTED — CLOSED` without new implementation: OWNER
+narrowed its scope to PARENT completion-state visual distinction already
+satisfied by accepted POD-02. No CHILD, row/background or text color
+requirement was created. All remaining non-closed entries retain their
+existing parity/evidence, deferred and future-direction classifications.
+
+## 3B. Phase 1 formal exit
+
+Current Phase 1 state: `PHASE 1 — FORMALLY CLOSED`.
+
+OWNER has confirmed:
+
+- `PHASE 1 EXIT-READY — NO BLOCKING IMPLEMENTATION OR EVIDENCE GATES REMAIN`;
+- deferred Android parity is not a Phase 1 exit blocker;
+- EVID-01 through EVID-04 are not Phase 1 exit blockers;
+- PODSETNIK polish remains deferred;
+- CIT-04 and PDF-04 remain future direction outside current Phase 1;
+- no Phase 1 implementation residual remains open.
+
+Accordingly, `PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE —
+COMPLETE` is the current recovery state. Phase 2 has not started, no Phase 2
+implementation, omission audit, residual or batch is selected. No next
+implementation member is authorized. The earlier batch-admissibility marker remains preserved
+as completed process history.
 
 The OWNER decision `PODSETNIK — DEFERRED FINE-TUNING / POLISH FINDINGS` keeps
 literal/wording, minor presentation, small UX and small bounded usability
