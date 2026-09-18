@@ -1,11 +1,11 @@
 # OPC Post-Drift Recovery Plan
 
-**Status:** `CURRENT RECOVERY-PHASE GOVERNANCE CONTROL`
+**Status:** `FORMALLY CLOSED — COMPLETED POST-DRIFT RECOVERY CONTROL`
 
-This document is the canonical continuity and governance plan for the current
-post-drift recovery phase. It records the established recovery lineage and
-controls task ordering; it does not create new product requirements or replace
-the detailed residual, deferred or evidence records.
+This document is the canonical completed record of the post-drift recovery
+lineage and governance controls. It preserves the historical recovery sequence
+and evidence boundaries; it no longer serves as active recovery-phase
+sequencing authority or as a replacement for normal OWNER roadmap governance.
 
 ## 1. Continuation baseline
 
@@ -366,28 +366,67 @@ normal roadmap.
 `NALOG CVEĆARI — PDF ONLY`.
 `DOCX — NOT AN OPEN OPTION`.
 
-No recovery implementation residual remains open. The current readiness state
-is:
+No recovery implementation residual remains open. The pre-closure readiness
+state was:
 
 `POST-DRIFT RECOVERY — READY FOR FORMAL OWNER CLOSURE`
 
-This is not a recovery-closure claim. A separate explicit OWNER closure task is
-required.
+This was the pre-closure state; formal OWNER closure is recorded below.
+
+## 3G. Formal OWNER recovery closure
+
+Formal OWNER closure date: `2026-09-18`.
+
+`POST-DRIFT RECOVERY — FORMALLY CLOSED`
+
+`POST-DRIFT RECOVERY CONTROL SEQUENCE — COMPLETE`
+
+`PHASE 1 — FORMALLY CLOSED`
+
+`POST-PHASE-1 CONSOLIDATED ANDROID PARITY — COMPLETE`
+
+`PHASE 2 — FORMALLY CLOSED`
+
+`PHASE 3 — FORMALLY CLOSED`
+
+`NO OPEN RECOVERY IMPLEMENTATION RESIDUAL`
+
+`NORMAL OWNER ROADMAP / SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — ACTIVE`
+
+The completed recovery sequence includes the Phase 1 correction and
+reconciliation sequence, consolidated Android parity, the Phase 2 no-omission
+review, the Phase 3 no-omission review, and reconciliation of the remaining
+non-blocking evidence, deferred, future-direction and release-boundary
+classifications. No recovery implementation residual remains open.
+
+Final recovery baseline identity:
+
+`4C974501426B2C9713C67AC8A08812651C66C35B2A475DC227B1FB6450D08E93`
+
+The closure commit is the Docs-as-Code publication commit that records this
+status transition; its Git identity is reported by the publication handoff.
+Implementation publication remains a separate matter.
+
+EVID-01 through EVID-03 remain non-blocking evidence gaps. EVID-04 preserves
+accepted Windows evidence without claiming item-level Android runtime
+acceptance. Deferred, future-direction, technical-debt and stable-product
+release work return to the normal OWNER roadmap. No next roadmap task is
+selected by this closure.
 
 ## 3A. Docs-as-Code progression control
 
-After every OWNER-accepted recovery subphase, the canonical recovery
-phase/status and each affected current-authority document must be reconciled.
-Local authoritative documentation and the intended public GitHub current
-documentation must then be synchronized through the established OWNER-gated
-Docs-as-Code workflow. A recovery phase must not silently advance while the
-public/current documentation still reports the previous phase. Implementation
-publication remains a separate gate from documentation synchronization.
+During the active recovery sequence, every OWNER-accepted recovery subphase
+required reconciliation of the canonical recovery phase/status and each
+affected current-authority document. Local authoritative documentation and the
+intended public GitHub current documentation were synchronized through the
+OWNER-gated Docs-as-Code workflow. This completed record preserves that
+control history; implementation publication remains a separate gate from
+documentation synchronization.
 
 ## 4. Residual and deferred authority
 
-The plan references, and does not duplicate or replace, the sole current
-detailed residual/deferred/evidence authority:
+The completed recovery record references, and does not duplicate or replace,
+the final recovery residual/deferred/evidence authority:
 
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\10_CURRENT_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
@@ -426,9 +465,10 @@ homes and the operative dependency records, especially:
 - `docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`
 - `docs/OPC_PHASE2_ROADMAP_CURRENT_REALITY_RECONCILIATION.md`
 
-## 5. Mandatory recovery-plan continuity gate
+## 5. Historical recovery-plan continuity gate
 
-During this recovery phase, every substantive OPC task must physically read
+During the active recovery phase, every substantive OPC task was required to
+physically read
 this canonical plan before task planning or substantive source-learning and
 must report:
 
@@ -453,11 +493,12 @@ protected-boundary and anti-drift controls.
 
 ## 6. Completion boundary
 
-This plan remains governing authority until the recovery residual, recovery-
-specific deferred/evidence obligations and recovery-specific integrated
-acceptance/release boundary are reconciled and the OWNER explicitly closes the
-post-drift recovery phase. Stable OPC v.1 product-line and general release work
-is not part of this recovery boundary unless separately proven to be a
-recovery-specific blocker. A task may not claim recovery closure from
+This completed record preserves the recovery residual, recovery-specific
+deferred/evidence obligations and recovery-specific integrated
+acceptance/release boundary that were reconciled before formal OWNER closure.
+It is no longer active recovery sequencing authority. Stable OPC v.1
+product-line and general release work is not part of the completed recovery
+boundary unless separately proven to be a recovery-specific blocker. A task may
+not claim recovery closure from
 source/test evidence, a runtime observation, documentation synchronization or
 a public Git commit alone.

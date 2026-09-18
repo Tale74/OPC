@@ -1,6 +1,6 @@
 ﻿# OPC current development state
 
-**Status:** `CURRENT RECONCILED CONTINUITY SUMMARY`
+**Status:** `FORMALLY CLOSED — CURRENT RECONCILED CONTINUITY SUMMARY`
 
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
@@ -9,18 +9,24 @@
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
-dependency information, not current recovery sequencing authority. The current
-post-drift recovery phase and task sequencing are governed by
-`docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; detailed current residual status and
-backlog are governed by the sole current successor residual ledger/matrix. The
-resolved current recovery phase is
+dependency information. The completed post-drift recovery record is preserved
+in `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; ordinary future task sequencing is
+governed by the normal OWNER roadmap. Final recovery residual status and
+evidence boundaries are preserved in the completed recovery ledger/matrix. The
+resolved recovery sequence ends with
 `PHASE 3 — FORMALLY CLOSED`; the completed Phase 3 audit established
 `PHASE 3 — NO PROVEN OMITTED POST-CEREMONY OBLIGATIONS`. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
-The current recovery readiness state is:
-`POST-DRIFT RECOVERY — READY FOR FORMAL OWNER CLOSURE`.
-This is readiness only; the recovery phase is not yet claimed closed.
+The current recovery state is:
+`POST-DRIFT RECOVERY — FORMALLY CLOSED`.
+Formal OWNER closure date: `2026-09-18`.
+`POST-DRIFT RECOVERY CONTROL SEQUENCE — COMPLETE`.
+`NO OPEN RECOVERY IMPLEMENTATION RESIDUAL`.
+The closure commit is the Docs-as-Code publication commit that records this
+transition; its Git identity is reported by the publication handoff.
+Implementation publication remains a separate matter.
+`NORMAL OWNER ROADMAP / SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — ACTIVE`.
 Within Phase 1, the most recently completed current wave is
 `PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`, following the completed
 `POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`
@@ -138,8 +144,9 @@ classified outside the recovery implementation sequence.
 `NALOG CVEĆARI — PDF ONLY`.
 `DOCX — NOT AN OPEN OPTION`.
 
-No recovery implementation residual remains open. A separate explicit OWNER
-closure task is still required.
+No recovery implementation residual remains open. No next roadmap task is
+selected by this closure; every new implementation task requires separate OWNER
+authorization.
 
 The completed preceding Phase 1 wave is:
 
@@ -297,9 +304,11 @@ internal Phase 1 implementation order is selected. Historical
 readiness/dependency sequences are not current sequencing authority.
 
 This marker is a governance/continuity correction and does not replace or
-reclassify the detailed residual, deferred or evidence records. The canonical
-plan and existing current homes remain subordinate to OWNER authority and the
-established engineering, active-source, donor-control and anti-drift gates.
+reclassify the detailed residual, deferred or evidence records. The completed
+recovery plan and completed recovery ledger/matrix preserve recovery
+provenance; ordinary future sequencing follows the normal OWNER roadmap. The
+established engineering, active-source, donor-control and anti-drift gates
+remain active.
 
 The application/product name is `OPC`. `OPC Srbija` is internal shorthand only
 for the stable Serbian-market product-line gate and is not a rename.
@@ -327,9 +336,9 @@ The consolidated current-state record is
 It records the accepted R1–R5 implementation/source/test/documentation
 baseline, records the R5 independent Logos review PASS and separates it from
 runtime/release acceptance, and classifies the remaining ČITULJE/PODSETNIK
-capabilities. It is supporting current-state/evidence material, not current
-recovery sequencing authority. Current sequencing is governed by
-`OPC_POST_DRIFT_RECOVERY_PLAN.md` and the current successor residual authority.
+capabilities. It is supporting current-state/evidence material and does not
+govern ordinary future sequencing. The completed recovery plan and residual
+records preserve recovery provenance; normal OWNER roadmap governance is active.
 No R1–R5 item is release complete on bounded evidence alone.
 
 ## R1 portable IRiU identity and transfer foundation — 2026-09-05
@@ -444,10 +453,10 @@ separate claims governed by the actually completed evidence; recovered
 decisions must not be reopened or used to infer additional business
 completion.
 
-The broader owner roadmap remains supporting roadmap context. Current recovery
-sequencing is governed by the canonical recovery plan and successor residual
-authority. After the current recovery sequence is completed, the owner roadmap
-may proceed through the lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
+The broader owner roadmap remains supporting roadmap context. After formal
+recovery closure, normal OWNER roadmap governance and synchronized Windows +
+Android development are active. The owner roadmap may proceed through the
+lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
 VALUTE, and the Serbian-market OPC v.1 product-line gate. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
 signing work remain attached technical/release controls only when necessary for
