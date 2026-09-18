@@ -111,8 +111,9 @@ preceding completed Phase 1 wave was:
 
 `CIT-02 — SHARED CONCRETE-FORMAT PROJECTION — OWNER WINDOWS RUNTIME ACCEPTED`
 
-The CIT-02 status is `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
-DEFERRED BY OWNER`. Its accepted architecture is the current PREDMET IRiU
+The CIT-02 status is `WINDOWS OWNER RUNTIME ACCEPTED — CONSOLIDATED ANDROID
+PARITY COMPLETE; ITEM-LEVEL ANDROID RUNTIME ACCEPTANCE NOT CLAIMED`. Its
+accepted architecture is the current PREDMET IRiU
 occurrence → canonical IRiU display-name resolution → shared ČITULJE
 concrete-format projection → ČITULJE preparation UI/PDF. `interniNaziv`
 remains stable category/business identity; current `nazivPrikaz` remains the

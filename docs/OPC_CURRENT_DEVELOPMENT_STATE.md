@@ -867,8 +867,8 @@ recoloring was required or created. POD-01 is `WINDOWS OWNER RUNTIME ACCEPTED â€
 CLOSED`; POD-05 and the narrow responsive child-placement finding are now
 closed with the accepted runtime evidence. All other residual, deferred,
 authority-gap and evidence-only classifications remain unchanged. Phase 2 is
-formally closed with no proven omitted PRE-CEREMONY obligation; Phase 3 has not
-started.
+formally closed with no proven omitted PRE-CEREMONY obligation; Phase 3 is
+formally closed with no proven omitted POST-CEREMONY obligations.
 The protected active inventory covers 748 files with zero unexpected missing
 files; proven obsolete staging/evidence roots were moved to quarantine without
 changing active implementation content. The active-source manifest, stale
