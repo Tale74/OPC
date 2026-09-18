@@ -131,7 +131,9 @@ The accepted selector/navigation contract is:
 
 `ZAVRŠEN` remains excluded. Direct dropdown selection opens the corresponding
 preparation without `OTVORI ČITULJE`; return, refresh and invalidation behavior
-remain protected. Android parity remains deferred by OWNER.
+remain protected. In that earlier acceptance record, Android parity was
+deferred; consolidated Android parity is now complete and item-level Android
+runtime acceptance is not claimed for this record.
 
 The accepted current multi-item package is:
 
@@ -342,6 +344,35 @@ The accepted URNA/PEPEO lifecycle, including +3-day notification eligibility,
 repeating notifications until completion, the `ZAVRŠEN` blocker and the
 `GROBLJE POLAGANJA URNE` authority, remains protected and unchanged.
 
+## 3F. Recovery closure readiness normalization
+
+OWNER has resolved that the canonical phrase `final integrated
+acceptance/release sequence` means the recovery-specific integrated
+acceptance/release boundary. It does not require completion of the complete
+stable OPC v.1 product-line release program.
+
+Stable-product and release work returns to the normal OWNER roadmap unless
+separately proven to be a recovery-specific blocker. This includes MODUL DVE
+VALUTE, release identity/version/update-channel policy, signing and handover,
+stable-product backup/restore rehearsal, final product runtime matrices,
+performance targets, broader UI/UX work and related release gates.
+
+EVID-01, EVID-02 and EVID-03 remain non-blocking evidence gaps. EVID-04
+preserves accepted Windows evidence without claiming item-level Android runtime
+acceptance. Deferred polish, future direction and technical debt return to the
+normal roadmap.
+
+`NALOG CVEĆARI — PDF ONLY`.
+`DOCX — NOT AN OPEN OPTION`.
+
+No recovery implementation residual remains open. The current readiness state
+is:
+
+`POST-DRIFT RECOVERY — READY FOR FORMAL OWNER CLOSURE`
+
+This is not a recovery-closure claim. A separate explicit OWNER closure task is
+required.
+
 ## 3A. Docs-as-Code progression control
 
 After every OWNER-accepted recovery subphase, the canonical recovery
@@ -365,8 +396,9 @@ not a competing current authority. The current successor records the accepted
 closure of CIT-06, CIT-07 and PDF-03 in addition to the three
 additional Phase 1 phase-classification defects `POD-08`, `POD-09` and `POD-10`,
 the later Windows-owner-runtime acceptance of Foundation A, and `POD-11` as the
-existing grouped-obligation-standard correction accepted on Windows with
-Android parity deferred by OWNER. POD-03 is now closed as
+existing grouped-obligation-standard correction accepted on Windows. The
+earlier item-level Android deferral is historical; consolidated Android parity
+is now complete and item-level Android runtime acceptance is not claimed. POD-03 is now closed as
 `WINDOWS OWNER RUNTIME ACCEPTED` under its existing ceremony/header boundary.
 Its accepted one-presentation result does not redesign the header or create a
 new residual. The later POD-02/POD-04 package is recorded as
@@ -374,8 +406,8 @@ new residual. The later POD-02/POD-04 package is recorded as
 implementation residuals and does not advance or reorder the Phase 1 sequence.
 The completed Phase 2 audit found `PHASE 2 PROVEN OMITTED OBLIGATIONS — NONE
 FOUND`; Phase 2 is formally closed and creates no implementation work. Phase 3
-remains reserved for separately proven post-ceremony omissions and is not
-started or selected here.
+is also formally closed with `PHASE 3 — NO PROVEN OMITTED POST-CEREMONY
+OBLIGATIONS`; no Phase 3 implementation member, omission or batch is selected.
 Historical readiness/dependency sequences must not be promoted to current
 sequencing authority.
 
@@ -420,8 +452,11 @@ protected-boundary and anti-drift controls.
 
 ## 6. Completion boundary
 
-This plan remains governing authority until the residual, deferred, evidence
-and final integrated acceptance/release sequence is completed and the OWNER
-explicitly closes the post-drift recovery phase. A task may not claim recovery
-closure from source/test evidence, a runtime observation, documentation
-synchronization or a public Git commit alone.
+This plan remains governing authority until the recovery residual, recovery-
+specific deferred/evidence obligations and recovery-specific integrated
+acceptance/release boundary are reconciled and the OWNER explicitly closes the
+post-drift recovery phase. Stable OPC v.1 product-line and general release work
+is not part of this recovery boundary unless separately proven to be a
+recovery-specific blocker. A task may not claim recovery closure from
+source/test evidence, a runtime observation, documentation synchronization or
+a public Git commit alone.

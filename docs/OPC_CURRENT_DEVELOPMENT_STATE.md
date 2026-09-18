@@ -18,6 +18,9 @@ resolved current recovery phase is
 `PHASE 3 — NO PROVEN OMITTED POST-CEREMONY OBLIGATIONS`. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
+The current recovery readiness state is:
+`POST-DRIFT RECOVERY — READY FOR FORMAL OWNER CLOSURE`.
+This is readiness only; the recovery phase is not yet claimed closed.
 Within Phase 1, the most recently completed current wave is
 `PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`, following the completed
 `POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`
@@ -119,6 +122,25 @@ current source. No implementation package, residual or batch was required.
 No source, test, schema, JSON, QA, build or baseline change was made by this
 closure. The entire post-drift recovery sequence is not claimed complete.
 
+OWNER has resolved that the recovery completion boundary is recovery-specific.
+The complete stable OPC v.1/product-line release program is not a recovery
+closure prerequisite. MODUL DVE VALUTE, release identity/version/update-channel
+policy, signing/handover, stable-product backup/restore rehearsal, final
+product runtime matrices, performance work, broader UI/UX work and related
+release gates return to the normal OWNER roadmap unless separately proven to be
+recovery-specific blockers.
+
+EVID-01, EVID-02 and EVID-03 remain non-blocking evidence gaps. EVID-04
+preserves accepted Windows evidence without claiming item-level Android runtime
+acceptance. Deferred polish, future direction and technical debt remain
+classified outside the recovery implementation sequence.
+
+`NALOG CVEĆARI — PDF ONLY`.
+`DOCX — NOT AN OPEN OPTION`.
+
+No recovery implementation residual remains open. A separate explicit OWNER
+closure task is still required.
+
 The completed preceding Phase 1 wave is:
 
 `POD-05 + BOUNDED NARROW RESPONSIVE CORRECTION — OWNER RUNTIME ACCEPTANCE PASS`
@@ -169,7 +191,8 @@ The accepted selector/navigation contract is:
 
 `ZAVRŠEN` remains excluded. Direct dropdown selection opens the corresponding
 preparation without `OTVORI ČITULJE`; return, refresh and invalidation behavior
-remain protected. Android parity remains deferred by OWNER.
+remain protected. Consolidated Android parity is complete; item-level Android
+runtime acceptance is not claimed for this historical acceptance record.
 
 The completed preceding recovery process marker was:
 
@@ -184,10 +207,10 @@ The resolved OWNER recovery sequence is:
 2. `PHASE 2 — OMITTED PRE-CEREMONY OBLIGATIONS`;
 3. `PHASE 3 — OMITTED POST-CEREMONY OBLIGATIONS`.
 
-Foundation A (`POD-08`, `POD-09`, `POD-10`) is now recorded as
-`WINDOWS OWNER RUNTIME ACCEPTED`, with Android parity deferred until the Phase
-1 Windows defect set is consolidated. `POD-11 — VOJNE POČASTI` is recorded as
-`WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED BY OWNER` and remains
+Foundation A (`POD-08`, `POD-09`, `POD-10`) is recorded as
+`WINDOWS OWNER RUNTIME ACCEPTED — CONSOLIDATED ANDROID PARITY COMPLETE; ITEM-LEVEL ANDROID RUNTIME ACCEPTANCE NOT CLAIMED`.
+`POD-11 — VOJNE POČASTI` is recorded as
+`WINDOWS OWNER RUNTIME ACCEPTED — CONSOLIDATED ANDROID PARITY COMPLETE; ITEM-LEVEL ANDROID RUNTIME ACCEPTANCE NOT CLAIMED` and remains
 classified as `PHASE 1 DEFECT — EXISTING GROUPED-OBLIGATION STANDARD MISAPPLIED`.
 Windows and Android remain equal peers; after the consolidated Android parity
 point, development returns to synchronized Windows + Android execution. The
@@ -215,8 +238,9 @@ mismatches: 26 unchanged and the accepted PODSETNIK source row updated.
 The bounded closure evidence and public residual-status delta are recorded in
 [`docs/tasks/OPC_TASK_PHASE1_POD02_POD04_POST_ACCEPTANCE_CLOSURE.md`](tasks/OPC_TASK_PHASE1_POD02_POD04_POST_ACCEPTANCE_CLOSURE.md).
 
-CIT-01 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY
-DEFERRED BY OWNER`. The accepted behavior permits human correction after
+CIT-01 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED — CONSOLIDATED ANDROID
+PARITY COMPLETE; ITEM-LEVEL ANDROID RUNTIME ACCEPTANCE NOT CLAIMED`. The
+accepted behavior permits human correction after
 finalization, preserves finalization and PARTE provenance, blocks later PARTE
 influence, and removes only the preparation while preserving IRiU/PREDMET.
 The later same-occurrence preparation is fresh and is not automatically
@@ -232,17 +256,20 @@ accepted. `NO TASK REQUIREMENT MAY BE PROMOTED TO OWNER AUTHORITY WITHOUT A
 VERIFIED AUTHORITY SOURCE.` CIT-06 is now recorded as `WINDOWS OWNER RUNTIME
 ACCEPTED`; CIT-07 is recorded as `WINDOWS OWNER RUNTIME ACCEPTED` for the
 wide-screen layout, while its narrow-runtime evidence remains targeted-test
-evidence with Android parity deferred by OWNER. PDF-03 is recorded as
+evidence; consolidated Android parity is complete and item-level Android
+runtime acceptance is not claimed. PDF-03 is recorded as
 `WINDOWS OWNER RUNTIME ACCEPTED` for the accepted SAHRANA/KREMACIJA contract;
 PDF-05 is recorded as `PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`; no
 open or remaining PDF-05 residual is selected.
-CIT-02 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID PARITY DEFERRED
-BY OWNER`; the accepted shared projection runs from the current PREDMET IRiU
+CIT-02 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — CONSOLIDATED ANDROID
+PARITY COMPLETE; ITEM-LEVEL ANDROID RUNTIME ACCEPTANCE NOT CLAIMED`; the
+accepted shared projection runs from the current PREDMET IRiU
 occurrence through canonical display-name resolution to the ČITULJE UI and
 PDF. `interniNaziv` remains stable category/business identity and
 `nazivPrikaz` remains current user-visible truth. No schema or JSON contract
-changed. CIT-03 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED — ANDROID
-PARITY DEFERRED BY OWNER`.
+changed. CIT-03 is now recorded as `WINDOWS OWNER RUNTIME ACCEPTED —
+CONSOLIDATED ANDROID PARITY COMPLETE; ITEM-LEVEL ANDROID RUNTIME ACCEPTANCE
+NOT CLAIMED`.
 
 The CIT-03 test-lifecycle incident is resolved task evidence only:
 `RESOLVED — TEST-LIFECYCLE ONLY — NO PRODUCT REQUIREMENT CREATED`.
