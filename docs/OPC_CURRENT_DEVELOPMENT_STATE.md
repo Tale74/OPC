@@ -25,7 +25,7 @@ Formal OWNER closure date: `2026-09-18`.
 `NO OPEN RECOVERY IMPLEMENTATION RESIDUAL`.
 The closure commit is the Docs-as-Code publication commit that records this
 transition; its Git identity is reported by the publication handoff.
-Implementation publication remains a separate matter.
+`OPC v1.5 CLEAN BASELINE — PUBLISHED`.
 `NORMAL OWNER ROADMAP / SYNCHRONIZED WINDOWS + ANDROID DEVELOPMENT — ACTIVE`.
 Within Phase 1, the most recently completed current wave is
 `PDF-05 — WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`, following the completed

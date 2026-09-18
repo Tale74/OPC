@@ -6,7 +6,8 @@
 - Owner: Tale
 - Outcome: local clean development baseline establishment
 - Scope: source/test/configuration migration of the already reconciled current delta; no product correction
-- Publication: not pushed; implementation publication remains separately gated
+- Publication: clean-baseline branch published successfully after the original
+  separate implementation-publication gate was satisfied by OWNER authorization
 
 ## Source continuity
 
@@ -88,13 +89,18 @@ this baseline handoff.
 - Requirements/traceability: no product requirement was added or changed; the migration preserves the accepted current delta.
 - Architecture/data contracts: no schema, database, JSON, transfer or business contract changed.
 - Verification/acceptance: analyzer, serialized tests and both release builds completed; runtime acceptance was not created by build success.
-- Quality/release: both platform release artifacts are recorded; push/publication remains separately gated.
+- Quality/release: both platform release artifacts are recorded; the clean-baseline
+  branch was published successfully and the worktree remained clean.
 - Authority: current docs and the prior accepted reconciliation establish the migration boundary; historical REVIEW material was not used as a donor.
 - Incidental finding disposition: the prior Android execution-incomplete incident was resolved by the bounded retry; no orphan finding remains.
 
 ## Commit note
 
-This handoff is intended to be included in the single local baseline commit
-with subject `baseline: establish clean OPC v1.5 source`. The final commit SHA,
-parent, staged path set and clean-worktree result are reported by the final
-post-commit verification.
+The baseline was committed as
+`d98d27797c3c0bec194f71646960c32d64154aa0` with subject
+`baseline: establish clean OPC v1.5 source`. The final documentation and
+publication tip is `2fe70594c7234e7c9eeeeaef43b8802e6009551d` on branch
+`codex/opc-v1.5-clean-baseline`, published to
+`https://github.com/Tale74/OPC.git`. Implementation publication is complete
+for this clean-baseline branch, and the worktree remained clean after
+publication.
