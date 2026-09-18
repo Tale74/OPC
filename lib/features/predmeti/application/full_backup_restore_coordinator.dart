@@ -116,7 +116,8 @@ class FullBackupRestoreCoordinator {
   Future<_StoredReminderInventory> _storedReminderInventory() async {
     final rows = await _db
         .customSelect(
-          'SELECT predmet_id, scheduled_notification_ids '
+          'SELECT predmet_id, scheduled_notification_ids, '
+          'urna_scheduled_notification_ids '
           'FROM ceremony_reminder_settings',
         )
         .get();
@@ -130,6 +131,14 @@ class FullBackupRestoreCoordinator {
         );
         if (decoded is List) {
           ids.addAll(decoded.whereType<num>().map((value) => value.toInt()));
+        }
+        final urnaDecoded = jsonDecode(
+          row.read<String>('urna_scheduled_notification_ids'),
+        );
+        if (urnaDecoded is List) {
+          ids.addAll(
+            urnaDecoded.whereType<num>().map((value) => value.toInt()),
+          );
         }
       } on FormatException {
         // Invalid local derivative data cannot become a cancellation target.
@@ -180,11 +189,15 @@ class FullBackupRestoreCoordinator {
       gateway: notificationGateway,
     ).reschedule(
       predmetId: predmet.id,
+      predmetStatus: predmet.status,
       ceremonyType: predmet.vrstaCeremonije,
       deceasedFirstName: predmet.ime,
       deceasedLastName: predmet.prezime,
       ceremonyDate: predmet.datumCeremonije,
       ceremonyTime: predmet.vremeCeremonije,
+      ceremonyLocation: predmet.groblje,
+      urnPlacementType: predmet.tipPolaganja,
+      urnCemetery: predmet.grobljePolaganjaUrne,
       ceremonyAt: parseCeremonyReminderDateTime(
         predmet.datumCeremonije,
         predmet.vremeCeremonije,

@@ -1108,6 +1108,7 @@ class _FakeGateway implements CeremonyNotificationGateway {
     required String title,
     required String body,
     required String payload,
+    bool repeatDaily = false,
   }) async {
     scheduledIds.add(id);
     if (failScheduling) {

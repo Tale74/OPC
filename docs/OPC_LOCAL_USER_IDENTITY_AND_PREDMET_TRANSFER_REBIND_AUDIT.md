@@ -4,6 +4,11 @@ Status: `CODE-FIRST TECHNICAL AUDIT — NO IMPLEMENTATION AUTHORIZED`
 
 Date: 2026-07-26
 
+Current authority note (2026-08-22): the audit findings below are historical
+source-learning context. The accepted owner oracle and the implemented schema-28
+portable responsibility correction supersede the pre-correction local-rebinding
+conclusion for same-FIRMA PREDMET responsibility.
+
 Base branch: `task/OPC-GATE-0-FIRM-IDENTITY-ADVISER-LINK-CORRECTION`
 
 Base SHA: `fca00fa1cf4b53d7dccf858bc98e48a6a84f35f5`
@@ -185,3 +190,78 @@ current bounded selective fallback. Destructive full-backup replacement stays
 fail-closed when FIRMA identity is incomplete; explicit user confirmation can
 import only new/unambiguous PREDMET families through the existing local-user
 transfer seam. See `docs/OPC_FULL_BACKUP_CASE2_RECONCILIATION_DESIGN.md`.
+
+## 10. SAME-FIRMA SAVETNIK source-learning checkpoint — 2026-08-22
+
+This section records current source behavior before any new responsibility
+correction is designed. It is not an implementation proposal.
+
+### CURRENT BEHAVIOR (source-proven)
+
+```text
+authenticated local session
+  -> ListaPredmetaScreen._noviPredmet()
+  -> PredmetiRepository.kreirajPredmet(savetnikId: session.korisnik.id)
+  -> Predmeti.savetnikId = local session id
+  -> Predmeti.createdByKorisnikId = same local session id
+
+individual JSON export
+  -> _serijalizujPredmet()
+  -> predmet.toJson()
+  -> schemaVersion 6 (or 7 only when the STANJE ROBE consequence block is
+     present)
+  -> exports savetnikId, createdByKorisnikId and
+     lastBusinessModifiedByKorisnikId as database-local integers
+  -> exports no Korisnici table and no stable cross-database user identity
+
+new individual import
+  -> _procitajPredmetTransferPayload()
+  -> PredmetiRepository.uveziPredmetSaPovezanimPodacimaUnutarTransakcije()
+  -> active destination actor is validated
+  -> savetnikId, createdByKorisnikId and lastBusinessModifiedByKorisnikId are
+     all overwritten with actor.id
+  -> no IMPORT_NEW logIzmena row is written
+
+same-identity replacement
+  -> _zameniPredmetUBazi()
+  -> destination PREDMET id is retained
+  -> PredmetiRepository.zameniPredmetSaPovezanimPodacima()
+  -> destination savetnikId and createdByKorisnikId are preserved
+  -> lastBusinessModifiedByKorisnikId is set to the local replacement actor
+  -> prior logIzmena rows are retained and IMPORT_REPLACE is appended
+
+derivatives
+  -> LISTA resolves Predmeti.savetnikId through local Korisnici.imePrezime
+  -> LISTA PDF export resolves the same relation, passes the name through
+     ListaPdfDataBuilder, and renders it in the document-local footer
+  -> other PREDMET PDF exporters follow the same document-local lookup
+  -> memorandum_logo.dart is shared only for memorandum identity rows/logo;
+     no shared SAVETNIK footer engine was found
+  -> StatistikaAggregator groups by Predmeti.savetnikId and local user label
+```
+
+### PROVEN DEFECT
+
+The accepted Test A path is caused by the new-import projection in
+`lib/features/predmeti/data/predmeti_repository.dart` (the
+`localPredmet` copy inside
+`uveziPredmetSaPovezanimPodacimaUnutarTransakcije`). It explicitly replaces
+the incoming PREDMET's SAVETNIK relation with the destination importer. The
+same stored relation then drives LISTA, LISTA PDF and STATISTIKA. This is not a
+presentation-only resolver defect and is not caused by equal numeric IDs being
+portable; the importer intentionally writes its own local ID.
+
+`createdByKorisnikId`, `lastBusinessModifiedByKorisnikId` and
+`logIzmena.korisnikId` remain separate local audit concepts in source. Full
+backup is different: it transfers the complete `korisnici`/PREDMET/log family
+and restores the rows together. That mechanism does not establish semantics
+for individual PREDMET transfer.
+
+### UNRESOLVED BEFORE DESIGN
+
+The source and current business authority do not define the outcome when a
+legitimate incoming SAME-FIRMA SAVETNIK cannot be resolved to a destination
+local user. No phantom user and no importer rebinding are permitted, but the
+required fail-closed, null/unresolved, or explicitly selected-local-user
+outcome is not technically derivable. An OWNER BUSINESS ORACLE is required
+before design or implementation.

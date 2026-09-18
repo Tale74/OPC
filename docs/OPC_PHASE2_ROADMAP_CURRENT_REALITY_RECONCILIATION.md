@@ -19,8 +19,8 @@
 | Windows single-instance protection | `OPEN` / implementation discrepancy candidate | Audit evidence shows no native guard; this Phase 2 task records the gap and does not change source. |
 | Windows startup/canonical runtime closure | `PARTIALLY COMPLETE` | Proven cold/reopen and repaired-copy slices remain bounded; protected-install visual/SCENARIO/LISTA proof remains open. |
 | Evidence-first performance closure | `OPEN` | Windows exit/startup and Android PARTE/IRiU profiling targets remain unmeasured or owner-target dependent. |
-| Completion/signal model | `OPEN` / `BLOCKED BY OWNER DECISION` | Complete derived signal meanings are not settled. |
-| PODSETNIK full upgrade | `OPEN` / `BLOCKED BY OWNER DECISION` | Existing notification behavior is represented; complete lifecycle-aware semantics remain owner-open. |
+| Completion/signal model | `COMPLETED — RECOVERED OWNER CONTRACT` | Recovered owner baseline and traceability ledger settle the target semantics; structured source implementation remains absent. |
+| PODSETNIK full upgrade | `OPEN — IMPLEMENTATION NEXT` | Existing notification behavior is represented; implement the recovered lifecycle-aware contract in the exact three-task order. |
 | Single-PREDMET JSON UI relocation | `OPEN` | Action ownership relocation remains a product-completeness item; no code change authorized here. |
 | Full backup/restore final rehearsal | `OPEN` / release-gate blocker | Prior scoped PASS is evidence, not current release-candidate closure. |
 | NALOG CVEĆARI content and scope | `BLOCKED BY OWNER DECISION` | No standalone generator/business scope is proven. |
@@ -45,7 +45,7 @@ This is classified as `ROADMAP DRIFT` and `DOCUMENTATION DRIFT`, not an implemen
 
 ## Owner decisions preserved
 
-The following remain open and were not guessed: complete PODSETNIK signal meanings, NALOG CVEĆARI content/scope, RAČUN FIRMA availability/default, measurable performance targets, EUR activation/treatment, app identity/version/update channel, release baseline/signing custody, and future IP/repository-use/distribution decisions.
+The following remain open and were not guessed: missing/invalid urn-location fallback, exact PODSETNIK localization catalogue/API, migration/version and fingerprint formats, role-specific reopen semantics, exact count grammar/attention animation, NALOG CVEĆARI content/scope, RAČUN FIRMA availability/default, measurable performance targets, EUR activation/treatment, app identity/version/update channel, release baseline/signing custody, and future IP/repository-use/distribution decisions. Recovered PODSETNIK business meanings are not reopened.
 
 ## Reconciliation result
 

@@ -46,21 +46,67 @@ void main() {
         status: 'ANONIMIZOVAN',
         createdAt: '2026-07-15T10:00:00.000',
       );
+      await _insert(
+        db,
+        ime: 'Nepoznat',
+        status: 'NEPOZNAT',
+        createdAt: '2026-07-16T10:00:00.000',
+      );
 
       final candidates = await repo.getPodsetnikKandidate();
 
       expect(candidates.map((predmet) => predmet.ime), [
         'Najnoviji',
-        'DrugiStatus',
         'Stariji',
       ]);
       expect(candidates.map((predmet) => predmet.status), [
         'ZATVOREN',
-        'U_OBRADI',
         'OTVOREN',
       ]);
     },
   );
+
+  testWidgets('selector removes a PREDMET after terminal status transition', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 1));
+      await db.close();
+      await tester.pump(const Duration(milliseconds: 1));
+    });
+    final id = await _insert(
+      db,
+      ime: 'Postaje završen',
+      status: 'ZATVOREN',
+      createdAt: '2026-07-12T10:00:00.000',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PodsetnikModuleScreen(
+          predmetiRepository: PredmetiRepository(db),
+          predmetId: id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Postaje završen Test'), findsOneWidget);
+
+    await (db.update(db.predmeti)..where((row) => row.id.equals(id))).write(
+      const PredmetiCompanion(status: Value('ZAVRŠEN')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Postaje završen Test'), findsNothing);
+    expect(find.text('Nema PREDMETA dostupnih za PODSETNIK.'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+  });
 
   testWidgets('PODSETNIK selector omits number prefix and keeps flow usable', (
     tester,
@@ -69,7 +115,9 @@ void main() {
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 1));
       await db.close();
+      await tester.pump(const Duration(milliseconds: 1));
     });
     final id = await _insert(
       db,
@@ -98,6 +146,9 @@ void main() {
       find.byKey(const Key('podsetnik-reminders-enabled')),
       findsOneWidget,
     );
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
   });
 
   testWidgets('PODSETNIK renders an empty candidate list safely', (
@@ -107,7 +158,9 @@ void main() {
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 1));
       await db.close();
+      await tester.pump(const Duration(milliseconds: 1));
     });
     await _insert(
       db,
@@ -131,6 +184,9 @@ void main() {
 
     expect(find.text('Nema PREDMETA dostupnih za PODSETNIK.'), findsOneWidget);
     expect(tester.takeException(), null);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
   });
 }
 

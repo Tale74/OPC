@@ -138,6 +138,10 @@ class Predmeti extends Table {
   TextColumn get vremeCeremonije => text().withDefault(const Constant(''))();
   // DA / NE
   TextColumn get opelo => text().withDefault(const Constant('NE'))();
+
+  /// DA / NE when OPELO is active; empty means legacy/unknown and is fail-safe.
+  TextColumn get obavestitiSvestenika =>
+      text().withDefault(const Constant(''))();
   TextColumn get opeloMesto => text().withDefault(const Constant(''))();
   TextColumn get vremeOpela => text().withDefault(const Constant(''))();
   TextColumn get vremeIspracaja => text().withDefault(const Constant(''))();

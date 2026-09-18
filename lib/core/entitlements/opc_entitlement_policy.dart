@@ -47,6 +47,7 @@ enum OpcDocumentAction {
   predracunPdf,
   specifikacijaTroskovaPdf,
   nalogZaOpremanjePdf,
+  nalogCvecariPdf,
   jsonTransfer,
   racunPdf,
 }
@@ -533,7 +534,8 @@ final class OpcEntitlementPolicy {
       OpcDocumentAction.listaPdf ||
       OpcDocumentAction.predracunPdf ||
       OpcDocumentAction.specifikacijaTroskovaPdf ||
-      OpcDocumentAction.nalogZaOpremanjePdf => isModuleAvailable(
+      OpcDocumentAction.nalogZaOpremanjePdf ||
+      OpcDocumentAction.nalogCvecariPdf => isModuleAvailable(
         OpcModule.operationalDocuments,
       ),
       OpcDocumentAction.jsonTransfer => isModuleAvailable(

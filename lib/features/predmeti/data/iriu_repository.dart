@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../core/constants/iriu_constants.dart';
+import '../../../core/utils/stable_id_generator.dart';
 import '../../../core/database/database.dart';
 import '../../../core/format/app_money_format.dart';
 import '../core_v2/rules/iriu_truth_rules.dart';
@@ -800,6 +801,7 @@ class IriuRepository {
         .insert(
           IriuCompanion(
             predmetId: Value(predmetId),
+            portableOccurrenceId: Value(generateIriuOccurrencePortableId()),
             katalogStableArticleId: Value(katalogStableArticleId),
             interniNaziv: Value(interniNaziv),
             nazivPrikaz: Value(nazivPrikaz),

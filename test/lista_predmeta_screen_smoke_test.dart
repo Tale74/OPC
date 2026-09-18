@@ -1,11 +1,15 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/podesavanja/data/podesavanja_repository.dart';
+import 'package:opc_v4/features/podsetnik/data/podsetnik_obligation_repository.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/predmeti/presentation/lista_predmeta_screen.dart';
 
@@ -85,6 +89,14 @@ void main() {
     );
     session.prijavi(admin);
     final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
+    await db.into(db.iriu).insert(
+      IriuCompanion(
+        predmetId: Value(predmetId),
+        portableOccurrenceId: const Value('r5-review-bar'),
+        interniNaziv: const Value(IriuK.cituljaP),
+        nazivPrikaz: const Value('Čitulje'),
+      ),
+    );
     final predmet = await (db.select(
       db.predmeti,
     )..where((row) => row.id.equals(predmetId))).getSingle();
@@ -112,6 +124,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('ČITULJA'), findsOneWidget);
+
     await tester.tap(find.byIcon(Icons.more_vert));
     await tester.pumpAndSettle();
     final shortcut = find.text('Podsetnik');
@@ -135,6 +149,82 @@ void main() {
     await tester.pump();
     await tester.pumpAndSettle();
   });
+
+  testWidgets(
+    'REVIEW BAR refreshes after PODSETNIK completion without restart',
+    (tester) async {
+      final db = AppDatabase.forTesting(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        await tester.idle();
+        await tester.pump(const Duration(milliseconds: 1));
+        await tester.pumpAndSettle();
+        await db.close();
+      });
+
+      final authRepo = AuthRepository(db);
+      final session = SessionService();
+      final podesavanjaRepo = PodesavanjaRepository(db);
+      final predmetiRepo = PredmetiRepository(db);
+      final admin = await authRepo.kreirajPrvogAdmina(
+        imePrezime: 'Test Administrator',
+        pin: '1234',
+      );
+      session.prijavi(admin);
+      final predmetId = await predmetiRepo.kreirajPredmet(
+        savetnikId: admin.id,
+      );
+      await db.into(db.iriu).insert(
+        IriuCompanion(
+          predmetId: Value(predmetId),
+          portableOccurrenceId: const Value('live-review-bar-cvece'),
+          interniNaziv: const Value(IriuK.cvece),
+          nazivPrikaz: const Value('CVEĆE'),
+        ),
+      );
+      final predmet = await (db.select(
+        db.predmeti,
+      )..where((row) => row.id.equals(predmetId))).getSingle();
+      final policy = OpcEntitlementPolicy.fromPayload(
+        OpcEntitlementPayload.safeProductionFallback,
+      );
+
+      await tester.pumpWidget(
+        wrapForTest(
+          ListaPredmetaScreen(
+            predmetiRepo: predmetiRepo,
+            authRepo: authRepo,
+            podesavanjaRepo: podesavanjaRepo,
+            session: session,
+            predmetiStreamOverride: Stream.value([predmet]),
+            runStartupSideEffects: false,
+            entitlementPolicy: policy,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('podsetnik-overview-bar')), findsOneWidget);
+      expect(find.text('CVEĆE'), findsOneWidget);
+
+      await PodsetnikObligationRepository(db).setAtomicCompletion(
+        predmetId: predmetId,
+        stableRuleId: 'goods.flowers',
+        completed: true,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('CVEĆE'), findsNothing);
+      expect(find.text('OBAVEZE ISPUNJENE'), findsOneWidget);
+    },
+  );
 
   test('Osnovni no longer disables Podsetnik shortcut', () {
     expect(
@@ -162,14 +252,30 @@ void main() {
     }
   });
 
-  test('anonymized PREDMET keeps Podsetnik shortcut disabled', () {
-    expect(
-      podsetnikShortcutEnabled(
-        entitlementPolicy: _potpunPolicy(),
-        predmetStatus: 'ANONIMIZOVAN',
-      ),
-      isFalse,
-    );
+  test('only active lifecycle statuses enable the Podsetnik shortcut', () {
+    for (final status in const ['OTVOREN', 'ZATVOREN']) {
+      expect(
+        podsetnikShortcutEnabled(
+          entitlementPolicy: _potpunPolicy(),
+          predmetStatus: status,
+        ),
+        isTrue,
+      );
+    }
+    for (final status in const [
+      'ZAVRŠEN',
+      'ANONIMIZOVAN',
+      'U_OBRADI',
+      'NEPOZNAT',
+    ]) {
+      expect(
+        podsetnikShortcutEnabled(
+          entitlementPolicy: _potpunPolicy(),
+          predmetStatus: status,
+        ),
+        isFalse,
+      );
+    }
   });
 
   testWidgets(

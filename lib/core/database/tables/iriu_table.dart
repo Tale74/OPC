@@ -6,6 +6,15 @@ class Iriu extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get predmetId =>
       integer().references(Predmeti, #id, onDelete: KeyAction.cascade)();
+
+  /// Opaque portable identity of this concrete PREDMET/IRiU occurrence.
+  ///
+  /// Nullable for additive compatibility with legacy/direct rows. Production
+  /// creation and transfer paths materialize it; startup/export repair fills
+  /// legacy gaps without changing IRiU membership or display ordering.
+  TextColumn get portableOccurrenceId =>
+      text().named('portable_occurrence_id').nullable()();
+
   TextColumn get katalogStableArticleId =>
       text().named('katalog_stable_article_id').nullable()();
 
@@ -15,6 +24,11 @@ class Iriu extends Table {
 
   /// Naziv za prikaz — vidljiv korisniku, editabilan.
   TextColumn get nazivPrikaz => text().withDefault(const Constant(''))();
+
+  /// Free-form ribbon/dedication text for the current concrete CVEĆE row.
+  /// It belongs to this PREDMET/IRiU occurrence and is intentionally nullable
+  /// so legacy rows and non-CVEĆE rows remain unchanged.
+  TextColumn get tekstTrake => text().named('tekst_trake').nullable()();
 
   /// Količina — slobodan tekst; when a unit price is applied it drives IZNOS.
   TextColumn get kom => text().withDefault(const Constant(''))();

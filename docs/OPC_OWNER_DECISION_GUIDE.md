@@ -178,9 +178,9 @@ Fallback: kontradiktorne ili nevalidne činjenice ne smeju stvarati implicitno i
 **Status: `OWNER-APPROVED — NOT YET IMPLEMENTED`**
 **Decision ID: `OPC-OD-CER-002`**
 
-- `OPELO = DA` omogućava obaveštavanje parohijskog sveštenika i potvrdu `SVEŠTENIK JE OBAVEŠTEN`.
-- `VOJNE POČASTI = DA` omogućava prijavu i potvrdu `VOJNE POČASTI SU PRIJAVLJENE`.
-- `OPELO U CRKVI = DA` i `TIP GROBLJA = GRADSKO` omogućavaju potvrdu `CRKVA JE POTVRDILA DA JE TERMIN ZA OPELO SLOBODAN`.
+- `OPELO = DA` i FIRMA odgovornost daju jednu atomsku radnju `Obavestiti sveštenika`; ne postoji zaseban `Dogovor potvrđen` ili crkvena potvrda.
+- `VOJNE POČASTI = DA` daju jednu atomsku radnju `Obavestiti nadležnu službu`; ne koristi se tekst `VOJNE POČASTI SU PRIJAVLJENE`.
+- Ne uvodi se poseban `Church slot`, termin crkve ili druga potvrda izvan jedne sveštenikove radnje. `Spremiti komplet za opelo` je zasebno dete samo kada ga aktuelni PREDMET/IRiU čini relevantnim.
 
 Fallback: bez oba izvorna uslova obaveza nije moguća. Ako se uslov promeni nakon prihvatanja ili izvršenja, primenjuje se odeljak 5.7 i čuva istorija.
 
@@ -200,12 +200,20 @@ Potvrde izvršenja predceremonijalnih obaveza dobijaju samo automatski OPC times
 
 ### 5.5 Uticaj na ZAVRŠEN i kategoriju
 
+> Historical CEREMONIJA readiness wording retained for provenance. For
+> PODSETNIK, section 9.2 supersedes generalized blocker semantics: no OPELO,
+> military, pension, church, PARTE, OPREMA, SLIKA, CRNINA or CVEĆE item blocks
+> `ZAVRŠEN` merely because it is unfinished.
+
 **Status: `OWNER-APPROVED — NOT YET IMPLEMENTED`**
 **Decision ID: `OPC-OD-CER-005`**
 
 Prihvaćena, a neizvršena predceremonijalna obaveza blokira `ZAVRŠEN`. Sama po sebi ne stvara članstvo u `POSTCEREMONIJALNI TOK`.
 
 ### 5.6 Opcija B — prestanak blokiranja
+
+> Historical CEREMONIJA readiness timing retained for provenance; it is not a
+> PODSETNIK rule. The recovered PODSETNIK blocker boundary is section 9.2/9.4.
 
 **Status: `OWNER-APPROVED — NOT YET IMPLEMENTED`**
 **Decision ID: `OPC-OD-CER-006`**
@@ -399,6 +407,93 @@ The following queue IDs are retained as audit navigation IDs, not owner-decision
 - `OPC-PARTE-ODQ-015`: generated artifact metadata and any print-status meaning.
 
 Detailed evidence and fallbacks are in `docs/OPC_PARTE_PRINT_PREPARATION_MEDIA_AUDIT_REPORT.md` and `docs/OPC_PARTE_PRINT_PREPARATION_PSEUDOCODE.md`.
+
+## 9. PODSETNIK — recovered owner-authority baseline (2026-08-28)
+
+This section is the recovered target business contract restored from the
+owner-authority baseline and traceability ledger. It is not implementation
+authorization. Current source, tests and runtime evidence remain the authority
+for what is actually implemented; the readiness contract and pseudocode are
+subordinate technical projections.
+
+### 9.1 Boundary, eligibility and checklist semantics
+
+PREDMET is the sole business truth and current IRiU is the goods/services truth.
+PODSETNIK derives operational consequences and owns only technical delivery
+state. There is no generic Accept/Dismiss business-suggestion workflow.
+Eligibility is exactly `OTVOREN || ZATVOREN`; every other status fails closed,
+and historical reminder rows for ineligible PREDMETI are inert.
+
+The user-facing checklist is `OBAVEZE I NAPOMENE`: one general free note plus
+atomic executable children. Grouped parents aggregate relevant children, parent
+completion/mark-all is derived from children, and only unfinished atomic
+children count. `LISTA PDF` is the same conceptual checklist with fresh empty
+paper checkboxes, never a completion snapshot.
+
+### 9.2 Recovered obligation families and blocker boundary
+
+Phases are explicit `PRE-CEREMONY` or `POST-CEREMONY`; phase, parent state,
+unfinished status or reminder ownership never creates a generalized
+`ZAVRŠEN` blocker. The following are informational or ordinary checklist
+consequences unless an explicit rule below says otherwise: PIO payer/family
+paths, `Inostrani penzioner`, `U radnom odnosu`, `Drugo`, `PORODIČNI PENZIONER`,
+`BIOHAZARD`, `PARTE`, `OPREMA`, `SLIKA`, `CRNINA`, `CVEĆE`, `Sahrana van Srbije`,
+`Doček`, and unresolved `STANJE ROBE` visibility.
+
+Where FIRMA responsibility exists, PIO and family-pension parents are
+`REFUNDACIJA PIO → Predati zahtev`, `PORODIČNA PENZIJA → Predati zahtev`, and
+`POSMRTNA POMOĆ → Predati zahtev`; status combinations coexist and payer paths
+remain informational. Military honors use `Obavestiti nadležnu službu`.
+
+When OPELO is relevant, the grouped OPELO obligation contains the atomic
+`Obavestiti sveštenika` and, when current PREDMET/IRiU makes it relevant,
+`Spremiti komplet za opelo`. Priest contact and any agreement are one
+operational completion. No separate `Dogovor potvrđen`, `Church slot`, or
+`CRKVA JE POTVRDILA...` business derivative exists.
+
+### 9.3 Ceremony, location and primary notification
+
+Supported types are `SAHRANA`, `SAHRANA_EKSPRES`, `KREMACIJA` and
+`KREMACIJA_EKSPRES`. The main location is actual `GROBLJE`; an empty value
+displays `Groblje nije uneto`. The header is
+`<VRSTA> – <DATUM> – <VREME> – <MESTO>` using an EN dash. Primary notification
+delivery runs through the ceremony date and stops the next day. Future primary
+wording includes identity, concrete ceremony type, date, time and
+`NA GROBLJU <GROBLJE>`, ending `DOVRŠITE NEOPHODNE PRIPREME.`
+
+The post-ceremony bar rotates only relevant unfinished POST-CEREMONY parent
+labels, has no count, and opens PODSETNIK. With none remaining it stays visible,
+grey and inactive as `OBAVEZE ISPUNJENE` until `ZAVRŠEN`; the three-dot entry
+remains available while eligible. `OPC Int` values remain language-neutral and
+localization supplies grammar/display text.
+
+### 9.4 Urn/ashes rule
+
+For both `KREMACIJA` and `KREMACIJA_EKSPRES`, a canonical
+`tipPolaganja != NAKNADNO` makes FIRMA responsible for a POST-CEREMONY urn/
+ashes parent. It is manually completable at any time. It is the only explicit
+PODSETNIK `ZAVRŠEN` blocker; completion removes the blocker and ends its cycle
+immediately. The separate cycle threshold is ceremony date +3 days, only while
+unfinished; no target event date is required, and actual later placement/
+scattering is payer/family responsibility. Urn location is
+`GROBLJE POLAGANJA URNE`, not main `GROBLJE`.
+
+Semantic wording is `ZA <Ime Prezime> ZAKAZATI POLAGANJE URNE U <TIP> NA
+<GROBLJE POLAGANJA URNE>.` or, for `RASIPANJE_PEPELA`, `ZA <Ime Prezime>
+ZAKAZATI RASIPANJE PEPELA NA <GROBLJE POLAGANJA URNE> GROBLJU.` Canonical
+values are language-neutral. Missing or invalid urn location uses the exact
+fallback `Groblje za polaganje urne nije uneto`. Exact count grammar,
+localization catalogue/API, migration/version number, fingerprint
+encoding/version, role-specific reopen semantics and animation details remain
+OPEN; no answer is invented here.
+
+### 9.5 Current source / target separation
+
+Current source persists ceremony/urn fields and reminder configuration but does
+not yet implement the recovered generic obligation state, parent projection,
+urn blocker or +3-day secondary cycle. Those are TARGET OWNER CONTRACT items
+for the later three-task implementation sequence. No source, test, schema,
+pseudocode or runtime behavior is changed by this documentation baseline.
 
 ### 8.5 Historical implementation checkpoint — partially `SUPERSEDED`
 

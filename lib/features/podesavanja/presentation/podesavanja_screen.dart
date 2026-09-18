@@ -120,7 +120,13 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   @override
   Widget build(BuildContext context) {
     final visibleSections = OpcEntitlementPolicy.currentSettingsSections
-        .where(widget.entitlementPolicy.isSettingsSectionVisible)
+        .where(
+          (section) =>
+              widget.session.jeAdmin &&
+              widget.entitlementPolicy.isSettingsSectionVisible(section) ||
+              !widget.session.jeAdmin &&
+                  section == OpcSettingsSection.oAplikaciji,
+        )
         .toList(growable: false);
     final requestedInitialIndex = widget.initialSection == null
         ? -1
@@ -155,16 +161,18 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
           appBar: AppBar(
             title: const Text('PODEŠAVANJA', overflow: TextOverflow.ellipsis),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.save_alt_outlined),
-                tooltip: 'Izvoz baze',
-                onPressed: _izveziBazu,
-              ),
-              IconButton(
-                icon: const Icon(Icons.restore_outlined),
-                tooltip: 'Uvoz JSON',
-                onPressed: _uvoziBazu,
-              ),
+              if (widget.session.mozeBackup) ...[
+                IconButton(
+                  icon: const Icon(Icons.save_alt_outlined),
+                  tooltip: 'Izvoz baze',
+                  onPressed: _izveziBazu,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.restore_outlined),
+                  tooltip: 'Uvoz JSON',
+                  onPressed: _uvoziBazu,
+                ),
+              ],
             ],
           ),
           body: Column(
@@ -335,6 +343,7 @@ class _ModuliTab extends StatelessWidget {
                                   predmetiRepository: PredmetiRepository(
                                     repo.db,
                                   ),
+                                  session: session,
                                 ),
                               ),
                             )

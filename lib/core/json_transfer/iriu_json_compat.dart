@@ -1,4 +1,5 @@
 import '../database/database.dart';
+import '../utils/stable_id_generator.dart';
 
 /// Čita i stare IRiU JSON redove nastale pre editabilnog SCENARIO modela.
 ///
@@ -19,5 +20,12 @@ IriuData iriuDataFromCompatibleJson(Map<String, dynamic> json) {
     'scenarioUpravlja': false,
     'cekaOdlukuKorisnika': false,
     ...json,
+    // Legacy JSON has no occurrence identity. Generate it exactly once while
+    // materializing the imported row; current JSON preserves the source value.
+    'portableOccurrenceId': resolveIriuOccurrencePortableId(
+      json['portableOccurrenceId'] is String
+          ? json['portableOccurrenceId'] as String
+          : null,
+    ),
   });
 }

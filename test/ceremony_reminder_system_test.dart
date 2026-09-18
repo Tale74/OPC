@@ -116,6 +116,7 @@ void main() {
 
     await coordinator.reschedule(
       predmetId: 7,
+      predmetStatus: 'OTVOREN',
       ceremonyType: 'SAHRANA',
       deceasedFirstName: 'Petar',
       deceasedLastName: 'Petrović',
@@ -127,6 +128,7 @@ void main() {
     final firstIds = Set<int>.from(store.ids);
     await coordinator.reschedule(
       predmetId: 7,
+      predmetStatus: 'OTVOREN',
       ceremonyType: 'SAHRANA',
       deceasedFirstName: 'Petar',
       deceasedLastName: 'Petrović',
@@ -144,6 +146,42 @@ void main() {
       '13:00. DOVRŠITE NEOPHODNE PRIPREME.',
     );
   });
+
+  test(
+    'ineligible status cancels ids and cannot schedule replacements',
+    () async {
+      for (final status in const [
+        'ZAVRŠEN',
+        'ANONIMIZOVAN',
+        'U_OBRADI',
+        'NEPOZNAT',
+      ]) {
+        final store = _FakeStore()..ids = [7001, 7002];
+        final gateway = _FakeGateway();
+        final coordinator = CeremonyReminderCoordinator(
+          repository: store,
+          gateway: gateway,
+        );
+
+        final occurrences = await coordinator.reschedule(
+          predmetId: 7,
+          predmetStatus: status,
+          ceremonyType: 'SAHRANA',
+          deceasedFirstName: 'Petar',
+          deceasedLastName: 'Petrović',
+          ceremonyDate: '10.07.2026.',
+          ceremonyTime: '12:00',
+          ceremonyAt: DateTime(2026, 7, 10, 12),
+          now: DateTime(2026, 7, 1),
+        );
+
+        expect(occurrences, isEmpty);
+        expect(gateway.cancelled, containsAll([7001, 7002]));
+        expect(gateway.pending, isEmpty);
+        expect(store.ids, isEmpty);
+      }
+    },
+  );
 
   test(
     'owner-approved reminder text includes all PREDMET ceremony identity',
@@ -249,6 +287,7 @@ class _FakeStore implements CeremonyReminderStore {
     return CeremonyReminderStoredConfig(
       config: const CeremonyReminderConfig(),
       scheduledNotificationIds: List<int>.from(ids),
+      scheduledUrnaNotificationIds: const [],
     );
   }
 
@@ -256,6 +295,12 @@ class _FakeStore implements CeremonyReminderStore {
   Future<void> saveScheduledIds(int predmetId, List<int> ids) async {
     this.ids = List<int>.from(ids);
   }
+
+  @override
+  Future<void> saveUrnaScheduledIds(int predmetId, List<int> ids) async {}
+
+  @override
+  Future<bool> isUrnaObligationCompleted(int predmetId) async => false;
 }
 
 class _FakeGateway implements CeremonyNotificationGateway {
@@ -279,6 +324,7 @@ class _FakeGateway implements CeremonyNotificationGateway {
     required String title,
     required String body,
     required String payload,
+    bool repeatDaily = false,
   }) async {
     pending[id] = scheduledAt;
     lastBody = body;

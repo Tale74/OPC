@@ -186,11 +186,11 @@ pw.Widget _buildPage({
         <NalogZaOpremanjePdfField>[
           NalogZaOpremanjePdfField('Groblje:', prepared.mestoCeremonije),
           NalogZaOpremanjePdfField(
-            _ceremonyDateLabel(prepared.vrstaCeremonije),
+            nalogZaOpremanjeDateLabel(prepared.vrstaCeremonije),
             prepared.datumCeremonije,
           ),
           NalogZaOpremanjePdfField(
-            _ceremonyTimeLabel(prepared.vrstaCeremonije),
+            nalogZaOpremanjeTimeLabel(prepared.vrstaCeremonije),
             prepared.vremeCeremonije,
           ),
         ],
@@ -339,24 +339,12 @@ String _ceremonySectionTitle(String ceremonyType) {
   };
 }
 
-String _ceremonyDateLabel(String ceremonyType) {
-  return switch (ceremonyType.trim()) {
-    'Sahrana' => 'Datum sahrane:',
-    'Kremacija' => 'Datum kremacije:',
-    'Sme\u0161taj urne' => 'Datum sme\u0161taja urne:',
-    'Rasipanje pepela' => 'Datum rasipanja pepela:',
-    _ => 'Datum ceremonije:',
-  };
+String nalogZaOpremanjeDateLabel(String ceremonyType) {
+  return 'Datum:';
 }
 
-String _ceremonyTimeLabel(String ceremonyType) {
-  return switch (ceremonyType.trim()) {
-    'Sahrana' => 'Vreme sahrane:',
-    'Kremacija' => 'Vreme kremacije:',
-    'Sme\u0161taj urne' => 'Vreme sme\u0161taja urne:',
-    'Rasipanje pepela' => 'Vreme rasipanja pepela:',
-    _ => 'Vreme ceremonije:',
-  };
+String nalogZaOpremanjeTimeLabel(String ceremonyType) {
+  return 'Vreme:';
 }
 
 pw.Widget _buildSection(String title, List<NalogZaOpremanjePdfField> fields) {

@@ -15,6 +15,7 @@ import '../data/iriu_repository.dart';
 import '../data/kontakt_lica_repository.dart';
 import '../data/predmeti_repository.dart';
 import '../pdf/lista_pdf_export.dart';
+import '../pdf/nalog_cvecari_pdf_export.dart';
 import 'package:opc_v4/features/predmeti/pdf/nalog_za_opremanje_pdf_export.dart'
     as nalog_za_opremanje_pdf_export;
 import '../pdf/predracun_pdf_export.dart';
@@ -962,6 +963,14 @@ class _PredmetScreenState extends State<PredmetScreen> {
     );
   }
 
+  Future<void> _izveziNalogCvecariPdf() async {
+    await izvoziNalogCvecariPdf(
+      ctx: context,
+      db: widget.predmetiRepo.db,
+      predmetId: widget.predmetId,
+    );
+  }
+
   Future<void> _izveziPredracunPdf() async {
     await izvoziPredracunPdf(
       ctx: context,
@@ -1060,6 +1069,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
     required bool showPredracunPdf,
     required bool showListaPdf,
     required bool showNalogZaOpremanjePdf,
+    required bool showNalogCvecariPdf,
     required bool showPredmetPdfSnapshot,
     required bool showJsonTransfer,
     required bool showRacunPdf,
@@ -1069,6 +1079,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
       showPredracunPdf: showPredracunPdf,
       showListaPdf: showListaPdf,
       showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
+      showNalogCvecariPdf: showNalogCvecariPdf,
       showPredmetPdfSnapshot: showPredmetPdfSnapshot,
       showJsonTransfer: showJsonTransfer,
       showRacunPdf: showRacunPdf,
@@ -1429,6 +1440,12 @@ class _PredmetScreenState extends State<PredmetScreen> {
           label: 'NALOG ZA OPREMANJE PDF',
           onPressed: _izveziNalogZaOpremanjePdf,
         ),
+      if (visibility.showNalogCvecariPdf)
+        _DocumentActionButton(
+          icon: Icons.local_florist_outlined,
+          label: 'NALOG CVEĆARI PDF',
+          onPressed: _izveziNalogCvecariPdf,
+        ),
       if (visibility.showPredmetPdfSnapshot)
         _DocumentActionButton(
           icon: Icons.picture_as_pdf_outlined,
@@ -1555,6 +1572,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
     );
     final showNalogZaOpremanjePdf = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.nalogZaOpremanjePdf);
+    final showNalogCvecariPdf = widget.entitlementPolicy
+        .isDocumentActionVisible(OpcDocumentAction.nalogCvecariPdf);
     final showPredmetPdfSnapshot = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.predmetPdfSnapshot);
     final showJsonTransfer = widget.entitlementPolicy.isDocumentActionVisible(
@@ -1724,6 +1743,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
           showPredracunPdf: showPredracunPdf,
           showListaPdf: showListaPdf,
           showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
+          showNalogCvecariPdf: showNalogCvecariPdf,
           showPredmetPdfSnapshot: showPredmetPdfSnapshot,
           showJsonTransfer: showJsonTransfer,
           showRacunPdf: showRacunPdf,
@@ -1739,6 +1759,7 @@ class _DocumentActionVisibility {
     required this.showPredracunPdf,
     required this.showListaPdf,
     required this.showNalogZaOpremanjePdf,
+    required this.showNalogCvecariPdf,
     required this.showPredmetPdfSnapshot,
     required this.showJsonTransfer,
     required this.showRacunPdf,
@@ -1748,6 +1769,7 @@ class _DocumentActionVisibility {
   final bool showPredracunPdf;
   final bool showListaPdf;
   final bool showNalogZaOpremanjePdf;
+  final bool showNalogCvecariPdf;
   final bool showPredmetPdfSnapshot;
   final bool showJsonTransfer;
   final bool showRacunPdf;

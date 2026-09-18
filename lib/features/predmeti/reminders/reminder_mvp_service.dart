@@ -1,5 +1,6 @@
 import '../../../core/database/database.dart';
 import '../../../core/format/app_date_format.dart';
+import 'podsetnik_eligibility.dart';
 
 class ReminderMvpEntry {
   const ReminderMvpEntry({
@@ -10,6 +11,7 @@ class ReminderMvpEntry {
     required this.vrstaCeremonije,
     required this.datumCeremonije,
     required this.vremeCeremonije,
+    this.groblje = '',
     required this.daysUntilCeremony,
   });
 
@@ -20,6 +22,7 @@ class ReminderMvpEntry {
   final String vrstaCeremonije;
   final String datumCeremonije;
   final String vremeCeremonije;
+  final String groblje;
   final int daysUntilCeremony;
 
   String get sessionKey => '$predmetId:$daysUntilCeremony';
@@ -36,9 +39,6 @@ class ReminderMvpEntry {
 class ReminderMvpService {
   ReminderMvpService();
 
-  bool _isEligibleStatus(String status) =>
-      status == 'OTVOREN' || status == 'ZATVOREN';
-
   DateTime? _ceremonyDate(PredmetiData predmet) =>
       parseDateValue(predmet.datumCeremonije);
 
@@ -53,7 +53,7 @@ class ReminderMvpService {
     final entries = <ReminderMvpEntry>[];
 
     for (final predmet in predmeti) {
-      if (!_isEligibleStatus(predmet.status)) continue;
+      if (!isPodsetnikEligibleStatus(predmet.status)) continue;
       final ceremonyDate = _ceremonyDate(predmet);
       if (ceremonyDate == null) continue;
 
@@ -69,6 +69,7 @@ class ReminderMvpService {
           vrstaCeremonije: predmet.vrstaCeremonije,
           datumCeremonije: predmet.datumCeremonije,
           vremeCeremonije: predmet.vremeCeremonije,
+          groblje: predmet.groblje,
           daysUntilCeremony: delta,
         ),
       );

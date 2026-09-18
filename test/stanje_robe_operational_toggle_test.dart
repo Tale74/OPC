@@ -476,6 +476,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
       await tester.tap(find.text('Upravljaj stanjem robe'));
       await tester.pumpAndSettle();
 
@@ -600,6 +601,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
       await tester.tap(find.text('Upravljaj stanjem robe'));
       await tester.pumpAndSettle();
 
@@ -682,6 +684,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
+        await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
         await tester.tap(find.text('Upravljaj stanjem robe'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Inicijalizuj stanje robe iz kataloga'));
@@ -838,6 +841,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
+        await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
         await tester.tap(find.text('Upravljaj stanjem robe'));
         await tester.pumpAndSettle();
 

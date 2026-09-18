@@ -4,9 +4,12 @@ import 'package:drift/drift.dart';
 
 import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
+import '../../../core/utils/stable_id_generator.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../core_v2/business_policy/business_scenario_id.dart';
 import '../core_v2/scenario/scenario_module_repository.dart';
+import '../reminders/ceremony_notification_gateway.dart';
+import '../reminders/ceremony_reminder_repository.dart';
 
 enum SacuvajPredmetIshod { prviSave, novoSacuvano, bezIzmena }
 
@@ -33,8 +36,15 @@ class PredmetCompletionStateException implements Exception {
   String toString() => 'PREDMET mora prvo biti označen kao ZATVOREN.';
 }
 
+class UrnaAshesCompletionBlockException implements Exception {
+  const UrnaAshesCompletionBlockException();
+
+  @override
+  String toString() => 'URNA / PEPEO obaveza mora biti završena.';
+}
+
 class PredmetiRepository {
-  const PredmetiRepository(this._db);
+  const PredmetiRepository(this._db, {this.notificationGateway});
 
   static const String _saveCommitSnapshotPolje = '__save_commit_snapshot__';
   static const String _confirmedCloseSnapshotPolje =
@@ -46,6 +56,7 @@ class PredmetiRepository {
       BusinessScenarioId.defaultFuneralCeremonyPolicy.value;
 
   final AppDatabase _db;
+  final CeremonyNotificationGateway? notificationGateway;
 
   /// Izlaže bazu za kreiranje podrepozitorijuma (IriuRepository, KontaktLicaRepository).
   AppDatabase get db => _db;
@@ -62,9 +73,7 @@ class PredmetiRepository {
   Future<List<PredmetiData>> getPodsetnikKandidate() =>
       (_db.select(_db.predmeti)
             ..where(
-              (p) =>
-                  p.status.equals('ZAVRŠEN').not() &
-                  p.status.equals('ANONIMIZOVAN').not(),
+              (p) => p.status.equals('OTVOREN') | p.status.equals('ZATVOREN'),
             )
             ..orderBy([
               (p) => OrderingTerm.desc(p.datumKreiranja),
@@ -72,8 +81,42 @@ class PredmetiRepository {
             ]))
           .get();
 
+  /// Reactive counterpart used by the PODSETNIK selector so status changes
+  /// cannot leave a terminal PREDMET visible in a mounted screen.
+  Stream<List<PredmetiData>> watchPodsetnikKandidate() =>
+      (_db.select(_db.predmeti)
+            ..where(
+              (p) => p.status.equals('OTVOREN') | p.status.equals('ZATVOREN'),
+            )
+            ..orderBy([
+              (p) => OrderingTerm.desc(p.datumKreiranja),
+              (p) => OrderingTerm.desc(p.id),
+            ]))
+          .watch();
+
   Future<PredmetiData> getPredmet(int id) =>
       (_db.select(_db.predmeti)..where((p) => p.id.equals(id))).getSingle();
+
+  /// Deactivates platform reminder ids when a PREDMET leaves the active
+  /// PODSETNIK allow-list while retaining its historical logical config.
+  Future<void> _deactivatePodsetnik(int predmetId) async {
+    final repository = CeremonyReminderRepository(_db);
+    final stored = await repository.getForPredmet(predmetId);
+    if (stored.scheduledNotificationIds.isEmpty &&
+        stored.scheduledUrnaNotificationIds.isEmpty) {
+      return;
+    }
+    final gateway = notificationGateway ?? AndroidCeremonyNotificationGateway();
+    await gateway.initialize(requestPermission: false);
+    for (final id in stored.scheduledNotificationIds) {
+      await gateway.cancel(id);
+    }
+    for (final id in stored.scheduledUrnaNotificationIds) {
+      await gateway.cancel(id);
+    }
+    await repository.saveScheduledIds(predmetId, const []);
+    await repository.saveUrnaScheduledIds(predmetId, const []);
+  }
 
   Future<bool> imaAktivnuNezavrsenuPartePripremu(int predmetId) async {
     final preparation =
@@ -89,6 +132,30 @@ class PredmetiRepository {
   Future<void> _zahtevajDaParteNeBlokira(int predmetId) async {
     if (await imaAktivnuNezavrsenuPartePripremu(predmetId)) {
       throw const PartePreparationBlockException();
+    }
+  }
+
+  Future<void> _zahtevajDaUrnaNeBlokira(int predmetId) async {
+    final predmet = await getPredmet(predmetId);
+    final ceremony = predmet.vrstaCeremonije.trim().toUpperCase();
+    final placement = predmet.tipPolaganja.trim().toUpperCase();
+    final relevant =
+        (ceremony == 'KREMACIJA' || ceremony == 'KREMACIJA_EKSPRES') &&
+        placement.isNotEmpty &&
+        placement != 'NAKNADNO';
+    if (!relevant) return;
+    final row = await _db
+        .customSelect(
+          'SELECT completed FROM podsetnik_obaveze '
+          'WHERE predmet_id = ? AND stable_rule_id = ? LIMIT 1',
+          variables: [
+            Variable.withInt(predmetId),
+            Variable.withString('post.urn_ashes.arrange_placement'),
+          ],
+        )
+        .getSingleOrNull();
+    if (row?.read<int>('completed') != 1) {
+      throw const UrnaAshesCompletionBlockException();
     }
   }
 
@@ -243,6 +310,9 @@ class PredmetiRepository {
           .insert(
             IriuCompanion(
               predmetId: Value(predmetId),
+              portableOccurrenceId: Value(
+                generateIriuOccurrencePortableId(),
+              ),
               interniNaziv: Value(stavka.interniNaziv),
               nazivPrikaz: Value(stavka.nazivPrikaz ?? katalogRow.nazivPrikaz),
               kom: const Value('1'),
@@ -286,6 +356,13 @@ class PredmetiRepository {
     await (_db.delete(_db.iriu)..where((i) => i.predmetId.equals(id))).go();
     await _db.customStatement(
       'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
+      [id],
+    );
+    await (_db.delete(
+      _db.podsetnikObaveze,
+    )..where((obligation) => obligation.predmetId.equals(id))).go();
+    await _db.customStatement(
+      'DELETE FROM podsetnik_manual_obaveze WHERE predmet_id = ?',
       [id],
     );
     await (_db.delete(_db.predmeti)..where((p) => p.id.equals(id))).go();
@@ -432,33 +509,37 @@ class PredmetiRepository {
   /// Eksplicitno označava zatvoren PREDMET kao ZAVRŠEN i time ga zaključava
   /// za poslovne izmene. Ponovni prelaz ili otvaranje nisu dozvoljeni; GDPR
   /// anonimizacija ostaje zasebna lifecycle operacija.
-  Future<void> zavrsiPredmet(int id, {required int korisnikId}) =>
-      _db.transaction(() async {
-        final predmet = await getPredmet(id);
-        if (predmet.status == 'ZAVRŠEN') return;
-        if (predmet.status == 'ANONIMIZOVAN') {
-          throw const PredmetImmutableLifecycleException();
-        }
-        if (predmet.status != 'ZATVOREN') {
-          throw const PredmetCompletionStateException();
-        }
-        await _zahtevajDaParteNeBlokira(id);
-        final sada = DateTime.now().toIso8601String();
-        await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
-          PredmetiCompanion(
-            status: const Value('ZAVRŠEN'),
-            lastBusinessModifiedByKorisnikId: Value(korisnikId),
-            lastBusinessModifiedAt: Value(sada),
-          ),
-        );
-        await _upisiLogIzmene(
-          predmetId: id,
-          korisnikId: korisnikId,
-          polje: 'radni_ciklus',
-          staraVrednost: 'v${predmet.verzija}:${predmet.status}',
-          novaVrednost: 'v${predmet.verzija}:ZAVRŠEN',
-        );
-      });
+  Future<void> zavrsiPredmet(int id, {required int korisnikId}) async {
+    final changed = await _db.transaction<bool>(() async {
+      final predmet = await getPredmet(id);
+      if (predmet.status == 'ZAVRŠEN') return false;
+      if (predmet.status == 'ANONIMIZOVAN') {
+        throw const PredmetImmutableLifecycleException();
+      }
+      if (predmet.status != 'ZATVOREN') {
+        throw const PredmetCompletionStateException();
+      }
+      await _zahtevajDaParteNeBlokira(id);
+      await _zahtevajDaUrnaNeBlokira(id);
+      final sada = DateTime.now().toIso8601String();
+      await (_db.update(_db.predmeti)..where((p) => p.id.equals(id))).write(
+        PredmetiCompanion(
+          status: const Value('ZAVRŠEN'),
+          lastBusinessModifiedByKorisnikId: Value(korisnikId),
+          lastBusinessModifiedAt: Value(sada),
+        ),
+      );
+      await _upisiLogIzmene(
+        predmetId: id,
+        korisnikId: korisnikId,
+        polje: 'radni_ciklus',
+        staraVrednost: 'v${predmet.verzija}:${predmet.status}',
+        novaVrednost: 'v${predmet.verzija}:ZAVRŠEN',
+      );
+      return true;
+    });
+    if (changed) await _deactivatePodsetnik(id);
+  }
 
   /// Rediguje zaštićene identifikacione i kontakt podatke.
   /// Imena ostaju vidljiva u OPC v1.
@@ -503,6 +584,7 @@ class PredmetiRepository {
       ),
       allowLockedLifecycle: true,
     );
+    await _deactivatePodsetnik(id);
   }
 
   /// ZAVRŠEN predmeti — osnova za GDPR provjeru po starosti.
@@ -688,10 +770,15 @@ class PredmetiRepository {
         );
 
     for (final stavka in iriu) {
+      final portableStavka = stavka.copyWith(
+        portableOccurrenceId: Value(
+          resolveIriuOccurrencePortableId(stavka.portableOccurrenceId),
+        ),
+      );
       await _db
           .into(_db.iriu)
           .insert(
-            stavka
+            portableStavka
                 .toCompanion(true)
                 .copyWith(id: const Value.absent(), predmetId: Value(newId)),
           );
@@ -758,6 +845,13 @@ class PredmetiRepository {
       'DELETE FROM iriu_lifecycle_decisions WHERE predmet_id = ?',
       [lokalniPredmetId],
     );
+    await (_db.delete(
+      _db.podsetnikObaveze,
+    )..where((obligation) => obligation.predmetId.equals(lokalniPredmetId))).go();
+    await _db.customStatement(
+      'DELETE FROM podsetnik_manual_obaveze WHERE predmet_id = ?',
+      [lokalniPredmetId],
+    );
 
     await _db
         .update(_db.predmeti)
@@ -786,10 +880,15 @@ class PredmetiRepository {
     );
 
     for (final stavka in iriu) {
+      final portableStavka = stavka.copyWith(
+        portableOccurrenceId: Value(
+          resolveIriuOccurrencePortableId(stavka.portableOccurrenceId),
+        ),
+      );
       await _db
           .into(_db.iriu)
           .insert(
-            stavka
+            portableStavka
                 .toCompanion(true)
                 .copyWith(
                   id: const Value.absent(),

@@ -6,6 +6,7 @@ import '../../../core/utils/document_text_codec.dart';
 import '../core_v2/models/iriu_truth_models.dart';
 import '../core_v2/services/financial_truth_service.dart';
 import '../core_v2/services/predmet_iriu_truth_service.dart';
+import '../../podsetnik/domain/podsetnik_obligation.dart';
 import 'memorandum_logo.dart';
 
 class ListaPdfPreparedData {
@@ -24,6 +25,7 @@ class ListaPdfPreparedData {
     required this.napomene,
     required this.partePreview,
     required this.parteSimbol,
+    this.podsetnikChecklist = const <ListaPdfChecklistItem>[],
   });
 
   final PredmetiData predmet;
@@ -40,6 +42,14 @@ class ListaPdfPreparedData {
   final List<ListaPdfDocumentNote> napomene;
   final String partePreview;
   final String parteSimbol;
+  final List<ListaPdfChecklistItem> podsetnikChecklist;
+}
+
+class ListaPdfChecklistItem {
+  const ListaPdfChecklistItem({required this.label, this.group = false});
+
+  final String label;
+  final bool group;
 }
 
 class ListaPdfLabelValue {
@@ -157,8 +167,50 @@ class ListaPdfDataBuilder {
       napomene: _buildNotes(predmet),
       partePreview: _buildPartePreviewText(predmet),
       parteSimbol: _parteSimbolNaziv(predmet.simbol),
+      podsetnikChecklist: _buildPodsetnikChecklist(predmet, iriuStavke),
     );
   }
+}
+
+List<ListaPdfChecklistItem> _buildPodsetnikChecklist(
+  PredmetiData predmet,
+  List<IriuData> iriu,
+) {
+  final rules = const PodsetnikObligationDeriver().deriveRules(
+    predmet: predmet,
+    iriu: iriu,
+  );
+  String label(String id) => switch (id) {
+    'ceremony.opelo' => 'OPELO',
+    'ceremony.opelo.notify_priest' => 'Obavestiti sveštenika',
+    'ceremony.opelo.prepare_kit' => 'Spremiti komplet za opelo',
+    'social.pio_refund' => 'REFUNDACIJA PIO',
+    'social.pio_refund.submit_claim' => 'Podneti zahtev PIO',
+    'social.family_pension' => 'PORODIČNA PENZIJA',
+    'social.family_pension.submit_claim' => 'Podneti zahtev za porodičnu penziju',
+    'social.death_assistance' => 'POSMRTNA POMOĆ',
+    'social.death_assistance.submit_claim' => 'Podneti zahtev za posmrtnu pomoć',
+    'military.honors' => 'VOJNE POČASTI',
+    'military.honors.notify_authority' => 'OBAVESTITI NADLEŽNU SLUŽBU',
+    'ceremony.parte' => 'PARTE',
+    'goods.equipment' => 'OPREMA',
+    'goods.photo' => 'SLIKA',
+    'goods.mourning' => 'CRNINA',
+    'goods.flowers' => 'CVEĆE',
+    'ceremony.international' => 'Spremiti međunarodna dokumenta',
+    'ceremony.reception' => 'Preuzeti posmrtne ostatke',
+    'goods.stock' => 'Razreši stanje robe',
+    cituljeParentRuleId => 'ČITULJA',
+    'post.urn_ashes' => 'URNA / PEPEO',
+    'post.urn_ashes.arrange_placement' => 'Organizovati polaganje urne',
+    _ => id,
+  };
+  return List<ListaPdfChecklistItem>.unmodifiable(
+    rules.map((rule) => ListaPdfChecklistItem(
+      label: rule.displayLabel ?? label(rule.stableRuleId),
+      group: rule.kind == PodsetnikObligationKind.group,
+    )),
+  );
 }
 
 List<IriuTruthRow> _buildListaIriuItems(

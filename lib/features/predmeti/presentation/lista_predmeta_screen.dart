@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,6 +14,8 @@ import '../../auth/data/auth_security_repository.dart';
 import '../../auth/domain/session_service.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../podsetnik/presentation/podsetnik_module_screen.dart';
+import '../../podsetnik/data/podsetnik_obligation_repository.dart';
+import '../../podsetnik/domain/podsetnik_obligation.dart';
 import '../../podesavanja/presentation/podesavanja_screen.dart';
 import '../../setup/application/setup_readiness_service.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
@@ -25,7 +29,9 @@ import '../reminders/ceremony_reminder_coordinator.dart';
 import '../reminders/ceremony_reminder_model.dart';
 import '../reminders/ceremony_reminder_repository.dart';
 import '../reminders/ceremony_reminder_text.dart';
+import '../reminders/urna_ashes_reminder_model.dart';
 import '../reminders/reminder_mvp_service.dart';
+import '../reminders/podsetnik_eligibility.dart';
 import 'izvestaji_screen.dart';
 import 'moduli_screen.dart';
 import 'predmet_screen.dart';
@@ -39,7 +45,7 @@ bool podsetnikShortcutEnabled({
   required String predmetStatus,
 }) {
   return entitlementPolicy.isModuleAvailable(OpcModule.podsetnik) &&
-      predmetStatus != 'ANONIMIZOVAN';
+      isPodsetnikEligibleStatus(predmetStatus);
 }
 
 class ListaPredmetaScreen extends StatefulWidget {
@@ -140,9 +146,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     final dueLines = <String>[];
     var permissionPending = requestPermission;
     for (final predmet in predmeti) {
-      if (predmet.status != 'OTVOREN' && predmet.status != 'ZATVOREN') {
-        continue;
-      }
       final ceremonyAt = parseCeremonyReminderDateTime(
         predmet.datumCeremonije,
         predmet.vremeCeremonije,
@@ -150,19 +153,79 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       final stored = await _ceremonyReminderRepository.getForPredmet(
         predmet.id,
       );
+      if (!isPodsetnikEligibleStatus(predmet.status)) {
+        // Reconcile legacy/retained technical ids without deleting the
+        // historical reminder configuration.
+        if (stored.scheduledNotificationIds.isNotEmpty ||
+            stored.scheduledUrnaNotificationIds.isNotEmpty) {
+          await _ceremonyReminderCoordinator.reschedule(
+            predmetId: predmet.id,
+            predmetStatus: predmet.status,
+            ceremonyType: predmet.vrstaCeremonije,
+            deceasedFirstName: predmet.ime,
+            deceasedLastName: predmet.prezime,
+            ceremonyDate: predmet.datumCeremonije,
+            ceremonyTime: predmet.vremeCeremonije,
+            ceremonyLocation: predmet.groblje,
+            urnPlacementType: predmet.tipPolaganja,
+            urnCemetery: predmet.grobljePolaganjaUrne,
+            ceremonyAt: ceremonyAt,
+            now: now,
+          );
+        }
+        continue;
+      }
       await _ceremonyReminderCoordinator.reschedule(
         predmetId: predmet.id,
+        predmetStatus: predmet.status,
         ceremonyType: predmet.vrstaCeremonije,
         deceasedFirstName: predmet.ime,
         deceasedLastName: predmet.prezime,
         ceremonyDate: predmet.datumCeremonije,
         ceremonyTime: predmet.vremeCeremonije,
+        ceremonyLocation: predmet.groblje,
+        urnPlacementType: predmet.tipPolaganja,
+        urnCemetery: predmet.grobljePolaganjaUrne,
         ceremonyAt: ceremonyAt,
         now: now,
         requestPermission: permissionPending && stored.config.enabled,
       );
       permissionPending = false;
       if (ceremonyAt == null) continue;
+      if (Platform.isWindows) {
+        final urnaRelevant = isUrnaAshesObligationRelevant(
+          ceremonyType: predmet.vrstaCeremonije,
+          placementType: predmet.tipPolaganja,
+        );
+        var urnaCompleted = false;
+        if (urnaRelevant) {
+          urnaCompleted =
+              await _ceremonyReminderRepository.isUrnaObligationCompleted(
+                predmet.id,
+              );
+        }
+        final secondarySlot = activeUrnaAshesReminderSlot(
+          ceremonyAt: ceremonyAt,
+          config: stored.config,
+          now: now,
+          ceremonyType: predmet.vrstaCeremonije,
+          placementType: predmet.tipPolaganja,
+          completed: urnaCompleted,
+        );
+        if (secondarySlot != null) {
+          final key = 'secondary:${predmet.id}:${secondarySlot.toIso8601String()}';
+          if (_shownCeremonyDialogKeys.add(key)) {
+            dueLines.add(
+              buildUrnaAshesReminderText(
+                deceasedFirstName: predmet.ime,
+                deceasedLastName: predmet.prezime,
+                placementType: predmet.tipPolaganja,
+                urnaCemetery: predmet.grobljePolaganjaUrne,
+              ),
+            );
+          }
+        }
+      }
       final slot = activeCeremonyReminderSlot(
         ceremonyAt: ceremonyAt,
         config: stored.config,
@@ -178,6 +241,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
           deceasedLastName: predmet.prezime,
           ceremonyDate: predmet.datumCeremonije,
           ceremonyTime: predmet.vremeCeremonije,
+          ceremonyLocation: predmet.groblje,
         ),
       );
     }
@@ -365,6 +429,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
         builder: (_) => PodsetnikModuleScreen(
           predmetiRepository: widget.predmetiRepo,
           predmetId: predmet.id,
+          session: widget.session,
         ),
       ),
     );
@@ -649,7 +714,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
         widget.session.jeAdmin;
     final mozePodesavanja =
         widget.entitlementPolicy.hasVisibleSettingsSections &&
-        widget.session.jeAdmin;
+        (widget.session.jeAdmin || widget.session.jeSavetnik);
     return Scaffold(
       appBar: AppBar(
         title: const Text('OPC \u2014 LISTA PREDMETA'),
@@ -1025,6 +1090,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
               separatorBuilder: (context, i) => const SizedBox(height: 8),
               itemBuilder: (context, i) => _PredmetListItem(
                 predmet: lista[i],
+                database: widget.predmetiRepo.db,
                 savetnikIme:
                     lista[i].businessResponsibleName?.trim().isNotEmpty == true
                     ? lista[i].businessResponsibleName!.trim()
@@ -1180,6 +1246,7 @@ class _WindowsReminderLine extends StatelessWidget {
       deceasedLastName: entry.prezime,
       ceremonyDate: entry.datumCeremonije,
       ceremonyTime: entry.vremeCeremonije,
+      ceremonyLocation: entry.groblje,
     );
 
     return Container(
@@ -1270,6 +1337,7 @@ PredmetStockWarningCardStyle resolvePredmetStockWarningCardStyle(
 class _PredmetListItem extends StatelessWidget {
   const _PredmetListItem({
     required this.predmet,
+    required this.database,
     required this.savetnikIme,
     required this.hasUnresolvedStockConsequence,
     required this.onTap,
@@ -1284,6 +1352,7 @@ class _PredmetListItem extends StatelessWidget {
   });
 
   final PredmetiData predmet;
+  final AppDatabase database;
   final String savetnikIme;
   final bool hasUnresolvedStockConsequence;
   final VoidCallback? onTap;
@@ -1484,6 +1553,14 @@ class _PredmetListItem extends StatelessWidget {
                         style: sekundarni,
                       ),
                     ],
+                    if (canOpenPodsetnik) ...[
+                      const SizedBox(height: 10),
+                      _PodsetnikOverviewBar(
+                        predmet: predmet,
+                        database: database,
+                        onOpen: onPodsetnik,
+                      ),
+                    ],
                   ],
                 );
               }
@@ -1528,6 +1605,14 @@ class _PredmetListItem extends StatelessWidget {
                                 'Broj predmeta: ${predmet.brojPredmeta}',
                                 style: sekundarni,
                               ),
+                              if (canOpenPodsetnik) ...[
+                                const SizedBox(height: 10),
+                                _PodsetnikOverviewBar(
+                                  predmet: predmet,
+                                  database: database,
+                                  onOpen: onPodsetnik,
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -1597,6 +1682,112 @@ class _PredmetListItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PodsetnikOverviewBar extends StatefulWidget {
+  const _PodsetnikOverviewBar({
+    required this.predmet,
+    required this.database,
+    required this.onOpen,
+  });
+
+  final PredmetiData predmet;
+  final AppDatabase database;
+  final VoidCallback onOpen;
+
+  @override
+  State<_PodsetnikOverviewBar> createState() => _PodsetnikOverviewBarState();
+}
+
+class _PodsetnikOverviewBarState extends State<_PodsetnikOverviewBar> {
+  late Stream<List<PodsetnikObligation>> _obligations;
+  Timer? _rotationTimer;
+  int _rotationIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _obligations = _watch();
+    _rotationTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted) setState(() => _rotationIndex++);
+    });
+  }
+
+  Stream<List<PodsetnikObligation>> _watch() =>
+      PodsetnikObligationRepository(widget.database).watchCurrentForPredmet(
+        widget.predmet.id,
+      );
+
+  @override
+  void didUpdateWidget(covariant _PodsetnikOverviewBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.predmet.id != widget.predmet.id ||
+      oldWidget.predmet.verzija != widget.predmet.verzija ||
+        oldWidget.predmet.status != widget.predmet.status) {
+      _rotationIndex = 0;
+      _obligations = _watch();
+    }
+  }
+
+  @override
+  void dispose() {
+    _rotationTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<PodsetnikObligation>>(
+      stream: _obligations,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        final unfinished = podsetnikOverviewRoots(snapshot.data!);
+        final active = unfinished.isNotEmpty;
+        final text = podsetnikReviewBarText(snapshot.data!, _rotationIndex);
+        final scheme = Theme.of(context).colorScheme;
+        final child = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Icon(
+                active
+                    ? Icons.notifications_active_outlined
+                    : Icons.task_alt_outlined,
+                size: 18,
+                color: active
+                    ? scheme.onPrimaryContainer
+                    : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  key: const Key('podsetnik-overview-bar'),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: active ? scheme.onPrimaryContainer : scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+        return Material(
+          color: active
+              ? scheme.primaryContainer
+              : scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(10),
+          child: active
+              ? InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: widget.onOpen,
+                  child: child,
+                )
+              : child,
+        );
+      },
     );
   }
 }

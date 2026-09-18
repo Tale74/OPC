@@ -14,6 +14,7 @@ abstract interface class CeremonyNotificationGateway {
     required String title,
     required String body,
     required String payload,
+    bool repeatDaily = false,
   });
 }
 
@@ -62,6 +63,7 @@ class AndroidCeremonyNotificationGateway
     required String title,
     required String body,
     required String payload,
+    bool repeatDaily = false,
   }) async {
     if (!Platform.isAndroid) return;
     await initialize(requestPermission: false);
@@ -81,6 +83,8 @@ class AndroidCeremonyNotificationGateway
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents:
+          repeatDaily ? DateTimeComponents.time : null,
       payload: payload,
     );
   }

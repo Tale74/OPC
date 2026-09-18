@@ -31,6 +31,14 @@ void main() {
       }
     });
 
+    test('native DOKUMENTI exposes the Cvećari PDF action', () {
+      final policy = _policy(OpcPackageLevel.osnovni);
+      expect(
+        policy.isDocumentActionVisible(OpcDocumentAction.nalogCvecariPdf),
+        isTrue,
+      );
+    });
+
     test('presentation source resolves as explicit non-production Potpun', () {
       final policy = OpcEntitlementPolicy.fromPayload(
         OpcEntitlementPayload.presentationPotpun,

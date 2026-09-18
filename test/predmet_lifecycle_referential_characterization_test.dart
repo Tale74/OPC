@@ -124,9 +124,53 @@ void main() {
             'FROM ceremony_reminder_settings WHERE predmet_id = ?',
             predmet.id,
           ),
-          '[42001,42002]',
+          '[]',
         );
         expect(await _foreignKeyViolationTables(db), isEmpty);
+      },
+    );
+
+    test(
+      'completion cancels active reminder ids but retains historical config',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+        final predmet = await _insertPredmet(
+          db,
+          brojPredmeta: 'RI1-COMPLETE-REMINDER-001/2026',
+        );
+        await db.customStatement(
+          'UPDATE predmeti SET status = ? WHERE id = ?',
+          ['ZATVOREN', predmet.id],
+        );
+        await _insertReminder(db, predmet.id, '[44001,44002]');
+        final gateway = _RecordingNotificationGateway();
+        final actorId = await _ensureActiveActor(db);
+
+        await PredmetiRepository(
+          db,
+          notificationGateway: gateway,
+        ).zavrsiPredmet(predmet.id, korisnikId: actorId);
+
+        expect(gateway.cancelledIds, containsAll([44001, 44002]));
+        expect(
+          await _singleText(
+            db,
+            'SELECT scheduled_notification_ids AS value '
+            'FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            predmet.id,
+          ),
+          '[]',
+        );
+        expect(
+          await _singleText(
+            db,
+            'SELECT delivery_times AS value '
+            'FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            predmet.id,
+          ),
+          '["09:00"]',
+        );
       },
     );
 
@@ -629,6 +673,7 @@ class _RecordingNotificationGateway implements CeremonyNotificationGateway {
     required String title,
     required String body,
     required String payload,
+    bool repeatDaily = false,
   }) async {
     _scheduleCalls++;
     scheduledIds.add(id);

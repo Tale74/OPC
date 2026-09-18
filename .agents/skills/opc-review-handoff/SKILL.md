@@ -8,6 +8,28 @@ description: Produce a compact machine-verifiable OPC review handoff so Logos ca
 ## Goal
 Create an evidence index, not a new competing authority document.
 
+## Independent Logos review contract
+
+Before Logos writes, approves or assesses a substantive Codex task/report/
+review, Logos must record:
+
+1. `TASK UNDERSTANDING CONFIRMATION` — intended outcome, scope, locked OWNER
+   decisions and prohibited actions;
+2. `CONTINUITY ESTABLISHMENT CONFIRMATION` — current repository/branch/HEAD
+   where applicable, predecessor result, dependency position, open/closed
+   findings, current authority state and the actual review/evidence package;
+3. `DOCUMENTATION READING CONFIRMATION` — direct reading/classification of
+   current authoritative homes and task-relevant control documents.
+
+The independent comparison must use OWNER authority, current documentation,
+source/test/runtime evidence when relevant, continuity, intended outcome and
+anti-drift controls. The latest Codex report is evidence, not sufficient truth;
+conversation memory alone is not a substitute for current files and hashes.
+When authority, continuity, drift, unsupported inference, source/target
+separation or evidence completeness conflicts, Logos must recommend STOP and
+correction rather than approve by assumption. This procedure strengthens the
+existing HUMAN GATE and creates no parallel governance mechanism.
+
 ## Handoff content
 Include:
 - task identity;

@@ -116,8 +116,8 @@ explicit new owner business decision.
 
 The owner-roadmap-first order is now:
 
-**PODSETNIK/completion-signal owner decision and contract → lifecycle-aware
-PODSETNIK implementation and acceptance → remaining approved JSON/document/UI
+**Recovered PODSETNIK owner contract → lifecycle-aware PODSETNIK implementation
+and acceptance → remaining approved JSON/document/UI
 work → MODUL DVE VALUTE → Serbian-market OPC v.1 product-line gate → later
 `OPC_v.1_Int` work → signing and professional handover.**
 
@@ -133,7 +133,7 @@ while preserving the underlying evidence and history.
 
 ### 2.3 Owner roadmap — now
 
-`PODSETNIK / completion-signal model owner-decision and contract package`
+`PODSETNIK / recovered owner-authority restoration and implementation contract`
 
 The current authority and subordinate pseudocode agree that complete signal
 meanings remain owner-open. No reminder implementation or isolated notification
@@ -141,7 +141,7 @@ patch is authorized before that contract.
 
 ### 2.4 Owner roadmap — next
 
-After the signal contract is owner-approved: lifecycle-aware PODSETNIK;
+After the recovered signal contract is cleanly published: lifecycle-aware PODSETNIK;
 remaining Single-PREDMET JSON/document/UI work; MODUL DVE VALUTE; then the
 Serbian-market product-line gate with its attached release controls.
 
@@ -175,8 +175,8 @@ only.
 | LISTA/PDF item fidelity | `COMPLETED — TECHNICAL PASS` | Financially included citation rows remain visible in LISTA/shared itemized derivatives; NALOG scope remains intentional | Same shared implementation | Protect with reconciliation test and visual release acceptance | Hidden citation-row premise is superseded |
 | Windows real runtime/canonical closure | `PARTIAL — BLOCKING FOR WINDOWS GATE` | Installed cold/reopen and target PREDMET/IRiU open pass; repaired-state startup/PREDMET open pass; recurrence is closed; repaired KATALOG pipeline build is not deployed to protected install and concrete visual/SCENARIO/LISTA gates remain unproven | N/A | Complete safe owner deployment, obtain rendered visual/document proof, then re-evaluate repaired-state safety and canonical repair; Android remains gated | “Windows startup unverified” is superseded within proven scope |
 | KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | Build/technical evidence | Build/technical evidence | Include in final runtime business parity; do not redesign | Future FIKSNA/amount premise superseded |
-| Completion/signal model | `OPEN` | Not complete | Not complete | Inventory all derived completeness/due/missed/lifecycle signals; owner confirms business meaning | Must precede full PODSETNIK |
-| PODSETNIK full upgrade | `OPEN — REQUIRED PREDECESSOR` | In-app/notification behavior requires full model | OS notification exists; new notification for a `ZAVRŠEN` PREDMET is a retained finding | One lifecycle-aware informed-reminder program; no isolated status patch | Standalone reminder fix is rejected |
+| Completion/signal model | `COMPLETED — RECOVERED OWNER CONTRACT` | Structured source implementation remains absent | Target semantics are in recovered owner baseline/readiness contract | Implement only through the exact three-task PODSETNIK sequence; do not re-open owner decisions | Must precede full PODSETNIK implementation and remains a documentation/source boundary |
+| PODSETNIK full upgrade | `OPEN — NEXT IMPLEMENTATION` | In-app/notification behavior requires the recovered contract | Existing reminder behavior is current source reality; structured target remains unimplemented | Execute Task 1 → Task 2 → Task 3 from the readiness contract; no isolated status patch | Standalone reminder fix is rejected |
 | Single-PREDMET JSON relocation | `OPEN` | Move export/import action to PREDMET three-dot menu | Same | Preserve schema/legacy behavior and separate from full backup | Still valid |
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
 | NALOG CVEĆARI | `OPEN — OWNER DECISION REQUIRED` | No standalone generator proven | No standalone generator proven | Source/business inventory, owner content and PDF/DOCX scope, then implementation/acceptance if required | “Nearly complete” is unsupported |
@@ -351,7 +351,7 @@ Only unresolved current decisions are active:
 | Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance | `OPEN OWNER DECISION` |
 | NALOG CVEĆARI business content and PDF/DOCX scope | Its implementation/closure | `OPEN OWNER DECISION` |
 | RAČUN FIRMA availability and default for existing installations | Availability-policy implementation | `OPEN OWNER DECISION` |
-| Complete signal meanings used by informed reminders | PODSETNIK implementation | `OPEN OWNER DECISION` |
+| Complete signal meanings used by informed reminders | PODSETNIK implementation | `RECOVERED OWNER CONTRACT — IMPLEMENTATION OPEN` |
 | EUR global activation timing and treatment/conversion of eligible open PREDMETI | Currency activation/release contract | `OPEN OWNER DECISION` |
 | Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate | `OPEN OWNER DECISION` |
 | Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |

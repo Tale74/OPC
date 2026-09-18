@@ -217,7 +217,7 @@ Classification: `SOURCE-CONFIRMED / TEST-CONFIRMED`.
 
 ## 19. Users / Advisers / Administrators Logic
 
-Current app has local `Korisnici` with name, role `ADMINISTRATOR`/`SAVETNIK`, PIN hash, active flag, creation date, session service, first admin creation, user management, and administrator-only controls in some modules. PREDMET stores `savetnikId`, `createdByKorisnikId`, and `lastBusinessModifiedByKorisnikId`. Stable cross-device firm/license identity is not implemented.
+Current app has local `Korisnici` with name, role `ADMINISTRATOR`/`SAVETNIK`, PIN hash, active flag, creation date, session service, first admin creation, user management, and administrator-only controls in some modules. PREDMET stores local adviser/creator/modifier IDs plus the portable business-responsibility name/role snapshot introduced by schema 28. Stable cross-device numeric identity is not implemented: the portable human-readable responsibility is the PREDMET business truth, while local IDs are only destination bindings and operational history. Legacy rows remain unknown where no truthful snapshot exists.
 
 Evidence: `korisnici_table.dart`; `auth_repository.dart`; `session_service.dart`; `korisnici_screen.dart`; `login_screen_smoke_test.dart`; `stanje_robe_operational_toggle_test.dart`.
 
@@ -245,7 +245,7 @@ Single-PREDMET JSON:
 
 - format `OPC_PREDMET`;
 - carries root metadata including schema/version/export metadata;
-- carries `predmet`, `iriu`, `kontaktLica`, and allowed unresolved STANJE ROBE consequence transfer block;
+- carries `predmet`, `iriu`, `kontaktLica`, the scenario carrier, PREDMET-scoped lifecycle decisions without local IDs, and the allowed unresolved STANJE ROBE consequence transfer block;
 - imports as new PREDMET or same-`brojPredmeta` conflict;
 - conflict UI preserves cancel / keep local / replace imported;
 - replacement keeps local technical id and replaces related rows.

@@ -179,6 +179,47 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1));
     await tester.pumpAndSettle();
   });
+
+  testWidgets('SAVETNIK gets backup actions without global admin settings', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Test Administrator',
+      pin: '1234',
+    );
+    final savetnik = await authRepo.kreirajKorisnika(
+      imePrezime: 'Test Savetnik',
+      uloga: 'SAVETNIK',
+      pin: '5678',
+    );
+    session.prijavi(savetnik);
+
+    expect(session.mozeBackup, isTrue);
+    expect(session.jeAdmin, isFalse);
+    expect(admin.uloga, 'ADMINISTRATOR');
+
+    await tester.pumpWidget(
+      wrapForTest(
+        PodesavanjaScreen(
+          repo: PodesavanjaRepository(db),
+          authRepo: authRepo,
+          session: session,
+          initialSection: OpcSettingsSection.korisnici,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Izvoz baze'), findsOneWidget);
+    expect(find.byTooltip('Uvoz JSON'), findsOneWidget);
+    expect(find.text('PODACI FIRME'), findsNothing);
+    expect(find.text('KORISNICI'), findsNothing);
+    expect(find.text('NOVI KORISNIK'), findsNothing);
+  });
 }
 
 Future<void> _pumpUntilText(

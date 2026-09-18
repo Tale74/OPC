@@ -9,15 +9,19 @@ class CeremonyReminderStoredConfig {
   const CeremonyReminderStoredConfig({
     required this.config,
     required this.scheduledNotificationIds,
+    this.scheduledUrnaNotificationIds = const <int>[],
   });
 
   final CeremonyReminderConfig config;
   final List<int> scheduledNotificationIds;
+  final List<int> scheduledUrnaNotificationIds;
 }
 
 abstract interface class CeremonyReminderStore {
   Future<CeremonyReminderStoredConfig> getForPredmet(int predmetId);
   Future<void> saveScheduledIds(int predmetId, List<int> ids);
+  Future<void> saveUrnaScheduledIds(int predmetId, List<int> ids);
+  Future<bool> isUrnaObligationCompleted(int predmetId);
 }
 
 class CeremonyReminderRepository implements CeremonyReminderStore {
@@ -29,7 +33,8 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
   Future<CeremonyReminderStoredConfig> getForPredmet(int predmetId) async {
     final row = await db
         .customSelect(
-          'SELECT enabled, delivery_times, scheduled_notification_ids '
+          'SELECT enabled, delivery_times, scheduled_notification_ids, '
+          'urna_scheduled_notification_ids '
           'FROM ceremony_reminder_settings WHERE predmet_id = ?',
           variables: [Variable.withInt(predmetId)],
         )
@@ -38,6 +43,7 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
       return const CeremonyReminderStoredConfig(
         config: CeremonyReminderConfig(),
         scheduledNotificationIds: [],
+        scheduledUrnaNotificationIds: [],
       );
     }
     final rawIds = jsonDecode(row.read<String>('scheduled_notification_ids'));
@@ -52,6 +58,9 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
       scheduledNotificationIds: rawIds is List
           ? rawIds.whereType<num>().map((value) => value.toInt()).toList()
           : const [],
+      scheduledUrnaNotificationIds: _decodeIds(
+        row.read<String>('urna_scheduled_notification_ids'),
+      ),
     );
   }
 
@@ -81,5 +90,43 @@ class CeremonyReminderRepository implements CeremonyReminderStore {
       'WHERE scheduled_notification_ids <> excluded.scheduled_notification_ids',
       [predmetId, jsonEncode(ids), DateTime.now().toIso8601String()],
     );
+  }
+
+  @override
+  Future<void> saveUrnaScheduledIds(int predmetId, List<int> ids) {
+    return db.customStatement(
+      'INSERT INTO ceremony_reminder_settings '
+      '(predmet_id, urna_scheduled_notification_ids, updated_at) '
+      'VALUES (?, ?, ?) ON CONFLICT(predmet_id) DO UPDATE SET '
+      'urna_scheduled_notification_ids = excluded.urna_scheduled_notification_ids, '
+      'updated_at = excluded.updated_at',
+      [predmetId, jsonEncode(ids), DateTime.now().toIso8601String()],
+    );
+  }
+
+  @override
+  Future<bool> isUrnaObligationCompleted(int predmetId) async {
+    final row = await db
+        .customSelect(
+          'SELECT completed FROM podsetnik_obaveze '
+          'WHERE predmet_id = ? AND stable_rule_id = ? LIMIT 1',
+          variables: [
+            Variable.withInt(predmetId),
+            Variable.withString('post.urn_ashes.arrange_placement'),
+          ],
+        )
+        .getSingleOrNull();
+    return row?.read<int>('completed') == 1;
+  }
+}
+
+List<int> _decodeIds(String value) {
+  try {
+    final raw = jsonDecode(value);
+    return raw is List
+        ? raw.whereType<num>().map((item) => item.toInt()).toList()
+        : const <int>[];
+  } on FormatException {
+    return const <int>[];
   }
 }

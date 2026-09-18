@@ -38,7 +38,7 @@ void main() {
       final db = AppDatabase.forTesting(NativeDatabase(file));
       addTearDown(db.close);
 
-      expect(await _userVersion(db), 28);
+      expect(await _userVersion(db), 35);
       expect(
         await _tableNames(db),
         containsAll(['predmeti', 'parte_pripreme']),
@@ -196,7 +196,7 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 28);
+        expect(await _userVersion(second), 35);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
@@ -337,9 +337,9 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      // Schema 28 is the current supported version (portable responsibility);
+      // Schema 35 is the current supported version (URNA/F-06 milestone);
       // use the next checkpoint to exercise the future-version guard.
-      final db = fixture.openAtVersion(29, physicalVersion: 28);
+      final db = fixture.openAtVersion(36, physicalVersion: 35);
       addTearDown(db.close);
 
       await expectLater(
@@ -348,7 +348,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 29 -> 28'),
+            contains('unsupported migration checkpoint 36 -> 35'),
           ),
         ),
       );
@@ -398,9 +398,89 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 28);
+    expect(await _userVersion(retried), 35);
     await retried.close();
   });
+
+  test(
+    'known ceremony reminder orphan is rebuilt without losing supported data',
+    () async {
+      final fixture = await _fixture(
+        currentTemplate,
+        'known_ceremony_reminder_orphan',
+      );
+      addTearDown(fixture.dispose);
+      final db = fixture.openAtVersion(
+        31,
+        physicalVersion: 31,
+        mutateBeforeOpen: (raw) {
+          raw.execute('''
+            ALTER TABLE ceremony_reminder_settings
+            ADD COLUMN secondary_scheduled_notification_ids TEXT
+          ''');
+          raw.execute('''
+            UPDATE ceremony_reminder_settings
+            SET secondary_scheduled_notification_ids = '["orphan"]',
+                enabled = 0,
+                frequency_hours = 12,
+                delivery_times = '["08:00","16:00"]',
+                scheduled_notification_ids = '["primary"]',
+                updated_at = 'legacy-update'
+            WHERE predmet_id = 1
+          ''');
+        },
+      );
+      addTearDown(db.close);
+
+      await _open(db);
+
+      expect(await _userVersion(db), 35);
+      expect(await _columnNames(db, 'ceremony_reminder_settings'), {
+        'predmet_id',
+        'enabled',
+        'frequency_hours',
+        'delivery_times',
+        'scheduled_notification_ids',
+        'urna_scheduled_notification_ids',
+        'updated_at',
+      });
+      final row = await db
+          .customSelect('SELECT * FROM ceremony_reminder_settings WHERE predmet_id = 1')
+          .getSingle();
+      expect(row.read<int>('enabled'), 0);
+      expect(row.read<int>('frequency_hours'), 12);
+      expect(row.read<String>('delivery_times'), '["08:00","16:00"]');
+      expect(row.read<String>('scheduled_notification_ids'), '["primary"]');
+      expect(row.read<String>('urna_scheduled_notification_ids'), '[]');
+      expect(row.read<String>('updated_at'), 'legacy-update');
+      expect(
+        row.data.containsKey('secondary_scheduled_notification_ids'),
+        isFalse,
+      );
+      expect(await _count(db, 'predmeti'), 1);
+      expect(await _count(db, 'korisnici'), 1);
+      expect(
+        (await db.customSelect('PRAGMA quick_check').getSingle())
+            .read<String>('quick_check'),
+        'ok',
+      );
+
+      await db.close();
+      final reopened = AppDatabase.forTesting(NativeDatabase(fixture.databaseFile));
+      addTearDown(reopened.close);
+      await _open(reopened);
+      expect(await _columnNames(reopened, 'ceremony_reminder_settings'), {
+        'predmet_id',
+        'enabled',
+        'frequency_hours',
+        'delivery_times',
+        'scheduled_notification_ids',
+        'urna_scheduled_notification_ids',
+        'updated_at',
+      });
+      expect(await _count(reopened, 'predmeti'), 1);
+    },
+  );
 
   test(
     'migration does not recreate absent historical business KATALOG rows',
@@ -459,7 +539,7 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 28);
+  expect(await _userVersion(db), 35);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);

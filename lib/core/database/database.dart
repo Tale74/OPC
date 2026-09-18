@@ -13,6 +13,7 @@ import 'migration_test_database_selector.dart';
 import 'schema_recovery.dart';
 
 import 'tables/app_podesavanja_table.dart';
+import 'tables/citulje_pripreme_table.dart';
 import 'tables/firma_podaci_table.dart';
 import 'tables/iriu_katalog_config_table.dart';
 import 'tables/iriu_provenance_table.dart';
@@ -25,6 +26,7 @@ import 'tables/parte_predlosci_table.dart';
 import 'tables/parte_pripreme_table.dart';
 import 'tables/predlosci_dokumenata_table.dart';
 import 'tables/predmeti_table.dart';
+import 'tables/podsetnik_obaveze_table.dart';
 import 'tables/predmet_scenario_snapshots_table.dart';
 import 'tables/scenario_definitions_table.dart';
 import 'tables/scenario_modules_table.dart';
@@ -39,7 +41,9 @@ part 'database.g.dart';
     Korisnici,
     FirmaPodaci,
     AppPodesavanja,
+    CituljePripreme,
     Predmeti,
+    PodsetnikObaveze,
     KontaktLica,
     Iriu,
     IriuProvenance,
@@ -72,13 +76,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 35;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await _rejectNonEmptyVersionZeroDatabase();
       await m.createAll();
+      await _createPodsetnikManualObavezeTable();
       await _prepareAuthSecuritySchema();
       await _createIriuLifecycleDecisionTable();
       await _createCeremonyReminderSettingsTable();
@@ -221,6 +226,29 @@ class AppDatabase extends _$AppDatabase {
         await _ensureColumn(m, predmeti, predmeti.businessResponsibleName);
         await _ensureColumn(m, predmeti, predmeti.businessResponsibleRole);
       }
+      if (from < 29) {
+        await _ensureTable(m, podsetnikObaveze);
+      }
+      if (from < 30) {
+        await _ensureColumn(m, predmeti, predmeti.obavestitiSvestenika);
+      }
+      if (from < 31) {
+        await _ensureColumn(m, iriu, iriu.tekstTrake);
+      }
+      if (from < 32) {
+        await _ensureColumn(m, iriu, iriu.portableOccurrenceId);
+      }
+      if (from < 33) {
+        await _ensureTable(m, cituljePripreme);
+      }
+      if (from < 34) {
+        await _ensureColumn(m, cituljePripreme, cituljePripreme.finalized);
+        await _ensureColumn(m, cituljePripreme, cituljePripreme.finalizedAt);
+      }
+      if (from < 35) {
+        await _createPodsetnikManualObavezeTable();
+        await _ensureCeremonyReminderUrnaIdsColumn();
+      }
     },
     beforeOpen: (details) async {
       final versionBefore = details.versionBefore;
@@ -240,8 +268,13 @@ class AppDatabase extends _$AppDatabase {
       await _ensureStanjeRobeStableArticleIdUniqueIndex();
       await _ensureStanjeRobeAppliedEffectsIndexes();
       await _ensureStanjeRobePoslediceIndexes();
+      await backfillMissingIriuPortableOccurrenceIds();
+      await _ensureIriuPortableOccurrenceIdUniqueIndex();
       await _createCeremonyReminderSettingsTable();
       await _ensureCeremonyReminderDeliveryTimesColumn();
+      await _ensureCeremonyReminderUrnaIdsColumn();
+      await _recoverKnownLegacyCeremonyReminderSettings();
+      await _createPodsetnikManualObavezeTable();
       await backfillMissingKatalogStableArticleIds();
       await canonicalizeSeedCatalogStableArticleIds();
       await _validateRequiredSchema();
@@ -359,18 +392,31 @@ class AppDatabase extends _$AppDatabase {
     await _ensureColumn(migrator, predmeti, predmeti.lastBusinessModifiedAt);
     await _ensureColumn(migrator, predmeti, predmeti.businessResponsibleName);
     await _ensureColumn(migrator, predmeti, predmeti.businessResponsibleRole);
+    await _ensureTable(migrator, podsetnikObaveze);
+    await _createPodsetnikManualObavezeTable();
+    await _ensureColumn(migrator, predmeti, predmeti.obavestitiSvestenika);
     await _ensureColumn(
       migrator,
       katalogArtikli,
       katalogArtikli.stableArticleId,
     );
     await _ensureColumn(migrator, iriu, iriu.katalogStableArticleId);
+    await _ensureColumn(migrator, iriu, iriu.tekstTrake);
+    await _ensureColumn(migrator, iriu, iriu.portableOccurrenceId);
+    await _ensureTable(migrator, cituljePripreme);
+    await _ensureColumn(migrator, cituljePripreme, cituljePripreme.finalized);
+    await _ensureColumn(
+      migrator,
+      cituljePripreme,
+      cituljePripreme.finalizedAt,
+    );
     await _ensureTable(migrator, stanjeRobeStavke);
     await _ensureTable(migrator, stanjeRobeAppliedEffects);
     await _ensureTable(migrator, stanjeRobePosledice);
     await _ensureAppPodesavanjaStanjeRobeOperativnoColumn();
     await _createCeremonyReminderSettingsTable();
     await _ensureCeremonyReminderDeliveryTimesColumn();
+    await _ensureCeremonyReminderUrnaIdsColumn();
     await _ensureColumn(migrator, predmeti, predmeti.docekDatum);
     await _ensureColumn(migrator, predmeti, predmeti.grobljePolaganjaUrne);
     await _ensureColumn(migrator, predmeti, predmeti.promenaSanduka);
@@ -651,6 +697,13 @@ class AppDatabase extends _$AppDatabase {
         primaryKeyPosition: 0,
       ),
       SqliteColumnDefinition(
+        name: 'urna_scheduled_notification_ids',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "'[]'",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
         name: 'updated_at',
         type: 'TEXT',
         notNull: true,
@@ -705,6 +758,150 @@ class AppDatabase extends _$AppDatabase {
         ADD COLUMN delivery_times TEXT NOT NULL DEFAULT '["09:00"]'
       ''',
     );
+  }
+
+  Future<void> _ensureCeremonyReminderUrnaIdsColumn() async {
+    await _schemaRecovery.ensureColumn(
+      tableName: 'ceremony_reminder_settings',
+      expected: const SqliteColumnDefinition(
+        name: 'urna_scheduled_notification_ids',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "'[]'",
+        primaryKeyPosition: 0,
+      ),
+      addColumnSql: '''
+        ALTER TABLE ceremony_reminder_settings
+        ADD COLUMN urna_scheduled_notification_ids TEXT NOT NULL DEFAULT '[]'
+      ''',
+    );
+  }
+
+  /// Recovers exactly the stale schema found in the supported canonical
+  /// database: one obsolete column on the custom reminder-settings table.
+  ///
+  /// This is deliberately not a generic unknown-column cleanup. Every
+  /// current column is validated first, and the table is rebuilt atomically so
+  /// only the proven orphan is discarded.
+  Future<void> _recoverKnownLegacyCeremonyReminderSettings() async {
+    const tableName = 'ceremony_reminder_settings';
+    const orphanColumn = 'secondary_scheduled_notification_ids';
+    const expectedColumns = <String>{
+      'predmet_id',
+      'enabled',
+      'frequency_hours',
+      'delivery_times',
+      'scheduled_notification_ids',
+      'urna_scheduled_notification_ids',
+      'updated_at',
+    };
+
+    if (!await _schemaRecovery.tableExists(tableName)) return;
+    final columns = await _schemaRecovery.tableColumns(tableName);
+    final unexpected = columns.keys.toSet().difference(expectedColumns);
+    if (!unexpected.contains(orphanColumn)) return;
+    if (unexpected.length != 1 || columns.length != expectedColumns.length + 1) {
+      throw OpcSchemaMismatch(
+        'table "$tableName" has unsupported schema differences beyond the '
+        'known orphan column "$orphanColumn": '
+        '${unexpected.toList()..sort()}',
+      );
+    }
+
+    await _schemaRecovery.validateColumns(
+      tableName,
+      const [
+        SqliteColumnDefinition(
+          name: 'predmet_id',
+          type: 'INTEGER',
+          notNull: false,
+          defaultSql: null,
+          primaryKeyPosition: 1,
+        ),
+        SqliteColumnDefinition(
+          name: 'enabled',
+          type: 'INTEGER',
+          notNull: true,
+          defaultSql: '1',
+          primaryKeyPosition: 0,
+        ),
+        SqliteColumnDefinition(
+          name: 'frequency_hours',
+          type: 'INTEGER',
+          notNull: true,
+          defaultSql: '24',
+          primaryKeyPosition: 0,
+        ),
+        SqliteColumnDefinition(
+          name: 'delivery_times',
+          type: 'TEXT',
+          notNull: true,
+          defaultSql: '\'["09:00"]\'',
+          primaryKeyPosition: 0,
+        ),
+        SqliteColumnDefinition(
+          name: 'scheduled_notification_ids',
+          type: 'TEXT',
+          notNull: true,
+          defaultSql: "'[]'",
+          primaryKeyPosition: 0,
+        ),
+        SqliteColumnDefinition(
+          name: 'urna_scheduled_notification_ids',
+          type: 'TEXT',
+          notNull: true,
+          defaultSql: "'[]'",
+          primaryKeyPosition: 0,
+        ),
+        SqliteColumnDefinition(
+          name: 'updated_at',
+          type: 'TEXT',
+          notNull: true,
+          defaultSql: "''",
+          primaryKeyPosition: 0,
+        ),
+      ],
+      rejectUnexpectedColumns: false,
+    );
+
+    const legacyTableName = 'ceremony_reminder_settings__opc_legacy_orphan';
+    if (await _schemaRecovery.tableExists(legacyTableName)) {
+      throw const OpcSchemaMismatch(
+        'known ceremony reminder recovery has an unfinished temporary table',
+      );
+    }
+
+    await transaction(() async {
+      await customStatement(
+        'ALTER TABLE "$tableName" RENAME TO "$legacyTableName"',
+      );
+      await _createCeremonyReminderSettingsTable();
+      await customStatement('''
+        INSERT INTO ceremony_reminder_settings (
+          predmet_id, enabled, frequency_hours, delivery_times,
+          scheduled_notification_ids, urna_scheduled_notification_ids,
+          updated_at
+        )
+        SELECT predmet_id, enabled, frequency_hours, delivery_times,
+               scheduled_notification_ids, urna_scheduled_notification_ids,
+               updated_at
+        FROM ceremony_reminder_settings__opc_legacy_orphan
+      ''');
+      await customStatement(
+        'DROP TABLE "$legacyTableName"',
+      );
+    });
+  }
+
+  Future<void> _createPodsetnikManualObavezeTable() {
+    return customStatement('''
+      CREATE TABLE IF NOT EXISTS podsetnik_manual_obaveze (
+        predmet_id INTEGER NOT NULL REFERENCES predmeti(id) ON DELETE CASCADE,
+        stable_rule_id TEXT NOT NULL,
+        obligation_text TEXT NOT NULL,
+        PRIMARY KEY (predmet_id, stable_rule_id)
+      )
+    ''');
   }
 
   Future<void> _ensureKorisniciAuthSecurityColumns({
@@ -833,6 +1030,7 @@ class AppDatabase extends _$AppDatabase {
         frequency_hours INTEGER NOT NULL DEFAULT 24,
         delivery_times TEXT NOT NULL DEFAULT '["09:00"]',
         scheduled_notification_ids TEXT NOT NULL DEFAULT '[]',
+        urna_scheduled_notification_ids TEXT NOT NULL DEFAULT '[]',
         updated_at TEXT NOT NULL DEFAULT ''
       )
     ''');
@@ -2094,6 +2292,67 @@ class AppDatabase extends _$AppDatabase {
         );
       }
     });
+  }
+
+  /// Materializes identities only for legacy/direct IRiU rows that do not
+  /// have one. Existing valid values are never rewritten, and no ordering or
+  /// membership decision is made from the generated value.
+  Future<void> backfillMissingIriuPortableOccurrenceIds({
+    int? predmetId,
+  }) async {
+    await transaction(() async {
+      final rows = await customSelect(
+        '''
+        SELECT id
+        FROM iriu
+        WHERE (portable_occurrence_id IS NULL
+           OR TRIM(portable_occurrence_id) = '')
+          ${predmetId == null ? '' : 'AND predmet_id = ?'}
+        ORDER BY id
+        ''',
+        variables: [
+          if (predmetId != null) Variable<int>(predmetId),
+        ],
+        readsFrom: {iriu},
+      ).get();
+
+      for (final row in rows) {
+        final id = row.read<int>('id');
+        await customUpdate(
+          '''
+          UPDATE iriu
+          SET portable_occurrence_id = ?
+          WHERE id = ?
+            AND (portable_occurrence_id IS NULL
+             OR TRIM(portable_occurrence_id) = '')
+          ''',
+          variables: [
+            Variable<String>(generateIriuOccurrencePortableId()),
+            Variable<int>(id),
+          ],
+          updates: {iriu},
+        );
+      }
+    });
+  }
+
+  Future<void> _ensureIriuPortableOccurrenceIdUniqueIndex() async {
+    await _schemaRecovery.ensureIndex(
+      const SqliteIndexDefinition(
+        name: 'idx_iriu_predmet_portable_occurrence_id',
+        table: 'iriu',
+        unique: true,
+        columns: ['predmet_id', 'portable_occurrence_id'],
+        whereSql:
+            "WHERE portable_occurrence_id IS NOT NULL AND TRIM(portable_occurrence_id) <> ''",
+        createSql: '''
+          CREATE UNIQUE INDEX idx_iriu_predmet_portable_occurrence_id
+          ON iriu(predmet_id, portable_occurrence_id)
+          WHERE portable_occurrence_id IS NOT NULL
+            AND TRIM(portable_occurrence_id) <> ''
+        ''',
+      ),
+    );
   }
 
   /// Collapses only the built-in ČITULJE business tuples during an explicit

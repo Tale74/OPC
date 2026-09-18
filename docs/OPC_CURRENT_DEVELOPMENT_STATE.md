@@ -36,6 +36,30 @@ The completed preceding process marker was
 authorized no implementation. It is superseded by the formal Phase 1 exit
 record below.
 
+## OPC v1.5 clean development baseline
+
+`OPC v1.5 CLEAN DEVELOPMENT BASELINE — ESTABLISHED`
+
+The current development source is:
+
+`C:\Projekti\OPC_v1.5\source`
+
+It is the clean-baseline target on branch
+`codex/opc-v1.5-clean-baseline`. The predecessor mixed SOURCE at
+`C:\Projekti\OPC\OPC v.1\SOURCE` remains read-only provenance and was not
+reset, cleaned, restored, stashed or otherwise mutated.
+
+The accepted current delta was transferred as 83 reconciled paths with
+predecessor-target equivalence `83/83 PASS`, zero missing paths and zero hash
+mismatches. The machine-readable migration evidence is
+`docs/OPC_V1_5_CLEAN_BASELINE_MANIFEST.csv`; the final evidence handoff is
+`docs/OPC_V1_5_CLEAN_BASELINE_HANDOFF.md`.
+
+The target passed `flutter analyze --no-pub`, the serialized full suite
+(`549 passed, 10 skipped, 0 failures`), the Windows release build and the
+Android production release build. No Phase 2 feature, residual or batch is
+selected by this baseline transition.
+
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
 Engineering Profile. Supporting reports and historical records remain

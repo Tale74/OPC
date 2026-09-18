@@ -35,10 +35,12 @@ class CeremonyReminderOccurrence {
   const CeremonyReminderOccurrence({
     required this.scheduledAt,
     required this.notificationId,
+    this.repeatDaily = false,
   });
 
   final DateTime scheduledAt;
   final int notificationId;
+  final bool repeatDaily;
 }
 
 /// Builds future platform delivery slots for the ceremony's -2/-1/0 days.

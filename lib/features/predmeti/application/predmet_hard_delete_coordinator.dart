@@ -58,7 +58,10 @@ class PredmetHardDeleteCoordinator {
     final stagedMedia = await mediaStore.stageOwnedDeletion(mediaKeys);
 
     try {
-      await _cancelStoredReminderIds(reminder.scheduledNotificationIds);
+      await _cancelStoredReminderIds([
+        ...reminder.scheduledNotificationIds,
+        ...reminder.scheduledUrnaNotificationIds,
+      ]);
       await predmetiRepository.obrisiPredmet(predmetId);
     } on Object catch (primaryFailure, primaryStackTrace) {
       final compensationFailures = <Object>[];
@@ -67,18 +70,21 @@ class PredmetHardDeleteCoordinator {
       } on Object catch (failure) {
         compensationFailures.add(failure);
       }
-      if (reminder.scheduledNotificationIds.isNotEmpty) {
+      if (reminder.scheduledNotificationIds.isNotEmpty ||
+          reminder.scheduledUrnaNotificationIds.isNotEmpty) {
         try {
           await CeremonyReminderCoordinator(
             repository: reminderRepository,
             gateway: notificationGateway,
           ).reschedule(
             predmetId: predmet.id,
+            predmetStatus: predmet.status,
             ceremonyType: predmet.vrstaCeremonije,
             deceasedFirstName: predmet.ime,
             deceasedLastName: predmet.prezime,
             ceremonyDate: predmet.datumCeremonije,
             ceremonyTime: predmet.vremeCeremonije,
+            ceremonyLocation: predmet.groblje,
             ceremonyAt: parseCeremonyReminderDateTime(
               predmet.datumCeremonije,
               predmet.vremeCeremonije,

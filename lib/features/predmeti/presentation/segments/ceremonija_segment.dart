@@ -43,6 +43,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   String _vrstaCeremonije = 'SAHRANA';
 
   bool _opelo = false;
+  bool _obavestitiSvestenika = false;
   String _opeloMesto = '';
   late final TextEditingController _vremeOpelaCtrl;
   late final TextEditingController _vremeIspracajaCtrl;
@@ -206,6 +207,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         : d.vrstaCeremonije;
 
     _opelo = d.opelo == 'DA';
+    _obavestitiSvestenika = d.obavestitiSvestenika == 'DA';
     _opeloMesto = d.opeloMesto;
     _vremeOpelaCtrl = TextEditingController(text: d.vremeOpela);
     _vremeIspracajaCtrl = TextEditingController(text: d.vremeIspracaja);
@@ -302,6 +304,9 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         ),
         vremeCeremonije: Value(_normalizedTime(_vremeCeremonijeCtrl)),
         opelo: Value(_opelo ? 'DA' : 'NE'),
+        obavestitiSvestenika: Value(
+          _opelo ? (_obavestitiSvestenika ? 'DA' : 'NE') : '',
+        ),
         opeloMesto: Value(_opeloMesto),
         vremeOpela: Value(_normalizedTime(_vremeOpelaCtrl)),
         vremeIspracaja: Value(_normalizedTime(_vremeIspracajaCtrl)),
@@ -341,6 +346,10 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   Future<void> _rescheduleRemindersIfChanged({
     bool requestPermission = false,
   }) async {
+    final currentPredmet = await (widget.iriuRepo.db.select(
+      widget.iriuRepo.db.predmeti,
+    )..where((row) => row.id.equals(widget.predmetId))).getSingleOrNull();
+    if (currentPredmet == null) return;
     final date = normalizeCeremonyDateInput(_datumCeremonijeCtrl.text);
     final time = normalizeTimeInput(_vremeCeremonijeCtrl.text);
     final source =
@@ -350,11 +359,15 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     _lastReminderSource = source;
     await _reminderCoordinator.reschedule(
       predmetId: widget.predmetId,
+      predmetStatus: currentPredmet.status,
       ceremonyType: _vrstaCeremonije,
       deceasedFirstName: widget.initialData.ime,
       deceasedLastName: widget.initialData.prezime,
       ceremonyDate: date,
       ceremonyTime: time,
+      ceremonyLocation: currentPredmet.groblje,
+      urnPlacementType: currentPredmet.tipPolaganja,
+      urnCemetery: currentPredmet.grobljePolaganjaUrne,
       ceremonyAt: parseCeremonyReminderDateTime(date, time),
       requestPermission: requestPermission,
     );
@@ -523,6 +536,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                           // Ako prelazimo na vrstu gde opelo nije mogu\u0107e
                           if (_opelaNije.contains(nova)) {
                             _opelo = false;
+                            _obavestitiSvestenika = false;
                             _opeloMesto = '';
                           }
                           // Ako trenutno mesto opela nije u novoj listi
@@ -875,7 +889,10 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   value: _opelo,
                   enabled: e,
                   onChanged: (v) {
-                    setState(() => _opelo = v);
+                    setState(() {
+                      _opelo = v;
+                      if (!v) _obavestitiSvestenika = false;
+                    });
                     if (v) {
                       _predloziIriu([IriuK.kompletZaOpelo]);
                       final pomereno = _pomerVreme(
@@ -897,6 +914,17 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   },
                 ),
                 if (_opelo) ...[
+                  const SizedBox(height: 8),
+                  PredmetBooleanDecisionTile(
+                    key: const Key('obavestiti-svestenika-decision'),
+                    title: 'Obavestiti sveštenika',
+                    value: _obavestitiSvestenika,
+                    enabled: e,
+                    onChanged: (v) => setState(() {
+                      _obavestitiSvestenika = v;
+                      _scheduleSave();
+                    }),
+                  ),
                   const SizedBox(height: 8),
                   if (isNarrowAndroid) ...[
                     DropdownButtonFormField<String>(

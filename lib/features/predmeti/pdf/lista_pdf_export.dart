@@ -193,6 +193,7 @@ class _ListaPdfSnapshot {
     required this.napomene,
     required this.partePreview,
     required this.parteSimbol,
+    required this.podsetnikChecklist,
   });
 
   factory _ListaPdfSnapshot.fromPreparedData(
@@ -215,6 +216,7 @@ class _ListaPdfSnapshot {
       napomene: preparedData.napomene,
       partePreview: preparedData.partePreview,
       parteSimbol: preparedData.parteSimbol,
+      podsetnikChecklist: preparedData.podsetnikChecklist,
     );
   }
 
@@ -233,6 +235,7 @@ class _ListaPdfSnapshot {
   final List<ListaPdfDocumentNote> napomene;
   final String partePreview;
   final String parteSimbol;
+  final List<ListaPdfChecklistItem> podsetnikChecklist;
 }
 
 class _IriuLayoutProfile {
@@ -508,6 +511,8 @@ pw.Widget _buildPageTwoBody(_ListaPdfSnapshot snapshot) {
     children: [
       _buildPreparedSection(snapshot.payerSection),
       pw.SizedBox(height: _kSectionGap),
+      _buildPodsetnikChecklistSection(snapshot.podsetnikChecklist),
+      pw.SizedBox(height: _kSectionGap),
       pw.Expanded(
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
@@ -523,6 +528,56 @@ pw.Widget _buildPageTwoBody(_ListaPdfSnapshot snapshot) {
         ),
       ),
     ],
+  );
+}
+
+pw.Widget _buildPodsetnikChecklistSection(
+  List<ListaPdfChecklistItem> items,
+) {
+  return _buildSectionShell(
+    title: 'OBAVEZE I NAPOMENE',
+    child: items.isEmpty
+        ? pw.Text(
+            documentTextCodec.normalize('Nema trenutno relevantnih obaveza.'),
+            style: pw.TextStyle(
+              fontStyle: pw.FontStyle.italic,
+              fontSize: _kCompactBodyFontSize,
+              color: PdfColors.grey700,
+            ),
+          )
+        : pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: items
+                .map(
+                  (item) => pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 3),
+                    child: pw.Row(
+                      children: [
+                        pw.Container(
+                          width: 8,
+                          height: 8,
+                          decoration: pw.BoxDecoration(
+                            border: pw.Border.all(color: PdfColors.grey700),
+                          ),
+                        ),
+                        pw.SizedBox(width: 6),
+                        pw.Expanded(
+                          child: pw.Text(
+                            documentTextCodec.normalize(item.label),
+                            style: pw.TextStyle(
+                              fontSize: _kCompactBodyFontSize,
+                              fontWeight: item.group
+                                  ? pw.FontWeight.bold
+                                  : pw.FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
   );
 }
 

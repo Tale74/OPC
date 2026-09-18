@@ -38,6 +38,23 @@ This document is documentation only. It maps domains, ownership, dependencies, s
 - Korisnici owns local users/roles; future stable firm/license identities are unresolved.
 - JSON/PDF own transfer/rendering representations only, not master truth.
 
+### FIRMA / database / device / actor boundary (source-learning reconciliation)
+
+- `FirmaPodaci` is a local singleton-like business/settings context. Source
+  supports one local database context containing that firm data, local users,
+  PREDMETI, KATALOG/configuration and history; it does not store a separate
+  database-owner field.
+- Windows and Android use the same OPC domain/database contracts. The source
+  establishes peer local execution contexts, not a device-owned business
+  namespace or a server master.
+- `Korisnici.id` is database-local authentication/actor identity. Roles control
+  permissions; a role is not itself a business owner.
+- PREDMET business responsibility is distinct from local operation metadata:
+  portable SAVETNIK name/role is PREDMET truth, while creator, modifier and
+  `logIzmena` IDs remain local actor/audit fields.
+- Individual JSON transfer and schema-9 full Backup are distinct contracts;
+  source-local numeric IDs do not become destination authority.
+
 Dependent-data lifecycle map:
 `docs/OPC_PREDMET_DEPENDENT_DATA_LIFECYCLE_MATRIX.md`.
 
@@ -188,6 +205,7 @@ User exports single PREDMET
 -> build OPC_PREDMET root metadata
 -> include sourceExpectations
 -> include predmet / iriu / kontaktLica
+-> include scenario carrier and lifecycle decisions (business keys only)
 -> include unresolved consequence block when safe
 -> generate human-readable filename
 -> file is transfer artifact, not identity source
