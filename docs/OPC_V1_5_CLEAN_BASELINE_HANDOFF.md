@@ -78,9 +78,10 @@ The current development source transitions to:
 `C:\Projekti\OPC_v1.5\source`
 
 The predecessor SOURCE remains historical/read-only provenance. Post-drift
-recovery remains formally closed; synchronized Windows + Android development
-continues from this clean-baseline target. Phase 2 has not started and no new
-feature, residual or batch is selected by this baseline handoff.
+recovery remains formally closed; Phase 2 is formally closed; Phase 3 is
+formally closed. Synchronized Windows + Android development continues from
+this clean-baseline target. No new feature, residual or batch is selected by
+this baseline handoff.
 
 ## Engineering-profile and control disposition
 

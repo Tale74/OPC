@@ -909,12 +909,15 @@ donor denylist, future-task precheck and high-risk baseline lifecycle are now
 durable controls. `SOURCE/runtime_data` and `SOURCE/.audit_tmp` remain
 `UNRESOLVED – DO NOT USE`.
 
-The current SOURCE remains a mixed dirty working state on the named task
-branch and is not yet a coherent published implementation baseline. The
-latest Windows process/window observation remains the known Codex sandbox
-desktop-binding recurrence; OWNER-visible desktop runtime acceptance remains
-required for the broader restoration package. The separately scoped REVIEW BAR
-runtime acceptance is recorded by the current phase marker above.
+The predecessor recovery-era SOURCE at
+`C:\Projekti\OPC\OPC v.1\SOURCE` remains a frozen mixed
+predecessor/provenance checkout and is not the current development SOURCE.
+Current development SOURCE is `C:\Projekti\OPC_v1.5\source`; ordinary
+development must not resume from the predecessor. The latest Windows
+process/window observation remains the known Codex sandbox desktop-binding
+recurrence; OWNER-visible desktop runtime acceptance remains required for the
+broader restoration package. The separately scoped REVIEW BAR runtime
+acceptance is recorded by the current phase marker above.
 Documentation authority and implementation-source publication are separate
 gates. Residual OWNER findings remain preserved for later OWNER-gated
 corrective work and are not claimed as resolved by this documentation
