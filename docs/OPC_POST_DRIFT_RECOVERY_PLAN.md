@@ -99,11 +99,11 @@ The detailed evidence remains in the accepted external handoffs, including:
 
 ## 3. Current phase marker
 
-`PHASE 2 — FORMALLY CLOSED`
+`PHASE 3 — FORMALLY CLOSED`
 
 The immediately preceding accepted recovery phase was:
 
-`PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
+`PHASE 2 FORMAL NO-OMISSION CLOSURE — COMPLETE`
 
 The REVIEW BAR corrective phase, its post-acceptance documentation closure,
 Foundation A, POD-11 and CIT-01 remain complete predecessor milestones. The
@@ -316,8 +316,31 @@ source. `VOJNE POČASTI` is governed by the established OWNER trigger
 residual or batch was required. No source, test, schema, JSON, QA, build or
 baseline change was made by this closure.
 
-`PHASE 3 — NOT STARTED` remains the current next-phase state. No Phase 3
-implementation member, omission or batch is selected.
+`PHASE 3 — FORMALLY CLOSED` is the current completed no-omission state. The
+completed Phase 3 audit established:
+
+`PHASE 3 — NO PROVEN OMITTED POST-CEREMONY OBLIGATIONS`
+
+All current OWNER-authorized post-ceremony obligations reviewed are present in
+current source. No implementation package, residual or batch was required. No
+source, test, schema, JSON, QA, build or baseline change was made by this
+closure.
+
+This Phase 3 closure does not claim that the entire post-drift recovery
+sequence is complete.
+
+## 3E. Phase 3 formal no-omission closure
+
+The reviewed post-ceremony set was:
+
+- `REFUNDACIJA PIO → Predati zahtev`;
+- `PORODIČNA PENZIJA → Predati zahtev`;
+- `POSMRTNA POMOĆ → Predati zahtev`;
+- `URNA / PEPEO → arrange placement`.
+
+The accepted URNA/PEPEO lifecycle, including +3-day notification eligibility,
+repeating notifications until completion, the `ZAVRŠEN` blocker and the
+`GROBLJE POLAGANJA URNE` authority, remains protected and unchanged.
 
 ## 3A. Docs-as-Code progression control
 

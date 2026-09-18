@@ -14,8 +14,8 @@ post-drift recovery phase and task sequencing are governed by
 `docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`; detailed current residual status and
 backlog are governed by the sole current successor residual ledger/matrix. The
 resolved current recovery phase is
-`PHASE 2 — FORMALLY CLOSED`; Phase 3 remains reserved for proven omitted
-post-ceremony obligations and has not started. Forensic
+`PHASE 3 — FORMALLY CLOSED`; the completed Phase 3 audit established
+`PHASE 3 — NO PROVEN OMITTED POST-CEREMONY OBLIGATIONS`. Forensic
 evidence and the full reality matrix are in
 `docs/OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`.
 Within Phase 1, the most recently completed current wave is
@@ -64,11 +64,11 @@ represents publication of the complete mixed implementation SOURCE.
 
 The current phase is:
 
-`PHASE 2 — FORMALLY CLOSED`
+`PHASE 3 — FORMALLY CLOSED`
 
 The immediately preceding accepted phase was:
 
-`PHASE 1 FORMAL POST-COMPLETION CONTROL/DOCUMENTATION CLOSURE — COMPLETE`
+`PHASE 2 FORMAL NO-OMISSION CLOSURE — COMPLETE`
 
 The formal Phase 1 exit decision is:
 
@@ -110,8 +110,14 @@ source. `VOJNE POČASTI` is governed by the established OWNER trigger
 residual or batch was required. No source, test, schema, JSON, QA, build or
 baseline change was made by this closure.
 
-`PHASE 3 — NOT STARTED` remains current. No Phase 3 implementation member,
-omission or batch is selected.
+The completed Phase 3 closure is:
+
+`PHASE 3 — NO PROVEN OMITTED POST-CEREMONY OBLIGATIONS`
+
+All current OWNER-authorized post-ceremony obligations reviewed are present in
+current source. No implementation package, residual or batch was required.
+No source, test, schema, JSON, QA, build or baseline change was made by this
+closure. The entire post-drift recovery sequence is not claimed complete.
 
 The completed preceding Phase 1 wave is:
 
@@ -258,7 +264,8 @@ defect set includes the established residuals plus `POD-08`, `POD-09`,
 their phase classification, while `POD-11` records the accepted grouped-
 obligation standard correction. `PIO-01` remains unchanged and locked. Phase 2 is
 `PHASE 2 — FORMALLY CLOSED — NO PROVEN OMITTED PRE-CEREMONY OBLIGATIONS`; Phase
-3 is `PHASE 3 — NOT STARTED`. No
+3 is `PHASE 3 — FORMALLY CLOSED — NO PROVEN OMITTED POST-CEREMONY
+OBLIGATIONS`. No
 internal Phase 1 implementation order is selected. Historical
 readiness/dependency sequences are not current sequencing authority.
 
