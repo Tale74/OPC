@@ -135,10 +135,25 @@ itself, an OPC startup defect when the process is bound to the Codex sandbox
 desktop. Domains 1–5 therefore remain OWNER evidence required. Build/source
 identity remains separate from runtime acceptance.
 
-The accepted active-source hygiene result is documented externally and does
-not convert the protected mixed local SOURCE into a published coherent
-implementation baseline. See
+This paragraph records the 2026-09-08 recovery-era publication boundary; its
+mixed-local-SOURCE description is historical, not the current v1.5 baseline.
+See
 [`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
+
+### 5E. Current v1.5 source and F-09 status — 2026-09-19
+
+The published v1.5 product-source baseline and local-only active-source control
+package are identified in `OPC_CURRENT_DEVELOPMENT_STATE.md`. The high-risk
+baseline has 28 logical protected rows. This documentation-task delta does not
+change product source and is not runtime acceptance, release readiness, or
+permission to implement a roadmap item.
+
+OWNER has authorized two F-09 children under the FINANSIJE parent:
+PLATITI RAČUN and NAPLATITI OBAVEZE are siblings, with no child-to-child
+sequence. Their exact triggers and manual-completion/REVIEW BAR behavior are
+recorded in Product/Domain and the current-state home. Current source lacks
+both. Broader unspecified FINANSIJE reminder scope remains deferred. No tests,
+builds, or runtime acceptance are claimed by this documentation status update.
 
 ## 6. Backup, restore and interoperability
 

@@ -50,15 +50,12 @@ parity, backup, signing, version and handover items are release controls
 attached to their parent, not standalone product features. Valid but
 non-blocking debt stays outside the critical path.
 
-During the current post-drift recovery phase, this existing owner-roadmap
-control also requires every substantive task to identify its current residual
-ID/group, classification, predecessor authority and plan authorization. The
-task must confirm that it does not skip, reorder, reinterpret or silently
-extend the canonical recovery plan, and that no historical readiness or
-dependency sequence is being promoted to current sequencing authority. This
-is the recovery plan's task-to-plan conformance rule, not a parallel
-governance regime. If current authority does not establish one next residual
-correction, the result is `OWNER SEQUENCING DECISION REQUIRED`.
+The post-drift recovery plan is formally closed and is not current sequencing
+authority. Normal OWNER roadmap governance is active. A task must use an
+explicit OWNER-selected member when one exists; otherwise report that no next
+member is selected. Historical recovery/readiness sequences must not be
+promoted into a current order. This does not select a roadmap member or create
+product scope.
 
 If a finding changes business meaning or introduces new product scope, stop at
 `OWNER DECISION REQUIRED`; observation alone never creates authority. Avoid
@@ -89,27 +86,25 @@ This is a transitional local + GitHub model. It is not a Git-only authority mode
 
 For documentation changes, update the Git current-state home and record any required local counterpart or local evidence relationship in the manifest. Do not promote private databases, backups, credentials or raw runtime artifacts.
 
-The current local implementation may be a protected mixed dirty working state.
-Synchronizing documentation to GitHub does not publish that implementation as
-a coherent source baseline. The active-source and donor rules in
+The current v1.5 implementation target is the clean baseline identified in
+`OPC_CURRENT_DEVELOPMENT_STATE.md`; earlier mixed-dirty SOURCE descriptions are
+historical. Documentation synchronization does not by itself claim product
+implementation or runtime acceptance. The active-source and donor rules in
 [`OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md)
 are mandatory for future corrective work.
 
-### 3A. Post-drift recovery-plan continuity
+### 3A. Completed post-drift recovery record
 
-While the post-drift recovery phase remains open, every substantive OPC task
-must physically read [`OPC_POST_DRIFT_RECOVERY_PLAN.md`](OPC_POST_DRIFT_RECOVERY_PLAN.md)
-before task planning or substantive source-learning. The task report must
-state the resolved path, `READ = YES`, the current recovery phase, the
-immediately preceding accepted phase or handoff, the single next
-plan-authorized action relevant to the task, and that the task does not skip,
-reorder, reinterpret or silently extend the recovery plan. If any item cannot
-be established, stop with `STOP — RECOVERY PLAN CONTINUITY NOT ESTABLISHED`.
+[`OPC_POST_DRIFT_RECOVERY_PLAN.md`](OPC_POST_DRIFT_RECOVERY_PLAN.md) is a
+formally closed continuity record. Read it when a task changes or relies on
+recovery-closure facts; report the relevant phase/closure and distinguish it
+from current OWNER roadmap sequencing. It authorizes no further recovery
+implementation action and does not supply a next roadmap member.
 
-The plan governs continuity and ordering only. It does not create product
-requirements or replace the detailed residual/deferred/evidence ledger and
-matrix. Existing engineering-profile, HUMAN GATE, Docs-as-Code, active-source,
-donor-control and anti-drift controls remain in force.
+The recovery plan does not create product requirements or replace the detailed
+residual/deferred/evidence ledger and matrix. Existing engineering-profile,
+HUMAN GATE, Docs-as-Code, active-source, donor-control and anti-drift controls
+remain in force.
 
 ### 3B. Active-source precheck
 
@@ -158,12 +153,9 @@ implementation donor mechanism.
 
 - Do not infer the active operational baseline from public `main`; use the exact branch and SHA named by the current handover/task.
 - The published Phase 3 baseline is `task/OPC-SCENARIO-MODULE-LOCK` at `336552ff40eaa72321670cb554ebd1d6d784d30c`; use the exact handover/task SHA for later work.
-- For ordinary development outside the open post-drift recovery phase, start from
-  a clean worktree and keep unrelated work out of the branch. During the
-  current recovery phase, the protected mixed SOURCE is the continuation
-  baseline: do not clean, reset, stash, restore, move or normalize it. Preserve
-  its unrelated delta and follow the canonical recovery plan and current
-  handoff instead.
+- Start from a clean worktree and keep unrelated work out of the branch. The
+  former protected mixed SOURCE was a recovery-era continuation baseline only;
+  it is frozen provenance, not the current v1.5 development target.
 - Use descriptive focused commits and review status, staged names and staged diff before commit.
 - Do not change canonical/default branch in documentation work.
 - A task report must contain the required manifest start/end compliance blocks when the repository gate applies.
@@ -283,7 +275,7 @@ The following remain visible and are not silently closed by this guide:
 - explicit IP/repository-use/distribution status and third-party license inventory;
 - JSON interoperability hotspot;
 - KATALOG edge-case characterization;
-- PODSETNIK signal model (owner-gated);
+- Exact F-09 target semantics are owner-authorized but absent from current source; broader unspecified FINANSIJE reminder scope remains deferred, and no roadmap member is selected here;
 - pseudocode drift (continuously compared with current authority and roadmap);
 - Phase 4 forensic dead-code/superseded-implementation closure review;
 - future Web/`OPC_v.1_Int`/multicurrency scope.

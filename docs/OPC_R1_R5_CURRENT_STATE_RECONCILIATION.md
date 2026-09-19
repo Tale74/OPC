@@ -64,13 +64,13 @@ claim that every owner-planned future surface is complete.
 | --- | --- | --- |
 | F-01 NALOG ZA OPREMANJE placement/action | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | Current PODSETNIK screen exposes the equipment action; bounded callback/output tests pass. Full owner runtime placement acceptance remains pending. |
 | F-02 NAPOMENA separation | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | Current screen has a separate general note field below the checklist; integrated visual/runtime acceptance remains pending. |
-| F-03 completed/incomplete distinction | `PARTIALLY IMPLEMENTED` | `lib/features/podsetnik/presentation/podsetnik_module_screen.dart` renders `completed` through checked/unchecked `CheckboxListTile` values for groups, children and standalone items. Current tests (`test/podsetnik_task2_ui_integration_test.dart`, `test/podsetnik_module_screen_test.dart`, `test/podsetnik_task2_bounded_correction_test.dart` and `test/podsetnik_obligation_foundation_test.dart`) cover checklist/state behavior but do not prove an explicit completed-vs-incomplete visual treatment beyond checkbox state; that evidence/runtime gap remains open. |
+| F-03 / POD-01 PARENT completion-state visual distinction | `CLOSED — OWNER-ACCEPTED POD-02 PRESENTATION` | OWNER narrowed POD-01 to the PARENT completion-state visual distinction, satisfied by accepted POD-02 presentation: incomplete PARENT checkbox is red and completed PARENT checkbox is green; the white check mark remains protected. No CHILD or broader status-surface recoloring was required. This narrow completion-state color semantics item is closed; separate broader PODSETNIK polish and integrated runtime/release boundaries remain separate. |
 | F-04 REVIEW BAR semantics | `IMPLEMENTED + OWNER RUNTIME ACCEPTANCE PASS — scoped REVIEW BAR behavior protected` | General relevant unfinished-parent projection, cadence, placement/style, zero-state and live completion refresh are accepted for the scoped REVIEW BAR correction; broader integrated runtime/release boundary remains. |
 | F-05 ČITULJA | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | R1–R5 baseline; see the ČITULJE matrix. |
 | F-06 manual / `POSEBNE OBAVEZE` | `IMPLEMENTED + OWNER RUNTIME ACCEPTANCE PASS — scoped REVIEW BAR participation protected` | The accepted REVIEW BAR correction covers active `POSEBNE OBAVEZE`; broader F-06 manual-child/transfer/runtime/release scope remains governed by the current residual authority. |
 | F-07 PODSETNIK transfer | `IMPLEMENTED + RUNTIME ACCEPTANCE PENDING` | PREDMET-owned obligation rows and R5 minimal ČITULJA state use existing JSON/Backup paths; physical cross-device acceptance remains pending. |
 | F-08 IMENIK | `DEFERRED` | Outside the R1–R5 dependency chain; no new implementation is authorized by this reconciliation. |
-| F-09 FINANSIJE | `DEFERRED` | Existing FINANSIJE segment and focused formatting behavior are separate; broader owner-planned F-09 work is outside R1–R5 and not implemented here. |
+| F-09 FINANSIJE | `OWNER-AUTHORIZED TARGET — BOTH CHILD RULES ABSENT; BROADER SCOPE DEFERRED` | FINANSIJE is the parent of sibling children PLATITI RAČUN and NAPLATITI OBAVEZE. The former derives from TROŠKOVI JKP under established OWNER payer/responsibility semantics; the latter derives when ZA NAPLATU > 0. Both are manually completable and participate in the general REVIEW BAR while relevant and unfinished. Current source lacks both. No child sequencing or roadmap-member selection is implied. |
 | URNA/PEPEO obligation/notification lifecycle | `IMPLEMENTED + SOURCE/TEST/DOCUMENTATION COMPLETE — RUNTIME/EVIDENCE/RELEASE BOUNDARY OPEN` | Specialization, scoped `ZAVRŠEN` blocker, transfer paths and source/test/documentation behavior are current; remaining runtime/device evidence and integrated release acceptance are separate gates. |
 | PODSETNIK UI/PDF/LISTA consistency | `PARTIALLY IMPLEMENTED` | R5 ČITULJA/LISTA/PDF route is implemented; broader PODSETNIK visual redesign and full runtime consistency remain open. |
 | Windows/Android runtime acceptance | `OPEN` | Integrated R1–R5 runtime/device evidence is still pending. |
@@ -104,7 +104,7 @@ The following remain pending:
 
 No R1–R5 item is marked `RELEASE COMPLETE`.
 
-## 7. Open items and current sequencing consequence
+## 7. Open items and current roadmap status
 
 ### Open items
 
@@ -112,24 +112,25 @@ No R1–R5 item is marked `RELEASE COMPLETE`.
    and runtime evidence remains governed by the current residual authority.
 2. `EVIDENCE GAP`: broader URNA/PEPEO Windows secondary-cycle and integrated
    runtime evidence remains governed by the current residual authority.
-3. `DEFERRED / feature`: broader F-09 FINANSIJE work.
+3. `OWNER-AUTHORIZED TARGET / implementation open`: the two exact F-09 child rules are absent from current source; broader unspecified FINANSIJE reminder scope remains deferred.
 4. `DEFERRED / feature`: IMENIK when its dependency position is selected.
-5. `PARTIALLY IMPLEMENTED / UI-UX`: F-03 explicit completed/incomplete visual
-   distinction evidence and broader PODSETNIK visual/presentation corrections
-   beyond the accepted R5 ČITULJA/LISTA scope.
+5. `OPEN / UI-UX`: broader PODSETNIK visual/presentation polish beyond the
+   accepted narrow POD-01 PARENT completion colors and the accepted R5
+   ČITULJA/LISTA scope. This broader boundary does not reopen the closed
+   F-03/POD-01 completion-state color semantics.
 6. `OPEN / runtime acceptance`: integrated Windows, Android and cross-device
    acceptance.
 7. `OPEN / release`: final full QA/build/signing/version/Git/publication gates.
 
-No unique next residual implementation is established by this supporting
-record. Current recovery sequencing is governed by the canonical recovery plan
-and the current successor residual authority:
+No unique next roadmap member is established or selected by this supporting
+record. The post-drift recovery plan is formally closed and is not current
+sequencing authority. Normal OWNER roadmap governance is active:
 
-`OWNER SEQUENCING DECISION REQUIRED`
+`NO NEXT OWNER-ROADMAP MEMBER SELECTED`
 
 The predecessor recommendation to select F-06 or URNA/PEPEO as the next feature
-is historical and non-authoritative for current recovery ordering. This record
-does not authorize the next task automatically.
+is historical and non-authoritative. This record does not authorize or select a
+next task automatically.
 
 ## 8. Documentation reconciliation record
 
@@ -157,11 +158,25 @@ The restoration source/test/documentation result remains distinct from
 runtime/release acceptance. The latest Windows process/window event is the
 known Codex sandbox desktop-binding recurrence, so integrated Domains 1–5
 remain `OWNER EVIDENCE REQUIRED`; it is not classified as an OPC startup
-defect without OWNER launch on `WinSta0\\Default`. The current local SOURCE is
-still a mixed dirty working state and is not represented as a coherent
-published implementation baseline. Future corrective work must load the
-active-source manifest and donor denylist before any source action.
+defect without OWNER launch on `WinSta0\\Default`. At this 2026-09-09 checkpoint,
+the local SOURCE was recorded as a mixed dirty working state. That statement is
+historical and is superseded by the current v1.5 clean-baseline and active-source
+status recorded below. Future corrective work must load the active-source
+manifest and donor denylist before any source action.
 
-F-03 remains `PARTIALLY IMPLEMENTED`: checkbox state evidence exists, but the
-OWNER-required explicit completed/incomplete visual distinction is not closed
-by this documentation task.
+## 10. Current target and F-09 overlay — 2026-09-19
+
+This supporting record is reconciled to the current v1.5 clean baseline and
+the formally closed post-drift recovery status. Historical recovery ordering
+in this document is not current sequencing authority. No next OWNER roadmap
+member is selected by this overlay.
+
+OWNER has resolved the exact F-09 meaning: FINANSIJE is the parent;
+PLATITI RAČUN and NAPLATITI OBAVEZE are sibling child obligations. The former
+derives from TROŠKOVI JKP under established OWNER payer/responsibility semantics;
+the latter derives when ZA NAPLATU > 0. Both are manually completable and
+participate in the general REVIEW BAR while relevant and unfinished. No
+child-to-child dependency or ordered completion is implied. Current source
+lacks both obligations. These two exact rules are no longer deferred; broader
+unspecified FINANSIJE reminder scope remains deferred. This status overlay does
+not select implementation or establish runtime/release acceptance.

@@ -5,7 +5,7 @@
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-09-17
+**Reconciled:** 2026-09-19
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
@@ -174,7 +174,9 @@ The completed Phase 3 closure is:
 All current OWNER-authorized post-ceremony obligations reviewed are present in
 current source. No implementation package, residual or batch was required.
 No source, test, schema, JSON, QA, build or baseline change was made by this
-closure. The entire post-drift recovery sequence is not claimed complete.
+closure. At this Phase 3 checkpoint, the entire post-drift recovery sequence
+had not yet been formally closed; that statement is superseded by the later
+formal OWNER closure recorded in this document.
 
 OWNER has resolved that the recovery completion boundary is recovery-specific.
 The complete stable OPC v.1/product-line release program is not a recovery
@@ -335,7 +337,13 @@ UX/usability findings without creating CIT-02 regressions or separate
 micro-tasks. Current PODSETNIK ČITULJA child presentation is not a CIT-02
 defect.
 
-The sole current detailed residual authority is the successor pair:
+The completed recovery-era residual/provenance record is the successor pair
+below. It remains the detailed record of recovery findings and dispositions,
+but it is not current normal-roadmap sequencing authority and is not the sole
+current residual authority. Ordinary current residual and roadmap status are
+governed by the current authoritative homes and the separately completed,
+OWNER-gated normal-roadmap reconciliation. Preserve these files as recovery
+provenance; they do not control ordinary current sequencing:
 
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\10_CURRENT_RESIDUAL_FINDINGS_AND_OWNER_DECISIONS.md`
 - `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-REVIEW-BAR-POST-ACCEPTANCE-DOCUMENTATION-CLOSURE\11_CURRENT_GOOD_STATE_VS_RESIDUAL_MATRIX.md`
@@ -463,14 +471,14 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |
 | Android PARTE performance | Source risks are mapped; focused current-device profiling acceptance is absent. | Reproduce/profile before choosing a correction. |
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
-| PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. | Preserve the accepted state; no next PODSETNIK implementation is selected. |
+| PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. F-09 has two owner-authorized children, both absent from current source; broader unspecified FINANSIJE reminder scope remains deferred. | Preserve accepted behavior. F-09 implementation and the next roadmap member are not selected by this status record. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
 | Documents | RAČUN PDF exists. `NALOG CVEĆARI` is an accepted/protected current PDF unit in the native PREDMET → DOKUMENTI route: PREDMET remains the sole content truth, PODSETNIK carries only the shortcut/link, and the accepted item/ribbon/image structure, common shared PDF mechanism, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels are protected. Output scope is PDF only; DOCX is not an open option. | Accepted/protected current NALOG CVEĆARI PDF unit; no NALOG PDF/DOCX scope decision remains open. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
-| MODUL DVE VALUTE | Not implemented. | Mandatory before stable OPC v.1 and before `OPC_v.1_Int`. |
+| MODUL DVE VALUTE | Not implemented. | Required before stable OPC v.1; `OPC_v.1_Int` follows the stable product-line gate. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
 
-## Owner-roadmap control and current dependency order
+## Owner-roadmap control and current dependency boundaries
 
 The owner-planned roadmap is the primary development roadmap. The dependency
 plan may order prerequisites and release controls, but it may not create new
@@ -480,9 +488,9 @@ non-blocking debt stays outside the critical path.
 
 The earlier roadmap marker
 `independent Logos review of the bounded PODSETNIK presentation/primary-notification correction`
-is superseded as the current next step by the later OWNER-accepted REVIEW BAR
-phase marker and canonical recovery plan. It remains historical roadmap
-context, not the current recovery-phase action.
+was superseded in the recovery lineage by the later OWNER-accepted REVIEW BAR
+phase marker. Both that marker and the now-formally-closed recovery plan are
+historical recovery context, not current OWNER roadmap sequencing authority.
 
 The prior current-state record's next-action wording is superseded by the
 completed POD-02+POD-04 closure marker above. The completed recovery-phase
@@ -501,14 +509,20 @@ separate claims governed by the actually completed evidence; recovered
 decisions must not be reopened or used to infer additional business
 completion.
 
-The broader owner roadmap remains supporting roadmap context. After formal
-recovery closure, normal OWNER roadmap governance and synchronized Windows +
-Android development are active. The owner roadmap may proceed through the
-lifecycle-aware PODSETNIK program, remaining JSON/document/UI work, MODUL DVE
-VALUTE, and the Serbian-market OPC v.1 product-line gate. SCENARIO carrier,
+After formal recovery closure, normal OWNER roadmap governance and synchronized
+Windows + Android development are active. No next roadmap member is selected
+by this record. The owner-authorized F-09 target is status, not a sequencing
+decision: FINANSIJE is the parent, with sibling children PLATITI RAČUN and
+NAPLATITI OBAVEZE. The former derives from TROŠKOVI JKP under the established
+OWNER payer/responsibility semantics; the latter derives when ZA NAPLATU > 0.
+Both are manually completable and participate in the general REVIEW BAR while
+relevant and unfinished. Current source lacks both. No child-to-child sequence,
+dependency, or ordered completion is implied; broader unspecified FINANSIJE
+reminder scope remains deferred. The separate stable-product prerequisite
+MODUL DVE VALUTE remains required before stable OPC v.1. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
-signing work remain attached technical/release controls only when necessary for
-those parents.
+signing work remain attached technical/release controls only when necessary
+for an OWNER-selected parent.
 
 The provenance matrix, reverse-coverage result and demotion of unparented
 technical chains are recorded in
@@ -886,13 +900,14 @@ historical evidence. The package paths, hashes and 27-row baseline below were
 current for the predecessor at that time; they do not identify the v1.5
 active-source control package. The current v1.5 pointer is recorded above.
 
-The recovered current implementation state remains protected by the external
-baseline package with SHA-256
+At that predecessor checkpoint, the recovered implementation state was
+protected by the external baseline package with SHA-256
 `5241576752D8F3954D741A3AC0CEEF089863F5AAC2E30F72354264C4FE9ABE5A`.
 The prior active-source hygiene/quarantine package remains preserved as
 historical evidence with ZIP SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
-The current active control package is the external local-only package at
+The then-current active control package for the predecessor was the external
+local-only package at
 `C:\Projekti\OPC\OPC v.1\REVIEW\CURRENT_TASK\OPC-HIGH-RISK-ACTIVE-BASELINE-CONTROLLED-REBASELINE-20260917-PHASE1-PDF05-CLOSURE\`,
 with enclosing ZIP SHA-256
 `B550645672750630B5403CE5CB404331CCBCAB7538777325E931A66946D6E27E`,
@@ -909,34 +924,40 @@ PACKAGE_MANIFEST.json SHA-256
 `BDB24A8F73861B5200962689D4DBE9E0253DC142B254E822F60C53EFE8E30B5C`, and
 ZIP SHA-256
 `B6B2D92F8ED24633F972D36AC79B24B9DEEDCF7398C35ADFB721A8D0388916CE`.
-Its predecessor ZIP physical status remains exactly
+The physical status recorded for its predecessor ZIP at that checkpoint was
+exactly
 `PREDECESSOR ZIP PHYSICAL RE-VERIFICATION — NOT AVAILABLE`.
-This is a current location fact, not an eternal path invariant; each future
-substantive task must re-resolve the location from current authority and use the
-current package manifest/handoff to map the five logical inputs to their actual
-filenames. The package remains current local-only control evidence, not
-implementation authority or a donor. The current controlled rebaseline is
+That package path was current at the historical checkpoint, not an eternal
+path invariant. Each later substantive task must re-resolve the active package
+location from current authority and use the then-current package manifest and
+handoff to map the five logical inputs to their actual filenames. At that
+checkpoint, this predecessor package was local-only control evidence, not
+implementation authority or a donor. The predecessor controlled rebaseline at
+that checkpoint was
 `4C974501426B2C9713C67AC8A08812651C66C35B2A475DC227B1FB6450D08E93` and
-verifies all 27 protected rows with zero mismatches: 26 rows are unchanged and
-the sole accepted changed row is
+verified all 27 protected rows with zero mismatches: 26 rows were unchanged and
+the sole accepted changed row was
 `lib/features/predmeti/citulje/pdf/citulja_pdf_export.dart` with final hash
-`B06CE7303C6AD9420B9F9AD8DDFACD5212090DF1ABFB23395D30F03A0EA34E89`. The current residual
-ledger and matrix also close POD-01 without a source change: OWNER narrowed it
-to PARENT completion-state visual distinction, already satisfied by the
-accepted POD-02 red/incomplete and green/complete PARENT checkbox state. The
-accepted white check mark remains protected; no CHILD, row/background or text
-recoloring was required or created. POD-01 is `WINDOWS OWNER RUNTIME ACCEPTED —
-CLOSED`; POD-05 and the narrow responsive child-placement finding are now
-closed with the accepted runtime evidence. All other residual, deferred,
-authority-gap and evidence-only classifications remain unchanged. Phase 2 is
-formally closed with no proven omitted PRE-CEREMONY obligation; Phase 3 is
-formally closed with no proven omitted POST-CEREMONY obligations.
-The protected active inventory covers 748 files with zero unexpected missing
-files; proven obsolete staging/evidence roots were moved to quarantine without
-changing active implementation content. The active-source manifest, stale
-donor denylist, future-task precheck and high-risk baseline lifecycle are now
-durable controls. `SOURCE/runtime_data` and `SOURCE/.audit_tmp` remain
-`UNRESOLVED – DO NOT USE`.
+`B06CE7303C6AD9420B9F9AD8DDFACD5212090DF1ABFB23395D30F03A0EA34E89`. The
+recovery-era residual ledger and matrix at that historical checkpoint also
+recorded POD-01 closure without a source change: OWNER had narrowed it to the
+PARENT completion-state visual distinction, satisfied by the accepted POD-02
+red/incomplete and green/complete PARENT checkbox state. The accepted white
+check mark remained protected; no CHILD, row/background or text recoloring was
+required or created. The predecessor records listed POD-01 as
+`WINDOWS OWNER RUNTIME ACCEPTED — CLOSED`; POD-05 and the narrow responsive
+child-placement finding were recorded as closed with the accepted runtime
+evidence. Other residual, deferred, authority-gap and evidence-only
+classifications were preserved in that checkpoint. Phase 2 was recorded as
+formally closed with no proven omitted PRE-CEREMONY obligation; Phase 3 was
+recorded as formally closed with no proven omitted POST-CEREMONY obligations.
+The protected active inventory at that predecessor checkpoint covered 748
+files with zero unexpected missing files; proven obsolete staging/evidence
+roots were moved to quarantine without changing active implementation content.
+The predecessor active-source manifest, stale donor denylist, future-task
+precheck and high-risk baseline lifecycle constituted controls for that
+predecessor package. `SOURCE/runtime_data` and `SOURCE/.audit_tmp` were marked
+`UNRESOLVED – DO NOT USE` in that predecessor record.
 
 The predecessor recovery-era SOURCE at
 `C:\Projekti\OPC\OPC v.1\SOURCE` remains a frozen mixed

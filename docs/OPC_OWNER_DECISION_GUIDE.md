@@ -487,13 +487,42 @@ localization catalogue/API, migration/version number, fingerprint
 encoding/version, role-specific reopen semantics and animation details remain
 OPEN; no answer is invented here.
 
-### 9.5 Current source / target separation
+### 9.5 Historical source / target checkpoint — 2026-08-28
 
-Current source persists ceremony/urn fields and reminder configuration but does
-not yet implement the recovered generic obligation state, parent projection,
-urn blocker or +3-day secondary cycle. Those are TARGET OWNER CONTRACT items
-for the later three-task implementation sequence. No source, test, schema,
-pseudocode or runtime behavior is changed by this documentation baseline.
+At the 2026-08-28 recovered-owner checkpoint, source persisted ceremony/urn
+fields and reminder configuration but did not yet implement the recovered
+generic obligation state, parent projection, urn blocker or +3-day secondary
+cycle. This is a historical source snapshot, superseded for current source
+status by §9.6 and the current development-state home. It remains evidence of
+the target/source distinction at that checkpoint, not current implementation
+authorization.
+
+### 9.6 Current source status and F-09 owner clarification — 2026-09-19
+
+The current source includes bounded generic grouped-obligation infrastructure,
+the URNA/PEPEO cycle, and F-06 manual-obligation integration. This does not
+establish general runtime or release acceptance; those remain separately
+tracked in the current-state and quality/release homes.
+
+OWNER has clarified the exact F-09 FINANSIJE target:
+
+- `FINANSIJE` is the parent.
+- `PLATITI RAČUN` and `NAPLATITI OBAVEZE` are sibling child obligations of that
+  parent.
+- `PLATITI RAČUN` derives from `TROŠKOVI JKP` under the already established
+  OWNER payer/responsibility semantics; no additional trigger is implied.
+- `NAPLATITI OBAVEZE` derives when `ZA NAPLATU > 0`.
+- Both children are manually completable and participate in the general REVIEW
+  BAR while relevant and unfinished.
+- Neither child sequences, depends on, or orders completion of the other.
+- Current source lacks both F-09 obligations. These exact two target rules are
+  no longer deferred; broader unspecified FINANSIJE reminder scope remains
+  deferred.
+
+This addendum records business meaning and current source status only. It does
+not authorize implementation, select a roadmap member, or create a stable
+decision ID. The earlier arrow notation is superseded for relationship
+semantics.
 
 ### 8.5 Historical implementation checkpoint — partially `SUPERSEDED`
 

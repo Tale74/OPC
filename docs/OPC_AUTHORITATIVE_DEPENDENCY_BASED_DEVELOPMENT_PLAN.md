@@ -112,14 +112,22 @@ is preserved but cannot silently remain active roadmap instruction.
 These items reopen only for a new source/runtime finding, a regression, or an
 explicit new owner business decision.
 
-### 2.2 Current one-line dependency order
+### 2.2 Current roadmap and locked product-line prerequisites
 
-The owner-roadmap-first order is now:
+The normal OWNER roadmap is active. This dependency plan does not select or
+order the next owner-roadmap member; no next member is selected by this record.
+The earlier sequence beginning with a broad lifecycle-aware PODSETNIK program
+is superseded as current sequencing authority.
 
-**Recovered PODSETNIK owner contract → lifecycle-aware PODSETNIK implementation
-and acceptance → remaining approved JSON/document/UI
-work → MODUL DVE VALUTE → Serbian-market OPC v.1 product-line gate → later
+The locked product-line prerequisite relationship remains:
+
+**MODUL DVE VALUTE → stable OPC v.1 product-line gate → later
 `OPC_v.1_Int` work → signing and professional handover.**
+
+This prerequisite chain does not select the next task or order other owner-
+planned work. The bounded F-09 status is recorded in its standalone owner-
+clarification section outside §4 and does not rank it ahead of another roadmap
+member.
 
 PREDMET/referential/lifecycle, SCENARIO-carrier, performance, parity,
 backup/restore, identity and other technical/release items are attached
@@ -127,23 +135,32 @@ controls only when necessary for one of those owner-planned parents. The full
 provenance matrix and reverse-coverage record are in
 `docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md`.
 
-This owner-roadmap order replaces every older “next dependency” statement that
+This current-roadmap status supersedes older “next dependency” statements that
 promoted technical preparation or acceptance controls into product scope,
-while preserving the underlying evidence and history.
+while preserving their underlying evidence and history. It does not select a
+next owner-roadmap member.
 
-### 2.3 Owner roadmap — now
+### 2.3 Owner roadmap — current status
 
-`PODSETNIK / recovered owner-authority restoration and implementation contract`
+No next owner-roadmap member is selected by this plan. The post-drift recovery
+sequence is formally closed and is not current sequencing authority.
 
-The current authority and subordinate pseudocode agree that complete signal
-meanings remain owner-open. No reminder implementation or isolated notification
-patch is authorized before that contract.
+The exact F-09 target is owner-authorized and bounded: FINANSIJE is the parent;
+PLATITI RAČUN and NAPLATITI OBAVEZE are sibling children. Their triggers,
+manual completion and general REVIEW BAR participation are recorded in the
+standalone “Bounded F-09 owner clarification — no roadmap position” section.
+Current source lacks both. This records owner meaning and source status only;
+it does not authorize implementation or select a roadmap member. Broader
+unspecified FINANSIJE reminder scope remains deferred.
 
-### 2.4 Owner roadmap — next
+### 2.4 Owner roadmap — next-member selection
 
-After the recovered signal contract is cleanly published: lifecycle-aware PODSETNIK;
-remaining Single-PREDMET JSON/document/UI work; MODUL DVE VALUTE; then the
-Serbian-market product-line gate with its attached release controls.
+`NO NEXT OWNER-ROADMAP MEMBER SELECTED`.
+
+Single-PREDMET JSON/document/UI work, the bounded F-09 implementation target,
+and other product work remain subject to OWNER sequencing and separate task
+authorization. The stable-product and release prerequisites remain attached to
+their established product-line boundary; this plan does not reorder them.
 
 ### 2.5 Later, non-blocking and historical classifications
 
@@ -175,11 +192,11 @@ only.
 | LISTA/PDF item fidelity | `COMPLETED — TECHNICAL PASS` | Financially included citation rows remain visible in LISTA/shared itemized derivatives; NALOG scope remains intentional | Same shared implementation | Protect with reconciliation test and visual release acceptance | Hidden citation-row premise is superseded |
 | Windows real runtime/canonical closure | `PARTIAL — BLOCKING FOR WINDOWS GATE` | Installed cold/reopen and target PREDMET/IRiU open pass; repaired-state startup/PREDMET open pass; recurrence is closed; repaired KATALOG pipeline build is not deployed to protected install and concrete visual/SCENARIO/LISTA gates remain unproven | N/A | Complete safe owner deployment, obtain rendered visual/document proof, then re-evaluate repaired-state safety and canonical repair; Android remains gated | “Windows startup unverified” is superseded within proven scope |
 | KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | Build/technical evidence | Build/technical evidence | Include in final runtime business parity; do not redesign | Future FIKSNA/amount premise superseded |
-| Completion/signal model | `COMPLETED — RECOVERED OWNER CONTRACT` | Structured source implementation remains absent | Target semantics are in recovered owner baseline/readiness contract | Implement only through the exact three-task PODSETNIK sequence; do not re-open owner decisions | Must precede full PODSETNIK implementation and remains a documentation/source boundary |
-| PODSETNIK full upgrade | `OPEN — NEXT IMPLEMENTATION` | In-app/notification behavior requires the recovered contract | Existing reminder behavior is current source reality; structured target remains unimplemented | Execute Task 1 → Task 2 → Task 3 from the readiness contract; no isolated status patch | Standalone reminder fix is rejected |
+| Generic completion/signal infrastructure | `PARTIALLY IMPLEMENTED; BROADER SIGNAL SCOPE DEFERRED` | Current generic obligation infrastructure exists; F-06 and URNA/PEPEO are separately bounded | Same shared source | Preserve existing behavior; no broad FINANSIJE signal meanings or implementation order are created here | Current F-09 status is recorded separately below; historical readiness order is not current authority |
+| PODSETNIK / F-09 | `OWNER-AUTHORIZED TARGET — IMPLEMENTATION OPEN; NOT SELECTED` | Current source lacks PLATITI RAČUN and NAPLATITI OBAVEZE | Same shared source; no F-09 child rule is present | Any future implementation requires a separately selected and authorized task; preserve sibling relation and locked triggers | Owner meaning is resolved only for the two exact children; no child-to-child sequence |
 | Single-PREDMET JSON relocation | `OPEN` | Move export/import action to PREDMET three-dot menu | Same | Preserve schema/legacy behavior and separate from full backup | Still valid |
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
-| NALOG CVEĆARI | `OPEN — OWNER DECISION REQUIRED` | No standalone generator proven | No standalone generator proven | Source/business inventory, owner content and PDF/DOCX scope, then implementation/acceptance if required | “Nearly complete” is unsupported |
+| NALOG CVEĆARI | `CLOSED — ACCEPTED PDF-ONLY UNIT` | Accepted current PDF unit in the native PREDMET → DOKUMENTI route | Shared implementation | Preserve the accepted PDF-only scope; DOCX is not an open option | Older open-scope wording is superseded |
 | Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
 | PDF RAČUN availability/business scope | `PARTIAL — OWNER DECISION REQUIRED` | RAČUN PDF currently available under standard document entitlement | Same shared product behavior | Decide FIRMA availability/default and confirm present limited business scope; no VAT/tax/fiscal inference | “RAČUN absent” is false; availability-policy work remains |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS` | Shared `ThemeMode.system` and owner runtime acceptance prove the supported light/dark behavior is closed | Owner runtime authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED` | No further theme implementation, audit or roadmap dependency; reopen only for a proven regression or new owner decision | Older partial/pending theme wording is superseded |
@@ -245,33 +262,34 @@ snapshot/provenance sections. Legacy schema 6/7 inputs remain readable without
 claiming imported continuity; final platform round-trip acceptance remains a
 release gate.
 
-### 4.4 Complete signal model and PODSETNIK
-
-Do not implement the observed `ZAVRŠEN` notification as an isolated patch.
-
-First define the full derived signal model from PREDMET/SCENARIO/IRiU:
-
-- empty/partial/complete and N/A/optional semantics;
-- lifecycle eligibility;
-- due/missed/completed/cancelled semantics;
-- scenario-dependent required fields and IRiU exceptions;
-- no parallel stored business truth.
-
-Then implement one informed reminder program covering DB ownership, OS
-scheduling/cancellation, restart/reboot, permission denial, duplicates, valid
-tap target, restore/reschedule, and Windows/Android business parity. The Android
-notification created for an already `ZAVRŠEN` PREDMET is an acceptance fixture
-for this program.
-
-### 4.5 Remaining product completeness
+### 4.4 Remaining product completeness
 
 - relocate Single-PREDMET JSON to the PREDMET three-dot menu;
-- decide and, if required, implement NALOG CVEĆARI content/output;
+- preserve the accepted PDF-only NALOG CVEĆARI unit; DOCX is not an open option;
 - refine standard PDF typography document by document;
 - decide RAČUN FIRMA availability/default while preserving its current limited
   scope and avoiding VAT/tax/fiscal/legal inference;
 - perform a full Windows/Android UI/UX audit;
 - evaluate, but do not automatically implement, contextual `Pomoć`/`Uputstvo`.
+
+## Bounded F-09 owner clarification — no roadmap position
+
+The current OWNER-authorized F-09 target is limited to two sibling children of
+the FINANSIJE parent:
+
+- `PLATITI RAČUN` derives from `TROŠKOVI JKP` under the already established
+  OWNER payer/responsibility semantics, with no additional triggers;
+- `NAPLATITI OBAVEZE` derives when `ZA NAPLATU > 0`;
+- both are manually completable and participate in the general REVIEW BAR
+  while relevant and unfinished.
+
+The earlier arrow notation is not a child ordering: neither obligation depends
+on or precedes the other. Current source lacks both authorized F-09 rules.
+These facts define no implementation authorization or roadmap position. The
+broader unspecified FINANSIJE reminder scope remains deferred. Existing
+lifecycle, reminder scheduling, transfer, and release controls stay governed
+by their proven source/evidence state; this bounded correction does not select
+a broad PODSETNIK upgrade or introduce new signal meanings.
 
 ## 5. SCENARIO closed contract
 
@@ -302,8 +320,7 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
 - A restore success from an earlier artifact is evidence, not the final gate.
 - RAČUN PDF exists today. Open work concerns FIRMA availability/default and
   business scope, not recreation of the exporter.
-- NALOG CVEĆARI remains unproven as a standalone generator and needs an owner
-  content decision.
+- NALOG CVEĆARI is an accepted PDF-only unit; DOCX is not an open option.
 - Standard PDF typography work excludes PARTE and preserves document formation.
 - Windows light/dark theme is closed by explicit owner runtime authority:
   `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. Do not add a
@@ -313,7 +330,7 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
   for weak hierarchy, grouping, terminology or interactions.
 - Contextual help is a future design direction, not implementation authority.
 
-## 7. MODUL DVE VALUTE — mandatory before OPC_v.1_Int
+## 7. MODUL DVE VALUTE — required predecessor of stable OPC v.1
 
 `LOCKED OWNER DECISION — REQUIRED PREDECESSOR OF STABLE OPC v.1`
 
@@ -349,12 +366,15 @@ Only unresolved current decisions are active:
 | Decision | Needed before | Status |
 | --- | --- | --- |
 | Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance | `OPEN OWNER DECISION` |
-| NALOG CVEĆARI business content and PDF/DOCX scope | Its implementation/closure | `OPEN OWNER DECISION` |
 | RAČUN FIRMA availability and default for existing installations | Availability-policy implementation | `OPEN OWNER DECISION` |
-| Complete signal meanings used by informed reminders | PODSETNIK implementation | `RECOVERED OWNER CONTRACT — IMPLEMENTATION OPEN` |
 | EUR global activation timing and treatment/conversion of eligible open PREDMETI | Currency activation/release contract | `OPEN OWNER DECISION` |
 | Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate | `OPEN OWNER DECISION` |
 | Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |
+
+The exact F-09 triggers and child relationship are resolved OWNER meaning, not
+an open decision-queue item. Their implementation remains absent and unselected
+as a roadmap member; the broader unspecified FINANSIJE reminder scope remains
+deferred. No new decision ID is created by this status reconciliation.
 
 Removed from the active queue as already decided:
 
