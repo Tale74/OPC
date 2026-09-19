@@ -5,24 +5,58 @@
 
 ## Purpose and authority boundary
 
-OPC pseudocode is intentional Logos continuity / logical-functional system visibility material. It represents how OPC works, including CORE, modules, derivatives, relationships, invariants and important flows, and is compared with the authoritative roadmap to detect progress, drift and regressions. It remains internal Tale/Logos development-control material. Source/tests/runtime evidence and owner authority retain their higher authority; pseudocode does not become a second source of truth.
+OPC PSEUDOCODE is continuity/source-learning material describing observed
+implementation causality. EXPERIENCE records evidence-backed engineering
+lessons about safe work with the current system. Both are internal
+development-control layers only. Current OWNER authority and current source,
+tests and runtime evidence retain their respective authority; neither layer is
+product, business, requirements, implementation or roadmap authority.
 
-The full pseudocode artifacts were physically separated from the Git-visible `docs/` market-facing documentation surface during Phase 1 Closure Correction. They remain preserved locally under:
+During Phase 1 Closure Correction, the then-existing pseudocode set was
+physically separated from the Git-visible `docs/` surface. The table below is
+the historical inventory/hash record for that predecessor set; it is not a
+current inventory of the v1.5 local controls. The current v1.5 layers are:
 
-`INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/`
+- `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/` — current source-learning map.
+- `INTERNAL_DEVELOPMENT_CONTROL/EXPERIENCE/` — evidence-based engineering
+  experience.
 
-That directory is explicitly ignored by the repository and is not a public Git/GitHub publication target. The original Git paths remain as short boundary pointers so historical links and Git history remain discoverable without shipping the pseudocode content.
+Both directories are explicitly ignored by the repository and are not public
+Git/GitHub publication targets. Original Git paths remain historical boundary
+pointers; they do not imply that the full local artifacts are published.
 
-The durable active-source and donor boundary is maintained separately in
+## Current v1.5 control pointers — 2026-09-19
+
+- Active development SOURCE: `C:\Projekti\OPC_v1.5\source`.
+- Current local-only active-source package:
+  `INTERNAL_DEVELOPMENT_CONTROL/ACTIVE_SOURCE_CONTROL/OPC-V1.5-ACTIVE-SOURCE-CONTROLLED-REBASELINE-20260919/`.
+  This is current-target control/evidence, not implementation authority or a
+  donor.
+- Current PSEUDOCODE:
+  `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md`.
+  It is rebuilt from current v1.5 source-learning and remains continuity
+  material, not a second source of truth.
+- Current EXPERIENCE:
+  `INTERNAL_DEVELOPMENT_CONTROL/EXPERIENCE/OPC_ENGINEERING_EXPERIENCE.md`.
+  It preserves evidence-bound engineering lessons; it creates no product
+  requirement, business rule or roadmap priority.
+- The predecessor SOURCE at `C:\Projekti\OPC\OPC v.1\SOURCE` and its
+  recovery-era active-source package are frozen provenance only and
+  donor-prohibited. Historical hashes/inventory below do not define the
+  current v1.5 control set.
+- PREDMET remains the sole business truth. The normal OWNER roadmap is active;
+  this register selects no roadmap member or implementation work.
+
+The durable active-source and donor boundary is also governed by
 [`docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md`](OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md).
 That document governs implementation/evidence classification and donor-use
-prechecks; this register continues to govern the internal pseudocode boundary.
+prechecks; this register continues to govern local control-layer boundaries.
 
-## Preserved artifact register
+## Historical artifact inventory — predecessor separation record
 
-| Original Git path | Local internal artifact | SHA-256 after separation | Content action | Authority role |
+| Original Git path | Local internal artifact | SHA-256 recorded at separation | Historical content action | Authority role |
 |---|---|---|---|---|
-| `docs/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md` | `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md` | `A13F5D6D703AB397BB37EA4303F82271DEC2D8EE836C092170DE6AE16E8BEE3C` | Phase 2 synchronization header and package-policy correction; body current with explicit deltas | Internal development control |
+| `docs/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md` | `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_BUSINESS_CRITICAL_PSEUDOCODE_MAP.md` | `A13F5D6D703AB397BB37EA4303F82271DEC2D8EE836C092170DE6AE16E8BEE3C` | Predecessor map record; superseded locally by the rebuilt v1.5 map above | Historical internal development control |
 | `docs/OPC_CANONICAL_DATABASE_RECOVERY_PSEUDOCODE.md` | `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_CANONICAL_DATABASE_RECOVERY_PSEUDOCODE.md` | `4C80F1A398D84702AC56CDA60E27611691856D2FB5DA8981D9BF2094F9125209` | Phase 2 synchronization header; body current with explicit recovery/release deltas | Internal development control |
 | `docs/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md` | `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_IRIU_BUSINESS_LOGIC_PSEUDOCODE.md` | `B2B9E970DEE28C8911B489496E45AFF68208DF17F1C8D386AAB43E1D902E12BE` | Phase 2 synchronization header; body current with explicit package/carrier deltas | Internal development control |
 | `docs/OPC_MODULI_PAKETI_PODSETNIK_ARCHITECTURE_PSEUDOCODE.md` | `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/OPC_MODULI_PAKETI_PODSETNIK_ARCHITECTURE_PSEUDOCODE.md` | `18581B1B6083E04893BAEBE74C10075E4B9D34FC35848704DEB4B886C76EBF25` | Phase 2 synchronization header; body current with explicit package/reminder deltas | Internal development control |
@@ -51,4 +85,8 @@ surface.
 
 ## Operating rule
 
-Future tasks may update the local internal artifacts only when their scope explicitly requires pseudocode continuity. Any product/current-state truth needed by market-facing documentation must be represented independently in the current authority homes. No public navigation depends on the internal directory.
+Future tasks may update local PSEUDOCODE or EXPERIENCE only when their scope
+explicitly requires that continuity/evidence work. Any product/current-state
+truth needed by public documentation must be represented independently in the
+current authority homes. No public navigation depends on the internal
+directory, and neither local layer authorizes implementation or roadmap work.

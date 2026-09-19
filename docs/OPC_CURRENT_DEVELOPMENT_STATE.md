@@ -60,6 +60,30 @@ The target passed `flutter analyze --no-pub`, the serialized full suite
 Android production release build. No Phase 2 feature, residual or batch is
 selected by this baseline transition.
 
+## Current v1.5 active-source and local-control boundary — 2026-09-19
+
+The active development target remains
+`C:\Projekti\OPC_v1.5\source` on
+`codex/opc-v1.5-clean-baseline`. The predecessor SOURCE at
+`C:\Projekti\OPC\OPC v.1\SOURCE` is frozen provenance only and is
+donor-prohibited. Its recovery-era active-source package is historical; it is
+not the control package for the v1.5 target.
+
+The current local-only v1.5 active-source package is
+`INTERNAL_DEVELOPMENT_CONTROL/ACTIVE_SOURCE_CONTROL/OPC-V1.5-ACTIVE-SOURCE-CONTROLLED-REBASELINE-20260919/`.
+It records 28 current logical high-risk inputs with `28/28 PASS` and zero
+unresolved rows. The active-source package is control/evidence only, not
+implementation or product authority, and is not published to Git.
+
+Current internal continuity layers are
+`INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/` (current implementation
+source-learning) and `INTERNAL_DEVELOPMENT_CONTROL/EXPERIENCE/` (evidence-based
+engineering experience). Both are ignored local-only controls, not product,
+business, requirements or roadmap authority; PREDMET and the current OWNER
+roadmap remain governed by their authoritative homes. Post-drift recovery is
+formally closed, the normal OWNER roadmap is active, and no next roadmap member
+is selected by this control update.
+
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
 Engineering Profile. Supporting reports and historical records remain
@@ -83,14 +107,14 @@ remain classified by the migration manifest and are not silently deleted. Task
 review indexes remain local, non-authoritative convenience layers and are not
 part of the current product-documentation navigation.
 
-## Post-drift recovery phase — current continuity marker
+## Post-drift recovery phase — formally closed continuity record
 
 The canonical recovery-phase governance plan is
 [`docs/OPC_POST_DRIFT_RECOVERY_PLAN.md`](OPC_POST_DRIFT_RECOVERY_PLAN.md).
-The protected recovered/current continuation baseline is the current mixed
-SOURCE at `C:\Projekti\OPC\OPC v.1\SOURCE`, governed by the current external
-active-source package and its protected baseline. The pre-control-hardening
-published documentation reference at task start was
+During the recovery phase, the protected continuation baseline was the mixed
+SOURCE at `C:\Projekti\OPC\OPC v.1\SOURCE`. That predecessor is no longer
+the current development target; see the v1.5 active-source boundary above.
+The pre-control-hardening published documentation reference at task start was
 `0ec0c7356851f792e53a8198573890cb1274b4e0`; later authorized publication may
 supersede it. Neither that reference nor later documentation publication alone
 represents publication of the complete mixed implementation SOURCE.
@@ -855,7 +879,12 @@ forensic tests and are not treated as execution evidence. Windows/Android
 runtime acceptance, release build/signing, canonical-DB writes, Git staging,
 commit, push and publication remain pending/separately gated.
 
-## Recovered baseline and active-source authority hygiene – 2026-09-09
+## Historical recovered-baseline and predecessor active-source hygiene — 2026-09-09/17
+
+This section preserves the recovery-era predecessor control state as
+historical evidence. The package paths, hashes and 27-row baseline below were
+current for the predecessor at that time; they do not identify the v1.5
+active-source control package. The current v1.5 pointer is recorded above.
 
 The recovered current implementation state remains protected by the external
 baseline package with SHA-256
