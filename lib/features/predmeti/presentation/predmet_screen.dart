@@ -7,10 +7,10 @@ import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/utils/json_export_import.dart';
 import '../../auth/domain/session_service.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
+import '../../podsetnik/presentation/podsetnik_module_screen.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
-import '../application/predmet_hard_delete_coordinator.dart';
 import '../data/iriu_repository.dart';
 import '../data/kontakt_lica_repository.dart';
 import '../data/predmeti_repository.dart';
@@ -26,7 +26,7 @@ import '../parte/application/parte_preparation_service.dart';
 import '../parte/data/parte_media_store.dart';
 import '../parte/data/parte_preparation_repository.dart';
 import '../parte/domain/parte_models.dart';
-import '../reminders/ceremony_notification_gateway.dart';
+import 'predmet_overflow_menu.dart';
 import 'segments/ceremonija_segment.dart';
 import 'segments/finansije_segment.dart';
 import 'segments/iriu_segment.dart';
@@ -236,7 +236,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
   bool get _zatvoren => _predmet?.status == 'ZATVOREN';
   bool get _zavrsen => _predmet?.status == 'ZAVRŠEN';
   bool get _anonimizovan => _predmet?.status == 'ANONIMIZOVAN';
-  bool get _mozeAnonimizacija => _zavrsen;
   bool get _imaMinimumIdentiteta {
     final p = _predmet;
     if (p == null) return true;
@@ -699,34 +698,16 @@ class _PredmetScreenState extends State<PredmetScreen> {
   }
 
   Future<bool> _zavrsi() async {
-    if (!_zatvoren) return false;
-    if (!mounted) return false;
-    final ok = await showDialog<bool>(
+    final p = _predmet;
+    if (p == null) return false;
+    final completed = await finishPredmetFromOverflow(
       context: context,
-      builder: (dialogContext) => _buildHeightFitDialog(
-        context: dialogContext,
-        title: const Text('Označi predmet kao ZAVRŠEN'),
-        content: const Text(
-          'Predmet će biti označen kao ZAVRŠEN i trajno zaključan za izmene.\n'
-          'Posle ove potvrde više nije moguće otvoriti predmet za izmenu.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('ODUSTANI'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('OZNAČI KAO ZAVRŠEN'),
-          ),
-        ],
-      ),
+      predmetiRepo: widget.predmetiRepo,
+      session: widget.session,
+      predmetId: widget.predmetId,
+      currentStatus: p.status,
     );
-    if (ok != true) return false;
-    await widget.predmetiRepo.zavrsiPredmet(
-      widget.predmetId,
-      korisnikId: widget.session.korisnik!.id,
-    );
+    if (!completed) return false;
     await _ucitaj();
     if (!mounted) return false;
     _showSnackBarSafely(
@@ -821,55 +802,38 @@ class _PredmetScreenState extends State<PredmetScreen> {
     }
   }
 
+  Future<void> _otvoriPodsetnik() async {
+    final p = _predmet;
+    if (p == null ||
+        !predmetPodsetnikActionEnabled(
+          entitlementPolicy: widget.entitlementPolicy,
+          predmetStatus: p.status,
+        )) {
+      return;
+    }
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => PodsetnikModuleScreen(
+          predmetiRepository: widget.predmetiRepo,
+          predmetId: widget.predmetId,
+          session: widget.session,
+        ),
+      ),
+    );
+  }
+
   Future<void> _anonimizuj() async {
     final p = _predmet;
     if (p == null) return;
-    if (!_mozeAnonimizacija) {
-      if (mounted) {
-        _showSnackBarSafely(
-          const SnackBar(
-            content: Text(
-              'GDPR anonimizacija je dostupna samo za predmet sa statusom ZAVRŠEN.',
-            ),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-      return;
-    }
-    if (await _blokirajAkoParteNijeZavrsena(action: 'anonimizovan')) {
-      return;
-    }
-    if (!mounted) return;
-    // true → izvezi pa anonimizuj, false → samo anonimizuj, null → odustani
-    final izbor = await showDialog<bool?>(
+    final anonymized = await anonymizePredmetFromOverflow(
       context: context,
-      builder: (ctx) => _buildHeightFitDialog(
-        context: ctx,
-        title: const Text('GDPR anonimizacija'),
-        content: const Text(
-          'GDPR za\u0161tita podataka o li\u010dnosti trajno uklanja za\u0161ti\u0107ene '
-          'identifikacione i kontakt podatke.\n\n'
-          'Imena ostaju vidljiva. Predmet ostaje u evidenciji sa statusom '
-          'ANONIMIZOVAN.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, null),
-            child: const Text('OTKAŽI'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('ANONIMIZUJ'),
-          ),
-        ],
-      ),
+      predmetiRepo: widget.predmetiRepo,
+      predmetId: widget.predmetId,
+      predmetNumber: p.brojPredmeta,
+      currentStatus: p.status,
     );
-    if (izbor == null || !mounted) return;
-    await widget.predmetiRepo.anonimizujPredmet(widget.predmetId);
+    if (!anonymized || !mounted) return;
     await _ucitaj();
     if (mounted) {
       _showSnackBarSafely(
@@ -881,43 +845,16 @@ class _PredmetScreenState extends State<PredmetScreen> {
     }
   }
 
-  Future<bool?> _potvrdiBrisanje(BuildContext ctx) {
-    final p = _predmet;
-    if (p == null) return Future.value(false);
-    return showDialog<bool>(
-      context: ctx,
-      builder: (dialogContext) => _buildHeightFitDialog(
-        context: dialogContext,
-        title: const Text('Trajno brisanje predmeta'),
-        content: Text(
-          'Predmet ${p.brojPredmeta} će biti trajno obrisan.\n\n'
-          'Biće nepovratno uklonjeni i svi njegovi zavisni podaci.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('ODUSTANI'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('OBRIŠI TRAJNO'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _obrisiPredmet({bool popAfterDelete = true}) async {
-    final ok = await _potvrdiBrisanje(context);
-    if (ok != true || !mounted) return;
-    await PredmetHardDeleteCoordinator(
-      db: widget.predmetiRepo.db,
-      notificationGateway: AndroidCeremonyNotificationGateway(),
-    ).deletePredmet(widget.predmetId);
-    if (!mounted) return;
+    final p = _predmet;
+    if (p == null) return;
+    final deleted = await deletePredmetFromOverflow(
+      context: context,
+      predmetiRepo: widget.predmetiRepo,
+      predmetId: widget.predmetId,
+      predmetNumber: p.brojPredmeta,
+    );
+    if (!deleted || !mounted) return;
     _showSnackBarSafely(
       const SnackBar(
         content: Text('Predmet je trajno obrisan.'),
@@ -1071,7 +1008,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
     required bool showNalogZaOpremanjePdf,
     required bool showNalogCvecariPdf,
     required bool showPredmetPdfSnapshot,
-    required bool showJsonTransfer,
     required bool showRacunPdf,
   }) {
     final documentVisibility = _DocumentActionVisibility(
@@ -1081,7 +1017,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
       showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
       showNalogCvecariPdf: showNalogCvecariPdf,
       showPredmetPdfSnapshot: showPredmetPdfSnapshot,
-      showJsonTransfer: showJsonTransfer,
       showRacunPdf: showRacunPdf,
     );
     return Column(
@@ -1198,22 +1133,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
                           textStyle: const TextStyle(
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: _zavrsi,
-                        icon: const Icon(Icons.done_all),
-                        label: const Text('ZAVRŠI'),
-                        style: buttonStyle.copyWith(
-                          backgroundColor: WidgetStateProperty.all(
-                            Colors.blueGrey,
-                          ),
-                          foregroundColor: WidgetStateProperty.all(
-                            Colors.white,
                           ),
                         ),
                       ),
@@ -1452,12 +1371,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
           label: 'PREDMET PDF snapshot',
           onPressed: _izveziPredmetPdfSnapshot,
         ),
-      if (visibility.showJsonTransfer)
-        _DocumentActionButton(
-          icon: Icons.upload_file_outlined,
-          label: 'Izvezi JSON',
-          onPressed: _izveziPredmetJson,
-        ),
       if (visibility.showRacunPdf)
         _DocumentActionButton(
           icon: Icons.receipt_outlined,
@@ -1522,16 +1435,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     icon: const Icon(Icons.edit_outlined),
                     label: const Text('IZMENI'),
                   ),
-                if (_zatvoren)
-                  FilledButton.icon(
-                    onPressed: _zavrsi,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.blueGrey,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.done_all),
-                    label: const Text('OZNAČI KAO ZAVRŠEN'),
-                  ),
               ],
             ),
           ],
@@ -1576,8 +1479,13 @@ class _PredmetScreenState extends State<PredmetScreen> {
         .isDocumentActionVisible(OpcDocumentAction.nalogCvecariPdf);
     final showPredmetPdfSnapshot = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.predmetPdfSnapshot);
-    final showJsonTransfer = widget.entitlementPolicy.isDocumentActionVisible(
-      OpcDocumentAction.jsonTransfer,
+    final canExportJson = predmetJsonExportActionVisible(
+      entitlementPolicy: widget.entitlementPolicy,
+      predmetStatus: p.status,
+    );
+    final canOpenPodsetnik = predmetPodsetnikActionEnabled(
+      entitlementPolicy: widget.entitlementPolicy,
+      predmetStatus: p.status,
     );
     final showRacunPdf = widget.entitlementPolicy.isDocumentActionVisible(
       OpcDocumentAction.racunPdf,
@@ -1661,78 +1569,36 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     ),
                     child: const Text('IZMENI'),
                   ),
-              PopupMenuButton<String>(
-                onSelected: (v) {
-                  if (v == 'save') _sacuvajPredmet();
-                  if (v == 'close') _zatvori();
-                  if (v == 'edit') _otkljucajZaIzmenu();
-                  if (v == 'finish') _zavrsi();
-                  if (v == 'anon') _anonimizuj();
-                  if (v == 'delete') _obrisiPredmet();
-                },
-                itemBuilder: (_) => [
-                  if (_zatvoren)
-                    const PopupMenuItem(
-                      value: 'finish',
-                      child: ListTile(
-                        leading: Icon(Icons.done_all),
-                        title: Text('Označi kao ZAVRŠEN'),
-                        dense: true,
-                      ),
-                    ),
-                  if (!_anonimizovan)
-                    PopupMenuItem(
-                      value: 'anon',
-                      enabled: _mozeAnonimizacija,
-                      child: const ListTile(
-                        leading: Icon(Icons.person_remove_outlined),
-                        title: Text('GDPR anonimizacija'),
-                        dense: true,
-                      ),
-                    ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.delete_forever_outlined,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      title: Text(
-                        'Obriši predmet trajno',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                      dense: true,
-                    ),
-                  ),
-                ],
-              ),
             ],
-            if (_anonimizovan)
-              PopupMenuButton<String>(
-                onSelected: (v) {
-                  if (v == 'delete') _obrisiPredmet();
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.delete_forever_outlined,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      title: Text(
-                        'Obriši predmet trajno',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                      dense: true,
-                    ),
-                  ),
-                ],
+            PredmetOverflowMenu(
+              key: Key('predmet-overflow-menu-detail-${widget.predmetId}'),
+              triggerKey: Key(
+                'predmet-overflow-trigger-detail-${widget.predmetId}',
               ),
+              predmetStatus: p.status,
+              canOpenPodsetnik: canOpenPodsetnik,
+              canExportJson: canExportJson,
+              onSelected: (action) {
+                switch (action) {
+                  case PredmetOverflowAction.close:
+                    _zatvori();
+                  case PredmetOverflowAction.edit:
+                    _otkljucajZaIzmenu();
+                  case PredmetOverflowAction.finish:
+                    _zavrsi();
+                  case PredmetOverflowAction.documents:
+                    _selectSection(_PredmetLogicalSection.dokumenti);
+                  case PredmetOverflowAction.reminder:
+                    _otvoriPodsetnik();
+                  case PredmetOverflowAction.exportJson:
+                    _izveziPredmetJson();
+                  case PredmetOverflowAction.anonymize:
+                    _anonimizuj();
+                  case PredmetOverflowAction.delete:
+                    _obrisiPredmet();
+                }
+              },
+            ),
             const SizedBox(width: 4),
           ],
         ),
@@ -1745,7 +1611,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
           showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
           showNalogCvecariPdf: showNalogCvecariPdf,
           showPredmetPdfSnapshot: showPredmetPdfSnapshot,
-          showJsonTransfer: showJsonTransfer,
           showRacunPdf: showRacunPdf,
         ),
       ),
@@ -1761,7 +1626,6 @@ class _DocumentActionVisibility {
     required this.showNalogZaOpremanjePdf,
     required this.showNalogCvecariPdf,
     required this.showPredmetPdfSnapshot,
-    required this.showJsonTransfer,
     required this.showRacunPdf,
   });
 
@@ -1771,7 +1635,6 @@ class _DocumentActionVisibility {
   final bool showNalogZaOpremanjePdf;
   final bool showNalogCvecariPdf;
   final bool showPredmetPdfSnapshot;
-  final bool showJsonTransfer;
   final bool showRacunPdf;
 }
 

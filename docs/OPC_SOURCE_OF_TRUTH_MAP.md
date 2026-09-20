@@ -42,6 +42,7 @@ evidence only. They must not reopen RR-005 or become a second current fact.
 | Owner roadmap provenance and reverse coverage | `docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md` | Original post-zero plan drafts/candidate, owner-review findings, current authority, Git history and accepted closures | CURRENT SUPPORTING EVIDENCE — provenance matrix and zero-orphan reverse check; not a competing roadmap authority. |
 | Recovered PODSETNIK owner authority | Recovery baseline and traceability ledger supplied in the recovered-owner restoration review package | `docs/OPC_OWNER_DECISION_GUIDE.md` section 9, `docs/OPC_OWNER_DECISION_INDEX.md`, current source/audit evidence | OWNER TARGET AUTHORITY — restored decisions POD-001…POD-074; no re-decision. Current source remains separate; foundation, bounded UI/primary-notification work, R5 ČITULJA integration, URNA/PEPEO lifecycle and F-06 manual obligations are implemented at source/test/documentation level; runtime/release acceptance remains pending. The 2026-09-19 F-09 owner clarification is a separate dated addendum, not a new ID or pseudocode authority. |
 | F-09 FINANSIJE owner clarification and Member 1 implementation — 2026-09-20 | `docs/OPC_PRODUCT_AND_DOMAIN.md` §6 and `docs/OPC_OWNER_DECISION_GUIDE.md` §9.6 | Owner-provided predicate and PRE-CEREMONY placement decisions; implementation continuation; current-state and quality/release homes; focused source/tests/build evidence | OWNER AUTHORITY — FINANSIJE is the PRE-CEREMONY parent with sibling PRE-CEREMONY children PLATITI RAČUN and NAPLATITI OBAVEZE. PLATITI RAČUN iff `TROŠKOVI JKP > 0 AND jkpPlacaSamostalno == false`; NAPLATITI OBAVEZE iff `ZA NAPLATU > 0`. Member 1 is source/test/QA/build complete; runtime/release remains separate. Broader reminder scope is deferred; no child sequencing is created. |
+| PREDMET unified three-dot menu and `ZAVRŠEN` presentation consolidation — 2026-09-20 | `docs/OPC_PRODUCT_AND_DOMAIN.md` §6 (OWNER-authorized same-PREDMET menu-equality invariant); current Member 2 task authorization | `lib/features/predmeti/presentation/predmet_overflow_menu.dart`, `lista_predmeta_screen.dart`, `predmet_screen.dart`, `test/predmet_overflow_menu_unification_test.dart`, relocation/regression tests, current development state and dependency plan | TECHNICAL STATUS — list-row and opened/expanded detail menus consume one canonical action definition and expose identical action identities/labels/enabled states for the same PREDMET state; no valid action is lost. JSON EXPORT appears in both menus and not in `DOKUMENTI`; JSON IMPORT remains exclusively in unchanged `PODEŠAVANJA`. Existing navigation, GDPR and permanent-delete actions are preserved; `ZAVRŠEN` follows the same lifecycle path, with Segment 10/narrow Android duplicates absent. Transfer contract and lifecycle business rules are unchanged. Full tests, analyzer and Windows/Android release builds pass; OWNER runtime acceptance remains separate and unclaimed. |
 | PODSETNIK implementation readiness | `docs/OPC_PODSETNIK_IMPLEMENTATION_READINESS_CONTRACT.md` | Recovered owner baseline, source/audit evidence, internal pseudocode | SUBORDINATE TECHNICAL DESIGN — its exact three-task order applies only to its established scope; it cannot create F-09 business semantics, select a current roadmap member, or claim implementation. |
 | Post-zero owner authority | `docs/OPC_ZERO_BASELINE_AND_POST_ZERO_OWNER_AUTHORITY.md` | Later explicitly owner-confirmed Git records | OWNER AUTHORITY RECORD; interpreted through the compact Phase 1 homes. Pre-zero owner decisions are not current authority. |
 | Incident and anti-drift evidence | `docs/OPC_INCIDENT_AND_ANTI_DRIFT_REGISTER.md` | Linked historical reports and Git history | PERMANENT EVIDENCE; does not revive pre-zero policy. |
@@ -151,6 +152,25 @@ The OWNER-selected F-09 Member 1 implementation additionally uses
 keeps the FINANSIJE display and `NAPLATITI OBAVEZE` threshold aligned; the
 generic obligation watch refreshes from PREDMET/IRiU/stock/completion inputs.
 F-09 has no schema or JSON contract change and adds no `ZAVRŠEN` blocker.
+
+## PREDMET unified three-dot menu implementation traceability — 2026-09-20
+
+The bounded Member 2 correction is implemented by the shared action
+construction in `lib/features/predmeti/presentation/predmet_overflow_menu.dart`,
+consumed from `lista_predmeta_screen.dart` and `predmet_screen.dart`. For the
+same concrete PREDMET and business state, both surfaces expose matching action
+identities, labels and enabled states. The canonical action union preserves
+edit/open, close, documents, PODSETNIK, Single-PREDMET JSON export, `ZAVRŠEN`,
+GDPR anonymization and permanent delete under their existing predicates.
+JSON export uses the selected/current PREDMET identity from either menu and is
+not a `DOKUMENTI` action; JSON import remains exclusively in
+`PODEŠAVANJA`. Import UI, serializer, transfer contract, lifecycle repository,
+schema and JSON behavior are unchanged. `ZAVRŠEN` retains its existing
+repository lifecycle path and blockers; duplicate Segment 10 and narrow
+Android triggers remain absent. The focused equality/navigation/lifecycle/
+JSON/GDPR/delete tests, relevant regressions, full serialized tests, analyzer,
+Windows release and Android production release all pass. OWNER runtime
+acceptance is not inferred or claimed.
 
 ## Current-state restoration implementation traceability — 2026-09-08
 

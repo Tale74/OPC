@@ -9,6 +9,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/database/database.dart';
 import '../../../core/format/app_date_format.dart';
+import '../../../core/utils/json_export_import.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/auth_security_repository.dart';
 import '../../auth/domain/session_service.dart';
@@ -21,7 +22,6 @@ import '../../setup/application/setup_readiness_service.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
-import '../application/predmet_hard_delete_coordinator.dart';
 import '../data/iriu_repository.dart';
 import '../data/predmeti_repository.dart';
 import '../reminders/ceremony_notification_gateway.dart';
@@ -35,6 +35,7 @@ import '../reminders/podsetnik_eligibility.dart';
 import 'izvestaji_screen.dart';
 import 'moduli_screen.dart';
 import 'predmet_screen.dart';
+import 'predmet_overflow_menu.dart';
 
 const bool automaticGdprStartupDialogEnabled = false;
 
@@ -43,10 +44,10 @@ bool manualGdprActionAvailable(String status) => status == 'ZAVRŠEN';
 bool podsetnikShortcutEnabled({
   required OpcEntitlementPolicy entitlementPolicy,
   required String predmetStatus,
-}) {
-  return entitlementPolicy.isModuleAvailable(OpcModule.podsetnik) &&
-      isPodsetnikEligibleStatus(predmetStatus);
-}
+}) => predmetPodsetnikActionEnabled(
+  entitlementPolicy: entitlementPolicy,
+  predmetStatus: predmetStatus,
+);
 
 class ListaPredmetaScreen extends StatefulWidget {
   const ListaPredmetaScreen({
@@ -199,10 +200,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
         );
         var urnaCompleted = false;
         if (urnaRelevant) {
-          urnaCompleted =
-              await _ceremonyReminderRepository.isUrnaObligationCompleted(
-                predmet.id,
-              );
+          urnaCompleted = await _ceremonyReminderRepository
+              .isUrnaObligationCompleted(predmet.id);
         }
         final secondarySlot = activeUrnaAshesReminderSlot(
           ceremonyAt: ceremonyAt,
@@ -213,7 +212,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
           completed: urnaCompleted,
         );
         if (secondarySlot != null) {
-          final key = 'secondary:${predmet.id}:${secondarySlot.toIso8601String()}';
+          final key =
+              'secondary:${predmet.id}:${secondarySlot.toIso8601String()}';
           if (_shownCeremonyDialogKeys.add(key)) {
             dueLines.add(
               buildUrnaAshesReminderText(
@@ -549,6 +549,34 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     );
   }
 
+  Future<void> _zavrsiSaListe(PredmetiData p) async {
+    final completed = await finishPredmetFromOverflow(
+      context: context,
+      predmetiRepo: widget.predmetiRepo,
+      session: widget.session,
+      predmetId: p.id,
+      currentStatus: p.status,
+    );
+    if (!completed || !mounted) return;
+    _showSnackBarSafely(
+      SnackBar(
+        content: Text(
+          'Predmet ${p.brojPredmeta} je označen kao ZAVRŠEN i zaključan za izmene.',
+        ),
+        backgroundColor: Colors.blueGrey,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _izveziPredmetJsonSaListe(PredmetiData p) async {
+    await izvoziPredmetJson(
+      ctx: context,
+      db: widget.predmetiRepo.db,
+      predmetId: p.id,
+    );
+  }
+
   Future<void> _anonimizuj(PredmetiData p) async {
     if (!manualGdprActionAvailable(p.status)) {
       if (!mounted) return;
@@ -563,41 +591,13 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       return;
     }
 
-    if (await _blokirajAkoParteNijeZavrsena(p, action: 'anonimizovan')) {
-      return;
-    }
-    if (!mounted) return;
-
-    final izbor = await showDialog<bool?>(
+    await anonymizePredmetFromOverflow(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('GDPR anonimizacija'),
-        content: Text(
-          'Anonimizovati predmet ${p.brojPredmeta}?\n\n'
-          'GDPR za\u0161tita podataka o li\u010dnosti trajno uklanja za\u0161ti\u0107ene '
-          'identifikacione i kontakt podatke.\n\n'
-          'Imena ostaju vidljiva. Predmet ostaje u evidenciji sa statusom '
-          'ANONIMIZOVAN.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, null),
-            child: const Text('OTKA\u017DI'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('ANONIMIZUJ'),
-          ),
-        ],
-      ),
+      predmetiRepo: widget.predmetiRepo,
+      predmetId: p.id,
+      predmetNumber: p.brojPredmeta,
+      currentStatus: p.status,
     );
-
-    if (izbor == null) return;
-
-    if (mounted) await widget.predmetiRepo.anonimizujPredmet(p.id);
   }
 
   Future<bool> _blokirajAkoParteNijeZavrsena(
@@ -629,35 +629,13 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   }
 
   Future<void> _obrisi(PredmetiData p) async {
-    final ok = await showDialog<bool>(
+    final deleted = await deletePredmetFromOverflow(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Trajno brisanje predmeta'),
-        content: Text(
-          'Predmet ${p.brojPredmeta} će biti trajno obrisan.\n\n'
-          'Bi\u0107e nepovratno uklonjeni i svi njegovi zavisni podaci.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('ODUSTANI'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('OBRI\u0160I TRAJNO'),
-          ),
-        ],
-      ),
+      predmetiRepo: widget.predmetiRepo,
+      predmetId: p.id,
+      predmetNumber: p.brojPredmeta,
     );
-    if (ok != true || !mounted) return;
-    await PredmetHardDeleteCoordinator(
-      db: widget.predmetiRepo.db,
-      notificationGateway: AndroidCeremonyNotificationGateway(),
-    ).deletePredmet(p.id);
-    if (!mounted) return;
+    if (!deleted || !mounted) return;
     _showSnackBarSafely(
       SnackBar(
         content: Text('Predmet ${p.brojPredmeta} je trajno obrisan.'),
@@ -1090,6 +1068,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
               separatorBuilder: (context, i) => const SizedBox(height: 8),
               itemBuilder: (context, i) => _PredmetListItem(
                 predmet: lista[i],
+                predmetId: lista[i].id,
                 database: widget.predmetiRepo.db,
                 savetnikIme:
                     lista[i].businessResponsibleName?.trim().isNotEmpty == true
@@ -1101,12 +1080,17 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
                 onZatvori: () => _zatvoriPredmetSaListe(lista[i]),
                 onOtvoriZaIzmenu: () => _otvoriZaIzmenuSaListe(lista[i]),
                 onDokumenti: () => _otvoriDokumente(lista[i]),
+                canExportJson: predmetJsonExportActionVisible(
+                  entitlementPolicy: widget.entitlementPolicy,
+                  predmetStatus: lista[i].status,
+                ),
+                onExportJson: () => _izveziPredmetJsonSaListe(lista[i]),
+                onFinish: () => _zavrsiSaListe(lista[i]),
                 canOpenPodsetnik: podsetnikShortcutEnabled(
                   entitlementPolicy: widget.entitlementPolicy,
                   predmetStatus: lista[i].status,
                 ),
                 onPodsetnik: () => _otvoriPodsetnik(lista[i]),
-                canAnonimizuj: lista[i].status == 'ZAVRŠEN',
                 onAnonimizuj: () => _anonimizuj(lista[i]),
                 onObrisi: () => _obrisi(lista[i]),
               ),
@@ -1337,6 +1321,7 @@ PredmetStockWarningCardStyle resolvePredmetStockWarningCardStyle(
 class _PredmetListItem extends StatelessWidget {
   const _PredmetListItem({
     required this.predmet,
+    required this.predmetId,
     required this.database,
     required this.savetnikIme,
     required this.hasUnresolvedStockConsequence,
@@ -1344,14 +1329,17 @@ class _PredmetListItem extends StatelessWidget {
     required this.onZatvori,
     required this.onOtvoriZaIzmenu,
     required this.onDokumenti,
+    required this.canExportJson,
+    required this.onExportJson,
+    required this.onFinish,
     required this.canOpenPodsetnik,
     required this.onPodsetnik,
-    required this.canAnonimizuj,
     required this.onAnonimizuj,
     required this.onObrisi,
   });
 
   final PredmetiData predmet;
+  final int predmetId;
   final AppDatabase database;
   final String savetnikIme;
   final bool hasUnresolvedStockConsequence;
@@ -1359,9 +1347,11 @@ class _PredmetListItem extends StatelessWidget {
   final VoidCallback onZatvori;
   final VoidCallback onOtvoriZaIzmenu;
   final VoidCallback onDokumenti;
+  final bool canExportJson;
+  final VoidCallback onExportJson;
+  final VoidCallback onFinish;
   final bool canOpenPodsetnik;
   final VoidCallback onPodsetnik;
-  final bool canAnonimizuj;
   final VoidCallback onAnonimizuj;
   final VoidCallback onObrisi;
 
@@ -1520,10 +1510,13 @@ class _PredmetListItem extends StatelessWidget {
                         const SizedBox(width: 8),
                         _TileActions(
                           status: predmet.status,
-                          canAnonimizuj: canAnonimizuj,
+                          predmetId: predmetId,
                           onZatvori: onZatvori,
                           onOtvoriZaIzmenu: onOtvoriZaIzmenu,
                           onDokumenti: onDokumenti,
+                          canExportJson: canExportJson,
+                          onExportJson: onExportJson,
+                          onFinish: onFinish,
                           canOpenPodsetnik: canOpenPodsetnik,
                           onPodsetnik: onPodsetnik,
                           onAnonimizuj: onAnonimizuj,
@@ -1661,10 +1654,13 @@ class _PredmetListItem extends StatelessWidget {
                               const SizedBox(height: 8),
                               _TileActions(
                                 status: predmet.status,
-                                canAnonimizuj: canAnonimizuj,
+                                predmetId: predmetId,
                                 onZatvori: onZatvori,
                                 onOtvoriZaIzmenu: onOtvoriZaIzmenu,
                                 onDokumenti: onDokumenti,
+                                canExportJson: canExportJson,
+                                onExportJson: onExportJson,
+                                onFinish: onFinish,
                                 canOpenPodsetnik: canOpenPodsetnik,
                                 onPodsetnik: onPodsetnik,
                                 onAnonimizuj: onAnonimizuj,
@@ -1715,16 +1711,15 @@ class _PodsetnikOverviewBarState extends State<_PodsetnikOverviewBar> {
     });
   }
 
-  Stream<List<PodsetnikObligation>> _watch() =>
-      PodsetnikObligationRepository(widget.database).watchCurrentForPredmet(
-        widget.predmet.id,
-      );
+  Stream<List<PodsetnikObligation>> _watch() => PodsetnikObligationRepository(
+    widget.database,
+  ).watchCurrentForPredmet(widget.predmet.id);
 
   @override
   void didUpdateWidget(covariant _PodsetnikOverviewBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.predmet.id != widget.predmet.id ||
-      oldWidget.predmet.verzija != widget.predmet.verzija ||
+        oldWidget.predmet.verzija != widget.predmet.verzija ||
         oldWidget.predmet.status != widget.predmet.status) {
       _rotationIndex = 0;
       _obligations = _watch();
@@ -1767,7 +1762,9 @@ class _PodsetnikOverviewBarState extends State<_PodsetnikOverviewBar> {
                   key: const Key('podsetnik-overview-bar'),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: active ? scheme.onPrimaryContainer : scheme.onSurface,
+                    color: active
+                        ? scheme.onPrimaryContainer
+                        : scheme.onSurface,
                   ),
                 ),
               ),
@@ -1905,10 +1902,13 @@ class _InfoRow extends StatelessWidget {
 class _TileActions extends StatelessWidget {
   const _TileActions({
     required this.status,
-    required this.canAnonimizuj,
+    required this.predmetId,
     required this.onZatvori,
     required this.onOtvoriZaIzmenu,
     required this.onDokumenti,
+    required this.canExportJson,
+    required this.onExportJson,
+    required this.onFinish,
     required this.canOpenPodsetnik,
     required this.onPodsetnik,
     required this.onAnonimizuj,
@@ -1916,10 +1916,13 @@ class _TileActions extends StatelessWidget {
   });
 
   final String status;
-  final bool canAnonimizuj;
+  final int predmetId;
   final VoidCallback onZatvori;
   final VoidCallback onOtvoriZaIzmenu;
   final VoidCallback onDokumenti;
+  final bool canExportJson;
+  final VoidCallback onExportJson;
+  final VoidCallback onFinish;
   final bool canOpenPodsetnik;
   final VoidCallback onPodsetnik;
   final VoidCallback onAnonimizuj;
@@ -1927,109 +1930,33 @@ class _TileActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final isDarkTheme = theme.brightness == Brightness.dark;
-    final triggerFill = isDarkTheme
-        ? scheme.surfaceContainerHighest.withValues(alpha: 0.95)
-        : scheme.surface.withValues(alpha: 0.9);
-    final triggerBorder = isDarkTheme
-        ? scheme.outline.withValues(alpha: 0.7)
-        : scheme.outlineVariant.withValues(alpha: 0.85);
-    final triggerIconColor = isDarkTheme
-        ? scheme.onSurface
-        : scheme.onSurfaceVariant;
-
-    return SizedBox(
-      width: 36,
-      height: 36,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: triggerFill,
-          shape: BoxShape.circle,
-          border: Border.all(color: triggerBorder),
-        ),
-        child: PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, size: 20, color: triggerIconColor),
-          tooltip: 'Više opcija',
-          padding: EdgeInsets.zero,
-          splashRadius: 20,
-          onSelected: (v) {
-            if (v == 'close') onZatvori();
-            if (v == 'edit') onOtvoriZaIzmenu();
-            if (v == 'docs') onDokumenti();
-            if (v == 'reminder') onPodsetnik();
-            if (v == 'anon') onAnonimizuj();
-            if (v == 'delete') onObrisi();
-          },
-          itemBuilder: (_) {
-            final zavrsen = status == 'ZAVR\u0160EN';
-            return [
-              if (status == 'OTVOREN')
-                const PopupMenuItem(
-                  value: 'close',
-                  child: ListTile(
-                    leading: Icon(Icons.lock_outline),
-                    title: Text('Zatvori predmet'),
-                    dense: true,
-                  ),
-                ),
-              if (status == 'ZATVOREN')
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: ListTile(
-                    leading: Icon(Icons.edit_outlined),
-                    title: Text('Otvori za izmenu'),
-                    dense: true,
-                  ),
-                ),
-              const PopupMenuItem(
-                value: 'docs',
-                child: ListTile(
-                  leading: Icon(Icons.folder_outlined),
-                  title: Text('Dokumenti'),
-                  dense: true,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'reminder',
-                enabled: canOpenPodsetnik,
-                child: const ListTile(
-                  leading: Icon(Icons.notifications_none_outlined),
-                  title: Text('Podsetnik'),
-                  dense: true,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'anon',
-                enabled: zavrsen && canAnonimizuj,
-                child: const ListTile(
-                  leading: Icon(Icons.person_remove_outlined),
-                  title: Text('GDPR anonimizacija'),
-                  dense: true,
-                ),
-              ),
-              const PopupMenuDivider(),
-              PopupMenuItem(
-                value: 'delete',
-                child: ListTile(
-                  leading: Icon(
-                    Icons.delete_forever_outlined,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  title: Text(
-                    'Obri\u0161i trajno',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                  dense: true,
-                ),
-              ),
-            ];
-          },
-        ),
-      ),
+    return PredmetOverflowMenu(
+      key: Key('predmet-overflow-menu-list-$predmetId'),
+      triggerKey: Key('predmet-overflow-trigger-list-$predmetId'),
+      predmetStatus: status,
+      canOpenPodsetnik: canOpenPodsetnik,
+      canExportJson: canExportJson,
+      compact: true,
+      onSelected: (action) {
+        switch (action) {
+          case PredmetOverflowAction.close:
+            onZatvori();
+          case PredmetOverflowAction.edit:
+            onOtvoriZaIzmenu();
+          case PredmetOverflowAction.finish:
+            onFinish();
+          case PredmetOverflowAction.documents:
+            onDokumenti();
+          case PredmetOverflowAction.reminder:
+            onPodsetnik();
+          case PredmetOverflowAction.exportJson:
+            onExportJson();
+          case PredmetOverflowAction.anonymize:
+            onAnonimizuj();
+          case PredmetOverflowAction.delete:
+            onObrisi();
+        }
+      },
     );
   }
 }

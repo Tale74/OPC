@@ -98,6 +98,16 @@ The following materially define the current product or remain explicitly open:
   Neither child depends on, precedes, or orders completion of the other. Both
   exact rules are implemented in current source; broader unspecified FINANSIJE
   reminder scope remains deferred.
+- OWNER-authorized PREDMET action boundary: `PREDMET → DOKUMENTI` contains
+  actual documents and document derivatives. Single-PREDMET JSON export is an
+  operational transfer action, not a document, and belongs in the PREDMET
+  three-dot menu. For one concrete PREDMET, that menu exposes the same option
+  set from the overview/list row and opened/expanded detail view, subject to
+  the same existing business/status conditions; no currently valid option is
+  lost. Both surfaces consume one canonical action definition. JSON export is
+  present in both menus and absent from `DOKUMENTI`; Single-PREDMET JSON import
+  remains exclusively in `PODEŠAVANJA`. This presentation rule does not alter
+  the Single-PREDMET or full Backup JSON transfer contracts.
 - Native Windows single-instance protection and installer/update running-app protection are closed by full acceptance; remaining release-risk integrity and final backup/restore work remain separately controlled.
 - NALOG CVEĆARI is an accepted/protected PDF-only unit; DOCX is not an open option.
 - RAČUN availability/default, performance acceptance targets, app identity/version/update channel and future distribution/IP model remain owner decisions or owner/legal decisions as applicable.

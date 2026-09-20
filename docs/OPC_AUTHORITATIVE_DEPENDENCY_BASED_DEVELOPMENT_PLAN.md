@@ -114,10 +114,13 @@ explicit new owner business decision.
 
 ### 2.2 Current roadmap and locked product-line prerequisites
 
-The normal OWNER roadmap is active. This dependency plan does not select or
-order the next owner-roadmap member; no next member is selected by this record.
-The earlier sequence beginning with a broad lifecycle-aware PODSETNIK program
-is superseded as current sequencing authority.
+The normal OWNER roadmap is active. This dependency plan does not create or
+select roadmap members. OWNER has separately selected normal-roadmap Member 2
+for the bounded PREDMET action-relocation package; its implementation, QA and
+Windows/Android release builds are technically complete, with the final OWNER
+review gate pending. No member after Member 2 is selected. The earlier sequence
+beginning with a broad lifecycle-aware PODSETNIK program is superseded as
+current sequencing authority.
 
 The locked product-line prerequisite relationship remains:
 
@@ -126,8 +129,8 @@ The locked product-line prerequisite relationship remains:
 
 This prerequisite chain does not select the next task or order other owner-
 planned work. The separately OWNER-selected F-09 Member 1 implementation and
-its current technical status are recorded below; this plan does not select a
-successor roadmap member.
+the current Member 2 selection/status are recorded below; this plan does not
+select a member after Member 2.
 
 PREDMET/referential/lifecycle, SCENARIO-carrier, performance, parity,
 backup/restore, identity and other technical/release items are attached
@@ -137,13 +140,15 @@ provenance matrix and reverse-coverage record are in
 
 This current-roadmap status supersedes older “next dependency” statements that
 promoted technical preparation or acceptance controls into product scope,
-while preserving their underlying evidence and history. It does not select a
-next owner-roadmap member.
+while preserving their underlying evidence and history. The current Member 2
+selection comes from separate OWNER authorization; this plan does not select a
+successor to Member 2.
 
 ### 2.3 Owner roadmap — current status
 
-No next owner-roadmap member is selected by this plan. The post-drift recovery
-sequence is formally closed and is not current sequencing authority.
+OWNER-selected normal-roadmap Member 2 is the current bounded implementation
+task; no member after it is selected. The post-drift recovery sequence is
+formally closed and is not current sequencing authority.
 
 The bounded F-09 target is implemented under the separate OWNER selection of
 normal-roadmap Member 1: FINANSIJE is the PRE-CEREMONY parent; PLATITI RAČUN
@@ -154,16 +159,32 @@ semantics. Source, focused/regression/full tests, analyzer and Windows/Android
 builds passed; OWNER runtime/release acceptance remains separate. Broader
 unspecified FINANSIJE reminder scope remains deferred.
 
+The separately selected normal-roadmap Member 2 now applies OWNER's corrected
+same-PREDMET menu invariant: list-row and opened/expanded detail three-dot
+menus expose the same action set under the same existing status/business
+conditions, with no valid option lost, through one shared canonical action
+definition. Single-PREDMET JSON EXPORT is present in both menus and absent
+from `DOKUMENTI`; JSON IMPORT remains exclusively in `PODEŠAVANJA`. Existing
+navigation, GDPR and permanent-delete actions are preserved, and `ZAVRŠEN`
+uses the same existing lifecycle path, with Segment 10 and narrow Android
+duplicates absent. Transfer contracts and lifecycle business rules are
+unchanged. Focused tests, relevant regressions, full serialized suite,
+analyzer and Windows/Android release builds pass; OWNER runtime acceptance,
+final review and publication remain open at the post-implementation review
+gate.
+
 ### 2.4 Owner roadmap — next-member selection
 
-`NO NEXT OWNER-ROADMAP MEMBER SELECTED`.
+`NO OWNER-ROADMAP MEMBER AFTER MEMBER 2 SELECTED`.
 
 The bounded F-09 Member 1 implementation is complete under its explicit OWNER
-selection and does not authorize broader finance scope. Single-PREDMET
-JSON/document/UI work and other future product work remain subject to OWNER
-sequencing and separate task authorization. The stable-product and release
-prerequisites remain attached to their established product-line boundary; this
-plan does not reorder them.
+selection and does not authorize broader finance scope. Member 2 is selected
+and technically complete under its separate explicit OWNER authorization; its
+publication waits at the current review gate. This does not select a successor
+or authorize JSON relocation beyond the export-only scope, currency work, or
+other future product work. The stable-product and release prerequisites remain
+attached to their established product-line boundary; this plan does not reorder
+them.
 
 ### 2.5 Later, non-blocking and historical classifications
 
@@ -197,7 +218,7 @@ only.
 | KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | Build/technical evidence | Build/technical evidence | Include in final runtime business parity; do not redesign | Future FIKSNA/amount premise superseded |
 | Generic completion/signal infrastructure | `PARTIALLY IMPLEMENTED; BROADER SIGNAL SCOPE DEFERRED` | Current generic obligation infrastructure exists; F-06 and URNA/PEPEO are separately bounded | Same shared source | Preserve existing behavior; no broad FINANSIJE signal meanings or implementation order are created here | Current F-09 status is recorded separately below; historical readiness order is not current authority |
 | PODSETNIK / F-09 Member 1 | `IMPLEMENTED — SOURCE/TEST/ANALYZE/WINDOWS+ANDROID BUILD PASS; RUNTIME/RELEASE OPEN` | FINANSIJE PRE-CEREMONY parent and both PRE-CEREMONY sibling rules exist in current source; generic refresh observes PREDMET, IRiU, stock and completion inputs | Same shared source; no schema/JSON change | Preserve exact predicates, phase placement and generic obligation behavior; broader FINANSIJE reminder scope remains deferred | Owner-selected Member 1 is complete; no child-to-child sequence or successor selection is implied |
-| Single-PREDMET JSON relocation | `OPEN` | Move export/import action to PREDMET three-dot menu | Same | Preserve schema/legacy behavior and separate from full backup | Still valid |
+| Single-PREDMET JSON export relocation / PREDMET `ZAVRŠEN` action consolidation | `IMPLEMENTED — SOURCE/TEST/ANALYZE/FULL SUITE/WINDOWS+ANDROID RELEASE BUILD PASS; OWNER RUNTIME/PUBLICATION OPEN` | Export-only action is in canonical detail/KORICE overflow; JSON import stays exclusively in PODEŠAVANJA; completion action reuses the existing lifecycle path | Same shared implementation | No transfer-contract or lifecycle change; complete OWNER runtime/release acceptance only through its separate gate | The old export/import relocation scope is superseded by the binding export-only OWNER correction |
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
 | NALOG CVEĆARI | `CLOSED — ACCEPTED PDF-ONLY UNIT` | Accepted current PDF unit in the native PREDMET → DOKUMENTI route | Shared implementation | Preserve the accepted PDF-only scope; DOCX is not an open option | Older open-scope wording is superseded |
 | Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
@@ -267,7 +288,6 @@ release gate.
 
 ### 4.4 Remaining product completeness
 
-- relocate Single-PREDMET JSON to the PREDMET three-dot menu;
 - preserve the accepted PDF-only NALOG CVEĆARI unit; DOCX is not an open option;
 - refine standard PDF typography document by document;
 - decide RAČUN FIRMA availability/default while preserving its current limited

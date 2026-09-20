@@ -81,8 +81,10 @@ source-learning) and `INTERNAL_DEVELOPMENT_CONTROL/EXPERIENCE/` (evidence-based
 engineering experience). Both are ignored local-only controls, not product,
 business, requirements or roadmap authority; PREDMET and the current OWNER
 roadmap remain governed by their authoritative homes. Post-drift recovery is
-formally closed, the normal OWNER roadmap is active, and no next roadmap member
-is selected by this control update.
+formally closed and the normal OWNER roadmap is active. At the 2026-09-20
+active-source control-update checkpoint no next member had yet been selected;
+OWNER later selected normal-roadmap Member 2 under separate authority. That
+selection does not select a successor to Member 2.
 
 README is navigation only. The five substantive current OPC authority homes
 are Product/Domain, Architecture, Development, Quality/Release and the
@@ -474,6 +476,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. OWNER-selected F-09 Member 1 implements the FINANSIJE PRE-CEREMONY parent and sibling PRE-CEREMONY children PLATITI RAČUN and NAPLATITI OBAVEZE; broader unspecified finance reminders remain deferred. | Preserve generic obligation/reconciliation behavior, exact F-09 predicates and confirmed PRE-CEREMONY placement. Runtime acceptance, release and publication remain separate gates. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
 | Documents | RAČUN PDF exists. `NALOG CVEĆARI` is an accepted/protected current PDF unit in the native PREDMET → DOKUMENTI route: PREDMET remains the sole content truth, PODSETNIK carries only the shortcut/link, and the accepted item/ribbon/image structure, common shared PDF mechanism, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels are protected. Output scope is PDF only; DOCX is not an open option. | Accepted/protected current NALOG CVEĆARI PDF unit; no NALOG PDF/DOCX scope decision remains open. |
+| PREDMET action relocation — normal-roadmap Member 2 | OWNER's corrected UI invariant requires one concrete PREDMET to expose the same three-dot option set from its overview/list row and opened/expanded detail view, under the same existing business/status conditions, with no valid option lost. Both surfaces consume the shared canonical action definition. JSON EXPORT is present in both menus and absent from `DOKUMENTI`; JSON IMPORT remains exclusively in `PODEŠAVANJA` and unchanged. Existing navigation, GDPR and permanent-delete options are preserved; `ZAVRŠEN` uses the same lifecycle path, with Segment 10 and narrow Android duplicates absent. Transfer contracts and lifecycle business rules are unchanged. Focused menu tests (7 PASS), relevant regressions (32 PASS), analyzer, full serialized suite (566 PASS / 10 SKIP / 0 FAIL), Windows release (PASS, 438.9 s) and Android production APK (PASS, 1365.6 s) pass. | OWNER runtime acceptance remains separately unproven; tests/builds do not establish interactive acceptance. No commit/push or successor roadmap selection is included in this task gate. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
 | MODUL DVE VALUTE | Not implemented. | Required before stable OPC v.1; `OPC_v.1_Int` follows the stable product-line gate. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
@@ -521,9 +524,29 @@ participates. NAPLATITI OBAVEZE derives when ZA NAPLATU > 0. Both are manually
 completable and participate in the general REVIEW BAR while relevant and
 unfinished. No child-to-child sequence, dependency, or ordered completion is
 implied. Runtime acceptance, release and publication remain open; broader
-unspecified FINANSIJE reminder scope remains deferred. No successor roadmap
-member is selected by this status record. The separate stable-product prerequisite
-MODUL DVE VALUTE remains required before stable OPC v.1. SCENARIO carrier,
+unspecified FINANSIJE reminder scope remains deferred.
+
+OWNER separately selected normal-roadmap Member 2 for the bounded PREDMET
+action-relocation package. The corrected OWNER UI invariant is that one
+concrete PREDMET exposes the same three-dot option set from the overview/list
+row and opened/expanded detail view, subject to identical existing
+business/status conditions; no valid option is lost. Both surfaces use the
+shared canonical action definition. Single-PREDMET JSON EXPORT is an
+operational menu action present on both surfaces and absent from `DOKUMENTI`;
+JSON IMPORT remains exclusively in `PODEŠAVANJA` and is unchanged. Existing
+edit/open, close, documents, PODSETNIK, GDPR and permanent-delete capabilities
+are preserved; `ZAVRŠEN` follows the same existing lifecycle path on both
+surfaces, with the Segment 10 and narrow Android duplicates absent. Transfer
+contracts and lifecycle business rules are unchanged. Focused menu tests (7
+PASS), relevant regressions (32 PASS), analyzer, full serialized suite (566
+PASS / 10 SKIP / 0 FAIL), Windows release (`flutter build windows --release
+--no-pub`, PASS, 438.9 s) and Android production APK (`flutter build apk
+--release --no-pub`, PASS, 1365.6 s) all completed. These are
+technical/build evidence only: OWNER runtime acceptance is NOT CLAIMED, and no
+commit or push has occurred. No roadmap member after Member 2 is selected.
+
+The separate stable-product prerequisite MODUL DVE VALUTE remains required
+before stable OPC v.1. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
 signing work remain attached technical/release controls only when necessary
 for an OWNER-selected parent.
