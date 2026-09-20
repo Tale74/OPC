@@ -89,14 +89,16 @@ void main() {
     );
     session.prijavi(admin);
     final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
-    await db.into(db.iriu).insert(
-      IriuCompanion(
-        predmetId: Value(predmetId),
-        portableOccurrenceId: const Value('r5-review-bar'),
-        interniNaziv: const Value(IriuK.cituljaP),
-        nazivPrikaz: const Value('Čitulje'),
-      ),
-    );
+    await db
+        .into(db.iriu)
+        .insert(
+          IriuCompanion(
+            predmetId: Value(predmetId),
+            portableOccurrenceId: const Value('r5-review-bar'),
+            interniNaziv: const Value(IriuK.cituljaP),
+            nazivPrikaz: const Value('Čitulje'),
+          ),
+        );
     final predmet = await (db.select(
       db.predmeti,
     )..where((row) => row.id.equals(predmetId))).getSingle();
@@ -177,17 +179,17 @@ void main() {
         pin: '1234',
       );
       session.prijavi(admin);
-      final predmetId = await predmetiRepo.kreirajPredmet(
-        savetnikId: admin.id,
-      );
-      await db.into(db.iriu).insert(
-        IriuCompanion(
-          predmetId: Value(predmetId),
-          portableOccurrenceId: const Value('live-review-bar-cvece'),
-          interniNaziv: const Value(IriuK.cvece),
-          nazivPrikaz: const Value('CVEĆE'),
-        ),
-      );
+      final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
+      await db
+          .into(db.iriu)
+          .insert(
+            IriuCompanion(
+              predmetId: Value(predmetId),
+              portableOccurrenceId: const Value('live-review-bar-cvece'),
+              interniNaziv: const Value(IriuK.cvece),
+              nazivPrikaz: const Value('CVEĆE'),
+            ),
+          );
       final predmet = await (db.select(
         db.predmeti,
       )..where((row) => row.id.equals(predmetId))).getSingle();
@@ -222,6 +224,22 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('CVEĆE'), findsNothing);
+      expect(find.text('OBAVEZE ISPUNJENE'), findsOneWidget);
+
+      await (db.update(db.predmeti)..where((row) => row.id.equals(predmetId)))
+          .write(const PredmetiCompanion(troskoviJkp: Value(25)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('FINANSIJE'), findsOneWidget);
+      expect(find.text('OBAVEZE ISPUNJENE'), findsNothing);
+
+      await (db.update(db.predmeti)..where((row) => row.id.equals(predmetId)))
+          .write(const PredmetiCompanion(troskoviJkp: Value(0)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('FINANSIJE'), findsNothing);
       expect(find.text('OBAVEZE ISPUNJENE'), findsOneWidget);
     },
   );

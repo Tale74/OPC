@@ -125,9 +125,9 @@ The locked product-line prerequisite relationship remains:
 `OPC_v.1_Int` work → signing and professional handover.**
 
 This prerequisite chain does not select the next task or order other owner-
-planned work. The bounded F-09 status is recorded in its standalone owner-
-clarification section outside §4 and does not rank it ahead of another roadmap
-member.
+planned work. The separately OWNER-selected F-09 Member 1 implementation and
+its current technical status are recorded below; this plan does not select a
+successor roadmap member.
 
 PREDMET/referential/lifecycle, SCENARIO-carrier, performance, parity,
 backup/restore, identity and other technical/release items are attached
@@ -145,22 +145,25 @@ next owner-roadmap member.
 No next owner-roadmap member is selected by this plan. The post-drift recovery
 sequence is formally closed and is not current sequencing authority.
 
-The exact F-09 target is owner-authorized and bounded: FINANSIJE is the parent;
-PLATITI RAČUN and NAPLATITI OBAVEZE are sibling children. Their triggers,
-manual completion and general REVIEW BAR participation are recorded in the
-standalone “Bounded F-09 owner clarification — no roadmap position” section.
-Current source lacks both. This records owner meaning and source status only;
-it does not authorize implementation or select a roadmap member. Broader
+The bounded F-09 target is implemented under the separate OWNER selection of
+normal-roadmap Member 1: FINANSIJE is the PRE-CEREMONY parent; PLATITI RAČUN
+and NAPLATITI OBAVEZE are sibling PRE-CEREMONY children. PLATITI RAČUN exists iff
+`TROŠKOVI JKP > 0 AND jkpPlacaSamostalno == false`; NAPLATITI OBAVEZE exists
+when `ZA NAPLATU > 0`. Both use generic manual-completion and REVIEW BAR
+semantics. Source, focused/regression/full tests, analyzer and Windows/Android
+builds passed; OWNER runtime/release acceptance remains separate. Broader
 unspecified FINANSIJE reminder scope remains deferred.
 
 ### 2.4 Owner roadmap — next-member selection
 
 `NO NEXT OWNER-ROADMAP MEMBER SELECTED`.
 
-Single-PREDMET JSON/document/UI work, the bounded F-09 implementation target,
-and other product work remain subject to OWNER sequencing and separate task
-authorization. The stable-product and release prerequisites remain attached to
-their established product-line boundary; this plan does not reorder them.
+The bounded F-09 Member 1 implementation is complete under its explicit OWNER
+selection and does not authorize broader finance scope. Single-PREDMET
+JSON/document/UI work and other future product work remain subject to OWNER
+sequencing and separate task authorization. The stable-product and release
+prerequisites remain attached to their established product-line boundary; this
+plan does not reorder them.
 
 ### 2.5 Later, non-blocking and historical classifications
 
@@ -193,7 +196,7 @@ only.
 | Windows real runtime/canonical closure | `PARTIAL — BLOCKING FOR WINDOWS GATE` | Installed cold/reopen and target PREDMET/IRiU open pass; repaired-state startup/PREDMET open pass; recurrence is closed; repaired KATALOG pipeline build is not deployed to protected install and concrete visual/SCENARIO/LISTA gates remain unproven | N/A | Complete safe owner deployment, obtain rendered visual/document proof, then re-evaluate repaired-state safety and canonical repair; Android remains gated | “Windows startup unverified” is superseded within proven scope |
 | KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | Build/technical evidence | Build/technical evidence | Include in final runtime business parity; do not redesign | Future FIKSNA/amount premise superseded |
 | Generic completion/signal infrastructure | `PARTIALLY IMPLEMENTED; BROADER SIGNAL SCOPE DEFERRED` | Current generic obligation infrastructure exists; F-06 and URNA/PEPEO are separately bounded | Same shared source | Preserve existing behavior; no broad FINANSIJE signal meanings or implementation order are created here | Current F-09 status is recorded separately below; historical readiness order is not current authority |
-| PODSETNIK / F-09 | `OWNER-AUTHORIZED TARGET — IMPLEMENTATION OPEN; NOT SELECTED` | Current source lacks PLATITI RAČUN and NAPLATITI OBAVEZE | Same shared source; no F-09 child rule is present | Any future implementation requires a separately selected and authorized task; preserve sibling relation and locked triggers | Owner meaning is resolved only for the two exact children; no child-to-child sequence |
+| PODSETNIK / F-09 Member 1 | `IMPLEMENTED — SOURCE/TEST/ANALYZE/WINDOWS+ANDROID BUILD PASS; RUNTIME/RELEASE OPEN` | FINANSIJE PRE-CEREMONY parent and both PRE-CEREMONY sibling rules exist in current source; generic refresh observes PREDMET, IRiU, stock and completion inputs | Same shared source; no schema/JSON change | Preserve exact predicates, phase placement and generic obligation behavior; broader FINANSIJE reminder scope remains deferred | Owner-selected Member 1 is complete; no child-to-child sequence or successor selection is implied |
 | Single-PREDMET JSON relocation | `OPEN` | Move export/import action to PREDMET three-dot menu | Same | Preserve schema/legacy behavior and separate from full backup | Still valid |
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
 | NALOG CVEĆARI | `CLOSED — ACCEPTED PDF-ONLY UNIT` | Accepted current PDF unit in the native PREDMET → DOKUMENTI route | Shared implementation | Preserve the accepted PDF-only scope; DOCX is not an open option | Older open-scope wording is superseded |
@@ -272,24 +275,27 @@ release gate.
 - perform a full Windows/Android UI/UX audit;
 - evaluate, but do not automatically implement, contextual `Pomoć`/`Uputstvo`.
 
-## Bounded F-09 owner clarification — no roadmap position
+## Bounded F-09 owner authority and Member 1 implementation — 2026-09-20
 
 The current OWNER-authorized F-09 target is limited to two sibling children of
-the FINANSIJE parent:
+the FINANSIJE PRE-CEREMONY parent; both children are PRE-CEREMONY:
 
-- `PLATITI RAČUN` derives from `TROŠKOVI JKP` under the already established
-  OWNER payer/responsibility semantics, with no additional triggers;
+- `PLATITI RAČUN` exists exactly when
+  `TROŠKOVI JKP > 0 AND jkpPlacaSamostalno == false`; no additional JKP payer
+  identity/type field or other finance signal participates;
 - `NAPLATITI OBAVEZE` derives when `ZA NAPLATU > 0`;
 - both are manually completable and participate in the general REVIEW BAR
   while relevant and unfinished.
 
 The earlier arrow notation is not a child ordering: neither obligation depends
-on or precedes the other. Current source lacks both authorized F-09 rules.
-These facts define no implementation authorization or roadmap position. The
-broader unspecified FINANSIJE reminder scope remains deferred. Existing
-lifecycle, reminder scheduling, transfer, and release controls stay governed
-by their proven source/evidence state; this bounded correction does not select
-a broad PODSETNIK upgrade or introduce new signal meanings.
+on or precedes the other. OWNER separately selected and authorized this bounded
+target as normal-roadmap Member 1; both rules are now implemented on the
+generic obligation/reconciliation architecture. The shared receivable
+calculation and generic input watch preserve live refresh without a finance-
+specific parallel mechanism. Source/test/QA/build evidence is complete; runtime
+acceptance, release and publication remain separate. The broader unspecified
+FINANSIJE reminder scope remains deferred. This does not select a successor
+member, create a broad PODSETNIK upgrade, or introduce new signal meanings.
 
 ## 5. SCENARIO closed contract
 
@@ -372,8 +378,9 @@ Only unresolved current decisions are active:
 | Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |
 
 The exact F-09 triggers and child relationship are resolved OWNER meaning, not
-an open decision-queue item. Their implementation remains absent and unselected
-as a roadmap member; the broader unspecified FINANSIJE reminder scope remains
+an open decision-queue item. Their bounded implementation is complete under
+the separately OWNER-selected Member 1 task; OWNER runtime/release acceptance
+remains separate and broader unspecified FINANSIJE reminder scope remains
 deferred. No new decision ID is created by this status reconciliation.
 
 Removed from the active queue as already decided:

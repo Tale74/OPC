@@ -471,7 +471,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | Windows startup/exit | Installed baseline reached login in about 8–9 s and slow exit was observed. | Current-tip instrumented measurement and owner target before any correction. |
 | Android PARTE performance | Source risks are mapped; focused current-device profiling acceptance is absent. | Reproduce/profile before choosing a correction. |
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
-| PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. F-09 has two owner-authorized children, both absent from current source; broader unspecified FINANSIJE reminder scope remains deferred. | Preserve accepted behavior. F-09 implementation and the next roadmap member are not selected by this status record. |
+| PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. OWNER-selected F-09 Member 1 implements the FINANSIJE PRE-CEREMONY parent and sibling PRE-CEREMONY children PLATITI RAČUN and NAPLATITI OBAVEZE; broader unspecified finance reminders remain deferred. | Preserve generic obligation/reconciliation behavior, exact F-09 predicates and confirmed PRE-CEREMONY placement. Runtime acceptance, release and publication remain separate gates. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
 | Documents | RAČUN PDF exists. `NALOG CVEĆARI` is an accepted/protected current PDF unit in the native PREDMET → DOKUMENTI route: PREDMET remains the sole content truth, PODSETNIK carries only the shortcut/link, and the accepted item/ribbon/image structure, common shared PDF mechanism, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels are protected. Output scope is PDF only; DOCX is not an open option. | Accepted/protected current NALOG CVEĆARI PDF unit; no NALOG PDF/DOCX scope decision remains open. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
@@ -510,15 +510,19 @@ decisions must not be reopened or used to infer additional business
 completion.
 
 After formal recovery closure, normal OWNER roadmap governance and synchronized
-Windows + Android development are active. No next roadmap member is selected
-by this record. The owner-authorized F-09 target is status, not a sequencing
-decision: FINANSIJE is the parent, with sibling children PLATITI RAČUN and
-NAPLATITI OBAVEZE. The former derives from TROŠKOVI JKP under the established
-OWNER payer/responsibility semantics; the latter derives when ZA NAPLATU > 0.
-Both are manually completable and participate in the general REVIEW BAR while
-relevant and unfinished. Current source lacks both. No child-to-child sequence,
-dependency, or ordered completion is implied; broader unspecified FINANSIJE
-reminder scope remains deferred. The separate stable-product prerequisite
+Windows + Android development are active. OWNER selected normal-roadmap Member
+1, F-09 FINANSIJE, and its bounded implementation is complete at source/test/
+QA/build level. FINANSIJE is the parent, with sibling children PLATITI RAČUN
+and NAPLATITI OBAVEZE. OWNER confirms FINANSIJE is a PRE-CEREMONY parent and
+both sibling children are PRE-CEREMONY. The exact JKP predicate is
+`TROŠKOVI JKP > 0 AND
+jkpPlacaSamostalno == false`; no payer identity/type or other finance signal
+participates. NAPLATITI OBAVEZE derives when ZA NAPLATU > 0. Both are manually
+completable and participate in the general REVIEW BAR while relevant and
+unfinished. No child-to-child sequence, dependency, or ordered completion is
+implied. Runtime acceptance, release and publication remain open; broader
+unspecified FINANSIJE reminder scope remains deferred. No successor roadmap
+member is selected by this status record. The separate stable-product prerequisite
 MODUL DVE VALUTE remains required before stable OPC v.1. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
 signing work remain attached technical/release controls only when necessary

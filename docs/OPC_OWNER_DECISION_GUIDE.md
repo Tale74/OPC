@@ -497,7 +497,7 @@ status by §9.6 and the current development-state home. It remains evidence of
 the target/source distinction at that checkpoint, not current implementation
 authorization.
 
-### 9.6 Current source status and F-09 owner clarification — 2026-09-19
+### 9.6 Current source status and F-09 owner clarification — 2026-09-20
 
 The current source includes bounded generic grouped-obligation infrastructure,
 the URNA/PEPEO cycle, and F-06 manual-obligation integration. This does not
@@ -509,20 +509,25 @@ OWNER has clarified the exact F-09 FINANSIJE target:
 - `FINANSIJE` is the parent.
 - `PLATITI RAČUN` and `NAPLATITI OBAVEZE` are sibling child obligations of that
   parent.
-- `PLATITI RAČUN` derives from `TROŠKOVI JKP` under the already established
-  OWNER payer/responsibility semantics; no additional trigger is implied.
+- OWNER-confirmed phase placement is `FINANSIJE — PRE-CEREMONY PARENT`, with
+  both sibling children `PLATITI RAČUN — PRE-CEREMONY` and
+  `NAPLATITI OBAVEZE — PRE-CEREMONY`.
+- `PLATITI RAČUN` exists exactly when `TROŠKOVI JKP > 0 AND
+  jkpPlacaSamostalno == false`. No additional JKP payer identity/type field or
+  other finance signal participates in this trigger.
 - `NAPLATITI OBAVEZE` derives when `ZA NAPLATU > 0`.
 - Both children are manually completable and participate in the general REVIEW
   BAR while relevant and unfinished.
 - Neither child sequences, depends on, or orders completion of the other.
-- Current source lacks both F-09 obligations. These exact two target rules are
-  no longer deferred; broader unspecified FINANSIJE reminder scope remains
-  deferred.
+- The two exact F-09 obligations are implemented on the generic grouped-
+  obligation/reconciliation architecture. Source/test/QA/build status is
+  reconciled separately from OWNER runtime acceptance, release and publication.
+  Broader unspecified FINANSIJE reminder scope remains deferred.
 
-This addendum records business meaning and current source status only. It does
-not authorize implementation, select a roadmap member, or create a stable
-decision ID. The earlier arrow notation is superseded for relationship
-semantics.
+This section records the locked business meaning. The separate OWNER roadmap
+selection and implementation continuation authorize the bounded Member 1 work;
+they do not authorize broader FINANSIJE scope or create a stable decision ID.
+The earlier arrow notation is superseded for relationship semantics.
 
 ### 8.5 Historical implementation checkpoint — partially `SUPERSEDED`
 

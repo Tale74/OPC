@@ -353,7 +353,14 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
                   final doplata = refund > 0 ? posleRefundacije : robaSum;
                   final ostatak = avans > 0 ? doplata - avans : doplata;
                   final saJkp = ostatak + jkpDodatak;
-                  final zaNaplatu = saJkp - popust;
+                  final zaNaplatu = _financialTruthService.calculateZaNaplatu(
+                    robaIUsluge: robaSum,
+                    refundacijaPio: refund,
+                    avans: avans,
+                    troskoviJkp: _moneyValue(_troskoviJkpCtrl),
+                    jkpPlacaSamostalno: _jkpPlacaSamostalno,
+                    popust: popust,
+                  );
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

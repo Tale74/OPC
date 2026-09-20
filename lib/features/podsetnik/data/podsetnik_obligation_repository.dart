@@ -27,7 +27,8 @@ class PodsetnikObligationRepository {
     final manualRows = await _manualRows(predmetId);
     final unresolvedStock = await _hasUnresolvedStock(predmetId);
     final manualRules = _manualRules(manualRows);
-    final statusEligible = predmet.status.trim().toUpperCase() == 'OTVOREN' ||
+    final statusEligible =
+        predmet.status.trim().toUpperCase() == 'OTVOREN' ||
         predmet.status.trim().toUpperCase() == 'ZATVOREN';
     final currentRules = _deriver.deriveRules(
       predmet: predmet,
@@ -120,8 +121,16 @@ class PodsetnikObligationRepository {
   Stream<List<PodsetnikObligation>> watchCurrentForPredmet(
     int predmetId,
   ) async* {
-    final query = db.select(db.podsetnikObaveze)
-      ..where((row) => row.predmetId.equals(predmetId));
+    final query = db.customSelect(
+      'SELECT id FROM predmeti WHERE id = ?',
+      variables: [Variable.withInt(predmetId)],
+      readsFrom: {
+        db.predmeti,
+        db.iriu,
+        db.stanjeRobePosledice,
+        db.podsetnikObaveze,
+      },
+    );
     await for (final _ in query.watch()) {
       yield await currentForPredmet(predmetId);
     }
@@ -425,8 +434,7 @@ class PodsetnikObligationRepository {
         );
         final fingerprintMatches = state.sourceFingerprint == fingerprint;
         if (isCituljeChild && !fingerprintMatches) continue;
-        if (isManual &&
-            (state.obligationText == null || !fingerprintMatches)) {
+        if (isManual && (state.obligationText == null || !fingerprintMatches)) {
           continue;
         }
         await db
@@ -479,9 +487,7 @@ class PodsetnikObligationRepository {
     List<_ManualObligationRecord> rows,
   ) {
     final valid = rows
-        .where(
-          (row) => row.text.trim().isNotEmpty,
-        )
+        .where((row) => row.text.trim().isNotEmpty)
         .map(
           (row) => PodsetnikObligationRule(
             stableRuleId: row.stableRuleId,
@@ -552,20 +558,22 @@ class PodsetnikObligationRepository {
     final iriu = await (db.select(
       db.iriu,
     )..where((row) => row.predmetId.equals(predmetId))).get();
-    await db.into(db.podsetnikObaveze).insert(
-      PodsetnikObavezeCompanion(
-        predmetId: Value(predmetId),
-        stableRuleId: Value(id),
-        phase: const Value('preCeremony'),
-        kind: const Value('atomic'),
-        parentRuleId: const Value(posebneObavezeParentRuleId),
-        sourceFingerprint: Value(
-          _deriver.sourceFingerprint(rule, predmet, iriu),
-        ),
-        completed: const Value(false),
-        updatedAt: Value(now),
-      ),
-    );
+    await db
+        .into(db.podsetnikObaveze)
+        .insert(
+          PodsetnikObavezeCompanion(
+            predmetId: Value(predmetId),
+            stableRuleId: Value(id),
+            phase: const Value('preCeremony'),
+            kind: const Value('atomic'),
+            parentRuleId: const Value(posebneObavezeParentRuleId),
+            sourceFingerprint: Value(
+              _deriver.sourceFingerprint(rule, predmet, iriu),
+            ),
+            completed: const Value(false),
+            updatedAt: Value(now),
+          ),
+        );
     await db.customStatement(
       'INSERT INTO podsetnik_manual_obaveze '
       '(predmet_id, stable_rule_id, obligation_text) VALUES (?, ?, ?)',
@@ -659,7 +667,10 @@ extension<T> on Iterable<T> {
 }
 
 class _ManualObligationRecord {
-  const _ManualObligationRecord({required this.stableRuleId, required this.text});
+  const _ManualObligationRecord({
+    required this.stableRuleId,
+    required this.text,
+  });
 
   final String stableRuleId;
   final String text;

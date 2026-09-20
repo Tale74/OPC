@@ -275,7 +275,7 @@ The following remain visible and are not silently closed by this guide:
 - explicit IP/repository-use/distribution status and third-party license inventory;
 - JSON interoperability hotspot;
 - KATALOG edge-case characterization;
-- Exact F-09 target semantics are owner-authorized but absent from current source; broader unspecified FINANSIJE reminder scope remains deferred, and no roadmap member is selected here;
+- OWNER-selected normal-roadmap Member 1 implements the exact F-09 FINANSIJE sibling rules in current source: PRE-CEREMONY parent and both PRE-CEREMONY children; broader unspecified FINANSIJE reminder scope remains deferred, and runtime/release acceptance remains separate;
 - pseudocode drift (continuously compared with current authority and roadmap);
 - Phase 4 forensic dead-code/superseded-implementation closure review;
 - future Web/`OPC_v.1_Int`/multicurrency scope.

@@ -156,6 +156,21 @@ Manual rows are role-gated to SAVETNIK/ADMINISTRATOR, grouped under the derived
 `POSEBNE OBAVEZE` parent, and transferred through the existing PREDMET and
 Backup JSON paths. Runtime/device acceptance and release remain separate.
 
+The OWNER-selected F-09 Member 1 adds the FINANSIJE parent and two atomic
+sibling children to the same generic obligation projection. OWNER-confirmed
+phase placement is a PRE-CEREMONY FINANSIJE parent and two PRE-CEREMONY sibling
+children. The JKP child is
+derived only from positive `troskoviJkp` with `jkpPlacaSamostalno == false`;
+the receivables child uses the same `ZA NAPLATU` calculation as the FINANSIJE
+segment and exists only above zero. The generic current-obligation watch
+reconciles when PREDMET, IRiU, stock-consequence or obligation-completion inputs
+change; this is shared refresh behavior, not a finance-specific parallel path.
+The implementation reuses generic grouped/manual-completion and REVIEW BAR
+behavior, introduces no schema or JSON contract change, and does not add a
+`ZAVRŠEN` blocker. Source/test/QA/build evidence and the separate runtime and
+release boundaries are recorded in the current-state and quality/release
+homes.
+
 The MODULI catalog uses the available width responsively: at the established
 wide-layout breakpoint it derives the existing module sequence into two
 readable columns; below that breakpoint it keeps the same sequence in one

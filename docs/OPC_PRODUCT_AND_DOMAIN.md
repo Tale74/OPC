@@ -88,13 +88,16 @@ The following materially define the current product or remain explicitly open:
   release and publication status must be tracked separately. The scoped URNA
   completion blocker is not generalized to other obligations.
 - The owner-authorized F-09 FINANSIJE target consists of two sibling child
-  obligations under the FINANSIJE parent: PLATITI RAČUN derives from TROŠKOVI
-  JKP under the already established OWNER payer/responsibility semantics, and
-  NAPLATITI OBAVEZE derives when ZA NAPLATU > 0. Both are manually completable
+  obligations under the FINANSIJE parent. OWNER-confirmed phase placement is:
+  FINANSIJE — PRE-CEREMONY PARENT; PLATITI RAČUN and NAPLATITI OBAVEZE are
+  sibling children, each PRE-CEREMONY. PLATITI RAČUN exists exactly when
+  `TROŠKOVI JKP > 0 AND jkpPlacaSamostalno == false`; no additional payer
+  identity/type field or other finance signal participates in that trigger.
+  NAPLATITI OBAVEZE exists when `ZA NAPLATU > 0`. Both are manually completable
   and participate in the general REVIEW BAR while relevant and unfinished.
-  Neither child depends on, precedes, or orders completion of the other. Current
-  source lacks both obligations; broader unspecified FINANSIJE reminder scope
-  remains deferred.
+  Neither child depends on, precedes, or orders completion of the other. Both
+  exact rules are implemented in current source; broader unspecified FINANSIJE
+  reminder scope remains deferred.
 - Native Windows single-instance protection and installer/update running-app protection are closed by full acceptance; remaining release-risk integrity and final backup/restore work remain separately controlled.
 - NALOG CVEĆARI is an accepted/protected PDF-only unit; DOCX is not an open option.
 - RAČUN availability/default, performance acceptance targets, app identity/version/update channel and future distribution/IP model remain owner decisions or owner/legal decisions as applicable.
@@ -111,7 +114,7 @@ If two documents assign different business meaning, retain both as evidence, rec
 | KATALOG | Catalogue identity/configuration/price source |
 | SCENARIO | Locked operational module for editable/default and applied package behavior |
 | PARTE | PREDMET-derived technical preparation/print workflow |
-| PODSETNIK | Reminder/notification operational area derived from PREDMET; current implementation, runtime acceptance, release and publication status are separate state claims. The exact owner-authorized F-09 targets and current source absence are recorded in §6 and the current-state home. |
+| PODSETNIK | Reminder/notification operational area derived from PREDMET; current implementation, runtime acceptance, release and publication status are separate state claims. The exact owner-authorized F-09 targets and implementation evidence are recorded in §6 and the current-state home. |
 | STANJE ROBE | Inventory and effect/consequence operational layer |
 | Derivative | Any document, projection, reminder, stock effect or transfer representation derived from master truth |
 | Owner runtime evidence | Observed behavior acceptance for a named platform/artifact; not automatic root-cause proof |

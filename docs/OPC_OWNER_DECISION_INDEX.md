@@ -4,22 +4,26 @@
 
 This register gives recorded owner decisions stable identifiers. It is a navigation and traceability aid, not implementation authorization. The authoritative wording is in `docs/OPC_OWNER_DECISION_GUIDE.md`; executable-style boundaries and fallbacks are in `docs/OPC_OWNER_DECISIONS_STATUSI_CEREMONIJA_PSEUDOCODE.md`. Current implementation status is reconciled in `docs/OPC_CURRENT_DEVELOPMENT_STATE.md` and current supporting records.
 
-## Current F-09 status overlay — 2026-09-19
+## Current F-09 status overlay — 2026-09-20
 
 The owner clarification records FINANSIJE as the parent of sibling children
-PLATITI RAČUN and NAPLATITI OBAVEZE. Their exact triggers, manual completion,
+PLATITI RAČUN and NAPLATITI OBAVEZE. OWNER-confirmed phase placement is
+FINANSIJE — PRE-CEREMONY PARENT, with both children PRE-CEREMONY. Their exact triggers, manual completion,
 and general REVIEW BAR participation are in Owner Decision Guide §9.6 and
-Product/Domain §6. Current source lacks both; broader unspecified FINANSIJE
-reminder scope remains deferred. No child-to-child sequence or roadmap-member
-selection is implied. This overlay assigns no new stable decision ID; existing
-IDs and their owner wording remain unchanged.
+Product/Domain §6. PLATITI RAČUN exists only for
+`TROŠKOVI JKP > 0 AND jkpPlacaSamostalno == false`; NAPLATITI OBAVEZE exists
+when `ZA NAPLATU > 0`. OWNER-selected normal-roadmap Member 1 implements both
+through the generic obligation architecture. Technical and runtime/release
+status remain distinct; broader unspecified FINANSIJE reminder scope remains
+deferred. This overlay assigns no new stable decision ID; existing IDs and
+their owner wording remain unchanged.
 
 ## Decision register
 
 | Decision ID | Segment | Decision title | Status | Guide section | Pseudocode section | Implementation status | Unresolved dependency |
 |---|---|---|---|---|---|---|---|
 | `OPC-OD-GLOBAL-001` | GLOBAL | Mandatory explicit fallback | OWNER-APPROVED — NOT YET IMPLEMENTED | 2 | 2 | Documentation only | Per-decision owner fallback where still unknown |
-| `OPC-OD-ARCH-001` | ARCHITECTURE | PREDMET authority and PODSETNIK boundary | PARTIALLY IMPLEMENTED | 3 | 3 | Generic structured obligation infrastructure exists; exact F-09 child rules remain absent | Preserve PREDMET authority; F-09 implementation and broader reminder scope remain separately gated/deferred |
+| `OPC-OD-ARCH-001` | ARCHITECTURE | PREDMET authority and PODSETNIK boundary | PARTIALLY IMPLEMENTED | 3 | 3 | Generic structured obligation infrastructure includes the bounded F-09 parent and sibling rules | Preserve PREDMET authority and generic reconciliation; broader reminder scope remains deferred |
 | `OPC-OD-STA-001` | STATUSI | POL-driven grammar and spouse initialization | PARTIALLY IMPLEMENTED | 4.1 | 4.1 | Current source infers a default in unresolved cases | No-inference correction and review UX |
 | `OPC-OD-STA-002` | STATUSI | Business meaning of work statuses | OWNER-APPROVED — NOT YET IMPLEMENTED | 4.2 | 4.2 | Status choices exist; structured semantics do not | Legal/advisory content authority |
 | `OPC-OD-STA-003` | STATUSI | One family-pension organizational right | OWNER-APPROVED — NOT YET IMPLEMENTED | 4.3 | 4.3 | Not implemented | Beneficiary detail and possible future service module |
@@ -42,11 +46,11 @@ IDs and their owner wording remain unchanged.
 | `OPC-OD-CER-009` | CEREMONIJA | Ceremony datetime business event | OWNER-APPROVED — NOT YET IMPLEMENTED | 5.9 | 5.9 | Current source directly saves fields | Event versioning/linkage model |
 | `OPC-OD-CER-010` | CEREMONIJA / IRIU | International/reception IRIU grouping | CURRENTLY IMPLEMENTED | 5.10 | 5.10 | SAHRANA owns conditional BALSAMOVANJE; DOČEK owns CARGO and MESTO/DATUM/VREME | Accepted/executed source-change lifecycle remains future owner pass |
 | `OPC-OD-CER-011` | CEREMONIJA / PARTE | PARTE remains derivative | CURRENTLY IMPLEMENTED | 5.11 | 5.11 | Implemented | Preserve boundary during future change |
-| `OPC-OD-POD-001` | PODSETNIK | PREDMET authority, eligibility and atomic/grouped model | PARTIALLY IMPLEMENTED — F-09 ABSENT | 9.1 | n/a | Generic grouped-obligation structure is present; both authorized F-09 rules are absent from source | No implementation or roadmap selection in this docs task; broader unspecified FINANSIJE signals remain deferred |
+| `OPC-OD-POD-001` | PODSETNIK | PREDMET authority, eligibility and atomic/grouped model | PARTIALLY IMPLEMENTED — F-09 MEMBER 1 SOURCE/QA/BUILD PASS | 9.1 | n/a | Generic grouped-obligation structure includes FINANSIJE PRE-CEREMONY parent and both PRE-CEREMONY children; OWNER runtime/release acceptance remains separate | Preserve exact predicates, sibling relation and phase placement; broader unspecified FINANSIJE signals remain deferred |
 | `OPC-OD-POD-002` | PODSETNIK / CEREMONIJA | Ceremony notification/location/daily-cycle baseline | PARTIALLY IMPLEMENTED | 9.3 | n/a | Current source wording/location/cycle is retained; target obligation-aware wording remains unimplemented | Future obligation-aware wording and lifecycle |
 | `OPC-OD-POD-003` | PODSETNIK / CEREMONIJA | Post-ceremony overview bar and completed state | PARTIALLY IMPLEMENTED — GENERIC PROJECTION EXISTS | 9.3 | n/a | General relevant unfinished-parent projection exists; current acceptance/runtime and broader release boundaries remain separate | Preserve current generic projection; do not infer F-09 child sequencing |
 | `OPC-OD-POD-004` | PODSETNIK / CEREMONIJA | Urn/ashes disposition obligation and +3-day obligation cycle | OWNER-APPROVED — IMPLEMENTATION STATUS SEPARATE | 9.4 | n/a | Source facts persist; implementation, runtime acceptance, release and publication status are separate claims | Exact missing-location fallback is locked; remaining implementation details and evidence are tracked separately; actual event date is payer/family responsibility |
-| `OPC-OD-POD-RECOVERED` | PODSETNIK | Recovered owner authority POD-001…POD-074 | PARTIALLY IMPLEMENTED — CURRENT STATUS SEPARATE | 9.1–9.4 | internal recovery baseline | Bounded source behavior exists for generic obligations, URNA/PEPEO and F-06; current-source and runtime/release status remain separate; F-09 children are absent | Use current-state and supporting records for implementation status; no owner rule is reopened |
+| `OPC-OD-POD-RECOVERED` | PODSETNIK | Recovered owner authority POD-001…POD-074 | PARTIALLY IMPLEMENTED — CURRENT STATUS SEPARATE | 9.1–9.4 | internal recovery baseline | Bounded source behavior exists for generic obligations, URNA/PEPEO, F-06 and the separately authorized F-09 Member 1; runtime/release status remains separate | Use current-state and supporting records for implementation status; no owner rule is reopened |
 | `OPC-OD-XSG-001` | CROSS-SEGMENT | Final vehicle departure is derived readiness | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.1 | 6.1 | Not implemented | Full readiness matrix |
 | `OPC-OD-XSG-002` | CROSS-SEGMENT | No manual readiness override | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.2 | 6.2 | Not implemented | Blocker taxonomy and source routing |
 | `OPC-OD-XSG-003` | CROSS-SEGMENT / DOČEK | Reception readiness and temporal order | OWNER-APPROVED — NOT YET IMPLEMENTED | 6.3 | 6.3 | Date/readiness model absent | Full reception conditions |

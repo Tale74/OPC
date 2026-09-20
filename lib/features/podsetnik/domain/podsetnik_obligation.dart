@@ -1,5 +1,7 @@
 import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
+import '../../predmeti/core_v2/services/financial_truth_service.dart';
+import '../../predmeti/core_v2/services/predmet_iriu_truth_service.dart';
 import '../../predmeti/reminders/urna_ashes_reminder_model.dart';
 
 enum PodsetnikObligationPhase { preCeremony, postCeremony }
@@ -9,6 +11,9 @@ enum PodsetnikObligationKind { atomic, group }
 const String cituljeParentRuleId = 'citulje.parent';
 const String posebneObavezeParentRuleId = 'special.manual';
 const String manualObligationRulePrefix = 'special.manual.';
+const String finansijeParentRuleId = 'finance.parent';
+const String platiJkpRacunRuleId = 'finance.pay_jkp_bill';
+const String naplatiObavezeRuleId = 'finance.collect_receivable';
 
 String cituljeChildRuleId(String portableOccurrenceId) =>
     'citulje.occurrence.$portableOccurrenceId';
@@ -68,8 +73,8 @@ List<PodsetnikObligation> podsetnikOverviewRoots(
   obligations.where(
     (item) =>
         item.relevant && item.rule.parentRuleId == null && !item.completed,
-    ),
-  );
+  ),
+);
 
 /// Text projection used only by the Lista REVIEW BAR. It deliberately keeps
 /// the generic root projection, so active CVEĆE, SLIKA, and derived
@@ -90,6 +95,9 @@ String podsetnikReviewBarText(
 /// as identity.
 class PodsetnikObligationDeriver {
   const PodsetnikObligationDeriver();
+
+  static const _predmetIriuTruthService = PredmetIriuTruthService();
+  static const _financialTruthService = FinancialTruthService();
 
   List<PodsetnikObligationRule> deriveRules({
     required PredmetiData predmet,
@@ -129,6 +137,20 @@ class PodsetnikObligationDeriver {
     const pre = PodsetnikObligationPhase.preCeremony;
     const post = PodsetnikObligationPhase.postCeremony;
 
+    final zaNaplatu = _calculateZaNaplatu(predmet, iriu);
+    final platiJkpRacunRelevant =
+        predmet.troskoviJkp > 0 && !predmet.jkpPlacaSamostalno;
+    final naplatiObavezeRelevant = zaNaplatu > 0;
+    if (platiJkpRacunRelevant || naplatiObavezeRelevant) {
+      group(finansijeParentRuleId, pre);
+      if (platiJkpRacunRelevant) {
+        child(platiJkpRacunRuleId, pre, finansijeParentRuleId);
+      }
+      if (naplatiObavezeRelevant) {
+        child(naplatiObavezeRuleId, pre, finansijeParentRuleId);
+      }
+    }
+
     final rsPensioner =
         _isYes(predmet.penzionerSrbije) ||
         _canonical(predmet.radniStatus) == 'PENZIONER_SRBIJE';
@@ -147,7 +169,11 @@ class PodsetnikObligationDeriver {
         (rsPensioner || militaryPensioner) &&
         firmaPioResponsibility) {
       group('social.family_pension', post);
-      child('social.family_pension.submit_claim', post, 'social.family_pension');
+      child(
+        'social.family_pension.submit_claim',
+        post,
+        'social.family_pension',
+      );
     }
     if (militaryPensioner && _isYes(predmet.posmrtnaPomoc)) {
       group('social.death_assistance', post);
@@ -159,11 +185,7 @@ class PodsetnikObligationDeriver {
     }
     if (militaryPensioner && _isYes(predmet.vojnePocasti)) {
       group('military.honors', pre);
-      child(
-        'military.honors.notify_authority',
-        pre,
-        'military.honors',
-      );
+      child('military.honors.notify_authority', pre, 'military.honors');
     }
 
     if (_isYes(predmet.opelo) && _isYes(predmet.obavestitiSvestenika)) {
@@ -232,20 +254,21 @@ class PodsetnikObligationDeriver {
       atomic('goods.stock', pre);
     }
 
-    final cituljeRows = iriu
-        .where(
-          (row) =>
-              (row.interniNaziv == IriuK.cituljaP ||
-                  row.interniNaziv == IriuK.cituljaNo) &&
-              _isCurrentOperationalRow(row) &&
-              row.portableOccurrenceId?.trim().isNotEmpty == true,
-        )
-        .toList()
-      ..sort(
-        (left, right) => left.redosled != right.redosled
-            ? left.redosled.compareTo(right.redosled)
-            : left.id.compareTo(right.id),
-      );
+    final cituljeRows =
+        iriu
+            .where(
+              (row) =>
+                  (row.interniNaziv == IriuK.cituljaP ||
+                      row.interniNaziv == IriuK.cituljaNo) &&
+                  _isCurrentOperationalRow(row) &&
+                  row.portableOccurrenceId?.trim().isNotEmpty == true,
+            )
+            .toList()
+          ..sort(
+            (left, right) => left.redosled != right.redosled
+                ? left.redosled.compareTo(right.redosled)
+                : left.id.compareTo(right.id),
+          );
     if (cituljeRows.isNotEmpty) {
       group(cituljeParentRuleId, pre);
       final sameTypeCounts = <String, int>{};
@@ -329,7 +352,7 @@ class PodsetnikObligationDeriver {
         final completed = rule.kind == PodsetnikObligationKind.group
             ? children.isNotEmpty &&
                   children.every(
-                        (childRule) =>
+                    (childRule) =>
                         completedByRule[childRule.stableRuleId] ?? false,
                   )
             : completedByRule[rule.stableRuleId] ?? false;
@@ -425,6 +448,12 @@ class PodsetnikObligationDeriver {
       'ceremony.international' => [predmet.sahranaVanSrbije.toString()],
       'ceremony.reception' => [predmet.docekPosmrtnihOstataka.toString()],
       'goods.stock' => [unresolvedStock.toString()],
+      finansijeParentRuleId => [
+        (predmet.troskoviJkp > 0 && !predmet.jkpPlacaSamostalno).toString(),
+        (_calculateZaNaplatu(predmet, iriu) > 0).toString(),
+      ],
+      platiJkpRacunRuleId => [predmet.troskoviJkp, predmet.jkpPlacaSamostalno],
+      naplatiObavezeRuleId => [_calculateZaNaplatu(predmet, iriu)],
       cituljeParentRuleId => [
         iriu
             .where(
@@ -459,6 +488,30 @@ class PodsetnikObligationDeriver {
       rule.stableRuleId,
       ...values.map((value) => value.toString().trim().toUpperCase()),
     ].join('|');
+  }
+
+  double _calculateZaNaplatu(PredmetiData predmet, List<IriuData> iriu) {
+    final truth = _predmetIriuTruthService.evaluate(
+      predmet: predmet,
+      storedRows: iriu,
+    );
+    final robaIUsluge = _financialTruthService
+        .buildRobaIUsluge(truth)
+        .robaIUsluge;
+    final refundacijaPio =
+        predmet.penzionerSrbije == 'DA' &&
+            predmet.narucilacRefundira != 'DA' &&
+            predmet.refundacijaPio > 0
+        ? predmet.refundacijaPio
+        : 0.0;
+    return _financialTruthService.calculateZaNaplatu(
+      robaIUsluge: robaIUsluge,
+      refundacijaPio: refundacijaPio,
+      avans: predmet.avans,
+      troskoviJkp: predmet.troskoviJkp,
+      jkpPlacaSamostalno: predmet.jkpPlacaSamostalno,
+      popust: predmet.popust,
+    );
   }
 
   static bool _isYes(String value) => value.trim().toUpperCase() == 'DA';
@@ -499,9 +552,11 @@ String podsetnikObligationDisplayLabel(PodsetnikObligationRule rule) {
     'social.pio_refund' => 'REFUNDACIJA PIO',
     'social.pio_refund.submit_claim' => 'Podneti zahtev PIO',
     'social.family_pension' => 'PORODIČNA PENZIJA',
-    'social.family_pension.submit_claim' => 'Podneti zahtev za porodičnu penziju',
+    'social.family_pension.submit_claim' =>
+      'Podneti zahtev za porodičnu penziju',
     'social.death_assistance' => 'POSMRTNA POMOĆ',
-    'social.death_assistance.submit_claim' => 'Podneti zahtev za posmrtnu pomoć',
+    'social.death_assistance.submit_claim' =>
+      'Podneti zahtev za posmrtnu pomoć',
     'military.honors' => 'VOJNE POČASTI',
     'military.honors.notify_authority' => 'OBAVESTITI NADLEŽNU SLUŽBU',
     'ceremony.parte' => 'PARTE',
@@ -512,6 +567,9 @@ String podsetnikObligationDisplayLabel(PodsetnikObligationRule rule) {
     'ceremony.international' => 'Spremiti međunarodna dokumenta',
     'ceremony.reception' => 'Preuzeti posmrtne ostatke',
     'goods.stock' => 'Razreši stanje robe',
+    finansijeParentRuleId => 'FINANSIJE',
+    platiJkpRacunRuleId => 'PLATITI RAČUN',
+    naplatiObavezeRuleId => 'NAPLATITI OBAVEZE',
     'post.urn_ashes' => 'URNA / PEPEO',
     'post.urn_ashes.arrange_placement' => 'Organizovati polaganje urne',
     posebneObavezeParentRuleId => 'POSEBNE OBAVEZE',
