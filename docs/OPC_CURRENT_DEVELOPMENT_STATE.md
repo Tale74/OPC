@@ -587,8 +587,9 @@ release build passed. OWNER accepted the fresh Word 2019 result: direct open,
 one-page render and print/layout parity all pass. The proven open-validity root
 cause was a nested table in the signature-labels cell without the required
 trailing paragraph; `_requiredTrailingParagraph()` is the minimal structural
-correction. The bounded Member 3 RAČUN/DOCX package is accepted for publication;
-no broader document-set runtime acceptance is implied.
+correction. The bounded Member 3 RAČUN/DOCX package is published in commit
+`d5ec4350b143607068f430f9ae3d352aa578f0a0`; no broader document-set runtime
+acceptance is implied.
 
 The separate stable-product prerequisite MODUL DVE VALUTE remains required
 before stable OPC v.1. SCENARIO carrier,

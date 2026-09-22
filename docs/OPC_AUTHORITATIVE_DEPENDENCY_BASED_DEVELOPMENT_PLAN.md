@@ -115,10 +115,11 @@ explicit new owner business decision.
 ### 2.2 Current roadmap and locked product-line prerequisites
 
 The normal OWNER roadmap is active. This dependency plan does not create or
-select roadmap members. OWNER has separately selected normal-roadmap Member 2
-for the bounded PREDMET action-relocation package; its implementation, QA and
-Windows/Android release builds are technically complete, with the final OWNER
-review gate pending. No member after Member 2 is selected. The earlier sequence
+select roadmap members. OWNER separately selected normal-roadmap Member 3 for
+the bounded RAČUN document package; its implementation, QA, Windows/Android
+release builds and OWNER Word 2019 runtime review are complete, and publication
+is recorded in commit `d5ec4350b143607068f430f9ae3d352aa578f0a0`. No member
+after Member 3 is selected. The earlier sequence
 beginning with a broad lifecycle-aware PODSETNIK program is superseded as
 current sequencing authority.
 
@@ -129,8 +130,8 @@ The locked product-line prerequisite relationship remains:
 
 This prerequisite chain does not select the next task or order other owner-
 planned work. The separately OWNER-selected F-09 Member 1 implementation and
-the current Member 2 selection/status are recorded below; this plan does not
-select a member after Member 2.
+the prior Member 2 publication are recorded below; this plan does not select a
+member after Member 3.
 
 PREDMET/referential/lifecycle, SCENARIO-carrier, performance, parity,
 backup/restore, identity and other technical/release items are attached
@@ -140,15 +141,15 @@ provenance matrix and reverse-coverage record are in
 
 This current-roadmap status supersedes older “next dependency” statements that
 promoted technical preparation or acceptance controls into product scope,
-while preserving their underlying evidence and history. The current Member 2
-selection comes from separate OWNER authorization; this plan does not select a
-successor to Member 2.
+while preserving their underlying evidence and history. The current Member 3
+publication comes from separate OWNER authorization; this plan does not select
+a successor to Member 3.
 
 ### 2.3 Owner roadmap — current status
 
-OWNER-selected normal-roadmap Member 2 is the current bounded implementation
-task; no member after it is selected. The post-drift recovery sequence is
-formally closed and is not current sequencing authority.
+OWNER-selected normal-roadmap Member 3 is the completed and published bounded
+implementation package; no member after it is selected. The post-drift recovery
+sequence is formally closed and is not current sequencing authority.
 
 The bounded F-09 target is implemented under the separate OWNER selection of
 normal-roadmap Member 1: FINANSIJE is the PRE-CEREMONY parent; PLATITI RAČUN
@@ -159,7 +160,7 @@ semantics. Source, focused/regression/full tests, analyzer and Windows/Android
 builds passed; OWNER runtime/release acceptance remains separate. Broader
 unspecified FINANSIJE reminder scope remains deferred.
 
-The separately selected normal-roadmap Member 2 now applies OWNER's corrected
+The separately selected normal-roadmap Member 2 applies OWNER's corrected
 same-PREDMET menu invariant: list-row and opened/expanded detail three-dot
 menus expose the same action set under the same existing status/business
 conditions, with no valid option lost, through one shared canonical action
@@ -169,22 +170,20 @@ navigation, GDPR and permanent-delete actions are preserved, and `ZAVRŠEN`
 uses the same existing lifecycle path, with Segment 10 and narrow Android
 duplicates absent. Transfer contracts and lifecycle business rules are
 unchanged. Focused tests, relevant regressions, full serialized suite,
-analyzer and Windows/Android release builds pass; OWNER runtime acceptance,
-final review and publication remain open at the post-implementation review
-gate.
+analyzer and Windows/Android release builds pass; the Member 2 publication is
+already recorded separately and is not reopened by Member 3.
 
 ### 2.4 Owner roadmap — next-member selection
 
-`NO OWNER-ROADMAP MEMBER AFTER MEMBER 2 SELECTED`.
+`NO OWNER-ROADMAP MEMBER AFTER MEMBER 3 SELECTED`.
 
 The bounded F-09 Member 1 implementation is complete under its explicit OWNER
-selection and does not authorize broader finance scope. Member 2 is selected
-and technically complete under its separate explicit OWNER authorization; its
-publication waits at the current review gate. This does not select a successor
-or authorize JSON relocation beyond the export-only scope, currency work, or
-other future product work. The stable-product and release prerequisites remain
-attached to their established product-line boundary; this plan does not reorder
-them.
+selection and does not authorize broader finance scope. Member 2 is published
+under its separate explicit OWNER authorization. Member 3 is now published with
+OWNER Word 2019 runtime acceptance. This does not select a successor or
+authorize currency work, broader document scope, or other future product work.
+The stable-product and release prerequisites remain attached to their
+established product-line boundary; this plan does not reorder them.
 
 ### 2.5 Later, non-blocking and historical classifications
 
@@ -222,7 +221,7 @@ only.
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
 | NALOG CVEĆARI | `CLOSED — ACCEPTED PDF-ONLY UNIT` | Accepted current PDF unit in the native PREDMET → DOKUMENTI route | Shared implementation | Preserve the accepted PDF-only scope; DOCX is not an open option | Older open-scope wording is superseded |
 | Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
-| RAČUN toggle, DOCX and shared data model — normal-roadmap Member 3 | `COMPLETED — OWNER RUNTIME ACCEPTED; PUBLICATION AUTHORIZED` | FIRMA toggle is the sole availability condition for PDF and DOCX; both adapters consume one canonical RAČUN data model; snapshot action/exporter retired; Word 2019 direct open, one-page render and print/layout parity accepted | Same bounded PREDMET/FIRMA/IRiU/SAVETNIK-derived model | Preserve exact OWNER text/defaults, Article 33, Backup behavior and unchanged Single-PREDMET JSON; no broader FIRMA/legal inference | Final Word defect: nested signature-label table required a trailing paragraph; corrected with `_requiredTrailingParagraph()`; no broader document-set acceptance is implied |
+| RAČUN toggle, DOCX and shared data model — normal-roadmap Member 3 | `COMPLETED — OWNER RUNTIME ACCEPTED; PUBLISHED` | FIRMA toggle is the sole availability condition for PDF and DOCX; both adapters consume one canonical RAČUN data model; snapshot action/exporter retired; Word 2019 direct open, one-page render and print/layout parity accepted | Same bounded PREDMET/FIRMA/IRiU/SAVETNIK-derived model | Preserve exact OWNER text/defaults, Article 33, Backup behavior and unchanged Single-PREDMET JSON; no broader FIRMA/legal inference | Published in commit `d5ec4350b143607068f430f9ae3d352aa578f0a0`. Final Word defect: nested signature-label table required a trailing paragraph; corrected with `_requiredTrailingParagraph()`; no broader document-set acceptance is implied |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS` | Shared `ThemeMode.system` and owner runtime acceptance prove the supported light/dark behavior is closed | Owner runtime authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED` | No further theme implementation, audit or roadmap dependency; reopen only for a proven regression or new owner decision | Older partial/pending theme wording is superseded |
 | Full UI/UX audit | `OPEN` | Only short SCENARIO impression | Only bounded runtime impressions | Full Windows/Android audit; concise working screens; hierarchy/terminology/interaction carry clarity | Runtime smoke is not full UX acceptance |
 | Contextual Help/User Guide | `DEFERRED PRODUCT DIRECTION` | Not designed | Not designed | Evaluate screen-contextual `Pomoć`/`Uputstvo` after UX audit; no immediate implementation authority | New direction, not current task |
@@ -329,7 +328,8 @@ canonical RAČUN data model, availability condition and filename base. Full
 Backup preserves the toggle; Single-PREDMET JSON is unchanged. The obsolete
 `PREDMET PDF SNAPSHOT` is retired from the offer and production wiring. Technical
 validation, both release builds and OWNER Word 2019 runtime/visual acceptance
-passed; publication closure is authorized. The proven Word defect was a nested
+passed; publication is complete in commit
+`d5ec4350b143607068f430f9ae3d352aa578f0a0`. The proven Word defect was a nested
 signature-label table without its required trailing paragraph, corrected with
 `_requiredTrailingParagraph()`. For the common helper audit, NALOG CVEĆARI remains
 unchanged and conformant; SPECIFIKACIJA TROŠKOVA, PREDRAČUN, LISTA, NALOG ZA
