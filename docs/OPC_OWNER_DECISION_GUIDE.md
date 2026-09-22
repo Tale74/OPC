@@ -529,6 +529,35 @@ selection and implementation continuation authorize the bounded Member 1 work;
 they do not authorize broader FINANSIJE scope or create a stable decision ID.
 The earlier arrow notation is superseded for relationship semantics.
 
+### 9.7 RAČUN availability and document-format authority — 2026-09-21
+
+OWNER locks the FIRMA-level `RAČUN` toggle at `PODEŠAVANJA → PODACI FIRME`.
+The control label is `RAČUN`; its default is `DA` for new FIRMA data, existing
+FIRMA migration and a legacy full Backup that omits the field. The adjacent
+information text is exactly:
+
+`Račun može da se formira ukoliko je pravno lice preduzetnik i nije u sistemu PDV`
+
+That text informs the user; the toggle is the sole machine-evaluated condition
+for both RAČUN PDF and RAČUN DOCX availability. OPC does not determine
+preduzetnik or PDV status, and no separate field for either is authorized.
+PIB, MB, activity code, FIRMA name and other FIRMA values do not participate.
+
+The existing Article 33 sentence is `KEEP` content in both formats. The two
+separate actions belong in `PREDMET → DOKUMENTI`, use the same availability
+condition and filename base, and represent the same canonical RAČUN data.
+Full Backup preserves the FIRMA toggle. Single-PREDMET JSON is unchanged and
+does not carry this FIRMA-level setting. `PREDMET PDF SNAPSHOT` is an obsolete
+document and is no longer offered; retained historical evidence is not current
+product behavior.
+
+Final Member 3 runtime closure: OWNER accepted the fresh Word 2019 RAČUN DOCX
+for direct open, one-page rendering and print/layout parity. The proven Word
+open-validity defect was a nested table in the signature-labels cell without a
+required trailing paragraph; the bounded technical correction is
+`_requiredTrailingParagraph()`. This records runtime/evidence acceptance only;
+it does not create broader FINANSIJE or document-set authority.
+
 ### 8.5 Historical implementation checkpoint — partially `SUPERSEDED`
 
 **Status: `SUPERSEDED` for fixed format/margin and completion cleanup; retained

@@ -12,8 +12,14 @@ void main() {
     test('uses presentation grammar for current ceremony branches', () {
       expect(nalogCvecariCeremonyHeading('SAHRANA'), 'PODACI O SAHRANI');
       expect(nalogCvecariCeremonyHeading('KREMACIJA'), 'PODACI O KREMACIJI');
-      expect(nalogCvecariCeremonyHeading('SMESTAJ_URNE'), 'PODACI O SMEŠTAJU URNE');
-      expect(nalogCvecariCeremonyHeading('RASIPANJE_PEPELA'), 'PODACI O RASIPANJU PEPELA');
+      expect(
+        nalogCvecariCeremonyHeading('SMESTAJ_URNE'),
+        'PODACI O SMEŠTAJU URNE',
+      );
+      expect(
+        nalogCvecariCeremonyHeading('RASIPANJE_PEPELA'),
+        'PODACI O RASIPANJU PEPELA',
+      );
     });
 
     test('uses the shared PDF typography and neutral pastel labels', () async {
@@ -27,28 +33,38 @@ void main() {
       expect(nalogCvecariRibbonValueForPdf('  '), isEmpty);
     });
 
-    test('renders the bounded content contract without quantity prefix', () async {
-      const prepared = NalogCvecariPdfPreparedData(
-        fullName: 'Ana Jovanović',
-        godinaRodjenja: '1970',
-        vrstaCeremonije: 'KREMACIJA',
-        mestoCeremonije: 'Novo groblje',
-        datumCeremonije: '31.08.2026.',
-        vremeCeremonije: '09:00',
-        flowers: [NalogCvecariPdfFlower(articleName: 'Ruže', ribbonText: 'Počivaj u miru')],
-      );
-      final bytes = await buildNalogCvecariPdfBytes(
-        firma: _firma,
-        app: _app,
-        savetnikIme: 'Savetnik',
-        status: 'OTVOREN',
-        dokumentVerzija: 'v1',
-        prepared: prepared,
-      );
-      expect(String.fromCharCodes(bytes.take(4)), '%PDF');
-      expect(nalogCvecariRibbonValueForPdf(prepared.flowers.single.ribbonText),
-          isNot(contains('TEKST TRAKE')));
-    });
+    test(
+      'renders the bounded content contract without quantity prefix',
+      () async {
+        const prepared = NalogCvecariPdfPreparedData(
+          fullName: 'Ana Jovanović',
+          godinaRodjenja: '1970',
+          vrstaCeremonije: 'KREMACIJA',
+          mestoCeremonije: 'Novo groblje',
+          datumCeremonije: '31.08.2026.',
+          vremeCeremonije: '09:00',
+          flowers: [
+            NalogCvecariPdfFlower(
+              articleName: 'Ruže',
+              ribbonText: 'Počivaj u miru',
+            ),
+          ],
+        );
+        final bytes = await buildNalogCvecariPdfBytes(
+          firma: _firma,
+          app: _app,
+          savetnikIme: 'Savetnik',
+          status: 'OTVOREN',
+          dokumentVerzija: 'v1',
+          prepared: prepared,
+        );
+        expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+        expect(
+          nalogCvecariRibbonValueForPdf(prepared.flowers.single.ribbonText),
+          isNot(contains('TEKST TRAKE')),
+        );
+      },
+    );
   });
 }
 
@@ -64,6 +80,7 @@ const _firma = FirmaPodaciData(
   email: '',
   sajt: '',
   parteDefaultTemplateId: '',
+  racunOmogucen: true,
 );
 
 const _app = AppPodesavanjaData(

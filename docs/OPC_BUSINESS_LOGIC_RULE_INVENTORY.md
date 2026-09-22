@@ -30,7 +30,7 @@ Evidence classification: SOURCE-CONFIRMED / TEST GAP
 Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; prior lifecycle task report
 Current implementation state: Source-confirmed. Tests cover related JSON/STANJE ROBE areas but not the full lifecycle state machine end to end.
 Windows/Android parity: Shared Dart source; runtime parity not freshly confirmed.
-JSON/PDF/UI relevance: `verzija` is exported/imported in PREDMET JSON and displayed in PDF snapshot/UI review.
+JSON/PDF/UI relevance: `verzija` is exported/imported in PREDMET JSON and displayed in the conflict/UI review. Its former PREDMET PDF SNAPSHOT representation is historical; that offer/exporter has been retired under normal-roadmap Member 3 and is not current product behavior.
 Future Web/sync relevance: Critical for version reasoning, conflict UI, and replica behavior.
 Risk if changed: Incorrect overwrite decisions, false version history, unsafe Web/sync merge assumptions.
 Open questions: Whether `verzija` alone is sufficient for future conflict/version reasoning.
@@ -75,10 +75,10 @@ Status: OWNER DECISION / SOURCE CURRENT COVERAGE DEFECT / TECHNICAL DESIGN REQUI
 Domain: Versioning
 Rule statement: `verzija` identifies a user-confirmed PREDMET business state. New PREDMET starts at `v1`; ordinary save is a working checkpoint; reopen alone does not increment; confirmed close increments only after canonical PREDMET aggregate business change. It is not export time, filename identity, firm identity, global identity, or proof by itself that automatic overwrite is safe.
 Evidence classification: OWNER DECISION / SOURCE-CONFIRMED / TEST GAP
-Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/utils/json_export_import.dart`; `lib/features/predmeti/pdf/predmet_pdf_snapshot_export.dart`
-Current implementation state: Defined on PREDMET with default 1; incremented on confirmed close when the raw PREDMET-row checkpoint changes; exported/imported with PREDMET; displayed in conflict dialog and PDFs. Current checkpoint excludes SCENARIO and all IRiU/contact rows, so business aggregate changes can retain the same version.
+Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/utils/json_export_import.dart`; historical former path `lib/features/predmeti/pdf/predmet_pdf_snapshot_export.dart` (retired under Member 3).
+Current implementation state: Defined on PREDMET with default 1; incremented on confirmed close when the raw PREDMET-row checkpoint changes; exported/imported with PREDMET and displayed in the conflict dialog. The former snapshot representation is historical, not a current output. Current checkpoint excludes SCENARIO and all IRiU/contact rows, so business aggregate changes can retain the same version.
 Windows/Android parity: Shared source.
-JSON/PDF/UI relevance: JSON, conflict UI, and PDF snapshot include it.
+JSON/PDF/UI relevance: JSON and conflict UI include it. The former PDF snapshot is retired; do not use that path as a current behavior claim. Current document formats retain their own bounded output contracts.
 Future Web/sync relevance: Critical candidate for conflict reasoning.
 Risk if changed: Wrong freshness/overwrite behavior.
 Open questions: None for close/save business meaning. Aggregate field coverage, canonicalization, checkpoint migration, lifecycle-event separation and tests are technical design work. Missing/null/wrong-type import is source-rejected.

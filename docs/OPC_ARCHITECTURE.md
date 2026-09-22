@@ -93,7 +93,7 @@ No complete file-level circular import claim is made here. The relevant finding 
 
 ## 6. Persistence and data architecture
 
-`AppDatabase` is created at startup. Drift tables cover PREDMET, users/firma/settings, IRiU/KATALOG/provenance, SCENARIO definitions/modules/snapshots, PARTE, ČITULJE preparation state, stock/effects/consequences, logs, contacts and document-related state. The current source/database checkpoint is schema version 35 with recovery/repair/identity protections documented in source and tests. A fresh database creates structural singleton/auth state only: user/business KATALOG rows are not automatically created. Existing KATALOG rows remain authoritative across reopen and migration; repair and legacy normalization remain explicit integrity operations.
+`AppDatabase` is created at startup. Drift tables cover PREDMET, users/firma/settings, IRiU/KATALOG/provenance, SCENARIO definitions/modules/snapshots, PARTE, ČITULJE preparation state, stock/effects/consequences, logs, contacts and document-related state. The current source/database checkpoint is schema version 36 with recovery/repair/identity protections documented in source and tests. A fresh database creates structural singleton/auth state only: user/business KATALOG rows are not automatically created. Existing KATALOG rows remain authoritative across reopen and migration; repair and legacy normalization remain explicit integrity operations.
 
 Each persisted IRiU occurrence has an additive `portableOccurrenceId` technical
 identity. It is unique within its PREDMET and is carried by single-PREDMET JSON
@@ -170,6 +170,27 @@ behavior, introduces no schema or JSON contract change, and does not add a
 `ZAVRŠEN` blocker. Source/test/QA/build evidence and the separate runtime and
 release boundaries are recorded in the current-state and quality/release
 homes.
+
+### RAČUN toggle and shared document model — normal-roadmap Member 3
+
+The FIRMA `racunOmogucen` setting is a single boolean with default `true` for
+new data and additive migration. The same field is carried by full Backup,
+including legacy-omission defaulting; it is deliberately absent from
+Single-PREDMET JSON. The OWNER information text is guidance only: no
+preduzetnik/PDV fields or inference are part of this model.
+
+RAČUN PDF and DOCX are separate adjacent actions in `PREDMET → DOKUMENTI` and
+are both omitted when the FIRMA toggle is false. One canonical RAČUN data
+snapshot derives semantic content from PREDMET, FIRMA, IRiU and SAVETNIK truth;
+PDF and direct OOXML DOCX adapters render that shared data, including the
+OWNER-retained Article 33 sentence. DOCX is not produced by reading or
+transforming PDF output. The obsolete `PREDMET PDF SNAPSHOT` action/exporter is
+retired after active production references were checked.
+
+The bounded common full-header/footer helper scope is the six active standard
+PREDMET PDFs: SPECIFIKACIJA TROŠKOVA, PREDRAČUN, LISTA, NALOG ZA OPREMANJE,
+NALOG CVEĆARI and RAČUN. PARTE and ČITULJE remain separate modules and are not
+part of this helper scope.
 
 The MODULI catalog uses the available width responsively: at the established
 wide-layout breakpoint it derives the existing module sequence into two

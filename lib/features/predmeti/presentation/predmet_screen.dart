@@ -19,8 +19,8 @@ import '../pdf/nalog_cvecari_pdf_export.dart';
 import 'package:opc_v4/features/predmeti/pdf/nalog_za_opremanje_pdf_export.dart'
     as nalog_za_opremanje_pdf_export;
 import '../pdf/predracun_pdf_export.dart';
-import '../pdf/predmet_pdf_snapshot_export.dart';
 import '../pdf/racun_pdf_export.dart';
+import '../pdf/racun_docx_exporter.dart';
 import '../pdf/specifikacija_troskova_pdf_export.dart';
 import '../parte/application/parte_preparation_service.dart';
 import '../parte/data/parte_media_store.dart';
@@ -876,14 +876,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
     await _ucitaj();
   }
 
-  Future<void> _izveziPredmetPdfSnapshot() async {
-    await izvoziPredmetPdfSnapshot(
-      ctx: context,
-      db: widget.predmetiRepo.db,
-      predmetId: widget.predmetId,
-    );
-  }
-
   Future<void> _izveziListaPdf() async {
     await izvoziListaPdf(
       ctx: context,
@@ -926,6 +918,14 @@ class _PredmetScreenState extends State<PredmetScreen> {
 
   Future<void> _izveziRacunPdf() async {
     await izvoziRacunPdf(
+      ctx: context,
+      db: widget.predmetiRepo.db,
+      predmetId: widget.predmetId,
+    );
+  }
+
+  Future<void> _izveziRacunDocx() async {
+    await izvoziRacunDocx(
       ctx: context,
       db: widget.predmetiRepo.db,
       predmetId: widget.predmetId,
@@ -1007,8 +1007,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
     required bool showListaPdf,
     required bool showNalogZaOpremanjePdf,
     required bool showNalogCvecariPdf,
-    required bool showPredmetPdfSnapshot,
     required bool showRacunPdf,
+    required bool showRacunDocx,
   }) {
     final documentVisibility = _DocumentActionVisibility(
       showSpecifikacijaTroskovaPdf: showSpecifikacijaTroskovaPdf,
@@ -1016,8 +1016,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
       showListaPdf: showListaPdf,
       showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
       showNalogCvecariPdf: showNalogCvecariPdf,
-      showPredmetPdfSnapshot: showPredmetPdfSnapshot,
       showRacunPdf: showRacunPdf,
+      showRacunDocx: showRacunDocx,
     );
     return Column(
       children: [
@@ -1365,17 +1365,17 @@ class _PredmetScreenState extends State<PredmetScreen> {
           label: 'NALOG CVEĆARI PDF',
           onPressed: _izveziNalogCvecariPdf,
         ),
-      if (visibility.showPredmetPdfSnapshot)
-        _DocumentActionButton(
-          icon: Icons.picture_as_pdf_outlined,
-          label: 'PREDMET PDF snapshot',
-          onPressed: _izveziPredmetPdfSnapshot,
-        ),
       if (visibility.showRacunPdf)
         _DocumentActionButton(
           icon: Icons.receipt_outlined,
           label: 'RAČUN PDF',
           onPressed: _izveziRacunPdf,
+        ),
+      if (visibility.showRacunDocx)
+        _DocumentActionButton(
+          icon: Icons.description_outlined,
+          label: 'RAČUN DOCX',
+          onPressed: _izveziRacunDocx,
         ),
     ];
 
@@ -1477,8 +1477,6 @@ class _PredmetScreenState extends State<PredmetScreen> {
         .isDocumentActionVisible(OpcDocumentAction.nalogZaOpremanjePdf);
     final showNalogCvecariPdf = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.nalogCvecariPdf);
-    final showPredmetPdfSnapshot = widget.entitlementPolicy
-        .isDocumentActionVisible(OpcDocumentAction.predmetPdfSnapshot);
     final canExportJson = predmetJsonExportActionVisible(
       entitlementPolicy: widget.entitlementPolicy,
       predmetStatus: p.status,
@@ -1487,9 +1485,17 @@ class _PredmetScreenState extends State<PredmetScreen> {
       entitlementPolicy: widget.entitlementPolicy,
       predmetStatus: p.status,
     );
-    final showRacunPdf = widget.entitlementPolicy.isDocumentActionVisible(
-      OpcDocumentAction.racunPdf,
-    );
+    final racunAvailable =
+        (_firmaPodaci?.racunOmogucen ?? false) &&
+        widget.entitlementPolicy.isDocumentActionVisible(
+          OpcDocumentAction.racunPdf,
+        );
+    final showRacunPdf = racunAvailable;
+    final showRacunDocx =
+        racunAvailable &&
+        widget.entitlementPolicy.isDocumentActionVisible(
+          OpcDocumentAction.racunDocx,
+        );
     final primaryHeaderTextStyle = headerTextStyle.copyWith(
       fontWeight: FontWeight.w700,
       fontSize: isNarrowAndroid ? 14 : headerTextStyle.fontSize,
@@ -1610,8 +1616,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
           showListaPdf: showListaPdf,
           showNalogZaOpremanjePdf: showNalogZaOpremanjePdf,
           showNalogCvecariPdf: showNalogCvecariPdf,
-          showPredmetPdfSnapshot: showPredmetPdfSnapshot,
           showRacunPdf: showRacunPdf,
+          showRacunDocx: showRacunDocx,
         ),
       ),
     );
@@ -1625,8 +1631,8 @@ class _DocumentActionVisibility {
     required this.showListaPdf,
     required this.showNalogZaOpremanjePdf,
     required this.showNalogCvecariPdf,
-    required this.showPredmetPdfSnapshot,
     required this.showRacunPdf,
+    required this.showRacunDocx,
   });
 
   final bool showSpecifikacijaTroskovaPdf;
@@ -1634,8 +1640,8 @@ class _DocumentActionVisibility {
   final bool showListaPdf;
   final bool showNalogZaOpremanjePdf;
   final bool showNalogCvecariPdf;
-  final bool showPredmetPdfSnapshot;
   final bool showRacunPdf;
+  final bool showRacunDocx;
 }
 
 class _PredmetOrientationHeader extends StatelessWidget {

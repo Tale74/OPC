@@ -15,4 +15,5 @@ class FirmaPodaci extends Table {
   BlobColumn get logo => blob().nullable()();
   TextColumn get parteDefaultTemplateId =>
       text().withDefault(const Constant('builtin_parte_standard_v1'))();
+  BoolColumn get racunOmogucen => boolean().withDefault(const Constant(true))();
 }

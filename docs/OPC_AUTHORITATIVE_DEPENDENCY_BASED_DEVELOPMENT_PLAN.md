@@ -222,7 +222,7 @@ only.
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
 | NALOG CVEĆARI | `CLOSED — ACCEPTED PDF-ONLY UNIT` | Accepted current PDF unit in the native PREDMET → DOKUMENTI route | Shared implementation | Preserve the accepted PDF-only scope; DOCX is not an open option | Older open-scope wording is superseded |
 | Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
-| PDF RAČUN availability/business scope | `PARTIAL — OWNER DECISION REQUIRED` | RAČUN PDF currently available under standard document entitlement | Same shared product behavior | Decide FIRMA availability/default and confirm present limited business scope; no VAT/tax/fiscal inference | “RAČUN absent” is false; availability-policy work remains |
+| RAČUN toggle, DOCX and shared data model — normal-roadmap Member 3 | `COMPLETED — OWNER RUNTIME ACCEPTED; PUBLICATION AUTHORIZED` | FIRMA toggle is the sole availability condition for PDF and DOCX; both adapters consume one canonical RAČUN data model; snapshot action/exporter retired; Word 2019 direct open, one-page render and print/layout parity accepted | Same bounded PREDMET/FIRMA/IRiU/SAVETNIK-derived model | Preserve exact OWNER text/defaults, Article 33, Backup behavior and unchanged Single-PREDMET JSON; no broader FIRMA/legal inference | Final Word defect: nested signature-label table required a trailing paragraph; corrected with `_requiredTrailingParagraph()`; no broader document-set acceptance is implied |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS` | Shared `ThemeMode.system` and owner runtime acceptance prove the supported light/dark behavior is closed | Owner runtime authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED` | No further theme implementation, audit or roadmap dependency; reopen only for a proven regression or new owner decision | Older partial/pending theme wording is superseded |
 | Full UI/UX audit | `OPEN` | Only short SCENARIO impression | Only bounded runtime impressions | Full Windows/Android audit; concise working screens; hierarchy/terminology/interaction carry clarity | Runtime smoke is not full UX acceptance |
 | Contextual Help/User Guide | `DEFERRED PRODUCT DIRECTION` | Not designed | Not designed | Evaluate screen-contextual `Pomoć`/`Uputstvo` after UX audit; no immediate implementation authority | New direction, not current task |
@@ -290,8 +290,6 @@ release gate.
 
 - preserve the accepted PDF-only NALOG CVEĆARI unit; DOCX is not an open option;
 - refine standard PDF typography document by document;
-- decide RAČUN FIRMA availability/default while preserving its current limited
-  scope and avoiding VAT/tax/fiscal/legal inference;
 - perform a full Windows/Android UI/UX audit;
 - evaluate, but do not automatically implement, contextual `Pomoć`/`Uputstvo`.
 
@@ -316,6 +314,26 @@ specific parallel mechanism. Source/test/QA/build evidence is complete; runtime
 acceptance, release and publication remain separate. The broader unspecified
 FINANSIJE reminder scope remains deferred. This does not select a successor
 member, create a broad PODSETNIK upgrade, or introduce new signal meanings.
+
+## RAČUN toggle, shared document model and snapshot retirement — Member 3, 2026-09-21
+
+OWNER resolved RAČUN availability for the bounded normal-roadmap Member 3:
+the FIRMA `RAČUN` toggle is the only machine condition, with `DA` defaults for
+new data, migrated existing data and legacy full Backup omission. Its exact
+user information text is `Račun može da se formira ukoliko je pravno lice
+preduzetnik i nije u sistemu PDV`; OPC does not evaluate legal status or add
+preduzetnik/PDV fields. Article 33 remains `KEEP` content.
+
+Separate adjacent RAČUN PDF and DOCX actions in `PREDMET → DOKUMENTI` share one
+canonical RAČUN data model, availability condition and filename base. Full
+Backup preserves the toggle; Single-PREDMET JSON is unchanged. The obsolete
+`PREDMET PDF SNAPSHOT` is retired from the offer and production wiring. Technical
+validation, both release builds and OWNER Word 2019 runtime/visual acceptance
+passed; publication closure is authorized. The proven Word defect was a nested
+signature-label table without its required trailing paragraph, corrected with
+`_requiredTrailingParagraph()`. For the common helper audit, NALOG CVEĆARI remains
+unchanged and conformant; SPECIFIKACIJA TROŠKOVA, PREDRAČUN, LISTA, NALOG ZA
+OPREMANJE and RAČUN were each left unchanged because equivalence was not proven.
 
 ## 5. SCENARIO closed contract
 
@@ -344,8 +362,11 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
 
 - Single-PREDMET JSON and full backup JSON remain distinct products.
 - A restore success from an earlier artifact is evidence, not the final gate.
-- RAČUN PDF exists today. Open work concerns FIRMA availability/default and
-  business scope, not recreation of the exporter.
+- RAČUN's FIRMA `RAČUN` toggle, PDF/DOCX pair, shared canonical data model,
+  Backup preservation and unchanged Single-PREDMET JSON are implemented under
+  Member 3. The toggle is the sole availability condition; the OWNER-approved
+  Article 33 sentence remains in both outputs. Runtime/visual acceptance stays
+  separate.
 - NALOG CVEĆARI is an accepted PDF-only unit; DOCX is not an open option.
 - Standard PDF typography work excludes PARTE and preserves document formation.
 - Windows light/dark theme is closed by explicit owner runtime authority:
@@ -392,7 +413,6 @@ Only unresolved current decisions are active:
 | Decision | Needed before | Status |
 | --- | --- | --- |
 | Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance | `OPEN OWNER DECISION` |
-| RAČUN FIRMA availability and default for existing installations | Availability-policy implementation | `OPEN OWNER DECISION` |
 | EUR global activation timing and treatment/conversion of eligible open PREDMETI | Currency activation/release contract | `OPEN OWNER DECISION` |
 | Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate | `OPEN OWNER DECISION` |
 | Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |

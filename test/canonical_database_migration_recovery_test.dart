@@ -29,21 +29,24 @@ void main() {
   });
 
   group('confirmed v19 to v26 recovery states', () {
-    test('empty database is created directly as a valid schema 26', () async {
-      final root = await Directory.systemTemp.createTemp('opc_empty_schema_');
-      addTearDown(() async {
-        if (await root.exists()) await root.delete(recursive: true);
-      });
-      final file = File('${root.path}${Platform.pathSeparator}opc.sqlite');
-      final db = AppDatabase.forTesting(NativeDatabase(file));
-      addTearDown(db.close);
+    test(
+      'empty database is created directly as the current valid schema',
+      () async {
+        final root = await Directory.systemTemp.createTemp('opc_empty_schema_');
+        addTearDown(() async {
+          if (await root.exists()) await root.delete(recursive: true);
+        });
+        final file = File('${root.path}${Platform.pathSeparator}opc.sqlite');
+        final db = AppDatabase.forTesting(NativeDatabase(file));
+        addTearDown(db.close);
 
-      expect(await _userVersion(db), 35);
-      expect(
-        await _tableNames(db),
-        containsAll(['predmeti', 'parte_pripreme']),
-      );
-    });
+        expect(await _userVersion(db), 36);
+        expect(
+          await _tableNames(db),
+          containsAll(['predmeti', 'parte_pripreme']),
+        );
+      },
+    );
 
     test(
       'State A: v19 without docek_datum adds valid v20/v21/v22/v23/v24/v25/v26 schema',
@@ -196,7 +199,7 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 35);
+        expect(await _userVersion(second), 36);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
@@ -337,9 +340,9 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      // Schema 35 is the current supported version (URNA/F-06 milestone);
-      // use the next checkpoint to exercise the future-version guard.
-      final db = fixture.openAtVersion(36, physicalVersion: 35);
+      // Schema 36 adds the FIRMA RAČUN toggle; use the next checkpoint to
+      // exercise the future-version guard.
+      final db = fixture.openAtVersion(37, physicalVersion: 36);
       addTearDown(db.close);
 
       await expectLater(
@@ -348,7 +351,7 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 36 -> 35'),
+            contains('unsupported migration checkpoint 37 -> 36'),
           ),
         ),
       );
@@ -398,7 +401,7 @@ void main() {
       ),
     );
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 35);
+    expect(await _userVersion(retried), 36);
     await retried.close();
   });
 
@@ -434,7 +437,7 @@ void main() {
 
       await _open(db);
 
-      expect(await _userVersion(db), 35);
+      expect(await _userVersion(db), 36);
       expect(await _columnNames(db, 'ceremony_reminder_settings'), {
         'predmet_id',
         'enabled',
@@ -445,7 +448,9 @@ void main() {
         'updated_at',
       });
       final row = await db
-          .customSelect('SELECT * FROM ceremony_reminder_settings WHERE predmet_id = 1')
+          .customSelect(
+            'SELECT * FROM ceremony_reminder_settings WHERE predmet_id = 1',
+          )
           .getSingle();
       expect(row.read<int>('enabled'), 0);
       expect(row.read<int>('frequency_hours'), 12);
@@ -460,13 +465,16 @@ void main() {
       expect(await _count(db, 'predmeti'), 1);
       expect(await _count(db, 'korisnici'), 1);
       expect(
-        (await db.customSelect('PRAGMA quick_check').getSingle())
-            .read<String>('quick_check'),
+        (await db.customSelect('PRAGMA quick_check').getSingle()).read<String>(
+          'quick_check',
+        ),
         'ok',
       );
 
       await db.close();
-      final reopened = AppDatabase.forTesting(NativeDatabase(fixture.databaseFile));
+      final reopened = AppDatabase.forTesting(
+        NativeDatabase(fixture.databaseFile),
+      );
       addTearDown(reopened.close);
       await _open(reopened);
       expect(await _columnNames(reopened, 'ceremony_reminder_settings'), {
@@ -539,7 +547,7 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 35);
+  expect(await _userVersion(db), 36);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);

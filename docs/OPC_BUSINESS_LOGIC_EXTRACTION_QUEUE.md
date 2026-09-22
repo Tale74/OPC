@@ -15,7 +15,7 @@ This document lists business rules that must be extracted or technically audited
 | Full database/backup JSON | Full backup/import is broader recovery behavior and can be destructive; identity guard is missing. | TECHNICAL AUDIT REQUIRED | Design PIB/Matični broj and repository/firma guard. |
 | FirmaPodaci history | `FirmaPodaci` is editable/hybrid and must not be the only stable identity. | TECHNICAL AUDIT REQUIRED | Design history and continuity model. |
 | Platilac/narucilac compatibility | `Platilac` is current display term; `narucilac` remains internal code/database/JSON/template terminology. | OWNER REVIEW REQUIRED | Decide whether future cleanup preserves compatibility names or migrates them. |
-| PDF snapshot labels | Main PDFs use `PLATILAC`; snapshot/export labels still include `NARUČILAC`. | OWNER REVIEW REQUIRED | Decide PDF cleanup separately. |
+| Former PREDMET PDF SNAPSHOT labels | Main PDFs use `PLATILAC`; the former snapshot/export path used `NARUČILAC`. `PREDMET PDF SNAPSHOT` is now retired and no longer offered. | SUPERSEDED — OUTPUT RETIRED | No cleanup of a retired output. Preserve this label comparison as historical evidence; any future document-label change requires its own bounded OWNER decision. |
 | STANJE ROBE consequence rules | Inventory must not become parallel PREDMET truth; unresolved consequences and close-block behavior must be explicit. | PARTIALLY EXTRACTED | Extract user-visible warning/confirmation/close-block and transfer rules. |
 | Business policy evaluator ceremony guidance | Current evaluator derives condition flags and drives IRiU/finance consequences, but complete ceremony guidance, review checklist, PIO/refund guidance, JKP/payer guidance, document requirement graph, and stock consequence contract are not evaluator-complete. | PARTIALLY EXTRACTED / TECHNICAL AUDIT REQUIRED | Use the evaluator deep audit, scenario matrix, consequence graph, and completion matrix before any evaluator, IRiU, finance, document, STANJE ROBE, or Web/sync behavior changes. |
 | STANJE ROBE import/restore | Current local rules separate single-PREDMET JSON from warehouse quantities and full backup/import behavior. | TECHNICAL AUDIT REQUIRED | Define full backup/import stock handling and reconciliation. |
@@ -65,4 +65,3 @@ OWNER REVIEW REQUIRED:
 - which local docs should eventually be fully promoted;
 - conflicts between local docs and public docs;
 - final canonical implementation terminology for `Platilac`/`narucilac`;
-- PDF snapshot label cleanup decision.

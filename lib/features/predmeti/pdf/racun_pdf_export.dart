@@ -9,12 +9,10 @@ import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/document_text_codec.dart';
 import '../../../core/utils/export_utils.dart';
-import '../data/iriu_repository.dart';
 import 'lista_pdf_data_builder.dart';
 import 'memorandum_logo.dart';
+import 'racun_document_data.dart';
 
-const _kRacunPdfTitle = 'RAČUN';
-const _kRacunPdfFilenameToken = 'RACUN';
 const _kPageHorizontalMargin = 24.0;
 const _kPageTopMargin = 20.0;
 const _kPageBottomMargin = 16.0;
@@ -31,35 +29,9 @@ Future<void> izvoziRacunPdf({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(
-      db.predmeti,
-    )..where((t) => t.id.equals(predmetId))).getSingle();
-    final iriuStavke = await IriuRepository(db).getIriu(predmetId);
-    final firma = await (db.select(
-      db.firmaPodaci,
-    )..where((t) => t.id.equals(1))).getSingle();
-    final app = await (db.select(
-      db.appPodesavanja,
-    )..where((t) => t.id.equals(1))).getSingle();
-    final savetnik = predmet.savetnikId == null
-        ? null
-        : await (db.select(
-            db.korisnici,
-          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
-
-    final bytes = await _buildRacunPdf(
-      predmet: predmet,
-      iriuStavke: iriuStavke,
-      firma: firma,
-      app: app,
-      savetnik: savetnik,
-    );
-
-    final naziv = koricePdfDerivatFajlNaziv(
-      predmet,
-      _kRacunPdfFilenameToken,
-      includePredmetVersion: true,
-    );
+    final data = await RacunDocumentData.load(db: db, predmetId: predmetId);
+    final bytes = await buildRacunPdf(data);
+    final naziv = data.filenameFor('pdf');
     final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
     final lokacija = koriceFajlLokacija(fajl);
 
@@ -88,13 +60,7 @@ Future<void> izvoziRacunPdf({
   }
 }
 
-Future<Uint8List> _buildRacunPdf({
-  required PredmetiData predmet,
-  required List<IriuData> iriuStavke,
-  required FirmaPodaciData firma,
-  required AppPodesavanjaData app,
-  required KorisniciData? savetnik,
-}) async {
+Future<Uint8List> buildRacunPdf(RacunDocumentData data) async {
   final regularFont = pw.Font.ttf(
     await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
   );
@@ -115,19 +81,9 @@ Future<Uint8List> _buildRacunPdf({
     boldItalic: boldItalicFont,
   );
 
-  final preparedData = const ListaPdfDataBuilder().build(
-    predmet: predmet,
-    iriuStavke: iriuStavke,
-    firma: firma,
-    app: app,
-    savetnik: savetnik,
-    portableSavetnikName: predmet.businessResponsibleName,
-  );
-  final snapshot = _RacunPdfSnapshot.fromPreparedData(preparedData);
-
   final doc = pw.Document(
-    title: _kRacunPdfTitle,
-    author: snapshot.savetnikIme,
+    title: data.title,
+    author: data.advisorName,
     theme: theme,
   );
 
@@ -148,29 +104,26 @@ Future<Uint8List> _buildRacunPdf({
       build: (context) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(snapshot),
+          _buildHeader(data),
           pw.SizedBox(height: _kSectionGap),
-          _buildSimpleSection(
-            title:
-                'PREMINULO LICE: ${snapshot.preminuloImePrezime.toUpperCase()}',
-          ),
-          if (snapshot.platilacNaslov.trim().isNotEmpty) ...[
+          _buildSimpleSection(title: data.deceasedHeading),
+          if (data.payerTitle.trim().isNotEmpty) ...[
             pw.SizedBox(height: _kSectionGap),
-            _buildPayerSection(snapshot),
+            _buildPayerSection(data),
           ],
           pw.SizedBox(height: _kSectionGap),
           _buildIriuFinancialSection(
-            items: snapshot.iriuItems,
-            rows: snapshot.finansijskiRedovi,
+            items: data.items,
+            rows: data.financialRows,
           ),
           pw.SizedBox(height: _kSectionGap),
           _buildStampAndSignatureBlock(),
           pw.Spacer(),
           _buildFooter(
             context: context,
-            savetnikIme: snapshot.savetnikIme,
-            status: snapshot.status,
-            dokumentVerzija: snapshot.dokumentVerzija,
+            savetnikIme: data.advisorName,
+            status: data.statusValue,
+            dokumentVerzija: data.documentVersion,
           ),
         ],
       ),
@@ -180,78 +133,18 @@ Future<Uint8List> _buildRacunPdf({
   return doc.save();
 }
 
-class _RacunPdfSnapshot {
-  const _RacunPdfSnapshot({
-    required this.firma,
-    required this.app,
-    required this.brojPredmeta,
-    required this.datumIzdavanja,
-    required this.savetnikIme,
-    required this.status,
-    required this.dokumentVerzija,
-    required this.preminuloImePrezime,
-    required this.platilacNaslov,
-    required this.platilacDetalji,
-    required this.iriuItems,
-    required this.finansijskiRedovi,
-  });
-
-  factory _RacunPdfSnapshot.fromPreparedData(
-    ListaPdfPreparedData preparedData,
-  ) {
-    final preminuloImePrezime = _displayName(
-      preparedData.predmet.ime,
-      preparedData.predmet.prezime,
-    );
-
-    return _RacunPdfSnapshot(
-      firma: preparedData.firma,
-      app: preparedData.app,
-      brojPredmeta: preparedData.predmet.brojPredmeta.trim(),
-      datumIzdavanja: preparedData.datumIzvoza,
-      savetnikIme: preparedData.savetnikIme,
-      status: preparedData.predmet.status,
-      dokumentVerzija: preparedData.dokumentVerzija,
-      preminuloImePrezime: preminuloImePrezime,
-      platilacNaslov: _resolvePlatilacNaslov(preparedData.predmet),
-      platilacDetalji: _buildPlatilacDetalji(preparedData.predmet),
-      iriuItems: preparedData.iriuItems,
-      finansijskiRedovi: _buildRacunFinancialRows(
-        preparedData.finansijskiRedovi,
-      ),
-    );
-  }
-
-  final FirmaPodaciData firma;
-  final AppPodesavanjaData app;
-  final String brojPredmeta;
-  final DateTime datumIzdavanja;
-  final String savetnikIme;
-  final String status;
-  final String dokumentVerzija;
-  final String preminuloImePrezime;
-  final String platilacNaslov;
-  final List<ListaPdfLabelValue> platilacDetalji;
-  final List<ListaPdfIriuRenderItem> iriuItems;
-  final List<ListaPdfLabelValue> finansijskiRedovi;
-}
-
-pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
+pw.Widget _buildHeader(RacunDocumentData data) {
   final contact = <String>[
-    if (snapshot.firma.telefon.trim().isNotEmpty) snapshot.firma.telefon.trim(),
-    if (snapshot.firma.email.trim().isNotEmpty) snapshot.firma.email.trim(),
-    if (snapshot.firma.sajt.trim().isNotEmpty) snapshot.firma.sajt.trim(),
+    if (data.firma.telefon.trim().isNotEmpty) data.firma.telefon.trim(),
+    if (data.firma.email.trim().isNotEmpty) data.firma.email.trim(),
+    if (data.firma.sajt.trim().isNotEmpty) data.firma.sajt.trim(),
   ].join(' | ');
 
   final identityRows = buildMemorandumIdentityRows(
-    pib: snapshot.firma.pib,
-    mb: snapshot.firma.mb,
-    racun: snapshot.app.ziroRacun,
+    pib: data.firma.pib,
+    mb: data.firma.mb,
+    racun: data.app.ziroRacun,
   );
-
-  final naslov = snapshot.brojPredmeta.isNotEmpty
-      ? 'RAČUN BR: ${snapshot.brojPredmeta}'
-      : _kRacunPdfTitle;
 
   return pw.Container(
     padding: const pw.EdgeInsets.only(bottom: 8),
@@ -271,19 +164,17 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    documentTextCodec.normalize(snapshot.firma.naziv),
+                    documentTextCodec.normalize(data.firma.naziv),
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 14,
                     ),
                   ),
-                  if (snapshot.firma.adresa.trim().isNotEmpty)
+                  if (data.firma.adresa.trim().isNotEmpty)
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(
-                          snapshot.firma.adresa.trim(),
-                        ),
+                        documentTextCodec.normalize(data.firma.adresa.trim()),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
@@ -306,8 +197,8 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
                 ],
               ),
             ),
-            if (snapshot.firma.logo?.isNotEmpty ?? false)
-              buildMemorandumLogo(snapshot.firma.logo!),
+            if (data.firma.logo?.isNotEmpty ?? false)
+              buildMemorandumLogo(data.firma.logo!),
           ],
         ),
         pw.SizedBox(height: 7),
@@ -316,7 +207,7 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
           children: [
             pw.Expanded(
               child: pw.Text(
-                documentTextCodec.normalize(naslov),
+                documentTextCodec.normalize(data.headerTitle),
                 style: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 11,
@@ -325,7 +216,7 @@ pw.Widget _buildHeader(_RacunPdfSnapshot snapshot) {
             ),
             pw.Text(
               documentTextCodec.normalize(
-                'Datum izdavanja: ${formatDateForDocument(snapshot.datumIzdavanja)}',
+                '${data.labels.issueDate} ${formatDateForDocument(data.issueDate)}',
               ),
               textAlign: pw.TextAlign.right,
               style: pw.TextStyle(
@@ -390,13 +281,13 @@ pw.Widget _buildSimpleSection({required String title}) {
   return _buildSectionShell(title: title, child: pw.SizedBox.shrink());
 }
 
-pw.Widget _buildPayerSection(_RacunPdfSnapshot snapshot) {
-  final columns = _splitIntoColumns(snapshot.platilacDetalji, 3);
+pw.Widget _buildPayerSection(RacunDocumentData data) {
+  final columns = _splitIntoColumns(data.payerDetails, 3);
   return _buildSectionShell(
-    title: 'PLATILAC: ${snapshot.platilacNaslov.toUpperCase()}',
+    title: data.payerHeading,
     child: columns.isEmpty
         ? pw.Text(
-            documentTextCodec.normalize('Nema evidentiranih podataka.'),
+            documentTextCodec.normalize(data.labels.emptyPayer),
             style: pw.TextStyle(
               fontStyle: pw.FontStyle.italic,
               fontSize: _kCompactBodyFontSize,
@@ -450,7 +341,7 @@ pw.Widget _buildIriuFinancialSection({
   required List<ListaPdfLabelValue> rows,
 }) {
   return _buildSectionShell(
-    title: 'IRIU: IZABRANA ROBA I USLUGE',
+    title: const RacunDocumentLabels().itemsSection,
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -462,7 +353,7 @@ pw.Widget _buildIriuFinancialSection({
               items.isEmpty
                   ? pw.Text(
                       documentTextCodec.normalize(
-                        'Nema poslovno relevantnih IRIU stavki za prikaz.',
+                        const RacunDocumentLabels().emptyItems,
                       ),
                       style: pw.TextStyle(
                         fontStyle: pw.FontStyle.italic,
@@ -488,10 +379,15 @@ pw.Widget _buildIriuFinancialSection({
                             color: PdfColors.blueGrey50,
                           ),
                           children: [
-                            _buildTableHeaderCell('NAZIV'),
-                            _buildTableHeaderCell('KOM', horizontalPadding: 3),
                             _buildTableHeaderCell(
-                              'IZNOS',
+                              const RacunDocumentLabels().itemName,
+                            ),
+                            _buildTableHeaderCell(
+                              const RacunDocumentLabels().itemQuantity,
+                              horizontalPadding: 3,
+                            ),
+                            _buildTableHeaderCell(
+                              const RacunDocumentLabels().itemAmount,
                               alignRight: true,
                               horizontalPadding: 2,
                             ),
@@ -518,7 +414,7 @@ pw.Widget _buildIriuFinancialSection({
               pw.SizedBox(height: 4),
               pw.Text(
                 documentTextCodec.normalize(
-                  'Poreski obveznik nije u sistemu PDV-a na osnovu člana 33. Zakona o porezu na dodatu vrednost.',
+                  const RacunDocumentLabels().article33,
                 ),
                 style: const pw.TextStyle(fontSize: _kPdvFontSize),
               ),
@@ -698,64 +594,6 @@ pw.Widget _buildSectionShell({
       ],
     ),
   );
-}
-
-String _displayName(String ime, String prezime) {
-  final fullName = [
-    ime.trim(),
-    prezime.trim(),
-  ].where((value) => value.isNotEmpty).join(' ');
-  return fullName.isEmpty ? '-' : fullName;
-}
-
-List<ListaPdfLabelValue> _buildRacunFinancialRows(
-  List<ListaPdfLabelValue> rows,
-) {
-  return rows
-      .map(
-        (row) => row.label.trim() == 'ZA NAPLATU'
-            ? ListaPdfLabelValue('UKUPNO', row.value, kind: row.kind)
-            : row,
-      )
-      .toList(growable: false);
-}
-
-String _resolvePlatilacNaslov(PredmetiData predmet) {
-  if (predmet.naruTip == 'PRAVNO_LICE') {
-    return predmet.naruPlNaziv.trim();
-  }
-  final fullName = predmet.naruImePrezime.trim();
-  if (fullName.isNotEmpty) return fullName;
-  return _displayName(predmet.naruIme, predmet.naruPrezime);
-}
-
-List<ListaPdfLabelValue> _buildPlatilacDetalji(PredmetiData predmet) {
-  if (predmet.naruTip == 'PRAVNO_LICE') {
-    return _compactValues([
-      ListaPdfLabelValue('Adresa', predmet.naruPlAdresa),
-      ListaPdfLabelValue('PIB', predmet.naruPlPib),
-      ListaPdfLabelValue('Matični broj', predmet.naruPlMb),
-      ListaPdfLabelValue('Odgovorno lice', predmet.naruPlOdgovornoLice),
-      ListaPdfLabelValue('Telefon 1', predmet.naruPlTelefon1),
-      ListaPdfLabelValue('Telefon 2', predmet.naruPlTelefon2),
-      ListaPdfLabelValue('Email', predmet.naruPlEmail),
-    ]);
-  }
-
-  return _compactValues([
-    ListaPdfLabelValue('JMBG', predmet.naruJmbg),
-    ListaPdfLabelValue('LK / pasoš', predmet.naruBrojLk),
-    ListaPdfLabelValue('Adresa', predmet.naruAdresa),
-    ListaPdfLabelValue('Telefon 1', predmet.naruTelefon1),
-    ListaPdfLabelValue('Telefon 2', predmet.naruTelefon2),
-    ListaPdfLabelValue('Email', predmet.naruEmail),
-  ]);
-}
-
-List<ListaPdfLabelValue> _compactValues(List<ListaPdfLabelValue> values) {
-  return values
-      .where((value) => value.value.trim().isNotEmpty)
-      .toList(growable: false);
 }
 
 List<List<ListaPdfLabelValue>> _splitIntoColumns(

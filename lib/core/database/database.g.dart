@@ -545,6 +545,21 @@ class $FirmaPodaciTable extends FirmaPodaci
         requiredDuringInsert: false,
         defaultValue: const Constant('builtin_parte_standard_v1'),
       );
+  static const VerificationMeta _racunOmogucenMeta = const VerificationMeta(
+    'racunOmogucen',
+  );
+  @override
+  late final GeneratedColumn<bool> racunOmogucen = GeneratedColumn<bool>(
+    'racun_omogucen',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("racun_omogucen" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -559,6 +574,7 @@ class $FirmaPodaciTable extends FirmaPodaci
     sajt,
     logo,
     parteDefaultTemplateId,
+    racunOmogucen,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -647,6 +663,15 @@ class $FirmaPodaciTable extends FirmaPodaci
         ),
       );
     }
+    if (data.containsKey('racun_omogucen')) {
+      context.handle(
+        _racunOmogucenMeta,
+        racunOmogucen.isAcceptableOrUnknown(
+          data['racun_omogucen']!,
+          _racunOmogucenMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -704,6 +729,10 @@ class $FirmaPodaciTable extends FirmaPodaci
         DriftSqlType.string,
         data['${effectivePrefix}parte_default_template_id'],
       )!,
+      racunOmogucen: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}racun_omogucen'],
+      )!,
     );
   }
 
@@ -726,6 +755,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
   final String sajt;
   final Uint8List? logo;
   final String parteDefaultTemplateId;
+  final bool racunOmogucen;
   const FirmaPodaciData({
     required this.id,
     required this.naziv,
@@ -739,6 +769,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     required this.sajt,
     this.logo,
     required this.parteDefaultTemplateId,
+    required this.racunOmogucen,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -757,6 +788,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       map['logo'] = Variable<Uint8List>(logo);
     }
     map['parte_default_template_id'] = Variable<String>(parteDefaultTemplateId);
+    map['racun_omogucen'] = Variable<bool>(racunOmogucen);
     return map;
   }
 
@@ -774,6 +806,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       sajt: Value(sajt),
       logo: logo == null && nullToAbsent ? const Value.absent() : Value(logo),
       parteDefaultTemplateId: Value(parteDefaultTemplateId),
+      racunOmogucen: Value(racunOmogucen),
     );
   }
 
@@ -797,6 +830,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       parteDefaultTemplateId: serializer.fromJson<String>(
         json['parteDefaultTemplateId'],
       ),
+      racunOmogucen: serializer.fromJson<bool>(json['racunOmogucen']),
     );
   }
   @override
@@ -817,6 +851,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       'parteDefaultTemplateId': serializer.toJson<String>(
         parteDefaultTemplateId,
       ),
+      'racunOmogucen': serializer.toJson<bool>(racunOmogucen),
     };
   }
 
@@ -833,6 +868,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     String? sajt,
     Value<Uint8List?> logo = const Value.absent(),
     String? parteDefaultTemplateId,
+    bool? racunOmogucen,
   }) => FirmaPodaciData(
     id: id ?? this.id,
     naziv: naziv ?? this.naziv,
@@ -847,6 +883,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     logo: logo.present ? logo.value : this.logo,
     parteDefaultTemplateId:
         parteDefaultTemplateId ?? this.parteDefaultTemplateId,
+    racunOmogucen: racunOmogucen ?? this.racunOmogucen,
   );
   FirmaPodaciData copyWithCompanion(FirmaPodaciCompanion data) {
     return FirmaPodaciData(
@@ -868,6 +905,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       parteDefaultTemplateId: data.parteDefaultTemplateId.present
           ? data.parteDefaultTemplateId.value
           : this.parteDefaultTemplateId,
+      racunOmogucen: data.racunOmogucen.present
+          ? data.racunOmogucen.value
+          : this.racunOmogucen,
     );
   }
 
@@ -885,7 +925,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
           ..write('email: $email, ')
           ..write('sajt: $sajt, ')
           ..write('logo: $logo, ')
-          ..write('parteDefaultTemplateId: $parteDefaultTemplateId')
+          ..write('parteDefaultTemplateId: $parteDefaultTemplateId, ')
+          ..write('racunOmogucen: $racunOmogucen')
           ..write(')'))
         .toString();
   }
@@ -904,6 +945,7 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     sajt,
     $driftBlobEquality.hash(logo),
     parteDefaultTemplateId,
+    racunOmogucen,
   );
   @override
   bool operator ==(Object other) =>
@@ -920,7 +962,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
           other.email == this.email &&
           other.sajt == this.sajt &&
           $driftBlobEquality.equals(other.logo, this.logo) &&
-          other.parteDefaultTemplateId == this.parteDefaultTemplateId);
+          other.parteDefaultTemplateId == this.parteDefaultTemplateId &&
+          other.racunOmogucen == this.racunOmogucen);
 }
 
 class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
@@ -936,6 +979,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
   final Value<String> sajt;
   final Value<Uint8List?> logo;
   final Value<String> parteDefaultTemplateId;
+  final Value<bool> racunOmogucen;
   const FirmaPodaciCompanion({
     this.id = const Value.absent(),
     this.naziv = const Value.absent(),
@@ -949,6 +993,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     this.sajt = const Value.absent(),
     this.logo = const Value.absent(),
     this.parteDefaultTemplateId = const Value.absent(),
+    this.racunOmogucen = const Value.absent(),
   });
   FirmaPodaciCompanion.insert({
     this.id = const Value.absent(),
@@ -963,6 +1008,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     this.sajt = const Value.absent(),
     this.logo = const Value.absent(),
     this.parteDefaultTemplateId = const Value.absent(),
+    this.racunOmogucen = const Value.absent(),
   });
   static Insertable<FirmaPodaciData> custom({
     Expression<int>? id,
@@ -977,6 +1023,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     Expression<String>? sajt,
     Expression<Uint8List>? logo,
     Expression<String>? parteDefaultTemplateId,
+    Expression<bool>? racunOmogucen,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -992,6 +1039,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
       if (logo != null) 'logo': logo,
       if (parteDefaultTemplateId != null)
         'parte_default_template_id': parteDefaultTemplateId,
+      if (racunOmogucen != null) 'racun_omogucen': racunOmogucen,
     });
   }
 
@@ -1008,6 +1056,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     Value<String>? sajt,
     Value<Uint8List?>? logo,
     Value<String>? parteDefaultTemplateId,
+    Value<bool>? racunOmogucen,
   }) {
     return FirmaPodaciCompanion(
       id: id ?? this.id,
@@ -1023,6 +1072,7 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
       logo: logo ?? this.logo,
       parteDefaultTemplateId:
           parteDefaultTemplateId ?? this.parteDefaultTemplateId,
+      racunOmogucen: racunOmogucen ?? this.racunOmogucen,
     );
   }
 
@@ -1067,6 +1117,9 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
         parteDefaultTemplateId.value,
       );
     }
+    if (racunOmogucen.present) {
+      map['racun_omogucen'] = Variable<bool>(racunOmogucen.value);
+    }
     return map;
   }
 
@@ -1084,7 +1137,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
           ..write('email: $email, ')
           ..write('sajt: $sajt, ')
           ..write('logo: $logo, ')
-          ..write('parteDefaultTemplateId: $parteDefaultTemplateId')
+          ..write('parteDefaultTemplateId: $parteDefaultTemplateId, ')
+          ..write('racunOmogucen: $racunOmogucen')
           ..write(')'))
         .toString();
   }
@@ -20285,6 +20339,7 @@ typedef $$FirmaPodaciTableCreateCompanionBuilder =
       Value<String> sajt,
       Value<Uint8List?> logo,
       Value<String> parteDefaultTemplateId,
+      Value<bool> racunOmogucen,
     });
 typedef $$FirmaPodaciTableUpdateCompanionBuilder =
     FirmaPodaciCompanion Function({
@@ -20300,6 +20355,7 @@ typedef $$FirmaPodaciTableUpdateCompanionBuilder =
       Value<String> sajt,
       Value<Uint8List?> logo,
       Value<String> parteDefaultTemplateId,
+      Value<bool> racunOmogucen,
     });
 
 class $$FirmaPodaciTableFilterComposer
@@ -20368,6 +20424,11 @@ class $$FirmaPodaciTableFilterComposer
 
   ColumnFilters<String> get parteDefaultTemplateId => $composableBuilder(
     column: $table.parteDefaultTemplateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get racunOmogucen => $composableBuilder(
+    column: $table.racunOmogucen,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -20440,6 +20501,11 @@ class $$FirmaPodaciTableOrderingComposer
     column: $table.parteDefaultTemplateId,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get racunOmogucen => $composableBuilder(
+    column: $table.racunOmogucen,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FirmaPodaciTableAnnotationComposer
@@ -20492,6 +20558,11 @@ class $$FirmaPodaciTableAnnotationComposer
     column: $table.parteDefaultTemplateId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get racunOmogucen => $composableBuilder(
+    column: $table.racunOmogucen,
+    builder: (column) => column,
+  );
 }
 
 class $$FirmaPodaciTableTableManager
@@ -20537,6 +20608,7 @@ class $$FirmaPodaciTableTableManager
                 Value<String> sajt = const Value.absent(),
                 Value<Uint8List?> logo = const Value.absent(),
                 Value<String> parteDefaultTemplateId = const Value.absent(),
+                Value<bool> racunOmogucen = const Value.absent(),
               }) => FirmaPodaciCompanion(
                 id: id,
                 naziv: naziv,
@@ -20550,6 +20622,7 @@ class $$FirmaPodaciTableTableManager
                 sajt: sajt,
                 logo: logo,
                 parteDefaultTemplateId: parteDefaultTemplateId,
+                racunOmogucen: racunOmogucen,
               ),
           createCompanionCallback:
               ({
@@ -20565,6 +20638,7 @@ class $$FirmaPodaciTableTableManager
                 Value<String> sajt = const Value.absent(),
                 Value<Uint8List?> logo = const Value.absent(),
                 Value<String> parteDefaultTemplateId = const Value.absent(),
+                Value<bool> racunOmogucen = const Value.absent(),
               }) => FirmaPodaciCompanion.insert(
                 id: id,
                 naziv: naziv,
@@ -20578,6 +20652,7 @@ class $$FirmaPodaciTableTableManager
                 sajt: sajt,
                 logo: logo,
                 parteDefaultTemplateId: parteDefaultTemplateId,
+                racunOmogucen: racunOmogucen,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

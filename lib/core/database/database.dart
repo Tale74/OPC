@@ -76,7 +76,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 35;
+  int get schemaVersion => 36;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -249,6 +249,9 @@ class AppDatabase extends _$AppDatabase {
         await _createPodsetnikManualObavezeTable();
         await _ensureCeremonyReminderUrnaIdsColumn();
       }
+      if (from < 36) {
+        await _ensureColumn(m, firmaPodaci, firmaPodaci.racunOmogucen);
+      }
     },
     beforeOpen: (details) async {
       final versionBefore = details.versionBefore;
@@ -405,11 +408,7 @@ class AppDatabase extends _$AppDatabase {
     await _ensureColumn(migrator, iriu, iriu.portableOccurrenceId);
     await _ensureTable(migrator, cituljePripreme);
     await _ensureColumn(migrator, cituljePripreme, cituljePripreme.finalized);
-    await _ensureColumn(
-      migrator,
-      cituljePripreme,
-      cituljePripreme.finalizedAt,
-    );
+    await _ensureColumn(migrator, cituljePripreme, cituljePripreme.finalizedAt);
     await _ensureTable(migrator, stanjeRobeStavke);
     await _ensureTable(migrator, stanjeRobeAppliedEffects);
     await _ensureTable(migrator, stanjeRobePosledice);
@@ -428,6 +427,7 @@ class AppDatabase extends _$AppDatabase {
       firmaPodaci,
       firmaPodaci.parteDefaultTemplateId,
     );
+    await _ensureColumn(migrator, firmaPodaci, firmaPodaci.racunOmogucen);
     await _ensureTable(migrator, partePredlosci);
     await _ensureTable(migrator, partePripreme);
     await _ensureColumn(
@@ -800,7 +800,8 @@ class AppDatabase extends _$AppDatabase {
     final columns = await _schemaRecovery.tableColumns(tableName);
     final unexpected = columns.keys.toSet().difference(expectedColumns);
     if (!unexpected.contains(orphanColumn)) return;
-    if (unexpected.length != 1 || columns.length != expectedColumns.length + 1) {
+    if (unexpected.length != 1 ||
+        columns.length != expectedColumns.length + 1) {
       throw OpcSchemaMismatch(
         'table "$tableName" has unsupported schema differences beyond the '
         'known orphan column "$orphanColumn": '
@@ -808,61 +809,57 @@ class AppDatabase extends _$AppDatabase {
       );
     }
 
-    await _schemaRecovery.validateColumns(
-      tableName,
-      const [
-        SqliteColumnDefinition(
-          name: 'predmet_id',
-          type: 'INTEGER',
-          notNull: false,
-          defaultSql: null,
-          primaryKeyPosition: 1,
-        ),
-        SqliteColumnDefinition(
-          name: 'enabled',
-          type: 'INTEGER',
-          notNull: true,
-          defaultSql: '1',
-          primaryKeyPosition: 0,
-        ),
-        SqliteColumnDefinition(
-          name: 'frequency_hours',
-          type: 'INTEGER',
-          notNull: true,
-          defaultSql: '24',
-          primaryKeyPosition: 0,
-        ),
-        SqliteColumnDefinition(
-          name: 'delivery_times',
-          type: 'TEXT',
-          notNull: true,
-          defaultSql: '\'["09:00"]\'',
-          primaryKeyPosition: 0,
-        ),
-        SqliteColumnDefinition(
-          name: 'scheduled_notification_ids',
-          type: 'TEXT',
-          notNull: true,
-          defaultSql: "'[]'",
-          primaryKeyPosition: 0,
-        ),
-        SqliteColumnDefinition(
-          name: 'urna_scheduled_notification_ids',
-          type: 'TEXT',
-          notNull: true,
-          defaultSql: "'[]'",
-          primaryKeyPosition: 0,
-        ),
-        SqliteColumnDefinition(
-          name: 'updated_at',
-          type: 'TEXT',
-          notNull: true,
-          defaultSql: "''",
-          primaryKeyPosition: 0,
-        ),
-      ],
-      rejectUnexpectedColumns: false,
-    );
+    await _schemaRecovery.validateColumns(tableName, const [
+      SqliteColumnDefinition(
+        name: 'predmet_id',
+        type: 'INTEGER',
+        notNull: false,
+        defaultSql: null,
+        primaryKeyPosition: 1,
+      ),
+      SqliteColumnDefinition(
+        name: 'enabled',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '1',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'frequency_hours',
+        type: 'INTEGER',
+        notNull: true,
+        defaultSql: '24',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'delivery_times',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: '\'["09:00"]\'',
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'scheduled_notification_ids',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "'[]'",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'urna_scheduled_notification_ids',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "'[]'",
+        primaryKeyPosition: 0,
+      ),
+      SqliteColumnDefinition(
+        name: 'updated_at',
+        type: 'TEXT',
+        notNull: true,
+        defaultSql: "''",
+        primaryKeyPosition: 0,
+      ),
+    ], rejectUnexpectedColumns: false);
 
     const legacyTableName = 'ceremony_reminder_settings__opc_legacy_orphan';
     if (await _schemaRecovery.tableExists(legacyTableName)) {
@@ -887,9 +884,7 @@ class AppDatabase extends _$AppDatabase {
                updated_at
         FROM ceremony_reminder_settings__opc_legacy_orphan
       ''');
-      await customStatement(
-        'DROP TABLE "$legacyTableName"',
-      );
+      await customStatement('DROP TABLE "$legacyTableName"');
     });
   }
 
@@ -2310,9 +2305,7 @@ class AppDatabase extends _$AppDatabase {
           ${predmetId == null ? '' : 'AND predmet_id = ?'}
         ORDER BY id
         ''',
-        variables: [
-          if (predmetId != null) Variable<int>(predmetId),
-        ],
+        variables: [if (predmetId != null) Variable<int>(predmetId)],
         readsFrom: {iriu},
       ).get();
 

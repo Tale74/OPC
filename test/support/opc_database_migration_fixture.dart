@@ -161,6 +161,9 @@ final class OpcDatabaseMigrationFixture {
   }
 
   static void _downgradePhysicalSchema(dynamic db, int version) {
+    if (version < 36) {
+      _dropColumn(db, 'firma_podaci', 'racun_omogucen');
+    }
     if (version < 30) {
       _dropColumn(db, 'predmeti', 'obavestiti_svestenika');
     }

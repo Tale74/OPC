@@ -110,7 +110,27 @@ The following materially define the current product or remain explicitly open:
   the Single-PREDMET or full Backup JSON transfer contracts.
 - Native Windows single-instance protection and installer/update running-app protection are closed by full acceptance; remaining release-risk integrity and final backup/restore work remain separately controlled.
 - NALOG CVEĆARI is an accepted/protected PDF-only unit; DOCX is not an open option.
-- RAČUN availability/default, performance acceptance targets, app identity/version/update channel and future distribution/IP model remain owner decisions or owner/legal decisions as applicable.
+- OWNER-authorized RAČUN availability is controlled solely by the FIRMA
+  `RAČUN` toggle in `PODEŠAVANJA → PODACI FIRME`. Its label is `RAČUN`, fresh
+  and migrated defaults are `DA`, and legacy full Backup without the field
+  resolves to `DA`. The adjacent information text is exactly `Račun može da se
+  formira ukoliko je pravno lice preduzetnik i nije u sistemu PDV`. The text is
+  guidance for the user's toggle decision; OPC does not evaluate preduzetnik or
+  PDV status and must not add either as a FIRMA model field. No other FIRMA
+  value controls availability.
+- RAČUN's existing Article 33 sentence is OWNER-approved `KEEP` content in both
+  PDF and DOCX. `PREDMET → DOKUMENTI` offers separate `RAČUN PDF` and `RAČUN
+  DOCX` actions under the same toggle. Both adapters consume one canonical
+  RAČUN data model; full Backup preserves the FIRMA toggle, while
+  Single-PREDMET JSON remains unchanged and excludes this FIRMA setting.
+- `PREDMET PDF SNAPSHOT` is an obsolete document and is retired from the
+  user-facing DOKUMENTI offer; its historical evidence is retained separately.
+- The active standard PREDMET PDF set is SPECIFIKACIJA TROŠKOVA, PREDRAČUN,
+  LISTA, NALOG ZA OPREMANJE, NALOG CVEĆARI and RAČUN. PARTE and ČITULJE remain
+  separate modules outside this common DOKUMENTI/helper scope.
+- Performance acceptance targets, app identity/version/update channel and
+  future distribution/IP model remain owner decisions or owner/legal decisions
+  as applicable.
 - MODUL DVE VALUTE is a required predecessor of stable OPC v.1. Web, OPC_v.1_Int and broader synchronization remain later/future scope; OPC_v.1_Int follows the stable product-line gate.
 
 If two documents assign different business meaning, retain both as evidence, record the conflict in the Phase 1 manifest/report and mark `OWNER DECISION REQUIRED` unless newer explicit owner authority already resolves it.

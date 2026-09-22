@@ -1,14 +1,14 @@
 # OPC Phase 2 Roadmap / Current-Reality Reconciliation
 
-**Status:** current Phase 2 synchronization evidence; the dependency-based plan remains the operative roadmap.
+**Status:** historical Phase 2 synchronization checkpoint; not current v1.5 roadmap authority. The dependency-based plan remains the operative roadmap.
 
 **Baseline:** `621c70f8d4820042e40a15f3d44187703092db3e` on `task/OPC-SCENARIO-MODULE-LOCK`.
 
 **Governing rule:** factual state is synchronized; business priority, product scope and implementation sequence are not redesigned by this report.
 
-## Effective classification map
+## Phase 2 checkpoint classification map
 
-| Roadmap area | Current classification | Evidence and reconciliation |
+| Roadmap area | Classification at this Phase 2 checkpoint | Evidence and reconciliation |
 |---|---|---|
 | Phase 1 authority/documentation standardization | `COMPLETE` | Published Phase 1 commit and current compact authority homes establish the navigation baseline. |
 | PREDMET authority and explicit lifecycle | `COMPLETE` technical baseline / runtime acceptance still scoped | Source, tests and current-state evidence confirm explicit lifecycle; final product parity remains a separate gate. |
@@ -24,7 +24,7 @@
 | Single-PREDMET JSON UI relocation | `OPEN` | Action ownership relocation remains a product-completeness item; no code change authorized here. |
 | Full backup/restore final rehearsal | `OPEN` / release-gate blocker | Prior scoped PASS is evidence, not current release-candidate closure. |
 | NALOG CVEĆARI content and scope | `BLOCKED BY OWNER DECISION` | No standalone generator/business scope is proven. |
-| RAČUN availability/default and standard PDF typography | `BLOCKED BY OWNER DECISION` / `TECHNICAL DEBT` | Existing exporter is not treated as absent; scope and visual refinement remain separate. |
+| RAČUN availability/default and standard PDF typography | `BLOCKED BY OWNER DECISION` / `TECHNICAL DEBT` (at this checkpoint) | Existing exporter is not treated as absent; scope and visual refinement remain separate. The later OWNER decision and Member 3 implementation closure resolve availability/default; standard PDF typography remains a separate item. See the current Product/Domain, Owner Decision Guide and dependency-plan homes. |
 | Windows light/dark theme | `COMPLETE` / `SUPERSEDED` pending wording | Explicit owner authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. It is removed from active roadmap dependency and reopens only for regression/new owner decision. |
 | Broader Windows/Android UI/UX audit | `OPEN` | Separate from the closed light/dark runtime item. |
 | MODUL DVE VALUTE | `OPEN` / blocking for stable OPC v.1 | Not implemented; remains a locked product-line predecessor. |
@@ -45,7 +45,7 @@ This is classified as `ROADMAP DRIFT` and `DOCUMENTATION DRIFT`, not an implemen
 
 ## Owner decisions preserved
 
-The following remain open and were not guessed: missing/invalid urn-location fallback, exact PODSETNIK localization catalogue/API, migration/version and fingerprint formats, role-specific reopen semantics, exact count grammar/attention animation, NALOG CVEĆARI content/scope, RAČUN FIRMA availability/default, measurable performance targets, EUR activation/treatment, app identity/version/update channel, release baseline/signing custody, and future IP/repository-use/distribution decisions. Recovered PODSETNIK business meanings are not reopened.
+The following were open and not guessed at this Phase 2 checkpoint: missing/invalid urn-location fallback, exact PODSETNIK localization catalogue/API, migration/version and fingerprint formats, role-specific reopen semantics, exact count grammar/attention animation, NALOG CVEĆARI content/scope, RAČUN FIRMA availability/default (later resolved under normal-roadmap Member 3), measurable performance targets, EUR activation/treatment, app identity/version/update channel, release baseline/signing custody, and future IP/repository-use/distribution decisions. Recovered PODSETNIK business meanings are not reopened.
 
 ## Reconciliation result
 

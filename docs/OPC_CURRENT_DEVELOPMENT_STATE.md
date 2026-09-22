@@ -475,7 +475,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | IRiU/KATALOG performance | Repository behavior is characterized; owner-observed slowdown is not decomposed. | Time repository, first frame, photo read and decode separately. |
 | PODSETNIK | POD-05 is closed with the accepted concise URNA/PEPEO parent/child presentation; the selected narrow child is immediately below its parent; the wide master/detail presentation is protected. F-06 `POSEBNE OBAVEZE`, the scoped `ZAVRŠEN` blocker and transfer paths remain protected. OWNER-selected F-09 Member 1 implements the FINANSIJE PRE-CEREMONY parent and sibling PRE-CEREMONY children PLATITI RAČUN and NAPLATITI OBAVEZE; broader unspecified finance reminders remain deferred. | Preserve generic obligation/reconciliation behavior, exact F-09 predicates and confirmed PRE-CEREMONY placement. Runtime acceptance, release and publication remain separate gates. |
 | Backup/restore release gate | Prior successful incidents are scoped evidence. | Repeat final rehearsal on release-candidate artifacts after SCENARIO carrier integration. |
-| Documents | RAČUN PDF exists. `NALOG CVEĆARI` is an accepted/protected current PDF unit in the native PREDMET → DOKUMENTI route: PREDMET remains the sole content truth, PODSETNIK carries only the shortcut/link, and the accepted item/ribbon/image structure, common shared PDF mechanism, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels are protected. Output scope is PDF only; DOCX is not an open option. | Accepted/protected current NALOG CVEĆARI PDF unit; no NALOG PDF/DOCX scope decision remains open. |
+| Documents | The active standard `PREDMET → DOKUMENTI` PDF set is SPECIFIKACIJA TROŠKOVA, PREDRAČUN, LISTA, NALOG ZA OPREMANJE, NALOG CVEĆARI and RAČUN. NALOG CVEĆARI remains the accepted PDF-only unit using the canonical full PDF helper; its accepted item/ribbon/image structure, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels remain protected. RAČUN now has adjacent PDF and DOCX actions under the sole FIRMA `RAČUN` toggle and one shared canonical data model. `PREDMET PDF SNAPSHOT` is retired / no longer offered. PARTE and ČITULJE remain separate modules. OWNER has accepted the bounded Member 3 RAČUN/DOCX Word 2019 runtime and visual result; this does not broaden acceptance to the rest of the document set. |
 | PREDMET action relocation — normal-roadmap Member 2 | OWNER's corrected UI invariant requires one concrete PREDMET to expose the same three-dot option set from its overview/list row and opened/expanded detail view, under the same existing business/status conditions, with no valid option lost. Both surfaces consume the shared canonical action definition. JSON EXPORT is present in both menus and absent from `DOKUMENTI`; JSON IMPORT remains exclusively in `PODEŠAVANJA` and unchanged. Existing navigation, GDPR and permanent-delete options are preserved; `ZAVRŠEN` uses the same lifecycle path, with Segment 10 and narrow Android duplicates absent. Transfer contracts and lifecycle business rules are unchanged. Focused menu tests (7 PASS), relevant regressions (32 PASS), analyzer, full serialized suite (566 PASS / 10 SKIP / 0 FAIL), Windows release (PASS, 438.9 s) and Android production APK (PASS, 1365.6 s) pass. | OWNER runtime acceptance remains separately unproven; tests/builds do not establish interactive acceptance. No commit/push or successor roadmap selection is included in this task gate. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
 | MODUL DVE VALUTE | Not implemented. | Required before stable OPC v.1; `OPC_v.1_Int` follows the stable product-line gate. |
@@ -545,6 +545,51 @@ PASS / 10 SKIP / 0 FAIL), Windows release (`flutter build windows --release
 technical/build evidence only: OWNER runtime acceptance is NOT CLAIMED, and no
 commit or push has occurred. No roadmap member after Member 2 is selected.
 
+## Normal-roadmap Member 3 — RAČUN toggle, shared model and snapshot retirement
+
+OWNER-authorized Member 3 is implemented and has passed technical validation.
+The FIRMA `RAČUN` boolean defaults to `DA` for new data, migration of existing
+FIRMA rows and legacy full Backup omission. The exact nearby information text
+is `Račun može da se formira ukoliko je pravno lice preduzetnik i nije u sistemu
+PDV`; it guides the user and is not machine-parsed. The toggle is the only
+availability condition for both RAČUN PDF and DOCX. No preduzetnik or PDV
+fields were added. Article 33 remains `KEEP` content in both outputs.
+
+Both adjacent `PREDMET → DOKUMENTI` actions consume one canonical RAČUN data
+model through separate PDF and direct OOXML DOCX adapters and use the same
+filename base. Full Backup preserves the toggle; Single-PREDMET JSON and its
+root/version remain unchanged. `PREDMET PDF SNAPSHOT` is retired after the
+production-reference scan; historical evidence remains historical.
+Current supporting Docs-as-Code now marks its former label-cleanup queue item
+superseded and qualifies old rule-inventory references as historical.
+
+The active standard PDF set remains the six named above. Helper audit outcome:
+NALOG CVEĆARI — already full-helper conformant; unchanged. The five
+nonconformant candidates are individually classified as follows:
+
+| Exporter | Member 3 disposition |
+| --- | --- |
+| SPECIFIKACIJA TROŠKOVA | `UNSAFE / EQUIVALENCE NOT PROVEN — LEFT UNCHANGED` |
+| PREDRAČUN | `UNSAFE / EQUIVALENCE NOT PROVEN — LEFT UNCHANGED` |
+| LISTA | `UNSAFE / EQUIVALENCE NOT PROVEN — LEFT UNCHANGED` |
+| NALOG ZA OPREMANJE | `UNSAFE / EQUIVALENCE NOT PROVEN — LEFT UNCHANGED` |
+| RAČUN | `UNSAFE / EQUIVALENCE NOT PROVEN — LEFT UNCHANGED` |
+
+No exporter was normalized; no universal helper-conformance claim or new
+visual-acceptance gate is created. PARTE and ČITULJE were not normalized or
+changed by this helper scope.
+
+Evidence: focused RAČUN tests `9 PASS`; focused DOKUMENTI regression `1 PASS`;
+relevant migration, Backup, JSON, settings and PDF regressions passed;
+`flutter analyze --no-pub` passed; the serialized full suite passed with
+`575 PASS / 10 SKIP / 0 FAIL`; Windows release build passed; Android production
+release build passed. OWNER accepted the fresh Word 2019 result: direct open,
+one-page render and print/layout parity all pass. The proven open-validity root
+cause was a nested table in the signature-labels cell without the required
+trailing paragraph; `_requiredTrailingParagraph()` is the minimal structural
+correction. The bounded Member 3 RAČUN/DOCX package is accepted for publication;
+no broader document-set runtime acceptance is implied.
+
 The separate stable-product prerequisite MODUL DVE VALUTE remains required
 before stable OPC v.1. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
@@ -582,7 +627,6 @@ deferred.
 ## Active owner decisions
 
 - performance acceptance targets after measurement;
-- RAČUN FIRMA availability/default;
 - EUR activation timing and eligible open-PREDMET treatment;
 - final app version/update channel and release baseline;
 - publisher/signing-key custody.

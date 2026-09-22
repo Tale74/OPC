@@ -160,6 +160,27 @@ serialized full suite (556 passed, 10 skipped, 0 failed), and
 builds passed; these are build evidence only, not owner-observed runtime
 acceptance. Broader unspecified FINANSIJE reminder scope remains deferred.
 
+### 5F. RAČUN toggle, shared PDF/DOCX model and snapshot retirement — 2026-09-21
+
+Normal-roadmap Member 3 adds the OWNER-locked FIRMA `RAČUN` toggle (default
+`DA`; legacy full Backup omission defaults to `DA`) as the sole machine
+availability condition for both RAČUN PDF and DOCX. Both outputs consume one
+canonical RAČUN data model; Article 33 is retained; full Backup carries the
+setting and Single-PREDMET JSON is unchanged. The obsolete PREDMET PDF SNAPSHOT
+offer/exporter is retired. The six-output standard PDF set and the exact
+exporter-by-exporter helper dispositions are recorded in the current-state
+home; no full-helper normalization was performed for the five candidates whose
+semantic equivalence could not be proven.
+
+Focused RAČUN tests (9), focused DOKUMENTI regression (1), relevant
+migration/Backup/JSON/settings/PDF regressions, analyzer and the serial complete
+suite (575 passed, 10 skipped, 0 failed) passed. Windows release and Android
+production release builds passed. OWNER accepted Word 2019 direct open,
+one-page render and print/layout parity. The proven defect was a nested table
+in the signature-labels cell without the required trailing paragraph;
+`_requiredTrailingParagraph()` is the minimal correction. This acceptance is
+bounded to the RAČUN/DOCX package and does not broaden to unrelated documents.
+
 ## 6. Backup, restore and interoperability
 
 Single-PREDMET transfer and full-backup JSON remain distinct. Release acceptance must cover:

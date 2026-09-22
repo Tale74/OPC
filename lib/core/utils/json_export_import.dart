@@ -783,8 +783,7 @@ List<CituljePreparationTransfer> _cituljeForBackupPredmet(
 ) => _optionalMapList(json, cituljePreparationTransferBlockKey)
     .where((row) => row['predmetId'] == predmetId)
     .map((row) {
-      final transferRow = Map<String, dynamic>.from(row)
-        ..remove('predmetId');
+      final transferRow = Map<String, dynamic>.from(row)..remove('predmetId');
       return CituljePreparationTransfer.fromJson(transferRow);
     })
     .toList(growable: false);
@@ -796,8 +795,7 @@ PodsetnikObligationTransferBlock? _podsetnikForBackupPredmet(
   final items = _optionalMapList(json, podsetnikObligationTransferKey)
       .where((row) => row['predmetId'] == predmetId)
       .map((row) {
-        final transferRow = Map<String, dynamic>.from(row)
-          ..remove('predmetId');
+        final transferRow = Map<String, dynamic>.from(row)..remove('predmetId');
         return PodsetnikObligationTransferState.fromJsonMap(transferRow);
       })
       .toList(growable: false);
@@ -946,9 +944,8 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
             if (manualTextByKey.containsKey(
               '${row.read<int>('predmet_id')}:${row.read<String>('stable_rule_id')}',
             ))
-              'obligationText': manualTextByKey[
-                '${row.read<int>('predmet_id')}:${row.read<String>('stable_rule_id')}'
-              ],
+              'obligationText':
+                  manualTextByKey['${row.read<int>('predmet_id')}:${row.read<String>('stable_rule_id')}'],
             'completed': row.read<int>('completed') == 1,
             if (row.readNullable<String>('completed_at') != null)
               'completedAt': row.readNullable<String>('completed_at'),
@@ -1094,6 +1091,12 @@ Map<String, dynamic> _normalizujBackupFirmaPodaciMap(Map<String, dynamic> row) {
   if ((normalized['parteDefaultTemplateId'] as String).trim().isEmpty) {
     normalized['parteDefaultTemplateId'] = parteBuiltinTemplateId;
   }
+  const racunToggleKey = 'racunOmogucen';
+  if (!normalized.containsKey(racunToggleKey)) {
+    normalized[racunToggleKey] = true;
+  } else {
+    _requiredBool(normalized, racunToggleKey, 'firmaPodaci');
+  }
   return normalized;
 }
 
@@ -1197,8 +1200,8 @@ Future<void> _restoreImportedCituljeState({
   final now = DateTime.now().toIso8601String();
   for (final preparation in preparations) {
     final occurrence = importedIriu.where(
-      (row) => row.portableOccurrenceId?.trim() ==
-          preparation.portableOccurrenceId,
+      (row) =>
+          row.portableOccurrenceId?.trim() == preparation.portableOccurrenceId,
     );
     if (occurrence.length != 1 ||
         occurrence.single.interniNaziv != preparation.articleType) {
@@ -1206,25 +1209,27 @@ Future<void> _restoreImportedCituljeState({
         'ČITULJE priprema nema odgovarajuću current IRiU occurrence vezu.',
       );
     }
-    await db.into(db.cituljePripreme).insert(
-      CituljePripremeCompanion.insert(
-        predmetId: predmetId,
-        portableOccurrenceId: preparation.portableOccurrenceId,
-        articleType: preparation.articleType,
-        parteTextMode: Value(preparation.parteTextMode?.dbValue),
-        publicationDate: Value(preparation.publicationDate),
-        publicationText: Value(preparation.publicationText),
-        note: Value(preparation.note),
-          state: Value(preparation.state.dbValue),
-          finalized: Value(preparation.finalized),
-          finalizedAt: Value(preparation.finalizedAt),
-          parteSnapshotFingerprint: Value(
-          preparation.parteSnapshotFingerprint,
-        ),
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
+    await db
+        .into(db.cituljePripreme)
+        .insert(
+          CituljePripremeCompanion.insert(
+            predmetId: predmetId,
+            portableOccurrenceId: preparation.portableOccurrenceId,
+            articleType: preparation.articleType,
+            parteTextMode: Value(preparation.parteTextMode?.dbValue),
+            publicationDate: Value(preparation.publicationDate),
+            publicationText: Value(preparation.publicationText),
+            note: Value(preparation.note),
+            state: Value(preparation.state.dbValue),
+            finalized: Value(preparation.finalized),
+            finalizedAt: Value(preparation.finalizedAt),
+            parteSnapshotFingerprint: Value(
+              preparation.parteSnapshotFingerprint,
+            ),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
   }
 }
 
@@ -1625,7 +1630,8 @@ Future<bool> _localDatabaseHasBusinessState(
     ];
     if (firmaFields.any((value) => value.trim().isNotEmpty) ||
         localFirma.logo != null ||
-        localFirma.parteDefaultTemplateId != _kBuiltInParteTemplateId) {
+        localFirma.parteDefaultTemplateId != _kBuiltInParteTemplateId ||
+        !localFirma.racunOmogucen) {
       return true;
     }
   }
@@ -2177,8 +2183,8 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
               k,
               (row) => KorisniciData.fromJson(row),
             ).toCompanion(true),
-              mode: InsertMode.insertOrReplace,
-            );
+            mode: InsertMode.insertOrReplace,
+          );
     }
 
     final firmMap = _withDecodedBlob(
@@ -2593,39 +2599,42 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
         cituljePreparationTransferBlockKey,
       );
       if (!backupPredmetIds.contains(predmetId)) continue;
-      final currentIriu = (await (db.select(db.iriu)
-                ..where((row) => row.predmetId.equals(predmetId)))
-              .get())
-          .where(
-            (row) =>
-                row.portableOccurrenceId?.trim() ==
-                parsed.portableOccurrenceId,
-          )
-          .toList(growable: false);
+      final currentIriu =
+          (await (db.select(
+                db.iriu,
+              )..where((row) => row.predmetId.equals(predmetId))).get())
+              .where(
+                (row) =>
+                    row.portableOccurrenceId?.trim() ==
+                    parsed.portableOccurrenceId,
+              )
+              .toList(growable: false);
       if (currentIriu.length != 1 ||
           currentIriu.single.interniNaziv != parsed.articleType) {
         throw const _ImportBlokiranException(
           'Backup ČITULJE priprema nema odgovarajuću IRiU occurrence vezu.',
         );
       }
-      await db.into(db.cituljePripreme).insert(
-        CituljePripremeCompanion.insert(
-          predmetId: predmetId,
-          portableOccurrenceId: parsed.portableOccurrenceId,
-          articleType: parsed.articleType,
-          parteTextMode: Value(parsed.parteTextMode?.dbValue),
-          publicationDate: Value(parsed.publicationDate),
-          publicationText: Value(parsed.publicationText),
-          note: Value(parsed.note),
-          state: Value(parsed.state.dbValue),
-          finalized: Value(parsed.finalized),
-          finalizedAt: Value(parsed.finalizedAt),
-          parteSnapshotFingerprint: Value(parsed.parteSnapshotFingerprint),
-          createdAt: DateTime.now().toIso8601String(),
-          updatedAt: DateTime.now().toIso8601String(),
-        ),
-        mode: InsertMode.insertOrReplace,
-      );
+      await db
+          .into(db.cituljePripreme)
+          .insert(
+            CituljePripremeCompanion.insert(
+              predmetId: predmetId,
+              portableOccurrenceId: parsed.portableOccurrenceId,
+              articleType: parsed.articleType,
+              parteTextMode: Value(parsed.parteTextMode?.dbValue),
+              publicationDate: Value(parsed.publicationDate),
+              publicationText: Value(parsed.publicationText),
+              note: Value(parsed.note),
+              state: Value(parsed.state.dbValue),
+              finalized: Value(parsed.finalized),
+              finalizedAt: Value(parsed.finalizedAt),
+              parteSnapshotFingerprint: Value(parsed.parteSnapshotFingerprint),
+              createdAt: DateTime.now().toIso8601String(),
+              updatedAt: DateTime.now().toIso8601String(),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
     }
     await db.deduplicateCituljeCatalogAndRemapReferences();
     await db.backfillMissingKatalogStableArticleIds();
@@ -3221,18 +3230,18 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
       : PodsetnikObligationTransferBlock.fromJsonMap(
           (rawPodsetnik as Map).cast<String, dynamic>(),
         );
-  final cituljePripreme = _optionalMapList(
-    json,
-    cituljePreparationTransferBlockKey,
-  ).map((row) {
-    try {
-      return CituljePreparationTransfer.fromJson(row);
-    } catch (_) {
-      throw const _ImportBlokiranException(
-        'Neispravna ČITULJE sekcija u PREDMET JSON transferu.',
-      );
-    }
-  }).toList(growable: false);
+  final cituljePripreme =
+      _optionalMapList(json, cituljePreparationTransferBlockKey)
+          .map((row) {
+            try {
+              return CituljePreparationTransfer.fromJson(row);
+            } catch (_) {
+              throw const _ImportBlokiranException(
+                'Neispravna ČITULJE sekcija u PREDMET JSON transferu.',
+              );
+            }
+          })
+          .toList(growable: false);
   final cituljePortableIds = <String>{};
   for (final item in cituljePripreme) {
     if (!cituljePortableIds.add(item.portableOccurrenceId)) {
@@ -3253,13 +3262,12 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
   );
 }
 
-Map<String, dynamic> _cituljePripremeToBackupMap(
-  CituljePripremeData row,
-) => <String, dynamic>{
-  ...row.toJson(),
-  'schemaVersion': cituljeTransferSchemaVersion,
-  'policy': cituljeTransferPolicy,
-};
+Map<String, dynamic> _cituljePripremeToBackupMap(CituljePripremeData row) =>
+    <String, dynamic>{
+      ...row.toJson(),
+      'schemaVersion': cituljeTransferSchemaVersion,
+      'policy': cituljeTransferPolicy,
+    };
 
 void _validatePortableIriuOccurrenceIds(Iterable<IriuData> rows) {
   final seenByPredmet = <int, Set<String>>{};

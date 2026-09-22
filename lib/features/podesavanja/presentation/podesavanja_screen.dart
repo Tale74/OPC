@@ -123,7 +123,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         .where(
           (section) =>
               widget.session.jeAdmin &&
-              widget.entitlementPolicy.isSettingsSectionVisible(section) ||
+                  widget.entitlementPolicy.isSettingsSectionVisible(section) ||
               !widget.session.jeAdmin &&
                   section == OpcSettingsSection.oAplikaciji,
         )
@@ -736,6 +736,7 @@ class _FirmaTab extends StatefulWidget {
 class _FirmaTabState extends State<_FirmaTab> {
   bool _ucitava = true;
   bool _cuva = false;
+  bool _racunOmogucen = true;
 
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nazivCtrl;
@@ -810,6 +811,7 @@ class _FirmaTabState extends State<_FirmaTab> {
       _emailCtrl.text = firma.email;
       _sajtCtrl.text = firma.sajt;
       _logo = firma.logo;
+      _racunOmogucen = firma.racunOmogucen;
       _ucitava = false;
     });
     if (widget.prikaziOnboarding) {
@@ -860,6 +862,7 @@ class _FirmaTabState extends State<_FirmaTab> {
         email: Value(_emailCtrl.text.trim()),
         sajt: Value(_sajtCtrl.text.trim()),
         logo: Value(_logo),
+        racunOmogucen: Value(_racunOmogucen),
       ),
     );
     await widget.repo.saveAppPodesavanja(
@@ -1034,6 +1037,22 @@ class _FirmaTabState extends State<_FirmaTab> {
                   ),
                 ),
                 const SizedBox(height: 32),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('RAČUN'),
+                  subtitle: const Text(
+                    'Račun može da se formira ukoliko je pravno lice '
+                    'preduzetnik i nije u sistemu PDV',
+                  ),
+                  value: _racunOmogucen,
+                  onChanged: _cuva
+                      ? null
+                      : (value) {
+                          setState(() => _racunOmogucen = value);
+                          _setDirty();
+                        },
+                ),
+                const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _cuva ? null : _sacuvaj,
                   child: _cuva

@@ -42,7 +42,6 @@ enum OpcSettingsSection {
 }
 
 enum OpcDocumentAction {
-  predmetPdfSnapshot,
   listaPdf,
   predracunPdf,
   specifikacijaTroskovaPdf,
@@ -50,6 +49,7 @@ enum OpcDocumentAction {
   nalogCvecariPdf,
   jsonTransfer,
   racunPdf,
+  racunDocx,
 }
 
 /// Stage 1 owner policy for the native Windows/Android product.
@@ -530,7 +530,6 @@ final class OpcEntitlementPolicy {
 
   bool isDocumentActionVisible(OpcDocumentAction action) {
     return switch (action) {
-      OpcDocumentAction.predmetPdfSnapshot ||
       OpcDocumentAction.listaPdf ||
       OpcDocumentAction.predracunPdf ||
       OpcDocumentAction.specifikacijaTroskovaPdf ||
@@ -541,9 +540,8 @@ final class OpcEntitlementPolicy {
       OpcDocumentAction.jsonTransfer => isModuleAvailable(
         OpcModule.jsonSinglePredmetTransfer,
       ),
-      OpcDocumentAction.racunPdf => isModuleAvailable(
-        OpcModule.operationalDocuments,
-      ),
+      OpcDocumentAction.racunPdf || OpcDocumentAction.racunDocx =>
+        isModuleAvailable(OpcModule.operationalDocuments),
     };
   }
 
