@@ -1453,6 +1453,7 @@ Future<void> _insertCatalogCategory(AppDatabase db, String category) async {
           nazivPrikaz: category,
           tip: const Value('KATALOSKA'),
         ),
+        mode: InsertMode.insertOrIgnore,
       );
 }
 

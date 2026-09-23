@@ -108,6 +108,7 @@ is preserved but cannot silently remain active roadmap instruction.
 | KATALOG/IRiU price model | `COMPLETED — TECHNICAL PASS` | FIKSNA price, CRNINA KATALOŠKA, applied price snapshot, `KOM × CENA = IZNOS`, manual override and OSNOVNI pricing are covered. |
 | Android release build/startup | `COMPLETED — OWNER RUNTIME PASS` | Fresh release APK, in-place upgrade, cold/warm startup, login/navigation and stability smoke passed. |
 | Full technical regression baseline | `COMPLETED — TECHNICAL PASS` | Latest inherited baseline: analyze PASS; full suite 393 passed, 7 skipped, 0 failed; Windows and Android release builds PASS. |
+| Scenario ↔ KATALOG clean-start baseline and category-delete protection | `COMPLETED — OWNER ACCEPTED; PUBLISHED` | Fresh databases seed the exact 29 system-required category configurations with no business articles; user edits remain extensible; persisted SCENARIO references protect built-in and custom categories from physical deletion. Focused/full QA, analyzer, Windows/Android release builds and OWNER Windows/Android package acceptance passed. Broader release gates remain separate. |
 
 These items reopen only for a new source/runtime finding, a regression, or an
 explicit new owner business decision.

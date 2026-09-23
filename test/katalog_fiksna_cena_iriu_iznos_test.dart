@@ -279,5 +279,6 @@ Future<void> _insertConfig(
           nazivPrikaz: interniNaziv,
           tip: Value(tip),
         ),
+        mode: InsertMode.insertOrReplace,
       );
 }

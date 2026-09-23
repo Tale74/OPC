@@ -193,7 +193,7 @@ Single-PREDMET transfer and full-backup JSON remain distinct. Release acceptance
 - isolated-copy migration and restore evidence;
 - Windows/Android artifact and runtime scope.
 
-Release/data-integrity acceptance also protects the empty-business-KATALOG contract: a fresh database may create structural/auth singleton state, but must not invent user/business categories or articles. Existing KATALOG content must survive reopen and migration without automatic reseeding; tests must provide explicit catalogue fixtures when required.
+Release/data-integrity acceptance also protects the clean-start KATALOG contract: a fresh database seeds the exact 29 system-required category configurations but no business articles or starter pack. Existing KATALOG rows and user edits must survive reopen and migration; user categories remain extensible, and any persisted SCENARIO reference blocks physical category deletion. Tests may provide explicit business fixtures when required. The bounded Scenario ↔ KATALOG package has OWNER implementation acceptance and Windows/Android semantic parity for this scope; broader release gates remain separate.
 
 Prior successful incidents are scoped evidence, not the final product-line rehearsal. The Windows owner-facing backup/restore acceptance is now `PASS — BOUNDED DISPOSABLE LANE`; the direct post-restore back/logout observation remains an evidence-incomplete, non-blocking successor. A release-candidate backup/restore rehearsal remains open in the current development plan.
 

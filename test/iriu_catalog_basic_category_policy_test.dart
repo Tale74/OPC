@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/constants/iriu_constants.dart';
+import 'package:opc_v4/core/catalog/katalog_category_baseline.dart';
 import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/features/podesavanja/data/podesavanja_repository.dart';
 import 'package:opc_v4/features/predmeti/core_v2/services/financial_truth_service.dart';
@@ -40,17 +41,18 @@ void main() {
       );
     });
 
-    test('fresh schema starts without business categories', () async {
+    test('fresh schema contains category baseline without business articles', () async {
       final db = createTestDatabase();
       addTearDown(db.close);
 
       expect(db.schemaVersion, 36);
-      for (final internalName in IriuK.podesiveOsnovneSeedKategorije) {
-        final rows = await (db.select(
-          db.iriuKatalogConfig,
-        )..where((row) => row.interniNaziv.equals(internalName))).get();
-        expect(rows, isEmpty);
-      }
+      expect(
+        (await db.select(db.iriuKatalogConfig).get())
+            .map((row) => row.interniNaziv)
+            .toSet(),
+        KatalogCategoryBaseline.internalNames,
+      );
+      expect(await db.select(db.katalogArtikli).get(), isEmpty);
     });
 
     test('new user category keeps the compatibility flag inert', () async {

@@ -601,6 +601,31 @@ The provenance matrix, reverse-coverage result and demotion of unparented
 technical chains are recorded in
 `docs/tasks/OPC_TASK_ROADMAP_PROVENANCE_RECONCILIATION_OWNER_ROADMAP_RESTORATION_REPORT.md`.
 
+## Normal-roadmap Scenario ↔ KATALOG clean-start baseline and delete protection — 2026-09-22
+
+The bounded Scenario ↔ KATALOG package is implemented on the current source.
+Fresh databases seed the exact 29 system-required KATALOG category
+configurations and no business articles or starter pack. `interniNaziv` remains
+the stable category identity while `nazivPrikaz` is editable display text, so
+renaming a category does not break an existing SCENARIO reference. User-added
+categories remain valid SCENARIO inputs. A persisted reference from either a
+built-in or custom SCENARIO blocks physical category deletion and preserves the
+existing deactivate/hide behavior; deleting the last scenario reference restores
+the existing category-delete rules. No schema, JSON contract, starter article,
+or broader SCENARIO policy change was introduced.
+
+Evidence: focused clean-start/reference tests `5 PASS`; relevant SCENARIO
+regressions `41 PASS`; KATALOG regressions `28 PASS / 2 SKIP`; Backup/JSON
+regressions `30 PASS`; final serialized suite `580 PASS / 10 SKIP / 0 FAIL`;
+final analyzer PASS; Windows release build PASS (`248.7 s`); Android
+production release build PASS (`1177.2 s`); `git diff --check` PASS.
+Windows Scenario delete protection PASS, Android clean-start category bootstrap
+PASS, OWNER implementation acceptance PASS, and Windows/Android semantic parity
+PASS for this package scope. The first Android observation was contaminated by
+pre-existing app state and remains historical evidence only; the later genuinely
+fresh-install result is the accepted clean-start proof. Broader release and
+unrelated roadmap gates remain separate.
+
 ## URNA/PEPEO + F-06 PODSETNIK milestone — current source state
 
 The bounded follow-on milestone implements the locked URNA/PEPEO lifecycle and

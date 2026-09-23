@@ -200,12 +200,7 @@ class PodesavanjaRepository {
     for (final definition in definitions) {
       try {
         final decoded = jsonDecode(definition.consequencesJson);
-        if (decoded is List &&
-            decoded.any(
-              (item) =>
-                  item is Map<String, dynamic> &&
-                  item['katalogCategoryInternalName'] == interniNaziv,
-            )) {
+        if (_scenarioDefinitionReferencesCategory(decoded, interniNaziv)) {
           uScenariju = true;
           break;
         }
@@ -223,6 +218,17 @@ class PodesavanjaRepository {
       uOsnovnomPaketu: uOsnovnomPaketu,
       uScenariju: uScenariju,
     );
+  }
+
+  bool _scenarioDefinitionReferencesCategory(
+    Object? decoded,
+    String interniNaziv,
+  ) {
+    if (decoded is! List) return false;
+    return decoded.any((item) {
+      if (item is! Map) return false;
+      return item['katalogCategoryInternalName'] == interniNaziv;
+    });
   }
 
   Future<KategorijaLifecycleIshod> ukloniIliDeaktivirajKorisnickuKategoriju(

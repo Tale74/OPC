@@ -210,7 +210,7 @@ Windows native singleton authority is `CLOSED — FULL ACCEPTANCE PASS` from the
 
 - Treat Drift-generated `database.g.dart` as generated output; do not edit it as hand-written architecture.
 - Protect schema/migration history, runtime data compatibility and backup/restore contracts.
-- Treat a fresh test/runtime database as empty of user/business KATALOG content. Tests that need catalogue data must insert an explicit fixture; production startup, reopen and migrations must not hide business bootstrap.
+- Treat a fresh test/runtime database as seeded with the exact system-required clean-start KATALOG category baseline (29 category configurations), with no business articles or starter pack. Existing rows and user edits must survive reopen and migration; user categories remain extensible, while any persisted SCENARIO reference blocks physical category deletion. Tests may add explicit business fixtures when required; production startup, reopen and migrations must not hide or replace user/business data.
 - Use isolated/forensic copies for risky data work; never replace a designated user database with a prepared/test database.
 - Keep single-PREDMET JSON and full-backup JSON distinct.
 - Do not commit runtime databases, customer data, exports, private backups, credentials or machine-local configuration.

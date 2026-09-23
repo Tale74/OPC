@@ -4,15 +4,20 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/catalog/katalog_category_baseline.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 
 void main() {
-  test('fresh database is valid and business KATALOG is empty', () async {
+  test('fresh database has system categories and empty business articles', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
     expect(await _userVersion(db), 36);
-    expect(await db.select(db.iriuKatalogConfig).get(), isEmpty);
+    final categories = await db.select(db.iriuKatalogConfig).get();
+    expect(
+      categories.map((row) => row.interniNaziv).toSet(),
+      KatalogCategoryBaseline.internalNames,
+    );
     expect(await db.select(db.katalogArtikli).get(), isEmpty);
     expect(
       await _hasIndex(db, 'idx_katalog_artikli_stable_article_id'),
@@ -28,19 +33,29 @@ void main() {
     expect(await db.hasKorisnika(), isTrue);
   });
 
-  test('reopening a fresh database does not reseed business KATALOG', () async {
+  test('reopening a fresh database preserves the category baseline and articles stay empty', () async {
     final directory = await Directory.systemTemp.createTemp(
       'opc-empty-katalog-',
     );
     final file = File('${directory.path}${Platform.pathSeparator}empty.sqlite');
     try {
       final first = AppDatabase.forTesting(NativeDatabase(file));
-      expect(await first.select(first.iriuKatalogConfig).get(), isEmpty);
+      expect(
+        (await first.select(first.iriuKatalogConfig).get())
+            .map((row) => row.interniNaziv)
+            .toSet(),
+        KatalogCategoryBaseline.internalNames,
+      );
       expect(await first.select(first.katalogArtikli).get(), isEmpty);
       await first.close();
 
       final second = AppDatabase.forTesting(NativeDatabase(file));
-      expect(await second.select(second.iriuKatalogConfig).get(), isEmpty);
+      expect(
+        (await second.select(second.iriuKatalogConfig).get())
+            .map((row) => row.interniNaziv)
+            .toSet(),
+        KatalogCategoryBaseline.internalNames,
+      );
       expect(await second.select(second.katalogArtikli).get(), isEmpty);
       expect(
         await _hasIndex(second, 'idx_katalog_artikli_stable_article_id'),

@@ -17,6 +17,20 @@ final class OpcDatabaseMigrationFixture {
     );
     final database = AppDatabase.forTesting(NativeDatabase(file));
     await database.customSelect('SELECT 1').get();
+    // This fixture represents the historical sparse template used by the
+    // migration tests. The production fresh-database baseline is intentionally
+    // removed here so those tests can exercise legacy absence and upgrade
+    // behavior without changing product bootstrap semantics.
+    await database.customStatement('''
+      DELETE FROM iriu_katalog_config
+      WHERE interni_naziv NOT IN (
+        'KORISNIK_LEGACY',
+        'AGENCIJSKE_USLUGE',
+        'DORADA_POGREBNE_OPREME',
+        'KUCANJE_OBELEZJA',
+        'SLOVA_I_BROJEVI'
+      )
+    ''');
     await database.customStatement(
       "UPDATE firma_podaci SET naziv = 'SYNTHETIC MIGRATION FIRMA' WHERE id = 1",
     );
@@ -43,7 +57,7 @@ final class OpcDatabaseMigrationFixture {
       ) VALUES (1, 'NARU_OPREMA', 'SYNTHETIC CONTACT', '', '', '', 1)
     ''');
     await database.customStatement('''
-      INSERT INTO iriu_katalog_config (
+      INSERT OR REPLACE INTO iriu_katalog_config (
         interni_naziv, naziv_prikaz, vidljiv, uvek_prikazati,
         tip, je_korisnicka, osnovna_u_svakom_predmetu, redosled
       ) VALUES (
@@ -52,7 +66,7 @@ final class OpcDatabaseMigrationFixture {
       )
     ''');
     await database.customStatement('''
-      INSERT INTO iriu_katalog_config (
+      INSERT OR REPLACE INTO iriu_katalog_config (
         interni_naziv, naziv_prikaz, vidljiv, uvek_prikazati,
         tip, je_korisnicka, osnovna_u_svakom_predmetu, redosled
       ) VALUES

@@ -16,6 +16,7 @@ import 'tables/app_podesavanja_table.dart';
 import 'tables/citulje_pripreme_table.dart';
 import 'tables/firma_podaci_table.dart';
 import 'tables/iriu_katalog_config_table.dart';
+import '../catalog/katalog_category_baseline.dart';
 import 'tables/iriu_provenance_table.dart';
 import 'tables/iriu_table.dart';
 import 'tables/katalog_artikli_table.dart';
@@ -83,6 +84,7 @@ class AppDatabase extends _$AppDatabase {
     onCreate: (m) async {
       await _rejectNonEmptyVersionZeroDatabase();
       await m.createAll();
+      await _seedMandatoryKatalogCategories();
       await _createPodsetnikManualObavezeTable();
       await _prepareAuthSecuritySchema();
       await _createIriuLifecycleDecisionTable();
@@ -1045,6 +1047,24 @@ class AppDatabase extends _$AppDatabase {
       ),
       mode: InsertMode.insertOrIgnore,
     );
+  }
+
+  /// Creates only the system category baseline on a brand-new database.
+  /// Existing rows and their user-edited labels/configuration are preserved by
+  /// the ignore mode; no business articles are created here.
+  Future<void> _seedMandatoryKatalogCategories() async {
+    for (final entry in KatalogCategoryBaseline.entries) {
+      await into(iriuKatalogConfig).insert(
+        IriuKatalogConfigCompanion(
+          interniNaziv: Value(entry.internalName),
+          nazivPrikaz: Value(entry.displayName),
+          tip: Value(entry.type),
+          cena: Value(entry.defaultPrice),
+          redosled: Value(entry.order),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+    }
   }
 
   // ── IRIU katalog — predefinisane stavke (sloj 1) ─────────────────────────
