@@ -799,6 +799,29 @@ scheduling or recreation semantics. Focused replacement integration, analyzer,
 full-suite and Windows release-build evidence pass. Broader PARTE/notification product characterization remains a
 separate concern; no SCENARIO or canonical-data behavior was changed.
 
+## PARTE workflow/performance correction — 2026-09-24
+
+The bounded PARTE correction addressed source-proven workflow cost and
+eligibility behavior without creating new business authority. Local composer
+edits now reuse the already-read PREDMET/render-plan state instead of chaining
+an additional source-change read and recomposition after every persisted
+action; initialization and the explicit completion path retain source-change
+validation. `PRIPREMA ZAVRŠENA` now requires a valid current preparation and a
+confirmed current preview, not a previous PDF export. PDF/DOCX export behavior
+and the PARTE-to-ČITULJE confirmed-content handoff remain unchanged.
+
+`MODUL PARTE` now uses a stable-ID PREDMET dropdown backed by one bounded
+PREDMET/preparation load, while retained eligible preparations remain
+reopenable and completed-preparation deletion continues to preserve PREDMET and
+IRiU data. No schema, Single-PREDMET JSON or Backup contract changed. Focused
+PARTE/ČITULJE/JSON regressions passed `39/39`; analyzer passed; the current
+serialized suite passed `586 PASS / 10 SKIP / 0 FAIL`; Windows and Android
+release builds passed. The source-proven causal correction was redundant
+refresh/recomposition; ČITULJE was not confirmed as the direct cause. OWNER
+runtime responsiveness acceptance passed after the bounded correction. Any
+continued ordinary-use observation is post-acceptance observation and does not
+reopen this publication gate.
+
 ## PREDMET local identity / recovery correction — bounded implementation
 
 Individual PREDMET transfer now requires an active local ADMINISTRATOR or

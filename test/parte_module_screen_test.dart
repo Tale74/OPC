@@ -10,7 +10,6 @@ import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
-import 'package:opc_v4/features/predmeti/presentation/predmet_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/presentation/parte_module_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/presentation/parte_composer_screen.dart';
 import 'package:opc_v4/features/predmeti/parte/data/parte_print_profile_store.dart';
@@ -48,20 +47,12 @@ void main() {
       parte: true,
       status: 'ZATVOREN',
     );
-    final eligible = await (db.select(
-      db.predmeti,
-    )..where((row) => row.brojPredmeta.equals('ELIGIBLE-001'))).getSingle();
-    PredmetScreen? openedParteDestination;
-
     await tester.pumpWidget(
       MaterialApp(
         home: ParteModuleScreen(
           predmetiRepository: PredmetiRepository(db),
           actor: actor,
           session: session,
-          onOpenPredmetParte: (destination) async {
-            openedParteDestination = destination;
-          },
           entitlement: const OpcEntitlementPolicy.fromSource(
             OpcDemoTestEntitlementSource(packageLevel: OpcPackageLevel.potpun),
           ),
@@ -74,20 +65,21 @@ void main() {
     }
 
     expect(find.text('MODUL PARTE'), findsOneWidget);
-    expect(find.text('Otvoreno Lice'), findsOneWidget);
-    expect(find.textContaining('ELIGIBLE-001'), findsOneWidget);
+    expect(find.byKey(const Key('parte-predmet-selector')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('parte-predmet-selector')));
+    await tester.pump();
+    expect(find.text('Otvoreno Lice · ELIGIBLE-001'), findsOneWidget);
     expect(find.textContaining('NO-PARTE-002'), findsNothing);
     expect(find.textContaining('CLOSED-003'), findsNothing);
-
-    await tester.tap(
-      find.byKey(ValueKey('parte-open-predmet-parte-${eligible.id}')),
-    );
+    await tester.tap(find.text('Otvoreno Lice · ELIGIBLE-001').last);
+    for (var attempt = 0; attempt < 20; attempt++) {
+      await tester.pump(const Duration(milliseconds: 250));
+      if (find.byType(ParteComposerScreen).evaluate().isNotEmpty) break;
+    }
+    expect(find.byType(ParteComposerScreen), findsOneWidget);
+    await tester.pageBack();
     await tester.pump();
-    expect(openedParteDestination, isNotNull);
-    expect(openedParteDestination!.predmetId, eligible.id);
-    expect(openedParteDestination!.openParte, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
     await tester.pump();
   });
 
@@ -384,7 +376,32 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.tap(find.byKey(const Key('parte-predmet-selector')));
+      await tester.pump();
+      await tester.tap(find.text('Sačuvana Lice · DELETE-005').last);
+      for (var attempt = 0; attempt < 20; attempt++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        if (find.byType(ParteComposerScreen).evaluate().isNotEmpty) break;
+      }
+      await tester.pageBack();
+      for (var attempt = 0; attempt < 20; attempt++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        if (find.byType(ParteComposerScreen).evaluate().isEmpty) {
+          break;
+        }
+      }
+      for (var attempt = 0; attempt < 20; attempt++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        if (find
+            .byKey(ValueKey('parte-preparation-menu-${predmet.id}'))
+            .evaluate()
+            .isNotEmpty) {
+          break;
+        }
+      }
+
       final menu = find.byKey(ValueKey('parte-preparation-menu-${predmet.id}'));
+      await tester.ensureVisible(menu);
       await tester.tap(menu);
       await tester.pumpAndSettle();
       await tester.tap(find.text('OBRIŠI SAČUVANU PRIPREMU'));
@@ -394,6 +411,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(await preparationRepository.findForPredmet(predmet.id), isNotNull);
 
+      await tester.ensureVisible(menu);
       await tester.tap(menu);
       await tester.pumpAndSettle();
       await tester.tap(find.text('OBRIŠI SAČUVANU PRIPREMU'));
@@ -421,8 +439,9 @@ void main() {
           break;
         }
       }
+      expect(find.byKey(const Key('parte-predmet-selector')), findsOneWidget);
       expect(
-        find.byKey(ValueKey('parte-preparation-${predmet.id}')),
+        find.byKey(ValueKey('parte-open-predmet-parte-${predmet.id}')),
         findsOneWidget,
       );
       expect(
@@ -430,7 +449,6 @@ void main() {
         findsNothing,
       );
       await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
       await tester.pump();
     },
   );

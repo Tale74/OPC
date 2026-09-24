@@ -27,6 +27,8 @@ class PartePreparationRepository {
     _db.partePripreme,
   )..where((row) => row.predmetId.equals(predmetId))).getSingleOrNull();
 
+  Future<List<PartePripremeData>> listAll() => _db.select(_db.partePripreme).get();
+
   Future<PartePripremeData> initializeOrResume({
     required int predmetId,
     required KorisniciData actor,
@@ -290,13 +292,10 @@ class PartePreparationRepository {
       entitlement: entitlement,
     );
     final current = await _requireEditable(preparationId);
-    if (!current.exportedSuccessfully ||
-        current.exportedRenderFingerprint != plan.fingerprint ||
-        current.previewConfirmedFingerprint != plan.fingerprint ||
-        current.exportedFilename?.trim().isEmpty != false ||
-        current.exportedLocation?.trim().isEmpty != false) {
+    if (!plan.canConfirmPreview ||
+        current.previewConfirmedFingerprint != plan.fingerprint) {
       throw StateError(
-        'PRIPREMA ZAVRŠENA zahteva uspešan aktuelni KORICE izvoz.',
+        'PRIPREMA ZAVRŠENA zahteva potvrđen aktuelni pregled pripreme.',
       );
     }
     final now = DateTime.now().toIso8601String();

@@ -425,7 +425,7 @@ void main() {
         actor: fixture.actor,
         entitlement: potpun,
       );
-      var preparation = (await fixture.repository.findForPredmet(
+      final preparation = (await fixture.repository.findForPredmet(
         fixture.predmet.id,
       ))!;
       final plan = await fixture.service.buildPlan(preparation: preparation);
@@ -435,19 +435,7 @@ void main() {
         actor: fixture.actor,
         entitlement: potpun,
       );
-      await fixture.repository.recordSuccessfulExport(
-        preparationId: preparation.id,
-        plan: plan,
-        filename: 'SYNTHETIC_PARTA_v1.pdf',
-        location: 'KORICE/SYNTHETIC_PARTA_v1.pdf',
-        actor: fixture.actor,
-        entitlement: potpun,
-      );
-      preparation = (await fixture.repository.findForPredmet(
-        fixture.predmet.id,
-      ))!;
-
-      expect(preparation.status, PartePreparationStatus.inProgress.dbValue);
+       expect(preparation.status, PartePreparationStatus.inProgress.dbValue);
       expect(
         await fixture.repository.blocksPredmetCompletion(fixture.predmet.id),
         isTrue,
@@ -460,19 +448,41 @@ void main() {
         actor: fixture.actor,
         entitlement: potpun,
       );
-      final completed = (await fixture.repository.findForPredmet(
-        fixture.predmet.id,
-      ))!;
-      expect(completed.status, PartePreparationStatus.completed.dbValue);
-      expect(completed.exportedFilename, 'SYNTHETIC_PARTA_v1.pdf');
-      expect(completed.draftJson, contains('textByBlock'));
+       final completed = (await fixture.repository.findForPredmet(
+         fixture.predmet.id,
+       ))!;
+       expect(completed.status, PartePreparationStatus.completed.dbValue);
+       expect(completed.exportedFilename, isNull);
+       expect(completed.exportedSuccessfully, isFalse);
+       expect(completed.draftJson, contains('textByBlock'));
       expect(await fixture.mediaStore.exists(imported.mediaKey), isTrue);
       expect(await external.exists(), isTrue);
       expect(await external.readAsBytes(), orderedEquals(originalBytes));
-      expect(
-        await fixture.repository.blocksPredmetCompletion(fixture.predmet.id),
-        isFalse,
-      );
+       expect(
+         await fixture.repository.blocksPredmetCompletion(fixture.predmet.id),
+         isFalse,
+       );
+
+       final postCompletionPdf = await PartePdfRenderer(
+         mediaStore: fixture.mediaStore,
+       ).build(plan: plan);
+       expect(String.fromCharCodes(postCompletionPdf.take(4)), '%PDF');
+       await fixture.repository.recordSuccessfulExport(
+         preparationId: completed.id,
+         plan: plan,
+         filename: 'SYNTHETIC_PARTA_AFTER_COMPLETION.pdf',
+         location: 'KORICE/SYNTHETIC_PARTA_AFTER_COMPLETION.pdf',
+         actor: fixture.actor,
+         entitlement: potpun,
+       );
+       final exportedAfterCompletion = (await fixture.repository.findForPredmet(
+         fixture.predmet.id,
+       ))!;
+       expect(exportedAfterCompletion.exportedSuccessfully, isTrue);
+       expect(
+         exportedAfterCompletion.exportedFilename,
+         'SYNTHETIC_PARTA_AFTER_COMPLETION.pdf',
+       );
       final retainedDraft = ParteDraft.decode(completed.draftJson);
       await fixture.repository.updateDraft(
         preparationId: completed.id,
@@ -633,7 +643,7 @@ void main() {
     expect(await fixture.mediaStore.exists(imported.mediaKey), isTrue);
   });
 
-  test('failed or stale preview/export state cannot complete', () async {
+  test('missing or stale preview state cannot complete', () async {
     final fixture = await _fixture();
     addTearDown(fixture.dispose);
     await fixture.repository.updateAcknowledgements(
@@ -656,17 +666,20 @@ void main() {
       ),
       throwsStateError,
     );
-    expect(
-      () => fixture.repository.recordSuccessfulExport(
-        preparationId: preparation.id,
-        plan: plan,
-        filename: 'never-written.pdf',
-        location: 'KORICE/never-written.pdf',
-        actor: fixture.actor,
-        entitlement: potpun,
-      ),
-      throwsStateError,
+    await fixture.repository.confirmPreview(
+      preparationId: preparation.id,
+      plan: plan,
+      actor: fixture.actor,
+      entitlement: potpun,
     );
+    final completed = await fixture.repository.beginCompletion(
+      preparationId: preparation.id,
+      plan: plan,
+      actor: fixture.actor,
+      entitlement: potpun,
+    );
+    expect(completed.status, PartePreparationStatus.completed.dbValue);
+    expect(completed.exportedSuccessfully, isFalse);
   });
 }
 

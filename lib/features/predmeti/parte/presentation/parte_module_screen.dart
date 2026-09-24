@@ -34,8 +34,12 @@ class ParteModuleScreen extends StatefulWidget {
 class _ParteModuleScreenState extends State<ParteModuleScreen> {
   late final PartePreparationRepository _preparations;
   late final PartePreparationService _preparationService;
-  late Future<List<_PartePredmetItem>> _items;
+  List<_PartePredmetItem> _items = const [];
   final Set<int> _locallyDeletedPreparationIds = <int>{};
+  int? _selectedPredmetId;
+  bool _loading = true;
+  bool _openingPredmet = false;
+  int _loadGeneration = 0;
 
   @override
   void initState() {
@@ -45,25 +49,49 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
       repository: _preparations,
       mediaStore: ParteMediaStore(),
     );
-    _items = _load();
+    _refresh();
   }
 
-  Future<List<_PartePredmetItem>> _load() async {
+  Future<void> _refresh() async {
+    final generation = ++_loadGeneration;
+    if (mounted) setState(() => _loading = true);
     final predmeti = await widget.predmetiRepository.getSvePredmete();
+    final preparations = await _preparations.listAll();
+    final preparationByPredmet = {
+      for (final preparation in preparations) preparation.predmetId: preparation,
+    };
     final items = <_PartePredmetItem>[];
     for (final predmet in predmeti) {
-      final preparation = await _preparations.findForPredmet(predmet.id);
+      final preparation = preparationByPredmet[predmet.id];
       final activeCandidate =
           predmet.status == 'OTVOREN' && predmet.partePotrebna;
       if (!activeCandidate && preparation == null) continue;
       items.add(_PartePredmetItem(predmet: predmet, preparation: preparation));
     }
-    return items;
+    if (!mounted || generation != _loadGeneration) return;
+    final selected = _selectedPredmetId;
+    setState(() {
+      _items = items;
+      _selectedPredmetId = items.any((item) => item.predmet.id == selected)
+          ? selected
+          : null;
+      _loading = false;
+    });
   }
 
-  Future<void> _refresh() async {
-    setState(() => _items = _load());
-    await _items;
+  Future<void> _selectPredmet(int? value) async {
+    if (value == null || _openingPredmet || !mounted) return;
+    final matching = _items.where((item) => item.predmet.id == value);
+    if (matching.isEmpty) return;
+    setState(() {
+      _selectedPredmetId = value;
+      _openingPredmet = true;
+    });
+    try {
+      await _open(matching.single);
+    } finally {
+      if (mounted) setState(() => _openingPredmet = false);
+    }
   }
 
   Future<void> _open(_PartePredmetItem item) async {
@@ -189,88 +217,103 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<List<_PartePredmetItem>>(
-        future: _items,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final items = snapshot.data!;
-          if (items.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Nema otvorenih PREDMETA za koje su PARTE označene kao potrebne.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-          return ListView.separated(
-            key: const Key('parte-module-predmet-list'),
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return Card(
-                child: ListTile(
-                  key: ValueKey('parte-preparation-${item.predmet.id}'),
-                  leading: const Icon(Icons.article_outlined),
-                  title: Text(item.displayName),
-                  subtitle: Text(
-                    'Broj PREDMETA: ${item.predmet.brojPredmeta}\n'
-                    '${item.statusLabel}',
-                  ),
-                  isThreeLine: true,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        key: ValueKey(
-                          'parte-open-predmet-parte-${item.predmet.id}',
-                        ),
-                        tooltip: 'Otvori segment PARTE u PREDMETU',
-                        onPressed: () => _openPredmetParte(item),
-                        icon: const Icon(Icons.article_outlined),
-                      ),
-                      if (item.isCompleted &&
-                          !_locallyDeletedPreparationIds.contains(
-                            item.preparation!.id,
-                          ))
-                        PopupMenuButton<_ParteItemAction>(
-                          key: ValueKey(
-                            'parte-preparation-menu-${item.predmet.id}',
-                          ),
-                          tooltip: 'Radnje za pripremu',
-                          onSelected: (action) {
-                            if (action == _ParteItemAction.deleteCompleted) {
-                              _deleteCompleted(item);
-                            }
-                          },
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                              value: _ParteItemAction.deleteCompleted,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: Icon(Icons.delete_outline),
-                                title: Text('OBRIŠI SAČUVANU PRIPREMU'),
-                              ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              key: const Key('parte-module-predmet-list'),
+              padding: const EdgeInsets.all(24),
+              children: [
+                const Text('PARTE'),
+                const SizedBox(height: 12),
+                if (_items.isEmpty)
+                  const Text(
+                    'Nema otvorenih PREDMETA za koje su PARTE označene kao potrebne.',
+                    textAlign: TextAlign.center,
+                  )
+                else ...[
+                  DropdownButtonFormField<int>(
+                    key: const Key('parte-predmet-selector'),
+                    initialValue: _selectedPredmetId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'PREDMET',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _items
+                        .map(
+                          (item) => DropdownMenuItem<int>(
+                            value: item.predmet.id,
+                            child: Text(
+                              '${item.displayName} · ${item.predmet.brojPredmeta}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
+                          ),
                         )
-                      else
-                        const Icon(Icons.chevron_right),
-                    ],
+                        .toList(growable: false),
+                    onChanged: _openingPredmet ? null : _selectPredmet,
                   ),
-                  onTap: () => _open(item),
-                ),
-              );
-            },
-          );
-        },
-      ),
+                  const SizedBox(height: 16),
+                  if (_selectedPredmetId == null)
+                    const Text('Izaberite PREDMET za pripremu PARTE.'),
+                  if (_selectedPredmetId != null)
+                    _buildSelectedPredmetActions(
+                      context,
+                      _items.firstWhere(
+                        (item) => item.predmet.id == _selectedPredmetId,
+                      ),
+                    ),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSelectedPredmetActions(
+    BuildContext context,
+    _PartePredmetItem item,
+  ) {
+    final canDelete =
+        item.isCompleted &&
+        !_locallyDeletedPreparationIds.contains(item.preparation!.id);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(item.statusLabel),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              key: ValueKey('parte-open-predmet-parte-${item.predmet.id}'),
+              onPressed: () => _openPredmetParte(item),
+              icon: const Icon(Icons.article_outlined),
+              label: const Text('OTVORI SEGMENT PARTE U PREDMETU'),
+            ),
+            if (canDelete)
+              PopupMenuButton<_ParteItemAction>(
+                key: ValueKey('parte-preparation-menu-${item.predmet.id}'),
+                tooltip: 'Radnje za pripremu',
+                onSelected: (action) {
+                  if (action == _ParteItemAction.deleteCompleted) {
+                    _deleteCompleted(item);
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: _ParteItemAction.deleteCompleted,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.delete_outline),
+                      title: Text('OBRIŠI SAČUVANU PRIPREMU'),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
     );
   }
 }

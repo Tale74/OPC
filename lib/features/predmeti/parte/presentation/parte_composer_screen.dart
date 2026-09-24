@@ -154,7 +154,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         .toStringAsFixed(1);
   }
 
-  Future<void> _reload() async {
+  Future<void> _reload({bool verifySourceChange = true}) async {
     final preparation = await _repository.findForPredmet(widget.predmetId);
     final predmet = await widget.predmetiRepository.getPredmet(
       widget.predmetId,
@@ -166,8 +166,13 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     if (PartePreparationStatus.fromDb(preparation.status) !=
         PartePreparationStatus.cleanupPending) {
       draft = ParteDraft.decode(preparation.draftJson);
-      plan = await _service.buildPlan(preparation: preparation);
-      sourceChanged = await _repository.sourceChanged(preparation.id);
+      plan = await _service.buildPlan(
+        preparation: preparation,
+        predmet: predmet,
+      );
+      if (verifySourceChange) {
+        sourceChanged = await _repository.sourceChanged(preparation.id);
+      }
     }
     if (!mounted) return;
     _replaceControllers(draft);
@@ -253,7 +258,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _applyDimensions() => _run(() async {
@@ -310,7 +315,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _applyPrintCorrection() => _run(() async {
@@ -429,7 +434,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _applyFontSizeInput() async {
@@ -502,7 +507,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _moveBlockByDrag(String id, double dxMm, double dyMm) async {
@@ -613,7 +618,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -633,7 +638,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _acknowledge({
@@ -651,7 +656,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       lowResolutionAccepted: lowResolution,
       grammarVerified: grammar,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _confirmPreview() => _run(() async {
@@ -661,7 +666,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _exportPdf() => _run(() async {
@@ -674,7 +679,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       horizontalCorrectionMm: _printProfile.horizontalCorrectionMm,
       verticalCorrectionMm: _printProfile.verticalCorrectionMm,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
     if (!mounted) return;
     prikaziPdfExportSuccessSnackBar(
       context,
@@ -761,7 +766,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _resetPreparation() => _run(() async {
@@ -794,7 +799,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload();
+    await _reload(verifySourceChange: false);
   });
 
   Future<void> _deleteRetainedPreparation() => _run(() async {
@@ -854,7 +859,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         entitlement: widget.entitlement,
       );
       await _loadPrintProfileForTemplate(selected.id);
-      await _reload();
+    await _reload(verifySourceChange: false);
     });
   }
 
@@ -1624,7 +1629,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             if (PartePreparationStatus.fromDb(_preparation!.status) ==
                 PartePreparationStatus.inProgress)
               FilledButton.icon(
-                onPressed: _busy || !exported ? null : _complete,
+               onPressed: _busy || !previewConfirmed ? null : _complete,
                 style: FilledButton.styleFrom(backgroundColor: Colors.green),
                 icon: const Icon(Icons.task_alt_outlined),
                 label: const Text('PRIPREMA ZAVRŠENA'),

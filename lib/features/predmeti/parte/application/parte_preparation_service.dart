@@ -86,6 +86,7 @@ class PartePreparationService {
 
   Future<ParteRenderPlan> buildPlan({
     required PartePripremeData preparation,
+    PredmetiData? predmet,
   }) async {
     final draft = ParteDraft.decode(preparation.draftJson);
     final template = repository.templateSnapshot(preparation);
@@ -111,7 +112,8 @@ class PartePreparationService {
             longEdge < ParteMediaStore.lowResolutionLongEdge;
       }
     }
-    final predmet = await repositoryPredmet(preparation.predmetId);
+    final currentPredmet =
+        predmet ?? await repositoryPredmet(preparation.predmetId);
     return composer.compose(
       ParteCompositionInput(
         draft: draft,
@@ -127,7 +129,7 @@ class PartePreparationService {
         grammarRequiresReview: !{
           'M',
           'Z',
-        }.contains(predmet.pol.trim().toUpperCase()),
+        }.contains(currentPredmet.pol.trim().toUpperCase()),
         grammarVerified: preparation.grammarVerified,
       ),
     );

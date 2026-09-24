@@ -102,6 +102,17 @@ are backfilled without changing IRiU membership or order; transfer validation
 rejects missing/duplicate identities and never derives business meaning from
 the identity value.
 
+The PARTE preparation workflow remains a PREDMET-derived technical derivative
+with unchanged schema, Single-PREDMET JSON and Backup contracts. `PRIPREMA
+ZAVRŠENA` requires a valid current render plan and a confirmed preview for that
+plan; it does not require a preceding PDF export. PDF/DOCX export remains an
+independent output path and can follow completion. The composer reuses the
+already-read PREDMET when building the render plan and avoids a second source-
+change read/recomposition on local persisted edits; source-change validation
+remains on initialization and the explicit completion path. `MODUL PARTE`
+loads PREDMET and preparation rows in one bounded read path, uses a stable-ID
+dropdown selector, and retains eligible saved preparations for reopening.
+
 ČITULJE preparation state is persisted per `(predmetId, portableOccurrenceId)` in
 `CituljePripreme`. Current `CITULJA_POLITIKA` and `CITULJA_NOVOSTI` IRiU
 membership remains the applicability source; non-current preparations are not
