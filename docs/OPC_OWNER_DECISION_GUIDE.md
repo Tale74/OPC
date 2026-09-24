@@ -529,6 +529,40 @@ selection and implementation continuation authorize the bounded Member 1 work;
 they do not authorize broader FINANSIJE scope or create a stable decision ID.
 The earlier arrow notation is superseded for relationship semantics.
 
+### 9.8 Canonical NAPOMENA and LISTA paper checklist — 2026-09-23
+
+The single canonical general PREDMET note is `Predmeti.napomena`, edited in
+`PREDMET → Segment 7: Roba i usluge → NAPOMENA`. PODSETNIK continues to show
+and may edit this same persisted field; that UI is a second access path, not an
+independent note source. LISTA PDF `NAPOMENE` is a projection of the same
+content.
+
+The former Statusi, Finansije and per-ČITULJA note inputs are retired from
+current editing. Their stored historical values and existing database,
+PREDMET JSON and Backup compatibility remain preserved; they are not
+automatically migrated or appended to the canonical note. No schema migration
+is required for this UI/projection change.
+
+LISTA PDF uses separate `OBAVEZE` and `NAPOMENE` sections. `OBAVEZE` projects
+the current shared PODSETNIK model using business-readable labels, visible
+PARENT/CHILD grouping and empty paper checkboxes. Whole obligation groups may
+flow into a second column when needed. The complete LISTA remains limited to
+two pages; required information must not be dropped or made unreadable to meet
+that limit. Concise source-backed context is placed under the obligation it
+explains; this includes the selected article/quantity, occurrence-matched
+CVEĆE article and non-empty `tekst trake`, and relevant OPELO, FINANSIJE,
+URNA, ČITULJE or manually entered obligation details. CVEĆE ribbon text stays
+associated with its own IRiU occurrence. URNA/PEPEO use the PODSETNIK short
+business parent/child labels rather than duplicated notification prose.
+Actionable child boxes remain empty for paper completion. Generated
+financial-note prose is retired from LISTA while financial values remain in
+the financial summary. No broader FINANSIJE rule or reminder scope is created.
+OWNER runtime acceptance of the corrected Windows LISTA output is PASS as of
+2026-09-24, including OBAVEZE, NAPOMENE, CVEĆE article/ribbon occurrence
+context, post-ceremony hierarchy and the two-page maximum. The earlier
+pre-correction runtime failure remains historical and is superseded for the
+current acceptance state.
+
 ### 9.7 RAČUN availability and document-format authority — 2026-09-21
 
 OWNER locks the FIRMA-level `RAČUN` toggle at `PODEŠAVANJA → PODACI FIRME`.

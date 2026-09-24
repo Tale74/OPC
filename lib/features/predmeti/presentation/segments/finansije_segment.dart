@@ -56,7 +56,6 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
   final Map<TextEditingController, double> _lastValidMoney = {};
   final Set<TextEditingController> _invalidMoney = {};
   Set<String> _nacinPlacanja = {};
-  late final TextEditingController _napomenaPlacanjCtrl;
 
   static const _nacinOpcije = [
     ('KES', 'Gotovina'),
@@ -65,9 +64,6 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
     ('CEKOVI', 'Čekovima'),
     ('NA_RATE', 'Na rate'),
   ];
-
-  String _normalizedText(TextEditingController ctrl) =>
-      normalizeText(ctrl.text);
 
   @override
   void initState() {
@@ -85,7 +81,6 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
     _popustCtrl = TextEditingController(
       text: d.popust > 0 ? formatMoneyNumber(d.popust) : '',
     );
-    _napomenaPlacanjCtrl = TextEditingController(text: d.napomenaPlacanja);
     for (final entry in <TextEditingController, double>{
       _avansCtrl: d.avans,
       _troskoviJkpCtrl: d.troskoviJkp,
@@ -112,12 +107,7 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
   @override
   void dispose() {
     _debounce?.cancel();
-    for (final c in [
-      _avansCtrl,
-      _troskoviJkpCtrl,
-      _popustCtrl,
-      _napomenaPlacanjCtrl,
-    ]) {
+    for (final c in [_avansCtrl, _troskoviJkpCtrl, _popustCtrl]) {
       c.dispose();
     }
     for (final node in _moneyFocusNodes.values) {
@@ -141,7 +131,6 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
         jkpPlacaSamostalno: Value(_jkpPlacaSamostalno),
         popust: Value(_moneyValue(_popustCtrl)),
         nacinPlacanja: Value(jsonEncode(_nacinPlacanja.toList())),
-        napomenaPlacanja: Value(_normalizedText(_napomenaPlacanjCtrl)),
       ),
     );
   }
@@ -437,23 +426,6 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
                 }).toList(),
               ),
               const SizedBox(height: 12),
-              // ── Napomena plaćanja ─────────────────────────────────────────
-              const Divider(),
-              const SizedBox(height: 8),
-              _sectionTitle(context, 'NAPOMENE'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _napomenaPlacanjCtrl,
-                enabled: e,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'NAPOMENA PLAĆANJA',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                  alignLabelWithHint: true,
-                ),
-                onChanged: (_) => _scheduleSave(),
-              ),
             ],
           ),
         ),

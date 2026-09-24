@@ -43,10 +43,11 @@ class _CituljeModuleScreenState extends State<CituljeModuleScreen> {
 
   Future<void> _applyPredmeti(List<PredmetiData> allPredmeti) async {
     final generation = ++_loadGeneration;
-    final predmeti = allPredmeti
-        .where((predmet) => isPodsetnikEligibleStatus(predmet.status))
-        .toList()
-      ..sort(_comparePredmeti);
+    final predmeti =
+        allPredmeti
+            .where((predmet) => isPodsetnikEligibleStatus(predmet.status))
+            .toList()
+          ..sort(_comparePredmeti);
     final result = <_CituljePredmetItem>[];
     for (final predmet in predmeti) {
       final preparations = await _repository.ensureCurrentForPredmet(
@@ -175,9 +176,9 @@ class _CituljeModuleScreenState extends State<CituljeModuleScreen> {
               ),
               const SizedBox(height: 16),
               if (_selectedPredmetId == null)
-                const Text('Izaberite PREDMET za pripremu ČITULJE.')
+                const Text('Izaberite PREDMET za pripremu ČITULJE.'),
             ],
-    ),
+          ),
   );
 }
 
@@ -286,7 +287,6 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
   late Future<String> _articleLabel;
   late final TextEditingController _date;
   late final TextEditingController _text;
-  late final TextEditingController _note;
   CituljeParteTextMode? _mode;
   bool _busy = false;
 
@@ -296,7 +296,6 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
     _setRow(widget.initial);
     _date = TextEditingController(text: widget.initial.publicationDate ?? '');
     _text = TextEditingController(text: widget.initial.publicationText);
-    _note = TextEditingController(text: widget.initial.note);
   }
 
   void _setRow(CituljePripremeData row) {
@@ -326,7 +325,6 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
         _setRow(widget.initial);
         _date.text = widget.initial.publicationDate ?? '';
         _text.text = widget.initial.publicationText;
-        _note.text = widget.initial.note;
       });
     }
   }
@@ -335,7 +333,6 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
   void dispose() {
     _date.dispose();
     _text.dispose();
-    _note.dispose();
     super.dispose();
   }
 
@@ -365,7 +362,7 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
         preparationId: _row.id,
         publicationDate: _date.text,
         publicationText: _text.text,
-        note: _note.text,
+        note: _row.note,
       );
       if (mounted) setState(() => _setRow(saved));
       return;
@@ -379,7 +376,7 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
       mode: mode,
       publicationDate: _date.text,
       publicationText: _text.text,
-      note: _note.text,
+      note: _row.note,
     );
     if (mode == CituljeParteTextMode.da &&
         saved.state == CituljePreparationState.parteSnapshotAvailable.dbValue) {
@@ -441,7 +438,7 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
       mode: mode,
       publicationDate: _date.text,
       publicationText: _text.text,
-      note: _note.text,
+      note: _row.note,
     );
     if (mounted) {
       setState(() {
@@ -492,7 +489,7 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
                   mode: _mode,
                   publicationDate: _date.text,
                   publicationText: _text.text,
-                  note: _note.text,
+                  note: _row.note,
                 );
                 if (mounted) setState(() => _setRow(saved));
               });
@@ -555,18 +552,10 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
       initialValue: _mode,
       decoration: const InputDecoration(labelText: 'PARTE TEKST'),
       items: const [
-        DropdownMenuItem(
-          value: CituljeParteTextMode.da,
-          child: Text('DA'),
-        ),
-        DropdownMenuItem(
-          value: CituljeParteTextMode.ne,
-          child: Text('NE'),
-        ),
+        DropdownMenuItem(value: CituljeParteTextMode.da, child: Text('DA')),
+        DropdownMenuItem(value: CituljeParteTextMode.ne, child: Text('NE')),
       ],
-      onChanged: locked
-          ? null
-          : (value) => setState(() => _mode = value),
+      onChanged: locked ? null : (value) => setState(() => _mode = value),
     );
     final dateField = TextField(
       key: const Key('citulje-publication-date'),
@@ -582,25 +571,17 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
     final publicationTextField = TextField(
       key: const Key('citulje-publication-text'),
       controller: _text,
-      enabled: locked ||
+      enabled:
+          locked ||
           (_mode == CituljeParteTextMode.ne ||
-              _row.state == CituljePreparationState.parteSnapshotAvailable.dbValue),
+              _row.state ==
+                  CituljePreparationState.parteSnapshotAvailable.dbValue),
       minLines: 4,
       maxLines: 8,
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: 'Tekst objave',
         helperText: 'Informativno: $wordCount reči',
-      ),
-    );
-    final noteField = TextField(
-      key: const Key('citulje-note'),
-      controller: _note,
-      enabled: true,
-      minLines: 2,
-      maxLines: 4,
-      decoration: const InputDecoration(
-        labelText: 'Napomena / pomoćni sadržaj',
       ),
     );
     final actionControls = !locked
@@ -681,12 +662,7 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
       const SizedBox(height: 8),
       dateField,
     ];
-    final rightColumn = <Widget>[
-      publicationTextField,
-      const SizedBox(height: 8),
-      noteField,
-      ...actionControls,
-    ];
+    final rightColumn = <Widget>[publicationTextField, ...actionControls];
     return Card(
       key: ValueKey('citulje-card-${_row.portableOccurrenceId}'),
       child: Padding(

@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import '../../../core/constants/iriu_constants.dart';
 import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/document_text_codec.dart';
@@ -46,10 +45,17 @@ class ListaPdfPreparedData {
 }
 
 class ListaPdfChecklistItem {
-  const ListaPdfChecklistItem({required this.label, this.group = false});
+  const ListaPdfChecklistItem({
+    required this.label,
+    this.group = false,
+    this.parentLabel,
+    this.context = const <String>[],
+  });
 
   final String label;
   final bool group;
+  final String? parentLabel;
+  final List<String> context;
 }
 
 class ListaPdfLabelValue {
@@ -98,16 +104,22 @@ class ListaPdfIriuRenderItem {
     required this.naziv,
     required this.kom,
     required this.iznos,
+    this.tekstTrake,
   });
 
   final String naziv;
   final String kom;
   final double iznos;
+  final String? tekstTrake;
 
   int get estimatedUnits {
     var units = 1;
     if (naziv.length > 34) units += 1;
     if (naziv.length > 68) units += 1;
+    final ribbonLength = tekstTrake?.length ?? 0;
+    if (ribbonLength > 36) units += 1;
+    if (ribbonLength > 72) units += 1;
+    if (ribbonLength > 108) units += 1;
     if (kom.isNotEmpty) units += 1;
     if (kom.length > 24) units += 1;
     return units;
@@ -124,6 +136,7 @@ class ListaPdfDataBuilder {
     required AppPodesavanjaData app,
     required KorisniciData? savetnik,
     String? portableSavetnikName,
+    List<PodsetnikObligationRule> additionalObligations = const [],
   }) {
     final truthSnapshot = const PredmetIriuTruthService().evaluate(
       predmet: predmet,
@@ -145,8 +158,23 @@ class ListaPdfDataBuilder {
             naziv: row.storedRow.nazivPrikaz.trim(),
             kom: row.storedRow.kom.trim(),
             iznos: _safeDouble(row.storedRow.iznos),
+            tekstTrake: row.storedRow.interniNaziv == IriuK.cvece
+                ? row.storedRow.tekstTrake?.trim()
+                : null,
           ),
         )
+        .toList(growable: false);
+    final finansijskiRedovi = _buildFinancialRows(
+      predmet: predmet,
+      finansijskaOsnova: finansijskaOsnova,
+    );
+    final visibleIriu = truthSnapshot
+        .rowsVisibleToDerivative(
+          excludedReasons: const <IriuDerivativeExclusion>{
+            IriuDerivativeExclusion.notOperationallyActive,
+          },
+        )
+        .map((row) => row.storedRow)
         .toList(growable: false);
 
     return ListaPdfPreparedData(
@@ -160,57 +188,186 @@ class ListaPdfDataBuilder {
       payerSection: _buildPayerSection(predmet),
       ceremonySection: _buildCeremonySection(predmet),
       iriuItems: iriuItems,
-      finansijskiRedovi: _buildFinancialRows(
-        predmet: predmet,
-        finansijskaOsnova: finansijskaOsnova,
-      ),
+      finansijskiRedovi: finansijskiRedovi,
       napomene: _buildNotes(predmet),
       partePreview: _buildPartePreviewText(predmet),
       parteSimbol: _parteSimbolNaziv(predmet.simbol),
-      podsetnikChecklist: _buildPodsetnikChecklist(predmet, iriuStavke),
+      podsetnikChecklist: _buildPodsetnikChecklist(
+        predmet: predmet,
+        iriu: iriuStavke,
+        visibleIriu: visibleIriu,
+        finansijskiRedovi: finansijskiRedovi,
+        additionalObligations: additionalObligations,
+      ),
     );
   }
 }
 
-List<ListaPdfChecklistItem> _buildPodsetnikChecklist(
-  PredmetiData predmet,
-  List<IriuData> iriu,
-) {
+List<ListaPdfChecklistItem> _buildPodsetnikChecklist({
+  required PredmetiData predmet,
+  required List<IriuData> iriu,
+  required List<IriuData> visibleIriu,
+  required List<ListaPdfLabelValue> finansijskiRedovi,
+  required List<PodsetnikObligationRule> additionalObligations,
+}) {
   final rules = const PodsetnikObligationDeriver().deriveRules(
     predmet: predmet,
     iriu: iriu,
+    additionalRules: additionalObligations,
   );
-  String label(String id) => switch (id) {
-    'ceremony.opelo' => 'OPELO',
-    'ceremony.opelo.notify_priest' => 'Obavestiti sveštenika',
-    'ceremony.opelo.prepare_kit' => 'Spremiti komplet za opelo',
-    'social.pio_refund' => 'REFUNDACIJA PIO',
-    'social.pio_refund.submit_claim' => 'Podneti zahtev PIO',
-    'social.family_pension' => 'PORODIČNA PENZIJA',
-    'social.family_pension.submit_claim' => 'Podneti zahtev za porodičnu penziju',
-    'social.death_assistance' => 'POSMRTNA POMOĆ',
-    'social.death_assistance.submit_claim' => 'Podneti zahtev za posmrtnu pomoć',
-    'military.honors' => 'VOJNE POČASTI',
-    'military.honors.notify_authority' => 'OBAVESTITI NADLEŽNU SLUŽBU',
-    'ceremony.parte' => 'PARTE',
-    'goods.equipment' => 'OPREMA',
-    'goods.photo' => 'SLIKA',
-    'goods.mourning' => 'CRNINA',
-    'goods.flowers' => 'CVEĆE',
-    'ceremony.international' => 'Spremiti međunarodna dokumenta',
-    'ceremony.reception' => 'Preuzeti posmrtne ostatke',
-    'goods.stock' => 'Razreši stanje robe',
-    cituljeParentRuleId => 'ČITULJA',
-    'post.urn_ashes' => 'URNA / PEPEO',
-    'post.urn_ashes.arrange_placement' => 'Organizovati polaganje urne',
-    _ => id,
-  };
-  return List<ListaPdfChecklistItem>.unmodifiable(
-    rules.map((rule) => ListaPdfChecklistItem(
-      label: rule.displayLabel ?? label(rule.stableRuleId),
-      group: rule.kind == PodsetnikObligationKind.group,
-    )),
-  );
+  final labels = <String, String>{};
+  for (final rule in rules) {
+    final label = podsetnikPresentationLabel(
+      rule,
+      urnPlacementType: predmet.tipPolaganja,
+    ).trim();
+    // The shared resolver intentionally falls back to stable identity for
+    // unknown rules. LISTA is a business document, so never print that key.
+    final technicalLiteral =
+        label == rule.stableRuleId ||
+        RegExp(r'^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$').hasMatch(label);
+    if (label.isNotEmpty && !technicalLiteral) {
+      labels[rule.stableRuleId] = label;
+    }
+  }
+  final items = <ListaPdfChecklistItem>[];
+  for (final rule in rules) {
+    final label = labels[rule.stableRuleId];
+    if (label == null) continue;
+    final parentLabel = rule.parentRuleId == null
+        ? null
+        : labels[rule.parentRuleId!];
+    final syntheticChild = rule.parentRuleId == null
+        ? podsetnikSyntheticChildLabel(rule.stableRuleId)
+        : null;
+    final context = _obligationContext(
+      rule: rule,
+      predmet: predmet,
+      iriu: visibleIriu,
+      finansijskiRedovi: finansijskiRedovi,
+    );
+    if (syntheticChild != null) {
+      items.add(ListaPdfChecklistItem(label: label, group: true));
+      items.add(
+        ListaPdfChecklistItem(
+          label: syntheticChild,
+          parentLabel: label,
+          context: context,
+        ),
+      );
+      continue;
+    }
+    items.add(
+      ListaPdfChecklistItem(
+        label: label,
+        group: rule.kind == PodsetnikObligationKind.group,
+        parentLabel: parentLabel,
+        context: context,
+      ),
+    );
+  }
+  return List<ListaPdfChecklistItem>.unmodifiable(items);
+}
+
+List<String> _obligationContext({
+  required PodsetnikObligationRule rule,
+  required PredmetiData predmet,
+  required List<IriuData> iriu,
+  required List<ListaPdfLabelValue> finansijskiRedovi,
+}) {
+  List<String> articleDetails(Iterable<IriuData> rows) => rows
+      .map((row) {
+        final name = row.nazivPrikaz.trim();
+        if (name.isEmpty) return '';
+        final quantity = row.kom.trim();
+        return quantity.isEmpty ? name : '$name — Kom: $quantity';
+      })
+      .where((detail) => detail.isNotEmpty)
+      .toList(growable: false);
+
+  List<IriuData> rowsFor(Set<String> categories) => iriu
+      .where(
+        (row) =>
+            categories.contains(row.interniNaziv.trim().toUpperCase()) &&
+            row.poslovniStatus.trim().toUpperCase() != 'NE PRIKAZUJE SE',
+      )
+      .toList(growable: false);
+
+  String? financeValue(String label) => finansijskiRedovi
+      .where((row) => row.label == label)
+      .map((row) => row.value)
+      .firstOrNull;
+
+  switch (rule.stableRuleId) {
+    case 'goods.equipment':
+      return articleDetails(
+        rowsFor({
+          IriuK.sanduk,
+          IriuK.pokrovGarnitura,
+          IriuK.obelezje,
+          IriuK.peskirZaKrst,
+          IriuK.posmrtneParte,
+          IriuK.doradaPogrebneOpreme,
+          IriuK.zastitnaIDodatnaOprema,
+        }),
+      );
+    case 'goods.photo':
+      return articleDetails(rowsFor({IriuK.slika}));
+    case 'goods.mourning':
+      return articleDetails(rowsFor({IriuK.crnina}));
+    case 'goods.flowers':
+      return rowsFor({IriuK.cvece})
+          .map((row) {
+            final name = row.nazivPrikaz.trim();
+            if (name.isEmpty) return '';
+            final ribbon = row.tekstTrake?.trim() ?? '';
+            return ribbon.isEmpty ? name : '$name\nTraka: $ribbon';
+          })
+          .where((detail) => detail.isNotEmpty)
+          .toList(growable: false);
+    case 'ceremony.opelo.notify_priest':
+      return <String>[
+        if (predmet.opeloMesto.trim().isNotEmpty)
+          'Mesto opela: ${_opeloMestoLabel(predmet.opeloMesto)}',
+        if (predmet.vremeOpela.trim().isNotEmpty)
+          'Vreme opela: ${predmet.vremeOpela.trim()}',
+      ];
+    case 'ceremony.opelo.prepare_kit':
+      return articleDetails(rowsFor({IriuK.kompletZaOpelo}));
+    case platiJkpRacunRuleId:
+      final value = financeValue('TROŠKOVI JKP');
+      return value == null ? const [] : <String>['Iznos računa: $value'];
+    case naplatiObavezeRuleId:
+      final value = financeValue('ZA NAPLATU');
+      return value == null ? const [] : <String>['Iznos za naplatu: $value'];
+    case 'post.urn_ashes.arrange_placement':
+      final location = predmet.grobljePolaganjaUrne.trim();
+      return location.isEmpty
+          ? const []
+          : <String>['Groblje polaganja urne: $location'];
+    case 'ceremony.international':
+      return <String>[
+        if (predmet.svisZemlja.trim().isNotEmpty)
+          'Zemlja: ${predmet.svisZemlja.trim()}',
+        if (predmet.svisGrad.trim().isNotEmpty)
+          'Grad: ${predmet.svisGrad.trim()}',
+      ];
+    case 'ceremony.reception':
+      return <String>[
+        if (predmet.docekMesto.trim().isNotEmpty)
+          'Mesto dočeka: ${predmet.docekMesto.trim()}',
+        if (predmet.docekVreme.trim().isNotEmpty)
+          'Vreme dočeka: ${predmet.docekVreme.trim()}',
+      ];
+    default:
+      final occurrenceId = rule.portableOccurrenceId;
+      if (occurrenceId != null) {
+        return articleDetails(
+          iriu.where((row) => row.portableOccurrenceId == occurrenceId),
+        );
+      }
+      return const <String>[];
+  }
 }
 
 List<IriuTruthRow> _buildListaIriuItems(
@@ -432,149 +589,11 @@ List<ListaPdfLabelValue> _buildFinancialRows({
 }
 
 List<ListaPdfDocumentNote> _buildNotes(PredmetiData predmet) {
-  final notes = <ListaPdfDocumentNote>[];
-  final finansijskeNapomene = _buildFinancialNotes(predmet);
   final opstaNapomena = predmet.napomena.trim();
-  final logickeNapomene = _buildOperationalNotes(predmet);
-
-  notes.addAll(finansijskeNapomene);
-  if (opstaNapomena.isNotEmpty) {
-    notes.add(ListaPdfDocumentNote('Opšta napomena', opstaNapomena));
-  }
-  notes.addAll(logickeNapomene);
-
-  return List<ListaPdfDocumentNote>.unmodifiable(notes);
-}
-
-List<ListaPdfDocumentNote> _buildFinancialNotes(PredmetiData predmet) {
-  final notes = <ListaPdfDocumentNote>[];
-  final troskoviJkp = _safeDouble(predmet.troskoviJkp);
-  final napomenaPlacanja = predmet.napomenaPlacanja.trim();
-  final nacinPlacanja = _paymentMethodLabels(predmet.nacinPlacanja);
-  final prikazRefundacije = predmet.penzionerSrbije == 'DA';
-  final refundacijaPio = _safeDouble(predmet.refundacijaPio);
-  final refundacijskiKontekstAktivan = prikazRefundacije && refundacijaPio > 0;
-
-  if (troskoviJkp > 0) {
-    notes.add(
-      ListaPdfDocumentNote(
-        'Troškovi JKP',
-        predmet.jkpPlacaSamostalno
-            ? 'Ne ulaze u iznos za naplatu; platilac ih izmiruje samostalno.'
-            : 'Uključeni su u iznos za naplatu.',
-        groupTitle: 'Finansijske napomene',
-      ),
-    );
-  }
-
-  if (nacinPlacanja.isNotEmpty) {
-    notes.add(
-      ListaPdfDocumentNote(
-        'Način plaćanja',
-        nacinPlacanja.join(', '),
-        groupTitle: 'Finansijske napomene',
-      ),
-    );
-  }
-
-  if (napomenaPlacanja.isNotEmpty) {
-    notes.add(
-      ListaPdfDocumentNote(
-        'Napomena plaćanja',
-        napomenaPlacanja,
-        groupTitle: 'Finansijske napomene',
-      ),
-    );
-  }
-
-  if (refundacijskiKontekstAktivan) {
-    notes.add(
-      ListaPdfDocumentNote(
-        'Refundacija PIO',
-        predmet.narucilacRefundira == 'DA'
-            ? 'Ne umanjuje iznos za naplatu; platilac refundaciju ostvaruje samostalno.'
-            : 'Umanjuje iznos za naplatu u aktivnom refundacijskom kontekstu.',
-        groupTitle: 'Finansijske napomene',
-      ),
-    );
-  }
-
-  return List<ListaPdfDocumentNote>.unmodifiable(notes);
-}
-
-List<ListaPdfDocumentNote> _buildOperationalNotes(PredmetiData predmet) {
-  final notes = <ListaPdfDocumentNote>[];
-  final radniStatusNapomena = predmet.penzionerNapomena.trim();
-  final uzrokSmrtiNapomena = _buildUzrokSmrtiOperationalNote(predmet);
-
-  if (uzrokSmrtiNapomena != null) {
-    notes.add(uzrokSmrtiNapomena);
-  }
-
-  if (_shouldShowRadniStatusNapomena(predmet, radniStatusNapomena)) {
-    notes.add(
-      ListaPdfDocumentNote('Napomena (radni status)', radniStatusNapomena),
-    );
-  }
-
-  if (predmet.bracniDrugOstvarujePravo == 'DA') {
-    notes.add(
-      const ListaPdfDocumentNote(
-        'Porodična penzija',
-        'Bračni drug ostvaruje pravo na porodičnu penziju.',
-      ),
-    );
-  }
-
-  if (predmet.bracniDrugOstvarujePravo == 'DA' &&
-      predmet.bracniDrugJePenzioner == 'DA') {
-    notes.add(
-      const ListaPdfDocumentNote('Bračni drug', 'Bračni drug je penzioner.'),
-    );
-  }
-
-  return List<ListaPdfDocumentNote>.unmodifiable(notes);
-}
-
-ListaPdfDocumentNote? _buildUzrokSmrtiOperationalNote(PredmetiData predmet) {
-  return switch (predmet.uzrokSmrti.trim()) {
-    'ZARAZNA' => const ListaPdfDocumentNote(
-      'Uzrok smrti',
-      'Označeno kao zarazna.',
-    ),
-    'NEDEFINISANA' => const ListaPdfDocumentNote(
-      'Uzrok smrti',
-      'Označeno kao nedefinisana.',
-    ),
-    _ => null,
-  };
-}
-
-List<String> _paymentMethodLabels(String raw) {
-  const paymentLabels = <String, String>{
-    'KES': 'Gotovina',
-    'KARTICA': 'Kartica',
-    'PRENOS': 'Prenos',
-    'CEKOVI': 'Čekovima',
-    'NA_RATE': 'Na rate',
-  };
-
-  final trimmed = raw.trim();
-  if (trimmed.isEmpty) return const <String>[];
-
-  try {
-    final decoded = jsonDecode(trimmed);
-    if (decoded is List) {
-      return decoded
-          .map((value) => paymentLabels[value?.toString().trim()] ?? '')
-          .where((value) => value.isNotEmpty)
-          .toList(growable: false);
-    }
-  } catch (_) {
-    return const <String>[];
-  }
-
-  return const <String>[];
+  if (opstaNapomena.isEmpty) return const <ListaPdfDocumentNote>[];
+  return List<ListaPdfDocumentNote>.unmodifiable([
+    ListaPdfDocumentNote('NAPOMENA', opstaNapomena),
+  ]);
 }
 
 double _safeDouble(double? value) {
@@ -927,10 +946,6 @@ bool _tipPolaganjaSaLokalitetom(String tipPolaganja) {
       tipPolaganja == 'GROBNICA' ||
       tipPolaganja == 'KOLUMBARIJUM' ||
       tipPolaganja == 'ROZARIJUM';
-}
-
-bool _shouldShowRadniStatusNapomena(PredmetiData predmet, String napomena) {
-  return napomena.isNotEmpty && predmet.radniStatus.trim().isNotEmpty;
 }
 
 String _grobnoMestoNaziv(String raw) {

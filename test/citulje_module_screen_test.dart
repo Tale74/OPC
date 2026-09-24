@@ -72,19 +72,25 @@ void main() {
         findsOneWidget,
       );
       expect(
-        tester.widget<CituljePreparationScreen>(
-          find.byType(CituljePreparationScreen),
-        ).predmet.id,
+        tester
+            .widget<CituljePreparationScreen>(
+              find.byType(CituljePreparationScreen),
+            )
+            .predmet
+            .id,
         predmetId,
       );
       expect(navigationObserver.preparationPushCount, 1);
       expect(find.text('OTVORI ČITULJE'), findsNothing);
       expect(find.text('ČITULJA POLITIKA'), findsOneWidget);
       expect(find.textContaining('portableOccurrenceId:'), findsNothing);
+      expect(find.byKey(const Key('citulje-note')), findsNothing);
       expect(
-        tester.widget<TextField>(
-          find.byKey(const Key('citulje-publication-date')),
-        ).readOnly,
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('citulje-publication-date')),
+            )
+            .readOnly,
         isTrue,
       );
       await tester.tap(find.byKey(const Key('citulje-parte-text-mode')));
@@ -96,10 +102,6 @@ void main() {
         'Samostalan tekst A',
       );
       await _selectCituljePublicationDate(tester);
-      await tester.enterText(
-        find.byKey(const Key('citulje-note')),
-        'UI beleška A',
-      );
       await tester.tap(find.byKey(const Key('citulje-save')));
       await tester.pumpAndSettle();
       expect(find.text('Samostalan tekst A'), findsOneWidget);
@@ -111,10 +113,6 @@ void main() {
         'Samostalan tekst B',
       );
       await _selectCituljePublicationDate(tester);
-      await tester.enterText(
-        find.byKey(const Key('citulje-note')),
-        'UI beleška B',
-      );
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -300));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('citulje-finalize')));
@@ -128,15 +126,19 @@ void main() {
         findsOneWidget,
       );
       expect(
-        tester.widget<TextField>(
-          find.byKey(const Key('citulje-publication-date')),
-        ).enabled,
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('citulje-publication-date')),
+            )
+            .enabled,
         isTrue,
       );
       expect(
-        tester.widget<TextField>(
-          find.byKey(const Key('citulje-publication-text')),
-        ).enabled,
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('citulje-publication-text')),
+            )
+            .enabled,
         isTrue,
       );
       expect(find.byKey(const Key('citulje-remove')), findsOneWidget);
@@ -145,10 +147,6 @@ void main() {
         'Ručna korekcija teksta',
       );
       await _selectCituljePublicationDate(tester);
-      await tester.enterText(
-        find.byKey(const Key('citulje-note')),
-        'Ručna korekcija beleške',
-      );
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -300));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('citulje-save')));
@@ -159,7 +157,7 @@ void main() {
         finalized.publicationDate,
         matches(RegExp(r'^\d{2}\.\d{2}\.\d{4}\.$')),
       );
-      expect(finalized.note, 'Ručna korekcija beleške');
+      expect(finalized.note, isEmpty);
       expect(finalized.finalized, isTrue);
       expect(finalized.finalizedAt, isNotNull);
       await tester.tap(find.byKey(const Key('citulje-remove')));
@@ -188,45 +186,53 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      final openId = await db.into(db.predmeti).insert(
-        PredmetiCompanion.insert(
-          brojPredmeta: const Value('CIT-OPEN'),
-          ime: const Value('Otvoren'),
-          prezime: const Value('Predmet'),
-          datumKreiranja: const Value('2026-09-12T10:00:00.000'),
-          status: const Value('OTVOREN'),
-        ),
-      );
-      final closedId = await db.into(db.predmeti).insert(
-        PredmetiCompanion.insert(
-          brojPredmeta: const Value('CIT-CLOSED'),
-          ime: const Value('Zatvoren'),
-          prezime: const Value('Predmet'),
-          datumKreiranja: const Value('2026-09-11T10:00:00.000'),
-          status: const Value('ZATVOREN'),
-        ),
-      );
-      final finishedId = await db.into(db.predmeti).insert(
-        PredmetiCompanion.insert(
-          brojPredmeta: const Value('CIT-FINISHED'),
-          ime: const Value('Završen'),
-          prezime: const Value('Predmet'),
-          datumKreiranja: const Value('2026-09-10T10:00:00.000'),
-          status: const Value('ZAVRŠEN'),
-        ),
-      );
+      final openId = await db
+          .into(db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('CIT-OPEN'),
+              ime: const Value('Otvoren'),
+              prezime: const Value('Predmet'),
+              datumKreiranja: const Value('2026-09-12T10:00:00.000'),
+              status: const Value('OTVOREN'),
+            ),
+          );
+      final closedId = await db
+          .into(db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('CIT-CLOSED'),
+              ime: const Value('Zatvoren'),
+              prezime: const Value('Predmet'),
+              datumKreiranja: const Value('2026-09-11T10:00:00.000'),
+              status: const Value('ZATVOREN'),
+            ),
+          );
+      final finishedId = await db
+          .into(db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('CIT-FINISHED'),
+              ime: const Value('Završen'),
+              prezime: const Value('Predmet'),
+              datumKreiranja: const Value('2026-09-10T10:00:00.000'),
+              status: const Value('ZAVRŠEN'),
+            ),
+          );
       for (final row in [
         (openId, 'citulja-open'),
         (closedId, 'citulja-closed'),
         (finishedId, 'citulja-finished'),
       ]) {
-        await db.into(db.iriu).insert(
-          IriuCompanion.insert(
-            predmetId: row.$1,
-            interniNaziv: 'CITULJA_POLITIKA',
-            portableOccurrenceId: Value(row.$2),
-          ),
-        );
+        await db
+            .into(db.iriu)
+            .insert(
+              IriuCompanion.insert(
+                predmetId: row.$1,
+                interniNaziv: 'CITULJA_POLITIKA',
+                portableOccurrenceId: Value(row.$2),
+              ),
+            );
       }
 
       await tester.pumpWidget(
@@ -247,9 +253,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(CituljePreparationScreen), findsOneWidget);
       expect(
-        tester.widget<CituljePreparationScreen>(
-          find.byType(CituljePreparationScreen),
-        ).predmet.id,
+        tester
+            .widget<CituljePreparationScreen>(
+              find.byType(CituljePreparationScreen),
+            )
+            .predmet
+            .id,
         closedId,
       );
       expect(navigationObserver.preparationPushCount, 1);
@@ -291,20 +300,24 @@ void main() {
         await tester.pump(const Duration(milliseconds: 1));
         await tester.pumpAndSettle();
       });
-      final predmetId = await db.into(db.predmeti).insert(
-        PredmetiCompanion.insert(
-          brojPredmeta: const Value('CIT-FALLBACK'),
-          datumKreiranja: const Value('2026-09-12T12:00:00.000'),
-          status: const Value('OTVOREN'),
-        ),
-      );
-      await db.into(db.iriu).insert(
-        IriuCompanion.insert(
-          predmetId: predmetId,
-          interniNaziv: 'CITULJA_NOVOSTI',
-          portableOccurrenceId: const Value('citulja-fallback'),
-        ),
-      );
+      final predmetId = await db
+          .into(db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('CIT-FALLBACK'),
+              datumKreiranja: const Value('2026-09-12T12:00:00.000'),
+              status: const Value('OTVOREN'),
+            ),
+          );
+      await db
+          .into(db.iriu)
+          .insert(
+            IriuCompanion.insert(
+              predmetId: predmetId,
+              interniNaziv: 'CITULJA_NOVOSTI',
+              portableOccurrenceId: const Value('citulja-fallback'),
+            ),
+          );
 
       await tester.pumpWidget(
         MaterialApp(
@@ -402,16 +415,20 @@ void main() {
       await db.close();
       await tester.binding.setSurfaceSize(null);
     });
-    final predmetId = await db.into(db.predmeti).insert(
-      PredmetiCompanion.insert(brojPredmeta: const Value('CIT-LAYOUT')),
-    );
-    await db.into(db.iriu).insert(
-      IriuCompanion.insert(
-        predmetId: predmetId,
-        interniNaziv: 'CITULJA_POLITIKA',
-        portableOccurrenceId: const Value('layout-1'),
-      ),
-    );
+    final predmetId = await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(brojPredmeta: const Value('CIT-LAYOUT')),
+        );
+    await db
+        .into(db.iriu)
+        .insert(
+          IriuCompanion.insert(
+            predmetId: predmetId,
+            interniNaziv: 'CITULJA_POLITIKA',
+            portableOccurrenceId: const Value('layout-1'),
+          ),
+        );
     final predmet = await (db.select(
       db.predmeti,
     )..where((row) => row.id.equals(predmetId))).getSingle();
@@ -434,48 +451,56 @@ void main() {
     final mode = find.byKey(const Key('citulje-parte-text-mode'));
     final date = find.byKey(const Key('citulje-publication-date'));
     final text = find.byKey(const Key('citulje-publication-text'));
-    final note = find.byKey(const Key('citulje-note'));
     final save = find.byKey(const Key('citulje-save'));
     expect(tester.getTopLeft(mode).dx, lessThan(tester.getTopLeft(text).dx));
     expect(tester.getTopLeft(date).dx, lessThan(tester.getTopLeft(text).dx));
-    expect(tester.getTopLeft(note).dx, closeTo(tester.getTopLeft(text).dx, 0.1));
+    expect(find.byKey(const Key('citulje-note')), findsNothing);
     expect(tester.getTopLeft(save).dx, greaterThan(tester.getTopLeft(mode).dx));
     expect(tester.takeException(), equals(null));
 
     await tester.binding.setSurfaceSize(const Size(360, 900));
     await tester.pump();
     await tester.pumpAndSettle();
-    expect(tester.getTopLeft(date).dx, closeTo(tester.getTopLeft(text).dx, 0.1));
+    expect(
+      tester.getTopLeft(date).dx,
+      closeTo(tester.getTopLeft(text).dx, 0.1),
+    );
     expect(tester.takeException(), equals(null));
   });
 
-  testWidgets('ČITULJE UI follows the current concrete KATALOG article name',
-      (tester) async {
+  testWidgets('ČITULJE UI follows the current concrete KATALOG article name', (
+    tester,
+  ) async {
     final db = createTestDatabase();
     addTearDown(db.close);
-    final predmetId = await db.into(db.predmeti).insert(
-      PredmetiCompanion.insert(
-        brojPredmeta: const Value('CIT-02-UI'),
-        ime: const Value('Milan'),
-        prezime: const Value('Test'),
-      ),
-    );
-    await db.into(db.iriu).insert(
-      IriuCompanion.insert(
-        predmetId: predmetId,
-        interniNaziv: 'CITULJA_POLITIKA',
-        nazivPrikaz: const Value('Porodična čitulja'),
-        katalogStableArticleId: const Value('CIT-P-001'),
-        portableOccurrenceId: const Value('citulja-concrete-ui-1'),
-      ),
-    );
-    final predmet = (await (db.select(db.predmeti)
-          ..where((row) => row.id.equals(predmetId)))
-        .getSingle());
+    final predmetId = await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('CIT-02-UI'),
+            ime: const Value('Milan'),
+            prezime: const Value('Test'),
+          ),
+        );
+    await db
+        .into(db.iriu)
+        .insert(
+          IriuCompanion.insert(
+            predmetId: predmetId,
+            interniNaziv: 'CITULJA_POLITIKA',
+            nazivPrikaz: const Value('Porodična čitulja'),
+            katalogStableArticleId: const Value('CIT-P-001'),
+            portableOccurrenceId: const Value('citulja-concrete-ui-1'),
+          ),
+        );
+    final predmet = (await (db.select(
+      db.predmeti,
+    )..where((row) => row.id.equals(predmetId))).getSingle());
 
     final repository = CituljePreparationRepository(db);
-    final preparation = (await repository.ensureCurrentForPredmet(predmetId))
-        .single;
+    final preparation = (await repository.ensureCurrentForPredmet(
+      predmetId,
+    )).single;
     expect(
       await repository.currentCituljaDisplayValue(preparation),
       'Porodična čitulja',
@@ -516,10 +541,7 @@ class _RecordingNavigatorObserver extends NavigatorObserver {
 }
 
 AppDatabase _createCituljeTestDatabase() => AppDatabase.forTesting(
-  DatabaseConnection(
-    NativeDatabase.memory(),
-    closeStreamsSynchronously: true,
-  ),
+  DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
 );
 
 Future<void> _selectCituljePublicationDate(WidgetTester tester) async {
@@ -528,10 +550,12 @@ Future<void> _selectCituljePublicationDate(WidgetTester tester) async {
   expect(find.byType(CalendarDatePicker), findsOneWidget);
   final day = DateTime.now().day.toString();
   await tester.tap(
-    find.descendant(
-      of: find.byType(CalendarDatePicker),
-      matching: find.text(day),
-    ).last,
+    find
+        .descendant(
+          of: find.byType(CalendarDatePicker),
+          matching: find.text(day),
+        )
+        .last,
   );
   await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();

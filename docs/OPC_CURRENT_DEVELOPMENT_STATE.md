@@ -1065,6 +1065,44 @@ process/window observation remains the known Codex sandbox desktop-binding
 recurrence; OWNER-visible desktop runtime acceptance remains required for the
 broader restoration package. The separately scoped REVIEW BAR runtime
 acceptance is recorded by the current phase marker above.
+
+## LISTA PDF / canonical NAPOMENA / CVEĆE ribbon — accepted current state — 2026-09-24
+
+The bounded LISTA/PODSETNIK note and ribbon projection is implemented in
+current source. LISTA uses a distinct `OBAVEZE` section with business-readable
+labels from the shared PODSETNIK resolver, visible PARENT/CHILD association,
+empty actionable paper checkboxes and whole-group two-column flow when
+needed. `NAPOMENE` projects canonical `Predmeti.napomena`; PODSETNIK continues
+to show/edit that same field. Non-empty per-row CVEĆE ribbon text is presented
+with its associated flower row. Generated financial-note prose is retired
+from LISTA; financial summary values remain.
+
+The checklist preserves actionable child rows beneath business parents,
+including supported synthetic parent/child displays. Empty paper boxes are
+used for actions; digital completion state is not printed as completed.
+Concise article, quantity, occurrence, location, finance, urn or manual-user
+context is shown only where needed to execute the obligation. URNA and PEPEO
+use the short PODSETNIK business parent/child labels instead of repeating
+dynamic alert prose. Whole obligation groups balance across columns when
+needed; the two-page limit does not permit dropping or truncating required
+content.
+
+The independent Statusi, Finansije and ČITULJE note inputs are removed from
+current editing. Their historical fields remain in the existing schema,
+serialization and Backup/JSON paths; no automatic merge or schema migration
+was introduced. The 2-page maximum remains a layout constraint, not permission
+to discard or truncate required data. Post-correction structural QA passed:
+focused relevant tests passed, analyzer found no issues, full serialized suite
+passed with `586 PASS / 10 SKIP / 0 FAIL`, and fresh Windows release and
+Android production release builds passed.
+
+OWNER reviewed the fresh Windows LISTA PDF and accepted `OBAVEZE`, `NAPOMENE`,
+CVEĆE article/ribbon occurrence context, post-ceremony hierarchy and the
+maximum two-page output on 2026-09-24. The earlier pre-correction Windows
+`OBAVEZE` failure remains historical evidence; this acceptance supersedes it
+for current runtime status. LISTA runtime acceptance is PASS. The bounded
+implementation/publication closure is authorized; unrelated release gates
+and roadmap work remain separate.
 Documentation authority and implementation-source publication are separate
 gates. Residual OWNER findings remain preserved for later OWNER-gated
 corrective work and are not claimed as resolved by this documentation

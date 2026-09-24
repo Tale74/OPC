@@ -10,7 +10,6 @@ import '../../predmeti/reminders/ceremony_notification_gateway.dart';
 import '../../predmeti/reminders/ceremony_reminder_coordinator.dart';
 import '../../predmeti/reminders/ceremony_reminder_model.dart';
 import '../../predmeti/reminders/ceremony_reminder_repository.dart';
-import '../../predmeti/reminders/urna_ashes_reminder_model.dart';
 import '../../predmeti/pdf/nalog_cvecari_pdf_export.dart';
 import '../../predmeti/pdf/nalog_za_opremanje_pdf_export.dart'
     as nalog_za_opremanje_pdf_export;
@@ -136,7 +135,7 @@ class PodsetnikPredmetSettings extends StatefulWidget {
   final Future<void> Function(BuildContext context)? onNalogZaOpremanje;
   final Future<void> Function(BuildContext context)? onNalogCvecari;
   final Future<void> Function(BuildContext context, String occurrenceId)?
-      onCituljaPdf;
+  onCituljaPdf;
 
   @override
   State<PodsetnikPredmetSettings> createState() =>
@@ -144,10 +143,7 @@ class PodsetnikPredmetSettings extends StatefulWidget {
 }
 
 class _PodsetnikPresentationChild {
-  const _PodsetnikPresentationChild({
-    required this.item,
-    required this.label,
-  });
+  const _PodsetnikPresentationChild({required this.item, required this.label});
 
   final PodsetnikObligation item;
   final String label;
@@ -166,13 +162,6 @@ class _PodsetnikPresentationParent {
 class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
   static const double _wideLayoutBreakpoint = 680;
   static const double _checklistColumnGap = 12;
-  static const _syntheticChildLabels = <String, String>{
-    'ceremony.parte': 'Spremiti parte',
-    'goods.equipment': 'Spremiti opremu',
-    'goods.flowers': 'Poručiti cveće',
-    'goods.photo': 'Spremiti sliku',
-    'goods.mourning': 'Spremiti crninu',
-  };
 
   late CeremonyReminderRepository _repository;
   late CeremonyReminderCoordinator _coordinator;
@@ -281,43 +270,44 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
   List<_PodsetnikPresentationParent> _presentationParents(
     List<PodsetnikObligation> roots,
   ) {
-    return roots.map((parent) {
-      final children = _obligations
-          .where(
-            (item) =>
-                item.relevant &&
-                item.rule.parentRuleId == parent.rule.stableRuleId,
-          )
-          .map(
-            (item) => _PodsetnikPresentationChild(
-              item: item,
-              label: _label(item),
-            ),
-          )
-          .toList(growable: false);
-      if (children.isNotEmpty) {
-        return _PodsetnikPresentationParent(
-          item: parent,
-          children: children,
-        );
-      }
-      final syntheticChildLabel = _syntheticChildLabels[parent.rule.stableRuleId];
-      if (syntheticChildLabel != null) {
-        return _PodsetnikPresentationParent(
-          item: parent,
-          children: [
-            _PodsetnikPresentationChild(
+    return roots
+        .map((parent) {
+          final children = _obligations
+              .where(
+                (item) =>
+                    item.relevant &&
+                    item.rule.parentRuleId == parent.rule.stableRuleId,
+              )
+              .map(
+                (item) => _PodsetnikPresentationChild(
+                  item: item,
+                  label: _label(item),
+                ),
+              )
+              .toList(growable: false);
+          if (children.isNotEmpty) {
+            return _PodsetnikPresentationParent(
               item: parent,
-              label: syntheticChildLabel,
-            ),
-          ],
-        );
-      }
-      return _PodsetnikPresentationParent(
-        item: parent,
-        children: const [],
-      );
-    }).toList(growable: false);
+              children: children,
+            );
+          }
+          final syntheticChildLabel = podsetnikSyntheticChildLabel(
+            parent.rule.stableRuleId,
+          );
+          if (syntheticChildLabel != null) {
+            return _PodsetnikPresentationParent(
+              item: parent,
+              children: [
+                _PodsetnikPresentationChild(
+                  item: parent,
+                  label: syntheticChildLabel,
+                ),
+              ],
+            );
+          }
+          return _PodsetnikPresentationParent(item: parent, children: const []);
+        })
+        .toList(growable: false);
   }
 
   Future<void> _addManualObligation() async {
@@ -362,33 +352,10 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
     await _loadObligations();
   }
 
-  String _label(PodsetnikObligation item) => switch (item.rule.stableRuleId) {
-    'ceremony.opelo' => 'OPELO',
-    'ceremony.opelo.notify_priest' => 'Obavestiti sveštenika',
-    'ceremony.opelo.prepare_kit' => 'Spremiti komplet za opelo',
-    'social.pio_refund' => 'REFUNDACIJA PIO',
-    'social.pio_refund.submit_claim' => 'Podneti zahtev PIO',
-    'social.family_pension' => 'PORODIČNA PENZIJA',
-    'social.family_pension.submit_claim' => 'Podneti zahtev za porodičnu penziju',
-    'social.death_assistance' => 'POSMRTNA POMOĆ',
-    'social.death_assistance.submit_claim' => 'Podneti zahtev za posmrtnu pomoć',
-    'military.honors' => 'VOJNE POČASTI',
-    'military.honors.notify_authority' => 'Obavestiti nadležnu službu',
-    'ceremony.parte' => 'PARTE',
-    'goods.equipment' => 'OPREMA',
-    'goods.photo' => 'SLIKA',
-    'goods.mourning' => 'CRNINA',
-    'goods.flowers' => 'CVEĆE',
-    'ceremony.international' => 'Spremiti međunarodna dokumenta',
-    'ceremony.reception' => 'Preuzeti posmrtne ostatke',
-    'goods.stock' => 'Razreši stanje robe',
-    'post.urn_ashes' => urnaAshesParentLabel(widget.predmet.tipPolaganja),
-    'post.urn_ashes.arrange_placement' =>
-      widget.predmet.tipPolaganja.trim().toUpperCase() == 'RASIPANJE_PEPELA'
-          ? 'Zakazati rasipanje pepela'
-          : 'Zakazati polaganje urne',
-    _ => podsetnikObligationDisplayLabel(item.rule),
-  };
+  String _label(PodsetnikObligation item) => podsetnikPresentationLabel(
+    item.rule,
+    urnPlacementType: widget.predmet.tipPolaganja,
+  );
 
   Future<void> _exportCituljaPdf(String occurrenceId) async {
     final callback = widget.onCituljaPdf;
@@ -417,27 +384,18 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
     final selected = item.rule.stableRuleId == _selectedParentRuleId;
     final scheme = Theme.of(context).colorScheme;
     final onChanged = item.isGroup
-        ? (bool value) => _setParentCompletion(
-              item.rule.stableRuleId,
-              value,
-            )
+        ? (bool value) => _setParentCompletion(item.rule.stableRuleId, value)
         : (bool value) => _setCompletion(item.rule.stableRuleId, value);
     return Material(
-      key: ValueKey(
-        'podsetnik-parent-surface-${item.rule.stableRuleId}',
-      ),
-      color: selected
-          ? scheme.secondaryContainer
-          : Colors.transparent,
+      key: ValueKey('podsetnik-parent-surface-${item.rule.stableRuleId}'),
+      color: selected ? scheme.secondaryContainer : Colors.transparent,
       child: Row(
         key: ValueKey('podsetnik-parent-${item.rule.stableRuleId}'),
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: InkWell(
-              key: ValueKey(
-                'podsetnik-parent-label-${item.rule.stableRuleId}',
-              ),
+              key: ValueKey('podsetnik-parent-label-${item.rule.stableRuleId}'),
               onTap: () => setState(
                 () => _selectedParentRuleId == item.rule.stableRuleId
                     ? _selectedParentRuleId = null
@@ -488,12 +446,8 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
         child: Align(
           alignment: Alignment.centerLeft,
           child: OutlinedButton.icon(
-            key: ValueKey(
-              'podsetnik-citulja-pdf-${item.rule.stableRuleId}',
-            ),
-            onPressed: () => _exportCituljaPdf(
-              item.rule.portableOccurrenceId!,
-            ),
+            key: ValueKey('podsetnik-citulja-pdf-${item.rule.stableRuleId}'),
+            onPressed: () => _exportCituljaPdf(item.rule.portableOccurrenceId!),
             icon: const Icon(Icons.picture_as_pdf_outlined),
             label: const Text('Čitulja PDF'),
           ),
@@ -505,14 +459,15 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
         alignment: Alignment.centerLeft,
         child: OutlinedButton(
           key: const Key('podsetnik-nalog-opremanje'),
-          onPressed: () => (widget.onNalogZaOpremanje ??
-                  (context) => nalog_za_opremanje_pdf_export
-                      .izvoziNalogZaOpremanjePdf(
-                        ctx: context,
-                        db: widget.database,
-                        predmetId: widget.predmet.id,
-                      ))
-              .call(context),
+          onPressed: () =>
+              (widget.onNalogZaOpremanje ??
+                      (context) => nalog_za_opremanje_pdf_export
+                          .izvoziNalogZaOpremanjePdf(
+                            ctx: context,
+                            db: widget.database,
+                            predmetId: widget.predmet.id,
+                          ))
+                  .call(context),
           child: const Text('Nalog za opremanje'),
         ),
       );
@@ -522,13 +477,14 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
         alignment: Alignment.centerLeft,
         child: OutlinedButton(
           key: const Key('podsetnik-nalog-cvecari'),
-          onPressed: () => (widget.onNalogCvecari ??
-                  (context) => izvoziNalogCvecariPdf(
+          onPressed: () =>
+              (widget.onNalogCvecari ??
+                      (context) => izvoziNalogCvecariPdf(
                         ctx: context,
                         db: widget.database,
                         predmetId: widget.predmet.id,
                       ))
-              .call(context),
+                  .call(context),
           child: const Text('Nalog cvećari'),
         ),
       );
@@ -537,26 +493,22 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
   }
 
   Widget _buildChildUnit(_PodsetnikPresentationChild child) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 28),
-            child: CheckboxListTile(
-              key: ValueKey(
-                'podsetnik-child-${child.item.rule.stableRuleId}',
-              ),
-              contentPadding: EdgeInsets.zero,
-              title: Text(child.label),
-              value: child.item.completed,
-              onChanged: (value) => _setCompletion(
-                child.item.rule.stableRuleId,
-                value ?? false,
-              ),
-            ),
-          ),
-          _buildObligationActions(child.item),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 28),
+        child: CheckboxListTile(
+          key: ValueKey('podsetnik-child-${child.item.rule.stableRuleId}'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(child.label),
+          value: child.item.completed,
+          onChanged: (value) =>
+              _setCompletion(child.item.rule.stableRuleId, value ?? false),
+        ),
+      ),
+      _buildObligationActions(child.item),
+    ],
+  );
 
   Widget _buildChecklist(BuildContext context) {
     final roots = _obligations
@@ -570,7 +522,8 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
         break;
       }
     }
-    final children = selectedParent?.children ?? const <_PodsetnikPresentationChild>[];
+    final children =
+        selectedParent?.children ?? const <_PodsetnikPresentationChild>[];
     final childPane = children.isEmpty
         ? const SizedBox.shrink()
         : Material(
@@ -578,24 +531,22 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
             color: Theme.of(context).colorScheme.secondaryContainer,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final child in children) _buildChildUnit(child),
-              ],
+              children: [for (final child in children) _buildChildUnit(child)],
             ),
           );
     Widget buildParentPane({required bool inlineSelectedChild}) => Column(
-          key: const Key('podsetnik-parent-obligations'),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (final parent in parents) ...[
-              _buildParentRow(parent.item),
-              if (inlineSelectedChild &&
-                  parent.item.rule.stableRuleId == _selectedParentRuleId &&
-                  children.isNotEmpty)
-                childPane,
-            ],
-          ],
-        );
+      key: const Key('podsetnik-parent-obligations'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final parent in parents) ...[
+          _buildParentRow(parent.item),
+          if (inlineSelectedChild &&
+              parent.item.rule.stableRuleId == _selectedParentRuleId &&
+              children.isNotEmpty)
+            childPane,
+        ],
+      ],
+    );
     final parentPane = buildParentPane(inlineSelectedChild: false);
     final narrowParentPane = buildParentPane(inlineSelectedChild: true);
 
@@ -616,7 +567,8 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
         if (_obligations.isNotEmpty)
           LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.hasBoundedWidth &&
+              final isWide =
+                  constraints.hasBoundedWidth &&
                   constraints.maxWidth >= _wideLayoutBreakpoint;
               if (!isWide) {
                 return narrowParentPane;
@@ -705,86 +657,85 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
       key: const Key('podsetnik-module-settings'),
       child: SingleChildScrollView(
         child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            Text(
-              'ČINJENICE CEREMONIJE',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              ceremonyHeader,
-              key: const Key('podsetnik-ceremony-header'),
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const Divider(height: 28),
-            Text(
-              'OBAVEZE I NAPOMENE',
-              key: const Key('podsetnik-obaveze-heading'),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            _buildChecklist(context),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('podsetnik-general-note'),
-              controller: _noteController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Napomena',
-                border: OutlineInputBorder(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ČINJENICE CEREMONIJE',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-              onChanged: (value) => (widget.database.update(
-                widget.database.predmeti,
-              )..where((row) => row.id.equals(widget.predmet.id))).write(
-                PredmetiCompanion(napomena: Value(value)),
+              const SizedBox(height: 6),
+              Text(
+                ceremonyHeader,
+                key: const Key('podsetnik-ceremony-header'),
+                style: Theme.of(context).textTheme.titleSmall,
               ),
-            ),
-            const Divider(height: 28),
-            SwitchListTile(
-              key: const Key('podsetnik-reminders-enabled'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Podsetnici za ceremoniju'),
-              value: config.enabled,
-              onChanged: (value) => _save(
-                config.copyWith(enabled: value),
-                requestPermission: value,
+              const Divider(height: 28),
+              Text(
+                'OBAVEZE I NAPOMENE',
+                key: const Key('podsetnik-obaveze-heading'),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-            ),
-            if (config.enabled)
-              Wrap(
-                key: const Key('podsetnik-reminder-delivery-times'),
-                spacing: 8,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  for (final value in config.normalizedDeliveryTimes)
-                    InputChip(
-                      label: Text(value),
-                      onDeleted: config.normalizedDeliveryTimes.length > 1
-                          ? () => _save(
-                              config.copyWith(
-                                deliveryTimes: config.normalizedDeliveryTimes
-                                    .where((item) => item != value)
-                                    .toList(),
-                              ),
-                            )
-                          : null,
+              const SizedBox(height: 8),
+              _buildChecklist(context),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('podsetnik-general-note'),
+                controller: _noteController,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Napomena',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) =>
+                    (widget.database.update(widget.database.predmeti)
+                          ..where((row) => row.id.equals(widget.predmet.id)))
+                        .write(PredmetiCompanion(napomena: Value(value))),
+              ),
+              const Divider(height: 28),
+              SwitchListTile(
+                key: const Key('podsetnik-reminders-enabled'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Podsetnici za ceremoniju'),
+                value: config.enabled,
+                onChanged: (value) => _save(
+                  config.copyWith(enabled: value),
+                  requestPermission: value,
+                ),
+              ),
+              if (config.enabled)
+                Wrap(
+                  key: const Key('podsetnik-reminder-delivery-times'),
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (final value in config.normalizedDeliveryTimes)
+                      InputChip(
+                        label: Text(value),
+                        onDeleted: config.normalizedDeliveryTimes.length > 1
+                            ? () => _save(
+                                config.copyWith(
+                                  deliveryTimes: config.normalizedDeliveryTimes
+                                      .where((item) => item != value)
+                                      .toList(),
+                                ),
+                              )
+                            : null,
+                      ),
+                    IconButton.filledTonal(
+                      key: const Key('podsetnik-reminder-add-time'),
+                      tooltip: 'Dodaj vreme podsetnika',
+                      onPressed: _addTime,
+                      icon: const Icon(Icons.add_alarm_outlined),
                     ),
-                  IconButton.filledTonal(
-                    key: const Key('podsetnik-reminder-add-time'),
-                    tooltip: 'Dodaj vreme podsetnika',
-                    onPressed: _addTime,
-                    icon: const Icon(Icons.add_alarm_outlined),
-                  ),
-                ],
-              ),
-              ],
-            ),
+                  ],
+                ),
+            ],
           ),
+        ),
       ),
     );
   }

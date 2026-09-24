@@ -155,6 +155,34 @@ keeps the FINANSIJE display and `NAPLATITI OBAVEZE` threshold aligned; the
 generic obligation watch refreshes from PREDMET/IRiU/stock/completion inputs.
 F-09 has no schema or JSON contract change and adds no `ZAVRŠEN` blocker.
 
+## LISTA PDF / canonical NAPOMENA / CVEĆE ribbon — 2026-09-23
+
+Current implementation evidence is `lib/features/predmeti/pdf/lista_pdf_data_builder.dart`,
+`lib/features/predmeti/pdf/lista_pdf_export.dart`,
+`lib/features/predmeti/presentation/segments/preminulo_lice_segment.dart`,
+`lib/features/predmeti/presentation/segments/finansije_segment.dart`,
+`lib/features/predmeti/citulje/presentation/citulje_module_screen.dart`,
+`lib/features/podsetnik/presentation/podsetnik_module_screen.dart`,
+`test/lista_pdf_obligations_notes_test.dart`,
+`test/podsetnik_task2_ui_integration_test.dart` and
+`test/citulje_module_screen_test.dart`. LISTA renders human-readable shared
+PODSETNIK labels with parent/child linkage and empty actionable paper boxes;
+the notes section projects only canonical `Predmeti.napomena`; each non-empty
+CVEĆE IRiU ribbon is associated with its row. Concise family-specific
+operational context and user-entered manual obligations are projected under
+the relevant action. URNA/PEPEO use the shared short business parent/child
+presentation. Whole groups flow across columns when needed, with a two-page
+maximum and no permission to discard required content. Obsolete note inputs
+are removed from current Statusi, Finansije and ČITULJE editing, while their
+schema, serialization and backup fields remain intact. No database schema or
+JSON contract change is made. Final focused/full QA and fresh release builds
+are recorded in the task review handoff. OWNER accepted the corrected Windows
+LISTA runtime output on 2026-09-24: OBAVEZE, NAPOMENE, CVEĆE occurrence/ribbon
+context, post-ceremony hierarchy and the two-page maximum are PASS. The earlier
+pre-correction OBAVEZE failure remains historical evidence and is superseded
+by this current acceptance; publication/Git synchronization is recorded
+separately.
+
 ## PREDMET unified three-dot menu implementation traceability — 2026-09-20
 
 The bounded Member 2 correction is implemented by the shared action

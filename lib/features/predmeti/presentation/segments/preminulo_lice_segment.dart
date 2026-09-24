@@ -104,7 +104,6 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
   bool _bracniDrugOstvarujePravo = false;
   bool _bracniDrugJePenzioner = false;
   late final TextEditingController _cinCtrlRS;
-  late final TextEditingController _radniStatusNapomenaCtrl;
 
   // ── Blur validacija ───────────────────────────────────────────────────────
   final _imeFocus = FocusNode();
@@ -167,7 +166,6 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     _bdJmbgCtrl = TextEditingController(text: d.bracniDrugJmbg);
 
     _cinCtrlRS = TextEditingController(text: d.cin);
-    _radniStatusNapomenaCtrl = TextEditingController(text: d.penzionerNapomena);
 
     _pol = d.pol.isNotEmpty ? d.pol : 'M';
     _mestoSmrti = IriuTruthRules.normalizeMestoSmrti(d.mestoSmrti);
@@ -243,7 +241,6 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
       _bdDevojackoCtrl,
       _bdJmbgCtrl,
       _cinCtrlRS,
-      _radniStatusNapomenaCtrl,
     ]) {
       c.dispose();
     }
@@ -300,7 +297,6 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
           _bracniDrugOstvarujePravo ? 'DA' : 'NE',
         ),
         bracniDrugJePenzioner: Value(_bracniDrugJePenzioner ? 'DA' : 'NE'),
-        penzionerNapomena: Value(_normalizedText(_radniStatusNapomenaCtrl)),
       ),
     );
   }
@@ -570,15 +566,6 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
                     ),
                 ],
                 const SizedBox(height: 8),
-              ],
-              if (_radniStatusSet.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                _field(
-                  'NAPOMENA (radni status)',
-                  _radniStatusNapomenaCtrl,
-                  e,
-                  maxLines: 2,
-                ),
               ],
             ],
           ],

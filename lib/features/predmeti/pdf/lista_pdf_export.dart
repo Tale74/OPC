@@ -10,6 +10,8 @@ import '../../../core/format/app_format.dart';
 import '../../../core/utils/document_text_codec.dart';
 import '../../../core/utils/export_utils.dart';
 import '../data/iriu_repository.dart';
+import '../../podsetnik/data/podsetnik_obligation_repository.dart';
+import '../../podsetnik/domain/podsetnik_obligation.dart';
 import 'lista_pdf_data_builder.dart';
 import 'memorandum_logo.dart';
 
@@ -33,6 +35,9 @@ Future<void> izvoziListaPdf({
       db.predmeti,
     )..where((t) => t.id.equals(predmetId))).getSingle();
     final iriuStavke = await IriuRepository(db).getIriu(predmetId);
+    final manualObligations = await PodsetnikObligationRepository(
+      db,
+    ).manualRulesForPredmetProjection(predmetId);
     final firma = await (db.select(
       db.firmaPodaci,
     )..where((t) => t.id.equals(1))).getSingle();
@@ -51,6 +56,7 @@ Future<void> izvoziListaPdf({
       firma: firma,
       app: app,
       savetnik: savetnik,
+      manualObligations: manualObligations,
     );
 
     final naziv = koricePdfDerivatFajlNaziv(
@@ -92,6 +98,23 @@ Future<Uint8List> _buildListaPdf({
   required FirmaPodaciData firma,
   required AppPodesavanjaData app,
   required KorisniciData? savetnik,
+  required List<PodsetnikObligationRule> manualObligations,
+}) async {
+  final preparedData = const ListaPdfDataBuilder().build(
+    predmet: predmet,
+    iriuStavke: iriuStavke,
+    firma: firma,
+    app: app,
+    savetnik: savetnik,
+    portableSavetnikName: predmet.businessResponsibleName,
+    additionalObligations: manualObligations,
+  );
+  return buildListaPdfBytesForTesting(preparedData: preparedData);
+}
+
+@visibleForTesting
+Future<Uint8List> buildListaPdfBytesForTesting({
+  required ListaPdfPreparedData preparedData,
 }) async {
   final regularFont = pw.Font.ttf(
     await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
@@ -113,14 +136,6 @@ Future<Uint8List> _buildListaPdf({
     boldItalic: boldItalicFont,
   );
 
-  final preparedData = const ListaPdfDataBuilder().build(
-    predmet: predmet,
-    iriuStavke: iriuStavke,
-    firma: firma,
-    app: app,
-    savetnik: savetnik,
-    portableSavetnikName: predmet.businessResponsibleName,
-  );
   final snapshot = _ListaPdfSnapshot.fromPreparedData(preparedData);
 
   final doc = pw.Document(
@@ -531,11 +546,103 @@ pw.Widget _buildPageTwoBody(_ListaPdfSnapshot snapshot) {
   );
 }
 
-pw.Widget _buildPodsetnikChecklistSection(
-  List<ListaPdfChecklistItem> items,
-) {
+pw.Widget _buildPodsetnikChecklistSection(List<ListaPdfChecklistItem> items) {
+  final groups = <List<ListaPdfChecklistItem>>[];
+  for (var index = 0; index < items.length;) {
+    final item = items[index];
+    if (item.group) {
+      final group = <ListaPdfChecklistItem>[item];
+      index++;
+      while (index < items.length && items[index].parentLabel == item.label) {
+        group.add(items[index++]);
+      }
+      groups.add(group);
+    } else {
+      groups.add(<ListaPdfChecklistItem>[item]);
+      index++;
+    }
+  }
+  final columns = _splitChecklistGroups(groups);
+  pw.Widget renderColumn(List<List<ListaPdfChecklistItem>> groups) => pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+    children: groups
+        .map(
+          (group) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 3),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: group
+                  .map((item) {
+                    final isParent = item.group;
+                    return pw.Padding(
+                      padding: pw.EdgeInsets.only(left: isParent ? 0 : 14),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                        children: [
+                          pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              if (!isParent)
+                                pw.Container(
+                                  margin: const pw.EdgeInsets.only(top: 1),
+                                  width: 8,
+                                  height: 8,
+                                  decoration: pw.BoxDecoration(
+                                    border: pw.Border.all(
+                                      color: PdfColors.grey700,
+                                    ),
+                                  ),
+                                )
+                              else
+                                pw.SizedBox(width: 8),
+                              pw.SizedBox(width: 6),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  documentTextCodec.normalize(item.label),
+                                  style: pw.TextStyle(
+                                    fontSize: _kCompactBodyFontSize,
+                                    fontWeight: isParent
+                                        ? pw.FontWeight.bold
+                                        : pw.FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (item.context.isNotEmpty)
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.only(
+                                left: 28,
+                                top: 2,
+                              ),
+                              child: pw.Column(
+                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                children: item.context
+                                    .map(
+                                      (line) => pw.Text(
+                                        documentTextCodec.normalize(line),
+                                        style: const pw.TextStyle(
+                                          fontSize: _kCompactBodyFontSize - 0.4,
+                                          color: PdfColors.grey700,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(growable: false),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  })
+                  .toList(growable: false),
+            ),
+          ),
+        )
+        .toList(growable: false),
+  );
+
   return _buildSectionShell(
-    title: 'OBAVEZE I NAPOMENE',
+    title: 'OBAVEZE',
     child: items.isEmpty
         ? pw.Text(
             documentTextCodec.normalize('Nema trenutno relevantnih obaveza.'),
@@ -545,40 +652,59 @@ pw.Widget _buildPodsetnikChecklistSection(
               color: PdfColors.grey700,
             ),
           )
-        : pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-            children: items
-                .map(
-                  (item) => pw.Padding(
-                    padding: const pw.EdgeInsets.only(bottom: 3),
-                    child: pw.Row(
-                      children: [
-                        pw.Container(
-                          width: 8,
-                          height: 8,
-                          decoration: pw.BoxDecoration(
-                            border: pw.Border.all(color: PdfColors.grey700),
-                          ),
-                        ),
-                        pw.SizedBox(width: 6),
-                        pw.Expanded(
-                          child: pw.Text(
-                            documentTextCodec.normalize(item.label),
-                            style: pw.TextStyle(
-                              fontSize: _kCompactBodyFontSize,
-                              fontWeight: item.group
-                                  ? pw.FontWeight.bold
-                                  : pw.FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(growable: false),
+        : pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Expanded(child: renderColumn(columns[0])),
+              if (columns[1].isNotEmpty) ...[
+                pw.SizedBox(width: _kSectionGap),
+                pw.Expanded(child: renderColumn(columns[1])),
+              ],
+            ],
           ),
   );
+}
+
+List<List<List<ListaPdfChecklistItem>>> _splitChecklistGroups(
+  List<List<ListaPdfChecklistItem>> groups,
+) {
+  int itemWeight(ListaPdfChecklistItem item) {
+    final text = <String>[item.label, ...item.context];
+    return text.fold<int>(
+      0,
+      (sum, value) => sum + ((value.length + 43) ~/ 44).clamp(1, 5),
+    );
+  }
+
+  int groupWeight(List<ListaPdfChecklistItem> group) =>
+      group.fold<int>(0, (sum, item) => sum + itemWeight(item));
+
+  final totalRows = groups.fold<int>(
+    0,
+    (sum, group) => sum + groupWeight(group),
+  );
+  if (totalRows <= 7 || groups.length < 2) {
+    return <List<List<ListaPdfChecklistItem>>>[
+      groups,
+      <List<ListaPdfChecklistItem>>[],
+    ];
+  }
+
+  var leftRows = 0;
+  var splitAt = 1;
+  var bestDifference = totalRows;
+  for (var index = 1; index < groups.length; index++) {
+    leftRows += groupWeight(groups[index - 1]);
+    final difference = (totalRows - 2 * leftRows).abs();
+    if (difference < bestDifference) {
+      bestDifference = difference;
+      splitAt = index;
+    }
+  }
+  return <List<List<ListaPdfChecklistItem>>>[
+    groups.take(splitAt).toList(growable: false),
+    groups.skip(splitAt).toList(growable: false),
+  ];
 }
 
 pw.Widget _buildIriuFinanceLayout(_ListaPdfSnapshot snapshot) {
@@ -758,7 +884,12 @@ pw.Widget _buildIriuTable(
         (item) => pw.TableRow(
           children: [
             _buildIriuCheckCell(profile),
-            _buildIriuBodyCell(item.naziv, profile),
+            _buildIriuBodyCell(
+              item.tekstTrake?.isNotEmpty == true
+                  ? '${item.naziv}\nTraka: ${item.tekstTrake}'
+                  : item.naziv,
+              profile,
+            ),
             _buildIriuBodyCell(item.kom, profile, horizontalPadding: 3),
             _buildIriuBodyCell(
               formatMoneyRsd(item.iznos),

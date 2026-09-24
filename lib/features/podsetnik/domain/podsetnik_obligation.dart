@@ -578,6 +578,43 @@ String podsetnikObligationDisplayLabel(PodsetnikObligationRule rule) {
   };
 }
 
+const Map<String, String> _syntheticObligationChildLabels = {
+  'ceremony.parte': 'Spremiti parte',
+  'goods.equipment': 'Spremiti opremu',
+  'goods.flowers': 'Poručiti cveće',
+  'goods.photo': 'Spremiti sliku',
+  'goods.mourning': 'Spremiti crninu',
+};
+
+/// Presentation-only action labels used beneath atomic PODSETNIK roots.
+///
+/// These rows remain atomic in persistence; the PODSETNIK master/detail UI
+/// presents the root as a group heading and this label as its actionable row.
+/// LISTA uses the same mapping for its paper parent/child projection.
+String? podsetnikSyntheticChildLabel(String stableRuleId) =>
+    _syntheticObligationChildLabels[stableRuleId];
+
+/// Shared current PODSETNIK presentation label. The urn rule stores full
+/// notification wording for its reminder cycle, while the checklist surface
+/// intentionally shows the concise business hierarchy.
+String podsetnikPresentationLabel(
+  PodsetnikObligationRule rule, {
+  String urnPlacementType = '',
+}) {
+  if (rule.stableRuleId == 'military.honors.notify_authority') {
+    return 'Obavestiti nadležnu službu';
+  }
+  if (rule.stableRuleId == 'post.urn_ashes') {
+    return urnaAshesParentLabel(urnPlacementType);
+  }
+  if (rule.stableRuleId == 'post.urn_ashes.arrange_placement') {
+    return urnPlacementType.trim().toUpperCase() == 'RASIPANJE_PEPELA'
+        ? 'Zakazati rasipanje pepela'
+        : 'Zakazati polaganje urne';
+  }
+  return podsetnikObligationDisplayLabel(rule);
+}
+
 /// REVIEW BAR-only label projection. Full URNA wording remains available
 /// through [podsetnikObligationDisplayLabel] to PODSETNIK and LISTA outputs.
 String podsetnikReviewBarDisplayLabel(PodsetnikObligationRule rule) {

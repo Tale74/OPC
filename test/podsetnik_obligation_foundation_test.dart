@@ -77,8 +77,10 @@ void main() {
     );
 
     expect(
-      podsetnikOverviewRoots([slika, cvece])
-          .map((item) => podsetnikReviewBarDisplayLabel(item.rule)),
+      podsetnikOverviewRoots([
+        slika,
+        cvece,
+      ]).map((item) => podsetnikReviewBarDisplayLabel(item.rule)),
       ['SLIKA', 'CVEĆE'],
     );
   });
@@ -108,34 +110,37 @@ void main() {
       completed: false,
     );
 
-    expect(
-      podsetnikReviewBarText([parent, child], 0),
-      'POSEBNE OBAVEZE',
-    );
+    expect(podsetnikReviewBarText([parent, child], 0), 'POSEBNE OBAVEZE');
   });
 
-  test('REVIEW BAR uses short URNA label and preserves full obligation label', () {
-    const urna = PodsetnikObligationRule(
-      stableRuleId: 'post.urn_ashes',
-      phase: PodsetnikObligationPhase.postCeremony,
-      kind: PodsetnikObligationKind.group,
-      displayLabel: 'ZA TEST ZAKAZATI POLAGANJE URNE U GROB NA GROBLJE.',
-    );
-    const obligation = PodsetnikObligation(
-      rule: urna,
-      predmetId: 1,
-      sourceFingerprint: 'urna',
-      relevant: true,
-      completed: false,
-    );
+  test(
+    'REVIEW BAR uses short URNA label and preserves full obligation label',
+    () {
+      const urna = PodsetnikObligationRule(
+        stableRuleId: 'post.urn_ashes',
+        phase: PodsetnikObligationPhase.postCeremony,
+        kind: PodsetnikObligationKind.group,
+        displayLabel: 'ZA TEST ZAKAZATI POLAGANJE URNE U GROB NA GROBLJE.',
+      );
+      const obligation = PodsetnikObligation(
+        rule: urna,
+        predmetId: 1,
+        sourceFingerprint: 'urna',
+        relevant: true,
+        completed: false,
+      );
 
-    expect(podsetnikReviewBarText([obligation], 0), 'ZAKAZATI POLAGANJE URNE');
-    expect(
-      podsetnikObligationDisplayLabel(urna),
-      'ZA TEST ZAKAZATI POLAGANJE URNE U GROB NA GROBLJE.',
-    );
-    expect(podsetnikReviewBarText(const [], 0), 'OBAVEZE ISPUNJENE');
-  });
+      expect(
+        podsetnikReviewBarText([obligation], 0),
+        'ZAKAZATI POLAGANJE URNE',
+      );
+      expect(
+        podsetnikObligationDisplayLabel(urna),
+        'ZA TEST ZAKAZATI POLAGANJE URNE U GROB NA GROBLJE.',
+      );
+      expect(podsetnikReviewBarText(const [], 0), 'OBAVEZE ISPUNJENE');
+    },
+  );
 
   test(
     'stable obligation identity is independent of display wording',
@@ -167,120 +172,117 @@ void main() {
     },
   );
 
-  test(
-    'VOJNE POČASTI uses the generic grouped obligation structure',
-    () async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
-      final id = await db
-          .into(db.predmeti)
-          .insert(
-            PredmetiCompanion.insert(
-              brojPredmeta: const Value('POD-VOJNE-POCASTI-1'),
-              datumKreiranja: const Value('2026-08-29'),
-              vojniPenzioner: const Value('DA'),
-              vojnePocasti: const Value('DA'),
-              narucilacRefundira: const Value('DA'),
-            ),
-          );
-      final predmet = await (db.select(
-        db.predmeti,
-      )..where((row) => row.id.equals(id))).getSingle();
-      final rules = const PodsetnikObligationDeriver().deriveRules(
-        predmet: predmet,
-        iriu: const [],
-      );
-      final parent = rules.singleWhere(
-        (rule) => rule.stableRuleId == 'military.honors',
-      );
-      final child = rules.singleWhere(
-        (rule) => rule.stableRuleId == 'military.honors.notify_authority',
-      );
-      expect(parent.kind, PodsetnikObligationKind.group);
-      expect(parent.phase, PodsetnikObligationPhase.preCeremony);
-      expect(podsetnikObligationDisplayLabel(parent), 'VOJNE POČASTI');
-      expect(child.kind, PodsetnikObligationKind.atomic);
-      expect(child.parentRuleId, 'military.honors');
-      expect(
-        podsetnikObligationDisplayLabel(child),
-        'OBAVESTITI NADLEŽNU SLUŽBU',
-      );
-      expect(
-        podsetnikObligationDisplayLabel(child),
-        isNot('VOJNE POČASTI — obavestiti nadležnu službu'),
-      );
+  test('VOJNE POČASTI uses the generic grouped obligation structure', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final id = await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('POD-VOJNE-POCASTI-1'),
+            datumKreiranja: const Value('2026-08-29'),
+            vojniPenzioner: const Value('DA'),
+            vojnePocasti: const Value('DA'),
+            narucilacRefundira: const Value('DA'),
+          ),
+        );
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((row) => row.id.equals(id))).getSingle();
+    final rules = const PodsetnikObligationDeriver().deriveRules(
+      predmet: predmet,
+      iriu: const [],
+    );
+    final parent = rules.singleWhere(
+      (rule) => rule.stableRuleId == 'military.honors',
+    );
+    final child = rules.singleWhere(
+      (rule) => rule.stableRuleId == 'military.honors.notify_authority',
+    );
+    expect(parent.kind, PodsetnikObligationKind.group);
+    expect(parent.phase, PodsetnikObligationPhase.preCeremony);
+    expect(podsetnikObligationDisplayLabel(parent), 'VOJNE POČASTI');
+    expect(child.kind, PodsetnikObligationKind.atomic);
+    expect(child.parentRuleId, 'military.honors');
+    expect(
+      podsetnikObligationDisplayLabel(child),
+      'OBAVESTITI NADLEŽNU SLUŽBU',
+    );
+    expect(
+      podsetnikObligationDisplayLabel(child),
+      isNot('VOJNE POČASTI — obavestiti nadležnu službu'),
+    );
 
-      final repo = PodsetnikObligationRepository(db);
-      var current = await repo.reconcileForPredmet(id);
-      expect(
-        current.map((item) => item.rule.stableRuleId),
-        ['military.honors', 'military.honors.notify_authority'],
-      );
-      expect(podsetnikReviewBarText(current, 0), 'VOJNE POČASTI');
+    final repo = PodsetnikObligationRepository(db);
+    var current = await repo.reconcileForPredmet(id);
+    expect(current.map((item) => item.rule.stableRuleId), [
+      'military.honors',
+      'military.honors.notify_authority',
+    ]);
+    expect(podsetnikReviewBarText(current, 0), 'VOJNE POČASTI');
 
-      await repo.setAtomicCompletion(
-        predmetId: id,
-        stableRuleId: child.stableRuleId,
-        completed: true,
-      );
-      current = await repo.currentForPredmet(id);
-      expect(
-        current.singleWhere(
-          (item) => item.rule.stableRuleId == 'military.honors',
-        ).completed,
-        isTrue,
-      );
-      expect(podsetnikReviewBarText(current, 0), 'OBAVEZE ISPUNJENE');
+    await repo.setAtomicCompletion(
+      predmetId: id,
+      stableRuleId: child.stableRuleId,
+      completed: true,
+    );
+    current = await repo.currentForPredmet(id);
+    expect(
+      current
+          .singleWhere((item) => item.rule.stableRuleId == 'military.honors')
+          .completed,
+      isTrue,
+    );
+    expect(podsetnikReviewBarText(current, 0), 'OBAVEZE ISPUNJENE');
 
-      await repo.setAtomicCompletion(
-        predmetId: id,
-        stableRuleId: child.stableRuleId,
-        completed: false,
-      );
-      current = await repo.currentForPredmet(id);
-      expect(podsetnikReviewBarText(current, 0), 'VOJNE POČASTI');
+    await repo.setAtomicCompletion(
+      predmetId: id,
+      stableRuleId: child.stableRuleId,
+      completed: false,
+    );
+    current = await repo.currentForPredmet(id);
+    expect(podsetnikReviewBarText(current, 0), 'VOJNE POČASTI');
 
-      await repo.setParentCompletion(
-        predmetId: id,
-        parentRuleId: parent.stableRuleId,
-        completed: true,
-      );
-      current = await repo.currentForPredmet(id);
-      expect(
-        current.singleWhere(
-          (item) => item.rule.stableRuleId == child.stableRuleId,
-        ).completed,
-        isTrue,
-      );
+    await repo.setParentCompletion(
+      predmetId: id,
+      parentRuleId: parent.stableRuleId,
+      completed: true,
+    );
+    current = await repo.currentForPredmet(id);
+    expect(
+      current
+          .singleWhere((item) => item.rule.stableRuleId == child.stableRuleId)
+          .completed,
+      isTrue,
+    );
 
-      final firma = await db.select(db.firmaPodaci).getSingle();
-      final app = await db.select(db.appPodesavanja).getSingle();
-      final lista = const ListaPdfDataBuilder().build(
-        predmet: predmet,
-        iriuStavke: const [],
-        firma: firma,
-        app: app,
-        savetnik: null,
-      );
-      expect(
-        lista.podsetnikChecklist.map((item) => item.label).toList(),
-        ['VOJNE POČASTI', 'OBAVESTITI NADLEŽNU SLUŽBU'],
-      );
-      expect(
-        lista.podsetnikChecklist.map((item) => item.group).toList(),
-        [true, false],
-      );
-      expect(
-        lista.podsetnikChecklist.map((item) => item.label),
-        isNot(contains('VOJNE POČASTI — obavestiti nadležnu službu')),
-      );
+    final firma = await db.select(db.firmaPodaci).getSingle();
+    final app = await db.select(db.appPodesavanja).getSingle();
+    final lista = const ListaPdfDataBuilder().build(
+      predmet: predmet,
+      iriuStavke: const [],
+      firma: firma,
+      app: app,
+      savetnik: null,
+    );
+    expect(lista.podsetnikChecklist.map((item) => item.label).toList(), [
+      'VOJNE POČASTI',
+      'Obavestiti nadležnu službu',
+    ]);
+    expect(lista.podsetnikChecklist.map((item) => item.group).toList(), [
+      true,
+      false,
+    ]);
+    expect(
+      lista.podsetnikChecklist.map((item) => item.label),
+      isNot(contains('VOJNE POČASTI — obavestiti nadležnu službu')),
+    );
 
-      await (db.update(db.predmeti)..where((row) => row.id.equals(id))).write(
-        const PredmetiCompanion(vojnePocasti: Value('NE')),
-      );
-      expect(await repo.currentForPredmet(id), isEmpty);
-    },
-  );
+    await (db.update(db.predmeti)..where((row) => row.id.equals(id))).write(
+      const PredmetiCompanion(vojnePocasti: Value('NE')),
+    );
+    expect(await repo.currentForPredmet(id), isEmpty);
+  });
 
   test(
     'atomic completion persists and parent derives from current children',
@@ -428,8 +430,10 @@ void main() {
         target,
       ).currentForPredmet(importedId);
       expect(
-        imported.singleWhere((item) => item.rule.stableRuleId == 'military.honors')
-            .rule.kind,
+        imported
+            .singleWhere((item) => item.rule.stableRuleId == 'military.honors')
+            .rule
+            .kind,
         PodsetnikObligationKind.group,
       );
       expect(
@@ -567,22 +571,25 @@ void main() {
     );
   });
 
-  test('RS and military pensioner coexist without duplicate PIO obligation', () async {
-    final rules = await _derive(
-      PredmetiCompanion.insert(
-        brojPredmeta: const Value('POD-R7'),
-        penzionerSrbije: const Value('DA'),
-        vojniPenzioner: const Value('DA'),
-        narucilacRefundira: const Value('NE'),
-      ),
-    );
-    final ids = rules.map((rule) => rule.stableRuleId).toList();
-    expect(ids.where((id) => id == 'social.pio_refund').length, 1);
-    expect(
-      ids.where((id) => id == 'social.pio_refund.submit_claim').length,
-      1,
-    );
-  });
+  test(
+    'RS and military pensioner coexist without duplicate PIO obligation',
+    () async {
+      final rules = await _derive(
+        PredmetiCompanion.insert(
+          brojPredmeta: const Value('POD-R7'),
+          penzionerSrbije: const Value('DA'),
+          vojniPenzioner: const Value('DA'),
+          narucilacRefundira: const Value('NE'),
+        ),
+      );
+      final ids = rules.map((rule) => rule.stableRuleId).toList();
+      expect(ids.where((id) => id == 'social.pio_refund').length, 1);
+      expect(
+        ids.where((id) => id == 'social.pio_refund.submit_claim').length,
+        1,
+      );
+    },
+  );
 
   test('family pension requires married pensioner and FIRMA path', () async {
     final payer = await _derive(
@@ -628,102 +635,112 @@ void main() {
     );
   });
 
-  test('PIO, family pension and funeral assistance are post-ceremony rules', () async {
-    final pio = await _derive(
-      PredmetiCompanion.insert(
-        brojPredmeta: const Value('POD-A-PIO'),
-        penzionerSrbije: const Value('DA'),
-        narucilacRefundira: const Value('NE'),
-      ),
-    );
-    final family = await _derive(
-      PredmetiCompanion.insert(
-        brojPredmeta: const Value('POD-A-FAMILY'),
-        bracnoStanje: const Value('UDATA'),
-        bracniDrugOstvarujePravo: const Value('DA'),
-        penzionerSrbije: const Value('DA'),
-        narucilacRefundira: const Value('NE'),
-      ),
-    );
-    final funeral = await _derive(
-      PredmetiCompanion.insert(
-        brojPredmeta: const Value('POD-A-FUNERAL'),
-        vojniPenzioner: const Value('DA'),
-        posmrtnaPomoc: const Value('DA'),
-      ),
-    );
+  test(
+    'PIO, family pension and funeral assistance are post-ceremony rules',
+    () async {
+      final pio = await _derive(
+        PredmetiCompanion.insert(
+          brojPredmeta: const Value('POD-A-PIO'),
+          penzionerSrbije: const Value('DA'),
+          narucilacRefundira: const Value('NE'),
+        ),
+      );
+      final family = await _derive(
+        PredmetiCompanion.insert(
+          brojPredmeta: const Value('POD-A-FAMILY'),
+          bracnoStanje: const Value('UDATA'),
+          bracniDrugOstvarujePravo: const Value('DA'),
+          penzionerSrbije: const Value('DA'),
+          narucilacRefundira: const Value('NE'),
+        ),
+      );
+      final funeral = await _derive(
+        PredmetiCompanion.insert(
+          brojPredmeta: const Value('POD-A-FUNERAL'),
+          vojniPenzioner: const Value('DA'),
+          posmrtnaPomoc: const Value('DA'),
+        ),
+      );
 
-    for (final rules in [pio, family, funeral]) {
-      expect(
-        rules
-            .where((rule) => rule.stableRuleId.startsWith('social.'))
-            .every(
-              (rule) => rule.phase == PodsetnikObligationPhase.postCeremony,
-            ),
-        isTrue,
-      );
-      final socialParents = rules.where(
-        (rule) =>
-            rule.stableRuleId.startsWith('social.') &&
-            rule.parentRuleId == null,
-      );
-      for (final parent in socialParents) {
+      for (final rules in [pio, family, funeral]) {
         expect(
           rules
-              .where((rule) => rule.parentRuleId == parent.stableRuleId)
+              .where((rule) => rule.stableRuleId.startsWith('social.'))
               .every(
                 (rule) => rule.phase == PodsetnikObligationPhase.postCeremony,
               ),
           isTrue,
         );
+        final socialParents = rules.where(
+          (rule) =>
+              rule.stableRuleId.startsWith('social.') &&
+              rule.parentRuleId == null,
+        );
+        for (final parent in socialParents) {
+          expect(
+            rules
+                .where((rule) => rule.parentRuleId == parent.stableRuleId)
+                .every(
+                  (rule) => rule.phase == PodsetnikObligationPhase.postCeremony,
+                ),
+            isTrue,
+          );
+        }
       }
-    }
-  });
+    },
+  );
 
-  test('phase correction preserves completion and portable transfer identity', () async {
-    final source = createTestDatabase();
-    final target = createTestDatabase();
-    addTearDown(source.close);
-    addTearDown(target.close);
-    final predmet = PredmetiCompanion.insert(
-      brojPredmeta: const Value('POD-A-TRANSFER'),
-      penzionerSrbije: const Value('DA'),
-      narucilacRefundira: const Value('NE'),
-    );
-    final sourceId = await source.into(source.predmeti).insert(predmet);
-    final targetId = await target.into(target.predmeti).insert(predmet);
-    final sourceRepo = PodsetnikObligationRepository(source);
-    final targetRepo = PodsetnikObligationRepository(target);
+  test(
+    'phase correction preserves completion and portable transfer identity',
+    () async {
+      final source = createTestDatabase();
+      final target = createTestDatabase();
+      addTearDown(source.close);
+      addTearDown(target.close);
+      final predmet = PredmetiCompanion.insert(
+        brojPredmeta: const Value('POD-A-TRANSFER'),
+        penzionerSrbije: const Value('DA'),
+        narucilacRefundira: const Value('NE'),
+      );
+      final sourceId = await source.into(source.predmeti).insert(predmet);
+      final targetId = await target.into(target.predmeti).insert(predmet);
+      final sourceRepo = PodsetnikObligationRepository(source);
+      final targetRepo = PodsetnikObligationRepository(target);
 
-    await sourceRepo.reconcileForPredmet(sourceId);
-    await sourceRepo.setAtomicCompletion(
-      predmetId: sourceId,
-      stableRuleId: 'social.pio_refund.submit_claim',
-      completed: true,
-    );
-    final sourceRow = (await (source.select(source.podsetnikObaveze)
-              ..where((row) =>
-                  row.stableRuleId.equals('social.pio_refund.submit_claim')))
-            .getSingle());
-    expect(sourceRow.phase, 'postCeremony');
-    expect(sourceRow.completed, isTrue);
+      await sourceRepo.reconcileForPredmet(sourceId);
+      await sourceRepo.setAtomicCompletion(
+        predmetId: sourceId,
+        stableRuleId: 'social.pio_refund.submit_claim',
+        completed: true,
+      );
+      final sourceRow =
+          (await (source.select(source.podsetnikObaveze)..where(
+                (row) =>
+                    row.stableRuleId.equals('social.pio_refund.submit_claim'),
+              ))
+              .getSingle());
+      expect(sourceRow.phase, 'postCeremony');
+      expect(sourceRow.completed, isTrue);
 
-    final exported = await sourceRepo.exportPortableState(sourceId);
-    final transferred = exported.singleWhere(
-      (state) => state.stableRuleId == 'social.pio_refund.submit_claim',
-    );
-    expect(transferred.phase, 'postCeremony');
-    await targetRepo.importPortableState(
-      predmetId: targetId,
-      states: [transferred],
-    );
-    final restored = (await (target.select(target.podsetnikObaveze)
-              ..where((row) =>
-                  row.stableRuleId.equals('social.pio_refund.submit_claim')))
-            .getSingle());
-    expect(restored.phase, 'postCeremony');
-    expect(restored.completed, isTrue);
-  });
+      final exported = await sourceRepo.exportPortableState(sourceId);
+      final transferred = exported.singleWhere(
+        (state) => state.stableRuleId == 'social.pio_refund.submit_claim',
+      );
+      expect(transferred.phase, 'postCeremony');
+      await targetRepo.importPortableState(
+        predmetId: targetId,
+        states: [transferred],
+      );
+      final restored =
+          (await (target.select(target.podsetnikObaveze)..where(
+                (row) =>
+                    row.stableRuleId.equals('social.pio_refund.submit_claim'),
+              ))
+              .getSingle());
+      expect(restored.phase, 'postCeremony');
+      expect(restored.completed, isTrue);
+    },
+  );
 
   test(
     'OPELO responsibility and kit are independent grouped children',
@@ -773,8 +790,9 @@ void main() {
       ),
     );
     expect(
-      irrelevant
-          .where((rule) => rule.stableRuleId == 'ceremony.opelo.prepare_kit'),
+      irrelevant.where(
+        (rule) => rule.stableRuleId == 'ceremony.opelo.prepare_kit',
+      ),
       isEmpty,
     );
 
@@ -784,10 +802,7 @@ void main() {
         opelo: const Value('DA'),
       ),
       iriu: [
-        IriuCompanion.insert(
-          predmetId: 0,
-          interniNaziv: IriuK.kompletZaOpelo,
-        ),
+        IriuCompanion.insert(predmetId: 0, interniNaziv: IriuK.kompletZaOpelo),
       ],
     );
     expect(

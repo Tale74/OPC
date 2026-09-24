@@ -99,6 +99,30 @@ The following materially define the current product or remain explicitly open:
   Neither child depends on, precedes, or orders completion of the other. Both
   exact rules are implemented in current source; broader unspecified FINANSIJE
   reminder scope remains deferred.
+- The canonical general PREDMET note is `Predmeti.napomena`, edited in
+  `PREDMET → Segment 7: Roba i usluge → NAPOMENA`. PODSETNIK may present and
+  edit that same field; it is not a second durable source. LISTA PDF projects
+  the same content in a separate `NAPOMENE` section. Historical values in the
+  retired Statusi, Finansije and per-ČITULJA note fields remain preserved in
+  their existing storage/transfer contracts; those fields are no longer
+  current editing inputs and are not automatically merged into the canonical
+  note.
+- LISTA PDF is a two-page maximum working checklist. Its `OBAVEZE` section
+  projects current PODSETNIK business labels and visible parent/child groups
+  with empty paper checkboxes; when useful, complete groups flow into a second
+  column without separating children from their parent. Concise, source-backed
+  operational context is attached to the obligation it explains, including
+  selected articles and quantity, occurrence-matched CVEĆE article/ribbon,
+  relevant OPELO/FINANSIJE/URNA details, ČITULJE occurrence context and
+  human-entered manual obligation text. `URNA` and `PEPEO` keep the short
+  business parent and actionable child labels used by PODSETNIK, not the full
+  notification sentence. Generated financial note prose is retired from LISTA;
+  financial values remain in the financial summary and user-entered canonical
+  NAPOMENA remains unchanged. The two-page limit is not permission to omit,
+  truncate or make required checklist content unreadable. OWNER accepted the
+  corrected Windows LISTA runtime output on 2026-09-24, including OBAVEZE,
+  NAPOMENE, CVEĆE occurrence/ribbon context, post-ceremony hierarchy and the
+  two-page maximum; the earlier pre-correction runtime failure is historical.
 - OWNER-authorized PREDMET action boundary: `PREDMET → DOKUMENTI` contains
   actual documents and document derivatives. Single-PREDMET JSON export is an
   operational transfer action, not a document, and belongs in the PREDMET

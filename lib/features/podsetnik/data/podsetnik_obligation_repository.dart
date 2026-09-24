@@ -115,6 +115,25 @@ class PodsetnikObligationRepository {
     );
   }
 
+  /// Reads current manual PODSETNIK rows for a document projection without
+  /// reconciling completion state, backfilling identities or writing storage.
+  Future<List<PodsetnikObligationRule>> manualRulesForPredmetProjection(
+    int predmetId,
+  ) async {
+    final status =
+        await (db.select(db.predmeti)..where((row) => row.id.equals(predmetId)))
+            .map((row) => row.status)
+            .getSingleOrNull();
+    if (status == null ||
+        (status.trim().toUpperCase() != 'OTVOREN' &&
+            status.trim().toUpperCase() != 'ZATVOREN')) {
+      return const <PodsetnikObligationRule>[];
+    }
+    return List<PodsetnikObligationRule>.unmodifiable(
+      _manualRules(await _manualRows(predmetId)),
+    );
+  }
+
   /// Reprojects the current PODSETNIK state whenever this PREDMET's owned
   /// completion rows change. The stream is the authoritative completion
   /// boundary; it is not a second REVIEW BAR state or a timer-based poll.
