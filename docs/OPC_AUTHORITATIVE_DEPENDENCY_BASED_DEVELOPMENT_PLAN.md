@@ -4,7 +4,7 @@
 
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 
-**Reconciled:** 2026-08-12
+**Reconciled:** 2026-09-25
 
 **Application name:** `OPC`
 
@@ -124,10 +124,15 @@ after Member 3 is selected. The earlier sequence
 beginning with a broad lifecycle-aware PODSETNIK program is superseded as
 current sequencing authority.
 
-The locked product-line prerequisite relationship remains:
+The current product-line relationship is:
 
-**MODUL DVE VALUTE → stable OPC v.1 product-line gate → later
-`OPC_v.1_Int` work → signing and professional handover.**
+**DVE VALUTE preparation/design → final OPC v1.5 finalization (implementation
+deferred) → finalized product version 2.0 with SRB distinction → later
+`OPC Int` product-line evolution → signing and professional handover.**
+
+The DVE VALUTE preparation package is complete and belongs to the finalization
+tail. It is not the next implementation package, and its deferred design
+choices do not create current product behavior.
 
 This prerequisite chain does not select the next task or order other owner-
 planned work. The separately OWNER-selected F-09 Member 1 implementation and
@@ -184,7 +189,13 @@ under its separate explicit OWNER authorization. Member 3 is now published with
 OWNER Word 2019 runtime acceptance. This does not select a successor or
 authorize currency work, broader document scope, or other future product work.
 The stable-product and release prerequisites remain attached to their
-established product-line boundary; this plan does not reorder them.
+established product-line boundary; this plan does not select a new
+implementation member. The first unfinished evidence-gated candidate now
+preceding finalization is `SCENARIO JSON CARRIER — FINAL PLATFORM
+ROUND-TRIP ACCEPTANCE`: production carrier wiring exists, while release-candidate
+Windows/Android round-trip evidence remains open. This is a release/runtime
+acceptance candidate, not authorization to change SCENARIO or start a new
+implementation package.
 
 ### 2.5 Later, non-blocking and historical classifications
 
@@ -226,7 +237,7 @@ only.
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS` | Shared `ThemeMode.system` and owner runtime acceptance prove the supported light/dark behavior is closed | Owner runtime authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED` | No further theme implementation, audit or roadmap dependency; reopen only for a proven regression or new owner decision | Older partial/pending theme wording is superseded |
 | Full UI/UX audit | `OPEN` | Only short SCENARIO impression | Only bounded runtime impressions | Full Windows/Android audit; concise working screens; hierarchy/terminology/interaction carry clarity | Runtime smoke is not full UX acceptance |
 | Contextual Help/User Guide | `DEFERRED PRODUCT DIRECTION` | Not designed | Not designed | Evaluate screen-contextual `Pomoć`/`Uputstvo` after UX audit; no immediate implementation authority | New direction, not current task |
-| MODUL DVE VALUTE | `OPEN — BLOCKING FOR OPC v.1` | Not implemented | Not implemented | Implement and prove contract in section 7 before product-line gate | Moving it to Int is prohibited |
+| MODUL DVE VALUTE | `DESIGN/PREPARATION COMPLETE — IMPLEMENTATION DEFERRED TO FINAL OPC v1.5 FINALIZATION` | Source-learning, authority reconciliation and implementation design complete; product implementation not started | Same | Preserve the accepted preparation package and resolve deferred design choices only at finalization; finalized product target is 2.0 with SRB distinction | Do not move DVE VALUTE to OPC Int; do not implement now |
 | Progressive refactor / partial rewrite | `DEFERRED / EVIDENCE-GATED` | Some bounded refactors already landed | Shared | Only where stability, maintainability, parity or localization evidence requires it | Roadmap-wide refactor predecessor is superseded |
 | Stage 2 package/licensing cleanup | `NON-BLOCKING BEFORE OPC v.1` | Dead compatibility code may remain | Same | Optional exact-scope cleanup; never restore restrictions | Not a gate predecessor |
 | Final platform business-semantic parity | `OPEN — BLOCKING FOR GATE` | Separate final acceptance required | Separate final acceptance required | Release-candidate matrix including lifecycle, JSON, reminders, documents and currency; theme closure is already recorded | Scenario parity alone is insufficient |
@@ -378,34 +389,35 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
   for weak hierarchy, grouping, terminology or interactions.
 - Contextual help is a future design direction, not implementation authority.
 
-## 7. MODUL DVE VALUTE — required predecessor of stable OPC v.1
+## 7. DVE VALUTE — preparation complete; implementation deferred
 
-`LOCKED OWNER DECISION — REQUIRED PREDECESSOR OF STABLE OPC v.1`
+`DESIGN/PREPARATION COMPLETE — IMPLEMENTATION DEFERRED TO FINAL OPC v1.5
+FINALIZATION`
 
-One runtime-capable module must support:
+The completed preparation package records the current OWNER model without
+creating implementation behavior:
 
-1. initial `RSD primary / EUR informative`;
-2. later owner-controlled `EUR primary / RSD informative` activation without a
-   new coding/build cycle.
+- one durable operative currency per PREDMET; existing PREDMETI never change
+  currency retroactively;
+- ZAVRŠEN and ANONIMIZOVAN PREDMETI remain terminal/non-financially mutable;
+- first RSD→EUR activation is controlled, manually initiated and blocked while
+  mutable PREDMETI exist;
+- the user-entered rate initializes parallel EUR KATALOG layers while the RSD
+  layer is preserved; later KATALOG editing is independent;
+- KATALOG→PREDMET price flow remains one-way and manual PREDMET/IRiU edits never
+  update KATALOG;
+- `PODEŠAVANJA → VALUTA` is the sole operative currency authority, while any
+  KATALOG currency selector is view/edit only;
+- documents use the stored PREDMET currency, and an EUR PREDMET must not emit a
+  relabeled RSD NBS IPS QR.
 
-Required contract:
-
-- FINANSIJE may optionally show informative EUR;
-- manual rate is `1 EUR = ___ RSD`;
-- informative EUR equals `RSD / kurs`;
-- informative display never mutates authoritative business amounts;
-- FIRMA has an owner-controlled global primary mode;
-- every PREDMET persists its primary currency, relevant rate/date/provenance and
-  history needed for stable documents;
-- open-PREDMET conversion is explicit and controlled; locked history is stable;
-- Windows, Android and JSON semantics are equal;
-- RSD and EUR document formation is prepared before activation;
-- no automatic external exchange rate;
-- no VAT, tax or fiscalization implication.
-
-Open owner decisions: activation timing and the permitted treatment of PREDMETI
-that are open at activation. `OPC_v.1_Int` later reuses/extends this proven
-contract for country and multicurrency profiles.
+The following remain attached to the deferred finalization package rather than
+being resolved here: rounding mode/scale/precision, conversion-rate provenance,
+transition wording, KATALOG dual-currency presentation and preference
+persistence, EUR QR/payment behavior, mixed-currency reporting, and later
+switching warnings. The finalized product target is version `2.0`; the Serbian
+product line receives an explicit `SRB` distinction, and future `OPC Int` is
+based on that SRB foundation rather than being current implementation scope.
 
 ## 8. Active owner decision queue
 
@@ -414,7 +426,7 @@ Only unresolved current decisions are active:
 | Decision | Needed before | Status |
 | --- | --- | --- |
 | Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance | `OPEN OWNER DECISION` |
-| EUR global activation timing and treatment/conversion of eligible open PREDMETI | Currency activation/release contract | `OPEN OWNER DECISION` |
+| DVE VALUTE finalization choices listed in section 7 | Final OPC v1.5 finalization | `DEFERRED WITH IMPLEMENTATION` |
 | Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate | `OPEN OWNER DECISION` |
 | Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |
 
@@ -431,7 +443,8 @@ Removed from the active queue as already decided:
 - SCENARIO placement, package model, PREDMET ownership, application and
   non-retroactivity;
 - Windows/Android equality and system-theme rule;
-- MODUL DVE VALUTE belonging before `OPC_v.1_Int`;
+- DVE VALUTE preparation is complete; its implementation belongs to the final
+  OPC v1.5 finalization before any `OPC Int` work;
 - product name remaining `OPC`.
 
 Pre-zero owner-decision indexes remain historical/navigation evidence under
@@ -454,7 +467,8 @@ The gate closes only when every required item is evidenced:
       legacy/fail-closed compatibility;
 - [x] Installer/update running-app program-file protection passes I1–I3; native Windows single-instance is already closed by full acceptance;
 - [ ] explicit completion and the full signal/PODSETNIK lifecycle pass;
-- [ ] MODUL DVE VALUTE passes Windows, Android, JSON and document formation;
+- [ ] DVE VALUTE finalization package is implemented and accepted under the
+      final OPC v1.5 finalization gate;
 - [ ] remaining required documents/policies are closed or explicitly classified;
 - [x] Windows light/dark theme runtime behavior is owner-confirmed closed;
       final business-semantic parity remains a separate gate;
@@ -485,15 +499,17 @@ Stable code is not rewritten for roadmap aesthetics.
 
 ## 11. OPC v.1 → OPC_v.1_Int boundary
 
-`OPC_v.1_Int` starts only after section 9 closes. Before that gate there is no
-international localization implementation, physical source fork, country
-profile rollout or international release identity.
+`OPC Int` starts only after section 9 closes and the final product-line
+finalization is complete. Before that gate there is no SRB implementation
+change, international localization implementation, physical source fork,
+country profile rollout or international release identity.
 
-After the gate, architecture work may define shared core/profiles/flavors and
-add supported languages/country/document/business-policy profiles. Serbian
-Latin and Cyrillic remain supported. The proven dual-currency contract is
-extended rather than duplicated. Tax, VAT, fiscalization and legal-form policy
-still require separate owner authority.
+After the gate and finalization, architecture work may define shared
+core/profiles/flavors and add supported languages/country/document/business-
+policy profiles. Serbian Latin and Cyrillic remain supported. The prepared
+dual-currency design may then be implemented and extended rather than
+duplicated. Tax, VAT, fiscalization and legal-form policy still require
+separate owner authority.
 
 ## 12. Historical provenance and superseded chronology
 
@@ -552,7 +568,8 @@ Stop affected work when:
 - completed SCENARIO work is being repeated without a new finding;
 - an isolated PODSETNIK patch would pre-empt the complete signal/lifecycle model;
 - `OPC Srbija` is being used to rename the application;
-- dual currency is being deferred to `OPC_v.1_Int`;
+- DVE VALUTE implementation is being deferred to final OPC v1.5 finalization,
+  not moved to `OPC Int`;
 - Web, internationalization, tax, VAT or fiscalization enters current scope
   without the required gate and owner decision.
 

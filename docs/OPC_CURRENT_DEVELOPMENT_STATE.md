@@ -5,7 +5,7 @@
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-09-19
+**Reconciled:** 2026-09-25
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
@@ -35,6 +35,28 @@ The completed preceding process marker was
 `NEXT: PHASE 1 BATCH-ADMISSIBILITY REVIEW`; it selected no batch contents and
 authorized no implementation. It is superseded by the formal Phase 1 exit
 record below.
+
+## DVE VALUTE preparation closure and roadmap resequencing — 2026-09-25
+
+`DVE VALUTE PREPARATION — COMPLETE`.
+
+Source-learning, authority reconciliation and implementation design are
+complete. Product implementation is deliberately deferred to the final OPC
+v1.5 finalization step. The accepted preparation package preserves one durable
+operative currency per PREDMET, never retroactively changes an existing
+PREDMET currency, blocks first RSD→EUR activation while mutable PREDMETI exist,
+initializes parallel EUR KATALOG price layers from a user-entered rate, keeps
+KATALOG→PREDMET flow one-way, and requires documents to use stored PREDMET
+currency. The older primary-plus-informational-secondary PREDMET model is
+superseded. Rounding, provenance, KATALOG UI, QR/payment, mixed-currency
+reporting and later-switching choices remain deferred with implementation.
+
+The finalization target is final OPC v1.5 finalization with finalized product
+version `2.0` and an explicit `SRB` distinction for the Serbian product line.
+Future `OPC Int` is a later product-line evolution based on that SRB foundation;
+no SRB, version-2.0 or OPC Int implementation is current. The completed stable
+pre-DVE backup/restore rehearsal remains historical safety evidence and is not
+recreated by this closure.
 
 ## OPC v1.5 clean development baseline
 
@@ -478,7 +500,7 @@ The final physical wave also exercised the separate single-PREDMET replacement p
 | Documents | The active standard `PREDMET → DOKUMENTI` PDF set is SPECIFIKACIJA TROŠKOVA, PREDRAČUN, LISTA, NALOG ZA OPREMANJE, NALOG CVEĆARI and RAČUN. NALOG CVEĆARI remains the accepted PDF-only unit using the canonical full PDF helper; its accepted item/ribbon/image structure, no `Broj predmeta` rule and generic `Datum:`/`Vreme:` labels remain protected. RAČUN now has adjacent PDF and DOCX actions under the sole FIRMA `RAČUN` toggle and one shared canonical data model. `PREDMET PDF SNAPSHOT` is retired / no longer offered. PARTE and ČITULJE remain separate modules. OWNER has accepted the bounded Member 3 RAČUN/DOCX Word 2019 runtime and visual result; this does not broaden acceptance to the rest of the document set. |
 | PREDMET action relocation — normal-roadmap Member 2 | OWNER's corrected UI invariant requires one concrete PREDMET to expose the same three-dot option set from its overview/list row and opened/expanded detail view, under the same existing business/status conditions, with no valid option lost. Both surfaces consume the shared canonical action definition. JSON EXPORT is present in both menus and absent from `DOKUMENTI`; JSON IMPORT remains exclusively in `PODEŠAVANJA` and unchanged. Existing navigation, GDPR and permanent-delete options are preserved; `ZAVRŠEN` uses the same lifecycle path, with Segment 10 and narrow Android duplicates absent. Transfer contracts and lifecycle business rules are unchanged. Focused menu tests (7 PASS), relevant regressions (32 PASS), analyzer, full serialized suite (566 PASS / 10 SKIP / 0 FAIL), Windows release (PASS, 438.9 s) and Android production APK (PASS, 1365.6 s) pass. | OWNER runtime acceptance remains separately unproven; tests/builds do not establish interactive acceptance. No commit/push or successor roadmap selection is included in this task gate. |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS`; owner authority is `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. | No theme work remains. Reopen only for a proven regression or new owner decision. Full cross-platform UI/UX audit remains a separate open area. Contextual help is a later design direction. |
-| MODUL DVE VALUTE | Not implemented. | Required before stable OPC v.1; `OPC_v.1_Int` follows the stable product-line gate. |
+| MODUL DVE VALUTE | `DESIGN/PREPARATION COMPLETE — IMPLEMENTATION DEFERRED TO FINAL OPC v1.5 FINALIZATION` | Preserve the completed preparation/design package; resolve its deferred choices only at finalization. Final product target is `2.0` with `SRB` distinction; future `OPC Int` is based on SRB and is not current scope. |
 | App identity/release | Current technical Android identity is `com.tale.opc_v4`, version `4.0.0+1`; this is not a final owner release decision. | Decide version/update channel/release baseline; visible name remains OPC. |
 
 ## Owner-roadmap control and current dependency boundaries
@@ -545,6 +567,27 @@ PASS / 10 SKIP / 0 FAIL), Windows release (`flutter build windows --release
 technical/build evidence only: OWNER runtime acceptance is NOT CLAIMED, and no
 commit or push has occurred. No roadmap member after Member 2 is selected.
 
+## Next active roadmap candidate after DVE VALUTE deferral — 2026-09-25
+
+The first genuinely unfinished candidate that precedes finalization is
+`SCENARIO JSON CARRIER — FINAL PLATFORM ROUND-TRIP ACCEPTANCE`.
+
+Its production Single-PREDMET and full-backup carriers are already wired and
+legacy compatibility is preserved. The unfinished part is release-candidate
+Windows/Android round-trip evidence, including the separately deferred Android
+physical-transfer proof, followed by the final backup/restore rehearsal. This
+is an evidence-gated runtime/release acceptance task, not a new SCENARIO
+implementation authorization and not a new OWNER roadmap member selection.
+
+Authority: the current SCENARIO JSON state in this document, dependency-plan
+§4.3 and §9, and the accepted PREDMET snapshot/provenance transfer contract.
+Known OWNER decisions are the existing `COMPLETE` versus `UNAVAILABLE`,
+fail-closed legacy compatibility, explicit import new/replace choice and
+non-retroactivity rules. Open questions are current release-candidate
+Windows/Android round-trip evidence and the final rehearsal boundary. The
+recommended next task type is `runtime/release acceptance audit`; no product
+implementation should start unless that audit proves a real defect.
+
 ## Normal-roadmap Member 3 — RAČUN toggle, shared model and snapshot retirement
 
 OWNER-authorized Member 3 is implemented and has passed technical validation.
@@ -591,11 +634,12 @@ correction. The bounded Member 3 RAČUN/DOCX package is published in commit
 `d5ec4350b143607068f430f9ae3d352aa578f0a0`; no broader document-set runtime
 acceptance is implied.
 
-The separate stable-product prerequisite MODUL DVE VALUTE remains required
-before stable OPC v.1. SCENARIO carrier,
+The DVE VALUTE preparation/design package is complete and its product
+implementation is deferred to final OPC v1.5 finalization. SCENARIO carrier,
 referential/lifecycle, performance, parity, backup/restore, identity and
 signing work remain attached technical/release controls only when necessary
-for an OWNER-selected parent.
+for the current release/finalization gates; none authorizes DVE implementation
+in the current line.
 
 The provenance matrix, reverse-coverage result and demotion of unparented
 technical chains are recorded in
@@ -664,7 +708,8 @@ does not claim that the broader Windows/Android UI/UX audit is complete.
 
 Already decided and not returned to the active queue: explicit completion
 lifecycle, SCENARIO ownership/placement/application, application name `OPC`,
-dual currency before `OPC_v.1_Int`, and non-blocking Stage 2 cleanup.
+DVE VALUTE preparation/design completion with implementation deferred to final
+OPC v1.5 finalization, and non-blocking Stage 2 cleanup.
 
 Windows real-runtime closure remains partial: installed cold start/reopen,
 target OPEN PREDMET/IRiU loading, and repaired-state startup/PREDMET loading

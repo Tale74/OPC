@@ -8,7 +8,10 @@
 
 OPC is a Flutter application for organizing funeral-ceremony business workflows. The same product runs on Windows and Android as standalone local applications. Each user/firma works with local Drift/SQLite data and user-controlled JSON transfer. The public GitHub repository is a sanitized source/documentation baseline; real case databases, customer/personal data, credentials, generated exports and machine-local artifacts remain outside Git.
 
-The current product scope is the local OPC v.1 product line. A possible future Web or `OPC_v.1_Int` form is a later product-line concern, not a current server-master architecture. No future Web/backend/API/sync/storage/payment/role model is selected by this document.
+The current product scope is the local OPC v.1 product line, developed on the
+active OPC v1.5 line. A possible future Web or `OPC_v.1_Int` form is a later
+product-line concern, not a current server-master architecture. No future
+Web/backend/API/sync/storage/payment/role model is selected by this document.
 
 ## 2. Authority and evidence precedence
 
@@ -98,7 +101,16 @@ The following materially define the current product or remain explicitly open:
   and participate in the general REVIEW BAR while relevant and unfinished.
   Neither child depends on, precedes, or orders completion of the other. Both
   exact rules are implemented in current source; broader unspecified FINANSIJE
-  reminder scope remains deferred.
+   reminder scope remains deferred.
+- DVE VALUTE preparation, source-learning and implementation design are
+  complete. Product implementation is deliberately deferred to the final OPC
+  v1.5 finalization step. The accepted preparation model is one durable
+  operative currency per PREDMET, preserved historical PREDMET currency,
+  controlled first EUR activation with parallel KATALOG price layers, and
+  stored-PREDMET currency for later documents. The remaining rounding,
+  provenance, KATALOG UI, QR/payment and mixed-currency reporting decisions
+  remain attached to that deferred finalization package and are not current
+  product behavior.
 - The canonical general PREDMET note is `Predmeti.napomena`, edited in
   `PREDMET → Segment 7: Roba i usluge → NAPOMENA`. PODSETNIK may present and
   edit that same field; it is not a second durable source. LISTA PDF projects
@@ -156,7 +168,12 @@ The following materially define the current product or remain explicitly open:
 - Performance acceptance targets, app identity/version/update channel and
   future distribution/IP model remain owner decisions or owner/legal decisions
   as applicable.
-- MODUL DVE VALUTE is a required predecessor of stable OPC v.1. Web, OPC_v.1_Int and broader synchronization remain later/future scope; OPC_v.1_Int follows the stable product-line gate.
+- DVE VALUTE preparation is `DESIGN/PREPARATION COMPLETE` and its product
+  implementation is deferred to the final OPC v1.5 finalization step. The
+  finalized product is targeted as version `2.0`, with an explicit `SRB`
+  distinction for the Serbian product line. Future `OPC Int` is a later
+  product-line evolution based on that SRB foundation; it is not current
+  implementation scope. The current running line remains OPC v1.5.
 
 If two documents assign different business meaning, retain both as evidence, record the conflict in the Phase 1 manifest/report and mark `OWNER DECISION REQUIRED` unless newer explicit owner authority already resolves it.
 

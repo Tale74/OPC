@@ -278,4 +278,6 @@ The following remain visible and are not silently closed by this guide:
 - OWNER-selected normal-roadmap Member 1 implements the exact F-09 FINANSIJE sibling rules in current source: PRE-CEREMONY parent and both PRE-CEREMONY children; broader unspecified FINANSIJE reminder scope remains deferred, and runtime/release acceptance remains separate;
 - pseudocode drift (continuously compared with current authority and roadmap);
 - Phase 4 forensic dead-code/superseded-implementation closure review;
-- future Web/`OPC_v.1_Int`/multicurrency scope.
+- DVE VALUTE preparation/design is complete but implementation is deferred to
+  final OPC v1.5 finalization; future Web/`OPC_v.1_Int` and broader
+  multicurrency/product-line scope remain outside current implementation.
