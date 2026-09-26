@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -19,6 +18,7 @@ import '../../core_v2/services/predmet_iriu_truth_service.dart';
 import '../../core_v2/scenario/scenario_module_repository.dart';
 import '../../data/iriu_repository.dart';
 import '../../domain/iriu_catalog_selection.dart';
+import 'iriu_cvece_ribbon_fields.dart';
 import 'iriu_row_tile.dart';
 
 const String iriuStatusPreporuceno = 'PREPORUČENO';
@@ -641,14 +641,16 @@ class _IriuSegmentState extends State<IriuSegment> {
                                     if (stavke.any(
                                       (row) => row.interniNaziv == IriuK.cvece,
                                     ))
-                                      _CveceRibbonFields(
+                                      IriuCveceRibbonFields(
                                         database: widget.iriuRepo.db,
                                         rows: stavke
                                             .where(
                                               (row) =>
-                                                  row.interniNaziv == IriuK.cvece,
+                                                  row.interniNaziv ==
+                                                  IriuK.cvece,
                                             )
                                             .toList(growable: false),
+                                        enabled: e,
                                       ),
                                   ],
                                 );
@@ -772,81 +774,6 @@ class _IriuSegmentState extends State<IriuSegment> {
           ),
         );
       },
-    );
-  }
-}
-
-class _CveceRibbonFields extends StatefulWidget {
-  const _CveceRibbonFields({required this.database, required this.rows});
-
-  final AppDatabase database;
-  final List<IriuData> rows;
-
-  @override
-  State<_CveceRibbonFields> createState() => _CveceRibbonFieldsState();
-}
-
-class _CveceRibbonFieldsState extends State<_CveceRibbonFields> {
-  final Map<int, TextEditingController> _controllers = {};
-
-  @override
-  void didUpdateWidget(covariant _CveceRibbonFields oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final activeIds = widget.rows.map((row) => row.id).toSet();
-    for (final id in _controllers.keys.toList()) {
-      if (!activeIds.contains(id)) _controllers.remove(id)?.dispose();
-    }
-  }
-
-  TextEditingController _controllerFor(IriuData row) {
-    return _controllers.putIfAbsent(
-      row.id,
-      () => TextEditingController(text: row.tekstTrake ?? ''),
-    );
-  }
-
-  @override
-  void dispose() {
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      key: const Key('iriu-cvece-ribbon-fields'),
-      padding: const EdgeInsets.only(top: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'TEKST TRAKE ZA CVEĆE',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          for (final row in widget.rows)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: TextField(
-                key: ValueKey('iriu-cvece-ribbon-${row.id}'),
-                controller: _controllerFor(row),
-                decoration: InputDecoration(
-                  labelText: row.nazivPrikaz.trim().isEmpty
-                      ? 'CVEĆE'
-                      : row.nazivPrikaz.trim(),
-                  hintText: 'TEKST TRAKE',
-                  border: const OutlineInputBorder(),
-                ),
-                onChanged: (value) => (widget.database.update(
-                  widget.database.iriu,
-                )..where((item) => item.id.equals(row.id))).write(
-                  IriuCompanion(tekstTrake: Value(value)),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

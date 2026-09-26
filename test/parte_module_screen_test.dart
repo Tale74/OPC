@@ -286,24 +286,88 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       if (find.text('TEKSTUALNI BLOKOVI').evaluate().isNotEmpty) break;
     }
-    await tester.tap(find.text('TEKSTUALNI BLOKOVI'));
-    await tester.pump();
-    final nameField = find.byKey(const ValueKey('parte-text-name'));
-    expect(nameField, findsOneWidget);
-    await tester.enterText(
-      nameField,
-      'VeryLongNameThatMustBeFittedToThePartePrintArea VeryLongSurnameThatMustBeFittedToThePartePrintArea',
+    final nameField = find.byKey(
+      const ValueKey('parte-text-name'),
+      skipOffstage: false,
     );
-      await tester.tap(find.byKey(const Key('parte-save-text')));
-      await tester.pumpAndSettle();
+    expect(nameField, findsOneWidget);
+    const editedText =
+        'VeryLongNameThatMustBeFittedToThePartePrintArea '
+        'VeryLongSurnameThatMustBeFittedToThePartePrintArea';
+    await tester.enterText(nameField, editedText);
+    final cancelResetButton = tester.widget<OutlinedButton>(
+      find.ancestor(
+        of: find.text('OBRIŠI PRIPREMU I POČNI NOVU'),
+        matching: find.byType(OutlinedButton),
+      ),
+    );
+    cancelResetButton.onPressed!();
+    await tester.pumpAndSettle();
+    expect(find.text('Obriši pripremu i počni ponovo'), findsOneWidget);
+    await tester.tap(find.text('ODUSTANI'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(nameField).controller!.text, editedText);
 
-      await tester.scrollUntilVisible(
-        find.text('PREGLED PRIPREME'),
-        600,
-        scrollable: find.byType(Scrollable).first,
-      );
-      final previewFinder = find.byType(PartePlanPreview);
-      expect(previewFinder, findsOneWidget);
+    final controllerBeforeMutation = tester
+        .widget<TextField>(nameField)
+        .controller;
+    final expandButton = find.text('PROŠIRI').first;
+    final expandButtonWidget = tester.widget<OutlinedButton>(
+      find.ancestor(of: expandButton, matching: find.byType(OutlinedButton)),
+    );
+    expandButtonWidget.onPressed!();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<TextField>(nameField).controller,
+      same(controllerBeforeMutation),
+    );
+    expect(tester.widget<TextField>(nameField).controller!.text, editedText);
+    var preparation = await PartePreparationRepository(
+      db,
+    ).findForPredmet(predmet.id);
+    expect(
+      ParteDraft.decode(preparation!.draftJson).textByBlock['name'],
+      isNot(editedText),
+    );
+
+    tester
+        .widget<FilledButton>(find.byKey(const Key('parte-save-text')))
+        .onPressed!();
+    await tester.pumpAndSettle();
+    preparation = await PartePreparationRepository(
+      db,
+    ).findForPredmet(predmet.id);
+    expect(
+      ParteDraft.decode(preparation!.draftJson).textByBlock['name'],
+      editedText,
+    );
+
+    tester
+        .widget<OutlinedButton>(
+          find.ancestor(
+            of: expandButton,
+            matching: find.byType(OutlinedButton),
+          ),
+        )
+        .onPressed!();
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(nameField).controller!.text, editedText);
+    preparation = await PartePreparationRepository(
+      db,
+    ).findForPredmet(predmet.id);
+    expect(
+      ParteDraft.decode(preparation!.draftJson).textByBlock['name'],
+      editedText,
+    );
+
+    await tester.scrollUntilVisible(
+      find.text('PREGLED PRIPREME'),
+      600,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final previewFinder = find.byType(PartePlanPreview);
+    expect(previewFinder, findsOneWidget);
     final preview = tester.widget<PartePlanPreview>(previewFinder);
     final fittedNameSize = preview.plan.blocks
         .firstWhere((block) => block.id == 'name')
@@ -316,6 +380,20 @@ void main() {
     );
     expect(fittedNameSize, lessThan(68));
     expect(displayedSize, fittedNameSize);
+
+    await (db.delete(
+      db.partePripreme,
+    )..where((row) => row.id.equals(preparation!.id))).go();
+    tester
+        .widget<OutlinedButton>(
+          find.ancestor(
+            of: find.text('PROŠIRI', skipOffstage: false).first,
+            matching: find.byType(OutlinedButton, skipOffstage: false),
+          ),
+        )
+        .onPressed!();
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(nameField).controller!.text, editedText);
   });
 
   testWidgets(

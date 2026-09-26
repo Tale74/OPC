@@ -11,6 +11,7 @@ import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart
 import 'package:opc_v4/features/predmeti/core_v2/services/iriu_display_name_resolver.dart';
 import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
+import 'package:opc_v4/features/predmeti/presentation/segments/iriu_cvece_ribbon_fields.dart';
 import 'package:opc_v4/features/predmeti/presentation/segments/iriu_row_tile.dart';
 
 import 'test_bootstrap.dart';
@@ -269,6 +270,118 @@ void main() {
     expect(find.text('Slika'), findsOneWidget);
     expect(find.text('Dodatna stavka'), findsNothing);
   });
+
+  testWidgets('CVEĆE ribbon remains editable and persists on open PREDMET', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final predmetId = await db
+        .into(db.predmeti)
+        .insert(const PredmetiCompanion(brojPredmeta: Value('RIBBON-OPEN')));
+    final ribbonId = await db
+        .into(db.iriu)
+        .insert(
+          IriuCompanion.insert(
+            predmetId: predmetId,
+            interniNaziv: 'CVECE',
+            nazivPrikaz: const Value('VEŠTAČKI VENAC'),
+            tekstTrake: const Value('Početni tekst'),
+          ),
+        );
+    final row = await (db.select(
+      db.iriu,
+    )..where((item) => item.id.equals(ribbonId))).getSingle();
+
+    await tester.pumpWidget(
+      wrapForTest(
+        Scaffold(
+          body: IriuCveceRibbonFields(database: db, rows: [row], enabled: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final field = find.byKey(ValueKey('iriu-cvece-ribbon-$ribbonId'));
+    expect(field, findsOneWidget);
+    expect(tester.widget<TextField>(field).enabled, isTrue);
+    await tester.enterText(field, 'Novi tekst trake');
+    await tester.pumpAndSettle();
+
+    final persisted = await (db.select(
+      db.iriu,
+    )..where((row) => row.id.equals(ribbonId))).getSingle();
+    expect(persisted.tekstTrake, 'Novi tekst trake');
+  });
+
+  testWidgets('CVEĆE ribbon is locked and cannot persist on closed PREDMET', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final predmetId = await db
+        .into(db.predmeti)
+        .insert(
+          const PredmetiCompanion(
+            brojPredmeta: Value('RIBBON-CLOSED'),
+            status: Value('ZATVOREN'),
+          ),
+        );
+    final ribbonId = await db
+        .into(db.iriu)
+        .insert(
+          IriuCompanion.insert(
+            predmetId: predmetId,
+            interniNaziv: 'CVECE',
+            nazivPrikaz: const Value('VEŠTAČKI VENAC'),
+            tekstTrake: const Value('Zaključani tekst'),
+          ),
+        );
+    final row = await (db.select(
+      db.iriu,
+    )..where((item) => item.id.equals(ribbonId))).getSingle();
+
+    await tester.pumpWidget(
+      wrapForTest(
+        Scaffold(
+          body: IriuCveceRibbonFields(
+            database: db,
+            rows: [row],
+            enabled: false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final field = find.byKey(ValueKey('iriu-cvece-ribbon-$ribbonId'));
+    expect(field, findsOneWidget);
+    expect(tester.widget<TextField>(field).enabled, isFalse);
+    await tester.tap(field);
+    await tester.enterText(field, 'Ne sme da se upiše');
+    await tester.pumpAndSettle();
+
+    final persisted = await (db.select(
+      db.iriu,
+    )..where((row) => row.id.equals(ribbonId))).getSingle();
+    expect(persisted.tekstTrake, 'Zaključani tekst');
+  });
+
+  test(
+    'CVEĆE ribbon uses and guards the existing IRiU editability authority',
+    () {
+      final segmentSource = File(
+        'lib/features/predmeti/presentation/segments/iriu_segment.dart',
+      ).readAsStringSync();
+      final ribbonSource = File(
+        'lib/features/predmeti/presentation/segments/iriu_cvece_ribbon_fields.dart',
+      ).readAsStringSync();
+
+      expect(segmentSource, contains('enabled: e'));
+      expect(ribbonSource, contains('enabled: widget.enabled'));
+      expect(ribbonSource, contains('if (!widget.enabled) return;'));
+    },
+  );
 
   test('BIOHAZARD display and warning remain unchanged', () async {
     final db = createTestDatabase();

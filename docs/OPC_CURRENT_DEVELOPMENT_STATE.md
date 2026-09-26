@@ -5,7 +5,18 @@
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-09-25
+**Reconciled:** 2026-09-26
+
+## Editing integrity closure — 2026-09-26
+
+The bounded `UX-IRIU-001` CVEĆE ribbon edit-permission correction and
+`UX-PARTE-003` unsaved-text-across-reload correction are closed with OWNER
+runtime acceptance and the recorded focused/full QA and Windows/Android build
+evidence. The runtime evidence is an OWNER attestation, not independent
+platform-specific observation. `UX-PARTE-001` remains open/separate; no broader
+UI/UX finding was closed. The task closure report is
+[`docs/tasks/OPC_TASK_EDITING_INTEGRITY_UX_IRIU_001_UX_PARTE_003_OWNER_RUNTIME_CLOSURE_REPORT.md`](tasks/OPC_TASK_EDITING_INTEGRITY_UX_IRIU_001_UX_PARTE_003_OWNER_RUNTIME_CLOSURE_REPORT.md).
+No next UI/UX correction package is selected by this closure.
 
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting

@@ -72,6 +72,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   PartePrintProfile _printProfile = const PartePrintProfile();
   bool _textExpanded = true;
   bool _formatExpanded = true;
+  int? _textControllerPreparationId;
 
   @override
   void initState() {
@@ -154,7 +155,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         .toStringAsFixed(1);
   }
 
-  Future<void> _reload({bool verifySourceChange = true}) async {
+  Future<void> _reload({
+    bool verifySourceChange = true,
+    bool preserveTextControllers = true,
+  }) async {
     final preparation = await _repository.findForPredmet(widget.predmetId);
     final predmet = await widget.predmetiRepository.getPredmet(
       widget.predmetId,
@@ -175,7 +179,11 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       }
     }
     if (!mounted) return;
-    _replaceControllers(draft);
+    _replaceControllers(
+      draft,
+      preparationId: preparation.id,
+      preserveExistingText: preserveTextControllers,
+    );
     if (draft != null) {
       final selected = draft.blocks.firstWhere(
         (block) => block.id == _selectedBlockId,
@@ -208,15 +216,28 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     });
   }
 
-  void _replaceControllers(ParteDraft? draft) {
-    for (final controller in _textControllers.values) {
-      controller.dispose();
+  void _replaceControllers(
+    ParteDraft? draft, {
+    required int preparationId,
+    required bool preserveExistingText,
+  }) {
+    final canPreserve =
+        preserveExistingText && _textControllerPreparationId == preparationId;
+    final activeIds = draft?.textByBlock.keys.toSet() ?? const <String>{};
+    for (final id in _textControllers.keys.toList()) {
+      if (!canPreserve || !activeIds.contains(id)) {
+        _textControllers.remove(id)?.dispose();
+      }
     }
-    _textControllers.clear();
-    if (draft == null) return;
-    for (final entry in draft.textByBlock.entries) {
-      _textControllers[entry.key] = TextEditingController(text: entry.value);
+    if (draft != null) {
+      for (final entry in draft.textByBlock.entries) {
+        _textControllers.putIfAbsent(
+          entry.key,
+          () => TextEditingController(text: entry.value),
+        );
+      }
     }
+    _textControllerPreparationId = preparationId;
   }
 
   double _displayFontSize(ParteBlockSpec block, [ParteRenderPlan? plan]) {
@@ -766,7 +787,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload(verifySourceChange: false);
+    await _reload(verifySourceChange: false, preserveTextControllers: false);
   });
 
   Future<void> _resetPreparation() => _run(() async {
@@ -799,7 +820,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       actor: widget.actor,
       entitlement: widget.entitlement,
     );
-    await _reload(verifySourceChange: false);
+    await _reload(verifySourceChange: false, preserveTextControllers: false);
   });
 
   Future<void> _deleteRetainedPreparation() => _run(() async {
@@ -859,7 +880,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
         entitlement: widget.entitlement,
       );
       await _loadPrintProfileForTemplate(selected.id);
-    await _reload(verifySourceChange: false);
+      await _reload(verifySourceChange: false);
     });
   }
 
@@ -1629,7 +1650,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
             if (PartePreparationStatus.fromDb(_preparation!.status) ==
                 PartePreparationStatus.inProgress)
               FilledButton.icon(
-               onPressed: _busy || !previewConfirmed ? null : _complete,
+                onPressed: _busy || !previewConfirmed ? null : _complete,
                 style: FilledButton.styleFrom(backgroundColor: Colors.green),
                 icon: const Icon(Icons.task_alt_outlined),
                 label: const Text('PRIPREMA ZAVRŠENA'),
