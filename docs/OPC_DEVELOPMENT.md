@@ -233,6 +233,35 @@ framing, evidence packaging and human/AI collaboration are maintained outside
 the product documentation surface; this home retains only the OPC-specific
 constraints and required evidence outcomes.
 
+### Computer Use runtime owner handoffs
+
+Before an OPC runtime task begins, identify mandatory OWNER interactions as
+explicit `OWNER ACTION REQUIRED` gates. Pause at each gate and resume only
+after OWNER confirmation; these prerequisites are not runtime failures.
+
+- Windows and Android authentication PINs are entered by OWNER directly in
+  OPC. Never request a PIN in chat or persist it in task/review evidence.
+- Android Wireless debugging pairing and device-side authorization are OWNER
+  actions where required. Verify authorized ADB connectivity before treating
+  Android runtime as available; do not retain pairing codes or endpoints in
+  shared evidence.
+- For physical Android layout coverage, OWNER places/rotates the device into
+  each required orientation and confirms readiness before that matrix begins.
+  Verify the actual rendered OPC layout; do not infer narrow/wide solely from
+  portrait/landscape orientation.
+- Ground each UI action in a fresh observed frame. Treat input dispatch and
+  screenshot capture as separate capabilities; if a fresh frame or grounded
+  action is unavailable, stop the affected test and preserve its unexecuted
+  status rather than using stale coordinates or blind input.
+- A capture is retained evidence only after its file exists at the intended
+  destination and that persistence is verified. Preserve owner-designated
+  captures; keep private live-data images and exports outside shared packages
+  unless separately redacted and authorized.
+
+These operational controls do not establish platform behavior or product
+cause. The task-specific successor and incident record is linked from
+`OPC_CURRENT_DEVELOPMENT_STATE.md`.
+
 ## 9. Contribution and documentation rules
 
 Current-state documentation is maintained as docs-as-code:

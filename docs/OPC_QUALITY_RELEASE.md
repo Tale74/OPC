@@ -60,6 +60,19 @@ No Phase 1 documentation change modifies this contract. Future source work must 
 | Forensic evidence | Database/transfer/migration/recovery fact for a named copy and scope |
 | Combined release acceptance | Requires the applicable technical, build, platform and data/runtime evidence together |
 
+Classify runtime outcomes explicitly as `REPRODUCED`, `NOT REPRODUCED`,
+`NOT TESTED`, or `INCONCLUSIVE`. `NOT TESTED` means the applicable test did
+not execute and must never be converted to `NOT REPRODUCED`. A missing runtime
+surface, authentication handoff, device pairing/authorization, physical
+orientation confirmation, or usable Computer Use input/capture capability
+leaves the affected matrix case unexecuted unless the test itself actually
+ran. OWNER-only prerequisites are explicit handoff gates, not test failures.
+For Android narrow/wide coverage, verify the rendered OPC layout; device
+portrait/landscape alone is not sufficient evidence of the layout class.
+
+Computer Use runtime tasks must follow the OWNER interaction and evidence
+capture controls in [`OPC_DEVELOPMENT.md`](OPC_DEVELOPMENT.md#computer-use-runtime-owner-handoffs).
+
 Owner runtime evidence is authority for observed end-product behavior, not automatic proof of internal root cause. Windows and Android acceptance are not interchangeable.
 
 ### 5A. Android structural-acceptance lane

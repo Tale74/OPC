@@ -18,6 +18,26 @@ UI/UX finding was closed. The task closure report is
 [`docs/tasks/OPC_TASK_EDITING_INTEGRITY_UX_IRIU_001_UX_PARTE_003_OWNER_RUNTIME_CLOSURE_REPORT.md`](tasks/OPC_TASK_EDITING_INTEGRITY_UX_IRIU_001_UX_PARTE_003_OWNER_RUNTIME_CLOSURE_REPORT.md).
 No next UI/UX correction package is selected by this closure.
 
+## UX-PARTE-001 runtime blocker documentation closure — 2026-09-27
+
+The Android-first runtime attempt did not reach any PARTE matrix case:
+`UX-PARTE-001 — OPEN / NOT TESTED / ROOT CAUSE NOT PROVEN`. Android single-
+PREDMET export was observed and structurally checked, but is not PARTE runtime
+acceptance. Windows import remains OWNER-attested and was not independently
+verified. The Computer Use interaction/capture limitation and mandatory
+OWNER-authentication, Android pairing, physical orientation and evidence-save
+handoffs are recorded as operational/process findings, not product defects.
+Five earlier snapshots lost before the OWNER retention instruction remain
+disclosed; later captures remain local and outside the shareable ZIP for
+privacy. `UX-PARTE-002 — OPEN / UNCHANGED`; `UX-PARTE-003 — CLOSED / UNCHANGED`.
+
+The OWNER supplied `LOGOS INDEPENDENT REVIEW — PASS`, scoped to the accuracy of
+the blocker package and its proven/unproven boundaries. No separate Logos
+review artifact was present in that package; no review text is inferred beyond
+the OWNER-supplied outcome. Closure details and package link are in
+[`OPC_TASK_UX_PARTE_001_RUNTIME_BLOCKER_DOCUMENTATION_CLOSURE_REPORT.md`](tasks/OPC_TASK_UX_PARTE_001_RUNTIME_BLOCKER_DOCUMENTATION_CLOSURE_REPORT.md)
+and the external task review handoff.
+
 This is the concise current-state entry point. The dependency plan
 (`docs/OPC_AUTHORITATIVE_DEPENDENCY_BASED_DEVELOPMENT_PLAN.md`) is supporting
 dependency information. The completed post-drift recovery record is preserved
