@@ -264,3 +264,67 @@ not silently inferred from this technical evidence.
 - [`OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md`](OPC_AUTHORITATIVE_PLAN_REALITY_RECONCILIATION_REPORT.md)
 - [`OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md`](OPC_BACKUP_RESTORE_POLICY_PUBLIC_SUMMARY.md)
 - [`OPC_PHASE1_IMPLEMENTATION_REPORT.md`](OPC_PHASE1_IMPLEMENTATION_REPORT.md)
+
+## 11. SCENARIO applied-state integrity and selector implementation — 2026-09-30
+
+The bounded implementation passes the current technical validation sequence:
+
+- focused SCENARIO/IRiU/selector/carrier/transfer regressions: `89 passed / 0 failed`;
+- `flutter analyze --no-pub`: PASS, `No issues found`;
+- `flutter test --no-pub --concurrency=1`: PASS, `600 passed / 9 skipped / 0 failed`;
+- `flutter build windows --release --no-pub`: PASS;
+- `flutter build apk --release --no-pub`: PASS, production flavor.
+
+The exact commands, output paths, artifact hashes, changed-file boundaries and
+known evidence limitations are recorded in
+[`OPC_TASK_SCENARIO_APPLIED_STATE_INTEGRITY_AND_SELECTOR_IMPLEMENTATION_REPORT.md`](tasks/OPC_TASK_SCENARIO_APPLIED_STATE_INTEGRITY_AND_SELECTOR_IMPLEMENTATION_REPORT.md).
+This technical result does not claim owner runtime acceptance, signing/custody,
+publication, or complete release readiness. Logos post-implementation review
+and OWNER runtime acceptance remain pending. Protected active-source hashes
+were not rebaselined by this task.
+
+## 12. SCENARIO carrierless historical-integrity correction — 2026-09-30
+
+The bounded correction to the implementation above was validated separately:
+
+- focused correction/regression groups passed; the standalone carrierless
+  test rerun passed `2/2`;
+- `flutter analyze --no-pub`: PASS;
+- `flutter test --no-pub --concurrency=1`: PASS, `602 passed / 9 skipped / 0 failed`;
+- `flutter build windows --release --no-pub`: PASS;
+- `flutter build apk --release --no-pub`: PASS, production release.
+
+The correction prevents an ordinary open from inferring historical applied
+state from current rules and records new base-row provenance at creation. The
+missing-snapshot presentation is explicitly evidence-unavailable, not
+categorical non-application. No schema, JSON contract, business policy or
+active-source baseline was changed. This is technical/build evidence only;
+Logos independent correction review and OWNER runtime acceptance remain
+pending. Details and artifact hashes are in
+[`OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md`](tasks/OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md).
+
+## 13. SCENARIO historical-integrity formal closure — 2026-09-30
+
+The later closure supersedes the pending review/runtime statements in §§11–12:
+
+- `SCENARIO CARRIERLESS / HISTORICAL-INTEGRITY CORRECTION — PASS`;
+- `LOGOS INDEPENDENT CORRECTION REVIEW — PASS`;
+- `OWNER RUNTIME ACCEPTANCE — PASS`;
+- PREDMET sole-business-truth, manual IRiU correction persistence after
+  reopen, and historical-SCENARIO non-overwrite of current PREDMET/IRiU are
+  confirmed.
+
+The concrete OWNER runtime case used carrier v1, with provenance coverage
+`UNAVAILABLE` and an assignment snapshot present. That case is not independent
+runtime proof for v2 `COMPLETE` or `PARTIAL` transfer; those are supported by
+automated QA. The accepted correction's technical evidence remains
+`602 passed / 9 skipped / 0 failed`, analyzer PASS, Windows release PASS and
+Android production APK PASS. No product QA was rerun for this
+documentation/control-only closure.
+
+The separate continuity item is recorded exactly as
+`PREVIOUS PENDING FINDING — NOT IDENTIFIABLE FROM CURRENT AUTHORITY`. It is
+not guessed or merged with the SCENARIO issue closed here, `UX-PARTE-001`, or
+another open item. `UX-PARTE-001` remains `OPEN / NOT TESTED / ROOT CAUSE NOT
+PROVEN`. See
+[`OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md`](tasks/OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md).

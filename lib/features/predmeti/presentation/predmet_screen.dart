@@ -129,6 +129,7 @@ class PredmetScreen extends StatefulWidget {
     this.openDocuments = false,
     this.openCeremony = false,
     this.openParte = false,
+    this.isNewPredmetCreationFlow = false,
     this.entitlementPolicy = const OpcEntitlementPolicy.current(),
   });
 
@@ -138,6 +139,7 @@ class PredmetScreen extends StatefulWidget {
   final bool openDocuments;
   final bool openCeremony;
   final bool openParte;
+  final bool isNewPredmetCreationFlow;
   final OpcEntitlementPolicy entitlementPolicy;
 
   @override
@@ -727,8 +729,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         context: ctx,
         title: const Text('Izlazak iz otvorenog predmeta'),
         content: const Text(
-          'Predmet je sačuvan kao radno stanje, ali poslovna verzija nastaje tek zatvaranjem predmeta.\n\n'
-          'Možete nastaviti izmenu, izaći i ostaviti predmet otvoren, ili zatvoriti predmet i potvrditi poslovno stanje.',
+          'Radno stanje je sačuvano; poslovna verzija nastaje tek zatvaranjem predmeta.',
         ),
         actions: [
           TextButton(
@@ -1313,6 +1314,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
           iriuRepo: _iriuRepo,
           podesavanjaRepo: _podesavanjaRepo,
           enabled: _otvoren,
+          isNewPredmetCreationFlow: widget.isNewPredmetCreationFlow,
           onNapomenaSave: (napomena) =>
               _onSave(PredmetiCompanion(napomena: Value(napomena))),
           initialNapomena: predmet.napomena,

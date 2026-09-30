@@ -79,7 +79,7 @@ void main() {
           .isEmpty) {
         await tester.pump(const Duration(milliseconds: 100));
       }
-      while (find.text('1 otvorenih PREDMETA').evaluate().isEmpty) {
+      while (find.text('Broj otvorenih predmeta: 1').evaluate().isEmpty) {
         await tester.pump(const Duration(milliseconds: 100));
       }
       await tester.tap(
@@ -91,15 +91,19 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('scenario-open-predmet-list')),
+        find.byKey(const ValueKey('scenario-open-predmet-selector')),
         findsOneWidget,
       );
-      await tester.ensureVisible(
-        find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
+      expect(
+        find.byKey(const ValueKey('scenario-open-predmet-list')),
+        findsNothing,
       );
       await tester.tap(
-        find.byKey(ValueKey('scenario-open-predmet-$predmetId')),
+        find.byKey(const ValueKey('scenario-open-predmet-selector')),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('PREDMET 080826-001').last);
+      await tester.pumpAndSettle();
       while (find.text('PRIMENJENI SCENARIO PAKET').evaluate().isEmpty) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -128,9 +132,20 @@ void main() {
       }
       expect(find.text('PRIMENJENO NA PREDMET'), findsAtLeastNWidgets(1));
       expect(find.text('PRIMENJENI SCENARIO PAKET'), findsOneWidget);
+      expect(
+        find.text('Istorijski SCENARIO snapshot nije dostupan.'),
+        findsOneWidget,
+      );
+      expect(find.text('SCENARIO paket nije primenjen.'), findsNothing);
+      expect(
+        await (db.select(db.predmetScenarioSnapshots)
+              ..where((item) => item.predmetId.equals(predmetId)))
+            .getSingleOrNull(),
+        isNull,
+      );
+      expect(await db.select(db.iriuProvenance).get(), isEmpty);
       expect(find.textContaining('SCENARIO_MAP_'), findsNothing);
       expect(find.textContaining('MAP_NASILNA_'), findsNothing);
-      expect(find.text('Zaštitna i dodatna oprema'), findsOneWidget);
       expect(
         find.text('Korekcije ovog PREDMETA vrše se izmenom njegovih stavki.'),
         findsOneWidget,

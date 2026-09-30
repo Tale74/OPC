@@ -49,6 +49,23 @@ class IriuRepository {
 
   AppDatabase get db => _db;
 
+  /// True only when an assignment snapshot exists and every current IRiU
+  /// occurrence has durable provenance. Incomplete transfer/legacy evidence
+  /// must not trigger automatic reconciliation merely because this screen was
+  /// opened; an explicit new-PREDMET path or a current PREDMET fact change is
+  /// required instead.
+  Future<bool> hasCompleteAppliedScenarioEvidence(int predmetId) async {
+    final snapshot = await _readScenarioSnapshot(predmetId);
+    if (snapshot == null) return false;
+    final rows = await getIriu(predmetId);
+    if (rows.isEmpty) return true;
+    final provenance = await (_db.select(
+      _db.iriuProvenance,
+    )..where((item) => item.iriuId.isIn(rows.map((row) => row.id).toList()))).get();
+    final provenIds = provenance.map((item) => item.iriuId).toSet();
+    return rows.every((row) => provenIds.contains(row.id));
+  }
+
   StanjeRobeLifecycleService _stanjeRobeLifecycleService() {
     final availability = StanjeRobeOperationalAvailability(
       podesavanjaRepository: PodesavanjaRepository(_db),
@@ -76,6 +93,7 @@ class IriuRepository {
     required List<ScenarioDefinition> scenarios,
     required Set<String> osnovniPaket,
     bool applyScenarioChange = true,
+    Map<int, bool> conditionChangeDecisions = const <int, bool>{},
   }) async {
     final hasOwnerPolicyDefinitions = scenarios.any(
       (scenario) => scenario.id.startsWith('MAP_'),
@@ -193,10 +211,16 @@ class IriuRepository {
       catalogDisplayNames,
     );
 
-    // A changed complete combination is previewed before any row,
-    // provenance or snapshot mutation. The UI can show the diff and call
-    // this method again with applyScenarioChange=true only after confirmation.
-    if (scenarioSnapshotChanged && !applyScenarioChange) {
+    // Planning is side-effect free. In particular, a changed assignment must
+    // not publish candidate rows or pending flags while the user is deciding.
+    final requiresAssignmentConfirmation =
+        scenarioSnapshotChanged && !applyScenarioChange;
+    final hasAllRemovalDecisions = removals.every(
+      (row) => conditionChangeDecisions.containsKey(row.id),
+    );
+    if (requiresAssignmentConfirmation ||
+        !applyScenarioChange ||
+        (removals.isNotEmpty && !hasAllRemovalDecisions)) {
       return ScenarioSyncResult(
         matchedScenarioIds: evaluation.matchedScenarioIds,
         addedCategories: additions,
@@ -206,175 +230,180 @@ class IriuRepository {
         changedCategories: changedNames,
         changedCategoryLabels: changedLabels,
         pendingUserDecisionRows: removals,
-        scenarioSnapshotChanged: true,
+        scenarioSnapshotChanged: scenarioSnapshotChanged,
       );
     }
-
-    for (final category in dismissed.difference(desired)) {
-      await _clearDismissal(
-        predmetId: predmetId,
-        interniNaziv: category,
-        scopeKey: _scenarioScopeKey,
-      );
-    }
-    for (final row in rows.where(
-      (row) =>
-          evaluation.baseCategories.contains(row.interniNaziv) &&
-          provenanceByIriuId[row.id] == null,
-    )) {
-      scenarioRows.add(row);
-      orderingInvalidated = true;
-      await _db
-          .into(_db.iriuProvenance)
-          .insertOnConflictUpdate(
-            IriuProvenanceCompanion.insert(
-              iriuId: Value(row.id),
-              origin: 'OSNOVNI_PAKET',
-              moduleId: const Value('scenario'),
-              createdAt: DateTime.now().toUtc().toIso8601String(),
-            ),
-          );
-    }
-
-    for (final row in removals) {
-      await azurirajStavku(
-        row.id,
-        const IriuCompanion(cekaOdlukuKorisnika: Value(true)),
-      );
-    }
-    for (final internalName in additions) {
-      final decision = evaluation.decisions[internalName]!;
-      final displayResolution = resolveIriuDisplayName(
-        internalName: internalName,
-        catalogDisplayNames: catalogDisplayNames,
-      );
-      if (!displayResolution.isResolved) {
-        throw StateError(
-          'SCENARIO consequence has no resolvable KATALOG category: '
-          '$internalName',
+    // Drift 2.32.1 supports nested transactions on NativeDatabase and
+    // propagates the active transaction through its connection zone. Existing
+    // lifecycle helpers may therefore use their own transaction boundary
+    // without escaping this outer atomic commit.
+    await _db.transaction(() async {
+      for (final category in dismissed.difference(desired)) {
+        await _clearDismissal(
+          predmetId: predmetId,
+          interniNaziv: category,
+          scopeKey: _scenarioScopeKey,
         );
       }
-      final id = await _insertStavka(
-        predmetId: predmetId,
-        interniNaziv: internalName,
-        nazivPrikaz: displayResolution.displayName!,
-        redosled: await sledeciredosled(predmetId),
-        poslovniStatus: decision.businessStatus,
-        obezbedjuje: decision.provider.name,
-        poslovnoUpozorenje: decision.warning,
-        poslovniRazlog: decision.reason,
-        poslovnaCelina: decision.section,
-        poslovniRedosled: decision.order,
-        finansijskiUkljuceno: decision.financiallyIncluded,
-        scenarioUpravlja: true,
-      );
-      final isBase = evaluation.baseCategories.contains(internalName);
-      final consequence = evaluation.scenarioCategories.firstWhere(
-        (item) => item.katalogCategoryInternalName == internalName,
-        orElse: () => const ScenarioConsequence(
-          katalogCategoryInternalName: '',
-          action: ScenarioConsequenceAction.recommended,
-        ),
-      );
-      await _db
-          .into(_db.iriuProvenance)
-          .insertOnConflictUpdate(
-            IriuProvenanceCompanion.insert(
-              iriuId: Value(id),
-              origin: isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET',
-              moduleId: const Value('scenario'),
-              scenarioId: Value(
-                isBase || evaluation.matchedScenarioIds.isEmpty
-                    ? null
-                    : evaluation.sourceScenarioIds[internalName],
-              ),
-              scenarioVersion: Value(isBase ? null : 1),
-              ruleId: Value(
-                isBase ? null : consequence.katalogCategoryInternalName,
-              ),
-              createdAt: DateTime.now().toUtc().toIso8601String(),
+      for (final row in removals) {
+        if (conditionChangeDecisions[row.id] == true) {
+          await azurirajStavku(
+            row.id,
+            const IriuCompanion(
+              scenarioUpravlja: Value(false),
+              cekaOdlukuKorisnika: Value(false),
             ),
           );
-    }
-    for (final row in scenarioRows.where(
-      (row) => desired.contains(row.interniNaziv),
-    )) {
-      final decision = evaluation.decisions[row.interniNaziv]!;
-      if (_scenarioDecisionChanged(row, decision) || !row.scenarioUpravlja) {
-        orderingInvalidated = true;
-      }
-      await azurirajStavku(
-        row.id,
-        IriuCompanion(
-          poslovniStatus: Value(decision.businessStatus),
-          obezbedjuje: Value(decision.provider.name),
-          poslovnoUpozorenje: Value(decision.warning),
-          poslovniRazlog: Value(decision.reason),
-          poslovnaCelina: Value(decision.section),
-          poslovniRedosled: Value(decision.order),
-          finansijskiUkljuceno: Value(decision.financiallyIncluded),
-          scenarioUpravlja: const Value(true),
-          cekaOdlukuKorisnika: const Value(false),
-        ),
-      );
-      final isBase = evaluation.baseCategories.contains(row.interniNaziv);
-      final consequence = evaluation.scenarioCategories.firstWhere(
-        (item) => item.katalogCategoryInternalName == row.interniNaziv,
-        orElse: () => const ScenarioConsequence(
-          katalogCategoryInternalName: '',
-          action: ScenarioConsequenceAction.recommended,
-        ),
-      );
-      await (_db.update(
-        _db.iriuProvenance,
-      )..where((item) => item.iriuId.equals(row.id))).write(
-        IriuProvenanceCompanion(
-          origin: Value(isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET'),
-          scenarioId: Value(
-            isBase || evaluation.matchedScenarioIds.isEmpty
-                ? null
-                : evaluation.sourceScenarioIds[row.interniNaziv],
-          ),
-          scenarioVersion: Value(isBase ? null : 1),
-          ruleId: Value(
-            isBase ? null : consequence.katalogCategoryInternalName,
-          ),
-        ),
-      );
-    }
-    if (removals.isNotEmpty || additions.isNotEmpty || orderingInvalidated) {
-      await _rebuildBusinessOrdering(predmetId);
-    }
-    if (ownerResult?.isComplete ?? false) {
-      final snapshot = candidateSnapshot!;
-      if (sameAssignedScenario) {
-        // A later editor change is intentionally not retroactive for a
-        // PREDMET that already carries this assignment snapshot.
-      } else if (previousSnapshot == null ||
-          previousSnapshot.snapshotHash == snapshot.snapshotHash) {
-        if (previousSnapshot == null) {
-          await _writeScenarioSnapshot(snapshot, predmetId: predmetId);
-        }
-      } else {
-        // A condition change is not silently accepted while rows await a
-        // user's keep/remove decision. Once no rows are pending, the current
-        // owner-map assignment becomes the new restore snapshot.
-        if (removals.isEmpty) {
-          await _writeScenarioSnapshot(snapshot, predmetId: predmetId);
+          await (_db.delete(
+            _db.iriuProvenance,
+          )..where((item) => item.iriuId.equals(row.id))).go();
+        } else {
+          await obrisiStavkuSaLifecycleMemorijom(
+            predmetId: predmetId,
+            row: row,
+            rememberManualDeletion: false,
+          );
         }
       }
-    }
+      for (final internalName in additions) {
+        final decision = evaluation.decisions[internalName]!;
+        final displayResolution = resolveIriuDisplayName(
+          internalName: internalName,
+          catalogDisplayNames: catalogDisplayNames,
+        );
+        if (!displayResolution.isResolved) {
+          throw StateError(
+            'SCENARIO consequence has no resolvable KATALOG category: '
+            '$internalName',
+          );
+        }
+        final id = await _insertStavka(
+          predmetId: predmetId,
+          interniNaziv: internalName,
+          nazivPrikaz: displayResolution.displayName!,
+          redosled: await sledeciredosled(predmetId),
+          poslovniStatus: decision.businessStatus,
+          obezbedjuje: decision.provider.name,
+          poslovnoUpozorenje: decision.warning,
+          poslovniRazlog: decision.reason,
+          poslovnaCelina: decision.section,
+          poslovniRedosled: decision.order,
+          finansijskiUkljuceno: decision.financiallyIncluded,
+          scenarioUpravlja: true,
+        );
+        final isBase = evaluation.baseCategories.contains(internalName);
+        final consequence = evaluation.scenarioCategories.firstWhere(
+          (item) => item.katalogCategoryInternalName == internalName,
+          orElse: () => const ScenarioConsequence(
+            katalogCategoryInternalName: '',
+            action: ScenarioConsequenceAction.recommended,
+          ),
+        );
+        await _db
+            .into(_db.iriuProvenance)
+            .insertOnConflictUpdate(
+              IriuProvenanceCompanion.insert(
+                iriuId: Value(id),
+                origin: isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET',
+                moduleId: const Value('scenario'),
+                scenarioId: Value(
+                  isBase || evaluation.matchedScenarioIds.isEmpty
+                      ? null
+                      : evaluation.sourceScenarioIds[internalName],
+                ),
+                scenarioVersion: Value(isBase ? null : 1),
+                ruleId: Value(
+                  isBase ? null : consequence.katalogCategoryInternalName,
+                ),
+                createdAt: DateTime.now().toUtc().toIso8601String(),
+              ),
+            );
+      }
+      for (final row in scenarioRows.where(
+        (row) => desired.contains(row.interniNaziv),
+      )) {
+        final decision = evaluation.decisions[row.interniNaziv]!;
+        if (_scenarioDecisionChanged(row, decision) || !row.scenarioUpravlja) {
+          orderingInvalidated = true;
+        }
+        await azurirajStavku(
+          row.id,
+          IriuCompanion(
+            poslovniStatus: Value(decision.businessStatus),
+            obezbedjuje: Value(decision.provider.name),
+            poslovnoUpozorenje: Value(decision.warning),
+            poslovniRazlog: Value(decision.reason),
+            poslovnaCelina: Value(decision.section),
+            poslovniRedosled: Value(decision.order),
+            finansijskiUkljuceno: Value(decision.financiallyIncluded),
+            scenarioUpravlja: const Value(true),
+            cekaOdlukuKorisnika: const Value(false),
+          ),
+        );
+        final isBase = evaluation.baseCategories.contains(row.interniNaziv);
+        final consequence = evaluation.scenarioCategories.firstWhere(
+          (item) => item.katalogCategoryInternalName == row.interniNaziv,
+          orElse: () => const ScenarioConsequence(
+            katalogCategoryInternalName: '',
+            action: ScenarioConsequenceAction.recommended,
+          ),
+        );
+        await (_db.update(
+          _db.iriuProvenance,
+        )..where((item) => item.iriuId.equals(row.id))).write(
+          IriuProvenanceCompanion(
+            origin: Value(isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET'),
+            scenarioId: Value(
+              isBase || evaluation.matchedScenarioIds.isEmpty
+                  ? null
+                  : evaluation.sourceScenarioIds[row.interniNaziv],
+            ),
+            scenarioVersion: Value(isBase ? null : 1),
+            ruleId: Value(
+              isBase ? null : consequence.katalogCategoryInternalName,
+            ),
+          ),
+        );
+      }
+      if (removals.isNotEmpty || additions.isNotEmpty || orderingInvalidated) {
+        await _rebuildBusinessOrdering(predmetId);
+      }
+      if (ownerResult?.isComplete ?? false) {
+        final snapshot = candidateSnapshot!;
+        if (sameAssignedScenario) {
+          // Frozen assignment remains authoritative for this PREDMET.
+        } else if (previousSnapshot == null ||
+            previousSnapshot.snapshotHash == snapshot.snapshotHash) {
+          if (previousSnapshot == null) {
+            await _writeScenarioSnapshot(snapshot, predmetId: predmetId);
+          }
+        } else if (removals.isEmpty || hasAllRemovalDecisions) {
+          await _writeScenarioSnapshot(snapshot, predmetId: predmetId);
+        }
+      }
+    });
     return ScenarioSyncResult(
       matchedScenarioIds: evaluation.matchedScenarioIds,
       addedCategories: additions,
       addedCategoryLabels: addedLabels,
-      removedCategories: applyScenarioChange ? const <String>[] : removedNames,
+      removedCategories: applyScenarioChange
+          ? removals
+                .where((row) => conditionChangeDecisions[row.id] == false)
+                .map((row) => row.interniNaziv)
+                .toList(growable: false)
+          : removedNames,
       removedCategoryLabels: applyScenarioChange
-          ? const <String>[]
+          ? _resolveScenarioLabels(
+              removals
+                  .where((row) => conditionChangeDecisions[row.id] == false)
+                  .map((row) => row.interniNaziv)
+                  .toList(growable: false),
+              catalogDisplayNames,
+            )
           : removedLabels,
       changedCategories: changedNames,
       changedCategoryLabels: changedLabels,
-      pendingUserDecisionRows: removals,
+      pendingUserDecisionRows: const <IriuData>[],
       scenarioSnapshotChanged: scenarioSnapshotChanged,
     );
   }
@@ -385,40 +414,42 @@ class IriuRepository {
     required IriuData row,
     required bool keepRow,
   }) async {
-    if (keepRow) {
-      await azurirajStavku(
-        row.id,
-        const IriuCompanion(
-          scenarioUpravlja: Value(false),
-          cekaOdlukuKorisnika: Value(false),
-        ),
-      );
-      await (_db.delete(
-        _db.iriuProvenance,
-      )..where((item) => item.iriuId.equals(row.id))).go();
-    } else {
-      await obrisiStavkuSaLifecycleMemorijom(
-        predmetId: predmetId,
-        row: row,
-        rememberManualDeletion: false,
-      );
-    }
-    await _rebuildBusinessOrdering(predmetId);
-    final predmet = await (_db.select(
-      _db.predmeti,
-    )..where((item) => item.id.equals(predmetId))).getSingleOrNull();
-    if (predmet != null) {
-      final pending =
-          await (_db.select(_db.iriu)..where(
-                (item) =>
-                    item.predmetId.equals(predmetId) &
-                    item.cekaOdlukuKorisnika.equals(true),
-              ))
-              .get();
-      if (pending.isEmpty) {
-        await _persistCurrentOwnerSnapshot(predmet);
+    await _db.transaction(() async {
+      if (keepRow) {
+        await azurirajStavku(
+          row.id,
+          const IriuCompanion(
+            scenarioUpravlja: Value(false),
+            cekaOdlukuKorisnika: Value(false),
+          ),
+        );
+        await (_db.delete(
+          _db.iriuProvenance,
+        )..where((item) => item.iriuId.equals(row.id))).go();
+      } else {
+        await obrisiStavkuSaLifecycleMemorijom(
+          predmetId: predmetId,
+          row: row,
+          rememberManualDeletion: false,
+        );
       }
-    }
+      await _rebuildBusinessOrdering(predmetId);
+      final predmet = await (_db.select(
+        _db.predmeti,
+      )..where((item) => item.id.equals(predmetId))).getSingleOrNull();
+      if (predmet != null) {
+        final pending =
+            await (_db.select(_db.iriu)..where(
+                  (item) =>
+                      item.predmetId.equals(predmetId) &
+                      item.cekaOdlukuKorisnika.equals(true),
+                ))
+                .get();
+        if (pending.isEmpty) {
+          await _persistCurrentOwnerSnapshot(predmet);
+        }
+      }
+    });
   }
 
   Future<PredmetScenarioSnapshot?> _readScenarioSnapshot(int predmetId) {

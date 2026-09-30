@@ -385,6 +385,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
             predmetiRepo: widget.predmetiRepo,
             session: widget.session,
             entitlementPolicy: widget.entitlementPolicy,
+            isNewPredmetCreationFlow: true,
           ),
         ),
       );

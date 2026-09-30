@@ -559,28 +559,30 @@ Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
           ))
           .get();
   final provenanceById = {for (final row in provenanceRows) row.iriuId: row};
-  final complete = iriu.every((row) => provenanceById.containsKey(row.id));
+  final knownRows = iriu.where((row) => provenanceById.containsKey(row.id));
+  final knownCount = knownRows.length;
+  final coverage = knownCount == iriu.length
+      ? ScenarioIriuProvenanceCoverage.complete
+      : knownCount == 0
+      ? ScenarioIriuProvenanceCoverage.unavailable
+      : ScenarioIriuProvenanceCoverage.partial;
   final envelope = ScenarioTransferEnvelope.create(
     assignment: assignment,
-    provenanceCoverage: complete
-        ? ScenarioIriuProvenanceCoverage.complete
-        : ScenarioIriuProvenanceCoverage.unavailable,
-    provenance: complete
-        ? iriu
-              .map((row) {
-                final item = provenanceById[row.id]!;
-                return ScenarioIriuProvenance(
-                  iriuId: row.id,
-                  origin: ScenarioIriuOriginKindWire.fromWireName(item.origin),
-                  moduleId: item.moduleId,
-                  scenarioId: item.scenarioId,
-                  scenarioVersion: item.scenarioVersion,
-                  ruleId: item.ruleId,
-                  operationId: item.operationId,
-                );
-              })
-              .toList(growable: false)
-        : const [],
+    provenanceCoverage: coverage,
+    provenance: knownRows
+        .map((row) {
+          final item = provenanceById[row.id]!;
+          return ScenarioIriuProvenance(
+            iriuId: row.id,
+            origin: ScenarioIriuOriginKindWire.fromWireName(item.origin),
+            moduleId: item.moduleId,
+            scenarioId: item.scenarioId,
+            scenarioVersion: item.scenarioVersion,
+            ruleId: item.ruleId,
+            operationId: item.operationId,
+          );
+        })
+        .toList(growable: false),
   );
   return SinglePredmetScenarioCarrierBlock.fromEnvelope(
     envelope: envelope,
@@ -1537,7 +1539,8 @@ Future<void> _restoreImportedScenarioCarrier({
           assignedByKorisnikId: Value(envelope.assignment.assignedByKorisnikId),
         ),
       );
-  if (envelope.provenanceCoverage != ScenarioIriuProvenanceCoverage.complete) {
+  if (envelope.provenanceCoverage ==
+      ScenarioIriuProvenanceCoverage.unavailable) {
     return;
   }
   for (final item in envelope.provenance) {

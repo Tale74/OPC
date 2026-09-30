@@ -676,11 +676,57 @@ class _OpenPredmetiDialogContent extends StatefulWidget {
 
 class _OpenPredmetiDialogContentState
     extends State<_OpenPredmetiDialogContent> {
-  PredmetiData? _selected;
+  late List<PredmetiData> _predmeti;
+  int? _selectedPredmetId;
+  int _refreshGeneration = 0;
+  int _selectedDataEpoch = 0;
+  bool _refreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _predmeti = _eligible(widget.predmeti);
+  }
+
+  List<PredmetiData> _eligible(List<PredmetiData> source) =>
+      source.where((item) => item.status == 'OTVOREN').toList(growable: false);
+
+  Future<void> _refresh() async {
+    final generation = ++_refreshGeneration;
+    setState(() => _refreshing = true);
+    try {
+      final loaded = _eligible(
+        await PredmetiRepository(widget.db).getSvePredmete(),
+      );
+      if (!mounted || generation != _refreshGeneration) return;
+      setState(() {
+        _predmeti = loaded;
+        _selectedDataEpoch++;
+        if (!_predmeti.any((item) => item.id == _selectedPredmetId)) {
+          _selectedPredmetId = null;
+        }
+        _refreshing = false;
+      });
+    } catch (_) {
+      if (!mounted || generation != _refreshGeneration) return;
+      setState(() => _refreshing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Otvorene PREDMETE nije moguće osvežiti.'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final selected = _selected;
+    PredmetiData? selected;
+    for (final item in _predmeti) {
+      if (item.id == _selectedPredmetId) {
+        selected = item;
+        break;
+      }
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Column(
@@ -688,22 +734,25 @@ class _OpenPredmetiDialogContentState
         children: [
           Row(
             children: [
-              if (selected != null)
-                IconButton(
-                  tooltip: 'NAZAD',
-                  onPressed: () => setState(() => _selected = null),
-                  icon: const Icon(Icons.arrow_back),
-                ),
-              Expanded(
+              const Expanded(
                 child: Text(
-                  selected == null
-                      ? 'OTVORENI PREDMETI'
-                      : 'PRIMENJENO NA PREDMET',
-                  style: const TextStyle(
+                  'PRIMENJENO NA PREDMET',
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+              ),
+              IconButton(
+                key: const ValueKey('scenario-open-predmet-refresh'),
+                tooltip: 'OSVEŽI OTVORENE PREDMETE',
+                onPressed: _refreshing ? null : _refresh,
+                icon: _refreshing
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh),
               ),
               IconButton(
                 tooltip: 'ZATVORI',
@@ -714,27 +763,43 @@ class _OpenPredmetiDialogContentState
           ),
           const Divider(height: 1),
           const SizedBox(height: 8),
-          Expanded(
-            child: selected == null
-                ? ListView.separated(
-                    key: const ValueKey('scenario-open-predmet-list'),
-                    itemCount: widget.predmeti.length,
-                    separatorBuilder: (_, index) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final predmet = widget.predmeti[index];
-                      return ListTile(
-                        key: ValueKey('scenario-open-predmet-${predmet.id}'),
-                        leading: const Icon(Icons.assignment_outlined),
-                        title: Text(_openPredmetDisplayName(predmet)),
-                        subtitle: Text('PREDMET ${predmet.brojPredmeta}'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => setState(() => _selected = predmet),
-                      );
-                    },
+          if (_predmeti.isNotEmpty)
+            DropdownButtonFormField<int>(
+              key: const ValueKey('scenario-open-predmet-selector'),
+              initialValue: selected?.id,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'PREDMET',
+                border: OutlineInputBorder(),
+              ),
+              items: _predmeti
+                  .map(
+                    (predmet) => DropdownMenuItem<int>(
+                      value: predmet.id,
+                      child: Text(
+                        _scenarioPredmetSelectorIdentity(predmet),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   )
+                  .toList(growable: false),
+              onChanged: (id) => setState(() => _selectedPredmetId = id),
+            ),
+          if (_predmeti.isNotEmpty) const SizedBox(height: 12),
+          Expanded(
+            child: _predmeti.isEmpty
+                ? const Center(child: Text('Nema otvorenih PREDMETA.'))
+                : selected == null
+                ? const Center(child: Text('Izaberite PREDMET.'))
                 : SingleChildScrollView(
-                    key: const ValueKey('scenario-selected-predmet-detail'),
+                    key: ValueKey(
+                      'scenario-selected-predmet-detail-${selected.id}',
+                    ),
                     child: _SelectedPredmetScenarioView(
+                      key: ValueKey(
+                        'scenario-selected-predmet-${selected.id}-$_selectedDataEpoch',
+                      ),
                       predmet: selected,
                       db: widget.db,
                     ),
@@ -816,11 +881,22 @@ class _OpenPredmetSelector extends StatelessWidget {
 
 String _openPredmetDisplayName(PredmetiData predmet) {
   final fullName = '${predmet.ime.trim()} ${predmet.prezime.trim()}'.trim();
-  return fullName.isEmpty ? 'Bez unetog imena i prezimena' : fullName;
+  return fullName.isEmpty ? 'PREDMET ${predmet.brojPredmeta}' : fullName;
+}
+
+String _scenarioPredmetSelectorIdentity(PredmetiData predmet) {
+  final fullName = '${predmet.ime.trim()} ${predmet.prezime.trim()}'.trim();
+  return fullName.isEmpty
+      ? 'PREDMET ${predmet.brojPredmeta}'
+      : '$fullName · ${predmet.brojPredmeta}';
 }
 
 class _SelectedPredmetScenarioView extends StatefulWidget {
-  const _SelectedPredmetScenarioView({required this.predmet, required this.db});
+  const _SelectedPredmetScenarioView({
+    super.key,
+    required this.predmet,
+    required this.db,
+  });
 
   final PredmetiData predmet;
   final AppDatabase db;
@@ -833,40 +909,46 @@ class _SelectedPredmetScenarioView extends StatefulWidget {
 class _SelectedPredmetScenarioViewState
     extends State<_SelectedPredmetScenarioView> {
   late Future<_SelectedScenarioData> _dataFuture;
+  int _loadGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _dataFuture = _load();
+    _dataFuture = _load(++_loadGeneration);
   }
 
   @override
   void didUpdateWidget(_SelectedPredmetScenarioView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.predmet.id != widget.predmet.id) {
-      _dataFuture = _load();
+    if (oldWidget.predmet != widget.predmet) {
+      _dataFuture = _load(++_loadGeneration);
     }
   }
 
-  Future<_SelectedScenarioData> _load() async {
+  Future<_SelectedScenarioData> _load(int generation) async {
+    final selectedPredmet = widget.predmet;
+    final database = widget.db;
     // The production MODULI -> SCENARIO hand-off must reconcile before the
     // view reads persisted rows. Earlier E2E tests called the repository
     // directly and therefore bypassed this real runtime boundary.
     await ScenarioRuntimeReconciliationService(
-      widget.db,
-    ).reconcileOpenPredmet(widget.predmet);
+      database,
+    ).reconcileOpenPredmet(selectedPredmet);
+    if (!mounted || generation != _loadGeneration) {
+      throw StateError('Selected SCENARIO PREDMET changed during loading.');
+    }
     final snapshotRow =
-        await (widget.db.select(widget.db.predmetScenarioSnapshots)
-              ..where((item) => item.predmetId.equals(widget.predmet.id)))
+        await (database.select(database.predmetScenarioSnapshots)
+              ..where((item) => item.predmetId.equals(selectedPredmet.id)))
             .getSingleOrNull();
     final snapshot = snapshotRow == null
         ? null
         : ScenarioAssignmentSnapshot.fromJsonMap(
             jsonDecode(snapshotRow.snapshotJson) as Map<String, dynamic>,
           );
-    final rows = await IriuRepository(widget.db).getIriu(widget.predmet.id);
-    final provenance = await (widget.db.select(
-      widget.db.iriuProvenance,
+    final rows = await IriuRepository(database).getIriu(selectedPredmet.id);
+    final provenance = await (database.select(
+      database.iriuProvenance,
     )..where((item) => item.moduleId.equals('scenario'))).get();
     final provenanceById = {
       for (final item in provenance) item.iriuId: item.origin,
@@ -879,17 +961,13 @@ class _SelectedPredmetScenarioViewState
         .where((entry) => entry.value == 'OSNOVNI_PAKET')
         .map((entry) => entry.key)
         .toSet();
-    final snapshotOsnovni = snapshot?.osnovniPaket.toSet() ?? const <String>{};
-    final knownProvenanceIds = provenanceById.keys.toSet();
+    if (!mounted || generation != _loadGeneration) {
+      throw StateError('Selected SCENARIO PREDMET changed during loading.');
+    }
     return _SelectedScenarioData(
       snapshot: snapshot,
       osnovniRows: rows
-          .where(
-            (row) =>
-                osnovniOwnedIds.contains(row.id) ||
-                (!knownProvenanceIds.contains(row.id) &&
-                    snapshotOsnovni.contains(row.interniNaziv)),
-          )
+          .where((row) => osnovniOwnedIds.contains(row.id))
           .toList(growable: false),
       scenarioRows: rows
           .where((row) => scenarioOwnedIds.contains(row.id))
@@ -900,6 +978,7 @@ class _SelectedPredmetScenarioViewState
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_SelectedScenarioData>(
+      key: ValueKey('scenario-selected-data-$_loadGeneration'),
       future: _dataFuture,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -988,7 +1067,7 @@ class _SelectedPredmetScenarioViewState
                   const SizedBox(height: 4),
                   Text(
                     data.snapshot == null
-                        ? 'SCENARIO paket nije primenjen.'
+                        ? 'Istorijski SCENARIO snapshot nije dostupan.'
                         : _scenarioBusinessSummary(data.snapshot!.scenario),
                   ),
                   const SizedBox(height: 4),

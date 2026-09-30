@@ -1206,3 +1206,58 @@ Documentation authority and implementation-source publication are separate
 gates. Residual OWNER findings remain preserved for later OWNER-gated
 corrective work and are not claimed as resolved by this documentation
 synchronization.
+
+## SCENARIO applied-state integrity + PREDMET selector — implementation candidate — 2026-09-30
+
+The bounded implementation now plans SCENARIO reconciliation without writes,
+collects the full removal-decision set before mutation, and applies accepted
+IRiU/lifecycle/order/provenance/snapshot changes atomically. Failure-injection
+coverage verifies rollback. The open-PREDMET selector is single-selection,
+excludes non-open cases and invalidates stale detail loads on case switch or
+refresh. SCENARIO single-PREDMET transfer writes v2 `PARTIAL` provenance
+coverage while keeping v1 `COMPLETE`/`UNAVAILABLE` reads compatible; unknown
+provenance is not fabricated. Full-backup round-trip coverage retains snapshot
+and known provenance continuity.
+
+Verification: focused regression `89 passed / 0 failed`, analyzer PASS, full
+serial test suite `600 PASS / 9 SKIP / 0 FAIL`, Windows release build PASS and
+Android production APK build PASS. This is a source/build candidate only: Logos
+post-implementation review and OWNER runtime acceptance remain pending. No
+runtime behavior is inferred from tests/builds. No source commit/push or active
+protected-hash rebaseline was performed. See
+[`OPC_TASK_SCENARIO_APPLIED_STATE_INTEGRITY_AND_SELECTOR_IMPLEMENTATION_REPORT.md`](tasks/OPC_TASK_SCENARIO_APPLIED_STATE_INTEGRITY_AND_SELECTOR_IMPLEMENTATION_REPORT.md).
+
+## SCENARIO carrierless historical-integrity correction — 2026-09-30
+
+The earlier SCENARIO applied-state implementation passed technical QA but its
+Logos review found carrierless historical non-fabrication unproven. A bounded
+correction now distinguishes the new-PREDMET creation lifecycle from ordinary
+open, records OSNOVNI_PAKET provenance when those rows are created, prevents
+category-based historical backfill, and presents a missing snapshot as
+unavailable evidence rather than proof of non-application. Final verification
+is `602 passed / 9 skipped / 0 failed`, analyzer PASS, Windows release PASS and
+Android production APK PASS. Logos correction review and OWNER runtime remain
+pending; no protected baseline was rebaselined and no source was published.
+See [`OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md`](tasks/OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md).
+
+## SCENARIO historical-integrity formal closure — 2026-09-30
+
+The later authoritative outcome supersedes the pending review/runtime wording
+above: `SCENARIO CARRIERLESS / HISTORICAL-INTEGRITY CORRECTION — PASS`,
+`LOGOS INDEPENDENT CORRECTION REVIEW — PASS`, and `OWNER RUNTIME ACCEPTANCE —
+PASS`. PREDMET remains the sole business truth; manual IRiU corrections
+survive reopen; historical SCENARIO state does not override current PREDMET or
+IRiU state. This closure changes no product behavior.
+
+The OWNER runtime case used carrier v1; provenance coverage was `UNAVAILABLE`
+and an assignment snapshot existed. It is not independent runtime proof of v2
+`COMPLETE` or `PARTIAL` transfer. Those behaviors are supported by automated
+QA, not this specific runtime case. Product QA was not rerun for the
+documentation/control-only closure.
+
+`PREVIOUS PENDING FINDING — NOT IDENTIFIABLE FROM CURRENT AUTHORITY`. Its
+identity is not guessed or merged with the SCENARIO inconsistency closed here,
+`UX-PARTE-001`, or another open item. It is not investigated in this closure.
+`UX-PARTE-001` remains separately `OPEN / NOT TESTED / ROOT CAUSE NOT PROVEN`.
+The formal closure record is
+[`OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md`](tasks/OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md).

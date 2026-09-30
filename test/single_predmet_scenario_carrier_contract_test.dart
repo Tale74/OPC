@@ -13,7 +13,10 @@ void main() {
       );
 
       expect(block.provenance.map((item) => item.iriuTransferIndex), [0, 1, 2]);
-      expect(block.provenance.first.origin, ScenarioIriuOriginKind.osnovniPaket);
+      expect(
+        block.provenance.first.origin,
+        ScenarioIriuOriginKind.osnovniPaket,
+      );
       expect(block.provenance[1].origin, ScenarioIriuOriginKind.legacy);
       expect(block.provenance.last.origin, ScenarioIriuOriginKind.rucnaStavka);
     });
@@ -112,8 +115,10 @@ void main() {
         sourceIriuIds: [101, 102],
       );
       expect(block.provenance, isEmpty);
-      expect(block.provenanceCoverage,
-          ScenarioIriuProvenanceCoverage.unavailable);
+      expect(
+        block.provenanceCoverage,
+        ScenarioIriuProvenanceCoverage.unavailable,
+      );
     });
 
     test('COMPLETE coverage must include every transferred row', () {
@@ -137,6 +142,55 @@ void main() {
         () => block.resolveToEnvelope(destinationIriuIds: [201, 202, 203]),
         throwsA(isA<SinglePredmetScenarioCarrierValidationException>()),
       );
+    });
+
+    test('PARTIAL maps and preserves only known provenance references', () {
+      final envelope = ScenarioTransferEnvelope.create(
+        assignment: _assignment(),
+        provenanceCoverage: ScenarioIriuProvenanceCoverage.partial,
+        provenance: [_basic(101)],
+      );
+      final block = SinglePredmetScenarioCarrierBlock.fromEnvelope(
+        envelope: envelope,
+        sourceIriuIds: [101, 102, 103],
+      );
+      final resolved = block.resolveToEnvelope(
+        destinationIriuIds: [201, 202, 203],
+      );
+
+      expect(block.provenanceCoverage, ScenarioIriuProvenanceCoverage.partial);
+      expect(block.provenance.map((item) => item.iriuTransferIndex), [0]);
+      expect(
+        resolved.provenanceCoverage,
+        ScenarioIriuProvenanceCoverage.partial,
+      );
+      expect(resolved.provenance.map((item) => item.iriuId), [201]);
+      expect(
+        () => SinglePredmetScenarioCarrierBlock.fromEnvelope(
+          envelope: ScenarioTransferEnvelope.create(
+            assignment: _assignment(),
+            provenanceCoverage: ScenarioIriuProvenanceCoverage.partial,
+            provenance: [_basic(101), _legacy(102), _manual(103)],
+          ),
+          sourceIriuIds: [101, 102, 103],
+        ),
+        throwsA(isA<SinglePredmetScenarioCarrierValidationException>()),
+      );
+    });
+
+    test('version 1 carrier remains readable without redefining coverage', () {
+      final version1 = SinglePredmetScenarioCarrierBlock.fromEnvelope(
+        envelope: _envelope(),
+        sourceIriuIds: [101, 102, 103],
+      ).toJsonMap()..['carrierVersion'] = 1;
+
+      final decoded = SinglePredmetScenarioCarrierBlock.fromJsonMap(version1);
+      expect(
+        decoded.provenanceCoverage,
+        ScenarioIriuProvenanceCoverage.complete,
+      );
+      expect(decoded.provenance, hasLength(3));
+      expect(decoded.toJsonMap()['carrierVersion'], 2);
     });
 
     test('unknown fields, future version and hash tampering fail closed', () {
@@ -189,7 +243,9 @@ void main() {
         envelope: _envelope(),
         sourceIriuIds: [101, 102, 103],
       );
-      final payload = Map<String, dynamic>.from(block.toJsonMap()['payload'] as Map);
+      final payload = Map<String, dynamic>.from(
+        block.toJsonMap()['payload'] as Map,
+      );
       final provenance = List<dynamic>.from(payload['provenance'] as List);
       provenance[0] = Map<String, dynamic>.from(provenance[0] as Map)
         ..['future'] = true;
@@ -234,8 +290,10 @@ void main() {
         envelope: _envelope(),
         sourceIriuIds: [101, 102, 103],
       );
-      expect(block.contentHash,
-          '9fabb3ca4aef325405878cf50fa1f6e6b09e25f99f2e26eb782fbb7a19c89bfd');
+      expect(
+        block.contentHash,
+        '9fabb3ca4aef325405878cf50fa1f6e6b09e25f99f2e26eb782fbb7a19c89bfd',
+      );
     });
   });
 }
@@ -243,10 +301,7 @@ void main() {
 ScenarioTransferEnvelope _envelope({int? extraProvenanceId}) {
   final provenance = <ScenarioIriuProvenance>[
     _basic(101),
-    ScenarioIriuProvenance(
-      iriuId: 102,
-      origin: ScenarioIriuOriginKind.legacy,
-    ),
+    ScenarioIriuProvenance(iriuId: 102, origin: ScenarioIriuOriginKind.legacy),
     _manual(103),
     if (extraProvenanceId != null) _manual(extraProvenanceId),
   ];
@@ -269,10 +324,8 @@ ScenarioIriuProvenance _manual(int id) => ScenarioIriuProvenance(
   operationId: 'manual-$id',
 );
 
-ScenarioIriuProvenance _legacy(int id) => ScenarioIriuProvenance(
-  iriuId: id,
-  origin: ScenarioIriuOriginKind.legacy,
-);
+ScenarioIriuProvenance _legacy(int id) =>
+    ScenarioIriuProvenance(iriuId: id, origin: ScenarioIriuOriginKind.legacy);
 
 ScenarioAssignmentSnapshot _assignment() => ScenarioAssignmentSnapshot.create(
   moduleId: 'scenario',

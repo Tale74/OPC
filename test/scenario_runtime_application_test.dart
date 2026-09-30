@@ -71,7 +71,7 @@ void main() {
         scenarios: const [],
         osnovniPaket: const {IriuK.sanduk},
       );
-      expect(second.removedCategories, isEmpty);
+      expect(second.removedCategories, contains(IriuK.hladnjaca));
       expect(
         second.pendingUserDecisionRows.map((row) => row.interniNaziv),
         contains(IriuK.hladnjaca),
@@ -83,11 +83,15 @@ void main() {
       final pending = second.pendingUserDecisionRows.singleWhere(
         (row) => row.interniNaziv == IriuK.hladnjaca,
       );
-      await iRiu.resolveScenarioConditionChange(
+      final committed = await iRiu.syncScenarioRows(
         predmetId: predmetId,
-        row: pending,
-        keepRow: false,
+        predmet: predmet,
+        scenarios: const [],
+        osnovniPaket: const {IriuK.sanduk},
+        conditionChangeDecisions: {pending.id: false},
       );
+      expect(committed.pendingUserDecisionRows, isEmpty);
+      expect(committed.removedCategories, contains(IriuK.hladnjaca));
       expect(
         (await iRiu.getIriu(
           predmetId,

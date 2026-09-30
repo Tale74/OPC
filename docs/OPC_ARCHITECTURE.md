@@ -267,6 +267,25 @@ PREDMET facts + editable module definitions
         → locked regression/runtime contract
 ```
 
+Applied-state reconciliation is planned without persistence first. If the
+candidate removes scenario-owned rows or changes an assigned snapshot, the UI
+collects all required user decisions before committing. The final materialized
+rows, lifecycle/ordering effects, provenance and snapshot are applied in one
+database transaction; a failure rolls the whole decision set back. Nested
+repository lifecycle helpers remain within that outer transaction through
+Drift's nested transaction/savepoint behavior. PREDMET remains the sole
+business authority; the snapshot and provenance describe applied SCENARIO
+presentation/history and never infer assignment from `scenarioUpravlja`.
+
+Single-PREDMET SCENARIO transfer uses carrier/envelope v2 to distinguish
+`UNAVAILABLE`, `PARTIAL` known provenance and `COMPLETE` provenance. Readers
+remain compatible with v1 `UNAVAILABLE`/`COMPLETE`; v1 has no `PARTIAL` state.
+The full-backup schema continues to transfer known provenance with the
+assignment snapshot. Unknown rows stay unknown rather than being synthesized
+as scenario-owned. Android SCENARIO selection is open-PREDMET-only and presents
+one case at a time; selection/refresh generations reject stale asynchronous
+details after switching or closing a case.
+
 Individual PREDMET import is a restoration boundary, not a new-case
 initialization boundary. The transferred IRiU set and PREDMET-scoped lifecycle
 decisions are authoritative for the imported case; SCENARIO definitions remain
@@ -329,3 +348,15 @@ This document describes current architecture. It does not select a target folder
 - [`OPC_SCENARIO_MODULE_LOCK_REPORT.md`](OPC_SCENARIO_MODULE_LOCK_REPORT.md)
 - [`OPC_PHASE_1_FULL_CODE_ARCHITECTURE_REVIEW.md`](OPC_PHASE_1_FULL_CODE_ARCHITECTURE_REVIEW.md)
 - [`OPC_POST_ZERO_ARCHITECTURE_DECISION_GATE_SYNTHESIS.md`](OPC_POST_ZERO_ARCHITECTURE_DECISION_GATE_SYNTHESIS.md)
+
+## 12. SCENARIO historical applied-state boundary — 2026-09-30
+
+An absent historical assignment snapshot is not proof that SCENARIO was never
+applied. The MODULI → SCENARIO selected-PREDMET path is read-only. First
+application is tied to the new-PREDMET creation lifecycle, while ordinary
+open-time reconciliation requires a stored snapshot and durable provenance for
+all current IRiU occurrences. Provenance for OSNOVNI_PAKET rows is recorded
+when that lifecycle creates them; current category matching is not historical
+origin evidence. PREDMET remains the only business source of truth. The
+correction adds no database/schema or JSON state; see
+[`OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md`](tasks/OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md).

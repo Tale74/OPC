@@ -7,12 +7,11 @@ import 'scenario_transfer_envelope.dart';
 
 /// Version of the Single-PREDMET scenario block, independent of the carrier's
 /// root JSON schema version.
-const int singlePredmetScenarioCarrierVersion = 1;
-const String singlePredmetScenarioCarrierKind =
-    'OPC_SINGLE_PREDMET_SCENARIO';
+const int singlePredmetScenarioCarrierVersion = 2;
+const int _legacySinglePredmetScenarioCarrierVersion = 1;
+const String singlePredmetScenarioCarrierKind = 'OPC_SINGLE_PREDMET_SCENARIO';
 const String singlePredmetScenarioCarrierHashAlgorithm = 'SHA-256';
-const String singlePredmetScenarioCarrierHashScope =
-    'PAYLOAD_CANONICAL_JSON';
+const String singlePredmetScenarioCarrierHashScope = 'PAYLOAD_CANONICAL_JSON';
 
 /// A carrier-safe reference to one IRIU row. The source/destination database
 /// primary key is deliberately absent; the transfer index is scoped to the
@@ -145,7 +144,8 @@ class SinglePredmetScenarioCarrierBlock {
     final references = envelope.provenance
         .map(
           (item) => SinglePredmetScenarioProvenanceReference(
-            iriuTransferIndex: sourceIndexById[item.iriuId] ??
+            iriuTransferIndex:
+                sourceIndexById[item.iriuId] ??
                 (throw const SinglePredmetScenarioCarrierValidationException(
                   'Scenario provenance references an IRIU row outside the transfer list.',
                 )),
@@ -159,7 +159,7 @@ class SinglePredmetScenarioCarrierBlock {
         )
         .toList(growable: false);
     _validateAssignmentOwnership(envelope.assignment, references);
-    _assertCompleteCoverage(
+    _validateCoverage(
       envelope.provenanceCoverage,
       sourceIriuIds.length,
       references,
@@ -188,7 +188,9 @@ class SinglePredmetScenarioCarrierBlock {
         'Unsupported Single-PREDMET scenario carrier kind.',
       );
     }
-    if (input['carrierVersion'] != singlePredmetScenarioCarrierVersion) {
+    final version = input['carrierVersion'];
+    if (version != singlePredmetScenarioCarrierVersion &&
+        version != _legacySinglePredmetScenarioCarrierVersion) {
       throw const SinglePredmetScenarioCarrierValidationException(
         'Unsupported Single-PREDMET scenario carrier version.',
       );
@@ -211,6 +213,12 @@ class SinglePredmetScenarioCarrierBlock {
     final coverage = ScenarioIriuProvenanceCoverageWire.fromWireName(
       _requiredText(payload, 'provenanceCoverage'),
     );
+    if (version == _legacySinglePredmetScenarioCarrierVersion &&
+        coverage == ScenarioIriuProvenanceCoverage.partial) {
+      throw const SinglePredmetScenarioCarrierValidationException(
+        'PARTIAL provenance coverage requires carrier version 2.',
+      );
+    }
     final references = _requiredMapList(payload, 'provenance')
         .map(SinglePredmetScenarioProvenanceReference.fromJsonMap)
         .toList(growable: false);
@@ -269,7 +277,7 @@ class SinglePredmetScenarioCarrierBlock {
         );
       }
     }
-    _assertCompleteCoverage(
+    _validateCoverage(
       provenanceCoverage,
       destinationIriuIds.length,
       provenance,
@@ -315,6 +323,12 @@ class SinglePredmetScenarioCarrierBlock {
         'UNAVAILABLE provenance coverage must not contain provenance rows.',
       );
     }
+    if (provenanceCoverage == ScenarioIriuProvenanceCoverage.partial &&
+        sorted.isEmpty) {
+      throw const SinglePredmetScenarioCarrierValidationException(
+        'PARTIAL provenance coverage must contain known provenance references.',
+      );
+    }
     final payload = _payloadMap(assignment, provenanceCoverage, sorted);
     return SinglePredmetScenarioCarrierBlock._(
       assignment: assignment,
@@ -347,18 +361,36 @@ void _validateAssignmentOwnership(
   }
 }
 
-void _assertCompleteCoverage(
+void _validateCoverage(
   ScenarioIriuProvenanceCoverage coverage,
   int rowCount,
   Iterable<SinglePredmetScenarioProvenanceReference> provenance,
 ) {
-  if (coverage != ScenarioIriuProvenanceCoverage.complete) return;
   final indexes = provenance.map((item) => item.iriuTransferIndex).toSet();
-  if (indexes.length != rowCount ||
-      indexes.any((index) => index < 0 || index >= rowCount)) {
+  if (indexes.any((index) => index < 0 || index >= rowCount)) {
     throw const SinglePredmetScenarioCarrierValidationException(
-      'COMPLETE provenance coverage must identify every transferred IRIU row.',
+      'Provenance transfer index is outside the transferred IRIU rows.',
     );
+  }
+  switch (coverage) {
+    case ScenarioIriuProvenanceCoverage.complete:
+      if (indexes.length != rowCount) {
+        throw const SinglePredmetScenarioCarrierValidationException(
+          'COMPLETE provenance coverage must identify every transferred IRIU row.',
+        );
+      }
+    case ScenarioIriuProvenanceCoverage.partial:
+      if (indexes.isEmpty || indexes.length >= rowCount) {
+        throw const SinglePredmetScenarioCarrierValidationException(
+          'PARTIAL provenance coverage must identify a non-empty strict subset of transferred IRIU rows.',
+        );
+      }
+    case ScenarioIriuProvenanceCoverage.unavailable:
+      if (indexes.isNotEmpty) {
+        throw const SinglePredmetScenarioCarrierValidationException(
+          'UNAVAILABLE provenance coverage must not contain provenance rows.',
+        );
+      }
   }
 }
 
@@ -382,9 +414,8 @@ Map<String, dynamic> _payloadMap(
   'provenance': provenance.map((item) => item.toJsonMap()).toList(),
 };
 
-String _hashPayload(Map<String, dynamic> payload) => sha256
-    .convert(utf8.encode(jsonEncode(_canonicalize(payload))))
-    .toString();
+String _hashPayload(Map<String, dynamic> payload) =>
+    sha256.convert(utf8.encode(jsonEncode(_canonicalize(payload)))).toString();
 
 Object? _canonicalize(Object? value) {
   if (value is Map) {
@@ -448,7 +479,9 @@ String? _optionalText(String? value, String key) {
   if (value == null) return null;
   final normalized = value.trim();
   if (normalized.isEmpty) {
-    throw SinglePredmetScenarioCarrierValidationException('$key must not be empty.');
+    throw SinglePredmetScenarioCarrierValidationException(
+      '$key must not be empty.',
+    );
   }
   return normalized;
 }
@@ -497,7 +530,9 @@ String _requiredText(Map<String, dynamic> json, String key) {
 int _requiredInt(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is! int) {
-    throw SinglePredmetScenarioCarrierValidationException('$key must be an integer.');
+    throw SinglePredmetScenarioCarrierValidationException(
+      '$key must be an integer.',
+    );
   }
   return value;
 }
@@ -506,7 +541,9 @@ int? _optionalIntValue(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value == null) return null;
   if (value is! int) {
-    throw SinglePredmetScenarioCarrierValidationException('$key must be an integer.');
+    throw SinglePredmetScenarioCarrierValidationException(
+      '$key must be an integer.',
+    );
   }
   return value;
 }
@@ -529,7 +566,9 @@ List<Map<String, dynamic>> _requiredMapList(
 ) {
   final value = json[key];
   if (value is! List) {
-    throw SinglePredmetScenarioCarrierValidationException('$key must be a list.');
+    throw SinglePredmetScenarioCarrierValidationException(
+      '$key must be a list.',
+    );
   }
   return value
       .map((item) => _stringKeyMap(item, '$key item'))

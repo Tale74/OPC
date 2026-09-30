@@ -80,6 +80,47 @@ void main() {
       expect(completeEmpty.provenance, isEmpty);
     });
 
+    test(
+      'PARTIAL preserves a known subset without fabricating missing rows',
+      () {
+        final partial = ScenarioTransferEnvelope.create(
+          assignment: _assignment(),
+          provenanceCoverage: ScenarioIriuProvenanceCoverage.partial,
+          provenance: [_basicRow(10)],
+        );
+        final decoded = ScenarioTransferEnvelope.decode(partial.encode());
+
+        expect(
+          decoded.provenanceCoverage,
+          ScenarioIriuProvenanceCoverage.partial,
+        );
+        expect(decoded.provenance.map((item) => item.iriuId), [10]);
+        expect(
+          () => ScenarioTransferEnvelope.create(
+            assignment: _assignment(),
+            provenanceCoverage: ScenarioIriuProvenanceCoverage.partial,
+          ),
+          throwsA(isA<ScenarioTransferEnvelopeValidationException>()),
+        );
+      },
+    );
+
+    test('version 1 envelope remains readable with its original coverage', () {
+      final version1 = ScenarioTransferEnvelope.create(
+        assignment: _assignment(),
+        provenanceCoverage: ScenarioIriuProvenanceCoverage.complete,
+        provenance: [_basicRow(10)],
+      ).toJsonMap()..['envelopeVersion'] = 1;
+
+      final decoded = ScenarioTransferEnvelope.fromJsonMap(version1);
+      expect(
+        decoded.provenanceCoverage,
+        ScenarioIriuProvenanceCoverage.complete,
+      );
+      expect(decoded.provenance.single.iriuId, 10);
+      expect(decoded.toJsonMap()['envelopeVersion'], 2);
+    });
+
     test('duplicate IDs and contradictory ownership are rejected', () {
       expect(
         () => ScenarioTransferEnvelope.create(
@@ -239,8 +280,10 @@ void main() {
       );
 
       expect(envelope.assignment.snapshotHash, _assignment().snapshotHash);
-      expect(envelope.provenanceCoverage,
-          ScenarioIriuProvenanceCoverage.unavailable);
+      expect(
+        envelope.provenanceCoverage,
+        ScenarioIriuProvenanceCoverage.unavailable,
+      );
     });
 
     test('legacy and manual provenance ownership is retained', () {
@@ -256,10 +299,10 @@ void main() {
         ],
       );
 
-      expect(
-        envelope.provenance.map((item) => item.origin),
-        [ScenarioIriuOriginKind.rucnaStavka, ScenarioIriuOriginKind.legacy],
-      );
+      expect(envelope.provenance.map((item) => item.origin), [
+        ScenarioIriuOriginKind.rucnaStavka,
+        ScenarioIriuOriginKind.legacy,
+      ]);
     });
   });
 }

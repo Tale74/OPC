@@ -42,6 +42,7 @@ class IriuSegment extends StatefulWidget {
     required this.podesavanjaRepo,
     required this.enabled,
     required this.onNapomenaSave,
+    this.isNewPredmetCreationFlow = false,
     this.initialNapomena,
     this.initialFocusInterniNaziv,
   });
@@ -52,6 +53,7 @@ class IriuSegment extends StatefulWidget {
   final PodesavanjaRepository podesavanjaRepo;
   final bool enabled;
   final void Function(String) onNapomenaSave;
+  final bool isNewPredmetCreationFlow;
   final String? initialNapomena;
   final String? initialFocusInterniNaziv;
 
@@ -263,7 +265,20 @@ class _IriuSegmentState extends State<IriuSegment> {
     _stockConsequencesRepo = StanjeRobePoslediceRepository(widget.iriuRepo.db);
     _scenarioRepository = ScenarioModuleRepository(widget.iriuRepo.db);
     _napomenaCtrl = TextEditingController(text: widget.initialNapomena ?? '');
-    unawaited(_runScenarioSync(widget.predmetData));
+    unawaited(_reconcileOnOpen(widget.predmetData));
+  }
+
+  Future<void> _reconcileOnOpen(PredmetiData predmet) async {
+    if (widget.isNewPredmetCreationFlow) {
+      await _runScenarioSync(predmet, forceCurrentApplication: true);
+      return;
+    }
+    if (!await widget.iriuRepo.hasCompleteAppliedScenarioEvidence(
+      widget.predmetId,
+    )) {
+      return;
+    }
+    await _runScenarioSync(predmet);
   }
 
   @override
@@ -294,37 +309,34 @@ class _IriuSegmentState extends State<IriuSegment> {
         old.docekPosmrtnihOstataka != cur.docekPosmrtnihOstataka ||
         old.promenaSanduka != cur.promenaSanduka ||
         old.opelo != cur.opelo) {
-      unawaited(_runScenarioSync(cur));
+      unawaited(_runScenarioSync(cur, forceCurrentApplication: true));
     }
   }
 
-  Future<void> _runScenarioSync(PredmetiData predmet) async {
+  Future<void> _runScenarioSync(
+    PredmetiData predmet, {
+    bool forceCurrentApplication = false,
+  }) async {
     final module = await _scenarioRepository.ensureModuleAndDefaults();
     final scenarios = await _scenarioRepository.getActiveDefinitions();
-    var result = await widget.iriuRepo.syncScenarioRows(
+    final preview = await widget.iriuRepo.syncScenarioRows(
       predmetId: widget.predmetId,
       predmet: predmet,
       scenarios: scenarios,
       osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
       applyScenarioChange: false,
     );
-    if (!mounted || !result.changed) return;
-    if (result.scenarioSnapshotChanged) {
+    if (!mounted || (!preview.changed && !forceCurrentApplication)) return;
+    if (preview.scenarioSnapshotChanged) {
       final confirmed = await _confirmScenarioDiff(
         context,
-        result,
+        preview,
         predmet.brojPredmeta,
       );
       if (!mounted || confirmed != true) return;
-      result = await widget.iriuRepo.syncScenarioRows(
-        predmetId: widget.predmetId,
-        predmet: predmet,
-        scenarios: scenarios,
-        osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
-        applyScenarioChange: true,
-      );
     }
-    for (final row in result.pendingUserDecisionRows) {
+    final decisions = <int, bool>{};
+    for (final row in preview.pendingUserDecisionRows) {
       if (!mounted) return;
       final keep = await showDialog<bool>(
         context: context,
@@ -347,12 +359,17 @@ class _IriuSegmentState extends State<IriuSegment> {
           ],
         ),
       );
-      await widget.iriuRepo.resolveScenarioConditionChange(
-        predmetId: widget.predmetId,
-        row: row,
-        keepRow: keep ?? true,
-      );
+      if (!mounted || keep == null) return;
+      decisions[row.id] = keep;
     }
+    final result = await widget.iriuRepo.syncScenarioRows(
+      predmetId: widget.predmetId,
+      predmet: predmet,
+      scenarios: scenarios,
+      osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
+      applyScenarioChange: true,
+      conditionChangeDecisions: decisions,
+    );
     if (!mounted) return;
     final added = result.addedCategories.length;
     final removed = result.removedCategories.length;

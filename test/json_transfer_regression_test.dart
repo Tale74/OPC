@@ -7,6 +7,8 @@ import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/core/json_transfer/iriu_json_compat.dart';
 import 'package:opc_v4/core/json_transfer/predmet_json_transfer_core.dart';
 import 'package:opc_v4/core/utils/json_export_import.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import 'package:opc_v4/features/stanje_robe/data/stanje_robe_posledice_repository.dart';
@@ -1152,6 +1154,135 @@ void main() {
     });
 
     test(
+      'single-PREDMET JSON round-trip preserves known PARTIAL SCENARIO provenance',
+      () async {
+        final sourceDb = createTestDatabase();
+        final targetDb = createTestDatabase();
+        addTearDown(sourceDb.close);
+        addTearDown(targetDb.close);
+        final predmet = await _insertPredmet(
+          sourceDb,
+          brojPredmeta: 'SCENARIO-PARTIAL-001',
+          ime: 'Partial',
+          prezime: 'Carrier',
+        );
+        final knownId = await _insertIriu(
+          sourceDb,
+          predmetId: predmet.id,
+          stableId: 'scenario-partial-known',
+          interniNaziv: 'KNOWN_SCENARIO_ITEM',
+          nazivPrikaz: 'Poznata SCENARIO stavka',
+        );
+        await _insertIriu(
+          sourceDb,
+          predmetId: predmet.id,
+          stableId: 'scenario-partial-unknown',
+          interniNaziv: 'UNKNOWN_LEGACY_ITEM',
+          nazivPrikaz: 'Nepoznata istorijska stavka',
+        );
+        final snapshot = ScenarioAssignmentSnapshot.create(
+          moduleId: 'scenario',
+          scenarioId: 'partial-transfer-test',
+          scenarioVersion: 1,
+          scenario: const ScenarioDefinition(
+            id: 'partial-transfer-test',
+            name: 'Partial transfer test',
+            condition: ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.mestoSmrti,
+                operator: ScenarioCriterionOperator.equals,
+                values: ['STAN'],
+              ),
+            ),
+            consequences: [
+              ScenarioConsequence(
+                katalogCategoryInternalName: 'KNOWN_SCENARIO_ITEM',
+                action: ScenarioConsequenceAction.required,
+              ),
+            ],
+          ),
+          osnovniPaket: const {'OSNOVNI_PARTIAL_TEST'},
+          assignedAt: '2026-09-29T12:00:00.000Z',
+        );
+        await sourceDb
+            .into(sourceDb.predmetScenarioSnapshots)
+            .insert(
+              PredmetScenarioSnapshotsCompanion.insert(
+                predmetId: Value(predmet.id),
+                moduleId: snapshot.moduleId,
+                scenarioId: snapshot.scenarioId,
+                scenarioVersion: snapshot.scenarioVersion,
+                snapshotJson: jsonEncode(snapshot.toJsonMap()),
+                snapshotHash: snapshot.snapshotHash,
+                assignedAt: snapshot.assignedAt,
+              ),
+            );
+        await sourceDb
+            .into(sourceDb.iriuProvenance)
+            .insert(
+              IriuProvenanceCompanion.insert(
+                iriuId: Value(knownId),
+                origin: 'SCENARIO_PAKET',
+                moduleId: const Value('scenario'),
+                scenarioId: const Value('partial-transfer-test'),
+                scenarioVersion: const Value(1),
+                ruleId: const Value('KNOWN_SCENARIO_ITEM'),
+                createdAt: '2026-09-29T12:00:00.000Z',
+              ),
+            );
+
+        final exported =
+            jsonDecode(
+                  await serializePredmetJsonForTest(
+                    db: sourceDb,
+                    predmetId: predmet.id,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final carrier = PredmetJsonTransferCore.decode(
+          jsonEncode(exported),
+        ).scenarioCarrier!;
+        expect((carrier['payload'] as Map)['provenanceCoverage'], 'PARTIAL');
+        expect((carrier['payload'] as Map)['provenance'], hasLength(1));
+
+        await importPredmetJsonMapForTest(
+          db: targetDb,
+          json: exported,
+          localActorKorisnikId: await _ensureActiveActor(targetDb),
+        );
+        final importedPredmet =
+            await (targetDb.select(targetDb.predmeti)..where(
+                  (row) => row.brojPredmeta.equals('SCENARIO-PARTIAL-001'),
+                ))
+                .getSingle();
+        final importedRows = await (targetDb.select(
+          targetDb.iriu,
+        )..where((row) => row.predmetId.equals(importedPredmet.id))).get();
+        final importedKnown = importedRows.singleWhere(
+          (row) => row.interniNaziv == 'KNOWN_SCENARIO_ITEM',
+        );
+        final importedUnknown = importedRows.singleWhere(
+          (row) => row.interniNaziv == 'UNKNOWN_LEGACY_ITEM',
+        );
+        final restoredProvenance = await targetDb
+            .select(targetDb.iriuProvenance)
+            .get();
+        expect(restoredProvenance, hasLength(1));
+        expect(restoredProvenance.single.iriuId, importedKnown.id);
+        expect(restoredProvenance.single.scenarioId, 'partial-transfer-test');
+        expect(
+          restoredProvenance.any((row) => row.iriuId == importedUnknown.id),
+          isFalse,
+        );
+        final restoredSnapshot =
+            await (targetDb.select(targetDb.predmetScenarioSnapshots)
+                  ..where((row) => row.predmetId.equals(importedPredmet.id)))
+                .getSingle();
+        expect(restoredSnapshot.snapshotHash, snapshot.snapshotHash);
+      },
+    );
+
+    test(
       'full backup restore deduplicates citation rows and preserves snapshots',
       () async {
         final sourceDb = createTestDatabase();
@@ -1185,7 +1316,7 @@ void main() {
           brojPredmeta: 'RESTORE-CITULJE/2026',
           ime: 'Istorijski',
         );
-        await _insertIriu(
+        final scenarioIriuId = await _insertIriu(
           sourceDb,
           predmetId: predmet.id,
           stableId: 'restore-citulje-b',
@@ -1193,6 +1324,56 @@ void main() {
           nazivPrikaz: 'Stari snapshot naziv',
           iznos: 7777,
         );
+        final appliedScenario = ScenarioAssignmentSnapshot.create(
+          moduleId: 'scenario',
+          scenarioId: 'backup-round-trip',
+          scenarioVersion: 1,
+          scenario: const ScenarioDefinition(
+            id: 'backup-round-trip',
+            name: 'Backup round-trip scenario',
+            condition: ScenarioCondition.criterion(
+              ScenarioCriterion(
+                field: ScenarioCriterionField.mestoSmrti,
+                operator: ScenarioCriterionOperator.equals,
+                values: ['STAN'],
+              ),
+            ),
+            consequences: [
+              ScenarioConsequence(
+                katalogCategoryInternalName: 'CITULJA_POLITIKA',
+                action: ScenarioConsequenceAction.required,
+              ),
+            ],
+          ),
+          osnovniPaket: const {'OSNOVNI_TEST'},
+          assignedAt: '2026-09-29T12:00:00.000Z',
+        );
+        await sourceDb
+            .into(sourceDb.predmetScenarioSnapshots)
+            .insert(
+              PredmetScenarioSnapshotsCompanion.insert(
+                predmetId: Value(predmet.id),
+                moduleId: appliedScenario.moduleId,
+                scenarioId: appliedScenario.scenarioId,
+                scenarioVersion: appliedScenario.scenarioVersion,
+                snapshotJson: jsonEncode(appliedScenario.toJsonMap()),
+                snapshotHash: appliedScenario.snapshotHash,
+                assignedAt: appliedScenario.assignedAt,
+              ),
+            );
+        await sourceDb
+            .into(sourceDb.iriuProvenance)
+            .insert(
+              IriuProvenanceCompanion.insert(
+                iriuId: Value(scenarioIriuId),
+                origin: 'SCENARIO_PAKET',
+                moduleId: const Value('scenario'),
+                scenarioId: const Value('backup-round-trip'),
+                scenarioVersion: const Value(1),
+                ruleId: const Value('CITULJA_POLITIKA'),
+                createdAt: '2026-09-29T12:00:00.000Z',
+              ),
+            );
 
         final backup = await _backupJsonFromDb(sourceDb);
         expect(backup['schemaVersion'], 9);
@@ -1222,6 +1403,21 @@ void main() {
           restoredIriu.katalogStableArticleId,
           catalogRows.single.stableArticleId,
         );
+        final restoredSnapshot = await (targetDb.select(
+          targetDb.predmetScenarioSnapshots,
+        )..where((row) => row.predmetId.equals(predmet.id))).getSingle();
+        expect(restoredSnapshot.snapshotHash, appliedScenario.snapshotHash);
+        expect(
+          ScenarioAssignmentSnapshot.fromJsonMap(
+            jsonDecode(restoredSnapshot.snapshotJson) as Map<String, dynamic>,
+          ).scenarioId,
+          'backup-round-trip',
+        );
+        final restoredProvenance = await (targetDb.select(
+          targetDb.iriuProvenance,
+        )..where((row) => row.iriuId.equals(restoredIriu.id))).getSingle();
+        expect(restoredProvenance.origin, 'SCENARIO_PAKET');
+        expect(restoredProvenance.scenarioId, 'backup-round-trip');
         expect(
           (await targetDb.customSelect('PRAGMA integrity_check').getSingle())
               .read<String>('integrity_check'),

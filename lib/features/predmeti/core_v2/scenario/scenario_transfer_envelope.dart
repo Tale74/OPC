@@ -6,20 +6,22 @@ import 'scenario_persistence_contract.dart';
 
 /// Version of the transport framing, distinct from the embedded schema-1
 /// [ScenarioAssignmentSnapshot].
-const int scenarioTransferEnvelopeVersion = 1;
+const int scenarioTransferEnvelopeVersion = 2;
+const int _legacyScenarioTransferEnvelopeVersion = 1;
 
 const String scenarioTransferEnvelopeKind = 'OPC_SCENARIO_TRANSFER';
 const String scenarioTransferEnvelopeHashAlgorithm = 'SHA-256';
 const String scenarioTransferEnvelopeHashScope = 'PAYLOAD_CANONICAL_JSON';
 
-enum ScenarioIriuProvenanceCoverage { unavailable, complete }
+enum ScenarioIriuProvenanceCoverage { unavailable, partial, complete }
 
-extension ScenarioIriuProvenanceCoverageWire
-    on ScenarioIriuProvenanceCoverage {
+extension ScenarioIriuProvenanceCoverageWire on ScenarioIriuProvenanceCoverage {
   String get wireName {
     switch (this) {
       case ScenarioIriuProvenanceCoverage.unavailable:
         return 'UNAVAILABLE';
+      case ScenarioIriuProvenanceCoverage.partial:
+        return 'PARTIAL';
       case ScenarioIriuProvenanceCoverage.complete:
         return 'COMPLETE';
     }
@@ -31,6 +33,8 @@ extension ScenarioIriuProvenanceCoverageWire
         return ScenarioIriuProvenanceCoverage.unavailable;
       case 'COMPLETE':
         return ScenarioIriuProvenanceCoverage.complete;
+      case 'PARTIAL':
+        return ScenarioIriuProvenanceCoverage.partial;
       default:
         throw ScenarioTransferEnvelopeValidationException(
           'Unknown provenance coverage: $value.',
@@ -74,11 +78,13 @@ class ScenarioTransferEnvelope {
         'UNAVAILABLE provenance coverage must not contain provenance rows.',
       );
     }
-    final payload = _payloadMap(
-      assignment,
-      provenanceCoverage,
-      sorted,
-    );
+    if (provenanceCoverage == ScenarioIriuProvenanceCoverage.partial &&
+        sorted.isEmpty) {
+      throw const ScenarioTransferEnvelopeValidationException(
+        'PARTIAL provenance coverage must contain known provenance rows.',
+      );
+    }
+    final payload = _payloadMap(assignment, provenanceCoverage, sorted);
     return ScenarioTransferEnvelope._(
       assignment: assignment,
       provenanceCoverage: provenanceCoverage,
@@ -102,7 +108,9 @@ class ScenarioTransferEnvelope {
         'Unsupported scenario transfer envelope kind.',
       );
     }
-    if (input['envelopeVersion'] != scenarioTransferEnvelopeVersion) {
+    final version = input['envelopeVersion'];
+    if (version != scenarioTransferEnvelopeVersion &&
+        version != _legacyScenarioTransferEnvelopeVersion) {
       throw const ScenarioTransferEnvelopeValidationException(
         'Unsupported scenario transfer envelope version.',
       );
@@ -125,6 +133,12 @@ class ScenarioTransferEnvelope {
     final coverage = ScenarioIriuProvenanceCoverageWire.fromWireName(
       _requiredText(payload, 'provenanceCoverage'),
     );
+    if (version == _legacyScenarioTransferEnvelopeVersion &&
+        coverage == ScenarioIriuProvenanceCoverage.partial) {
+      throw const ScenarioTransferEnvelopeValidationException(
+        'PARTIAL provenance coverage requires envelope version 2.',
+      );
+    }
     final provenanceMaps = _requiredMapList(payload, 'provenance');
     final provenance = provenanceMaps
         .map(ScenarioIriuProvenance.fromJsonMap)
@@ -233,9 +247,8 @@ class ScenarioTransferEnvelopeValidationException implements Exception {
   String toString() => 'ScenarioTransferEnvelopeValidationException: $message';
 }
 
-String _hashPayload(Map<String, dynamic> payload) => sha256
-    .convert(utf8.encode(jsonEncode(_canonicalize(payload))))
-    .toString();
+String _hashPayload(Map<String, dynamic> payload) =>
+    sha256.convert(utf8.encode(jsonEncode(_canonicalize(payload)))).toString();
 
 Object? _canonicalize(Object? value) {
   if (value is Map) {

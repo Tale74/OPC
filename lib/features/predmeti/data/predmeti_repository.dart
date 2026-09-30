@@ -289,43 +289,54 @@ class PredmetiRepository {
     final katalogByInternalName = {
       for (final row in katalog) row.interniNaziv: row,
     };
-    // KATALOG only describes categories.  The SCENARIO module is the single
+    // KATALOG only describes categories. The SCENARIO module is the single
     // source of truth for the basic package; the legacy catalog boolean is
     // intentionally inert (kept in the schema for compatibility).
     final scenarioRepository = ScenarioModuleRepository(_db);
     final module = await scenarioRepository.ensureModuleAndDefaults();
     final osnovniPaket = scenarioRepository.readOsnovniPaket(module);
-    final inicijalneStavke = <({String interniNaziv, String? nazivPrikaz})>[
-      for (final interniNaziv in osnovniPaket)
-        (interniNaziv: interniNaziv, nazivPrikaz: null),
-    ];
-    final materializedInternalNames = <String>{};
-    int red = 0;
-    for (final stavka in inicijalneStavke) {
-      if (!materializedInternalNames.add(stavka.interniNaziv)) continue;
-      final katalogRow = katalogByInternalName[stavka.interniNaziv];
-      if (katalogRow == null) continue;
-      await _db
-          .into(_db.iriu)
-          .insert(
-            IriuCompanion(
-              predmetId: Value(predmetId),
-              portableOccurrenceId: Value(
-                generateIriuOccurrencePortableId(),
+    await _db.transaction(() async {
+      final materializedInternalNames = <String>{};
+      var red = 0;
+      for (final interniNaziv in osnovniPaket) {
+        if (!materializedInternalNames.add(interniNaziv)) continue;
+        final katalogRow = katalogByInternalName[interniNaziv];
+        if (katalogRow == null) continue;
+        final iRiuId = await _db
+            .into(_db.iriu)
+            .insert(
+              IriuCompanion(
+                predmetId: Value(predmetId),
+                portableOccurrenceId: Value(
+                  generateIriuOccurrencePortableId(),
+                ),
+                interniNaziv: Value(interniNaziv),
+                nazivPrikaz: Value(katalogRow.nazivPrikaz),
+                kom: const Value('1'),
+                // OSNOVNI PAKET is materialized before the SCENARIO
+                // reconciliation pass. Carry the fixed KATALOG price at
+                // this boundary so the persisted IRiU row has the same
+                // price/amount semantics as a scenario-added row.
+                cena: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
+                iznos: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
+                redosled: Value(red++),
               ),
-              interniNaziv: Value(stavka.interniNaziv),
-              nazivPrikaz: Value(stavka.nazivPrikaz ?? katalogRow.nazivPrikaz),
-              kom: const Value('1'),
-              // OSNOVNI PAKET is materialized before the SCENARIO
-              // reconciliation pass.  Carry the fixed KATALOG price at
-              // this boundary so the persisted IRiU row has the same
-              // price/amount semantics as a scenario-added row.
-              cena: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
-              iznos: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
-              redosled: Value(red++),
-            ),
-          );
-    }
+            );
+        // This row was created here, for this new PREDMET, from the basic
+        // package. Record that proven origin at creation; never infer it later
+        // from a category match against current configuration.
+        await _db
+            .into(_db.iriuProvenance)
+            .insert(
+              IriuProvenanceCompanion.insert(
+                iriuId: Value(iRiuId),
+                origin: 'OSNOVNI_PAKET',
+                moduleId: const Value('scenario'),
+                createdAt: DateTime.now().toUtc().toIso8601String(),
+              ),
+            );
+      }
+    });
   }
 
   Future<void> obrisiPredmet(int id) => _db.transaction(() async {
