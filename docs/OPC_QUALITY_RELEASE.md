@@ -75,6 +75,20 @@ capture controls in [`OPC_DEVELOPMENT.md`](OPC_DEVELOPMENT.md#computer-use-runti
 
 Owner runtime evidence is authority for observed end-product behavior, not automatic proof of internal root cause. Windows and Android acceptance are not interchangeable.
 
+**REFUNDACIJA PIO text-only correction — formally closed (2026-10-01).** The
+accepted instruction is “Unesite iznos naknade pogrebnih troškova preko
+Republičkog fonda za penzijsko i invalidsko osiguranje (PIO fond) za tekući
+period.” The old explanatory block is removed; amount input, formatting,
+SAČUVAJ, persistence, eligibility and FINANSIJE behavior are unchanged.
+Evidence: focused test `6 passed / 0 failed`; analyzer PASS; full suite
+`602 passed / 9 skipped / 0 failed`; Windows release build PASS; Android
+production APK build PASS (debug-signing configuration, not store-signed). The
+APK SHA-256 is
+`AD43E7114BF65A4C22B69D6FB68F2BEF91A355B8370ABF9ADC06BDA7A14BBC6`. Logos
+independent review and OWNER runtime acceptance are PASS. Product QA was not
+rerun for this documentation-only closure. See
+[`OPC_TASK_REFUNDACIJA_PIO_TEXT_CORRECTION_CLOSURE_REPORT.md`](tasks/OPC_TASK_REFUNDACIJA_PIO_TEXT_CORRECTION_CLOSURE_REPORT.md).
+
 ### 5A. Android structural-acceptance lane
 
 Release/runtime evidence remains PRODUCTION-specific. For shared database invariants, `ANDROID_TEST` is the dedicated synthetic, disposable and intentionally inspectable physical acceptance lane: its `opc_v4_android_test` database may be copied read-only through the debuggable test package for schema, integrity, referential-cleanup, replacement and backup/restore evidence. This lane does not relax PRODUCTION protection and must contain no owner production data, credentials, backups or private exports. ANDROID_TEST evidence is authoritative only for invariants whose implementation equivalence with PRODUCTION has been explicitly proven.

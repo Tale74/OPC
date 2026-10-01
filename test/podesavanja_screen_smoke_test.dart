@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
@@ -10,6 +10,58 @@ import 'package:opc_v4/features/podesavanja/presentation/podesavanja_screen.dart
 import 'test_bootstrap.dart';
 
 void main() {
+  testWidgets(
+    'REFUNDACIJA PIO shows the approved instruction and input actions',
+    (tester) async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+
+      final authRepo = AuthRepository(db);
+      final session = SessionService();
+      final admin = await authRepo.kreirajPrvogAdmina(
+        imePrezime: 'Test Administrator',
+        pin: '1234',
+      );
+      session.prijavi(admin);
+
+      await tester.pumpWidget(
+        wrapForTest(
+          PodesavanjaScreen(
+            repo: PodesavanjaRepository(db),
+            authRepo: authRepo,
+            session: session,
+            initialSection: OpcSettingsSection.refundacijaPio,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      const instruction =
+          'Unesite iznos naknade pogrebnih troškova preko Republičkog fonda '
+          'za penzijsko i invalidsko osiguranje (PIO fond) za tekući period.';
+      expect(find.text(instruction), findsOneWidget);
+      expect(tester.widget<Text>(find.text(instruction)).textSpan, isNull);
+      expect(
+        find.text('Pravo na refundaciju ostvaruje se pod sledećim uslovima:'),
+        findsNothing,
+      );
+      expect(find.text('Preminuli je penzioner'), findsNothing);
+      expect(find.text('REFUNDACIJA U KORIST FIRME'), findsNothing);
+      expect(find.textContaining('Iznos refundacije oduzima se'), findsNothing);
+      expect(
+        find.textContaining('Naručilac opreme i usluga je fizičko lice'),
+        findsNothing,
+      );
+      expect(find.textContaining('PENZIONER = DA'), findsNothing);
+      expect(find.textContaining('PLATILAC REFUNDIRA = NE'), findsNothing);
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.text('IZNOS REFUNDACIJE PIO (RSD)'), findsOneWidget);
+      expect(find.text('RSD'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'SAČUVAJ'), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+    },
+  );
+
   testWidgets('podesavanja screen can open directly on korisnici section', (
     tester,
   ) async {

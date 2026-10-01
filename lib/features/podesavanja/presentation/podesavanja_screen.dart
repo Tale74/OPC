@@ -1270,43 +1270,10 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Pravo na refundaciju ostvaruje se pod sledećim uslovima:',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const _InfoRed(
-                      ikona: Icons.check_circle_outline,
-                      tekst:
-                          'Preminuli je penzioner Republike Srbije (PENZIONER R. SRBIJE = DA)',
-                    ),
-                    const SizedBox(height: 8),
-                    const _InfoRed(
-                      ikona: Icons.check_circle_outline,
-                      tekst: 'Naručilac opreme i usluga je fizičko lice',
-                    ),
-                    const SizedBox(height: 8),
-                    const _InfoRed(
-                      ikona: Icons.check_circle_outline,
-                      tekst:
-                          'Platilac ne refundira samostalno (PLATILAC REFUNDIRA = NE)',
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Iznos refundacije oduzima se od ukupnog iznosa robe i usluga '
-                      'pri obračunu u segmentu FINANSIJE.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Unesite iznos naknade pogrebnih troškova preko Republičkog fonda '
+                  'za penzijsko i invalidsko osiguranje (PIO fond) za tekući period.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
             ],

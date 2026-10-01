@@ -7,6 +7,18 @@
 
 **Reconciled:** 2026-09-26
 
+## REFUNDACIJA PIO text correction — formally closed — 2026-10-01
+
+The separate PODEŠAVANJA → REFUNDACIJA PIO text-only correction is formally
+closed. Its accepted instruction is “Unesite iznos naknade pogrebnih troškova
+preko Republičkog fonda za penzijsko i invalidsko osiguranje (PIO fond) za
+tekući period.” The old explanatory checklist was removed; amount entry,
+formatting, save/persistence, eligibility predicates and FINANSIJE behavior
+remain unchanged. Focused UI tests, analyzer, full suite and Windows/Android
+release builds pass. Logos independent review and OWNER runtime acceptance are
+PASS. The closure record is
+[`OPC_TASK_REFUNDACIJA_PIO_TEXT_CORRECTION_CLOSURE_REPORT.md`](tasks/OPC_TASK_REFUNDACIJA_PIO_TEXT_CORRECTION_CLOSURE_REPORT.md).
+
 ## Editing integrity closure — 2026-09-26
 
 The bounded `UX-IRIU-001` CVEĆE ribbon edit-permission correction and
