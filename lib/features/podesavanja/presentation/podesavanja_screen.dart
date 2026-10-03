@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -1410,7 +1411,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Podaci sa ove strane koriste se za prikaz uputstva za plaćanje i za zaključani NBS IPS QR config model.',
+                'Ovi podaci se koriste u uputstvu za plaćanje i NBS IPS QR kodu.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 24),
@@ -1487,7 +1488,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Za NBS IPS QR engine ovde se čuva samo config sloj. QR naziv primaoca se preuzima iz naziva firme, svrha plaćanja je zaključana na "Transakcija po nalogu", a poziv na broj koristi PREMINULO LICE. Dinamički ulaz dolazi kasnije iz konkretnog predmeta kao iznos za naplatu. RO se u ovom modelu za sada ne koristi.',
+                  'QR kod koristi naziv firme kao primaoca i svrhu „Transakcija po nalogu“. Poziv na broj koristi ime i prezime preminulog, a iznos se preuzima iz konkretnog predmeta. Polje RO se ne koristi.',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -1596,9 +1597,10 @@ class _OAplikacijiTab extends StatelessWidget {
                 tekst: 'Republika Srbija',
               ),
               const SizedBox(height: 8),
-              const _InfoRed(
+              _InfoRed(
                 ikona: Icons.code_outlined,
-                tekst: 'Flutter / Dart — Windows desktop',
+                tekst:
+                    'Platforma: ${defaultTargetPlatform == TargetPlatform.android ? 'Android' : 'Windows desktop'}',
               ),
               const SizedBox(height: 24),
               const Divider(),

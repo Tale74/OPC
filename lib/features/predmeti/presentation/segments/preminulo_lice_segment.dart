@@ -114,7 +114,7 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
   bool _devojackoNeedsAttention = false;
 
   static const _radniStatusOpcije = [
-    ('PENZIONER_SRBIJE', 'Penzioner Republike Srbije'),
+    ('PENZIONER_SRBIJE', 'Penzioner'),
     ('VOJNI_PENZIONER', 'Vojni penzioner'),
     ('INOSTRANI_PENZIONER', 'Inostrani penzioner'),
     ('U_RADNOM_ODNOSU', 'U radnom odnosu'),

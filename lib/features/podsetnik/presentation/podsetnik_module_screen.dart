@@ -69,9 +69,7 @@ class _PodsetnikModuleScreenState extends State<PodsetnikModuleScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Podešavanja podsetnika koriste činjenice iz PREDMETA i '
-                'CEREMONIJE. Datum, vreme i mesto ceremonije menjaju se u '
-                'PREDMETU; ovde se podešava obaveštavanje.',
+                'Datum, vreme i mesto ceremonije menjate u PREDMETU; podsetnike podešavate ovde.',
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<int>(

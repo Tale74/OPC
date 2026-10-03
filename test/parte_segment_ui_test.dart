@@ -45,7 +45,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('MODUL PARTE'), findsOneWidget);
+    expect(find.textContaining('modulu PARTE'), findsOneWidget);
     expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsNothing);
     expect(find.text('Sintetički ožalošćeni'), findsOneWidget);
   });
@@ -59,7 +59,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsNothing);
-    expect(find.textContaining('MODUL PARTE'), findsOneWidget);
+    expect(find.textContaining('modulu PARTE'), findsOneWidget);
     expect(find.text('PREVIEW PARTE'), findsNothing);
     expect(find.textContaining('WYSIWYG preview'), findsNothing);
     expect(find.byIcon(Icons.preview_outlined), findsNothing);
@@ -82,7 +82,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('OTVORI PRIPREMU ZA ŠTAMPU'), findsNothing);
-    expect(find.textContaining('MODUL PARTE'), findsOneWidget);
+    expect(find.textContaining('modulu PARTE'), findsOneWidget);
     expect(find.textContaining('WYSIWYG preview'), findsNothing);
     expect(find.byIcon(Icons.preview_outlined), findsNothing);
     expect(tester.takeException(), equals(null));

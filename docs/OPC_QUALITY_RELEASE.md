@@ -208,6 +208,40 @@ in the signature-labels cell without the required trailing paragraph;
 `_requiredTrailingParagraph()` is the minimal correction. This acceptance is
 bounded to the RAČUN/DOCX package and does not broaden to unrelated documents.
 
+### 5G. Android UX Direction 2 residual runtime and formal closure — 2026-10-03
+
+`ANDROID UX DIRECTION 2 — MICROCOPY / LITERAL CLEANUP — FORMALLY CLOSED`.
+The residuals are R-1 PASS, R-2 PASS, R-3 PASS and A-13 PASS, within the
+specific criteria and evidence recorded in the closure report. The original
+R-1 runtime observation established absence of the raw PIO predicates on the
+then-tested surface; that surface was later superseded by the separately
+approved PIO text correction. The current PIO state is supported by its own
+tests, Logos PASS and OWNER runtime PASS. The R-1 screenshot is not represented
+as a capture of the later PIO text. R-2 covers the PREDMET/CEREMONIJA label;
+R-3 covers the LISTA PDF label and retained destination values; A-13 covers the
+protected-category dialog and its cancel/deactivate choices.
+
+The recorded residual-runtime captures are Windows desktop evidence. They do
+not establish physical Android-device runtime or general release readiness.
+Original Direction 2 QA was 16 focused tests PASS, analyzer PASS, full suite
+593 passed / 10 skipped / 0 failed, and Windows/Android production release
+builds PASS. Later PIO-candidate QA on the evolved worktree was 602 passed / 9
+skipped / 0 failed, analyzer PASS and Windows/Android release builds PASS; it
+is supplementary evidence, not a replacement claim about the original D2 QA
+run. No product QA was rerun for this documentation-only formal closure.
+
+The SCENARIO inconsistency recorded during the earlier D2 runtime work was
+subsequently split into a separate historical-integrity task, corrected,
+reviewed by Logos (PASS), accepted at OWNER runtime (PASS), and formally
+closed by commit `c6cafa3a3172eb911ef3002a0533632e315d4f7d`. It is historical
+context, not an open Direction 2 finding. The separate continuity item remains
+`PREVIOUS PENDING FINDING — NOT IDENTIFIABLE FROM CURRENT AUTHORITY`; its
+identity is not guessed or merged with SCENARIO or UX-PARTE. `UX-PARTE-001`
+remains `OPEN / NOT TESTED / ROOT CAUSE NOT PROVEN`; `UX-PARTE-002` remains a
+separate hierarchy/density concern and `UX-PARTE-003` remains closed. Direction
+2 closure makes no broader UX-program or release-readiness claim.
+
+
 ## 6. Backup, restore and interoperability
 
 Single-PREDMET transfer and full-backup JSON remain distinct. Release acceptance must cover:

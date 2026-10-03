@@ -337,7 +337,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
                           const _SectionHeading(
                             title: 'Pregled perioda',
                             subtitle:
-                                'Prikaz je samo za čitanje i zasnovan isključivo na predmetima čiji datum kreiranja upada u izabrani period.',
+                                'Prikaz obuhvata predmete kreirane u izabranom periodu.',
                           ),
                           const SizedBox(height: 12),
                           _SummaryCard(
@@ -351,7 +351,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
                           const _SectionHeading(
                             title: 'Savetnici',
                             subtitle:
-                                'Presek prikazuje broj predmeta, zbir IRIU vrednosti po predmetima i prose?nu IRIU vrednost po predmetu.',
+                                'Za svakog savetnika prikazani su broj predmeta, ukupna i prosečna vrednost robe i usluga.',
                           ),
                           const SizedBox(height: 12),
                           _BreakdownSection(
@@ -366,7 +366,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
                           const _SectionHeading(
                             title: 'Ceremonija',
                             subtitle:
-                                'Prikaz je podeljen na vrstu ceremonije i mesto ceremonije za isti izabrani period.',
+                                'Za izabrani period prikazani su vrsta i mesto ceremonije.',
                           ),
                           const SizedBox(height: 12),
                           _BreakdownSection(
@@ -387,7 +387,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
                           const _SectionHeading(
                             title: 'Mesto smrti',
                             subtitle:
-                                'Presek je vezan za isti posmatrani period i ne uvodi dodatne filtere niti posebnu logiku.',
+                                'Podaci obuhvataju predmete kreirane u izabranom periodu.',
                           ),
                           const SizedBox(height: 12),
                           _BreakdownSection(
@@ -402,7 +402,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
                           const _SectionHeading(
                             title: 'Top 10 artikala',
                             subtitle:
-                                'Top lista prikazuje pojedinačne artikle unutar svake kataloške kategorije. Artikal se računa jednom po predmetu, bez uticaja kolone KOM.',
+                                'Artikli su grupisani po kategorijama i broje se jednom po predmetu, bez obzira na količinu.',
                           ),
                           const SizedBox(height: 12),
                           _TopArtikliSection(
@@ -557,7 +557,7 @@ class _FilterCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Sav prikaz ispod koristi datum kreiranja predmeta kao jedini vremenski filter.',
+              'Period obuhvata predmete prema datumu kreiranja.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -678,13 +678,13 @@ class _SummaryCard extends StatelessWidget {
             ),
             const Divider(height: 24),
             _MetricTile(
-              label: 'Ukupan zbir IRIU vrednosti',
+              label: 'Ukupna vrednost robe i usluga',
               value: formatMoney(summary.ukupnaIriuVrednost),
               emphasize: true,
             ),
             const Divider(height: 24),
             _MetricTile(
-              label: 'Prosečna IRIU vrednost po predmetu',
+              label: 'Prosečna vrednost po predmetu',
               value: formatMoney(summary.prosecnaIriuVrednostPoPredmetu),
             ),
           ],
@@ -800,7 +800,7 @@ class _BreakdownSection extends StatelessWidget {
                               value: row.brojPredmeta.toString(),
                             ),
                             _InlineMetric(
-                              label: 'Zbir IRIU',
+                              label: 'Vrednost robe i usluga',
                               value: formatMoney(row.ukupnaIriuVrednost),
                             ),
                             _InlineMetric(

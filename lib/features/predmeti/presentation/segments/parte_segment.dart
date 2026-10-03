@@ -367,7 +367,7 @@ class _ParteSegmentState extends State<ParteSegment> {
                 const _ParteInfoCard(
                   icon: Icons.dashboard_customize_outlined,
                   text:
-                      'Poslovni podaci su sačuvani. Tehnička priprema se pokreće kroz MODUL PARTE.',
+                      'Poslovni podaci su sačuvani. Pripremu nastavite u modulu PARTE.',
                 ),
               const SizedBox(height: 16),
               // ── Simbol ────────────────────────────────────────────────────

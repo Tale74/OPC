@@ -16,6 +16,13 @@ import 'package:opc_v4/features/predmeti/presentation/lista_predmeta_screen.dart
 import 'test_bootstrap.dart';
 
 void main() {
+  test('past-day labels use the OWNER-approved singular rule', () {
+    expect(formatRelativePastDayLabel(1), 'Pre 1 dan');
+    for (final days in [2, 3, 4, 5, 11, 21, 22]) {
+      expect(formatRelativePastDayLabel(days), 'Pre $days dana');
+    }
+  });
+
   testWidgets('lista predmeta screen opens with stable actions', (
     tester,
   ) async {

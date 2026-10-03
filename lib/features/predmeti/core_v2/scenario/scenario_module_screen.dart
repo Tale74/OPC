@@ -558,7 +558,7 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                               title: 'OTVORENI PREDMETI',
                               subtitle: openPredmeti.isEmpty
                                   ? 'Nema otvorenih PREDMETA'
-                                  : '${openPredmeti.length} otvorenih PREDMETA',
+                                  : 'Broj otvorenih predmeta: ${openPredmeti.length}',
                               icon: Icons.folder_open_outlined,
                               actionLabel: 'OTVORI',
                               onPressed: () =>
@@ -1382,7 +1382,7 @@ class _ScenarioPolicyTreeState extends State<_ScenarioPolicyTree> {
                         ),
                         _businessFilter(
                           fieldWidth,
-                          'SAHRANA VAN SRBIJE',
+                          'SAHRANA U INOSTRANSTVU',
                           _international ? 'DA' : 'NE',
                           const ['NE', 'DA'],
                           (value) => setState(() {
@@ -2046,7 +2046,7 @@ String _criterionFieldLabel(ScenarioCriterionField field) => switch (field) {
   ScenarioCriterionField.tipGroblja => 'TIP GROBLJA',
   ScenarioCriterionField.grobnoMesto => 'GROBNO MESTO',
   ScenarioCriterionField.tipGrobnogMesta => 'TIP GROBNOG MESTA',
-  ScenarioCriterionField.sahranaVanSrbije => 'SAHRANA VAN SRBIJE',
+  ScenarioCriterionField.sahranaVanSrbije => 'SAHRANA U INOSTRANSTVU',
   ScenarioCriterionField.docekPosmrtnihOstataka => 'DOČEK POSMRTNIH OSTATAKA',
   ScenarioCriterionField.opelo => 'OPELO',
 };

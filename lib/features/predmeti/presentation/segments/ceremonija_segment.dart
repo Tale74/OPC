@@ -1043,7 +1043,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
               const SizedBox(height: 8),
 
               _decisionTile(
-                title: 'Sahrana van Srbije',
+                title: 'Sahrana u inostranstvu',
                 value: _sahranaVanSrbije,
                 enabled: e,
                 onChanged: (v) {

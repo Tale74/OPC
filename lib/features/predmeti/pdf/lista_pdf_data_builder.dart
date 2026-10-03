@@ -408,7 +408,7 @@ ListaPdfSectionData _buildPreminuloSection(PredmetiData predmet) {
       predmet.bracniDrugDevojacko,
     ),
     if (predmet.penzionerSrbije == 'DA')
-      const ListaPdfLabelValue('Penzioner Srbije', 'DA'),
+      const ListaPdfLabelValue('Penzioner', 'DA'),
     if (predmet.vojniPenzioner == 'DA')
       const ListaPdfLabelValue('Vojni penzioner', 'DA'),
     if (predmet.vojnePocasti == 'DA')
@@ -514,7 +514,7 @@ ListaPdfSectionData _buildCeremonySection(PredmetiData predmet) {
     if (mozeOpelo && predmet.opelo != 'DA')
       ListaPdfLabelValue('Vreme ispraćaja', predmet.vremeIspracaja),
     if (predmet.sahranaVanSrbije) ...[
-      const ListaPdfLabelValue('Sahrana van Srbije', 'DA'),
+      const ListaPdfLabelValue('Sahrana u inostranstvu', 'DA'),
       ListaPdfLabelValue('Zemlja', predmet.svisZemlja),
       ListaPdfLabelValue('Grad', predmet.svisGrad),
     ],

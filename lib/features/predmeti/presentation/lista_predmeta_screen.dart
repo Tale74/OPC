@@ -1983,7 +1983,7 @@ class _TerminBadge extends StatelessWidget {
 
     if (razlika < 0) {
       color = Colors.grey;
-      label = 'PRE ${-razlika}d';
+      label = formatRelativePastDayLabel(-razlika);
     } else if (razlika == 0) {
       color = Colors.red;
       label = 'DANAS';
@@ -2016,6 +2016,10 @@ class _TerminBadge extends StatelessWidget {
     );
   }
 }
+
+@visibleForTesting
+String formatRelativePastDayLabel(int daysAgo) =>
+    daysAgo == 1 ? 'Pre 1 dan' : 'Pre $daysAgo dana';
 
 class _StockWarningBadge extends StatelessWidget {
   const _StockWarningBadge();

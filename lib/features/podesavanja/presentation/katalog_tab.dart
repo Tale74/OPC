@@ -205,7 +205,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
     final opis = ideNaBrisanje
         ? 'Kategorija nije korišćena i može biti fizički obrisana.'
         : status.uScenariju
-        ? 'Kategorija se ne može obrisati jer je koristi jedan ili više SCENARIO-a. Biće deaktivirana i sakrivena iz aktivnog kataloga.'
+        ? 'Kategorija se koristi u postojećem paketu. Ne može se obrisati, ali će biti deaktivirana i sakrivena iz kataloga.'
         : 'Kategorija je korišćena ili povezana, pa će biti bezbedno deaktivirana i sakrivena iz aktivnog kataloga.';
 
     final ok = await showDialog<bool>(
@@ -232,10 +232,10 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                 ),
               if (status.uOsnovnomPaketu)
                 const Text(
-                  'Kategorija je deo OSNOVNOG PAKETA u SCENARIO modulu.',
+                  'Kategorija se koristi u osnovnom paketu.',
                 ),
               if (status.uScenariju)
-                const Text('Kategorija je zaštićena jer je koristi SCENARIO.'),
+                const Text('Kategorija se koristi u postojećem paketu i ne može se obrisati.'),
             ],
           ],
         ),

@@ -207,7 +207,7 @@ class PartePdfRenderer {
                   '${plan.printableZoneWidthMm.toStringAsFixed(1)} × '
                   '${plan.printableZoneHeightMm.toStringAsFixed(1)} mm.\n'
                   'Narandžasta: zona štampe. Crvena: sigurna površina. Plava: poznata mera.\n'
-                  'Štampati isključivo uz Actual size / 100%. Ne koristiti Fit, Shrink ili Scale to page.\n'
+                  'Štampati u stvarnoj veličini (Actual size / 100%). Ne koristiti Fit, Shrink ni Scale to page.\n'
                   'Izmerite odstupanje preseka osa od centra obrasca: horizontalno (- levo / + desno) i vertikalno (- gore / + dole).',
                   style: pw.TextStyle(font: regular, fontSize: 9),
                 ),

@@ -75,6 +75,58 @@ void main() {
     },
   );
 
+  test('LISTA PDF labels international burial country-neutrally', () async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final id = await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('LISTA-INT-01'),
+            sahranaVanSrbije: const Value(true),
+            svisZemlja: const Value('CRNA GORA'),
+            svisGrad: const Value('BAR'),
+          ),
+        );
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((row) => row.id.equals(id))).getSingle();
+    final prepared = const ListaPdfDataBuilder().build(
+      predmet: predmet,
+      iriuStavke: const [],
+      firma: await db.select(db.firmaPodaci).getSingle(),
+      app: await db.select(db.appPodesavanja).getSingle(),
+      savetnik: null,
+    );
+    final ceremonyRows = prepared.ceremonySection.columns.expand(
+      (column) => column,
+    );
+
+    final internationalBurial = ceremonyRows.singleWhere(
+      (row) => row.label == 'Sahrana u inostranstvu',
+    );
+    expect(internationalBurial.value, 'DA');
+    expect(
+      ceremonyRows.any((row) => row.label == 'Sahrana van Srbije'),
+      isFalse,
+    );
+    expect(
+      ceremonyRows
+          .singleWhere((row) => row.label == 'Zemlja')
+          .value,
+      'CRNA GORA',
+    );
+    expect(
+      ceremonyRows.singleWhere((row) => row.label == 'Grad').value,
+      'BAR',
+    );
+
+    final pdfBytes = await buildListaPdfBytesForTesting(
+      preparedData: prepared,
+    );
+    expect(latin1.decode(pdfBytes, allowInvalid: true), startsWith('%PDF-'));
+  });
+
   test(
     'LISTA carries every non-empty ribbon text with its flower row',
     () async {

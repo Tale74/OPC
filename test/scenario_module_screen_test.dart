@@ -174,7 +174,7 @@ void main() {
           .isEmpty) {
         await tester.pump(const Duration(milliseconds: 100));
       }
-      while (find.text('1 otvorenih PREDMETA').evaluate().isEmpty) {
+      while (find.text('Broj otvorenih predmeta: 1').evaluate().isEmpty) {
         await tester.pump(const Duration(milliseconds: 100));
       }
       await tester.tap(

@@ -164,6 +164,7 @@ void main() {
       find.byKey(const Key('parte-preview-technical-guide')),
       findsOneWidget,
     );
+    expect(find.textContaining('stvarnoj veličini'), findsOneWidget);
     expect(find.textContaining('Actual size / 100%'), findsOneWidget);
     expect(find.textContaining('ne ulaze u PDF ni DOCX'), findsOneWidget);
     final preview = tester.widget<PartePlanPreview>(

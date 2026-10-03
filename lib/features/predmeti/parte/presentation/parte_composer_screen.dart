@@ -727,7 +727,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     if (!mounted) return;
     prikaziPdfExportSuccessSnackBar(
       context,
-      poruka: 'Kalibracioni PDF je sačuvan. Štampajte uz Actual size / 100%.',
+      poruka:
+          'Kalibracioni PDF je sačuvan. Štampajte u stvarnoj veličini (Actual size / 100%).',
       fajl: result.file,
     );
     setState(() => _busy = false);
@@ -1709,7 +1710,7 @@ class _PartePreviewTechnicalGuide extends StatelessWidget {
               style: textTheme.bodySmall,
             ),
             Text(
-              'Štampajte uz Actual size / 100% – bez Fit, Shrink ili Scale to page.',
+              'Štampajte u stvarnoj veličini (Actual size / 100%). Ne koristite Fit, Shrink ni Scale to page.',
               style: textTheme.bodySmall,
             ),
           ],

@@ -19,6 +19,39 @@ release builds pass. Logos independent review and OWNER runtime acceptance are
 PASS. The closure record is
 [`OPC_TASK_REFUNDACIJA_PIO_TEXT_CORRECTION_CLOSURE_REPORT.md`](tasks/OPC_TASK_REFUNDACIJA_PIO_TEXT_CORRECTION_CLOSURE_REPORT.md).
 
+## Android UX Direction 2 — formal closure — 2026-10-03
+
+`ANDROID UX DIRECTION 2 — MICROCOPY / LITERAL CLEANUP — FORMALLY CLOSED`.
+The bounded Direction 2 source/test candidate and its residual runtime
+acceptance are closed. The historical R-1 PIO observation was superseded by
+the separately approved PIO text correction in commit
+`39f94a1bccbb98aa04bdb8a6fe6904105503601a`; the newer PIO test, Logos PASS and
+OWNER runtime PASS describe the current PIO surface. R-2, R-3 and A-13 retain
+their separately scoped OWNER runtime PASS results. The recorded runtime
+captures were Windows desktop observations, not physical Android-device
+acceptance or general release readiness.
+
+The earlier Direction 2 runtime record also noted a SCENARIO inconsistency.
+That item was subsequently separated, audited and corrected under the
+SCENARIO historical-integrity task, received Logos correction review PASS and
+OWNER runtime acceptance PASS, and was formally closed by commit
+`c6cafa3a3172eb911ef3002a0533632e315d4f7d`. It is not an open Direction 2
+finding. The separate continuity status remains exactly
+`PREVIOUS PENDING FINDING — NOT IDENTIFIABLE FROM CURRENT AUTHORITY`; it is not
+identified or merged with SCENARIO or any UX-PARTE finding here.
+
+`UX-PARTE-001 — OPEN / NOT TESTED / ROOT CAUSE NOT PROVEN` remains separate;
+`UX-PARTE-002` remains a separate hierarchy/density concern and
+`UX-PARTE-003` remains closed. Directions 1 and 3–6 remain separate and
+unselected. Direction 2 closure does not authorize another UX implementation.
+No product source/test was changed during this formal closure and product QA
+was not rerun. The protected source baseline remains `28/28 PASS`; active-source
+control package integrity is `7/7 PASS`, with publication pointer and local /
+remote HEAD at `39f94a1bccbb98aa04bdb8a6fe6904105503601a` before the D2 closure
+commit. Full evidence is in
+[`OPC_TASK_ANDROID_UX_DIRECTION_2_RESIDUAL_RUNTIME_ACCEPTANCE_CLOSURE_REPORT.md`](tasks/OPC_TASK_ANDROID_UX_DIRECTION_2_RESIDUAL_RUNTIME_ACCEPTANCE_CLOSURE_REPORT.md)
+and the external bounded closure handoff.
+
 ## Editing integrity closure — 2026-09-26
 
 The bounded `UX-IRIU-001` CVEĆE ribbon edit-permission correction and

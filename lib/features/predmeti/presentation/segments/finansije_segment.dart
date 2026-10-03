@@ -231,7 +231,7 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
               const SizedBox(height: 8),
               if (prikazRefundacije) ...[
                 PredmetBooleanDecisionTile(
-                  title: 'REFUNDACIJA PIO U KORIST PLATIOCA',
+                  title: 'REFUNDACIJA U KORIST PLATIOCA',
                   subtitle:
                       'Platilac samostalno ostvaruje refundaciju kod PIO fonda',
                   value: _platilaciRefundira,

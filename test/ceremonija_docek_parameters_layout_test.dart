@@ -9,6 +9,41 @@ import 'package:opc_v4/features/predmeti/presentation/segments/ceremonija_segmen
 import 'test_bootstrap.dart';
 
 void main() {
+  testWidgets(
+    'PREDMET ceremony uses country-neutral label for international burial',
+    (tester) async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final predmet = await _insertPredmet(
+        db,
+        docek: false,
+        sahranaVanSrbije: true,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CeremonijuSegment(
+                initialData: predmet,
+                predmetId: predmet.id,
+                iriuRepo: IriuRepository(db),
+                enabled: true,
+                onSave: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final label = find.text('Sahrana u inostranstvu');
+      await tester.ensureVisible(label);
+      expect(label, findsOneWidget);
+      expect(find.text('Sahrana van Srbije'), findsNothing);
+    },
+  );
+
   for (final scenario in const <(TargetPlatform, double, String)>[
     (TargetPlatform.windows, 1200, 'Windows'),
     (TargetPlatform.android, 412, 'narrow Android'),
@@ -59,17 +94,22 @@ void main() {
   }
 }
 
-Future<PredmetiData> _insertPredmet(AppDatabase db) async {
+Future<PredmetiData> _insertPredmet(
+  AppDatabase db, {
+  bool docek = true,
+  bool sahranaVanSrbije = false,
+}) async {
   final id = await db
       .into(db.predmeti)
       .insert(
         PredmetiCompanion.insert(
           brojPredmeta: const Value('DOCEK-UI-001/2026'),
           datumKreiranja: const Value('2026-07-11T10:00:00.000'),
-          docekPosmrtnihOstataka: const Value(true),
+          docekPosmrtnihOstataka: Value(docek),
           docekMesto: const Value('Beograd'),
           docekDatum: const Value('19.07.2026.'),
           docekVreme: const Value('14:30'),
+          sahranaVanSrbije: Value(sahranaVanSrbije),
         ),
       );
   return (db.select(db.predmeti)..where((p) => p.id.equals(id))).getSingle();
