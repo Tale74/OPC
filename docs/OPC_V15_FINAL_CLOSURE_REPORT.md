@@ -35,17 +35,21 @@ Current check: `20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED`. Historical
 22/28 chronology is not reconstructed by assumption. No `28/28` or rebaseline
 claim is made.
 
-Repository staging/commit/push, remote identity, exact committed tree and
-residual worktree state must match the final external review handoff. This
-report distinguishes local baseline from remote publication and product
-development closure from release handover. External review ZIP integrity and
-hash sidecar are delivered separately; private runtime screenshots, data,
-credentials and the full backup are excluded.
+Repository publication is verified: branch
+`codex/opc-v1.5-clean-baseline`, commit
+`a4f48ac5f6add623f66b3b422f93aaacf6a78527`, tree
+`b65440468fb177b4aaf609a90e48908c3bd82750`. The normal fast-forward push
+advanced the remote from `c37b7d23541408414b6061e6cdb257039762ce43`, and a
+post-push `git ls-remote` returned the exact commit. The reviewed commit has
+85 paths. Pre-existing mixed worktree residuals remain preserved and
+uncommitted/untracked as classified; they were not included. This report
+distinguishes product development closure from release handover. External
+review ZIP integrity and hash sidecar are delivered separately; private
+runtime screenshots, data, credentials and the full backup are excluded.
 
 ## Closure status
 
-Use the factual state from the final handoff. Complete label is permitted only
-if all required backup, baseline, review, and local/GitHub publication gates
-are proven. Otherwise report `LOCAL BASELINE COMPLETE – GITHUB PENDING`,
-`BACKUP VERIFIED – BASELINE PENDING`, or the exact blocker. No next v1.5 task
-or OPC Int task is selected.
+Backup/restore, reviewed baseline, and local/GitHub publication gates are
+verified. The accepted runtime retains its explicit scoped `PARTIAL` coverage
+label, and no Windows physical runtime, signing, distribution, or handover is
+claimed. No next v1.5 task or OPC Int task is selected.
