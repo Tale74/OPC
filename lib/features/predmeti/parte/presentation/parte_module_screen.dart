@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
+import '../../../../core/help/opc_help.dart';
 import '../../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../auth/domain/session_service.dart';
 import '../../data/predmeti_repository.dart';
@@ -58,7 +59,8 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
     final predmeti = await widget.predmetiRepository.getSvePredmete();
     final preparations = await _preparations.listAll();
     final preparationByPredmet = {
-      for (final preparation in preparations) preparation.predmetId: preparation,
+      for (final preparation in preparations)
+        preparation.predmetId: preparation,
     };
     final items = <_PartePredmetItem>[];
     for (final predmet in predmeti) {
@@ -68,6 +70,13 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
       if (!activeCandidate && preparation == null) continue;
       items.add(_PartePredmetItem(predmet: predmet, preparation: preparation));
     }
+    items.sort((a, b) {
+      final byCreation = b.predmet.datumKreiranja.compareTo(
+        a.predmet.datumKreiranja,
+      );
+      if (byCreation != 0) return byCreation;
+      return b.predmet.id.compareTo(a.predmet.id);
+    });
     if (!mounted || generation != _loadGeneration) return;
     final selected = _selectedPredmetId;
     setState(() {
@@ -140,9 +149,7 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
     }
     await Navigator.push<void>(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => destination,
-      ),
+      MaterialPageRoute<void>(builder: (_) => destination),
     );
     if (mounted) await _refresh();
   }
@@ -208,7 +215,10 @@ class _ParteModuleScreenState extends State<ParteModuleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MODUL PARTE'),
+        title: const OpcHelpTitle(
+          title: Text('MODUL PARTE'),
+          chapterId: 'parte.list',
+        ),
         actions: [
           IconButton(
             onPressed: _refresh,

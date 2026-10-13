@@ -81,6 +81,8 @@ void main() {
         predmetId,
       );
       expect(navigationObserver.preparationPushCount, 1);
+      expect(find.text('ČITULJE · Ana Test'), findsOneWidget);
+      expect(find.text('ČITULJE · R3-UI-001'), findsNothing);
       expect(find.text('OTVORI ČITULJE'), findsNothing);
       expect(find.text('ČITULJA POLITIKA'), findsOneWidget);
       expect(find.textContaining('portableOccurrenceId:'), findsNothing);
@@ -169,6 +171,71 @@ void main() {
       expect(await db.select(db.iriu).get(), hasLength(1));
     },
   );
+
+  testWidgets('ČITULJE heading follows the newly selected PREDMET', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final db = _createCituljeTestDatabase();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      await db.close();
+    });
+    final firstId = await _insertCituljePredmet(
+      db,
+      broj: 'CIT-HEADER-1',
+      ime: 'Ana',
+      prezime: 'Veoma Dugo Prezime Za Proveru Responzivnosti',
+      occurrence: 'header-1',
+    );
+    final secondId = await _insertCituljePredmet(
+      db,
+      broj: 'CIT-HEADER-2',
+      ime: 'Milan',
+      prezime: 'Drugi',
+      occurrence: 'header-2',
+    );
+    expect(firstId, isNot(secondId));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(platform: TargetPlatform.android),
+        home: CituljeModuleScreen(predmetiRepository: PredmetiRepository(db)),
+      ),
+    );
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
+    await tester.tap(find.byKey(const Key('citulje-predmet-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Ana Veoma Dugo Prezime'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('ČITULJE · Ana Veoma Dugo Prezime Za Proveru Responzivnosti'),
+      findsOneWidget,
+    );
+    expect(find.text('ČITULJE · CIT-HEADER-1'), findsNothing);
+    expect(tester.takeException(), equals(null));
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('citulje-predmet-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Milan Drugi'));
+    await tester.pumpAndSettle();
+    expect(find.text('ČITULJE · Milan Drugi'), findsOneWidget);
+    expect(
+      find.text('ČITULJE · Ana Veoma Dugo Prezime Za Proveru Responzivnosti'),
+      findsNothing,
+    );
+    expect(tester.takeException(), equals(null));
+  });
 
   testWidgets(
     'ČITULJE selector preserves eligible statuses and invalidates terminal candidates',
@@ -418,7 +485,11 @@ void main() {
     final predmetId = await db
         .into(db.predmeti)
         .insert(
-          PredmetiCompanion.insert(brojPredmeta: const Value('CIT-LAYOUT')),
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('CIT-LAYOUT'),
+            ime: const Value('Mira'),
+            prezime: const Value('Vrlo Dugo Prezime'),
+          ),
         );
     await db
         .into(db.iriu)
@@ -447,6 +518,8 @@ void main() {
     for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 250));
     }
+    expect(find.text('ČITULJE · Mira Vrlo Dugo Prezime'), findsOneWidget);
+    expect(find.text('ČITULJE · CIT-LAYOUT'), findsNothing);
 
     final mode = find.byKey(const Key('citulje-parte-text-mode'));
     final date = find.byKey(const Key('citulje-publication-date'));
@@ -461,6 +534,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(360, 900));
     await tester.pump();
     await tester.pumpAndSettle();
+    expect(find.text('ČITULJE · Mira Vrlo Dugo Prezime'), findsOneWidget);
     expect(
       tester.getTopLeft(date).dx,
       closeTo(tester.getTopLeft(text).dx, 0.1),
@@ -543,6 +617,34 @@ class _RecordingNavigatorObserver extends NavigatorObserver {
 AppDatabase _createCituljeTestDatabase() => AppDatabase.forTesting(
   DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
 );
+
+Future<int> _insertCituljePredmet(
+  AppDatabase db, {
+  required String broj,
+  required String ime,
+  required String prezime,
+  required String occurrence,
+}) async {
+  final predmetId = await db
+      .into(db.predmeti)
+      .insert(
+        PredmetiCompanion.insert(
+          brojPredmeta: Value(broj),
+          ime: Value(ime),
+          prezime: Value(prezime),
+        ),
+      );
+  await db
+      .into(db.iriu)
+      .insert(
+        IriuCompanion.insert(
+          predmetId: predmetId,
+          interniNaziv: 'CITULJA_POLITIKA',
+          portableOccurrenceId: Value(occurrence),
+        ),
+      );
+  return predmetId;
+}
 
 Future<void> _selectCituljePublicationDate(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('citulje-publication-date')));

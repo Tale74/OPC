@@ -12,6 +12,22 @@ import 'scenario_contract.dart';
 final class OwnerScenarioPolicyKernel {
   const OwnerScenarioPolicyKernel();
 
+  static bool isBiohazardCause(String cause) {
+    final normalizedCause = cause.trim().toUpperCase();
+    return normalizedCause == 'ZARAZNA' || normalizedCause == 'NEDEFINISANA';
+  }
+
+  static bool requiresBiohazardPrecautions({
+    required String cause,
+    required String normalizedMestoSmrti,
+    required bool docek,
+  }) {
+    return isBiohazardCause(cause) &&
+        (docek ||
+            (normalizedMestoSmrti.isNotEmpty &&
+                normalizedMestoSmrti != 'BOLNICA'));
+  }
+
   static const List<String> causes = <String>[
     'PRIRODNA',
     'NASILNA',
@@ -217,9 +233,12 @@ final class OwnerScenarioPolicyKernel {
 
     final isHospital = input.mestoSmrti == 'BOLNICA';
     final requiresProtectiveEquipment = input.uzrokSmrti != 'PRIRODNA';
-    final biohazard =
-        input.uzrokSmrti == 'ZARAZNA' || input.uzrokSmrti == 'NEDEFINISANA';
-    final warning = biohazard
+    final requiresBiohazardPrecautionsForInput = requiresBiohazardPrecautions(
+      cause: input.uzrokSmrti,
+      normalizedMestoSmrti: input.mestoSmrti,
+      docek: input.docek,
+    );
+    final warning = requiresBiohazardPrecautionsForInput
         ? 'Postupati prema merama zaštite za zaraznu bolest.'
         : '';
 
@@ -227,8 +246,8 @@ final class OwnerScenarioPolicyKernel {
       add(IriuK.cargoTroskovi);
       add(
         IriuK.iznosenje,
-        warning: biohazard ? warning : '',
-        reason: biohazard ? 'BIOHAZARD' : '',
+        warning: requiresBiohazardPrecautionsForInput ? warning : '',
+        reason: requiresBiohazardPrecautionsForInput ? 'BIOHAZARD' : '',
       );
       if (requiresProtectiveEquipment) {
         add(IriuK.zastitnaIDodatnaOprema);
@@ -240,8 +259,8 @@ final class OwnerScenarioPolicyKernel {
         add(
           IriuK.spremaanjePokojnika,
           action: ScenarioConsequenceAction.recommended,
-          warning: biohazard ? warning : '',
-          reason: biohazard ? 'BIOHAZARD' : '',
+          warning: requiresBiohazardPrecautionsForInput ? warning : '',
+          reason: requiresBiohazardPrecautionsForInput ? 'BIOHAZARD' : '',
         );
       }
       if (input.opelo == 'DA') add(IriuK.kompletZaOpelo);
@@ -252,8 +271,8 @@ final class OwnerScenarioPolicyKernel {
       add(IriuK.transportnaVreca);
       add(
         IriuK.iznosenje,
-        warning: biohazard ? warning : '',
-        reason: biohazard ? 'BIOHAZARD' : '',
+        warning: requiresBiohazardPrecautionsForInput ? warning : '',
+        reason: requiresBiohazardPrecautionsForInput ? 'BIOHAZARD' : '',
       );
       if (requiresProtectiveEquipment) {
         add(IriuK.zastitnaIDodatnaOprema);
@@ -262,8 +281,8 @@ final class OwnerScenarioPolicyKernel {
       add(IriuK.hladnjaca);
       add(
         IriuK.spremaanjePokojnika,
-        warning: biohazard ? warning : '',
-        reason: biohazard ? 'BIOHAZARD' : '',
+        warning: requiresBiohazardPrecautionsForInput ? warning : '',
+        reason: requiresBiohazardPrecautionsForInput ? 'BIOHAZARD' : '',
       );
     }
     _addBurialAndInternational(rows, input, add);
@@ -283,10 +302,9 @@ final class OwnerScenarioPolicyKernel {
     add,
   ) {
     final isKremacija = input.isKremacija;
-    final isBiohazardCause =
-        input.uzrokSmrti == 'ZARAZNA' || input.uzrokSmrti == 'NEDEFINISANA';
+    final hasBiohazardCause = isBiohazardCause(input.uzrokSmrti);
     final needsMetalInsert = !isKremacija &&
-        ((isBiohazardCause && !input.docek) ||
+        ((hasBiohazardCause && !input.docek) ||
             (!input.sahranaVanSrbije &&
                 input.tipGrobnogMesta == 'GROBNICA') ||
             (!input.docek && input.sahranaVanSrbije));
@@ -294,7 +312,7 @@ final class OwnerScenarioPolicyKernel {
         input.tipGroblja == 'LOKALNO' &&
         input.sahranaVanSrbije &&
         input.tipGrobnogMesta == 'GROB' &&
-        !isBiohazardCause;
+        !hasBiohazardCause;
     var localTransportAdded = false;
     if (localInternationalGrob) {
       add(IriuK.prevozSprovoda, action: ScenarioConsequenceAction.recommended);
@@ -571,6 +589,12 @@ final class OwnerScenarioInput {
     international: sahranaVanSrbije,
     docek: docek,
   );
+
+  /// Compares the normalized inputs that affect the complete owner kernel.
+  /// `promenaSanduka` is included separately because it changes consequences
+  /// without changing the stable combination key.
+  bool hasSameEvaluationInputsAs(OwnerScenarioInput other) =>
+      key == other.key && promenaSanduka == other.promenaSanduka;
 }
 
 final class OwnerScenarioKey {

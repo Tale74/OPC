@@ -29,6 +29,12 @@ subordinate supporting authority/evidence, owner provenance, governance,
 historical, internal or private material; none is a co-equal compact current
 authority home.
 
+The current project-history/source/documentation reconciliation is recorded
+in [`OPC_PROJECT_HISTORY_SOURCE_DOCUMENTATION_RECONCILIATION_20261010.md`](tasks/OPC_PROJECT_HISTORY_SOURCE_DOCUMENTATION_RECONCILIATION_20261010.md).
+It is supporting evidence for chronology, implementation traceability and
+open verification debt, not a sixth authority home and not a replacement for
+the subsystem contracts.
+
 ## RR-005 closure reconciliation
 
 The current correction authority is `RR-005 CORRECTION CLOSED — FULL
@@ -138,7 +144,7 @@ and quarantine material remains evidence, not implementation authority.
 
 | Area | Current source of truth | Supporting sources | Status / caution |
 | --- | --- | --- | --- |
-| Active-source authority and donor control | `docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md` | Current external/local-only package containing the logical inputs `ACTIVE_SOURCE_AUTHORITY_MANIFEST.json`, `STALE_DONOR_DENYLIST.json`, `HIGH_RISK_ACTIVE_HASH_BASELINE.csv`, `DONOR_USE_GATE.md` and `OPC_ACTIVE_SOURCE_PRECHECK.md`, plus the current hygiene handoff | CURRENT AUTHORITATIVE CONTROL – the task must resolve the package location, physically read and individually report all five inputs before source-learning or modification; donor reuse requires bounded reconciliation and explicit OWNER authorization; unresolved roots remain `UNRESOLVED – DO NOT USE`. |
+| Active-source authority and donor control | `docs/OPC_ACTIVE_SOURCE_AUTHORITY_AND_DONOR_CONTROL.md` | Current v1.5 local-only control package under the ignored `INTERNAL_DEVELOPMENT_CONTROL/ACTIVE_SOURCE_CONTROL/` root, plus its package manifest and current handoff | CURRENT AUTHORITATIVE CONTROL – the task resolves the current physical path from current authority, physically reads and individually reports all five logical inputs before source-learning or modification; donor reuse requires bounded reconciliation and explicit OWNER authorization; unresolved roots remain `UNRESOLVED – DO NOT USE`. “Local-only” means outside the tracked/publication boundary; the package is physically inside the local SOURCE checkout. |
 
 ## R2 implementation traceability
 
@@ -224,3 +230,43 @@ The implementation evidence is technical only: targeted/regression checks
 `528 PASS / 10 SKIP / 0 FAIL`. Build/runtime/device acceptance and GitHub
 publication are not inferred from these results. `SOURCE/REVIEW` remains
 prohibited; review evidence belongs under the external `REVIEW` layer.
+
+## Offline guide and contextual POMOĆ traceability — 2026-10-12
+
+The source of user-guide content is `assets/opc_user_guide.json`; its parser
+and validation live in `lib/core/help/opc_guide_repository.dart`, and its
+full-screen rendering/navigation live in `lib/core/help/opc_guide_screen.dart`.
+`lib/core/help/opc_help.dart` owns the explicit contextual action and PREDMET
+segment-to-chapter mapping; `lib/core/widgets/opc_page_chrome.dart` integrates
+it with shared screen chrome. Settings/About presentation and screen-specific
+entry points are mapped in
+[`OPC_EXTENDED_COR05_IMPLEMENTATION_20261012_TRACEABILITY.md`](tasks/OPC_EXTENDED_COR05_IMPLEMENTATION_20261012_TRACEABILITY.md).
+The resource is bundled/offline and loaded only on a help request. It is
+documentation content, not PREDMET authority, business policy, database state
+or an operational contract. The first complete Serbian text is an OWNER-review
+draft; no physical runtime acceptance is claimed.
+
+The source-verified revision task dated 2026-10-12 integrates the Logos
+editorial proposal after checking all 33 chapters against current source and
+OWNER authority. Stable chapter IDs and contextual mappings are preserved;
+the `lista` chapter and shared entry-screen title are now `PREDMETI`. The
+source-verified text and material Logos-to-source corrections are indexed in
+[`OPC_EXTENDED_COR05_GUIDE_REVISION_20261012_TRACEABILITY.md`](tasks/OPC_EXTENDED_COR05_GUIDE_REVISION_20261012_TRACEABILITY.md)
+and its external REVIEW package. This status is a review candidate, not a
+claim of physical runtime acceptance or publication.
+
+## OWNER-approved final guide content integration — 2026-10-12
+
+The consolidated OWNER editorial document remains the content authority for
+the 33 chapters; a later OWNER presentation decision requires all guide text,
+including headings, to be italic. The single resource and stable chapter IDs
+remain `assets/opc_user_guide.json`, parsed by
+`lib/core/help/opc_guide_repository.dart` and rendered by
+`lib/core/help/opc_guide_screen.dart`. Focused source reconciliation corrects
+only the inappropriate `ljudi` expression, the unsupported unconditional PIN
+database-deletion claim, the scope of eight business-entry segments versus two
+additional numbered sections, and the SCENARIO explanation for automatic
+category rows, concrete KATALOG article selection and reconciliation. It does
+not alter auth, PREDMET, SCENARIO or IRiU behavior. Test/build results and exact
+content deltas are recorded in
+[`OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md`](OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md).

@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../../../core/format/app_filename_format.dart';
 import '../../../../core/utils/export_utils.dart';
 import '../data/parte_template_repository.dart';
@@ -91,12 +92,16 @@ class _ParteTemplateManagementDialogState
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(title),
-        content: TextField(
+        content: ManualEntryAffordance(
           controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'NAZIV ŠABLONA',
-            border: OutlineInputBorder(),
+          enabled: true,
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'NAZIV ŠABLONA',
+              border: OutlineInputBorder(),
+            ),
           ),
         ),
         actions: [
@@ -293,19 +298,29 @@ class _ParteTemplateManagementDialogState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DropdownButtonFormField<String>(
-                      key: ValueKey('parte-template-$_selectedId-$_defaultId'),
+                      key: ValueKey(
+                        'parte-template-selector-$_selectedId-$_defaultId',
+                      ),
                       initialValue: _selectedId,
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'ŠABLON',
                         border: OutlineInputBorder(),
                       ),
                       items: _templates
                           .map(
-                            (template) => DropdownMenuItem(
+                            (template) => DropdownMenuItem<String>(
                               value: template.id,
-                              child: Text(
-                                '${template.name}${template.id == _defaultId ? ' – PODRAZUMEVAN' : ''}'
-                                '${template.id == widget.activeTemplateId ? ' – TRENUTNO PRIMENJEN' : ''}',
+                              child: Tooltip(
+                                message: template.name,
+                                child: Semantics(
+                                  label: template.name,
+                                  child: Text(
+                                    template.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               ),
                             ),
                           )

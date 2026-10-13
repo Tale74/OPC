@@ -4,10 +4,13 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/help/opc_help.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import 'katalog_photo_policy.dart';
 import '../data/podesavanja_repository.dart';
 
@@ -118,28 +121,39 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => AlertDialog(
-          title: const Text('Izmeni stavku'),
+          title: const OpcHelpTitle(
+            title: Text('Izmeni stavku'),
+            chapterId: 'settings.catalog',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              ManualEntryAffordance(
                 controller: nazivCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Naziv prikaza',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextField(
+                  controller: nazivCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Naziv prikaza',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               if (!_jeKataloska) ...[
                 const SizedBox(height: 12),
-                TextField(
+                ManualEntryAffordance(
                   controller: cenaCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'CENA (RSD)',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  enabled: true,
+                  child: TextField(
+                    controller: cenaCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'CENA (RSD)',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
                   ),
                 ),
               ],
@@ -211,7 +225,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(naslov),
+        title: OpcHelpTitle(title: Text(naslov), chapterId: 'settings.catalog'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,11 +245,11 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                       : 'Kategorija nema povezane artikle.',
                 ),
               if (status.uOsnovnomPaketu)
-                const Text(
-                  'Kategorija se koristi u osnovnom paketu.',
-                ),
+                const Text('Kategorija se koristi u osnovnom paketu.'),
               if (status.uScenariju)
-                const Text('Kategorija se koristi u postojećem paketu i ne može se obrisati.'),
+                const Text(
+                  'Kategorija se koristi u postojećem paketu i ne može se obrisati.',
+                ),
             ],
           ],
         ),
@@ -377,26 +391,33 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Dodaj kategoriju'),
+      title: const OpcHelpTitle(
+        title: Text('Dodaj kategoriju'),
+        chapterId: 'settings.catalog',
+      ),
       content: SizedBox(
         width: 380,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            ManualEntryAffordance(
               controller: _nazivCtrl,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Naziv kategorije',
-                border: const OutlineInputBorder(),
-                isDense: true,
-                errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+              enabled: true,
+              child: TextField(
+                controller: _nazivCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Naziv kategorije',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+                ),
+                onChanged: (_) {
+                  if (_greskaNaziv) setState(() => _greskaNaziv = false);
+                },
+                onSubmitted: (_) => _potvrdi(),
               ),
-              onChanged: (_) {
-                if (_greskaNaziv) setState(() => _greskaNaziv = false);
-              },
-              onSubmitted: (_) => _potvrdi(),
             ),
             const SizedBox(height: 16),
             Text(
@@ -560,7 +581,10 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Obriši artikal'),
+        title: const OpcHelpTitle(
+          title: Text('Obriši artikal'),
+          chapterId: 'settings.catalog',
+        ),
         content: Text('Obrisati "${a.naziv}"?'),
         actions: [
           TextButton(
@@ -773,7 +797,12 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Novi artikal' : 'Izmeni artikal'),
+      title: OpcHelpTitle(
+        title: Text(
+          widget.existing == null ? 'Novi artikal' : 'Izmeni artikal',
+        ),
+        chapterId: 'settings.catalog',
+      ),
       content: SizedBox(
         width: 360,
         child: SingleChildScrollView(
@@ -782,27 +811,35 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. NAZIV
-              TextField(
+              ManualEntryAffordance(
                 controller: _nazivCtrl,
-                autofocus: true,
-                textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'NAZIV',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+                enabled: true,
+                child: TextField(
+                  controller: _nazivCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'NAZIV',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               // 2. CENA
-              TextField(
+              ManualEntryAffordance(
                 controller: _cenaCtrl,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'CENA (RSD)',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+                enabled: true,
+                child: TextField(
+                  controller: _cenaCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'CENA (RSD)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

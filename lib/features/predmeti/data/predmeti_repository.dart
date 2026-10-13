@@ -6,6 +6,7 @@ import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/stable_id_generator.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
+import '../core_v2/scenario/owner_scenario_policy_kernel.dart';
 import '../core_v2/business_policy/business_scenario_id.dart';
 import '../core_v2/scenario/scenario_module_repository.dart';
 import '../reminders/ceremony_notification_gateway.dart';
@@ -307,9 +308,7 @@ class PredmetiRepository {
             .insert(
               IriuCompanion(
                 predmetId: Value(predmetId),
-                portableOccurrenceId: Value(
-                  generateIriuOccurrencePortableId(),
-                ),
+                portableOccurrenceId: Value(generateIriuOccurrencePortableId()),
                 interniNaziv: Value(interniNaziv),
                 nazivPrikaz: Value(katalogRow.nazivPrikaz),
                 kom: const Value('1'),
@@ -318,7 +317,9 @@ class PredmetiRepository {
                 // this boundary so the persisted IRiU row has the same
                 // price/amount semantics as a scenario-added row.
                 cena: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
-                iznos: Value(katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0),
+                iznos: Value(
+                  katalogRow.tip == 'FIKSNA' ? katalogRow.cena : 0.0,
+                ),
                 redosled: Value(red++),
               ),
             );
@@ -645,6 +646,64 @@ class PredmetiRepository {
     return poslednji?.novaVrednost;
   }
 
+  /// Proves a saved SCENARIO-driving PREDMET edit happened after the applied
+  /// assignment. The timestamp only orders two durable events; the proof is
+  /// the save-commit's typed old/new PREDMET snapshots changing normalized
+  /// OwnerScenarioInput. Missing, malformed or ambiguous evidence fails closed.
+  Future<bool> hasScenarioInputSaveAfterAppliedAt({
+    required int predmetId,
+    required String appliedAt,
+  }) async {
+    final appliedAtDate = DateTime.tryParse(appliedAt);
+    if (appliedAtDate == null) return false;
+    final current = await getPredmet(predmetId);
+    final commits =
+        await (_db.select(_db.logIzmena)
+              ..where(
+                (log) =>
+                    log.predmetId.equals(predmetId) &
+                    log.polje.equals(_saveCommitSnapshotPolje),
+              )
+              ..orderBy([(log) => OrderingTerm.asc(log.id)]))
+            .get();
+    for (final commit in commits) {
+      final committedAt = DateTime.tryParse(commit.datumVreme);
+      if (committedAt == null || !committedAt.isAfter(appliedAtDate)) {
+        continue;
+      }
+      final oldState = _predmetFromSaveCommitSnapshot(
+        commit.staraVrednost,
+        current,
+      );
+      final newState = _predmetFromSaveCommitSnapshot(
+        commit.novaVrednost,
+        current,
+      );
+      if (oldState == null || newState == null) return false;
+      final oldInput = OwnerScenarioInput.fromPredmet(oldState);
+      final newInput = OwnerScenarioInput.fromPredmet(newState);
+      if (!oldInput.isComplete || !newInput.isComplete) return false;
+      if (!oldInput.hasSameEvaluationInputsAs(newInput)) return true;
+    }
+    return false;
+  }
+
+  PredmetiData? _predmetFromSaveCommitSnapshot(
+    String encoded,
+    PredmetiData current,
+  ) {
+    if (encoded.trim().isEmpty) return null;
+    try {
+      final decoded = jsonDecode(encoded);
+      if (decoded is! Map) return null;
+      final data = Map<String, dynamic>.from(current.toJson())
+        ..addAll(Map<String, dynamic>.from(decoded));
+      return PredmetiData.fromJson(data);
+    } on Object {
+      return null;
+    }
+  }
+
   Future<bool> imaNesacuvanihIzmena(int id, {String? fallbackSnapshot}) async {
     final trenutno = await getPredmet(id);
     final poslednjiSnapshot =
@@ -857,8 +916,9 @@ class PredmetiRepository {
       [lokalniPredmetId],
     );
     await (_db.delete(
-      _db.podsetnikObaveze,
-    )..where((obligation) => obligation.predmetId.equals(lokalniPredmetId))).go();
+          _db.podsetnikObaveze,
+        )..where((obligation) => obligation.predmetId.equals(lokalniPredmetId)))
+        .go();
     await _db.customStatement(
       'DELETE FROM podsetnik_manual_obaveze WHERE predmet_id = ?',
       [lokalniPredmetId],

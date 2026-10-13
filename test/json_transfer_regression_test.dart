@@ -9,6 +9,7 @@ import 'package:opc_v4/core/json_transfer/predmet_json_transfer_core.dart';
 import 'package:opc_v4/core/utils/json_export_import.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/owner_scenario_policy_kernel.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import 'package:opc_v4/features/stanje_robe/data/stanje_robe_posledice_repository.dart';
@@ -1203,6 +1204,7 @@ void main() {
           ),
           osnovniPaket: const {'OSNOVNI_PARTIAL_TEST'},
           assignedAt: '2026-09-29T12:00:00.000Z',
+          appliedEvaluationBaseline: _transferEvaluationBaseline(),
         );
         await sourceDb
             .into(sourceDb.predmetScenarioSnapshots)
@@ -1279,6 +1281,14 @@ void main() {
                   ..where((row) => row.predmetId.equals(importedPredmet.id)))
                 .getSingle();
         expect(restoredSnapshot.snapshotHash, snapshot.snapshotHash);
+        expect(
+          ScenarioAssignmentSnapshot.fromJsonMap(
+            jsonDecode(restoredSnapshot.snapshotJson) as Map<String, dynamic>,
+          ).appliedEvaluationBaseline!.hasSameEvaluationInputsAs(
+            _transferEvaluationBaseline(),
+          ),
+          isTrue,
+        );
       },
     );
 
@@ -1347,6 +1357,7 @@ void main() {
           ),
           osnovniPaket: const {'OSNOVNI_TEST'},
           assignedAt: '2026-09-29T12:00:00.000Z',
+          appliedEvaluationBaseline: _transferEvaluationBaseline(),
         );
         await sourceDb
             .into(sourceDb.predmetScenarioSnapshots)
@@ -1407,11 +1418,14 @@ void main() {
           targetDb.predmetScenarioSnapshots,
         )..where((row) => row.predmetId.equals(predmet.id))).getSingle();
         expect(restoredSnapshot.snapshotHash, appliedScenario.snapshotHash);
+        final restoredAssignment = ScenarioAssignmentSnapshot.fromJsonMap(
+          jsonDecode(restoredSnapshot.snapshotJson) as Map<String, dynamic>,
+        );
+        expect(restoredAssignment.scenarioId, 'backup-round-trip');
         expect(
-          ScenarioAssignmentSnapshot.fromJsonMap(
-            jsonDecode(restoredSnapshot.snapshotJson) as Map<String, dynamic>,
-          ).scenarioId,
-          'backup-round-trip',
+          restoredAssignment.appliedEvaluationBaseline!
+              .hasSameEvaluationInputsAs(_transferEvaluationBaseline()),
+          isTrue,
         );
         final restoredProvenance = await (targetDb.select(
           targetDb.iriuProvenance,
@@ -1431,6 +1445,18 @@ void main() {
     );
   });
 }
+
+OwnerScenarioInput _transferEvaluationBaseline() => const OwnerScenarioInput(
+  uzrokSmrti: 'PRIRODNA',
+  mestoSmrti: 'STAN',
+  vrstaCeremonije: 'SAHRANA',
+  tipGroblja: 'GRADSKO',
+  tipGrobnogMesta: 'GROB',
+  opelo: 'DA',
+  sahranaVanSrbije: false,
+  docek: false,
+  promenaSanduka: false,
+);
 
 Future<PredmetiData> _insertPredmet(
   AppDatabase db, {

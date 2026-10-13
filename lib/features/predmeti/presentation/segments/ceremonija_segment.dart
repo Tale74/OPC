@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../data/iriu_repository.dart';
 import '../../reminders/ceremony_notification_gateway.dart';
 import '../../reminders/ceremony_reminder_coordinator.dart';
@@ -28,7 +29,7 @@ class CeremonijuSegment extends StatefulWidget {
   final int predmetId;
   final IriuRepository iriuRepo;
   final bool enabled;
-  final void Function(PredmetiCompanion) onSave;
+  final FutureOr<void> Function(PredmetiCompanion) onSave;
 
   @override
   State<CeremonijuSegment> createState() => _CeremonijuSegmentState();
@@ -289,11 +290,13 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
 
   void _scheduleSave() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 800), _save);
+    _debounce = Timer(const Duration(milliseconds: 800), () {
+      unawaited(_save());
+    });
   }
 
-  void _save() {
-    widget.onSave(
+  Future<void> _save() async {
+    await widget.onSave(
       PredmetiCompanion(
         groblje: Value(_normalizedText(_grobljeCt)),
         grobljePolaganjaUrne: Value(_normalizedText(_grobljePolaganjaUrneCt)),
@@ -333,7 +336,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         docekVreme: Value(_normalizedTime(_docekVremeCtrl)),
       ),
     );
-    unawaited(_rescheduleRemindersIfChanged());
+    await _rescheduleRemindersIfChanged();
   }
 
   Future<void> _loadReminderConfig() async {
@@ -346,17 +349,21 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   Future<void> _rescheduleRemindersIfChanged({
     bool requestPermission = false,
   }) async {
+    final date = normalizeCeremonyDateInput(_datumCeremonijeCtrl.text);
+    final time = normalizeTimeInput(_vremeCeremonijeCtrl.text);
+    final source =
+        '${widget.initialData.status}|${widget.initialData.ime}|'
+        '${widget.initialData.prezime}|$_vrstaCeremonije|$date|$time|'
+        '${_normalizedText(_grobljeCt)}|$_tipPolaganja|'
+        '${_normalizedText(_grobljePolaganjaUrneCt)}|'
+        '${_reminderConfig.enabled}|'
+        '${_reminderConfig.normalizedDeliveryTimes.join(',')}';
+    if (_lastReminderSource == source && !requestPermission) return;
+    _lastReminderSource = source;
     final currentPredmet = await (widget.iriuRepo.db.select(
       widget.iriuRepo.db.predmeti,
     )..where((row) => row.id.equals(widget.predmetId))).getSingleOrNull();
     if (currentPredmet == null) return;
-    final date = normalizeCeremonyDateInput(_datumCeremonijeCtrl.text);
-    final time = normalizeTimeInput(_vremeCeremonijeCtrl.text);
-    final source =
-        '$date|$time|${_reminderConfig.enabled}|'
-        '${_reminderConfig.normalizedDeliveryTimes.join(',')}';
-    if (_lastReminderSource == source && !requestPermission) return;
-    _lastReminderSource = source;
     await _reminderCoordinator.reschedule(
       predmetId: widget.predmetId,
       predmetStatus: currentPredmet.status,
@@ -450,16 +457,12 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
             children: [
               // Groblje + tip
               if (isNarrowAndroid) ...[
-                TextFormField(
-                  controller: _grobljeCt,
-                  enabled: e,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'GROBLJE',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 280),
+                    child: _grobljeField(e),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 const SizedBox(height: 12),
                 _segButton(
@@ -479,19 +482,17 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                 _row([
                   Expanded(
                     flex: 2,
-                    child: TextFormField(
-                      controller: _grobljeCt,
-                      enabled: e,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'GROBLJE',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => _scheduleSave(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _fieldGroupLabel('GROBLJE'),
+                        const SizedBox(height: 4),
+                        _grobljeField(e, showLabel: false),
+                      ],
                     ),
                   ),
                   Expanded(
+                    flex: 3,
                     child: _segButton(
                       'TIP GROBLJA',
                       const [
@@ -512,6 +513,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
               // Vrsta ceremonije
               DropdownButtonFormField<String>(
                 key: ValueKey(_vrstaCeremonije),
+                isExpanded: true,
                 initialValue: _imaLegacyVrstuCeremonije
                     ? null
                     : _vrstaCeremonije,
@@ -630,7 +632,10 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                         : null,
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
+                  ManualEntryAffordance(
+                    controller: _vremeOpelaCtrl,
+                    enabled: e,
+                    child: TextFormField(
                     controller: _vremeOpelaCtrl,
                     enabled: e,
                     decoration: const InputDecoration(
@@ -640,55 +645,72 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                       isDense: true,
                     ),
                     onChanged: (_) => _scheduleSave(),
+                    ),
                   ),
                 ] else */
                   _row([
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _parcelaCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'PARCELA',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _parcelaCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'PARCELA',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _grobBrojCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'BROJ GROBA',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _grobBrojCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'BROJ GROBA',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _redGrobCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'RED',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _redGrobCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'RED',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _npkCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'NPK',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _npkCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'NPK',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                   ]),
@@ -706,28 +728,36 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _grobljePolaganjaUrneCt,
                   enabled: e,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'GROBLJE ZA POLAGANJE URNE',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  child: TextFormField(
+                    controller: _grobljePolaganjaUrneCt,
+                    enabled: e,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'GROBLJE ZA POLAGANJE URNE',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: (_) => _scheduleSave(),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _oznakUrneCtrl,
                   enabled: e,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'OZNAKA URNE',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  child: TextFormField(
+                    controller: _oznakUrneCtrl,
+                    enabled: e,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      labelText: 'OZNAKA URNE',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: (_) => _scheduleSave(),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
@@ -755,51 +785,67 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   const SizedBox(height: 12),
                   _row([
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _urnaParcelaCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'PARCELA',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _urnaParcelaCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'PARCELA',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _urnaBrojCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'BROJ',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _urnaBrojCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'BROJ',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _urnaRedCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'RED',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _urnaRedCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'RED',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: ManualEntryAffordance(
                         controller: _urnaNpkCtrl,
                         enabled: e,
-                        decoration: const InputDecoration(
-                          labelText: 'NPK',
-                          border: OutlineInputBorder(),
-                          isDense: true,
+                        child: TextFormField(
+                          controller: _urnaNpkCtrl,
+                          enabled: e,
+                          decoration: const InputDecoration(
+                            labelText: 'NPK',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => _scheduleSave(),
                         ),
-                        onChanged: (_) => _scheduleSave(),
                       ),
                     ),
                   ]),
@@ -851,32 +897,38 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                   ),
                 ),
                 Expanded(
-                  child: TextFormField(
+                  child: ManualEntryAffordance(
                     controller: _vremeCeremonijeCtrl,
                     enabled: e,
-                    focusNode: _vremeCeremFocus,
-                    decoration: InputDecoration(
-                      labelText: 'VREME CEREMONIJE',
-                      hintText: 'HH:MM',
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                      errorText:
-                          _vremeCeremTouched &&
-                              _vremeCeremonijeCtrl.text.isEmpty
-                          ? 'Obavezno'
-                          : null,
+                    child: TextFormField(
+                      controller: _vremeCeremonijeCtrl,
+                      enabled: e,
+                      focusNode: _vremeCeremFocus,
+                      decoration: InputDecoration(
+                        labelText: 'VREME CEREMONIJE',
+                        hintText: 'HH:MM',
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                        errorText:
+                            _vremeCeremTouched &&
+                                _vremeCeremonijeCtrl.text.isEmpty
+                            ? 'Obavezno'
+                            : null,
+                      ),
+                      onChanged: _onVremeCeremonijeChanged,
+                      onEditingComplete: () {
+                        final normalized = normalizeTimeInput(
+                          _vremeCeremonijeCtrl.text,
+                        );
+                        if (normalized != _vremeCeremonijeCtrl.text) {
+                          _vremeCeremonijeCtrl.text = normalized;
+                          _vremeCeremonijeCtrl.selection =
+                              TextSelection.collapsed(
+                                offset: normalized.length,
+                              );
+                        }
+                      },
                     ),
-                    onChanged: _onVremeCeremonijeChanged,
-                    onEditingComplete: () {
-                      final normalized = normalizeTimeInput(
-                        _vremeCeremonijeCtrl.text,
-                      );
-                      if (normalized != _vremeCeremonijeCtrl.text) {
-                        _vremeCeremonijeCtrl.text = normalized;
-                        _vremeCeremonijeCtrl.selection =
-                            TextSelection.collapsed(offset: normalized.length);
-                      }
-                    },
                   ),
                 ),
               ]),
@@ -894,7 +946,6 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                       if (!v) _obavestitiSvestenika = false;
                     });
                     if (v) {
-                      _predloziIriu([IriuK.kompletZaOpelo]);
                       final pomereno = _pomerVreme(
                         _vremeCeremonijeCtrl.text,
                         30,
@@ -953,16 +1004,20 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                           : null,
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
+                    ManualEntryAffordance(
                       controller: _vremeOpelaCtrl,
                       enabled: e,
-                      decoration: const InputDecoration(
-                        labelText: 'VREME OPELA',
-                        hintText: 'HH:MM',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                      child: TextFormField(
+                        controller: _vremeOpelaCtrl,
+                        enabled: e,
+                        decoration: const InputDecoration(
+                          labelText: 'VREME OPELA',
+                          hintText: 'HH:MM',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
                   ] else
                     _row([
@@ -998,16 +1053,20 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
                         ),
                       ),
                       Expanded(
-                        child: TextFormField(
+                        child: ManualEntryAffordance(
                           controller: _vremeOpelaCtrl,
                           enabled: e,
-                          decoration: const InputDecoration(
-                            labelText: 'VREME OPELA',
-                            hintText: 'HH:MM',
-                            border: OutlineInputBorder(),
-                            isDense: true,
+                          child: TextFormField(
+                            controller: _vremeOpelaCtrl,
+                            enabled: e,
+                            decoration: const InputDecoration(
+                              labelText: 'VREME OPELA',
+                              hintText: 'HH:MM',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                            onChanged: (_) => _scheduleSave(),
                           ),
-                          onChanged: (_) => _scheduleSave(),
                         ),
                       ),
                     ]),
@@ -1026,16 +1085,20 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
               ],
               if (!_opelo && _mozeOpelo) ...[
                 const SizedBox(height: 8),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _vremeIspracajaCtrl,
                   enabled: e,
-                  decoration: const InputDecoration(
-                    labelText: 'VREME ISPRA\u0106AJA',
-                    hintText: 'HH:MM',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  child: TextFormField(
+                    controller: _vremeIspracajaCtrl,
+                    enabled: e,
+                    decoration: const InputDecoration(
+                      labelText: 'VREME ISPRA\u0106AJA',
+                      hintText: 'HH:MM',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: (_) => _scheduleSave(),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -1061,29 +1124,37 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
               if (_sahranaVanSrbije) ...[
                 _row([
                   Expanded(
-                    child: TextFormField(
+                    child: ManualEntryAffordance(
                       controller: _svisZemljaCtrl,
                       enabled: e,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'ZEMLJA',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                      child: TextFormField(
+                        controller: _svisZemljaCtrl,
+                        enabled: e,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'ZEMLJA',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
                   ),
                   Expanded(
-                    child: TextFormField(
+                    child: ManualEntryAffordance(
                       controller: _svisGradCtrl,
                       enabled: e,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'GRAD',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                      child: TextFormField(
+                        controller: _svisGradCtrl,
+                        enabled: e,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'GRAD',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        onChanged: (_) => _scheduleSave(),
                       ),
-                      onChanged: (_) => _scheduleSave(),
                     ),
                   ),
                 ]),
@@ -1153,6 +1224,39 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     );
   }
 
+  Widget _grobljeField(bool enabled, {bool showLabel = true}) =>
+      ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _grobljeCt,
+        builder: (context, value, _) {
+          final inviteInput = enabled && value.text.trim().isEmpty;
+          final colors = Theme.of(context).colorScheme;
+          final borderColor = inviteInput ? colors.primary : colors.outline;
+          return TextFormField(
+            key: const ValueKey('ceremonija-groblje-field'),
+            controller: _grobljeCt,
+            enabled: enabled,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              labelText: showLabel ? 'GROBLJE' : null,
+              filled: inviteInput,
+              fillColor: inviteInput ? colors.secondaryContainer : null,
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: borderColor,
+                  width: inviteInput ? 1.5 : 1,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.primary, width: 2),
+              ),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: (_) => _scheduleSave(),
+          );
+        },
+      );
+
   Widget _row(List<Widget> children) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children:
@@ -1166,16 +1270,20 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
 
-  Widget _docekMestoField(bool enabled) => TextFormField(
+  Widget _docekMestoField(bool enabled) => ManualEntryAffordance(
     controller: _docekMestoCtrl,
     enabled: enabled,
-    textCapitalization: TextCapitalization.words,
-    decoration: const InputDecoration(
-      labelText: 'MESTO DO\u010cEKA',
-      border: OutlineInputBorder(),
-      isDense: true,
+    child: TextFormField(
+      controller: _docekMestoCtrl,
+      enabled: enabled,
+      textCapitalization: TextCapitalization.words,
+      decoration: const InputDecoration(
+        labelText: 'MESTO DO\u010cEKA',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      onChanged: (_) => _scheduleSave(),
     ),
-    onChanged: (_) => _scheduleSave(),
   );
 
   Widget _docekDatumField(bool enabled) => TextFormField(
@@ -1210,16 +1318,20 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
     onTap: enabled ? _pickDocekDate : null,
   );
 
-  Widget _docekVremeField(bool enabled) => TextFormField(
+  Widget _docekVremeField(bool enabled) => ManualEntryAffordance(
     controller: _docekVremeCtrl,
     enabled: enabled,
-    decoration: const InputDecoration(
-      labelText: 'VREME DO\u010cEKA',
-      hintText: 'HH:MM',
-      border: OutlineInputBorder(),
-      isDense: true,
+    child: TextFormField(
+      controller: _docekVremeCtrl,
+      enabled: enabled,
+      decoration: const InputDecoration(
+        labelText: 'VREME DO\u010cEKA',
+        hintText: 'HH:MM',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      onChanged: (_) => _scheduleSave(),
     ),
-    onChanged: (_) => _scheduleSave(),
   );
 
   String _normalizedTime(TextEditingController ctrl) =>
@@ -1296,6 +1408,13 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   }
 
   /// Helper: labeled SegmentedButton
+  Widget _fieldGroupLabel(String label) => Text(
+    label,
+    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
+
   Widget _segButton(
     String label,
     List<ButtonSegment<String>> segments,
@@ -1305,12 +1424,7 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
   ) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
+      _fieldGroupLabel(label),
       const SizedBox(height: 4),
       if (_isNarrowAndroid(context))
         Wrap(
@@ -1332,6 +1446,9 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
         )
       else
         SegmentedButton<String>(
+          key: label == 'TIP GROBLJA'
+              ? const ValueKey('ceremonija-tip-groblja-control')
+              : null,
           segments: segments,
           selected: {selected},
           onSelectionChanged: enabled

@@ -1,5 +1,6 @@
 import '../../../../core/database/database.dart';
 import '../rules/iriu_truth_rules.dart';
+import '../scenario/owner_scenario_policy_kernel.dart';
 import 'business_policy_models.dart';
 import 'business_scenario_id.dart';
 
@@ -52,9 +53,11 @@ class BusinessPolicyEvaluator {
       hasReceptionOfRemains: input.docekPosmrtnihOstataka,
       hasUzrokSmrtiOverride: hasUzrokSmrtiOverride,
       requiresBiohazardPrecautions:
-          input.uzrokSmrti == 'ZARAZNA' &&
-              normalizedMestoSmrti.isNotEmpty &&
-              normalizedMestoSmrti != 'BOLNICA',
+          OwnerScenarioPolicyKernel.requiresBiohazardPrecautions(
+            cause: input.uzrokSmrti,
+            normalizedMestoSmrti: normalizedMestoSmrti,
+            docek: input.docekPosmrtnihOstataka,
+          ),
     );
   }
 

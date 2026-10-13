@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/help/opc_help.dart';
 import '../data/iriu_repository.dart';
 import '../data/predmeti_repository.dart';
 import '../statistika_v1/statistika_snapshot_service.dart';
@@ -227,7 +228,12 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
   Widget build(BuildContext context) {
     final range = _resolveRange();
     return Scaffold(
-      appBar: AppBar(title: const Text('STATISTIKA')),
+      appBar: AppBar(
+        title: const OpcHelpTitle(
+          title: Text('STATISTIKA'),
+          chapterId: 'statistics',
+        ),
+      ),
       body: FutureBuilder<_StatistikaSourceData>(
         future: _future,
         builder: (context, snapshot) {

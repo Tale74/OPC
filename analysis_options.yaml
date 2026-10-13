@@ -1,6 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  exclude:
+    - docs/tasks/OPC_SCENARIO_KERNEL_AND_UX_CORRECTIONS_LOGOS_REVIEW_PACKAGE_20261006/HEAD/**
+    - docs/tasks/OPC_SCENARIO_KERNEL_AND_UX_CORRECTIONS_LOGOS_REVIEW_PACKAGE_20261006/WORKING_TREE/**
   errors:
     missing_return: error
     dead_code: warning

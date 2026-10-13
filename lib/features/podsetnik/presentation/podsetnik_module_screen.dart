@@ -2,6 +2,8 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/help/opc_help.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import '../../auth/domain/session_service.dart';
 import '../data/podsetnik_obligation_repository.dart';
 import '../domain/podsetnik_obligation.dart';
@@ -46,7 +48,12 @@ class _PodsetnikModuleScreenState extends State<PodsetnikModuleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('MODULI / PODSETNIK')),
+      appBar: AppBar(
+        title: const OpcHelpTitle(
+          title: Text('MODULI / PODSETNIK'),
+          chapterId: 'reminders',
+        ),
+      ),
       body: StreamBuilder<List<PredmetiData>>(
         stream: _predmetiStream,
         builder: (context, snapshot) {
@@ -316,15 +323,19 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('POSEBNE OBAVEZE'),
-        content: TextField(
-          key: const Key('podsetnik-manual-text'),
+        content: ManualEntryAffordance(
           controller: controller,
-          autofocus: true,
-          minLines: 2,
-          maxLines: 5,
-          decoration: const InputDecoration(
-            labelText: 'Tekst obaveze',
-            border: OutlineInputBorder(),
+          enabled: true,
+          child: TextField(
+            key: const Key('podsetnik-manual-text'),
+            controller: controller,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Tekst obaveze',
+              border: OutlineInputBorder(),
+            ),
           ),
         ),
         actions: [
@@ -678,19 +689,23 @@ class _PodsetnikPredmetSettingsState extends State<PodsetnikPredmetSettings> {
               const SizedBox(height: 8),
               _buildChecklist(context),
               const SizedBox(height: 12),
-              TextField(
-                key: const Key('podsetnik-general-note'),
+              ManualEntryAffordance(
                 controller: _noteController,
-                minLines: 2,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Napomena',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextField(
+                  key: const Key('podsetnik-general-note'),
+                  controller: _noteController,
+                  minLines: 2,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Napomena',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) =>
+                      (widget.database.update(widget.database.predmeti)
+                            ..where((row) => row.id.equals(widget.predmet.id)))
+                          .write(PredmetiCompanion(napomena: Value(value))),
                 ),
-                onChanged: (value) =>
-                    (widget.database.update(widget.database.predmeti)
-                          ..where((row) => row.id.equals(widget.predmet.id)))
-                        .write(PredmetiCompanion(napomena: Value(value))),
               ),
               const Divider(height: 28),
               SwitchListTile(

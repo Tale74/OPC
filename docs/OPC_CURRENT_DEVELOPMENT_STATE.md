@@ -1,11 +1,42 @@
 ﻿# OPC current development state
 
-**Status:** `FORMALLY CLOSED — CURRENT RECONCILED CONTINUITY SUMMARY`
+**Status:** `CURRENT RECONCILED CONTINUITY SUMMARY — UPDATED 2026-10-13`
 
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 **Documentation baseline before this closure:** `4e74772f72da921a2c94207a48c5530bfcc59e61`
 
-**Reconciled:** 2026-09-26
+**Reconciled:** 2026-10-13
+
+## OWNER-accepted final OPC v1.5 development closure — 2026-10-13
+
+OWNER accepts the current OPC v1.5 product as stable, functionally correct and
+final. The OWNER-approved final guide integration dated 2026-10-12 is the last
+v1.5 development/correction task. No further v1.5 feature, correction,
+implementation, audit or physical runtime is selected by this closure.
+
+The final-guide implementation evidence remains: focused regressions `7/7`,
+`flutter analyze --no-pub` PASS, serial suite `663 PASS / 9 SKIP / 0 FAIL`,
+Windows release PASS, Android production release PASS. The Android Narrow/Wide
+delta-runtime dated 2026-10-13 is OWNER-accepted for its scoped checks only;
+the report retains `PARTIAL` comprehensive coverage because all guide chapters
+and contextual routes were not repeated. This does not establish a Windows
+physical runtime, signing, distribution or formal handover.
+
+The 2026-09 roadmap rows below that deferred DVE VALUTE to v1.5 finalization,
+or listed IMENIK/other pending features as v1.5 completion prerequisites, are
+superseded as active v1.5 development obligations by this later OWNER decision.
+They remain historical evidence and are not deleted or transferred wholesale
+to OPC Int. IMENIK was previously not established as a standalone product
+feature; a separate address-book requirement is not inferred. DVE VALUTE
+preparation remains historical design evidence; implementation is not
+authorized by this closure. OPC Int audit and implementation require separate
+OWNER authority. See `OPC_V15_ROADMAP_SUPERSESSION_MATRIX.md` and
+`OPC_V15_FINAL_CLOSURE_REPORT.md`.
+
+The protected active-source control remains unchanged: current comparison is
+`20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED`; no rebaseline or `28/28` claim
+is made. Repository baseline and housekeeping results are recorded in the
+dated closure evidence separately from product acceptance.
 
 ## REFUNDACIJA PIO text correction — formally closed — 2026-10-01
 
@@ -45,10 +76,12 @@ identified or merged with SCENARIO or any UX-PARTE finding here.
 `UX-PARTE-003` remains closed. Directions 1 and 3–6 remain separate and
 unselected. Direction 2 closure does not authorize another UX implementation.
 No product source/test was changed during this formal closure and product QA
-was not rerun. The protected source baseline remains `28/28 PASS`; active-source
-control package integrity is `7/7 PASS`, with publication pointer and local /
-remote HEAD at `39f94a1bccbb98aa04bdb8a6fe6904105503601a` before the D2 closure
-commit. Full evidence is in
+was not rerun. At the Direction 2 closure checkpoint, the protected source
+baseline comparison was `28/28 PASS` and active-source control package
+integrity was `7/7 PASS`, with publication pointer and local / remote HEAD at
+`39f94a1bccbb98aa04bdb8a6fe6904105503601a` before the D2 closure commit. This
+historical result is not the present D1 candidate's protected-hash status;
+that is `26/28` as recorded below. Full evidence is in
 [`OPC_TASK_ANDROID_UX_DIRECTION_2_RESIDUAL_RUNTIME_ACCEPTANCE_CLOSURE_REPORT.md`](tasks/OPC_TASK_ANDROID_UX_DIRECTION_2_RESIDUAL_RUNTIME_ACCEPTANCE_CLOSURE_REPORT.md)
 and the external bounded closure handoff.
 
@@ -167,11 +200,18 @@ The active development target remains
 donor-prohibited. Its recovery-era active-source package is historical; it is
 not the control package for the v1.5 target.
 
-The current local-only v1.5 active-source package is
+At publication of the 2026-09-19 active-source baseline checkpoint, the
+current local-only v1.5 active-source package was
 `INTERNAL_DEVELOPMENT_CONTROL/ACTIVE_SOURCE_CONTROL/OPC-V1.5-ACTIVE-SOURCE-CONTROLLED-REBASELINE-20260919/`.
-It records 28 current logical high-risk inputs with `28/28 PASS` and zero
-unresolved rows. The active-source package is control/evidence only, not
-implementation or product authority, and is not published to Git.
+At that checkpoint it recorded 28 current logical high-risk inputs with
+`28/28 PASS` and zero unresolved rows. This is a historical checkpoint result,
+not a claim about source hashes after later authorized product changes. At the
+2026-10-03 Direction 1 implementation candidate, package integrity remains
+`7/7 PASS`, while the protected source comparison is `26/28` because of the
+two D1 changes itemized in the current-state entry below; the baseline file
+itself remains unchanged and has not been rebaselined. The active-source
+package is control/evidence only, not implementation or product authority,
+and is not published to Git.
 
 Current internal continuity layers are
 `INTERNAL_DEVELOPMENT_CONTROL/PSEUDOCODE/` (current implementation
@@ -1306,3 +1346,380 @@ identity is not guessed or merged with the SCENARIO inconsistency closed here,
 `UX-PARTE-001` remains separately `OPEN / NOT TESTED / ROOT CAUSE NOT PROVEN`.
 The formal closure record is
 [`OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md`](tasks/OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md).
+
+## Android Direction 1 Compact Chrome — implementation candidate — 2026-10-03
+
+The OWNER-approved bounded D1 slice is implemented: shared compact chrome is
+used only by LISTA PREDMETA and PREDMET; narrow Android retains the existing
+PREDMET persistent primary-action surface, while wide/Windows keeps eligible
+actions in the horizontal AppBar. The PARTE print-format disclosure now starts
+collapsed without changes to its contents or workspace. OWNER decision B for
+PODSETNIK `updatedAt` is implemented: exact no-op reconciliation preserves the
+timestamp without a row update; new/changed durable rows receive a fresh one.
+
+Final technical evidence after completing the missing platform/long-value
+test coverage: focused tests `49/49 PASS`, analyzer PASS, full serialized suite
+`609 PASS / 9 SKIP / 0 FAIL`, Windows release build PASS and
+Android production APK build PASS. An earlier full-suite attempt had one
+unrelated timeout; the isolated file passed and the subsequent full serial
+rerun passed. `git diff --check` passes. Active-source package integrity is
+`7/7 PASS`; protected source comparison is `26/28`, with only the two
+task-authorized D1 edits in LISTA and PODSETNIK differing from the unchanged
+old baseline. No baseline value was changed/rebased. No schema, transfer,
+business policy, SCENARIO, typography, or PARTE workspace behavior changed.
+Nothing was staged, committed or pushed.
+
+This remains an implementation candidate: Logos post-implementation review
+is pending and Windows/Android OWNER runtime acceptance has not been performed.
+Technical tests/builds are not represented as runtime evidence. See
+[`OPC_TASK_ANDROID_DIRECTION_1_COMPACT_CHROME_IMPLEMENTATION_REPORT.md`](tasks/OPC_TASK_ANDROID_DIRECTION_1_COMPACT_CHROME_IMPLEMENTATION_REPORT.md).
+
+## SCENARIO historical reopen and reported UX corrections — 2026-10-06
+
+The generic SCENARIO later-reopen correction and bounded UI fixes for the
+five-status LISTA dropdown, Narrow PARTE precision-control grouping, diagonal
+block selection/movement, selected-block font-size synchronization, and
+FORMAT heading/field-label clearance are implemented in the current candidate.
+Photo-effect slider preview work is debounced and moved to a worker isolate;
+real-photo runtime fluidity remains unverified.
+The SCENARIO intent remains fail-closed for uncertain historical/carrierless
+state and uses existing creation provenance or explicit saved-PREDMET audit
+evidence; it adds no DB/schema or carrier contract. Full serial tests passed
+`629 / 9 skipped / 0 failed`, and analyzer passed. Android production and
+Windows release builds both completed with exit 0. This is technical evidence,
+not runtime acceptance: no runtime was run, and the Logos post-implementation
+review must precede the OWNER runtime sequence. No source was committed or
+pushed, no staging was performed, and the protected baseline was not
+rebaselined. The pre-write comparison was `26/28`; after this source update,
+the read-only comparison against the local 28-row baseline copy is `24/28`
+(two known D1 rows, the newly changed `predmeti_repository.dart` row, and the
+local-only pseudocode row). Controlled rebaseline is required but deferred
+until Logos review/OWNER runtime acceptance and separate authorization. See
+[`OPC_SCENARIO_HISTORICAL_WORKING_KERNEL_DIFFERENTIAL_RECOVERY_REPORT.md`](tasks/OPC_SCENARIO_HISTORICAL_WORKING_KERNEL_DIFFERENTIAL_RECOVERY_REPORT.md).
+
+## SCENARIO + BIOHAZARD correction and physical closure — 2026-10-09
+
+The accepted correction closes the missing-applied-state recovery and BIOHAZARD
+consistency targets. An incomplete initial SCENARIO evaluation does not establish
+partial applied ownership or poison provenance. Once legitimate current PREDMET
+facts are complete, the normal mutable `OTVOREN` / `ZATVOREN` lifecycle can
+establish current applied state. This is current-state recovery, not historical
+reconstruction. Manual and unrelated IRiU rows remain protected; `ZAVRŠEN` and
+`ANONIMIZOVAN` remain excluded from recovery mutation.
+
+Fresh physical Android acceptance confirmed the bounded `OPELO` lifecycle:
+`NE` has no `Komplet za opelo`; `NE→DA` adds it exactly once; save/restart/reopen
+preserves one row without a repeated proposal; `DA→NE` removes it; and a second
+save/restart/reopen preserves its absence without repeated reconciliation. A
+separate incomplete→complete disposable PREDMET established and retained its
+applied state across restart. A fresh valid `NEDEFINISANA` case rendered IRiU and
+the expected `ZARAZNA BOLEST` safety presentation without assertion/render
+failure. BIOHAZARD remains conditional on the canonical policy predicate and its
+relevant cause/place/reception inputs; this closure does not mean that every
+`NEDEFINISANA` case receives the same consequence.
+
+The canonical consistency guard remains active. Automated evidence is
+`flutter analyze — PASS`, full serial suite `636 PASS / 9 SKIP / 0 FAIL`, Windows
+release `PASS`, Android production release `PASS`; these were accepted from the
+preceding correction package and were not rerun by the physical closure. The
+physical evidence is in the external review package
+[`OPC_SCENARIO_BIOHAZARD_DEFECT_CLOSURE_20261009_PHYSICAL_COMPLETE.zip`](../../REVIEW/OPC_SCENARIO_BIOHAZARD_DEFECT_CLOSURE_20261009_PHYSICAL_COMPLETE.zip),
+SHA-256 `350FC182999FADCF48A701FEF2CFBECE2AFF4EBD6F27708DC7BFA7ADB8C85195`.
+The historical `RUNTIME OPC / 081026_0550` was not found through the normal
+application list; no hidden storage was inspected. The earlier Lemovanje
+observation remains explicitly outside accepted scope, with no defect
+classification and no SCENARIO authority reopened.
+
+## PARTE / CEREMONIJA Narrow UX and autosave synchronization — 2026-10-09
+
+The PARTE composer now starts with `TEKSTUALNI BLOKOVI` collapsed while keeping
+the text controls expandable. The text `Veličina` field remains editable and
+now contains accessible 0.5 pt up/down actions; both actions disable at the
+selected block's existing minimum/maximum. The displayed font value remains
+the preview's rendered value. Narrow `DIMENZIJE` actions use directional icons
+with semantic tooltips; the reset-size action is an icon with an explanatory
+tooltip. The controls are covered at a 412 dp viewport; Wide keeps its current
+layout and the same actions.
+
+For Narrow CEREMONIJA, the manual `GROBLJE` field is capped at 280 dp and
+left-aligned; Wide gives it three fifths of the shared cemetery/type row. When
+enabled and empty, it uses the theme's secondary-container fill and primary
+outline as a quiet invitation to enter known information. Once non-empty it
+returns to the ordinary field appearance. No pulse, error state, or global
+font-size reduction was introduced.
+
+The save path waits for the parent PREDMET save before reminder refresh. The
+reminder no-op key now includes the values consumed by reminder generation:
+status, deceased name, ceremony type/date/time/location, urn placement/cemetery
+and reminder settings. Unchanged reminder inputs return before rereading the
+PREDMET row. CEREMONIJA autosave remains debounced for 800 ms. The PREDMET
+repository compares the current row with the companion inside its transaction
+and skips the SQL update when there is no durable row change. Source therefore
+does not prove a database write for every keystroke; a changed value is saved
+after the debounce, while unrelated CEREMONIJA edits no longer cause the
+additional reminder-path reread after its source key has been established.
+
+Focused widget coverage verifies the collapsed default and expandability, the
+font stepper, min/max disabling and displayed-value behavior, one-row Narrow
+dimension controls, and empty-versus-populated cemetery appearance/width.
+Runtime verification of physical PARTE gesture arbitration, durability and
+real-photo fluidity remains separate from these source/test facts and must not
+be inferred from automated tests or builds.
+
+## Current implementation, QA and runtime status — 2026-10-10
+
+Current OWNER-reported state:
+
+`IMPLEMENTATION COMPLETE – AUTOMATED QA GREEN – LOGOS REVIEW ACCEPTED – PHYSICAL RUNTIME PENDING OWNER VERIFICATION`
+
+The bounded SCENARIO/BIOHAZARD physical closure is accepted for its named
+disposable OPELO, incomplete-to-complete bootstrap and BIOHAZARD cases. Its
+external review ZIP was reopened and all 19 manifest-listed hashes matched in
+the documentation-reconciliation task. This does not broaden that runtime
+matrix.
+
+The PARTE/CEREMONIJA Narrow implementation and automated evidence remain the
+bounded 2026-10-10 state above: focused tests 14/14 PASS, analyzer PASS, final
+full serial suite 637 PASS / 9 SKIP / 0 FAIL, Windows release PASS and Android
+production release PASS. These were carried forward from the accepted NIGHT
+review package; no QA/build was rerun for this status update. The review ZIP is
+29,068 bytes with SHA-256
+`DA791C3A31886DABE3EFAC025B42D9202A86B06E2FA1C0EE55CBE285726646F6`; its 15
+manifest-listed hashes were rechecked and matched.
+
+Physical NIGHT runtime remains pending for PARTE Narrow gesture/scroll
+arbitration, move/resize persistence across reopen, real-photo preview fluidity,
+observed app responsiveness and real PREDMET/PODSETNIK save-refresh
+synchronization. These are unverified runtime conditions, not confirmed source
+defects. No source correction or subsequent runtime task is authorized by this
+status entry.
+
+At the documentation task intake, branch codex/opc-v1.5-clean-baseline and
+HEAD c37b7d23541408414b6061e6cdb257039762ce43 matched the cached upstream
+tracking ref. The worktree was intentionally mixed. Its protected comparison
+was 24/28 with exactly the four already documented current divergences; no
+rebaseline was performed. See
+`tasks/OPC_PROJECT_HISTORY_SOURCE_DOCUMENTATION_RECONCILIATION_20261010.md` for the
+bounded history, subsystem source/test index, integrity checks and publication
+evidence. The review record is supporting evidence, not a new authority home.
+
+## 18. NIGHT UX refinement continuation — 2026-10-11
+
+The existing nine-requirement NIGHT UX task is implemented in the current
+mixed worktree. UX-01 is source-confirmed; UX-02 through UX-07 and UX-09 are
+implemented with focused regression coverage. UX-08 remains deferred because
+source inspection did not prove a cause for the reported scroll jump; no
+speculative scroll behavior change was made. The task does not alter business
+policy, schema, transfer contracts or PREDMET authority.
+
+Final verification after corrections: focused set `52 passed / 0 failed`,
+`flutter analyze --no-pub` PASS, full serial suite `648 passed / 9 skipped /
+0 failed`, Windows release PASS and Android production release PASS. Windows
+`data/app.so` is 13,239,216 bytes (SHA-256
+`86579248E59B09693E459DD0A686ED360A96D4CA2006548DA72D80EE422DC933`); the
+production APK is 79,682,339 bytes (SHA-256
+`850AE74FF0A700A43F2026FC98639F03675F350AD15196F0387B17A8ECEF274D`). These
+are build artifacts, not installed-device acceptance.
+
+Physical runtime is deferred pending Logos/OWNER review. Previous Android
+Narrow findings remain COR-01 PARTIAL, COR-02 PASS with absolute bounds
+untested, COR-03 mechanical PASS / clarity FAIL and UX-01 PASS for fields
+tried; this task's automated evidence does not upgrade them. Active-source
+control remains the accepted unchanged CSV `20/28 LITERAL MATCH – 8/8
+PROVENANCE RESOLVED`, CSV SHA-256
+`3FA780EE45874434E11B9B198A5D8855250541CEEE1E5AC543EB8E652EF1CE26`; no
+rebaseline was performed. See the external NIGHT UX continuation review
+package for task diff, evidence, incidental findings and remaining runtime
+debt.
+
+## 19. NIGHT UX residual correction — UX-01A/01B/05/06 — 2026-10-11
+
+OWNER authorized the bounded residual correction for UX-01A, UX-01B, UX-05
+and UX-06. The PARTE composer no longer repeats the PREDMET number beneath its
+name-based title. ČITULJE preparation identifies the current selected PREDMET
+by name/surname with responsive ellipsis and a blank-identity fallback. The
+open-case exit dialog gives `ZATVORI PREDMET` the same non-primary TextButton
+emphasis as `OSTANI` and `IZAĐI`, with unchanged callbacks. Segment hub,
+sidebar and open-section surfaces no longer show visible fractions/status
+words; the existing fill-state count and colors remain. All four corrections
+are shared OPC behavior across Windows, Android Narrow and Android Wide.
+
+Verification for this bounded continuation: focused set 26/26 PASS;
+`flutter analyze --no-pub` PASS; full serial suite 651 PASS / 9 SKIP / 0 FAIL;
+Windows release PASS; Android production release PASS. Artifact identities and
+hashes, test details, engineering-profile applicability and task traceability
+are in
+[`OPC_NIGHT_UX_RESIDUAL_CORRECTION_20261011_TRACEABILITY.md`](tasks/OPC_NIGHT_UX_RESIDUAL_CORRECTION_20261011_TRACEABILITY.md)
+and the external task review package. A Narrow Segment 2 field overflow was
+captured as an out-of-scope incidental for a separately authorized responsive
+layout review.
+
+No physical runtime, install, rebaseline, commit or push was performed. The
+accepted pre-task active-source state was 20/28 literal matches with all eight
+divergences proven; that historical result is not upgraded to a post-edit
+hash result. UX-02/03/04/07/08/09 and DATA-01 were not reopened. Status:
+`READY FOR LOGOS/OWNER REVIEW` — not runtime acceptance or final owner approval.
+
+## 20. Residual UX and user-facing text reconciliation — 2026-10-11
+
+OWNER-authorized COR-01 through COR-05 and AUD-01 were completed within the
+approved boundaries. COR-01 removes only the obsolete PARTE instruction;
+the repository-backed close blocker remains intact. COR-02 required no source
+change: Narrow retains the bottom `SAČUVAJ` action, while Wide and the Segment
+10 panel expose the existing save callback in their responsive locations.
+COR-03 keeps Segments 9 and 10 in neutral `noFields` state and adds a neutral
+outlined circle around their readable number; it adds no fields, counters or
+visible status text and changes no state colors. COR-04 keeps `GRADSKO` on one
+line in Narrow/Wide layouts through a small responsive allocation change.
+COR-05 replaces the long `O APLIKACIJI` copy with the OWNER-approved short
+description.
+
+AUD-01 reconciles the physical Segment 7 toast with source behavior. The Wide
+runtime screenshot records `Ponuda je usklađena: +9 / −0 STAVKI.` while
+Segment 7 is opened. Current source builds that message from the counts of
+SCENARIO additions/removals returned after an applied `syncScenarioRows`
+operation. That is consistent with the message, but the runtime capture has no
+post-event database snapshot or interaction trace proving the precise trigger
+and durable row set. No SCENARIO/IRiU behavior was changed and no stronger
+runtime claim is made. The OWNER-confirmed `TEST groblje` → `TEST GROBLJE`
+disposable-PREDMET correction remains an expected data edit, not a defect.
+
+Focused regressions passed `28/28`; `flutter analyze --no-pub` reported no
+issues; the full serialized suite passed `655` with `9` existing gated skips
+and `0` failures. Windows and Android production release builds passed. These
+are automated/build results, not physical runtime acceptance. The protected
+active-source CSV remains unchanged at its previously accepted
+`20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED`; no rebaseline was performed.
+See
+[`OPC_RESIDUAL_UX_AND_USER_FACING_TEXT_RECONCILIATION_20261011_TRACEABILITY.md`](tasks/OPC_RESIDUAL_UX_AND_USER_FACING_TEXT_RECONCILIATION_20261011_TRACEABILITY.md)
+and its external canonical review package for file hashes, QA/build artifacts,
+the preserved mixed-worktree baseline and the AUD-01 evidence boundary.
+Status: `READY FOR LOGOS/OWNER REVIEW`.
+
+## 22. Extended COR-05 guide and contextual help — 2026-10-12
+
+The approved short About description is shown directly with the OPC identity;
+`RAD U APLIKACIJI` now opens a full-screen offline guide. One bundled JSON
+resource contains 33 chapters covering first launch, authentication, the main
+screens, all ten PREDMET segments, settings and nested workflows, and the
+existing modules. Shared contextual POMOĆ actions open the mapped chapter only
+after the user requests help. The underlying screen remains on the navigation
+stack, and opening help does not save or mutate user data. Help content loads on
+demand; no network, schema, database or business-rule change was introduced.
+
+Focused regressions passed `24/24`; `flutter analyze --no-pub` passed with no
+issues; the full serialized Flutter suite passed `662`, with `9` gated skips
+and `0` failures. Windows release and Android production APK builds exited 0.
+These results do not establish installed-device behavior; physical runtime was
+not authorized. The initial Serbian guide is a complete implementation draft
+for OWNER wording review, and evidence gaps are listed in the task report. The
+accepted pre-task active-source result remains historical; the manifest was
+not edited or rebaselined. A separate post-edit literal comparison again
+found `20/28` matches and the same eight control paths; this is a measured
+current comparison, not a new baseline. Three of those tracked paths also
+contain authorized contextual-help call-site edits, and two are updated
+current-state documentation. Full expected/observed hashes are preserved in
+the external task evidence. See
+[`OPC_EXTENDED_COR05_IMPLEMENTATION_20261012_TRACEABILITY.md`](tasks/OPC_EXTENDED_COR05_IMPLEMENTATION_20261012_TRACEABILITY.md)
+and the external canonical review ZIP. Status: `READY FOR LOGOS/OWNER REVIEW`.
+
+## 21. COR-04 / COR-05 final bounded correction — 2026-10-11
+
+Following Logos/OWNER acceptance of the physical findings, only COR-04 and
+COR-05 were corrected. In Wide CEREMONIJA presentation, `GROBLJE` now has an
+external label aligned with the actual input top, matching the external
+`TIP GROBLJA` label and `GRADSKO/LOKALNO` control. The existing 2:3 width
+allocation is unchanged; the Narrow integrated-label presentation remains
+intact. Responsive regressions exercise Android and Windows Wide, long
+catalog names, and Narrow presentation. For COR-05, the exact approved short
+description is visible on the main `PODEŠAVANJA → O APLIKACIJI` screen and is
+also reused in its existing detail sheet; the OPC name, icon and tagline remain.
+
+Focused regressions passed `16/16`; `flutter analyze --no-pub` passed; the
+serialized full suite passed `656 / 9 skipped / 0 failed`. Windows release and
+Android production release builds passed. The APK is 79,665,955 bytes,
+SHA-256 `2081A996718358FBD1F514D7509611B6110A20D6E333716ADCFB9CBBFC88C18F`;
+the Windows Flutter payload `data/app.so` is 13,239,216 bytes, SHA-256
+`919D218FE9EFD2126ED22EC7E53D2CC7187A29170E5F2D21EF05DA8284457E10`.
+The Windows runner is 89,600 bytes, SHA-256
+`E6C2805D1F99621DDA30260B916289AF8CF3A1115BD7B28C80B13A0C5F830BAD`.
+Exact sequential command timestamps, exit codes and summaries are in the
+task-local review package. No physical runtime was performed. The protected
+active-source CSV remains unchanged at its accepted pre-task state
+`20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED`; it was not rebaselined.
+Status: `READY FOR LOGOS/OWNER REVIEW`.
+
+## 23. Extended COR-05 guide revision and PREDMETI title — 2026-10-12
+
+The Logos revision was checked against current OPC source, current product
+authority, the existing 33-chapter resource, and accepted contextual-help
+evidence. All 33 stable chapter IDs and their ordering remain intact. The
+`lista` chapter and shared entry-screen header now read `PREDMETI`. The guide
+starts with first launch and setup, distinguishes initial KATALOG configuration
+from PREDMET-scoped selections, notes the source-confirmed initial
+`OSNOVNI PAKET` rows, and explains single-PREDMET transfer separately from
+full Backup import. The unsupported `PONUDA` and `POTVRDA` examples were
+replaced by the exact current PREDMET document actions, including the gated
+`RAČUN DOCX` option. No business, lifecycle, data, schema, transfer or runtime
+behavior changed. The single bundled offline guide remains shared by `RAD U
+APLIKACIJI` and contextual `POMOĆ`; no route or chapter identifier changed.
+
+Source-grounded final text, the 33-chapter mapping, material reconciliation
+and QA/build evidence are indexed in
+[`OPC_EXTENDED_COR05_GUIDE_REVISION_20261012_TRACEABILITY.md`](tasks/OPC_EXTENDED_COR05_GUIDE_REVISION_20261012_TRACEABILITY.md)
+and its external canonical review ZIP. The protected active-source CSV and
+its historical baseline values remain unchanged; current literal comparison
+is recorded with provenance and does not claim `28/28`. No physical runtime,
+rebaseline, commit or push was performed. Status: `READY FOR LOGOS/OWNER
+REVIEW`.
+
+## 24. OWNER-approved final guide integration — 2026-10-12
+
+The final 33-chapter content from the consolidated OWNER editorial document is
+integrated in the single bundled offline JSON resource. Stable chapter IDs,
+order and contextual routing remain unchanged. The later OWNER decision that
+all guide text is italic, including headings, is implemented and tested.
+Source-grounded corrections distinguish eight business-data entry segments
+from the additional DOKUMENTI and PREGLED I POTVRDA sections; explain
+OSNOVNI PAKET and conditional SCENARIO category rows while leaving concrete
+KATALOG article choice to the user; replace the unsupported PIN/database
+deletion claim; and correct `naloge ljudi` to `naloge osoba`. No business,
+authentication, SCENARIO, persistence, schema or transfer behavior changed.
+
+Focused guide regressions passed `7/7`. Final `flutter analyze --no-pub`
+passed with no issues (14.9 s). The first full serial suite reported two
+existing migration cases above the default 30 s per-test threshold; both
+passed independently in 55 s and 46 s. The complete rerun
+`flutter test --no-pub --concurrency=1 --timeout 2m` exited 0 with
+`663 PASS / 9 SKIP / 0 FAIL` (26:07). Windows release build exited 0
+(179.6 s); Windows `data/app.so` is 13,140,912 bytes, SHA-256
+`F7A1FD9A0634523E105C6EF3C306CAFD5AA8F18D3B6FB92C962251A4CDC70C04`.
+Android production APK build exited 0 (890.8 s); the APK is 79,364,113
+bytes, SHA-256
+`2C98AFF3CFB3A37A3C0412DE8DC3AC2DC63D8AEF85EBB3F4E28CE4CA6CCF8489`.
+The packaged guide JSON in the APK and Windows assets matches the source at
+36,424 bytes, SHA-256
+`53F24B8525DF09C251CD550AF113EB260CA55582D920E88953F13BBCAF42FBF7`.
+
+Nine environment-, forensic- or copy-gated tests remain skips and are not
+counted as executed passes. The final commands and observed timing limitations
+are recorded in
+[`OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md`](tasks/OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md)
+and its external canonical review package. No physical runtime was performed;
+automated/build evidence does not claim device acceptance. The protected
+active-source CSV remains unchanged with accepted provenance result
+`20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED`; no rebaseline, commit or push
+was performed. Status: `READY FOR LOGOS/OWNER REVIEW`.
+
+The final timestamped closure rerun supersedes the untimestamped durations
+above for QA ordering and release evidence. `flutter analyze --no-pub` passed
+with no issues (exit 0; `2026-10-12T22:07:04.0677909Z`–
+`2026-10-12T22:07:23.5539217Z`). The complete serial suite passed `663 PASS /
+9 SKIP / 0 FAIL` (exit 0; `2026-10-12T22:07:35.0970405Z`–
+`2026-10-12T22:30:25.0152830Z`). Windows release passed (exit 0;
+`2026-10-12T22:30:32.0263118Z`–`2026-10-12T22:31:36.3943827Z`) and Android
+production APK passed (exit 0; `2026-10-12T22:31:41.5987500Z`–
+`2026-10-12T22:32:29.1275400Z`). Final artifact hashes match the recorded
+Windows and APK payload hashes above. Exact commands, results and source
+payload identity are in the external task QA evidence; no physical runtime was
+performed.

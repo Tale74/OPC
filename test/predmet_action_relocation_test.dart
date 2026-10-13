@@ -58,10 +58,6 @@ void main() {
       addTearDown(() => _disposeFixture(tester, fixture));
 
       expect(find.text('ZAVRŠI'), findsNothing);
-      final reviewSection = find.text('Pregled i potvrda');
-      await tester.ensureVisible(reviewSection);
-      await tester.tap(reviewSection);
-      await tester.pumpAndSettle();
       expect(find.text('OZNAČI KAO ZAVRŠEN'), findsNothing);
 
       await _openOverflow(tester);

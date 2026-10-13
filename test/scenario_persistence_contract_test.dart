@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_contract.dart';
+import 'package:opc_v4/features/predmeti/core_v2/scenario/owner_scenario_policy_kernel.dart';
 import 'package:opc_v4/features/predmeti/core_v2/scenario/scenario_persistence_contract.dart';
 
 void main() {
@@ -26,6 +27,90 @@ void main() {
       expect(decoded.osnovniPaket, {'AGENCIJSKE_USLUGE', 'SANDUK'});
       expect(decoded.scenario.consequences.single.order, 10);
     });
+
+    test('applied evaluation baseline round-trips and is integrity-bound', () {
+      const baseline = OwnerScenarioInput(
+        uzrokSmrti: 'PRIRODNA',
+        mestoSmrti: 'BOLNICA',
+        vrstaCeremonije: 'SAHRANA',
+        tipGroblja: 'GRADSKO',
+        tipGrobnogMesta: 'GROB',
+        opelo: 'DA',
+        sahranaVanSrbije: false,
+        docek: true,
+        promenaSanduka: true,
+      );
+      final snapshot = ScenarioAssignmentSnapshot.create(
+        moduleId: 'scenario',
+        scenarioId: 'hospital-gradsko',
+        scenarioVersion: 3,
+        scenario: _scenario(),
+        osnovniPaket: {'SANDUK'},
+        assignedAt: '2026-08-01T10:00:00.000Z',
+        appliedEvaluationBaseline: baseline,
+      );
+
+      final decoded = ScenarioAssignmentSnapshot.fromJsonMap(
+        snapshot.toJsonMap(),
+      );
+
+      expect(
+        decoded.appliedEvaluationBaseline!.hasSameEvaluationInputsAs(baseline),
+        isTrue,
+      );
+      expect(snapshot.toJsonMap()['appliedEvaluationBaseline'], {
+        'version': 1,
+        'input': {
+          'uzrokSmrti': 'PRIRODNA',
+          'mestoSmrti': 'BOLNICA',
+          'vrstaCeremonije': 'SAHRANA',
+          'tipGroblja': 'GRADSKO',
+          'tipGrobnogMesta': 'GROB',
+          'opelo': 'DA',
+          'sahranaVanSrbije': false,
+          'docek': true,
+          'promenaSanduka': true,
+        },
+      });
+
+      final tampered = Map<String, dynamic>.from(snapshot.toJsonMap());
+      final applied = Map<String, dynamic>.from(
+        tampered['appliedEvaluationBaseline'] as Map,
+      );
+      final input = Map<String, dynamic>.from(applied['input'] as Map)
+        ..['promenaSanduka'] = false;
+      applied['input'] = input;
+      tampered['appliedEvaluationBaseline'] = applied;
+      expect(
+        () => ScenarioAssignmentSnapshot.fromJsonMap(tampered),
+        throwsA(isA<ScenarioPersistenceValidationException>()),
+      );
+    });
+
+    test(
+      'legacy snapshot without applied baseline remains readable as absent',
+      () {
+        final legacy = ScenarioAssignmentSnapshot.create(
+          moduleId: 'scenario',
+          scenarioId: 'hospital-gradsko',
+          scenarioVersion: 3,
+          scenario: _scenario(),
+          osnovniPaket: {'SANDUK', 'AGENCIJSKE_USLUGE'},
+          assignedAt: '2026-08-01T10:00:00.000Z',
+          assignedByKorisnikId: 7,
+        );
+
+        final decoded = ScenarioAssignmentSnapshot.fromJsonMap(
+          legacy.toJsonMap(),
+        );
+
+        expect(decoded.appliedEvaluationBaseline, isNull);
+        expect(
+          decoded.toJsonMap().containsKey('appliedEvaluationBaseline'),
+          isFalse,
+        );
+      },
+    );
 
     test('schema v1 golden payload and hash remain stable', () {
       final snapshot = ScenarioAssignmentSnapshot.create(
@@ -160,10 +245,9 @@ void main() {
 
       expect(snapshot.moduleId, 'scenario');
       expect(snapshot.scenario.name, 'Bolnica i gradsko groblje');
-      expect(
-        snapshot.scenario.condition.children.single.criterion!.values,
-        ['BOLNICA'],
-      );
+      expect(snapshot.scenario.condition.children.single.criterion!.values, [
+        'BOLNICA',
+      ]);
       expect(
         snapshot.scenario.consequences.single.katalogCategoryInternalName,
         'PREVOZ_DO_GROBLJA',

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 
 /// Row-scoped CVEĆE ribbon text governed by the surrounding PREDMET editor.
 class IriuCveceRibbonFields extends StatefulWidget {
@@ -69,20 +70,24 @@ class _IriuCveceRibbonFieldsState extends State<IriuCveceRibbonFields> {
           for (final row in widget.rows)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: TextField(
-                key: ValueKey('iriu-cvece-ribbon-${row.id}'),
+              child: ManualEntryAffordance(
                 controller: _controllerFor(row),
                 enabled: widget.enabled,
-                decoration: InputDecoration(
-                  labelText: row.nazivPrikaz.trim().isEmpty
-                      ? 'CVEĆE'
-                      : row.nazivPrikaz.trim(),
-                  hintText: 'TEKST TRAKE',
-                  border: const OutlineInputBorder(),
+                child: TextField(
+                  key: ValueKey('iriu-cvece-ribbon-${row.id}'),
+                  controller: _controllerFor(row),
+                  enabled: widget.enabled,
+                  decoration: InputDecoration(
+                    labelText: row.nazivPrikaz.trim().isEmpty
+                        ? 'CVEĆE'
+                        : row.nazivPrikaz.trim(),
+                    hintText: 'TEKST TRAKE',
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: widget.enabled
+                      ? (value) => _saveRibbonText(row.id, value)
+                      : null,
                 ),
-                onChanged: widget.enabled
-                    ? (value) => _saveRibbonText(row.id, value)
-                    : null,
               ),
             ),
         ],

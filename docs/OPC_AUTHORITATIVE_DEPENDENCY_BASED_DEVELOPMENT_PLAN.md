@@ -1,6 +1,6 @@
 # OPC — authoritative dependency-based development plan
 
-**Status:** `CURRENT OPERATIVE DEPENDENCY MAP`
+**Status:** `DEPENDENCY MAP — OWNER-ACCEPTED OPC v1.5 DEVELOPMENT CLOSED 2026-10-13`
 
 **Reality-reconciliation baseline:** `78e04f40a6e4448fe8e4f9b2bfd1ef671a34a6d9`
 
@@ -12,10 +12,10 @@
 
 **Later product-line working identity:** `OPC_v.1_Int`
 
-This document is the current control plane for remaining OPC development. It
-supersedes stale status and sequencing statements in its pre-reconciliation
-version while preserving their owner decisions and audit provenance through
-Git history at the baseline SHA above and through section 12 below.
+This document records the dependency and release map as of its reconciliation
+date. OWNER's 2026-10-13 final v1.5 closure below supersedes its former active
+development sequencing, while preserving owner decisions and audit provenance
+through the unchanged historical sections and Git history at the baseline SHA.
 
 It is an ordering and release-control document, not an authority to create new
 owner product requirements. Product scope comes from the reconstructed owner
@@ -26,6 +26,28 @@ roadmap.
 `OPC Srbija` is planning shorthand only for the Serbian-market product-line
 gate. It is not the product name and must not be added to application UI,
 package-facing identity, installer identity or documentation as a rename.
+
+## 0. Later OWNER closure authority — 2026-10-13
+
+OWNER has accepted the current OPC v1.5 product as stable, functionally correct
+and final. The 2026-10-12 OWNER-approved final guide integration was the last
+v1.5 development/correction task. This later decision supersedes this plan's
+older active sequencing and completion prerequisites for IMENIK, DVE VALUTE,
+or other pending feature/correction work as v1.5 development obligations.
+Those older statements remain historical decision/provenance records; they
+must not be erased, interpreted as current work authorization, or silently
+transferred wholesale to OPC Int. See the current-state entry
+`OPC_CURRENT_DEVELOPMENT_STATE.md` and `OPC_V15_ROADMAP_SUPERSESSION_MATRIX.md`.
+
+The scoped Android Narrow/Wide delta-runtime dated 2026-10-13 was accepted by
+OWNER within the executed scope; its source report remains `PARTIAL` for
+comprehensive guide chapter/context-route coverage. No Windows physical
+runtime, signing, distribution or formal handover is implied. No OPC Int audit
+or implementation is authorized by the closure decision.
+
+The earlier dependency sections below are retained as historical provenance
+and completed-product evidence. They no longer select or authorize another
+OPC v1.5 product-development task.
 
 ## 1. Authority and interpretation
 
@@ -124,15 +146,18 @@ after Member 3 is selected. The earlier sequence
 beginning with a broad lifecycle-aware PODSETNIK program is superseded as
 current sequencing authority.
 
-The current product-line relationship is:
+The pre-closure product-line proposal was:
 
 **DVE VALUTE preparation/design → final OPC v1.5 finalization (implementation
 deferred) → finalized product version 2.0 with SRB distinction → later
 `OPC Int` product-line evolution → signing and professional handover.**
 
-The DVE VALUTE preparation package is complete and belongs to the finalization
-tail. It is not the next implementation package, and its deferred design
-choices do not create current product behavior.
+OWNER's 2026-10-13 closure supersedes that proposal as active v1.5 development
+sequencing: DVE VALUTE is not a v1.5 development obligation, its unresolved
+design choices remain historical, and the closure does not transfer it
+wholesale to OPC Int. No DVE implementation or finalization task is selected.
+Separate release and handover gates remain distinct and open where identified
+below.
 
 This prerequisite chain does not select the next task or order other owner-
 planned work. The separately OWNER-selected F-09 Member 1 implementation and
@@ -199,14 +224,21 @@ implementation package.
 
 ### 2.5 Later, non-blocking and historical classifications
 
-`OPC_v.1_Int`, app identity/version/update decisions, signing/handover,
-contextual help and Stage 2 cleanup retain their later/deferred status. Broad
-RI-3/FK expansion, broad rewrite, isolated PODSETNIK patches and other
+`OPC_v.1_Int`, app identity/version/update decisions, signing/handover and
+Stage 2 cleanup retain later/deferred status. Contextual POMOĆ and the accepted
+33-chapter guide are implemented; no further v1.5 help work is authorized.
+Broad RI-3/FK expansion, broad rewrite, isolated PODSETNIK patches and other
 unparented technical chains are not active roadmap items. Historical withdrawn
 transfer claims and obsolete Gate 0/future-SCENARIO wording remain provenance
 only.
 
 ## 3. Reality matrix
+
+The following matrix records the reconciled state before the 2026-10-13 OWNER
+closure. Its release-gate distinctions and completed evidence remain useful;
+unfinished v1.5 development/correction items are superseded by §0 and the
+dated closure matrix. Do not read historical `OPEN` or `PARTIAL` development
+rows as current authorization to implement.
 
 | Program / dependency | Actual state | Windows | Android | Remaining work / dependency decision | Old premise |
 | --- | --- | --- | --- | --- | --- |
@@ -215,9 +247,9 @@ only.
 | PREDMET authority/dependency protection | `PARTIAL` | Core truth and SCENARIO hand-off proven | Core truth and SCENARIO hand-off proven | Finish referential/lifecycle acceptance and carrier parity; do not reopen proven scenario ownership | Future snapshot/provenance premise is superseded |
 | Database/referential integrity | `PARTIAL` | Hard-delete runtime PASS; scoped restore history exists | Hard-delete DB/isolation PASS; scoped restore PASS on prior artifact | Remaining RI owner gates, FK/orphan strategy if pursued, current-tip final rehearsal | Isolated PODSETNIK orphan patch is superseded by coordinated program |
 | Windows single-instance | Native singleton and installer/update protection `CLOSED — FULL ACCEPTANCE PASS` | Native `Local\\OPC_ORGANIZATOR_POGREBNE_CEREMONIJE_SINGLE_INSTANCE` guard is published and accepted; Inno Setup declares the same mutex with `CloseApplications=no` | Native W1–W6 PASS; Inno Setup compile and I1/I2/I3 PASS | None — RR-012 closed; reopen only for proven regression | Native singleton and installer protection remain separate controls |
-| Windows startup/exit performance | `PARTIAL` | Installed baseline about 8–9 s to login; slow exit observed; current-tip instrumented acceptance absent | N/A | Measure current release lane, agree target, correct only proven bottlenecks if gate fails | Later runtime work does not prove performance closure |
-| Android PARTE performance | `PARTIAL` | N/A | Source risks known; latest focused profiler/acceptance not performed | Reproduce/profile on representative devices; fix only if measured | No full/partial rewrite is authorized by source audit alone |
-| IRiU/KATALOG performance | `PARTIAL` | Repository characterization exists; owner slowdown not decomposed | Same shared path; no measured platform acceptance | Separate repository, first-frame, photo read/decode timing before correction | Synthetic timing is diagnostic only |
+| Windows startup/exit performance | `PARTIAL — HISTORICAL DEVELOPMENT CANDIDATE` | Installed baseline about 8–9 s to login; slow exit observed; current-tip instrumented acceptance absent | N/A | No v1.5 performance correction is authorized by the 2026-10-13 closure; no performance PASS is inferred | Later runtime work does not prove performance closure |
+| Android PARTE performance | `PARTIAL — HISTORICAL DEVELOPMENT CANDIDATE` | N/A | Source risks known; latest focused profiler/acceptance not performed | No v1.5 performance correction is authorized by the 2026-10-13 closure; no performance PASS is inferred | No full/partial rewrite is authorized by source audit alone |
+| IRiU/KATALOG performance | `PARTIAL — HISTORICAL DEVELOPMENT CANDIDATE` | Repository characterization exists; owner slowdown not decomposed | Same shared path; no measured platform acceptance | No v1.5 performance correction is authorized by the 2026-10-13 closure; no performance PASS is inferred | Synthetic timing is diagnostic only |
 | PREDMET `ZAVRŠEN` lifecycle | `COMPLETED — TECHNICAL PASS / RUNTIME OWED` | Focused runtime not separately recorded | Focused runtime not separately recorded | Include lifecycle in final platform semantic acceptance | Old unresolved lifecycle queue is superseded |
 | SCENARIO implementation | `COMPLETED — TECHNICAL PASS` | See runtime row | See runtime row | Protect; do not repeat | Hard-coded/future-wiring chronology is superseded |
 | SCENARIO Windows runtime | `COMPLETED — OWNER RUNTIME PASS` | PASS | N/A | Only regression protection | Future wiring premise false |
@@ -232,12 +264,12 @@ only.
 | Single-PREDMET JSON export relocation / PREDMET `ZAVRŠEN` action consolidation | `IMPLEMENTED — SOURCE/TEST/ANALYZE/FULL SUITE/WINDOWS+ANDROID RELEASE BUILD PASS; OWNER RUNTIME/PUBLICATION OPEN` | Export-only action is in canonical detail/KORICE overflow; JSON import stays exclusively in PODEŠAVANJA; completion action reuses the existing lifecycle path | Same shared implementation | No transfer-contract or lifecycle change; complete OWNER runtime/release acceptance only through its separate gate | The old export/import relocation scope is superseded by the binding export-only OWNER correction |
 | Full backup/restore final rehearsal | `OPEN — BLOCKING FOR GATE` | Prior successful incidents are partial evidence | Prior scoped PASS is partial evidence | Current-tip, release-candidate, separate-platform final rehearsal with SCENARIO carrier | Prior restore does not close release gate |
 | NALOG CVEĆARI | `CLOSED — ACCEPTED PDF-ONLY UNIT` | Accepted current PDF unit in the native PREDMET → DOKUMENTI route | Shared implementation | Preserve the accepted PDF-only scope; DOCX is not an open option | Older open-scope wording is superseded |
-| Standard PDF typography | `OPEN` | Current documents exist | Shared generation | Per-document restrained refinement and visual/print acceptance; PARTE excluded | Still valid |
+| Standard PDF typography | `HISTORICAL OPEN — V1.5 OBLIGATION SUPERSEDED` | Current documents exist | Shared generation | Further per-document refinement is not a v1.5 completion obligation; no new work is authorized | Previously listed as remaining product completeness |
 | RAČUN toggle, DOCX and shared data model — normal-roadmap Member 3 | `COMPLETED — OWNER RUNTIME ACCEPTED; PUBLISHED` | FIRMA toggle is the sole availability condition for PDF and DOCX; both adapters consume one canonical RAČUN data model; snapshot action/exporter retired; Word 2019 direct open, one-page render and print/layout parity accepted | Same bounded PREDMET/FIRMA/IRiU/SAVETNIK-derived model | Preserve exact OWNER text/defaults, Article 33, Backup behavior and unchanged Single-PREDMET JSON; no broader FIRMA/legal inference | Published in commit `d5ec4350b143607068f430f9ae3d352aa578f0a0`. Final Word defect: nested signature-label table required a trailing paragraph; corrected with `_requiredTrailingParagraph()`; no broader document-set acceptance is implied |
 | Windows light/dark theme | `COMPLETE — OWNER RUNTIME PASS` | Shared `ThemeMode.system` and owner runtime acceptance prove the supported light/dark behavior is closed | Owner runtime authority: `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED` | No further theme implementation, audit or roadmap dependency; reopen only for a proven regression or new owner decision | Older partial/pending theme wording is superseded |
-| Full UI/UX audit | `OPEN` | Only short SCENARIO impression | Only bounded runtime impressions | Full Windows/Android audit; concise working screens; hierarchy/terminology/interaction carry clarity | Runtime smoke is not full UX acceptance |
-| Contextual Help/User Guide | `DEFERRED PRODUCT DIRECTION` | Not designed | Not designed | Evaluate screen-contextual `Pomoć`/`Uputstvo` after UX audit; no immediate implementation authority | New direction, not current task |
-| MODUL DVE VALUTE | `DESIGN/PREPARATION COMPLETE — IMPLEMENTATION DEFERRED TO FINAL OPC v1.5 FINALIZATION` | Source-learning, authority reconciliation and implementation design complete; product implementation not started | Same | Preserve the accepted preparation package and resolve deferred design choices only at finalization; finalized product target is 2.0 with SRB distinction | Do not move DVE VALUTE to OPC Int; do not implement now |
+| Full UI/UX audit | `HISTORICAL OPEN — V1.5 OBLIGATION SUPERSEDED` | Narrow correction/runtime evidence exists within named task scopes | Same; 2026-10-13 delta runtime accepted within executed scope and remains `PARTIAL` comprehensively | No broad v1.5 audit or correction is authorized; preserve unperformed checks as unverified | Runtime smoke is not full UX acceptance |
+| Contextual Help/User Guide | `IMPLEMENTED — FINAL V1.5 TASK COMPLETED` | Final 33-chapter offline guide content, italic presentation and contextual help are integrated and accepted within the final v1.5 task | The accepted Android Narrow/Wide delta runtime confirms its executed scope; comprehensive chapter/context-route coverage remains `PARTIAL`, and no Windows physical runtime is claimed | No further v1.5 help implementation is authorized by this closure; preserve the stated runtime limits and treat any further work as a separately authorized task | Supersedes the earlier deferred product-direction entry; current evidence is in current-state §24, final-guide traceability and the accepted Android runtime package |
+| MODUL DVE VALUTE | `CANCELLED AS V1.5 DEVELOPMENT OBLIGATION — NOT IMPLEMENTED` | Source-learning, authority reconciliation and implementation design remain historical preparation; product implementation not started | Same | Preserve the accepted preparation package; any future product decision requires separate OWNER authority and must not be inferred from this closure | No v1.5 implementation; no wholesale transfer or implementation under OPC Int is authorized |
 | Progressive refactor / partial rewrite | `DEFERRED / EVIDENCE-GATED` | Some bounded refactors already landed | Shared | Only where stability, maintainability, parity or localization evidence requires it | Roadmap-wide refactor predecessor is superseded |
 | Stage 2 package/licensing cleanup | `NON-BLOCKING BEFORE OPC v.1` | Dead compatibility code may remain | Same | Optional exact-scope cleanup; never restore restrictions | Not a gate predecessor |
 | Final platform business-semantic parity | `OPEN — BLOCKING FOR GATE` | Separate final acceptance required | Separate final acceptance required | Release-candidate matrix including lifecycle, JSON, reminders, documents and currency; theme closure is already recorded | Scenario parity alone is insufficient |
@@ -260,10 +292,11 @@ only.
 3. Include the explicit `ZAVRŠEN` lifecycle in final Windows and Android runtime
    semantic acceptance; focused tests alone do not create platform PASS.
 
-### 4.2 Evidence-first performance closure
+### 4.2 Historical evidence-first performance proposal — no current v1.5 task
 
-Performance work starts with current-tip release measurements. It does not
-start with a presumed refactor.
+The following proposal was recorded before final OWNER acceptance. It does not
+authorize a new v1.5 profiling/correction task. No performance target or
+closure result is inferred from the current development acceptance.
 
 - Windows: cold/warm process start to first window/usable screen, DB/open work,
   exit, and second-launch behavior.
@@ -275,10 +308,10 @@ start with a presumed refactor.
 Owner confirms an acceptance target after baseline evidence. If current
 behavior meets the target, close by evidence with no code change.
 
-### 4.3 SCENARIO carrier parity
+### 4.3 SCENARIO carrier contract and separate release-evidence boundary
 
-Production JSON integration must implement the already accepted carrier
-contract rather than invent a second model:
+Production JSON integration implements the accepted carrier contract rather
+than a second model:
 
 - Single-PREDMET JSON carries the PREDMET snapshot and complete STAVKA
   provenance through transfer-index reassociation;
@@ -297,12 +330,13 @@ snapshot/provenance sections. Legacy schema 6/7 inputs remain readable without
 claiming imported continuity; final platform round-trip acceptance remains a
 release gate.
 
-### 4.4 Remaining product completeness
+### 4.4 Historical remaining-product-completeness candidates — superseded
 
 - preserve the accepted PDF-only NALOG CVEĆARI unit; DOCX is not an open option;
-- refine standard PDF typography document by document;
-- perform a full Windows/Android UI/UX audit;
-- evaluate, but do not automatically implement, contextual `Pomoć`/`Uputstvo`.
+- standard PDF typography refinement is no longer a v1.5 completion obligation;
+- a broad Windows/Android UI/UX audit is not authorized by this closure;
+- contextual `Pomoć`/`Uputstvo` has since been implemented in the accepted final
+  guide task; no further help implementation is authorized here.
 
 ## Bounded F-09 owner authority and Member 1 implementation — 2026-09-20
 
@@ -372,6 +406,10 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
 
 ## 6. Documents, JSON, theme and UX boundaries
 
+This section preserves pre-closure constraints and evidence. Read it with §0
+and the dated closure matrix; a historical proposal below does not reopen a
+v1.5 correction task or contradict the accepted product state.
+
 - Single-PREDMET JSON and full backup JSON remain distinct products.
 - A restore success from an earlier artifact is evidence, not the final gate.
 - RAČUN's FIRMA `RAČUN` toggle, PDF/DOCX pair, shared canonical data model,
@@ -380,19 +418,22 @@ button, or `PODEŠAVANJA` placement may be reintroduced from historical text.
   Article 33 sentence remains in both outputs. Runtime/visual acceptance stays
   separate.
 - NALOG CVEĆARI is an accepted PDF-only unit; DOCX is not an open option.
-- Standard PDF typography work excludes PARTE and preserves document formation.
+- Standard PDF typography refinement was a pre-closure candidate. It is no
+  longer a v1.5 development obligation; no additional document-format or
+  print-acceptance result is claimed.
 - Windows light/dark theme is closed by explicit owner runtime authority:
   `WINDOWS LIGHT/DARK THEME — RUNTIME CONFIRMED / CLOSED`. Do not add a
   Windows-only selector or reopen a theme gate unless a new regression is
   proven or the owner issues a new decision.
 - Working screens remain concise. Do not add explanatory prose to compensate
   for weak hierarchy, grouping, terminology or interactions.
-- Contextual help is a future design direction, not implementation authority.
+- Contextual POMOĆ and the 33-chapter `RAD U APLIKACIJI` guide are implemented
+  in the accepted final v1.5 state. No additional help implementation is
+  authorized by this closure.
 
-## 7. DVE VALUTE — preparation complete; implementation deferred
+## 7. DVE VALUTE — historical preparation; implementation obligation superseded 2026-10-13
 
-`DESIGN/PREPARATION COMPLETE — IMPLEMENTATION DEFERRED TO FINAL OPC v1.5
-FINALIZATION`
+`DESIGN/PREPARATION COMPLETE — V1.5 IMPLEMENTATION OBLIGATION CANCELLED BY OWNER`
 
 The completed preparation package records the current OWNER model without
 creating implementation behavior:
@@ -411,24 +452,26 @@ creating implementation behavior:
 - documents use the stored PREDMET currency, and an EUR PREDMET must not emit a
   relabeled RSD NBS IPS QR.
 
-The following remain attached to the deferred finalization package rather than
-being resolved here: rounding mode/scale/precision, conversion-rate provenance,
-transition wording, KATALOG dual-currency presentation and preference
-persistence, EUR QR/payment behavior, mixed-currency reporting, and later
-switching warnings. The finalized product target is version `2.0`; the Serbian
-product line receives an explicit `SRB` distinction, and future `OPC Int` is
-based on that SRB foundation rather than being current implementation scope.
+The following choices had remained open in the old v1.5 finalization package:
+rounding mode/scale/precision, conversion-rate provenance, transition wording,
+KATALOG dual-currency presentation and preference persistence, EUR QR/payment
+behavior, mixed-currency reporting, and later switching warnings. They are
+retained as historical unresolved design, not active v1.5 obligations and not
+automatically transferred to OPC Int. No implementation is authorized by this
+closure.
 
-## 8. Active owner decision queue
+## 8. Owner decision queue as of 2026-09-25 — superseded for v1.5 by OWNER closure
 
-Only unresolved current decisions are active:
+The following records the queue before the 2026-10-13 final product acceptance.
+Its v1.5 development entries are historical; separate release/market decisions
+remain separate from development closure.
 
-| Decision | Needed before | Status |
+| Decision | Earlier trigger / status | 2026-10-13 disposition |
 | --- | --- | --- |
-| Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance | `OPEN OWNER DECISION` |
-| DVE VALUTE finalization choices listed in section 7 | Final OPC v1.5 finalization | `DEFERRED WITH IMPLEMENTATION` |
-| Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate | `OPEN OWNER DECISION` |
-| Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure | `OPEN OWNER DECISION` |
+| Measurable acceptance targets after current-tip Windows startup/exit and Android PARTE profiling | Any performance correction acceptance — `OPEN OWNER DECISION` | No v1.5 correction task authorized; no target or performance result inferred. |
+| DVE VALUTE finalization choices listed in section 7 | Final OPC v1.5 finalization — `DEFERRED WITH IMPLEMENTATION` | `CANCELLED AS A V1.5 DEVELOPMENT OBLIGATION`; design remains historical; implementation not authorized. |
+| Final OPC app identity/version/update channel (name remains OPC) | First Product-Line Gate — `OPEN OWNER DECISION` | Remains a separate release/market decision; this task does not resolve it. |
+| Release baseline branch/tag policy and publisher/signing-key custody | Release/handover closure — `OPEN OWNER DECISION` | Remains a separate release/handover decision; this task does not create a tag or signing identity. |
 
 The exact F-09 triggers and child relationship are resolved OWNER meaning, not
 an open decision-queue item. Their bounded implementation is complete under
@@ -436,24 +479,28 @@ the separately OWNER-selected Member 1 task; OWNER runtime/release acceptance
 remains separate and broader unspecified FINANSIJE reminder scope remains
 deferred. No new decision ID is created by this status reconciliation.
 
-Removed from the active queue as already decided:
+The following previously closed business decisions remain closed:
 
 - `ZATVOREN/ZAVRŠEN` lifecycle and retirement of automatic completion;
 - historical auto-completed behavior as a continuing automatic rule;
 - SCENARIO placement, package model, PREDMET ownership, application and
   non-retroactivity;
 - Windows/Android equality and system-theme rule;
-- DVE VALUTE preparation is complete; its implementation belongs to the final
-  OPC v1.5 finalization before any `OPC Int` work;
+- DVE VALUTE preparation is historical; its v1.5 implementation obligation is
+  superseded by the later OWNER closure and is not moved to `OPC Int`;
 - product name remaining `OPC`.
 
 Pre-zero owner-decision indexes remain historical/navigation evidence under
 the post-zero authority inventory. They are not silently promoted into this
 active queue.
 
-## 9. First Product-Line Gate — stable OPC v.1
+## 9. Separate First Product-Line / release gate — not equivalent to development closure
 
-The gate closes only when every required item is evidenced:
+The following is a separate product-line/release gate, not this v1.5
+development-closure checklist. Its remaining items are not silently declared
+complete or cancelled by the OWNER's acceptance of current product behavior.
+Conversely, listed historical feature/correction work is not renewed as a v1.5
+implementation obligation.
 
 - [ ] application name and visible product identity remain `OPC`;
 - [ ] Windows and Android release builds come from the release baseline;
@@ -467,8 +514,8 @@ The gate closes only when every required item is evidenced:
       legacy/fail-closed compatibility;
 - [x] Installer/update running-app program-file protection passes I1–I3; native Windows single-instance is already closed by full acceptance;
 - [ ] explicit completion and the full signal/PODSETNIK lifecycle pass;
-- [ ] DVE VALUTE finalization package is implemented and accepted under the
-      final OPC v1.5 finalization gate;
+- [x] DVE VALUTE is not a v1.5 development obligation under the 2026-10-13
+      OWNER closure; no implementation is claimed or authorized;
 - [ ] remaining required documents/policies are closed or explicitly classified;
 - [x] Windows light/dark theme runtime behavior is owner-confirmed closed;
       final business-semantic parity remains a separate gate;
@@ -481,7 +528,7 @@ The gate closes only when every required item is evidenced:
 
 Stage 2 package/licensing cleanup is not a default predecessor.
 
-## 10. Non-blocking debt and evidence-gated work
+## 10. Non-blocking debt and future evidence-gated work — no v1.5 successor selected
 
 The following may remain after the stable OPC v.1 gate when explicitly recorded
 and when no current evidence promotes it to a blocker:
@@ -491,7 +538,8 @@ and when no current evidence promotes it to a blocker:
   release rehearsal;
 - progressive refactor of stable code without a concrete stability,
   maintainability, parity or localization need;
-- contextual help implementation beyond an accepted design;
+- further contextual-help or guide expansion beyond the accepted 33-chapter
+  guide; no v1.5 follow-up task is selected or authorized;
 - OPC Web research and implementation;
 - international language/country/profile implementation.
 
@@ -504,11 +552,11 @@ finalization is complete. Before that gate there is no SRB implementation
 change, international localization implementation, physical source fork,
 country profile rollout or international release identity.
 
-After the gate and finalization, architecture work may define shared
-core/profiles/flavors and add supported languages/country/document/business-
-policy profiles. Serbian Latin and Cyrillic remain supported. The prepared
-dual-currency design may then be implemented and extended rather than
-duplicated. Tax, VAT, fiscalization and legal-form policy still require
+After the separate product-line gate, any architecture work or currency-design
+reuse requires a new explicit OWNER roadmap item and authority. The 2026-10-13
+closure does not transfer the prepared DVE VALUTE design wholesale to OPC Int
+and does not authorize its implementation. Serbian Latin and Cyrillic remain
+supported. Tax, VAT, fiscalization and legal-form policy still require
 separate owner authority.
 
 ## 12. Historical provenance and superseded chronology
@@ -568,8 +616,9 @@ Stop affected work when:
 - completed SCENARIO work is being repeated without a new finding;
 - an isolated PODSETNIK patch would pre-empt the complete signal/lifecycle model;
 - `OPC Srbija` is being used to rename the application;
-- DVE VALUTE implementation is being deferred to final OPC v1.5 finalization,
-  not moved to `OPC Int`;
+- The pre-closure DVE VALUTE sequencing statement is historical and superseded:
+  its implementation is not a v1.5 obligation, and no wholesale transfer or
+  implementation under `OPC Int` is authorized by the 2026-10-13 closure;
 - Web, internationalization, tax, VAT or fiscalization enters current scope
   without the required gate and owner decision.
 

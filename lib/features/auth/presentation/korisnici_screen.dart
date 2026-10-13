@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/help/opc_help.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import '../data/auth_repository.dart';
 import '../domain/session_service.dart';
 import 'pin_input_widget.dart';
@@ -62,7 +64,12 @@ class _KorisniciScreenState extends State<KorisniciScreen> {
       );
       if (widget.embedded) return blocked;
       return Scaffold(
-        appBar: AppBar(title: const Text('KORISNICI')),
+        appBar: AppBar(
+          title: const OpcHelpTitle(
+            title: Text('KORISNICI'),
+            chapterId: 'settings.users',
+          ),
+        ),
         body: blocked,
       );
     }
@@ -111,8 +118,8 @@ class _KorisniciScreenState extends State<KorisniciScreen> {
                 Text(
                   'KORISNICI',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const Spacer(),
                 FilledButton.icon(
@@ -130,7 +137,10 @@ class _KorisniciScreenState extends State<KorisniciScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KORISNICI'),
+        title: const OpcHelpTitle(
+          title: Text('KORISNICI'),
+          chapterId: 'settings.users',
+        ),
         centerTitle: false,
         actions: [
           FilledButton.icon(
@@ -399,12 +409,10 @@ class _KorisnikTile extends StatelessWidget {
           backgroundColor: neaktivan
               ? Colors.grey.shade300
               : (korisnik.uloga == 'ADMINISTRATOR'
-                  ? Theme.of(context).colorScheme.primaryContainer
-                  : Theme.of(context).colorScheme.secondaryContainer),
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : Theme.of(context).colorScheme.secondaryContainer),
           child: Text(
-            korisnik.imePrezime.isNotEmpty
-                ? korisnik.imePrezime[0]
-                : '?',
+            korisnik.imePrezime.isNotEmpty ? korisnik.imePrezime[0] : '?',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: neaktivan ? Colors.grey : null,
@@ -587,9 +595,9 @@ class _NoviKorisnikDialogState extends State<_NoviKorisnikDialog> {
             children: [
               Text(
                 'NOVI KORISNIK',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               if (_korak == 1) _buildPodaciForm(),
@@ -607,15 +615,19 @@ class _NoviKorisnikDialogState extends State<_NoviKorisnikDialog> {
       key: _formKey,
       child: Column(
         children: [
-          TextFormField(
+          ManualEntryAffordance(
             controller: _imeCtrl,
-            textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(
-              labelText: 'IME I PREZIME',
-              border: OutlineInputBorder(),
+            enabled: true,
+            child: TextFormField(
+              controller: _imeCtrl,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                labelText: 'IME I PREZIME',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Obavezno polje.' : null,
             ),
-            validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Obavezno polje.' : null,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -625,10 +637,7 @@ class _NoviKorisnikDialogState extends State<_NoviKorisnikDialog> {
               border: OutlineInputBorder(),
             ),
             items: const [
-              DropdownMenuItem(
-                value: 'SAVETNIK',
-                child: Text('SAVETNIK'),
-              ),
+              DropdownMenuItem(value: 'SAVETNIK', child: Text('SAVETNIK')),
               DropdownMenuItem(
                 value: 'ADMINISTRATOR',
                 child: Text('ADMINISTRATOR'),
@@ -713,10 +722,9 @@ class _PinDialogState extends State<_PinDialog> {
             children: [
               Text(
                 widget.title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               PinInputWidget(

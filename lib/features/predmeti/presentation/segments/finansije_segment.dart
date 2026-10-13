@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../core_v2/models/iriu_truth_models.dart';
 import '../../core_v2/services/financial_truth_service.dart';
 import '../../core_v2/services/predmet_iriu_truth_service.dart';
@@ -244,21 +245,25 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
                 const SizedBox(height: 12),
               ],
               _FinansijeFieldWithDecision(
-                field: TextFormField(
+                field: ManualEntryAffordance(
                   controller: _troskoviJkpCtrl,
-                  focusNode: _moneyFocusNodes[_troskoviJkpCtrl],
                   enabled: e,
-                  textAlign: TextAlign.right,
-                  textAlignVertical: TextAlignVertical.center,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+                  child: TextFormField(
+                    controller: _troskoviJkpCtrl,
+                    focusNode: _moneyFocusNodes[_troskoviJkpCtrl],
+                    enabled: e,
+                    textAlign: TextAlign.right,
+                    textAlignVertical: TextAlignVertical.center,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: _moneyFieldDecoration(
+                      'TROŠKOVI JKP',
+                      invalid: _invalidMoney.contains(_troskoviJkpCtrl),
+                    ),
+                    onChanged: (_) => _onMoneyChanged(_troskoviJkpCtrl),
+                    onEditingComplete: () => _formatField(_troskoviJkpCtrl),
                   ),
-                  decoration: _moneyFieldDecoration(
-                    'TROŠKOVI JKP',
-                    invalid: _invalidMoney.contains(_troskoviJkpCtrl),
-                  ),
-                  onChanged: (_) => _onMoneyChanged(_troskoviJkpCtrl),
-                  onEditingComplete: () => _formatField(_troskoviJkpCtrl),
                 ),
                 decision: PredmetBooleanDecisionTile(
                   title: 'TROŠKOVI JKP OBAVEZA PLATIOCA',
@@ -275,40 +280,48 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: ManualEntryAffordance(
                       controller: _avansCtrl,
-                      focusNode: _moneyFocusNodes[_avansCtrl],
                       enabled: e,
-                      textAlign: TextAlign.right,
-                      textAlignVertical: TextAlignVertical.center,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                      child: TextFormField(
+                        controller: _avansCtrl,
+                        focusNode: _moneyFocusNodes[_avansCtrl],
+                        enabled: e,
+                        textAlign: TextAlign.right,
+                        textAlignVertical: TextAlignVertical.center,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: _moneyFieldDecoration(
+                          'AVANS',
+                          invalid: _invalidMoney.contains(_avansCtrl),
+                        ),
+                        onChanged: (_) => _onMoneyChanged(_avansCtrl),
+                        onEditingComplete: () => _formatField(_avansCtrl),
                       ),
-                      decoration: _moneyFieldDecoration(
-                        'AVANS',
-                        invalid: _invalidMoney.contains(_avansCtrl),
-                      ),
-                      onChanged: (_) => _onMoneyChanged(_avansCtrl),
-                      onEditingComplete: () => _formatField(_avansCtrl),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: TextFormField(
+                    child: ManualEntryAffordance(
                       controller: _popustCtrl,
-                      focusNode: _moneyFocusNodes[_popustCtrl],
                       enabled: e,
-                      textAlign: TextAlign.right,
-                      textAlignVertical: TextAlignVertical.center,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                      child: TextFormField(
+                        controller: _popustCtrl,
+                        focusNode: _moneyFocusNodes[_popustCtrl],
+                        enabled: e,
+                        textAlign: TextAlign.right,
+                        textAlignVertical: TextAlignVertical.center,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: _moneyFieldDecoration(
+                          'POPUST',
+                          invalid: _invalidMoney.contains(_popustCtrl),
+                        ),
+                        onChanged: (_) => _onMoneyChanged(_popustCtrl),
+                        onEditingComplete: () => _formatField(_popustCtrl),
                       ),
-                      decoration: _moneyFieldDecoration(
-                        'POPUST',
-                        invalid: _invalidMoney.contains(_popustCtrl),
-                      ),
-                      onChanged: (_) => _onMoneyChanged(_popustCtrl),
-                      onEditingComplete: () => _formatField(_popustCtrl),
                     ),
                   ),
                 ],

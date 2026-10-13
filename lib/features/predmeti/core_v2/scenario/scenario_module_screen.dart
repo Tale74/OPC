@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
+import '../../../../core/help/opc_help.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
 import '../services/iriu_display_name_resolver.dart';
 import 'owner_scenario_policy_kernel.dart';
@@ -313,7 +315,12 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SCENARIO')),
+      appBar: AppBar(
+        title: const OpcHelpTitle(
+          title: Text('SCENARIO'),
+          chapterId: 'scenario',
+        ),
+      ),
       body: FutureBuilder<ScenarioModule>(
         future: _moduleFuture,
         builder: (context, moduleSnapshot) {
@@ -737,10 +744,7 @@ class _OpenPredmetiDialogContentState
               const Expanded(
                 child: Text(
                   'PRIMENJENO NA PREDMET',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
               ),
               IconButton(
@@ -2433,22 +2437,30 @@ class _ScenarioDialogState extends State<_ScenarioDialog> {
                 ),
                 const SizedBox(height: 12),
                 const _FieldCaption('RAZLOG'),
-                TextField(
+                ManualEntryAffordance(
                   controller: reason,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  enabled: true,
+                  child: TextField(
+                    controller: reason,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 const _FieldCaption('UPOZORENJE'),
-                TextField(
+                ManualEntryAffordance(
                   controller: warning,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  enabled: true,
+                  child: TextField(
+                    controller: warning,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    maxLines: 2,
                   ),
-                  maxLines: 2,
                 ),
               ],
             ),
@@ -3296,12 +3308,16 @@ class _CriterionEditorFields extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       const _FieldCaption('VREDNOST'),
-      TextField(
+      ManualEntryAffordance(
         controller: valuesController,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          isDense: true,
-          hintText: 'Unesite jednu ili više vrednosti',
+        enabled: true,
+        child: TextField(
+          controller: valuesController,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            isDense: true,
+            hintText: 'Unesite jednu ili više vrednosti',
+          ),
         ),
       ),
     ],
@@ -3402,12 +3418,16 @@ class _CriterionDialogState extends State<_CriterionDialog> {
             ),
             const SizedBox(height: 12),
             const _FieldCaption('VREDNOST'),
-            TextField(
+            ManualEntryAffordance(
               controller: _values,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                isDense: true,
-                hintText: 'Unesite jednu ili više vrednosti',
+              enabled: true,
+              child: TextField(
+                controller: _values,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                  hintText: 'Unesite jednu ili više vrednosti',
+                ),
               ),
             ),
           ],

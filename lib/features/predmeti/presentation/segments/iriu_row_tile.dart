@@ -119,6 +119,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     }
     _lastKomValue = nextKom;
     _scheduleSave();
+    if (mounted) setState(() {});
   }
 
   void _normalizeIznosDisplay() {
@@ -453,22 +454,35 @@ class _IriuRowTileState extends State<IriuRowTile> {
 
     InputDecoration rowDecoration({
       required EdgeInsetsGeometry contentPadding,
+      required TextEditingController controller,
     }) {
+      final inviteInput = fe && controller.text.trim().isEmpty;
+      final borderColor = !aktivan
+          ? suppressedBorder
+          : inviteInput
+          ? cs.primary
+          : cs.outline;
       return InputDecoration(
         border: const OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: aktivan ? cs.outline : suppressedBorder,
+            color: borderColor,
+            width: inviteInput ? 1.5 : 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
             color: aktivan ? cs.primary : suppressedBorder,
+            width: inviteInput ? 2 : 1,
           ),
         ),
         isDense: true,
-        filled: !aktivan,
-        fillColor: aktivan ? null : suppressedFill,
+        filled: !aktivan || inviteInput,
+        fillColor: !aktivan
+            ? suppressedFill
+            : inviteInput
+            ? cs.secondaryContainer
+            : null,
         contentPadding: contentPadding,
       );
     }
@@ -514,6 +528,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
         enabled: fe,
         textAlign: TextAlign.center,
         decoration: rowDecoration(
+          controller: _komCtrl,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 4,
             vertical: 8,
@@ -536,6 +551,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
         textAlign: TextAlign.right,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: rowDecoration(
+          controller: _iznosCtrl,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 8,
             vertical: 8,
@@ -805,13 +821,17 @@ class _IriuRowTileState extends State<IriuRowTile> {
       controller: _nazivCtrl,
       enabled: fe,
       decoration: rowDecoration(
+        controller: _nazivCtrl,
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       ),
       style: TextStyle(
         fontSize: 13,
         color: aktivan ? null : cs.onSurfaceVariant,
       ),
-      onChanged: (_) => _scheduleSave(),
+      onChanged: (_) {
+        _scheduleSave();
+        setState(() {});
+      },
     );
 
     final row = isNarrowAndroid

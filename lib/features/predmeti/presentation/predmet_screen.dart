@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 
 import '../../../core/database/database.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
+import '../../../core/help/opc_help.dart';
+import '../../../core/widgets/opc_page_chrome.dart';
 import '../../../core/utils/json_export_import.dart';
 import '../../auth/domain/session_service.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
@@ -25,7 +27,11 @@ import '../pdf/specifikacija_troskova_pdf_export.dart';
 import '../parte/application/parte_preparation_service.dart';
 import '../parte/data/parte_media_store.dart';
 import '../parte/data/parte_preparation_repository.dart';
-import '../parte/domain/parte_models.dart';
+import '../parte/presentation/parte_composer_screen.dart';
+import '../citulje/data/citulje_preparation_repository.dart';
+import '../citulje/presentation/citulje_module_screen.dart';
+import '../reminders/podsetnik_eligibility.dart';
+import 'predmet_segment_manual_fields.dart';
 import 'predmet_overflow_menu.dart';
 import 'segments/ceremonija_segment.dart';
 import 'segments/finansije_segment.dart';
@@ -57,14 +63,6 @@ class _PredmetSectionInfo {
   final _PredmetLogicalSection section;
   final String label;
   final IconData icon;
-}
-
-enum _SectionProgressLevel { notStarted, started, needsMore, ready }
-
-class _SectionProgress {
-  const _SectionProgress(this.level);
-
-  final _SectionProgressLevel level;
 }
 
 const _predmetSectionInfos = [
@@ -159,6 +157,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
   bool _cekaPrviEksplicitniSave = false;
   String? _saveBaselineSnapshot;
   PredmetiData? _predmet;
+  List<IriuData> _iriuRows = const <IriuData>[];
+  String? _scheduledIriuInventorySignature;
   double _refundacijaPioIznos = 0.0;
   FirmaPodaciData? _firmaPodaci;
   PartePripremeData? _partePriprema;
@@ -175,6 +175,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
       _selectedSection = _PredmetLogicalSection.ceremonija;
     } else if (widget.openParte) {
       _selectedSection = _PredmetLogicalSection.parte;
+    } else if (!widget.isNewPredmetCreationFlow) {
+      _selectedSection = _PredmetLogicalSection.preminuloLice;
     }
     _iriuRepo = IriuRepository(widget.predmetiRepo.db);
     _kontaktRepo = KontaktLicaRepository(widget.predmetiRepo.db);
@@ -210,11 +212,13 @@ class _PredmetScreenState extends State<PredmetScreen> {
       _podesavanjaRepo.getFirmaPodaci(),
       widget.predmetiRepo.procitajPoslednjiSaveCommitSnapshot(widget.predmetId),
       parteRepository.findForPredmet(widget.predmetId),
+      _iriuRepo.getIriu(widget.predmetId),
     ]);
     if (!mounted) return;
     final predmet = results[0] as PredmetiData;
     final poslednjiSaveSnapshot = results[3] as String?;
     final partePriprema = results[4] as PartePripremeData?;
+    final iRiuRows = results[5] as List<IriuData>;
     final baselineSnapshot =
         poslednjiSaveSnapshot ??
         widget.predmetiRepo.snapshotZaSaveCommit(predmet);
@@ -225,12 +229,33 @@ class _PredmetScreenState extends State<PredmetScreen> {
           (results[1] as AppPodesavanjaData).refundacijaPioIznos;
       _firmaPodaci = results[2] as FirmaPodaciData;
       _partePriprema = partePriprema;
+      _iriuRows = iRiuRows;
       _saveBaselineSnapshot = baselineSnapshot;
       _cekaPrviEksplicitniSave = cekaPrviEksplicitniSave;
       _imaNesacuvanihIzmena =
           cekaPrviEksplicitniSave ||
           widget.predmetiRepo.snapshotZaSaveCommit(predmet) != baselineSnapshot;
       _ucitava = false;
+    });
+  }
+
+  void _onIriuInventoryRowsChanged(List<IriuData> rows) {
+    String signature(List<IriuData> value) => value
+        .map((row) => '${row.id}|${row.nazivPrikaz}|${row.kom}')
+        .join('||');
+
+    final nextSignature = signature(rows);
+    if (nextSignature == signature(_iriuRows) ||
+        nextSignature == _scheduledIriuInventorySignature) {
+      return;
+    }
+    _scheduledIriuInventorySignature = nextSignature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _iriuRows = List<IriuData>.unmodifiable(rows);
+        _scheduledIriuInventorySignature = null;
+      });
     });
   }
 
@@ -267,108 +292,15 @@ class _PredmetScreenState extends State<PredmetScreen> {
     return '$prezime $ime'.trim();
   }
 
-  bool _hasAnyText(Iterable<String> values) {
-    return values.any((value) => value.trim().isNotEmpty);
-  }
-
-  _SectionProgress _progress({required bool started, required bool ready}) {
-    if (ready) return const _SectionProgress(_SectionProgressLevel.ready);
-    if (started) return const _SectionProgress(_SectionProgressLevel.needsMore);
-    return const _SectionProgress(_SectionProgressLevel.notStarted);
-  }
-
-  _SectionProgress _sectionProgress(
-    _PredmetLogicalSection section,
-    PredmetiData p,
-  ) {
-    switch (section) {
-      case _PredmetLogicalSection.preminuloLice:
-        final started = _hasAnyText([
-          p.ime,
-          p.prezime,
-          p.srednje,
-          p.jmbg,
-          p.datumRodjenja,
-          p.adresa,
-        ]);
-        return _progress(
-          started: started,
-          ready: p.ime.trim().isNotEmpty || p.prezime.trim().isNotEmpty,
-        );
-      case _PredmetLogicalSection.cinjeniceOSmrti:
-        final started = _hasAnyText([p.datumSmrti, p.mestoSmrti, p.uzrokSmrti]);
-        return _progress(
-          started: started,
-          ready:
-              p.datumSmrti.trim().isNotEmpty && p.mestoSmrti.trim().isNotEmpty,
-        );
-      case _PredmetLogicalSection.statusi:
-        final started = _hasAnyText([
-          p.bracnoStanje,
-          p.radniStatus,
-          p.bracniDrugIme,
-          p.bracniDrugPrezime,
-        ]);
-        return _progress(started: started, ready: started);
-      case _PredmetLogicalSection.platilac:
-        final started = _hasAnyText([
-          p.naruIme,
-          p.naruPrezime,
-          p.naruPlNaziv,
-          p.jkpIme,
-          p.jkpPrezime,
-          p.jkpPlNaziv,
-        ]);
-        return _progress(started: started, ready: started);
-      case _PredmetLogicalSection.ceremonija:
-        final started =
-            _hasAnyText([p.datumCeremonije, p.vremeCeremonije, p.groblje]) ||
-            p.sahranaVanSrbije ||
-            p.docekPosmrtnihOstataka;
-        return _progress(
-          started: started,
-          ready:
-              p.datumCeremonije.trim().isNotEmpty ||
-              p.groblje.trim().isNotEmpty,
-        );
-      case _PredmetLogicalSection.parte:
-        if (!p.partePotrebna) {
-          return const _SectionProgress(_SectionProgressLevel.ready);
-        }
-        final status = _partePriprema == null
-            ? null
-            : PartePreparationStatus.fromDb(_partePriprema!.status);
-        return _progress(
-          started: status != null,
-          ready:
-              status == PartePreparationStatus.completed ||
-              status == PartePreparationStatus.cleanupPending,
-        );
-      case _PredmetLogicalSection.robaIUsluge:
-        return const _SectionProgress(_SectionProgressLevel.started);
-      case _PredmetLogicalSection.finansije:
-        return const _SectionProgress(_SectionProgressLevel.started);
-      case _PredmetLogicalSection.dokumenti:
-        return const _SectionProgress(_SectionProgressLevel.started);
-      case _PredmetLogicalSection.pregledIPotvrda:
-        return _SectionProgress(
-          _imaNesacuvanihIzmena
-              ? _SectionProgressLevel.needsMore
-              : _SectionProgressLevel.ready,
-        );
-    }
-  }
-
-  _PredmetLogicalSection _recommendedSection(PredmetiData p) {
-    for (final info in _predmetSectionInfos) {
-      final progress = _sectionProgress(info.section, p);
-      if (progress.level == _SectionProgressLevel.notStarted ||
-          progress.level == _SectionProgressLevel.needsMore) {
-        return info.section;
-      }
-    }
-    return _PredmetLogicalSection.pregledIPotvrda;
-  }
+  PredmetSegmentFieldCount _segmentFieldCount(
+    int segmentNumber,
+    PredmetiData predmet,
+    List<IriuData> iRiuRows,
+  ) => countPredmetSegmentManualFields(
+    segmentNumber: segmentNumber,
+    predmet: predmet,
+    iRiuRows: iRiuRows,
+  );
 
   _PredmetSectionInfo _sectionInfo(_PredmetLogicalSection section) {
     return _predmetSectionInfos.firstWhere((info) => info.section == section);
@@ -623,11 +555,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
       builder: (dialogContext) => _buildHeightFitDialog(
         context: dialogContext,
         title: Text('Predmet ne može biti $action'),
-        content: const Text(
-          'PARTE priprema je započeta i nije završena.\n\n'
-          'Potvrdite finalni preview, uspešno izvezite PARTA PDF u KORICE i '
-          'izaberite PRIPREMA ZAVRŠENA.',
-        ),
+        content: const Text('PARTE priprema je započeta i nije završena.'),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -740,7 +668,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
             onPressed: () => Navigator.pop(ctx, 'leave'),
             child: const Text('IZAĐI'),
           ),
-          FilledButton(
+          TextButton(
             onPressed: () => Navigator.pop(ctx, 'close'),
             child: const Text('ZATVORI PREDMET'),
           ),
@@ -819,6 +747,57 @@ class _PredmetScreenState extends State<PredmetScreen> {
           predmetiRepository: widget.predmetiRepo,
           predmetId: widget.predmetId,
           session: widget.session,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _otvoriParteZaTrenutniPredmet() async {
+    final actor = widget.session.korisnik;
+    if (actor == null) return;
+    final current = await widget.predmetiRepo.getPredmet(widget.predmetId);
+    final preparations = PartePreparationRepository(widget.predmetiRepo.db);
+    final retained = await preparations.findForPredmet(current.id);
+    if ((current.status != 'OTVOREN' || !current.partePotrebna) &&
+        retained == null) {
+      if (!mounted) return;
+      _showSnackBarSafely(
+        const SnackBar(
+          content: Text(
+            'PREDMET više nije otvoren ili PARTE više nisu potrebne.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ParteComposerScreen(
+          predmetId: current.id,
+          predmetiRepository: widget.predmetiRepo,
+          actor: actor,
+          entitlement: widget.entitlementPolicy,
+        ),
+      ),
+    );
+    if (mounted) await _ucitaj();
+  }
+
+  Future<void> _otvoriCituljeZaTrenutniPredmet() async {
+    final current = await widget.predmetiRepo.getPredmet(widget.predmetId);
+    if (!isPodsetnikEligibleStatus(current.status)) return;
+    final preparations = CituljePreparationRepository(widget.predmetiRepo.db);
+    final currentRows = await preparations.ensureCurrentForPredmet(current.id);
+    if (currentRows.isEmpty) return;
+    if (!mounted) return;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => CituljePreparationScreen(
+          predmet: current,
+          preparations: preparations,
         ),
       ),
     );
@@ -1002,6 +981,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
 
   Widget _buildPredmetWorkspace({
     required PredmetiData predmet,
+    required List<IriuData> iRiuRows,
     required bool isNarrowAndroid,
     required bool showSpecifikacijaTroskovaPdf,
     required bool showPredracunPdf,
@@ -1042,10 +1022,12 @@ class _PredmetScreenState extends State<PredmetScreen> {
           child: isNarrowAndroid
               ? _buildNarrowWorkspace(
                   predmet: predmet,
+                  iRiuRows: iRiuRows,
                   documentVisibility: documentVisibility,
                 )
               : _buildWideWorkspace(
                   predmet: predmet,
+                  iRiuRows: iRiuRows,
                   documentVisibility: documentVisibility,
                 ),
         ),
@@ -1105,17 +1087,15 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: FilledButton.icon(
+                      child: OutlinedButton.icon(
                         onPressed: _zatvori,
                         icon: const Icon(Icons.lock_outline),
                         label: const Text('ZATVORI'),
-                        style: buttonStyle.copyWith(
-                          backgroundColor: WidgetStateProperty.all(
-                            Colors.orange,
-                          ),
-                          foregroundColor: WidgetStateProperty.all(
-                            Colors.white,
-                          ),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: buttonStyle.minimumSize?.resolve({}),
+                          foregroundColor: cs.onSurfaceVariant,
+                          side: BorderSide(color: cs.outline),
+                          textStyle: buttonStyle.textStyle?.resolve({}),
                         ),
                       ),
                     ),
@@ -1149,6 +1129,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
 
   Widget _buildNarrowWorkspace({
     required PredmetiData predmet,
+    required List<IriuData> iRiuRows,
     required _DocumentActionVisibility documentVisibility,
   }) {
     final selected = _selectedSection;
@@ -1164,7 +1145,11 @@ class _PredmetScreenState extends State<PredmetScreen> {
               _PredmetHubCard(
                 info: info,
                 index: _predmetSectionInfos.indexOf(info) + 1,
-                recommended: info.section == _recommendedSection(predmet),
+                fieldCount: _segmentFieldCount(
+                  _predmetSectionInfos.indexOf(info) + 1,
+                  predmet,
+                  iRiuRows,
+                ),
                 onTap: () => _selectSection(info.section),
               ),
               const SizedBox(height: 8),
@@ -1185,7 +1170,15 @@ class _PredmetScreenState extends State<PredmetScreen> {
           children: [
             _PredmetOrientationHeader(text: _predmetHeader(predmet)),
             const SizedBox(height: 12),
-            _SectionHeader(title: info.label.toUpperCase()),
+            _SectionHeader(
+              title: info.label.toUpperCase(),
+              index: _predmetSectionInfos.indexOf(info) + 1,
+              fieldCount: _segmentFieldCount(
+                _predmetSectionInfos.indexOf(info) + 1,
+                predmet,
+                iRiuRows,
+              ),
+            ),
             _buildSectionContent(
               section: selected,
               predmet: predmet,
@@ -1200,6 +1193,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
 
   Widget _buildWideWorkspace({
     required PredmetiData predmet,
+    required List<IriuData> iRiuRows,
     required _DocumentActionVisibility documentVisibility,
   }) {
     final selected = _selectedSection ?? _PredmetLogicalSection.preminuloLice;
@@ -1221,6 +1215,11 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     child: _PredmetSidebarTile(
                       info: item,
                       index: _predmetSectionInfos.indexOf(item) + 1,
+                      fieldCount: _segmentFieldCount(
+                        _predmetSectionInfos.indexOf(item) + 1,
+                        predmet,
+                        iRiuRows,
+                      ),
                       selected: item.section == selected,
                       onTap: () => _selectSection(item.section),
                     ),
@@ -1241,7 +1240,15 @@ class _PredmetScreenState extends State<PredmetScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _SectionHeader(title: info.label.toUpperCase()),
+                  _SectionHeader(
+                    title: info.label.toUpperCase(),
+                    index: _predmetSectionInfos.indexOf(info) + 1,
+                    fieldCount: _segmentFieldCount(
+                      _predmetSectionInfos.indexOf(info) + 1,
+                      predmet,
+                      iRiuRows,
+                    ),
+                  ),
                   _buildSectionContent(
                     section: selected,
                     predmet: predmet,
@@ -1314,6 +1321,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
           iriuRepo: _iriuRepo,
           podesavanjaRepo: _podesavanjaRepo,
           enabled: _otvoren,
+          onRowsChanged: _onIriuInventoryRowsChanged,
           isNewPredmetCreationFlow: widget.isNewPredmetCreationFlow,
           onNapomenaSave: (napomena) =>
               _onSave(PredmetiCompanion(napomena: Value(napomena))),
@@ -1422,11 +1430,13 @@ class _PredmetScreenState extends State<PredmetScreen> {
                     label: Text(_cuvaPoslovnuVerziju ? 'ČUVA...' : 'SAČUVAJ'),
                   ),
                 if (_otvoren)
-                  FilledButton.icon(
+                  OutlinedButton.icon(
                     onPressed: _zatvori,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                     icon: const Icon(Icons.lock_outline),
                     label: const Text('ZATVORI'),
@@ -1448,9 +1458,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
   @override
   Widget build(BuildContext context) {
     if (_ucitava || _predmet == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('PREDMET')),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: OpcPageChrome(title: Text('PREDMET'), helpChapterId: 'predmet'),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
     final p = _predmet!;
@@ -1487,6 +1497,11 @@ class _PredmetScreenState extends State<PredmetScreen> {
       entitlementPolicy: widget.entitlementPolicy,
       predmetStatus: p.status,
     );
+    final actor = widget.session.korisnik;
+    final canOpenParte =
+        actor != null &&
+        ((_otvoren && p.partePotrebna) || _partePriprema != null);
+    final canOpenCitulje = isPodsetnikEligibleStatus(p.status);
     final racunAvailable =
         (_firmaPodaci?.racunOmogucen ?? false) &&
         widget.entitlementPolicy.isDocumentActionVisible(
@@ -1516,68 +1531,77 @@ class _PredmetScreenState extends State<PredmetScreen> {
         await _obradiPokusanIzlazaIzPredmeta();
       },
       child: Scaffold(
-        appBar: AppBar(
-          titleSpacing: isNarrowAndroid ? 12 : null,
-          toolbarHeight: isNarrowAndroid ? 84 : null,
-          title: isNarrowAndroid
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      appBarIdentity,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: primaryHeaderTextStyle,
-                    ),
-                    const SizedBox(height: 6),
-                    _StatusChip(status: p.status),
-                  ],
-                )
-              : Text(
-                  appBarIdentity,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: primaryHeaderTextStyle,
+        appBar: OpcPageChrome(
+          narrowAndroid: isNarrowAndroid,
+          helpChapterId: _selectedSection == null && isNarrowAndroid
+              ? 'predmet'
+              : predmetGuideChapterIdForSegment(
+                  (_selectedSection ?? _PredmetLogicalSection.preminuloLice)
+                          .index +
+                      1,
                 ),
-          actions: [
-            if (!isNarrowAndroid) ...[
-              _StatusChip(status: p.status),
-              const SizedBox(width: 4),
-            ],
-            if (!_anonimizovan) ...[
-              if (_otvoren)
-                if (!isNarrowAndroid) ...[
-                  FilledButton(
-                    onPressed: _cuvaPoslovnuVerziju ? null : _sacuvajPredmet,
-                    style: FilledButton.styleFrom(
-                      padding: headerActionPadding,
-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    child: Text(_cuvaPoslovnuVerziju ? 'ČUVA...' : 'SAČUVAJ'),
+          identity: Text(
+            appBarIdentity,
+            maxLines: isNarrowAndroid ? 2 : 1,
+            overflow: TextOverflow.ellipsis,
+            style: primaryHeaderTextStyle,
+          ),
+          status: _StatusChip(status: p.status),
+          primaryActions: [
+            if (!_anonimizovan && _otvoren) ...[
+              FilledButton(
+                onPressed: _cuvaPoslovnuVerziju ? null : _sacuvajPredmet,
+                style: FilledButton.styleFrom(
+                  padding: headerActionPadding,
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                child: Text(_cuvaPoslovnuVerziju ? 'ČUVA...' : 'SAČUVAJ'),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: _zatvori,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  side: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withValues(alpha: 0.65),
                   ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _zatvori,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: headerActionPadding,
-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    child: const Text('ZATVORI'),
+                  padding: headerActionPadding,
+                  textStyle: const TextStyle(
+                    inherit: false,
+                    fontWeight: FontWeight.w700,
                   ),
-                ] else if (_zatvoren && !isNarrowAndroid)
-                  OutlinedButton(
-                    onPressed: _otkljucajZaIzmenu,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white54),
-                      padding: headerActionPadding,
-                    ),
-                    child: const Text('IZMENI'),
-                  ),
-            ],
+                ),
+                icon: const Icon(Icons.lock_outline),
+                label: const Text('ZATVORI'),
+              ),
+            ] else if (!_anonimizovan && _zatvoren)
+              OutlinedButton(
+                onPressed: _otkljucajZaIzmenu,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white54),
+                  padding: headerActionPadding,
+                ),
+                child: const Text('IZMENI'),
+              ),
+          ],
+          tools: [
+            IconButton(
+              key: const Key('predmet-shortcut-parte'),
+              tooltip: 'PARTE za ovaj PREDMET',
+              onPressed: canOpenParte ? _otvoriParteZaTrenutniPredmet : null,
+              icon: const Icon(Icons.article_outlined),
+            ),
+            IconButton(
+              key: const Key('predmet-shortcut-citulje'),
+              tooltip: 'ČITULJE za ovaj PREDMET',
+              onPressed: canOpenCitulje
+                  ? _otvoriCituljeZaTrenutniPredmet
+                  : null,
+              icon: const Icon(Icons.newspaper_outlined),
+            ),
             PredmetOverflowMenu(
               key: Key('predmet-overflow-menu-detail-${widget.predmetId}'),
               triggerKey: Key(
@@ -1612,6 +1636,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         ),
         body: _buildPredmetWorkspace(
           predmet: p,
+          iRiuRows: _iriuRows,
           isNarrowAndroid: isNarrowAndroid,
           showSpecifikacijaTroskovaPdf: showSpecifikacijaTroskovaPdf,
           showPredracunPdf: showPredracunPdf,
@@ -1668,13 +1693,13 @@ class _PredmetHubCard extends StatelessWidget {
   const _PredmetHubCard({
     required this.info,
     required this.index,
-    required this.recommended,
+    required this.fieldCount,
     required this.onTap,
   });
 
   final _PredmetSectionInfo info;
   final int index;
-  final bool recommended;
+  final PredmetSegmentFieldCount fieldCount;
   final VoidCallback onTap;
 
   @override
@@ -1682,7 +1707,6 @@ class _PredmetHubCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Card(
       margin: EdgeInsets.zero,
-      color: recommended ? cs.primaryContainer.withValues(alpha: 0.38) : null,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
@@ -1690,17 +1714,11 @@ class _PredmetHubCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Row(
             children: [
-              CircleAvatar(
+              _PredmetSegmentNumberBadge(
+                key: ValueKey('predmet-segment-number-hub-$index'),
+                index: index,
+                fieldCount: fieldCount,
                 radius: 16,
-                backgroundColor: cs.primary,
-                foregroundColor: cs.onPrimary,
-                child: Text(
-                  '$index',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1736,12 +1754,14 @@ class _PredmetSidebarTile extends StatelessWidget {
   const _PredmetSidebarTile({
     required this.info,
     required this.index,
+    required this.fieldCount,
     required this.selected,
     required this.onTap,
   });
 
   final _PredmetSectionInfo info;
   final int index;
+  final PredmetSegmentFieldCount fieldCount;
   final bool selected;
   final VoidCallback onTap;
 
@@ -1752,18 +1772,96 @@ class _PredmetSidebarTile extends StatelessWidget {
       selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       leading: CircleAvatar(
-        radius: 14,
-        child: Text(
-          '$index',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        key: ValueKey('predmet-segment-number-sidebar-$index'),
+        radius: 16,
+        backgroundColor: _segmentFillColor(context, fieldCount),
+        foregroundColor: const Color(0xFF201818),
+        child: _segmentNumberContent(
+          context: context,
+          index: index,
+          fieldCount: fieldCount,
+          textStyle: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
       title: Text(info.label),
       onTap: onTap,
-      dense: true,
     );
   }
 }
+
+class _PredmetSegmentNumberBadge extends StatelessWidget {
+  const _PredmetSegmentNumberBadge({
+    super.key,
+    required this.index,
+    required this.fieldCount,
+    required this.radius,
+  });
+
+  final int index;
+  final PredmetSegmentFieldCount fieldCount;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    label:
+        'Segment $index, ${fieldCount.stateLabel.toLowerCase()}, '
+        '${fieldCount.filled} od ${fieldCount.total} polja',
+    child: ExcludeSemantics(
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: _segmentFillColor(context, fieldCount),
+        foregroundColor: const Color(0xFF201818),
+        child: _segmentNumberContent(
+          context: context,
+          index: index,
+          fieldCount: fieldCount,
+          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _segmentNumberContent({
+  required BuildContext context,
+  required int index,
+  required PredmetSegmentFieldCount fieldCount,
+  required TextStyle textStyle,
+}) {
+  final noFields = fieldCount.state == PredmetSegmentFillState.noFields;
+  return SizedBox.expand(
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: noFields
+            ? Border.all(
+                color: Theme.of(context).colorScheme.outline,
+                width: 1.25,
+              )
+            : null,
+      ),
+      child: Center(
+        child: Text(
+          '$index',
+          style: textStyle.copyWith(color: const Color(0xFF201818)),
+        ),
+      ),
+    ),
+  );
+}
+
+Color _segmentFillColor(
+  BuildContext context,
+  PredmetSegmentFieldCount fieldCount,
+) => switch (fieldCount.state) {
+  PredmetSegmentFillState.empty => const Color(0xFFD96A65),
+  PredmetSegmentFillState.partial => const Color(0xFFE9A34D),
+  PredmetSegmentFillState.filled => const Color(0xFF7FAE83),
+  PredmetSegmentFillState.noFields => Theme.of(
+    context,
+  ).colorScheme.surfaceContainerHighest,
+};
 
 class _DocumentActionButton extends StatelessWidget {
   const _DocumentActionButton({
@@ -1840,9 +1938,15 @@ class _ReviewRow extends StatelessWidget {
 
 // Section header
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
+  const _SectionHeader({
+    required this.title,
+    required this.index,
+    required this.fieldCount,
+  });
 
   final String title;
+  final int index;
+  final PredmetSegmentFieldCount fieldCount;
 
   @override
   Widget build(BuildContext context) {
@@ -1866,12 +1970,37 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.primary,
-              letterSpacing: 0.5,
+          Expanded(
+            child: Text(
+              title,
+              key: ValueKey('predmet-segment-title-$index'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              semanticsLabel:
+                  'Segment $index, $title, ${fieldCount.stateLabel.toLowerCase()}, '
+                  '${fieldCount.filled} od ${fieldCount.total} polja',
+              textWidthBasis: TextWidthBasis.parent,
+              softWrap: false,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.primary,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          CircleAvatar(
+            key: ValueKey('predmet-segment-number-open-$index'),
+            radius: 14,
+            backgroundColor: _segmentFillColor(context, fieldCount),
+            foregroundColor: const Color(0xFF201818),
+            child: _segmentNumberContent(
+              context: context,
+              index: index,
+              fieldCount: fieldCount,
+              textStyle: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],

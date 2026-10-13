@@ -22,6 +22,61 @@ void main() {
     expect(keys.map((key) => key.stableId).toSet(), hasLength(1008));
   });
 
+  test('normalized SCENARIO trigger covers the complete 1008-key domain', () {
+    final keys = kernel.allKeys();
+    final inputs = [
+      for (final key in keys)
+        OwnerScenarioInput(
+          uzrokSmrti: key.cause,
+          mestoSmrti: key.place ?? OwnerScenarioPolicyKernel.places.first,
+          vrstaCeremonije: key.ceremony,
+          tipGroblja: key.cemeteryType,
+          tipGrobnogMesta: key.burialPlace,
+          opelo: key.opelo,
+          sahranaVanSrbije: key.international,
+          docek: key.docek,
+          promenaSanduka: false,
+        ),
+    ];
+
+    expect(inputs, hasLength(1008));
+    expect(inputs.map((input) => input.key).toSet(), hasLength(1008));
+    for (var index = 0; index < keys.length; index++) {
+      expect(inputs[index].key, keys[index]);
+      expect(
+        inputs[index].hasSameEvaluationInputsAs(inputs[index]),
+        isTrue,
+      );
+      if (index + 1 < inputs.length) {
+        expect(
+          inputs[index].hasSameEvaluationInputsAs(inputs[index + 1]),
+          isFalse,
+          reason: 'kernel transition ${keys[index].stableId} → '
+              '${keys[index + 1].stableId} must trigger reconciliation',
+        );
+      }
+    }
+
+    final receptionInput = inputs.firstWhere((input) => input.docek);
+    expect(
+      receptionInput.hasSameEvaluationInputsAs(
+        OwnerScenarioInput(
+          uzrokSmrti: receptionInput.uzrokSmrti,
+          mestoSmrti: receptionInput.mestoSmrti,
+          vrstaCeremonije: receptionInput.vrstaCeremonije,
+          tipGroblja: receptionInput.tipGroblja,
+          tipGrobnogMesta: receptionInput.tipGrobnogMesta,
+          opelo: receptionInput.opelo,
+          sahranaVanSrbije: receptionInput.sahranaVanSrbije,
+          docek: receptionInput.docek,
+          promenaSanduka: true,
+        ),
+      ),
+      isFalse,
+      reason: 'consequence-only coffin change must also trigger',
+    );
+  });
+
   test('owner kernel applies hospital exception and stable ordering', () async {
     final db = createTestDatabase();
     addTearDown(db.close);

@@ -285,6 +285,77 @@ void main() {
   });
 
   test(
+    'reconcile preserves updatedAt on no-op and refreshes it on row change',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final id = await db
+          .into(db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('POD-UPDATED-AT-1'),
+              datumKreiranja: const Value('2026-09-20'),
+              opelo: const Value('DA'),
+              obavestitiSvestenika: const Value('DA'),
+            ),
+          );
+      final repo = PodsetnikObligationRepository(db);
+      await repo.reconcileForPredmet(id);
+      final row = await (db.select(db.podsetnikObaveze)..where(
+            (value) =>
+                value.predmetId.equals(id) &
+                value.stableRuleId.equals('ceremony.opelo.notify_priest'),
+          ))
+          .getSingle();
+      final originalUpdatedAt = row.updatedAt;
+
+      await db.customStatement(
+        'CREATE TABLE podsetnik_update_probe (updates INTEGER NOT NULL)',
+      );
+      await db.customStatement('INSERT INTO podsetnik_update_probe VALUES (0)');
+      await db.customStatement('''
+      CREATE TRIGGER podsetnik_update_probe_trigger
+      AFTER UPDATE ON podsetnik_obaveze
+      WHEN NEW.id = ${row.id}
+      BEGIN
+        UPDATE podsetnik_update_probe SET updates = updates + 1;
+      END
+    ''');
+
+      await repo.reconcileForPredmet(id);
+      final unchanged = await (db.select(
+        db.podsetnikObaveze,
+      )..where((value) => value.id.equals(row.id))).getSingle();
+      final noOpProbe = await db
+          .customSelect('SELECT updates FROM podsetnik_update_probe')
+          .getSingle();
+      expect(noOpProbe.read<int>('updates'), 0);
+      expect(unchanged.updatedAt, originalUpdatedAt);
+
+      await (db.update(
+        db.podsetnikObaveze,
+      )..where((value) => value.id.equals(row.id))).write(
+        const PodsetnikObavezeCompanion(
+          sourceFingerprint: Value('deliberately-stale-test-value'),
+        ),
+      );
+      await db.customStatement('UPDATE podsetnik_update_probe SET updates = 0');
+      await Future<void>.delayed(const Duration(milliseconds: 3));
+      await repo.reconcileForPredmet(id);
+
+      final changed = await (db.select(
+        db.podsetnikObaveze,
+      )..where((value) => value.id.equals(row.id))).getSingle();
+      final changedProbe = await db
+          .customSelect('SELECT updates FROM podsetnik_update_probe')
+          .getSingle();
+      expect(changed.sourceFingerprint, isNot('deliberately-stale-test-value'));
+      expect(changed.updatedAt, isNot(originalUpdatedAt));
+      expect(changedProbe.read<int>('updates'), 1);
+    },
+  );
+
+  test(
     'atomic completion persists and parent derives from current children',
     () async {
       final db = createTestDatabase();

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import 'owner_scenario_policy_kernel.dart';
 import 'scenario_contract.dart';
 
 const int scenarioPersistenceSchemaVersion = 1;
@@ -50,6 +51,7 @@ class ScenarioAssignmentSnapshot {
     required Set<String> osnovniPaket,
     required this.assignedAt,
     required this.snapshotHash,
+    required this.appliedEvaluationBaseline,
     int? assignedByKorisnikId,
   }) : scenario = _freezeScenario(scenario),
        osnovniPaket = Set<String>.unmodifiable(osnovniPaket),
@@ -65,6 +67,7 @@ class ScenarioAssignmentSnapshot {
     required Set<String> osnovniPaket,
     required String assignedAt,
     int? assignedByKorisnikId,
+    OwnerScenarioInput? appliedEvaluationBaseline,
   }) {
     if (scenario.id != scenarioId) {
       throw const ScenarioPersistenceValidationException(
@@ -82,6 +85,9 @@ class ScenarioAssignmentSnapshot {
       assignedByKorisnikId: assignedByKorisnikId == null
           ? null
           : _requiredPositiveInt(assignedByKorisnikId, 'assignedByKorisnikId'),
+      appliedEvaluationBaseline: _validatedAppliedEvaluationBaseline(
+        appliedEvaluationBaseline,
+      ),
     );
     return ScenarioAssignmentSnapshot._(
       moduleId: draft.moduleId,
@@ -92,6 +98,7 @@ class ScenarioAssignmentSnapshot {
       assignedAt: draft.assignedAt,
       snapshotHash: _hashPayload(draft._payloadMap),
       assignedByKorisnikId: draft.assignedByKorisnikId,
+      appliedEvaluationBaseline: draft.appliedEvaluationBaseline,
     );
   }
 
@@ -106,6 +113,7 @@ class ScenarioAssignmentSnapshot {
       'osnovniPaket',
       'assignedAt',
       'assignedByKorisnikId',
+      'appliedEvaluationBaseline',
       'snapshotHash',
     }, 'scenario snapshot');
     final snapshot = ScenarioAssignmentSnapshot._(
@@ -120,6 +128,11 @@ class ScenarioAssignmentSnapshot {
         json,
         'assignedByKorisnikId',
       ),
+      appliedEvaluationBaseline: json.containsKey('appliedEvaluationBaseline')
+          ? _appliedEvaluationBaselineFromJson(
+              _requiredMap(json, 'appliedEvaluationBaseline'),
+            )
+          : null,
     );
     if (snapshot.scenario.id != snapshot.scenarioId) {
       throw const ScenarioPersistenceValidationException(
@@ -141,6 +154,7 @@ class ScenarioAssignmentSnapshot {
   final Set<String> osnovniPaket;
   final String assignedAt;
   final int? assignedByKorisnikId;
+  final OwnerScenarioInput? appliedEvaluationBaseline;
   final String snapshotHash;
 
   Map<String, dynamic> toJsonMap() => {
@@ -158,7 +172,87 @@ class ScenarioAssignmentSnapshot {
     'assignedAt': assignedAt,
     if (assignedByKorisnikId != null)
       'assignedByKorisnikId': assignedByKorisnikId,
+    if (appliedEvaluationBaseline != null)
+      'appliedEvaluationBaseline': _appliedEvaluationBaselineToJson(
+        appliedEvaluationBaseline!,
+      ),
   };
+}
+
+const int _appliedEvaluationBaselineVersion = 1;
+
+OwnerScenarioInput? _validatedAppliedEvaluationBaseline(
+  OwnerScenarioInput? baseline,
+) {
+  if (baseline != null && !baseline.isComplete) {
+    throw const ScenarioPersistenceValidationException(
+      'Applied SCENARIO evaluation baseline must be complete.',
+    );
+  }
+  return baseline;
+}
+
+Map<String, dynamic> _appliedEvaluationBaselineToJson(
+  OwnerScenarioInput baseline,
+) => {
+  'version': _appliedEvaluationBaselineVersion,
+  'input': {
+    'uzrokSmrti': baseline.uzrokSmrti,
+    'mestoSmrti': baseline.mestoSmrti,
+    'vrstaCeremonije': baseline.vrstaCeremonije,
+    'tipGroblja': baseline.tipGroblja,
+    'tipGrobnogMesta': baseline.tipGrobnogMesta,
+    'opelo': baseline.opelo,
+    'sahranaVanSrbije': baseline.sahranaVanSrbije,
+    'docek': baseline.docek,
+    'promenaSanduka': baseline.promenaSanduka,
+  },
+};
+
+OwnerScenarioInput _appliedEvaluationBaselineFromJson(
+  Map<String, dynamic> json,
+) {
+  _assertAllowedKeys(json, const {
+    'version',
+    'input',
+  }, 'applied evaluation baseline');
+  if (json['version'] != _appliedEvaluationBaselineVersion) {
+    throw const ScenarioPersistenceValidationException(
+      'Unsupported applied SCENARIO evaluation baseline version.',
+    );
+  }
+  final input = _requiredMap(json, 'input');
+  _assertAllowedKeys(input, const {
+    'uzrokSmrti',
+    'mestoSmrti',
+    'vrstaCeremonije',
+    'tipGroblja',
+    'tipGrobnogMesta',
+    'opelo',
+    'sahranaVanSrbije',
+    'docek',
+    'promenaSanduka',
+  }, 'applied evaluation input');
+  bool requiredBool(String key) {
+    final value = input[key];
+    if (value is! bool) {
+      throw ScenarioPersistenceValidationException('$key must be a boolean.');
+    }
+    return value;
+  }
+
+  final baseline = OwnerScenarioInput(
+    uzrokSmrti: _requiredTextValue(input, 'uzrokSmrti'),
+    mestoSmrti: _requiredTextValue(input, 'mestoSmrti'),
+    vrstaCeremonije: _requiredTextValue(input, 'vrstaCeremonije'),
+    tipGroblja: _requiredTextValue(input, 'tipGroblja'),
+    tipGrobnogMesta: _requiredTextValue(input, 'tipGrobnogMesta'),
+    opelo: _requiredTextValue(input, 'opelo'),
+    sahranaVanSrbije: requiredBool('sahranaVanSrbije'),
+    docek: requiredBool('docek'),
+    promenaSanduka: requiredBool('promenaSanduka'),
+  );
+  return _validatedAppliedEvaluationBaseline(baseline)!;
 }
 
 /// Provenance for one materialized STAVKA. Legacy rows may remain unclassified

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/widgets/opc_page_chrome.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/database/database.dart';
 import '../../../core/format/app_date_format.dart';
@@ -695,9 +696,13 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
         widget.entitlementPolicy.hasVisibleSettingsSections &&
         (widget.session.jeAdmin || widget.session.jeSavetnik);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('OPC \u2014 LISTA PREDMETA'),
-        actions: [
+      appBar: OpcPageChrome(
+        title: const Text('PREDMETI'),
+        helpChapterId: 'lista',
+        narrowAndroid:
+            Theme.of(context).platform == TargetPlatform.android &&
+            MediaQuery.sizeOf(context).width < 600,
+        tools: [
           /*
           if (widget.session.jeAdmin && !isWindowsDerivative) ...[
             IconButton(
@@ -896,40 +901,29 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
             onChanged: (v) => setState(() => _pretraga = v),
           ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _FilterChip(
-                label: 'SVE',
-                selected: _statusFilter == 'SVE',
-                onTap: () => setState(() => _statusFilter = 'SVE'),
-              ),
-              _FilterChip(
-                label: 'OTVOREN',
-                selected: _statusFilter == 'OTVOREN',
-                color: Colors.teal,
-                onTap: () => setState(() => _statusFilter = 'OTVOREN'),
-              ),
-              _FilterChip(
-                label: 'ZATVOREN',
-                selected: _statusFilter == 'ZATVOREN',
-                color: Colors.orange,
-                onTap: () => setState(() => _statusFilter = 'ZATVOREN'),
-              ),
-              _FilterChip(
-                label: 'ZAVR\u0160EN',
-                selected: _statusFilter == 'ZAVR\u0160EN',
-                color: Colors.grey,
-                onTap: () => setState(() => _statusFilter = 'ZAVR\u0160EN'),
-              ),
-              _FilterChip(
-                label: 'ANONIMIZOVAN',
-                selected: _statusFilter == 'ANONIMIZOVAN',
-                color: Colors.deepPurple,
-                onTap: () => setState(() => _statusFilter = 'ANONIMIZOVAN'),
+          DropdownButtonFormField<String>(
+            key: const Key('predmeti-status-filter'),
+            initialValue: _statusFilter,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Status predmeta',
+              prefixIcon: Icon(Icons.filter_list),
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: const [
+              DropdownMenuItem(value: 'SVE', child: Text('SVE')),
+              DropdownMenuItem(value: 'OTVOREN', child: Text('OTVOREN')),
+              DropdownMenuItem(value: 'ZATVOREN', child: Text('ZATVOREN')),
+              DropdownMenuItem(value: 'ZAVRŠEN', child: Text('ZAVRŠEN')),
+              DropdownMenuItem(
+                value: 'ANONIMIZOVAN',
+                child: Text('ANONIMIZOVAN'),
               ),
             ],
+            onChanged: (value) {
+              if (value != null) setState(() => _statusFilter = value);
+            },
           ),
           const SizedBox(height: 8),
           const Divider(height: 1),
@@ -2076,50 +2070,6 @@ class _StatusBadge extends StatelessWidget {
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: color,
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.color,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? c.withAlpha(30) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? c : Theme.of(context).colorScheme.outline,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
-            color: selected
-                ? c
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../core_v2/rules/iriu_truth_rules.dart';
 import 'predmet_decision_controls.dart';
 
@@ -588,15 +589,33 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
     FocusNode? focusNode,
     bool emphasize = false,
     bool protected = false,
-  }) => Builder(
-    builder: (context) {
-      final cs = Theme.of(context).colorScheme;
-      final highlightBorder = OutlineInputBorder(
-        borderSide: BorderSide(color: cs.tertiary, width: 1.6),
-      );
-      if (protected) {
-        return PredmetProtectedTextField(
-          labelText: label,
+  }) => ManualEntryAffordance(
+    controller: ctrl,
+    enabled: enabled,
+    child: Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        final highlightBorder = OutlineInputBorder(
+          borderSide: BorderSide(color: cs.tertiary, width: 1.6),
+        );
+        if (protected) {
+          return PredmetProtectedTextField(
+            labelText: label,
+            controller: ctrl,
+            enabled: enabled,
+            keyboardType: keyboard,
+            maxLines: maxLines,
+            focusNode: focusNode,
+            textCapitalization: caps
+                ? TextCapitalization.characters
+                : TextCapitalization.none,
+            hintText: hint,
+            errorText: errorText,
+            onChanged: (_) => _scheduleSave(),
+          );
+        }
+
+        return TextFormField(
           controller: ctrl,
           enabled: enabled,
           keyboardType: keyboard,
@@ -605,39 +624,25 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
           textCapitalization: caps
               ? TextCapitalization.characters
               : TextCapitalization.none,
-          hintText: hint,
-          errorText: errorText,
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: hint,
+            border: const OutlineInputBorder(),
+            isDense: true,
+            errorText: errorText,
+            filled: emphasize ? true : null,
+            fillColor: emphasize ? cs.tertiaryContainer.withAlpha(110) : null,
+            enabledBorder: emphasize ? highlightBorder : null,
+            focusedBorder: emphasize
+                ? highlightBorder.copyWith(
+                    borderSide: BorderSide(color: cs.tertiary, width: 2),
+                  )
+                : null,
+          ),
           onChanged: (_) => _scheduleSave(),
         );
-      }
-
-      return TextFormField(
-        controller: ctrl,
-        enabled: enabled,
-        keyboardType: keyboard,
-        maxLines: maxLines,
-        focusNode: focusNode,
-        textCapitalization: caps
-            ? TextCapitalization.characters
-            : TextCapitalization.none,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          border: const OutlineInputBorder(),
-          isDense: true,
-          errorText: errorText,
-          filled: emphasize,
-          fillColor: emphasize ? cs.tertiaryContainer.withAlpha(110) : null,
-          enabledBorder: emphasize ? highlightBorder : null,
-          focusedBorder: emphasize
-              ? highlightBorder.copyWith(
-                  borderSide: BorderSide(color: cs.tertiary, width: 2),
-                )
-              : null,
-        ),
-        onChanged: (_) => _scheduleSave(),
-      );
-    },
+      },
+    ),
   );
 
   Widget _datumField(

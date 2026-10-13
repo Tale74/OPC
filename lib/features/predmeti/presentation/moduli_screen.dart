@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/help/opc_help.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../auth/domain/session_service.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
@@ -38,7 +39,9 @@ class ModuliScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final actor = session.korisnik;
     return Scaffold(
-      appBar: AppBar(title: const Text('MODULI')),
+      appBar: AppBar(
+        title: const OpcHelpTitle(title: Text('MODULI'), chapterId: 'moduli'),
+      ),
       body: Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(
@@ -47,8 +50,7 @@ class ModuliScreen extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 720),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final wide =
-                    constraints.maxWidth >= _wideLayoutBreakpoint;
+                final wide = constraints.maxWidth >= _wideLayoutBreakpoint;
                 final itemWidth = wide
                     ? (constraints.maxWidth - _moduleGap) / 2
                     : constraints.maxWidth;
@@ -182,13 +184,12 @@ class _StanjeRobeModuleCardState extends State<_StanjeRobeModuleCard> {
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<
-    StanjeRobeOperationalStatus
-  >(
+  Widget build(
+    BuildContext context,
+  ) => StreamBuilder<StanjeRobeOperationalStatus>(
     stream: _statusStream,
     builder: (context, snapshot) {
-      final status =
-          snapshot.data ?? StanjeRobeOperationalStatus.disabled;
+      final status = snapshot.data ?? StanjeRobeOperationalStatus.disabled;
       final active = status == StanjeRobeOperationalStatus.active;
       return Card(
         child: Padding(
@@ -204,18 +205,10 @@ class _StanjeRobeModuleCardState extends State<_StanjeRobeModuleCard> {
                   'Operativno vođenje zaliha i posledica po PREDMETU.',
                 ),
               ),
-              Text(
-                active
-                    ? 'Status: operativno aktivno.'
-                    : 'Status: operativno isključeno.',
-              ),
               if (widget.session.jeAdmin) ...[
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('STANJE ROBE aktivno'),
-                  subtitle: const Text(
-                    'Isključivanje ne briše postojeće podatke.',
-                  ),
+                  title: const Text('Omogući upravljanje zalihama'),
                   value: active,
                   onChanged: (value) => widget.podesavanjaRepository
                       .setStanjeRobeOperativnoOmoguceno(value),
@@ -229,8 +222,7 @@ class _StanjeRobeModuleCardState extends State<_StanjeRobeModuleCard> {
                               session: widget.session,
                               podesavanjaRepository:
                                   widget.podesavanjaRepository,
-                              stanjeRobeRepository:
-                                  widget.stanjeRobeRepository,
+                              stanjeRobeRepository: widget.stanjeRobeRepository,
                               poslediceRepository: widget.poslediceRepository,
                               entitlementPolicy: widget.entitlementPolicy,
                             ),

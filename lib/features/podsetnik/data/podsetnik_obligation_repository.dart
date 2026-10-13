@@ -175,41 +175,51 @@ class PodsetnikObligationRepository {
             existing != null &&
             existing.kind == item.rule.kind.name &&
             existing.sourceFingerprint == item.sourceFingerprint;
-        await db
-            .into(db.podsetnikObaveze)
-            .insert(
-              PodsetnikObavezeCompanion(
-                predmetId: Value(predmetId),
-                stableRuleId: Value(item.rule.stableRuleId),
-                phase: Value(item.rule.phase.name),
-                kind: Value(item.rule.kind.name),
-                parentRuleId: Value(item.rule.parentRuleId),
-                sourceFingerprint: Value(item.sourceFingerprint),
-                completed: Value(preservesCompletion && existing.completed),
-                completedAt: Value(
-                  preservesCompletion ? existing.completedAt : null,
-                ),
-                updatedAt: Value(DateTime.now().toIso8601String()),
-              ),
-              mode: InsertMode.insertOrIgnore,
-            );
-        if (existing != null) {
-          await (db.update(
-            db.podsetnikObaveze,
-          )..where((row) => row.id.equals(existing.id))).write(
-            PodsetnikObavezeCompanion(
+        final nextCompleted = preservesCompletion && existing.completed;
+        final nextCompletedAt = preservesCompletion
+            ? existing.completedAt
+            : null;
+        if (existing == null) {
+          await db
+              .into(db.podsetnikObaveze)
+              .insert(
+                PodsetnikObavezeCompanion.insert(
+                  predmetId: predmetId,
+                  stableRuleId: item.rule.stableRuleId,
               phase: Value(item.rule.phase.name),
               kind: Value(item.rule.kind.name),
-              parentRuleId: Value(item.rule.parentRuleId),
+                  parentRuleId: Value(item.rule.parentRuleId),
               sourceFingerprint: Value(item.sourceFingerprint),
-              completed: Value(preservesCompletion && existing.completed),
-              completedAt: Value(
-                preservesCompletion ? existing.completedAt : null,
-              ),
-              updatedAt: Value(DateTime.now().toIso8601String()),
-            ),
-          );
+                  completed: Value(nextCompleted),
+                  completedAt: Value(nextCompletedAt),
+                  updatedAt: Value(DateTime.now().toIso8601String()),
+                ),
+              );
+          continue;
         }
+
+        final durableFieldsUnchanged =
+            existing.phase == item.rule.phase.name &&
+            existing.kind == item.rule.kind.name &&
+            existing.parentRuleId == item.rule.parentRuleId &&
+            existing.sourceFingerprint == item.sourceFingerprint &&
+            existing.completed == nextCompleted &&
+            existing.completedAt == nextCompletedAt;
+        if (durableFieldsUnchanged) continue;
+
+        await (db.update(
+          db.podsetnikObaveze,
+        )..where((row) => row.id.equals(existing.id))).write(
+          PodsetnikObavezeCompanion(
+            phase: Value(item.rule.phase.name),
+            kind: Value(item.rule.kind.name),
+            parentRuleId: Value(item.rule.parentRuleId),
+            sourceFingerprint: Value(item.sourceFingerprint),
+            completed: Value(nextCompleted),
+            completedAt: Value(nextCompletedAt),
+            updatedAt: Value(DateTime.now().toIso8601String()),
+          ),
+        );
       }
     });
     return currentForPredmet(predmetId);

@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:math' as math;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/help/opc_help.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../../core/utils/export_utils.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../data/predmeti_repository.dart';
 import '../application/parte_preparation_service.dart';
 import '../data/parte_media_store.dart';
@@ -20,6 +25,12 @@ import '../domain/parte_models.dart';
 import '../docx/parte_docx_exporter.dart';
 import '../pdf/parte_pdf_renderer.dart';
 import 'parte_template_management_dialog.dart';
+
+typedef ParteRectPreviewCallback = void Function(String id, ParteRectMm? rect);
+typedef ParteRectCommitCallback =
+    Future<void> Function(String id, ParteRectMm rect, {required bool moved});
+
+enum _ParteResizeHandle { nw, ne, sw, se }
 
 class ParteComposerScreen extends StatefulWidget {
   const ParteComposerScreen({
@@ -70,9 +81,17 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   late final TextEditingController _printVerticalController;
   late final TextEditingController _fontSizeController;
   PartePrintProfile _printProfile = const PartePrintProfile();
-  bool _textExpanded = true;
-  bool _formatExpanded = true;
+  bool _textExpanded = false;
+  bool _formatExpanded = false;
+  bool _mediaExpanded = false;
+  bool _precisionExpanded = false;
   int? _textControllerPreparationId;
+  final Map<String, ParteRectMm> _gesturePreviewRects = {};
+  final Map<String, double> _effectPreviewValues = {};
+  String? _activeEffectKey;
+  String? _activeEffectBlockId;
+  double? _activeEffectStartValue;
+  bool _effectGestureCancelled = false;
 
   @override
   void initState() {
@@ -84,6 +103,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       repository: _repository,
       mediaStore: _mediaStore,
     );
+
     _pdfService = PartePdfExportService(
       renderer: PartePdfRenderer(mediaStore: _mediaStore),
       repository: _repository,
@@ -250,6 +270,18 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     return rendered?.fontSize ?? block.initialFontSize;
   }
 
+  void _selectBlock(String id) {
+    if (_draft == null) return;
+    final block = _draft!.blocks.firstWhere(
+      (item) => item.id == id,
+      orElse: () => _draft!.blocks.first,
+    );
+    setState(() {
+      _selectedBlockId = block.id;
+      _fontSizeController.text = _displayFontSize(block).toStringAsFixed(1);
+    });
+  }
+
   Future<void> _run(Future<void> Function() action) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -382,6 +414,7 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   Future<void> _modifySelected({
     double dx = 0,
     double dy = 0,
+    bool skipHorizontalDragSnap = false,
     double widthDelta = 0,
     double heightDelta = 0,
     double fontDelta = 0,
@@ -429,7 +462,10 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
                 usableWidth: draft.printableZoneWidthMm,
                 usableHeight: draft.printableZoneHeightMm,
               );
-          if ((dx != 0 || dy != 0) && widthDelta == 0 && heightDelta == 0) {
+          if ((dx != 0 || dy != 0) &&
+              widthDelta == 0 &&
+              heightDelta == 0 &&
+              !(skipHorizontalDragSnap && dx != 0 && dy == 0)) {
             rect = _snapRect(rect, block.id, draft);
           }
           return block.copyWith(
@@ -458,6 +494,79 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     await _reload(verifySourceChange: false);
   });
 
+  String _effectKey(String blockId, String property) => '$blockId.$property';
+
+  void _startEffectSlider(String property, double value) {
+    final blockId = _selectedBlockId;
+    final key = _effectKey(blockId, property);
+    setState(() {
+      _activeEffectKey = key;
+      _activeEffectBlockId = blockId;
+      _activeEffectStartValue = value;
+      _effectGestureCancelled = false;
+      _effectPreviewValues[key] = value;
+    });
+  }
+
+  void _updateEffectSlider(String property, double value) {
+    final blockId = _activeEffectBlockId ?? _selectedBlockId;
+    final key = _effectKey(blockId, property);
+    setState(() {
+      _activeEffectKey = key;
+      _effectPreviewValues[key] = value;
+    });
+  }
+
+  void _cancelEffectSlider(PointerCancelEvent _) {
+    _effectGestureCancelled = true;
+    final key = _activeEffectKey;
+    if (key == null || !mounted) return;
+    setState(() {
+      _effectPreviewValues.remove(key);
+      _activeEffectKey = null;
+      _activeEffectBlockId = null;
+      _activeEffectStartValue = null;
+    });
+  }
+
+  void _endEffectSlider(String property, double value) {
+    final blockId = _activeEffectBlockId ?? _selectedBlockId;
+    final key = _effectKey(blockId, property);
+    final start = _activeEffectStartValue;
+    scheduleMicrotask(() async {
+      if (!mounted) return;
+      final cancelled = _effectGestureCancelled;
+      setState(() {
+        _activeEffectKey = null;
+        _activeEffectBlockId = null;
+        _activeEffectStartValue = null;
+        _effectGestureCancelled = false;
+      });
+      if (cancelled || start == null || start == value) {
+        setState(() => _effectPreviewValues.remove(key));
+        return;
+      }
+      if (_selectedBlockId != blockId) {
+        setState(() => _effectPreviewValues.remove(key));
+        return;
+      }
+      try {
+        switch (property) {
+          case 'brightness':
+            await _modifySelected(brightness: value);
+          case 'contrast':
+            await _modifySelected(contrast: value);
+          case 'sharpness':
+            await _modifySelected(sharpness: value);
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _effectPreviewValues.remove(key));
+        }
+      }
+    });
+  }
+
   Future<void> _applyFontSizeInput() async {
     final value = double.tryParse(
       _fontSizeController.text.trim().replaceAll(',', '.'),
@@ -483,6 +592,36 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
       return;
     }
     await _modifySelected(fontSize: value);
+  }
+
+  Future<void> _adjustSelectedFontSize(double delta) async {
+    final block = _draft!.blocks.firstWhere(
+      (item) => item.id == _selectedBlockId,
+    );
+    final before = _displayFontSize(block);
+    final requested = (block.initialFontSize + delta)
+        .clamp(block.minimumFontSize, block.maximumFontSize)
+        .toDouble();
+    if (requested == block.initialFontSize) return;
+
+    await _modifySelected(fontSize: requested);
+    if (!mounted || _draft == null) return;
+    final updated = _draft!.blocks.firstWhere(
+      (item) => item.id == _selectedBlockId,
+    );
+    final after = _displayFontSize(updated);
+    if ((after - before).abs() < 0.01) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Veličina prikazanog teksta nije promenjena jer je ograničena '
+              'prostorom bloka. Proširite DIMENZIJE ili skratite tekst.',
+            ),
+          ),
+        );
+    }
   }
 
   Future<void> _resetSelectedSize() => _run(() async {
@@ -531,10 +670,53 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     await _reload(verifySourceChange: false);
   });
 
-  Future<void> _moveBlockByDrag(String id, double dxMm, double dyMm) async {
-    if (mounted) setState(() => _selectedBlockId = id);
-    await _modifySelected(dx: dxMm, dy: dyMm);
+  void _previewBlockRect(String id, ParteRectMm? rect) {
+    if (!mounted) return;
+    setState(() {
+      if (rect == null) {
+        _gesturePreviewRects.remove(id);
+      } else {
+        _gesturePreviewRects[id] = rect;
+      }
+      _selectedBlockId = id;
+    });
   }
+
+  Future<void> _commitBlockRect(
+    String id,
+    ParteRectMm rect, {
+    required bool moved,
+  }) async {
+    final draft = _draft!;
+    final original = draft.blocks.firstWhere((block) => block.id == id).rect;
+    final finalRect = moved ? _snapRect(rect, id, draft) : rect;
+    if (_sameRect(original, finalRect)) {
+      _previewBlockRect(id, null);
+      return;
+    }
+    await _run(() async {
+      try {
+        final blocks = draft.blocks
+            .map(
+              (block) =>
+                  block.id == id ? block.copyWith(rect: finalRect) : block,
+            )
+            .toList(growable: false);
+        await _repository.updateDraft(
+          preparationId: _preparation!.id,
+          draft: draft.copyWith(blocks: blocks),
+          actor: widget.actor,
+          entitlement: widget.entitlement,
+        );
+        await _reload(verifySourceChange: false);
+      } finally {
+        _previewBlockRect(id, null);
+      }
+    });
+  }
+
+  bool _sameRect(ParteRectMm a, ParteRectMm b) =>
+      a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
 
   ParteRectMm _snapRect(ParteRectMm rect, String blockId, ParteDraft draft) {
     const threshold = 1.5;
@@ -889,13 +1071,23 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('PARTE PRIPREMA')),
+        appBar: AppBar(
+          title: const OpcHelpTitle(
+            title: Text('PARTE PRIPREMA'),
+            chapterId: 'parte.preparation',
+          ),
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('PARTE PRIPREMA')),
+        appBar: AppBar(
+          title: const OpcHelpTitle(
+            title: Text('PARTE PRIPREMA'),
+            chapterId: 'parte.preparation',
+          ),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -907,7 +1099,12 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     final status = PartePreparationStatus.fromDb(_preparation!.status);
     if (status == PartePreparationStatus.cleanupPending) {
       return Scaffold(
-        appBar: AppBar(title: const Text('PARTE PRIPREMA')),
+        appBar: AppBar(
+          title: const OpcHelpTitle(
+            title: Text('PARTE PRIPREMA'),
+            chapterId: 'parte.preparation',
+          ),
+        ),
         body: const Center(
           child: Padding(
             padding: EdgeInsets.all(24),
@@ -925,13 +1122,9 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
     final preview = _buildPreviewAndActions(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('PARTE – ${_predmet!.ime} ${_predmet!.prezime}'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(24),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Text('PREDMET ${_predmet!.brojPredmeta}'),
-          ),
+        title: OpcHelpTitle(
+          title: Text('PARTE – ${_predmet!.ime} ${_predmet!.prezime}'),
+          chapterId: 'parte.preparation',
         ),
         actions: [
           if (widget.actor.uloga == 'ADMINISTRATOR')
@@ -1016,26 +1209,28 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
               ),
             ),
           ),
-        ExpansionTile(
+        _buildDisclosureCard(
+          key: const Key('parte-text-blocks-disclosure'),
+          title: 'TEKSTUALNI BLOKOVI',
+          icon: Icons.article_outlined,
           initiallyExpanded: _textExpanded,
-          tilePadding: EdgeInsets.zero,
-          childrenPadding: const EdgeInsets.only(top: 10, bottom: 8),
           onExpansionChanged: (value) => _textExpanded = value,
-          title: Text(
-            'TEKSTUALNI BLOKOVI',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
+          childrenTopPadding: 10,
           children: [
             for (final id in textIds) ...[
-              TextField(
-                key: ValueKey('parte-text-$id'),
-                controller: _textControllers[id],
-                minLines: id == 'mourners' || id == 'ceremony' ? 2 : 1,
-                maxLines: id == 'mourners' || id == 'ceremony' ? 5 : 3,
-                decoration: InputDecoration(
-                  labelText: _blockLabel(id),
-                  border: const OutlineInputBorder(),
-                  isDense: true,
+              ManualEntryAffordance(
+                controller: _textControllers[id]!,
+                enabled: true,
+                child: TextField(
+                  key: ValueKey('parte-text-$id'),
+                  controller: _textControllers[id],
+                  minLines: id == 'mourners' || id == 'ceremony' ? 2 : 1,
+                  maxLines: id == 'mourners' || id == 'ceremony' ? 5 : 3,
+                  decoration: InputDecoration(
+                    labelText: _blockLabel(id),
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -1049,15 +1244,15 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        ExpansionTile(
+        _buildDisclosureCard(
+          key: const Key('parte-format-disclosure'),
+          title: 'FORMAT I ZONA ŠTAMPE',
+          icon: Icons.print_outlined,
           initiallyExpanded: _formatExpanded,
-          tilePadding: EdgeInsets.zero,
-          childrenPadding: const EdgeInsets.only(top: 10, bottom: 8),
           onExpansionChanged: (value) => _formatExpanded = value,
-          title: Text(
-            'FORMAT I ZONA ŠTAMPE (mm)',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
+          // InputDecoration's floating label extends above its field outline;
+          // keep it clear of the clipped disclosure-card child boundary.
+          childrenTopPadding: 18,
           children: [
             Wrap(
               spacing: 8,
@@ -1113,426 +1308,654 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        Text('MEDIJI', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        _buildDisclosureCard(
+          key: const Key('parte-media-disclosure'),
+          title: 'MEDIJI',
+          icon: Icons.perm_media_outlined,
+          initiallyExpanded: _mediaExpanded,
+          onExpansionChanged: (value) => _mediaExpanded = value,
           children: [
-            FilledButton.tonalIcon(
-              onPressed: _busy
-                  ? null
-                  : () => _importMedia(ParteMediaKind.photo),
-              icon: const Icon(Icons.photo_outlined),
-              label: Text(
-                _preparation!.photoMediaKey == null
-                    ? 'UNESI FOTOGRAFIJU'
-                    : 'ZAMENI FOTOGRAFIJU',
-              ),
-            ),
-            if (_preparation!.photoMediaKey != null)
-              OutlinedButton(
-                onPressed: _busy
-                    ? null
-                    : () => _removeMedia(ParteMediaKind.photo),
-                child: const Text('UKLONI FOTOGRAFIJU'),
-              ),
-            if (_draft!.symbolId == 'SLOBODAN_IZBOR')
-              FilledButton.tonalIcon(
-                onPressed: _busy
-                    ? null
-                    : () => _importMedia(ParteMediaKind.customSymbol),
-                icon: const Icon(Icons.add_photo_alternate_outlined),
-                label: Text(
-                  _preparation!.customSymbolMediaKey == null
-                      ? 'UNESI SLOBODAN SIMBOL'
-                      : 'ZAMENI SLOBODAN SIMBOL',
-                ),
-              ),
-            if (_preparation!.customSymbolMediaKey != null)
-              OutlinedButton(
-                onPressed: _busy
-                    ? null
-                    : () => _removeMedia(ParteMediaKind.customSymbol),
-                child: const Text('UKLONI SLOBODAN SIMBOL'),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'PRECIZNO POMERANJE I STIL',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          initialValue: _selectedBlockId,
-          decoration: const InputDecoration(
-            labelText: 'Blok',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
-          items: _draft!.blocks
-              .map(
-                (block) => DropdownMenuItem(
-                  value: block.id,
-                  child: Text(_blockLabel(block.id)),
-                ),
-              )
-              .toList(),
-          onChanged: (value) {
-            final next = value ?? _selectedBlockId;
-            final block = _draft!.blocks.firstWhere((item) => item.id == next);
-            setState(() {
-              _selectedBlockId = next;
-              _fontSizeController.text = _displayFontSize(
-                block,
-              ).toStringAsFixed(1);
-            });
-          },
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            IconButton.filledTonal(
-              onPressed: _busy ? null : () => _modifySelected(dx: -1),
-              icon: const Icon(Icons.arrow_left),
-              tooltip: 'Levo 1 mm',
-            ),
-            IconButton.filledTonal(
-              onPressed: _busy ? null : () => _modifySelected(dx: 1),
-              icon: const Icon(Icons.arrow_right),
-              tooltip: 'Desno 1 mm',
-            ),
-            IconButton.filledTonal(
-              onPressed: _busy ? null : () => _modifySelected(dy: -1),
-              icon: const Icon(Icons.arrow_upward),
-              tooltip: 'Gore 1 mm',
-            ),
-            IconButton.filledTonal(
-              onPressed: _busy ? null : () => _modifySelected(dy: 1),
-              icon: const Icon(Icons.arrow_downward),
-              tooltip: 'Dole 1 mm',
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        if (selected.kind == ParteBlockKind.text) ...[
-          LayoutBuilder(
-            key: const Key('parte-compact-font-row'),
-            builder: (context, constraints) => Wrap(
+            Wrap(
               spacing: 8,
               runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                SizedBox(
-                  width: constraints.maxWidth < 360
-                      ? constraints.maxWidth
-                      : constraints.maxWidth - 214,
-                  child: DropdownButtonFormField<String>(
-                    key: ValueKey(
-                      'parte-font-${selected.id}-${selected.fontFamily}',
-                    ),
-                    initialValue: selected.fontFamily,
-                    decoration: const InputDecoration(
-                      labelText: 'Font',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    items: ParteFontCatalog.supported
-                        .map(
-                          (font) => DropdownMenuItem(
-                            value: font,
-                            child: Text(ParteFontCatalog.displayName(font)),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _busy
+                FilledButton.tonalIcon(
+                  onPressed: _busy
+                      ? null
+                      : () => _importMedia(ParteMediaKind.photo),
+                  icon: const Icon(Icons.photo_outlined),
+                  label: Text(
+                    _preparation!.photoMediaKey == null
+                        ? 'UNESI FOTOGRAFIJU'
+                        : 'ZAMENI FOTOGRAFIJU',
+                  ),
+                ),
+                if (_preparation!.photoMediaKey != null)
+                  OutlinedButton(
+                    onPressed: _busy
                         ? null
-                        : (value) => _modifySelected(fontFamily: value),
+                        : () => _removeMedia(ParteMediaKind.photo),
+                    child: const Text('UKLONI FOTOGRAFIJU'),
                   ),
-                ),
-                SizedBox(
-                  width: 104,
-                  child: TextField(
-                    key: const Key('parte-font-size-state'),
-                    controller: _fontSizeController,
-                    enabled: !_busy,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
+                if (_draft!.symbolId == 'SLOBODAN_IZBOR')
+                  FilledButton.tonalIcon(
+                    onPressed: _busy
+                        ? null
+                        : () => _importMedia(ParteMediaKind.customSymbol),
+                    icon: const Icon(Icons.add_photo_alternate_outlined),
+                    label: Text(
+                      _preparation!.customSymbolMediaKey == null
+                          ? 'UNESI SLOBODAN SIMBOL'
+                          : 'ZAMENI SLOBODAN SIMBOL',
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Veličina',
-                      suffixText: 'pt',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    onSubmitted: (_) => _applyFontSizeInput(),
-                    onTapOutside: (_) {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      _applyFontSizeInput();
-                    },
                   ),
-                ),
-                IconButton.filledTonal(
-                  onPressed:
-                      _busy ||
-                          selected.initialFontSize <= selected.minimumFontSize
-                      ? null
-                      : () => _modifySelected(fontDelta: -0.5),
-                  icon: const Icon(Icons.text_decrease),
-                  tooltip: 'Manji font',
-                ),
-                IconButton.filledTonal(
-                  onPressed:
-                      _busy ||
-                          selected.initialFontSize >= selected.maximumFontSize
-                      ? null
-                      : () => _modifySelected(fontDelta: 0.5),
-                  icon: const Icon(Icons.text_increase),
-                  tooltip: 'Veći font',
-                ),
+                if (_preparation!.customSymbolMediaKey != null)
+                  OutlinedButton(
+                    onPressed: _busy
+                        ? null
+                        : () => _removeMedia(ParteMediaKind.customSymbol),
+                    child: const Text('UKLONI SLOBODAN SIMBOL'),
+                  ),
               ],
-            ),
-          ),
-          if (selected.initialFontSize <= selected.minimumFontSize)
-            const Text(
-              'Dostignut je najmanji font. Proširite ili povisite blok.',
-            )
-          else if (selected.initialFontSize >= selected.maximumFontSize)
-            const Text(
-              'Dostignut je najveći font. Proširite blok ili smanjite sadržaj.',
-            ),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              OutlinedButton(
-                onPressed: _busy ? null : () => _modifySelected(widthDelta: -1),
-                child: const Text('SUZI'),
-              ),
-              OutlinedButton(
-                onPressed: _busy ? null : () => _modifySelected(widthDelta: 1),
-                child: const Text('PROŠIRI'),
-              ),
-              OutlinedButton(
-                onPressed: _busy
-                    ? null
-                    : () => _modifySelected(heightDelta: -1),
-                child: const Text('SNIZI'),
-              ),
-              OutlinedButton(
-                onPressed: _busy ? null : () => _modifySelected(heightDelta: 1),
-                child: const Text('POVISI'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SegmentedButton<ParteTextAlign>(
-            segments: const [
-              ButtonSegment(
-                value: ParteTextAlign.left,
-                icon: Icon(Icons.format_align_left),
-              ),
-              ButtonSegment(
-                value: ParteTextAlign.center,
-                icon: Icon(Icons.format_align_center),
-              ),
-              ButtonSegment(
-                value: ParteTextAlign.right,
-                icon: Icon(Icons.format_align_right),
-              ),
-            ],
-            selected: {selected.alignment},
-            onSelectionChanged: _busy
-                ? null
-                : (value) => _modifySelected(alignment: value.first),
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Podebljano'),
-            value: selected.bold,
-            onChanged: _busy ? null : (value) => _modifySelected(bold: value),
-          ),
-        ] else ...[
-          Text(
-            'Veličina: ${selected.rect.width.toStringAsFixed(1)} × '
-            '${selected.rect.height.toStringAsFixed(1)} mm',
-          ),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              if (selected.lockAspectRatio) ...[
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _modifySelected(widthDelta: -1),
-                  child: const Text('UMANJI'),
-                ),
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _modifySelected(widthDelta: 1),
-                  child: const Text('POVEĆAJ'),
-                ),
-              ] else ...[
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _modifySelected(widthDelta: -1),
-                  child: const Text('UŽE'),
-                ),
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _modifySelected(widthDelta: 1),
-                  child: const Text('ŠIRE'),
-                ),
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _modifySelected(heightDelta: -1),
-                  child: const Text('NIŽE'),
-                ),
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _modifySelected(heightDelta: 1),
-                  child: const Text('VIŠE'),
-                ),
-              ],
-              OutlinedButton(
-                onPressed: _busy ? null : _resetSelectedSize,
-                child: const Text('VRATI VELIČINU ŠABLONA'),
-              ),
-            ],
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Zaključaj odnos stranica'),
-            value: selected.lockAspectRatio,
-            onChanged: _busy
-                ? null
-                : (value) => _modifySelected(lockAspectRatio: value),
-          ),
-          if (selected.kind == ParteBlockKind.photo) ...[
-            _effectSlider(
-              'Svetlina',
-              selected.brightness,
-              0.5,
-              1.5,
-              (value) => _modifySelected(brightness: value),
-            ),
-            _effectSlider(
-              'Kontrast',
-              selected.contrast,
-              0.5,
-              1.5,
-              (value) => _modifySelected(contrast: value),
-            ),
-            _effectSlider(
-              'Oštrina',
-              selected.sharpness,
-              0,
-              1,
-              (value) => _modifySelected(sharpness: value),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Crno-belo'),
-              value: selected.grayscale,
-              onChanged: _busy
-                  ? null
-                  : (value) => _modifySelected(grayscale: value),
             ),
           ],
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Okvir'),
-            value: selected.border,
-            onChanged: _busy ? null : (value) => _modifySelected(border: value),
-          ),
-          DropdownButtonFormField<ParteImageShape>(
-            initialValue: selected.imageShape,
-            decoration: const InputDecoration(
-              labelText: 'Oblik',
-              border: OutlineInputBorder(),
-              isDense: true,
+        ),
+        const SizedBox(height: 12),
+        _buildDisclosureCard(
+          key: const Key('parte-precision-disclosure'),
+          title: 'PRECIZNO POMERANJE I STIL',
+          icon: Icons.tune,
+          initiallyExpanded: _precisionExpanded,
+          onExpansionChanged: (value) => _precisionExpanded = value,
+          children: [
+            _precisionControlGroup(
+              'BLOK',
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                initialValue: _selectedBlockId,
+                decoration: const InputDecoration(
+                  labelText: 'Blok',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: _draft!.blocks
+                    .map(
+                      (block) => DropdownMenuItem(
+                        value: block.id,
+                        child: Text(_blockLabel(block.id)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  final next = value ?? _selectedBlockId;
+                  final block = _draft!.blocks.firstWhere(
+                    (item) => item.id == next,
+                  );
+                  _selectBlock(block.id);
+                },
+              ),
             ),
-            items: const [
-              DropdownMenuItem(
-                value: ParteImageShape.rectangle,
-                child: Text('Pravougaonik'),
+            _precisionControlGroup(
+              'POLOŽAJ · 1 mm',
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  IconButton.filledTonal(
+                    key: const Key('parte-position-left'),
+                    onPressed: _busy
+                        ? null
+                        : () => _modifySelected(
+                            dx: -1,
+                            skipHorizontalDragSnap: true,
+                          ),
+                    icon: const Icon(Icons.arrow_left),
+                    tooltip: 'Levo 1 mm',
+                  ),
+                  IconButton.filledTonal(
+                    key: const Key('parte-position-right'),
+                    onPressed: _busy
+                        ? null
+                        : () => _modifySelected(
+                            dx: 1,
+                            skipHorizontalDragSnap: true,
+                          ),
+                    icon: const Icon(Icons.arrow_right),
+                    tooltip: 'Desno 1 mm',
+                  ),
+                  IconButton.filledTonal(
+                    key: const Key('parte-position-up'),
+                    onPressed: _busy ? null : () => _modifySelected(dy: -1),
+                    icon: const Icon(Icons.arrow_upward),
+                    tooltip: 'Gore 1 mm',
+                  ),
+                  IconButton.filledTonal(
+                    key: const Key('parte-position-down'),
+                    onPressed: _busy ? null : () => _modifySelected(dy: 1),
+                    icon: const Icon(Icons.arrow_downward),
+                    tooltip: 'Dole 1 mm',
+                  ),
+                ],
               ),
-              DropdownMenuItem(
-                value: ParteImageShape.roundedRectangle,
-                child: Text('Zaobljeni pravougaonik'),
+            ),
+            const SizedBox(height: 8),
+            if (selected.kind == ParteBlockKind.text) ...[
+              _precisionSectionTitle('TEKST'),
+              LayoutBuilder(
+                key: const Key('parte-compact-font-row'),
+                builder: (context, constraints) => Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: constraints.maxWidth < 360
+                          ? constraints.maxWidth
+                          : constraints.maxWidth - 214,
+                      child: DropdownButtonFormField<String>(
+                        key: ValueKey(
+                          'parte-font-${selected.id}-${selected.fontFamily}',
+                        ),
+                        initialValue: selected.fontFamily,
+                        decoration: const InputDecoration(
+                          labelText: 'Font',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        items: ParteFontCatalog.supported
+                            .map(
+                              (font) => DropdownMenuItem(
+                                value: font,
+                                child: Text(ParteFontCatalog.displayName(font)),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: _busy
+                            ? null
+                            : (value) => _modifySelected(fontFamily: value),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 184,
+                      child: ManualEntryAffordance(
+                        controller: _fontSizeController,
+                        enabled: !_busy,
+                        child: TextField(
+                          key: const Key('parte-font-size-state'),
+                          controller: _fontSizeController,
+                          enabled: !_busy,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Veličina',
+                            suffixText: 'pt',
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 96,
+                              maxWidth: 96,
+                              minHeight: 48,
+                              maxHeight: 48,
+                            ),
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  key: const Key('parte-font-size-increment'),
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 48,
+                                    height: 48,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  tooltip: 'Uvećaj font za 0,5 pt',
+                                  onPressed:
+                                      _busy ||
+                                          selected.initialFontSize >=
+                                              selected.maximumFontSize
+                                      ? null
+                                      : () => _adjustSelectedFontSize(0.5),
+                                  icon: const Icon(Icons.keyboard_arrow_up),
+                                ),
+                                IconButton(
+                                  key: const Key('parte-font-size-decrement'),
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 48,
+                                    height: 48,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  tooltip: 'Smanji font za 0,5 pt',
+                                  onPressed:
+                                      _busy ||
+                                          selected.initialFontSize <=
+                                              selected.minimumFontSize
+                                      ? null
+                                      : () => _adjustSelectedFontSize(-0.5),
+                                  icon: const Icon(Icons.keyboard_arrow_down),
+                                ),
+                              ],
+                            ),
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onSubmitted: (_) => _applyFontSizeInput(),
+                          onTapOutside: (_) {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            _applyFontSizeInput();
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              DropdownMenuItem(
-                value: ParteImageShape.oval,
-                child: Text('Oval'),
+              if (selected.initialFontSize <= selected.minimumFontSize)
+                const Text(
+                  'Dostignut je najmanji font. Proširite ili povisite blok.',
+                )
+              else if (selected.initialFontSize >= selected.maximumFontSize)
+                const Text(
+                  'Dostignut je najveći font. Proširite blok ili smanjite sadržaj.',
+                ),
+              _precisionSectionTitle('DIMENZIJE'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _dimensionActionButton(
+                    key: const Key('parte-dimension-width-decrease'),
+                    icon: _dimensionArrow(horizontal: true, outward: false),
+                    tooltip: 'Suzi blok za 1 mm',
+                    onPressed: _busy
+                        ? null
+                        : () => _modifySelected(widthDelta: -1),
+                  ),
+                  _dimensionActionButton(
+                    key: const Key('parte-dimension-width-increase'),
+                    icon: _dimensionArrow(horizontal: true, outward: true),
+                    tooltip: 'Proširi blok za 1 mm',
+                    onPressed: _busy
+                        ? null
+                        : () => _modifySelected(widthDelta: 1),
+                  ),
+                  _dimensionActionButton(
+                    key: const Key('parte-dimension-height-decrease'),
+                    icon: _dimensionArrow(horizontal: false, outward: false),
+                    tooltip: 'Snizi blok za 1 mm',
+                    onPressed: _busy
+                        ? null
+                        : () => _modifySelected(heightDelta: -1),
+                  ),
+                  _dimensionActionButton(
+                    key: const Key('parte-dimension-height-increase'),
+                    icon: _dimensionArrow(horizontal: false, outward: true),
+                    tooltip: 'Povisi blok za 1 mm',
+                    onPressed: _busy
+                        ? null
+                        : () => _modifySelected(heightDelta: 1),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _precisionSectionTitle('PORAVNANJE I STIL'),
+              SegmentedButton<ParteTextAlign>(
+                segments: const [
+                  ButtonSegment(
+                    value: ParteTextAlign.left,
+                    icon: Icon(Icons.format_align_left),
+                  ),
+                  ButtonSegment(
+                    value: ParteTextAlign.center,
+                    icon: Icon(Icons.format_align_center),
+                  ),
+                  ButtonSegment(
+                    value: ParteTextAlign.right,
+                    icon: Icon(Icons.format_align_right),
+                  ),
+                ],
+                selected: {selected.alignment},
+                onSelectionChanged: _busy
+                    ? null
+                    : (value) => _modifySelected(alignment: value.first),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Podebljano'),
+                value: selected.bold,
+                onChanged: _busy
+                    ? null
+                    : (value) => _modifySelected(bold: value),
+              ),
+            ] else ...[
+              _precisionSectionTitle('DIMENZIJE'),
+              Text(
+                'Veličina: ${selected.rect.width.toStringAsFixed(1)} × '
+                '${selected.rect.height.toStringAsFixed(1)} mm',
+              ),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  if (selected.lockAspectRatio) ...[
+                    _dimensionActionButton(
+                      key: const Key('parte-dimension-size-decrease'),
+                      icon: const Icon(Icons.remove),
+                      tooltip: 'Umanji blok za 1 mm',
+                      onPressed: _busy
+                          ? null
+                          : () => _modifySelected(widthDelta: -1),
+                    ),
+                    _dimensionActionButton(
+                      key: const Key('parte-dimension-size-increase'),
+                      icon: const Icon(Icons.add),
+                      tooltip: 'Povećaj blok za 1 mm',
+                      onPressed: _busy
+                          ? null
+                          : () => _modifySelected(widthDelta: 1),
+                    ),
+                  ] else ...[
+                    _dimensionActionButton(
+                      key: const Key('parte-dimension-width-decrease'),
+                      icon: _dimensionArrow(horizontal: true, outward: false),
+                      tooltip: 'Suzi blok za 1 mm',
+                      onPressed: _busy
+                          ? null
+                          : () => _modifySelected(widthDelta: -1),
+                    ),
+                    _dimensionActionButton(
+                      key: const Key('parte-dimension-width-increase'),
+                      icon: _dimensionArrow(horizontal: true, outward: true),
+                      tooltip: 'Proširi blok za 1 mm',
+                      onPressed: _busy
+                          ? null
+                          : () => _modifySelected(widthDelta: 1),
+                    ),
+                    _dimensionActionButton(
+                      key: const Key('parte-dimension-height-decrease'),
+                      icon: _dimensionArrow(horizontal: false, outward: false),
+                      tooltip: 'Snizi blok za 1 mm',
+                      onPressed: _busy
+                          ? null
+                          : () => _modifySelected(heightDelta: -1),
+                    ),
+                    _dimensionActionButton(
+                      key: const Key('parte-dimension-height-increase'),
+                      icon: _dimensionArrow(horizontal: false, outward: true),
+                      tooltip: 'Povisi blok za 1 mm',
+                      onPressed: _busy
+                          ? null
+                          : () => _modifySelected(heightDelta: 1),
+                    ),
+                  ],
+                  _dimensionActionButton(
+                    key: const Key('parte-dimension-size-reset'),
+                    icon: const Icon(Icons.restart_alt),
+                    tooltip: 'Vrati veličinu iz šablona',
+                    onPressed: _busy ? null : _resetSelectedSize,
+                  ),
+                ],
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Zaključaj odnos stranica'),
+                value: selected.lockAspectRatio,
+                onChanged: _busy
+                    ? null
+                    : (value) => _modifySelected(lockAspectRatio: value),
+              ),
+              if (selected.kind == ParteBlockKind.photo) ...[
+                _precisionSectionTitle('IZGLED SLIKE'),
+                _effectSlider(
+                  'brightness',
+                  'Svetlina',
+                  selected.brightness,
+                  0.5,
+                  1.5,
+                ),
+                _effectSlider(
+                  'contrast',
+                  'Kontrast',
+                  selected.contrast,
+                  0.5,
+                  1.5,
+                ),
+                _effectSlider('sharpness', 'Oštrina', selected.sharpness, 0, 1),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Crno-belo'),
+                  value: selected.grayscale,
+                  onChanged: _busy
+                      ? null
+                      : (value) => _modifySelected(grayscale: value),
+                ),
+              ],
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Okvir'),
+                value: selected.border,
+                onChanged: _busy
+                    ? null
+                    : (value) => _modifySelected(border: value),
+              ),
+              DropdownButtonFormField<ParteImageShape>(
+                isExpanded: true,
+                initialValue: selected.imageShape,
+                decoration: const InputDecoration(
+                  labelText: 'Oblik',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: ParteImageShape.rectangle,
+                    child: Text('Pravougaonik'),
+                  ),
+                  DropdownMenuItem(
+                    value: ParteImageShape.roundedRectangle,
+                    child: Text('Zaobljeni pravougaonik'),
+                  ),
+                  DropdownMenuItem(
+                    value: ParteImageShape.oval,
+                    child: Text('Oval'),
+                  ),
+                ],
+                onChanged: _busy
+                    ? null
+                    : (value) => _modifySelected(imageShape: value),
               ),
             ],
-            onChanged: _busy
-                ? null
-                : (value) => _modifySelected(imageShape: value),
-          ),
-        ],
+          ],
+        ),
         const SizedBox(height: 16),
-        if (PartePreparationStatus.fromDb(_preparation!.status) ==
-            PartePreparationStatus.inProgress)
-          OutlinedButton.icon(
-            onPressed: _busy ? null : _resetPreparation,
-            icon: const Icon(Icons.restart_alt),
-            label: const Text('OBRIŠI PRIPREMU I POČNI NOVU'),
-          )
-        else
-          OutlinedButton.icon(
-            onPressed: _busy ? null : _deleteRetainedPreparation,
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('OBRIŠI SAČUVANU PRIPREMU'),
+        Card(
+          key: const Key('parte-secondary-danger-actions'),
+          margin: EdgeInsets.zero,
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'OSTALE RADNJE',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (PartePreparationStatus.fromDb(_preparation!.status) ==
+                    PartePreparationStatus.inProgress)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _resetPreparation,
+                    icon: const Icon(Icons.restart_alt),
+                    label: const Text('OBRIŠI PRIPREMU I POČNI NOVU'),
+                  )
+                else
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _deleteRetainedPreparation,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('OBRIŠI SAČUVANU PRIPREMU'),
+                  ),
+              ],
+            ),
           ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildDisclosureCard({
+    required Key key,
+    required String title,
+    required IconData icon,
+    required bool initiallyExpanded,
+    required ValueChanged<bool> onExpansionChanged,
+    double childrenTopPadding = 0,
+    required List<Widget> children,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    return Card(
+      key: key,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      color: colors.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: colors.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
+        maintainState: true,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        childrenPadding: EdgeInsets.fromLTRB(16, childrenTopPadding, 16, 16),
+        onExpansionChanged: onExpansionChanged,
+        leading: Icon(icon, color: colors.primary),
+        title: Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        children: children,
+      ),
     );
   }
 
   Widget _dimensionField(TextEditingController controller, String label) =>
       SizedBox(
         width: 190,
-        child: TextField(
+        child: ManualEntryAffordance(
           controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: label,
-            suffixText: 'mm',
-            border: const OutlineInputBorder(),
-            isDense: true,
+          enabled: true,
+          child: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: label,
+              suffixText: 'mm',
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
           ),
         ),
       );
 
+  Widget _dimensionActionButton({
+    required Key key,
+    required Widget icon,
+    required String tooltip,
+    required VoidCallback? onPressed,
+  }) => IconButton.filledTonal(
+    key: key,
+    onPressed: onPressed,
+    icon: icon,
+    tooltip: tooltip,
+  );
+
+  Widget _dimensionArrow({required bool horizontal, required bool outward}) =>
+      RotatedBox(
+        quarterTurns: horizontal ? 1 : 0,
+        child: Icon(outward ? Icons.unfold_more : Icons.unfold_less),
+      );
+
+  Widget _precisionSectionTitle(String title) => Padding(
+    padding: const EdgeInsets.only(top: 10, bottom: 6),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    ),
+  );
+
+  Widget _precisionControlGroup(String title, Widget child) => Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        child,
+      ],
+    ),
+  );
+
   Widget _effectSlider(
+    String property,
     String label,
     double value,
     double min,
     double max,
-    ValueChanged<double> onChanged,
-  ) => Row(
-    children: [
-      SizedBox(width: 76, child: Text(label)),
-      Expanded(
-        child: Slider(
-          value: value.clamp(min, max),
-          min: min,
-          max: max,
-          divisions: 20,
-          onChanged: _busy ? null : onChanged,
+  ) {
+    final key = _effectKey(_selectedBlockId, property);
+    return Row(
+      children: [
+        SizedBox(width: 76, child: Text(label)),
+        Expanded(
+          child: Listener(
+            onPointerCancel: _cancelEffectSlider,
+            child: Slider(
+              key: ValueKey('parte-effect-slider-$property'),
+              value: (_effectPreviewValues[key] ?? value).clamp(min, max),
+              min: min,
+              max: max,
+              divisions: 20,
+              onChangeStart: _busy
+                  ? null
+                  : (next) => _startEffectSlider(property, next),
+              onChanged: _busy
+                  ? null
+                  : (next) => _updateEffectSlider(property, next),
+              onChangeEnd: _busy
+                  ? null
+                  : (next) => _endEffectSlider(property, next),
+            ),
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 
   Widget _buildPreviewAndActions(BuildContext context) {
     final plan = _plan!;
@@ -1555,8 +1978,16 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
           plan: plan,
           mediaStore: _mediaStore,
           selectedBlockId: _selectedBlockId,
-          onBlockSelected: (id) => setState(() => _selectedBlockId = id),
-          onBlockMoved: _busy ? null : _moveBlockByDrag,
+          previewRects: _gesturePreviewRects,
+          effectOverrides: _effectPreviewValues,
+          lockAspectRatios: {
+            for (final block in _draft!.blocks)
+              block.id:
+                  block.kind != ParteBlockKind.text && block.lockAspectRatio,
+          },
+          onBlockSelected: _selectBlock,
+          onBlockRectPreview: _busy ? null : _previewBlockRect,
+          onBlockRectCommitted: _busy ? null : _commitBlockRect,
         ),
         const SizedBox(height: 12),
         for (final warning in plan.warnings)
@@ -1728,14 +2159,24 @@ class ParteEditorViewport extends StatefulWidget {
     required this.plan,
     required this.mediaStore,
     this.selectedBlockId,
+    this.previewRects = const <String, ParteRectMm>{},
+    this.effectOverrides = const <String, double>{},
+    this.lockAspectRatios = const <String, bool>{},
     this.onBlockSelected,
+    this.onBlockRectPreview,
+    this.onBlockRectCommitted,
     this.onBlockMoved,
   });
 
   final ParteRenderPlan plan;
   final ParteMediaStore mediaStore;
   final String? selectedBlockId;
+  final Map<String, ParteRectMm> previewRects;
+  final Map<String, double> effectOverrides;
+  final Map<String, bool> lockAspectRatios;
   final ValueChanged<String>? onBlockSelected;
+  final ParteRectPreviewCallback? onBlockRectPreview;
+  final ParteRectCommitCallback? onBlockRectCommitted;
   final Future<void> Function(String id, double dxMm, double dyMm)?
   onBlockMoved;
 
@@ -1752,7 +2193,7 @@ class _ParteEditorViewportState extends State<ParteEditorViewport> {
   bool _moveViewport = false;
 
   double get _scale =>
-      _controller.value.getMaxScaleOnAxis().clamp(_minimumScale, _maximumScale);
+      _controller.value.getColumn(0).length.clamp(_minimumScale, _maximumScale);
 
   @override
   void dispose() {
@@ -1852,7 +2293,17 @@ class _ParteEditorViewportState extends State<ParteEditorViewport> {
             plan: widget.plan,
             mediaStore: widget.mediaStore,
             selectedBlockId: widget.selectedBlockId,
+            previewRects: widget.previewRects,
+            effectOverrides: widget.effectOverrides,
+            lockAspectRatios: widget.lockAspectRatios,
+            viewportScale: _scale,
             onBlockSelected: widget.onBlockSelected,
+            onBlockRectPreview: _moveViewport
+                ? null
+                : widget.onBlockRectPreview,
+            onBlockRectCommitted: _moveViewport
+                ? null
+                : widget.onBlockRectCommitted,
             onBlockMoved: _moveViewport ? null : widget.onBlockMoved,
           ),
         ),
@@ -1867,14 +2318,26 @@ class PartePlanPreview extends StatelessWidget {
     required this.plan,
     required this.mediaStore,
     this.selectedBlockId,
+    this.previewRects = const <String, ParteRectMm>{},
+    this.effectOverrides = const <String, double>{},
+    this.lockAspectRatios = const <String, bool>{},
+    this.viewportScale = 1,
     this.onBlockSelected,
+    this.onBlockRectPreview,
+    this.onBlockRectCommitted,
     this.onBlockMoved,
   });
 
   final ParteRenderPlan plan;
   final ParteMediaStore mediaStore;
   final String? selectedBlockId;
+  final Map<String, ParteRectMm> previewRects;
+  final Map<String, double> effectOverrides;
+  final Map<String, bool> lockAspectRatios;
+  final double viewportScale;
   final ValueChanged<String>? onBlockSelected;
+  final ParteRectPreviewCallback? onBlockRectPreview;
+  final ParteRectCommitCallback? onBlockRectCommitted;
   final Future<void> Function(String id, double dxMm, double dyMm)?
   onBlockMoved;
 
@@ -1980,19 +2443,56 @@ class PartePlanPreview extends StatelessWidget {
                     ),
                   ),
                 for (final block in plan.blocks)
-                  Positioned(
-                    left: block.rect.x * scale,
-                    top: block.rect.y * scale,
-                    width: block.rect.width * scale,
-                    height: block.rect.height * scale,
-                    child: _DraggableParteBlock(
-                      block: block,
-                      scale: scale,
-                      mediaStore: mediaStore,
-                      selected: selectedBlockId == block.id,
-                      onSelected: onBlockSelected,
-                      onMoved: onBlockMoved,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final selectedBlock = selectedBlockId == block.id;
+                      final rect = previewRects[block.id] ?? block.rect;
+                      final handlePadding =
+                          selectedBlock &&
+                              onBlockRectPreview != null &&
+                              viewportScale > 0
+                          ? 24 / viewportScale
+                          : 0.0;
+                      final safeLeft =
+                          plan.printableZoneXmm + plan.horizontalMarginMm;
+                      final safeTop =
+                          plan.printableZoneYmm + plan.verticalMarginMm;
+                      final safeRight =
+                          plan.printableZoneXmm +
+                          plan.printableZoneWidthMm -
+                          plan.horizontalMarginMm;
+                      final safeBottom =
+                          plan.printableZoneYmm +
+                          plan.printableZoneHeightMm -
+                          plan.verticalMarginMm;
+                      return Positioned(
+                        left: rect.x * scale - handlePadding,
+                        top: rect.y * scale - handlePadding,
+                        width: rect.width * scale + handlePadding * 2,
+                        height: rect.height * scale + handlePadding * 2,
+                        child: _DraggableParteBlock(
+                          block: block,
+                          rect: rect,
+                          scale: scale,
+                          viewportScale: viewportScale,
+                          handlePadding: handlePadding,
+                          safeBounds: Rect.fromLTRB(
+                            safeLeft,
+                            safeTop,
+                            safeRight,
+                            safeBottom,
+                          ),
+                          mediaStore: mediaStore,
+                          selected: selectedBlock,
+                          onSelected: onBlockSelected,
+                          onPreview: onBlockRectPreview,
+                          onCommit: onBlockRectCommitted,
+                          onLegacyMoved: onBlockMoved,
+                          effectOverrides: effectOverrides,
+                          lockAspectRatio: lockAspectRatios[block.id] ?? true,
+                        ),
+                      );
+                    },
                   ),
               ],
             ),
@@ -2006,59 +2506,353 @@ class PartePlanPreview extends StatelessWidget {
 class _DraggableParteBlock extends StatefulWidget {
   const _DraggableParteBlock({
     required this.block,
+    required this.rect,
     required this.scale,
+    required this.viewportScale,
+    required this.handlePadding,
+    required this.safeBounds,
     required this.mediaStore,
     required this.selected,
     required this.onSelected,
-    required this.onMoved,
+    required this.onPreview,
+    required this.onCommit,
+    required this.onLegacyMoved,
+    required this.effectOverrides,
+    required this.lockAspectRatio,
   });
 
   final ParteRenderBlock block;
+  final ParteRectMm rect;
   final double scale;
+  final double viewportScale;
+  final double handlePadding;
+  final Rect safeBounds;
   final ParteMediaStore mediaStore;
   final bool selected;
   final ValueChanged<String>? onSelected;
-  final Future<void> Function(String id, double dxMm, double dyMm)? onMoved;
+  final ParteRectPreviewCallback? onPreview;
+  final ParteRectCommitCallback? onCommit;
+  final Future<void> Function(String id, double dxMm, double dyMm)?
+  onLegacyMoved;
+  final Map<String, double> effectOverrides;
+  final bool lockAspectRatio;
 
   @override
   State<_DraggableParteBlock> createState() => _DraggableParteBlockState();
 }
 
 class _DraggableParteBlockState extends State<_DraggableParteBlock> {
-  Offset _offset = Offset.zero;
+  _ParteResizeHandle? _activeHandle;
+  ParteRectMm? _startRect;
+  ParteRectMm? _previewRect;
+  Offset? _startPointer;
+  bool _moving = false;
+  Offset _legacyOffset = Offset.zero;
+  String? _mediaReadKey;
+  Future<Uint8List>? _mediaBytesFuture;
+
+  List<(_ParteResizeHandle, Offset)> _handleCenters() {
+    final left = widget.handlePadding;
+    final top = widget.handlePadding;
+    final right = left + widget.rect.width * widget.scale;
+    final bottom = top + widget.rect.height * widget.scale;
+    return [
+      (_ParteResizeHandle.nw, Offset(left, top)),
+      (_ParteResizeHandle.ne, Offset(right, top)),
+      (_ParteResizeHandle.sw, Offset(left, bottom)),
+      (_ParteResizeHandle.se, Offset(right, bottom)),
+    ];
+  }
+
+  _ParteResizeHandle? _hitHandle(Offset position) {
+    if (!widget.selected || widget.handlePadding == 0) return null;
+    final halfTarget = 24 / widget.viewportScale;
+    _ParteResizeHandle? nearest;
+    var nearestDistance = double.infinity;
+    for (final (handle, center) in _handleCenters()) {
+      final delta = position - center;
+      if (delta.dx.abs() > halfTarget || delta.dy.abs() > halfTarget) continue;
+      final distance = delta.distanceSquared;
+      if (distance < nearestDistance) {
+        nearest = handle;
+        nearestDistance = distance;
+      }
+    }
+    return nearest;
+  }
+
+  void _startGesture(DragStartDetails details) {
+    widget.onSelected?.call(widget.block.id);
+    _startRect = widget.rect;
+    _previewRect = widget.rect;
+    final selectionRelayoutPadding = widget.selected
+        ? Offset.zero
+        : Offset(24 / widget.viewportScale, 24 / widget.viewportScale);
+    _startPointer = details.localPosition + selectionRelayoutPadding;
+    _activeHandle = _hitHandle(details.localPosition);
+    _moving = _activeHandle == null;
+  }
+
+  void _updateGesture(DragUpdateDetails details) {
+    _updateGestureAt(details.localPosition);
+  }
+
+  void _updateGestureAt(Offset localPosition) {
+    final start = _startRect;
+    final pointer = _startPointer;
+    if (start == null || pointer == null || widget.scale <= 0) return;
+    final delta = localPosition - pointer;
+    final dxMm = delta.dx / widget.scale;
+    final dyMm = delta.dy / widget.scale;
+    final next = _moving
+        ? _moveRect(start, dxMm, dyMm)
+        : _resizeRect(start, _activeHandle!, dxMm, dyMm);
+    _previewRect = next;
+    widget.onPreview?.call(widget.block.id, next);
+  }
+
+  ParteRectMm _moveRect(ParteRectMm start, double dx, double dy) {
+    final x = (start.x + dx)
+        .clamp(widget.safeBounds.left, widget.safeBounds.right - start.width)
+        .toDouble();
+    final y = (start.y + dy)
+        .clamp(widget.safeBounds.top, widget.safeBounds.bottom - start.height)
+        .toDouble();
+    return ParteRectMm(x: x, y: y, width: start.width, height: start.height);
+  }
+
+  ParteRectMm _resizeRect(
+    ParteRectMm start,
+    _ParteResizeHandle handle,
+    double dx,
+    double dy,
+  ) {
+    const minimumMm = 5.0;
+    final movesLeft =
+        handle == _ParteResizeHandle.nw || handle == _ParteResizeHandle.sw;
+    final movesTop =
+        handle == _ParteResizeHandle.nw || handle == _ParteResizeHandle.ne;
+    final fixedX = movesLeft ? start.right : start.x;
+    final fixedY = movesTop ? start.bottom : start.y;
+    final maxWidth = movesLeft
+        ? fixedX - widget.safeBounds.left
+        : widget.safeBounds.right - fixedX;
+    final maxHeight = movesTop
+        ? fixedY - widget.safeBounds.top
+        : widget.safeBounds.bottom - fixedY;
+    if (maxWidth < minimumMm || maxHeight < minimumMm) {
+      return _previewRect ?? start;
+    }
+
+    var width = start.width + (movesLeft ? -dx : dx);
+    var height = start.height + (movesTop ? -dy : dy);
+    final ratio = widget.block.sourceAspectRatio ?? start.width / start.height;
+    if (widget.lockAspectRatio && ratio.isFinite && ratio > 0) {
+      final widthChange = (movesLeft ? -dx : dx) / start.width;
+      final heightChange = (movesTop ? -dy : dy) / start.height;
+      final widthDriven = widthChange.abs() >= heightChange.abs();
+      var scale = 1 + (widthDriven ? widthChange : heightChange);
+      final minScale = math.max(
+        minimumMm / start.width,
+        minimumMm / start.height,
+      );
+      final maxScale = math.min(
+        maxWidth / start.width,
+        maxHeight / start.height,
+      );
+      if (maxScale < minScale) return _previewRect ?? start;
+      scale = scale.clamp(minScale, maxScale).toDouble();
+      width = start.width * scale;
+      height = width / ratio;
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * ratio;
+      }
+    } else {
+      width = width.clamp(minimumMm, maxWidth).toDouble();
+      height = height.clamp(minimumMm, maxHeight).toDouble();
+    }
+    final left = movesLeft ? fixedX - width : fixedX;
+    final top = movesTop ? fixedY - height : fixedY;
+    return ParteRectMm(x: left, y: top, width: width, height: height);
+  }
+
+  void _finishGesture() {
+    final start = _startRect;
+    final result = _previewRect;
+    if (start == null || result == null) return;
+    _startRect = null;
+    _startPointer = null;
+    _activeHandle = null;
+    _previewRect = null;
+    if (_sameRect(start, result)) {
+      widget.onPreview?.call(widget.block.id, null);
+      return;
+    }
+    unawaited(widget.onCommit?.call(widget.block.id, result, moved: _moving));
+  }
+
+  void _cancelGesture() {
+    if (_startRect == null) return;
+    _startRect = null;
+    _startPointer = null;
+    _activeHandle = null;
+    _previewRect = null;
+    widget.onPreview?.call(widget.block.id, null);
+  }
+
+  bool _sameRect(ParteRectMm a, ParteRectMm b) =>
+      a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
 
   @override
   Widget build(BuildContext context) {
+    final pad = widget.handlePadding;
+    final target = widget.viewportScale > 0 ? 48 / widget.viewportScale : 48.0;
+    final visualSize = widget.viewportScale > 0
+        ? 12 / widget.viewportScale
+        : 12.0;
     return Transform.translate(
-      offset: _offset,
+      offset: _legacyOffset,
       child: GestureDetector(
         key: ValueKey('parte-preview-block-${widget.block.id}'),
         behavior: HitTestBehavior.opaque,
         onTap: () => widget.onSelected?.call(widget.block.id),
-        onPanUpdate: widget.onMoved == null
+        onPanStart: widget.onCommit == null || !widget.selected
             ? null
-            : (details) => setState(() => _offset += details.delta),
-        onPanEnd: widget.onMoved == null
+            : _startGesture,
+        onPanUpdate: widget.onCommit == null
+            ? widget.onLegacyMoved == null
+                  ? null
+                  : (details) => setState(() {
+                      _legacyOffset += details.delta;
+                    })
+            : !widget.selected
             ? null
-            : (_) async {
-                final delta = _offset;
-                setState(() => _offset = Offset.zero);
-                await widget.onMoved!(
-                  widget.block.id,
-                  delta.dx / widget.scale,
-                  delta.dy / widget.scale,
-                );
-              },
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: widget.selected
-                ? Border.all(color: Colors.blue, width: 2)
-                : null,
+            : (details) => setState(() => _updateGesture(details)),
+        onPanEnd: widget.onCommit == null
+            ? widget.onLegacyMoved == null
+                  ? null
+                  : (_) {
+                      final delta = _legacyOffset;
+                      setState(() => _legacyOffset = Offset.zero);
+                      unawaited(
+                        widget.onLegacyMoved!(
+                          widget.block.id,
+                          delta.dx / widget.scale,
+                          delta.dy / widget.scale,
+                        ),
+                      );
+                    }
+            : !widget.selected
+            ? null
+            : (_) => _finishGesture(),
+        onPanCancel: widget.onCommit == null || !widget.selected
+            ? null
+            : _cancelGesture,
+        child: RawGestureDetector(
+          // Register direct manipulation for unselected blocks too. This lets
+          // a user's first grab both select and move the block; otherwise the
+          // surrounding vertical page scroll wins the initial diagonal drag.
+          gestures: widget.onCommit != null
+              ? <Type, GestureRecognizerFactory>{
+                  _ParteDirectManipulationGestureRecognizer:
+                      GestureRecognizerFactoryWithHandlers<
+                        _ParteDirectManipulationGestureRecognizer
+                      >(
+                        () => _ParteDirectManipulationGestureRecognizer(
+                          debugOwner: this,
+                        ),
+                        (recognizer) {
+                          recognizer.shouldStart = _ownsPointerDown;
+                          recognizer.onStart = _startPointerGesture;
+                          recognizer.onUpdate = _updatePointerGesture;
+                          recognizer.onEnd = _finishGesture;
+                          recognizer.onCancel = _cancelGesture;
+                        },
+                      ),
+                }
+              : const <Type, GestureRecognizerFactory>{},
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: pad,
+                top: pad,
+                width: widget.rect.width * widget.scale,
+                height: widget.rect.height * widget.scale,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: widget.selected
+                        ? Border.all(color: Colors.blue, width: 2)
+                        : null,
+                  ),
+                  child: _content(),
+                ),
+              ),
+              if (widget.selected && widget.onCommit != null)
+                for (final entry in _handleCenters())
+                  Positioned(
+                    left: entry.$2.dx - target / 2,
+                    top: entry.$2.dy - target / 2,
+                    width: target,
+                    height: target,
+                    child: SizedBox(
+                      key: ValueKey(
+                        'parte-resize-hit-${widget.block.id}-${entry.$1.name}',
+                      ),
+                      width: target,
+                      height: target,
+                      child: Center(
+                        child: Container(
+                          width: visualSize,
+                          height: visualSize,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            border: Border.all(color: Colors.white, width: 2),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+            ],
           ),
-          child: _content(),
         ),
       ),
     );
+  }
+
+  bool _ownsPointerDown(Offset localPosition) {
+    if (widget.onCommit == null) return false;
+    if (widget.selected && _hitHandle(localPosition) != null) return true;
+    final pad = widget.handlePadding;
+    return Rect.fromLTWH(
+      pad,
+      pad,
+      widget.rect.width * widget.scale,
+      widget.rect.height * widget.scale,
+    ).contains(localPosition);
+  }
+
+  void _startPointerGesture(PointerDownEvent event) {
+    final renderObject = context.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.attached) return;
+    final globalPosition = event.position;
+    final localPosition = renderObject.globalToLocal(globalPosition);
+    _startGesture(
+      DragStartDetails(
+        globalPosition: globalPosition,
+        localPosition: localPosition,
+      ),
+    );
+  }
+
+  void _updatePointerGesture(PointerMoveEvent event) {
+    final renderObject = context.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.attached || !mounted) {
+      return;
+    }
+    _updateGestureAt(renderObject.globalToLocal(event.position));
   }
 
   Widget _content() {
@@ -2099,10 +2893,21 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
       );
     }
     if (block.mediaKey != null) {
+      if (_mediaReadKey != block.mediaKey) {
+        _mediaReadKey = block.mediaKey;
+        _mediaBytesFuture = widget.mediaStore.read(block.mediaKey!);
+      }
       return FutureBuilder<Uint8List>(
-        future: widget.mediaStore.read(block.mediaKey!),
+        future: _mediaBytesFuture,
         builder: (context, snapshot) => snapshot.hasData
-            ? _styledImage(applyParteImageEffects(snapshot.data!, block))
+            ? _ParteAsyncEffectPreview(
+                source: snapshot.data!,
+                block: block,
+                brightness: widget.effectOverrides['${block.id}.brightness'],
+                contrast: widget.effectOverrides['${block.id}.contrast'],
+                sharpness: widget.effectOverrides['${block.id}.sharpness'],
+                buildImage: _styledImage,
+              )
             : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
@@ -2131,4 +2936,193 @@ class _DraggableParteBlockState extends State<_DraggableParteBlock> {
       child: shaped,
     );
   }
+}
+
+class _ParteDirectManipulationGestureRecognizer
+    extends OneSequenceGestureRecognizer {
+  _ParteDirectManipulationGestureRecognizer({super.debugOwner});
+
+  bool Function(Offset localPosition)? shouldStart;
+  ValueChanged<PointerDownEvent>? onStart;
+  ValueChanged<PointerMoveEvent>? onUpdate;
+  VoidCallback? onEnd;
+  VoidCallback? onCancel;
+
+  int? _activePointer;
+  PointerDownEvent? _downEvent;
+  bool _accepted = false;
+
+  @override
+  bool isPointerAllowed(PointerDownEvent event) =>
+      shouldStart?.call(event.localPosition) == true;
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    _activePointer = event.pointer;
+    _downEvent = event;
+    super.addAllowedPointer(event);
+    resolve(GestureDisposition.accepted);
+  }
+
+  @override
+  void acceptGesture(int pointer) {
+    if (pointer != _activePointer) return;
+    _accepted = true;
+    final downEvent = _downEvent;
+    if (downEvent != null) onStart?.call(downEvent);
+  }
+
+  @override
+  void rejectGesture(int pointer) {
+    if (pointer != _activePointer) return;
+    if (_accepted) onCancel?.call();
+    _clearPointer();
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    if (!_accepted || event.pointer != _activePointer) return;
+    if (event is PointerMoveEvent) {
+      onUpdate?.call(event);
+    } else if (event is PointerUpEvent) {
+      stopTrackingPointer(event.pointer);
+      onEnd?.call();
+      _clearPointer();
+    } else if (event is PointerCancelEvent) {
+      stopTrackingPointer(event.pointer);
+      onCancel?.call();
+      _clearPointer();
+    }
+  }
+
+  @override
+  void didStopTrackingLastPointer(int pointer) {}
+
+  @override
+  String get debugDescription => 'parteDirectManipulation';
+
+  void _clearPointer() {
+    _activePointer = null;
+    _downEvent = null;
+    _accepted = false;
+  }
+}
+
+class _ParteAsyncEffectPreview extends StatefulWidget {
+  const _ParteAsyncEffectPreview({
+    required this.source,
+    required this.block,
+    required this.buildImage,
+    this.brightness,
+    this.contrast,
+    this.sharpness,
+  });
+
+  final Uint8List source;
+  final ParteRenderBlock block;
+  final double? brightness;
+  final double? contrast;
+  final double? sharpness;
+  final Widget Function(Uint8List) buildImage;
+
+  @override
+  State<_ParteAsyncEffectPreview> createState() =>
+      _ParteAsyncEffectPreviewState();
+}
+
+class _ParteAsyncEffectPreviewState extends State<_ParteAsyncEffectPreview> {
+  static const _previewDebounce = Duration(milliseconds: 80);
+
+  Timer? _debounce;
+  late Future<Uint8List> _preview;
+  bool _processing = false;
+  int _requestRevision = 0;
+
+  double get _brightness => widget.brightness ?? widget.block.brightness;
+  double get _contrast => widget.contrast ?? widget.block.contrast;
+  double get _sharpness => widget.sharpness ?? widget.block.sharpness;
+
+  @override
+  void initState() {
+    super.initState();
+    _preview = Future.value(widget.source);
+    _schedulePreview();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ParteAsyncEffectPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previousBrightness =
+        oldWidget.brightness ?? oldWidget.block.brightness;
+    final previousContrast = oldWidget.contrast ?? oldWidget.block.contrast;
+    final previousSharpness = oldWidget.sharpness ?? oldWidget.block.sharpness;
+    if (!identical(oldWidget.source, widget.source) ||
+        previousBrightness != _brightness ||
+        previousContrast != _contrast ||
+        previousSharpness != _sharpness ||
+        oldWidget.block.grayscale != widget.block.grayscale) {
+      _schedulePreview();
+    }
+  }
+
+  void _schedulePreview() {
+    _debounce?.cancel();
+    final revision = ++_requestRevision;
+    if (_brightness == 1 &&
+        _contrast == 1 &&
+        _sharpness == 0 &&
+        !widget.block.grayscale) {
+      _preview = Future.value(widget.source);
+      return;
+    }
+    _debounce = Timer(_previewDebounce, () {
+      if (!mounted || _processing || revision != _requestRevision) return;
+      _startPreview(revision);
+    });
+  }
+
+  void _startPreview(int revision) {
+    _processing = true;
+    final future = compute<Map<String, Object>, Uint8List>(
+      applyParteImageEffectsRequest,
+      <String, Object>{
+        'source': Uint8List.fromList(widget.source),
+        'brightness': _brightness,
+        'contrast': _contrast,
+        'sharpness': _sharpness,
+        'grayscale': widget.block.grayscale,
+      },
+      debugLabel: 'PARTE photo effect preview',
+    );
+    setState(() => _preview = future);
+    unawaited(_finishPreview(future, revision));
+  }
+
+  Future<void> _finishPreview(Future<Uint8List> future, int revision) async {
+    try {
+      await future;
+    } catch (_) {
+      // FutureBuilder keeps the source image as the safe preview fallback.
+    } finally {
+      if (mounted) {
+        _processing = false;
+        if (revision != _requestRevision) _schedulePreview();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<Uint8List>(
+    future: _preview,
+    initialData: widget.source,
+    builder: (context, snapshot) => widget.buildImage(
+      snapshot.hasError ? widget.source : snapshot.data ?? widget.source,
+    ),
+  );
 }

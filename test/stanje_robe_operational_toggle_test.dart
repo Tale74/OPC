@@ -400,7 +400,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Status: operativno aktivno.'), findsOneWidget);
+      expect(
+        find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
+        findsOneWidget,
+      );
       expect(find.byType(SwitchListTile), findsOneWidget);
       expect(find.text('Upravljaj stanjem robe'), findsOneWidget);
 
@@ -1255,7 +1258,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Status: operativno isključeno.'), findsOneWidget);
+      expect(
+        find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
+        findsOneWidget,
+      );
       expect(find.byType(SwitchListTile), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox.shrink());
@@ -1294,7 +1300,10 @@ void main() {
         expect(find.text('MODULI'), findsOneWidget);
         expect(find.text('STANJE ROBE'), findsOneWidget);
         expect(find.byType(SwitchListTile), findsOneWidget);
-        expect(find.text('Status: operativno isključeno.'), findsOneWidget);
+        expect(
+          find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
+          findsOneWidget,
+        );
 
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpAndSettle();

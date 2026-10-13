@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,7 +13,10 @@ import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/entitlements/opc_license_public_key_registry.dart';
 import '../../../core/entitlements/opc_local_license_bootstrap_service.dart';
 import '../../../core/installation/opc_installation_id_repository.dart';
+import '../../../core/help/opc_help.dart';
+import '../../../core/help/opc_guide_screen.dart';
 import '../../../core/format/app_format.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import '../../../core/utils/json_export_import.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/auth_security_repository.dart';
@@ -28,6 +32,9 @@ import '../../stanje_robe/presentation/stanje_robe_admin_screen.dart';
 import '../data/podesavanja_repository.dart';
 import '../domain/nbs_ips_qr_payload_builder.dart';
 import 'katalog_tab.dart';
+
+const _opcShortDescription =
+    'OPC pomaže u organizaciji i vođenju pogrebnih poslova. Na jednom mestu omogućava pregled predmeta, pripremu dokumentacije, praćenje obaveza i evidenciju robe i usluga.';
 
 class PodesavanjaScreen extends StatefulWidget {
   const PodesavanjaScreen({
@@ -160,7 +167,39 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         initialIndex: initialIndex,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('PODEŠAVANJA', overflow: TextOverflow.ellipsis),
+            title: Builder(
+              builder: (context) {
+                final controller = DefaultTabController.of(context);
+                return AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    final index = controller.index;
+                    final chapterId =
+                        index >= 0 && index < visibleSections.length
+                        ? switch (visibleSections[index]) {
+                            OpcSettingsSection.podaciFirme =>
+                              'settings.company',
+                            OpcSettingsSection.refundacijaPio =>
+                              'settings.refundacija',
+                            OpcSettingsSection.katalog => 'settings.catalog',
+                            OpcSettingsSection.moduli => 'settings.modules',
+                            OpcSettingsSection.korisnici => 'settings.users',
+                            OpcSettingsSection.uputstvoZaPlacanje =>
+                              'settings.payment',
+                            OpcSettingsSection.oAplikaciji => 'settings.about',
+                          }
+                        : 'settings';
+                    return OpcHelpTitle(
+                      chapterId: chapterId,
+                      title: const Text(
+                        'PODEŠAVANJA',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
             actions: [
               if (widget.session.mozeBackup) ...[
                 IconButton(
@@ -246,9 +285,8 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         repo: widget.repo,
         onDirtyChanged: (v) => setState(() => _uputstvoIsDirty = v),
       ),
-      OpcSettingsSection.oAplikaciji => _OAplikacijiTab(
-        session: widget.session,
-        entitlementPolicy: widget.entitlementPolicy,
+      OpcSettingsSection.oAplikaciji => const _OAplikacijiTab(
+        key: ValueKey('settings-about-tab'),
       ),
     };
   }
@@ -925,21 +963,29 @@ class _FirmaTabState extends State<_FirmaTab> {
               children: [
                 _buildLogoSekcija(context),
                 const SizedBox(height: 24),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _nazivCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'NAZIV FIRME',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _nazivCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      labelText: 'NAZIV FIRME',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _adresaCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'ADRESA',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _adresaCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'ADRESA',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -950,19 +996,27 @@ class _FirmaTabState extends State<_FirmaTab> {
                     if (isNarrow) {
                       return Column(
                         children: [
-                          TextFormField(
+                          ManualEntryAffordance(
                             controller: _pibCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'PIB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _pibCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'PIB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
+                          ManualEntryAffordance(
                             controller: _mbCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'MB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _mbCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'MB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ],
@@ -972,21 +1026,29 @@ class _FirmaTabState extends State<_FirmaTab> {
                     return Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: ManualEntryAffordance(
                             controller: _pibCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'PIB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _pibCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'PIB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: TextFormField(
+                          child: ManualEntryAffordance(
                             controller: _mbCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'MB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _mbCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'MB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ),
@@ -995,46 +1057,66 @@ class _FirmaTabState extends State<_FirmaTab> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _sifraCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'ŠIFRA DELATNOSTI',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _sifraCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'ŠIFRA DELATNOSTI',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _telefonCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'TELEFON',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _telefonCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'TELEFON',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _odgovornoCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'ODGOVORNO LICE',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _odgovornoCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'ODGOVORNO LICE',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'E-MAIL',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'E-MAIL',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _sajtCtrl,
-                  keyboardType: TextInputType.url,
-                  decoration: const InputDecoration(
-                    labelText: 'SAJT',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _sajtCtrl,
+                    keyboardType: TextInputType.url,
+                    decoration: const InputDecoration(
+                      labelText: 'SAJT',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -1228,28 +1310,32 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _refundacijaCtrl,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+                enabled: true,
+                child: TextFormField(
+                  controller: _refundacijaCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textAlign: TextAlign.right,
+                  decoration: const InputDecoration(
+                    labelText: 'IZNOS REFUNDACIJE PIO (RSD)',
+                    hintText: '0,00',
+                    suffixText: 'RSD',
+                    border: OutlineInputBorder(),
+                  ),
+                  onEditingComplete: () {
+                    final v = parsirajBroj(_refundacijaCtrl.text);
+                    final f = v > 0 ? formatBroj(v) : '';
+                    if (f != _refundacijaCtrl.text) {
+                      _refundacijaCtrl.text = f;
+                      _refundacijaCtrl.selection = TextSelection.collapsed(
+                        offset: f.length,
+                      );
+                    }
+                  },
                 ),
-                textAlign: TextAlign.right,
-                decoration: const InputDecoration(
-                  labelText: 'IZNOS REFUNDACIJE PIO (RSD)',
-                  hintText: '0,00',
-                  suffixText: 'RSD',
-                  border: OutlineInputBorder(),
-                ),
-                onEditingComplete: () {
-                  final v = parsirajBroj(_refundacijaCtrl.text);
-                  final f = v > 0 ? formatBroj(v) : '';
-                  if (f != _refundacijaCtrl.text) {
-                    _refundacijaCtrl.text = f;
-                    _refundacijaCtrl.selection = TextSelection.collapsed(
-                      offset: f.length,
-                    );
-                  }
-                },
               ),
               const SizedBox(height: 16),
               FilledButton(
@@ -1415,20 +1501,28 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 24),
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _ziroCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'TEKUĆI RAČUN',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _ziroCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'TEKUĆI RAČUN',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _bankaCtrl,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'NAZIV BANKE',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _bankaCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'NAZIV BANKE',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1442,13 +1536,17 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
                 ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _qrSifraCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'QR ŠIFRA PLAĆANJA',
-                  helperText: 'Obavezno 3 cifre, npr. 289',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _qrSifraCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'QR ŠIFRA PLAĆANJA',
+                    helperText: 'Obavezno 3 cifre, npr. 289',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1514,13 +1612,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
 // ── Tab 4: O aplikaciji ───────────────────────────────────────────────────────
 
 class _OAplikacijiTab extends StatelessWidget {
-  const _OAplikacijiTab({
-    required this.session,
-    required this.entitlementPolicy,
-  });
-
-  final SessionService session;
-  final OpcEntitlementPolicy entitlementPolicy;
+  const _OAplikacijiTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1559,12 +1651,23 @@ class _OAplikacijiTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: Text(
+                        _opcShortDescription,
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     OutlinedButton.icon(
-                      onPressed: () => showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        showDragHandle: true,
-                        builder: (_) => const _OAplikacijiDrugaStranaSheet(),
+                      key: const Key('opc-open-user-guide'),
+                      onPressed: () => Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const OpcGuideScreen(),
+                        ),
                       ),
                       icon: const Icon(Icons.menu_book_outlined),
                       label: const Text('RAD U APLIKACIJI'),
@@ -1633,23 +1736,11 @@ class _OAplikacijiTab extends StatelessWidget {
               Text(
                 'Aplikacija je u razvoju. Sve izmene i dopune se vrše '
                 'po dogovoru sa korisnikom.\n\n'
-                'Baza podataka se čuva lokalno na računaru korisnika.',
+                'Baza podataka se čuva lokalno na uređaju korisnika.',
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
-              if (session.jeAdmin) ...[
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
-                _LicenseActivationDiagnosticPanel(
-                  entitlementPolicy: entitlementPolicy,
-                ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
-                const _DatabaseLaneDiagnosticPanel(),
-              ],
             ],
           ),
         ),
@@ -1658,6 +1749,7 @@ class _OAplikacijiTab extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _LicenseActivationDiagnosticPanel extends StatefulWidget {
   const _LicenseActivationDiagnosticPanel({required this.entitlementPolicy});
 
@@ -2017,6 +2109,7 @@ String _packageLabel(OpcPackageLevel packageLevel) {
   };
 }
 
+// ignore: unused_element
 class _DatabaseLaneDiagnosticPanel extends StatefulWidget {
   const _DatabaseLaneDiagnosticPanel();
 
@@ -2198,115 +2291,6 @@ String _formatDateTime(DateTime? value) {
   final hour = local.hour.toString().padLeft(2, '0');
   final minute = local.minute.toString().padLeft(2, '0');
   return '$day.$month.$year. $hour:$minute';
-}
-
-class _OAplikacijiDrugaStranaSheet extends StatelessWidget {
-  const _OAplikacijiDrugaStranaSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'RAD U APLIKACIJI',
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Kratak pregled namene, osnovnog toka rada i poslovnih pravila aplikacije OPC.',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const _AboutTextBlock(
-                title: 'ŠTA JE OPC',
-                body:
-                    'OPC je radni alat za vođenje pogrebne ceremonije kroz jedan predmet kao centralno mesto unosa, pregleda i organizacije podataka. '
-                    'Njegova namena nije samo čuvanje podataka, već svakodnevni operativni rad kroz konkretan predmet, od prijema informacija do završnih dokumenata.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'KAKO OPC RADI',
-                body:
-                    'U OPC-u se svi važni podaci vode kroz jedan predmet. '
-                    'Podaci o preminulom licu, ceremoniji, robi, uslugama i finansijama objedinjeni su na jednom mestu, a potrebni dokumenti nastaju iz tog unosa. '
-                    'Na taj način se smanjuje prepisivanje, olakšava provera podataka i održava doslednost tokom rada.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'SVAKODNEVNA OPERATIVNA KORIST',
-                body:
-                    'U svakodnevnom radu OPC pomaže da podaci budu pregledni i dostupni na jednom mestu. '
-                    'Korisnik ne mora da vodi odvojene beleške za ono što je već uneseno, jer aplikacija objedinjuje radne informacije u jedinstven tok rada i olakšava snalaženje kroz predmet.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'DOKUMENTI IZ PREDMETA',
-                body:
-                    'Jedna od najvažnijih praktičnih koristi OPC-a je izrada dokumenata direktno iz podataka koji su već uneti u predmet. '
-                    'Kada su podaci pravilno evidentirani, aplikacija iz njih formira potrebne PDF dokumente bez dodatnog ručnog prekucavanja. '
-                    'Time se ubrzava rad, smanjuje mogućnost greške i olakšava arhiviranje.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'PODSETNIK I KONTROLA RADA',
-                body:
-                    'OPC ima i ulogu radnog podsetnika. Pregled predmeta pomaže korisniku da vidi šta je uneseno, šta je potvrđeno i šta još zahteva pažnju. '
-                    'Tako aplikacija ne služi samo kao evidencija, već i kao pomoć u organizaciji rada i proveri potpunosti podataka.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'KRATKO KORISNIČKO UPUTSTVO',
-                body:
-                    'Rad u aplikaciji počinje otvaranjem ili izborom predmeta. '
-                    'Podaci se unose u odgovarajuće segmente, a dokumenti se izrađuju iz već unetih podataka. '
-                    'Zato je najvažnije da predmet bude uredno i tačno popunjen, jer se iz njega dobijaju i pregled i dokumenti potrebni za dalji rad.',
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AboutTextBlock extends StatelessWidget {
-  const _AboutTextBlock({required this.title, required this.body});
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: textTheme.labelLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(body, style: textTheme.bodyMedium),
-      ],
-    );
-  }
 }
 
 class _InfoRed extends StatelessWidget {

@@ -45,13 +45,18 @@ The accepted active-source hygiene result records:
 The prior hygiene package remains preserved as historical evidence, with ZIP
 SHA-256
 `2A637C0629D863F56D358E8CAFD99EEFA16E0D463F5D93ACBEBA61970085DD9C`.
-The current active control package is external and local-only. Its physical
-location, manifest identity, enclosing-package identity and current 27-row
-baseline identity must be resolved from current authority, current-state and
-the accepted handoff for each substantive task; this durable control document
-does not hard-code mutable package or baseline identities. The resolved package
-must be physically verified before use, including its manifest, five logical
-inputs, package/integrity metadata and applicable active-source hashes.
+The current active control package is local-only and ignored by Git. In the
+current v1.5 layout it is physically under the source checkout's
+INTERNAL_DEVELOPMENT_CONTROL/ACTIVE_SOURCE_CONTROL/ root, outside the tracked
+and public publication boundary. “External” in older task notes means external
+to published/tracked SOURCE content, not a directory outside the local SOURCE
+checkout. Its exact package path, manifest identity, enclosing-package
+identity and current protected-baseline identity must still be resolved from
+current authority, current-state and the accepted handoff for each substantive
+task; this durable control document does not hard-code mutable package or
+baseline identities. The resolved package must be physically verified before
+use, including its manifest, five logical inputs, package/integrity metadata
+and applicable active-source hashes.
 Quarantine was copy/hash/remove verified without changing active source
 content; the current controlled rebaseline procedure verifies all protected
 rows.
@@ -119,9 +124,9 @@ current provenance/integrity: PASS
 ACTIVE SOURCE AUTHORITY PRECHECK — PASS
 ```
 
-The external package is a current local-only verification/control input for
-this purpose. It is not implementation authority, is not a donor, and must
-not be promoted or copied into `SOURCE` merely to satisfy the gate. Historical,
+The local-only package is a current verification/control input for this
+purpose. It is not implementation authority, is not a donor, and must not be
+promoted or copied into tracked `SOURCE` merely to satisfy the gate. Historical,
 recovery, review, quarantine, backup and stale material remains non-
 authoritative unless a separate bounded reconciliation and explicit OWNER
 authorization applies.

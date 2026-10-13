@@ -7,6 +7,7 @@ import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/podesavanja/data/podesavanja_repository.dart';
 import 'package:opc_v4/features/podesavanja/presentation/podesavanja_screen.dart';
 
+import 'opc_guide_test_bundle.dart';
 import 'test_bootstrap.dart';
 
 void main() {
@@ -95,7 +96,7 @@ void main() {
     expect(find.text('Sigurnosni kod nije podešen.'), findsOneWidget);
   });
 
-  testWidgets('O APLIKACIJI shows development POTPUN as effective source', (
+  testWidgets('O APLIKACIJI hides technical license diagnostics', (
     tester,
   ) async {
     final db = createTestDatabase();
@@ -124,36 +125,15 @@ void main() {
         ),
       ),
     );
-    await _pumpUntilText(
-      tester,
-      'Kompatibilni sačuvani paket (ne ograničava funkcije): Potpun',
-    );
+    await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining(
-        'Lokalna licenca (neaktivna u razvojnom POTPUN režimu):',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Kompatibilni sačuvani paket (ne ograničava funkcije): Potpun'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining(
-        'Sve postojeće Windows/Android funkcije su dostupne po odluci vlasnika.',
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('Razvojni/runtime-validation režim je aktivan'),
-      findsOneWidget,
-    );
+    expect(find.text('LICENCA / AKTIVACIJA'), findsNothing);
+    expect(find.text('DIJAGNOSTIKA BAZE'), findsNothing);
+    expect(find.textContaining('ID INSTALACIJE'), findsNothing);
+    expect(find.textContaining('Lokalna licenca'), findsNothing);
   });
 
-  testWidgets('O APLIKACIJI preserves final-package local diagnostics', (
-    tester,
-  ) async {
+  testWidgets('O APLIKACIJI hides database lane diagnostics', (tester) async {
     final db = createTestDatabase();
     addTearDown(db.close);
     final authRepo = AuthRepository(db);
@@ -175,22 +155,75 @@ void main() {
         ),
       ),
     );
-    await _pumpUntilText(
-      tester,
-      'Instalirana lokalna licenca - paket: Osnovni',
-    );
+    await tester.pumpAndSettle();
 
-    expect(
-      find.text('Instalirana lokalna licenca - paket: Osnovni'),
-      findsOneWidget,
+    expect(find.text('DIJAGNOSTIKA BAZE'), findsNothing);
+    expect(find.textContaining('Aktivna baza'), findsNothing);
+    expect(find.textContaining('Build varijanta'), findsNothing);
+    expect(find.text('LICENCA'), findsOneWidget);
+    expect(find.text('NAPOMENA'), findsOneWidget);
+  });
+
+  testWidgets('O APLIKACIJI displays the short approved OPC description', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Test Administrator',
+      pin: '1234',
     );
-    expect(
-      find.text(
-        'Kompatibilni sačuvani paket (ne ograničava funkcije): Osnovni',
+    session.prijavi(admin);
+
+    final guideBundle = await loadOpcGuideTestAssetBundle(tester);
+    await tester.pumpWidget(
+      DefaultAssetBundle(
+        bundle: guideBundle,
+        child: wrapForTest(
+          PodesavanjaScreen(
+            repo: PodesavanjaRepository(db),
+            authRepo: authRepo,
+            session: session,
+            initialSection: OpcSettingsSection.oAplikaciji,
+          ),
+        ),
       ),
-      findsOneWidget,
     );
-    expect(find.textContaining('neaktivna u razvojnom'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 600));
+
+    const description =
+        'OPC pomaže u organizaciji i vođenju pogrebnih poslova. Na jednom '
+        'mestu omogućava pregled predmeta, pripremu dokumentacije, praćenje '
+        'obaveza i evidenciju robe i usluga.';
+    expect(find.text(description), findsOneWidget);
+
+    await tester.tap(find.text('RAD U APLIKACIJI'));
+    for (var attempt = 0; attempt < 30; attempt++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (find
+          .byKey(const Key('opc-guide-chapter-picker'))
+          .evaluate()
+          .isNotEmpty) {
+        break;
+      }
+    }
+
+    expect(find.text(description, skipOffstage: false), findsOneWidget);
+    expect(find.text('RAD U APLIKACIJI'), findsWidgets);
+    expect(find.byKey(const Key('opc-guide-chapter-picker')), findsOneWidget);
+    expect(find.byType(BottomSheet), findsNothing);
+    for (final removedHeading in const [
+      'LICENCA / AKTIVACIJA',
+      'DIJAGNOSTIKA BAZE',
+    ]) {
+      expect(find.text(removedHeading), findsNothing);
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 5));
+    await tester.idle();
   });
 
   testWidgets('operational MODULI are absent from PODEŠAVANJA', (tester) async {
@@ -272,25 +305,6 @@ void main() {
     expect(find.text('KORISNICI'), findsNothing);
     expect(find.text('NOVI KORISNIK'), findsNothing);
   });
-}
-
-Future<void> _pumpUntilText(
-  WidgetTester tester,
-  String text, {
-  int maxPumps = 100,
-}) async {
-  for (var i = 0; i < maxPumps; i += 1) {
-    await tester.pump(const Duration(milliseconds: 100));
-    if (find.text(text).evaluate().isNotEmpty) {
-      return;
-    }
-  }
-  final renderedText = tester
-      .widgetList<Text>(find.byType(Text))
-      .map((widget) => widget.data ?? widget.textSpan?.toPlainText() ?? '')
-      .where((value) => value.trim().isNotEmpty)
-      .join('\n');
-  fail('Text "$text" was not rendered. Rendered text:\n$renderedText');
 }
 
 OpcEntitlementPolicy _osnovniLocalPolicy() {

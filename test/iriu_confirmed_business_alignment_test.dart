@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/features/predmeti/core_v2/business_policy/business_policy_evaluator.dart';
 import 'package:opc_v4/features/predmeti/core_v2/models/iriu_truth_models.dart';
 import 'package:opc_v4/features/predmeti/core_v2/services/predmet_iriu_truth_service.dart';
 
@@ -64,6 +65,93 @@ void main() {
       expect(komplet.storedRow.nazivPrikaz, 'Ručno izmenjen komplet');
       expect(komplet.storedRow.iznos, 4321);
       expect(komplet.countsForFinancialTruth, isFalse);
+    },
+  );
+
+  test(
+    'BIOHAZARD policy snapshot and IRiU truth agree for all valid causes',
+    () async {
+      final db = createTestDatabase();
+      addTearDown(db.close);
+      final basePredmet = await _insertPredmet(db);
+      final rowId = await db
+          .into(db.iriu)
+          .insert(
+            IriuCompanion.insert(
+              predmetId: basePredmet.id,
+              interniNaziv: IriuK.iznosenje,
+              nazivPrikaz: const Value('Iznošenje'),
+              kom: const Value('1'),
+              redosled: const Value(1),
+              scenarioUpravlja: const Value(true),
+            ),
+          );
+      final row = (await (db.select(
+        db.iriu,
+      )..where((item) => item.id.equals(rowId))).getSingle());
+      const service = PredmetIriuTruthService();
+      const expectedWarning =
+          'Postupati prema merama zaštite za zaraznu bolest.';
+
+      for (final (cause, expectedBiohazard) in const <(String, bool)>[
+        ('PRIRODNA', false),
+        ('ZARAZNA', true),
+        ('NEDEFINISANA', true),
+      ]) {
+        final predmet = basePredmet.copyWith(
+          uzrokSmrti: cause,
+          mestoSmrti: 'STAN',
+          vrstaCeremonije: 'SAHRANA',
+          tipGroblja: 'GRADSKO',
+          tipGrobnogMesta: 'GROB',
+          opelo: 'NE',
+          sahranaVanSrbije: false,
+          docekPosmrtnihOstataka: false,
+        );
+        final policy = const BusinessPolicyEvaluator().evaluateForIriuTruth(
+          predmet,
+        );
+        final scenarioRow = row.copyWith(
+          poslovnoUpozorenje: expectedBiohazard ? expectedWarning : '',
+        );
+        final truth = service.evaluate(
+          predmet: predmet,
+          storedRows: [scenarioRow],
+        );
+        final iznosenje = _row(truth, IriuK.iznosenje);
+
+        expect(
+          policy.requiresBiohazardPrecautions,
+          expectedBiohazard,
+          reason: 'cause=$cause',
+        );
+        expect(iznosenje.active, isTrue, reason: 'cause=$cause');
+        expect(iznosenje.biohazard, expectedBiohazard, reason: 'cause=$cause');
+        expect(
+          iznosenje.warning,
+          expectedBiohazard ? expectedWarning : '',
+          reason: 'cause=$cause',
+        );
+      }
+
+      final receptionPredmet = basePredmet.copyWith(
+        uzrokSmrti: 'NEDEFINISANA',
+        mestoSmrti: 'BOLNICA',
+        vrstaCeremonije: 'SAHRANA',
+        tipGroblja: 'GRADSKO',
+        tipGrobnogMesta: 'GROB',
+        opelo: 'NE',
+        sahranaVanSrbije: false,
+        docekPosmrtnihOstataka: true,
+      );
+      final receptionPolicy = const BusinessPolicyEvaluator()
+          .evaluateForIriuTruth(receptionPredmet);
+      final receptionTruth = service.evaluate(
+        predmet: receptionPredmet,
+        storedRows: [row.copyWith(poslovnoUpozorenje: expectedWarning)],
+      );
+      expect(receptionPolicy.requiresBiohazardPrecautions, isTrue);
+      expect(_row(receptionTruth, IriuK.iznosenje).biohazard, isTrue);
     },
   );
 }

@@ -7,6 +7,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
 import '../../../podesavanja/presentation/katalog_photo_policy.dart';
 import '../../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
@@ -16,6 +17,7 @@ import '../../core_v2/models/iriu_truth_models.dart';
 import '../../core_v2/rules/iriu_truth_rules.dart';
 import '../../core_v2/services/predmet_iriu_truth_service.dart';
 import '../../core_v2/scenario/scenario_module_repository.dart';
+import '../../core_v2/scenario/owner_scenario_policy_kernel.dart';
 import '../../data/iriu_repository.dart';
 import '../../domain/iriu_catalog_selection.dart';
 import 'iriu_cvece_ribbon_fields.dart';
@@ -45,6 +47,7 @@ class IriuSegment extends StatefulWidget {
     this.isNewPredmetCreationFlow = false,
     this.initialNapomena,
     this.initialFocusInterniNaziv,
+    this.onRowsChanged,
   });
 
   final int predmetId;
@@ -56,6 +59,7 @@ class IriuSegment extends StatefulWidget {
   final bool isNewPredmetCreationFlow;
   final String? initialNapomena;
   final String? initialFocusInterniNaziv;
+  final ValueChanged<List<IriuData>>? onRowsChanged;
 
   @override
   State<IriuSegment> createState() => _IriuSegmentState();
@@ -273,12 +277,15 @@ class _IriuSegmentState extends State<IriuSegment> {
       await _runScenarioSync(predmet, forceCurrentApplication: true);
       return;
     }
-    if (!await widget.iriuRepo.hasCompleteAppliedScenarioEvidence(
-      widget.predmetId,
-    )) {
-      return;
-    }
-    await _runScenarioSync(predmet);
+    final intent = await widget.iriuRepo.scenarioOpenReconciliationIntent(
+      predmetId: widget.predmetId,
+      currentPredmet: predmet,
+    );
+    if (!mounted || !intent.shouldReconcile) return;
+    await _runScenarioSync(
+      predmet,
+      forceCurrentApplication: intent.allowLegacyBaselineEstablishment,
+    );
   }
 
   @override
@@ -302,13 +309,14 @@ class _IriuSegmentState extends State<IriuSegment> {
       previous: old,
       current: cur,
     );
+    final previousScenarioInput = OwnerScenarioInput.fromPredmet(old);
+    final currentScenarioInput = OwnerScenarioInput.fromPredmet(cur);
+    final scenarioInputsChanged = !previousScenarioInput
+        .hasSameEvaluationInputsAs(currentScenarioInput);
 
     if (promenjeniMestoSmrtiUslovi ||
         promenjeniBlok2Uslovi ||
-        old.sahranaVanSrbije != cur.sahranaVanSrbije ||
-        old.docekPosmrtnihOstataka != cur.docekPosmrtnihOstataka ||
-        old.promenaSanduka != cur.promenaSanduka ||
-        old.opelo != cur.opelo) {
+        scenarioInputsChanged) {
       unawaited(_runScenarioSync(cur, forceCurrentApplication: true));
     }
   }
@@ -325,6 +333,7 @@ class _IriuSegmentState extends State<IriuSegment> {
       scenarios: scenarios,
       osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
       applyScenarioChange: false,
+      allowLegacyBaselineEstablishment: forceCurrentApplication,
     );
     if (!mounted || (!preview.changed && !forceCurrentApplication)) return;
     if (preview.scenarioSnapshotChanged) {
@@ -368,6 +377,7 @@ class _IriuSegmentState extends State<IriuSegment> {
       scenarios: scenarios,
       osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
       applyScenarioChange: true,
+      allowLegacyBaselineEstablishment: forceCurrentApplication,
       conditionChangeDecisions: decisions,
     );
     if (!mounted) return;
@@ -574,6 +584,9 @@ class _IriuSegmentState extends State<IriuSegment> {
                           stream: widget.iriuRepo.watchIriu(widget.predmetId),
                           builder: (context, snap) {
                             final stavke = snap.data ?? [];
+                            if (snap.hasData) {
+                              widget.onRowsChanged?.call(stavke);
+                            }
                             _scheduleInitialFocus(stavke);
                             final focusTargetMissing =
                                 widget.initialFocusInterniNaziv != null &&
@@ -768,23 +781,27 @@ class _IriuSegmentState extends State<IriuSegment> {
                 const Divider(),
                 // Napomena
                 const SizedBox(height: 4),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _napomenaCtrl,
                   enabled: e,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'NAPOMENA',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                    alignLabelWithHint: true,
+                  child: TextFormField(
+                    controller: _napomenaCtrl,
+                    enabled: e,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'NAPOMENA',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      alignLabelWithHint: true,
+                    ),
+                    onChanged: (v) {
+                      _napomenaDebounce?.cancel();
+                      _napomenaDebounce = Timer(
+                        const Duration(milliseconds: 800),
+                        () => widget.onNapomenaSave(_normalizedText(v)),
+                      );
+                    },
                   ),
-                  onChanged: (v) {
-                    _napomenaDebounce?.cancel();
-                    _napomenaDebounce = Timer(
-                      const Duration(milliseconds: 800),
-                      () => widget.onNapomenaSave(_normalizedText(v)),
-                    );
-                  },
                 ),
               ],
             ),
@@ -1331,19 +1348,23 @@ class _RucnoDialogState extends State<_RucnoDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            ManualEntryAffordance(
               controller: _nazivCtrl,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Naziv stavke',
-                border: const OutlineInputBorder(),
-                isDense: true,
-                errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+              enabled: true,
+              child: TextField(
+                controller: _nazivCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Naziv stavke',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+                ),
+                onChanged: (_) {
+                  if (_greskaNaziv) setState(() => _greskaNaziv = false);
+                },
+                onSubmitted: (_) => _potvrdi(),
               ),
-              onChanged: (_) {
-                if (_greskaNaziv) setState(() => _greskaNaziv = false);
-              },
-              onSubmitted: (_) => _potvrdi(),
             ),
             const SizedBox(height: 16),
             Text(

@@ -75,6 +75,20 @@ capture controls in [`OPC_DEVELOPMENT.md`](OPC_DEVELOPMENT.md#computer-use-runti
 
 Owner runtime evidence is authority for observed end-product behavior, not automatic proof of internal root cause. Windows and Android acceptance are not interchangeable.
 
+**Android Direction 1 Compact Chrome — technical candidate (2026-10-03).**
+The bounded shared-chrome/PARTE-disclosure/PODSETNIK timestamp implementation
+passes focused regressions (`49/49`, including Android-wide and long-value /
+1.5× text-scale coverage), `flutter analyze --no-pub`, the full serial suite
+(`609 passed / 9 skipped / 0 failed`), Windows release build and
+Android production APK build. A prior full-suite attempt had one timeout in an
+unrelated migration test; isolated verification and a complete serial rerun
+passed. The active-source package integrity is `7/7 PASS`; the protected source
+comparison is `26/28` because the two authorized D1 source edits have not been
+rebaselined. `git diff --check` passes. Logos post-implementation review
+remains pending; Windows and Android OWNER runtime acceptance has not been performed.
+No runtime/release acceptance is inferred from technical QA or builds. See
+[`OPC_TASK_ANDROID_DIRECTION_1_COMPACT_CHROME_IMPLEMENTATION_REPORT.md`](tasks/OPC_TASK_ANDROID_DIRECTION_1_COMPACT_CHROME_IMPLEMENTATION_REPORT.md).
+
 **REFUNDACIJA PIO text-only correction — formally closed (2026-10-01).** The
 accepted instruction is “Unesite iznos naknade pogrebnih troškova preko
 Republičkog fonda za penzijsko i invalidsko osiguranje (PIO fond) za tekući
@@ -376,3 +390,325 @@ not guessed or merged with the SCENARIO issue closed here, `UX-PARTE-001`, or
 another open item. `UX-PARTE-001` remains `OPEN / NOT TESTED / ROOT CAUSE NOT
 PROVEN`. See
 [`OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md`](tasks/OPC_TASK_SCENARIO_HISTORICAL_INTEGRITY_FORMAL_CLOSURE_REPORT.md).
+
+## 14. SCENARIO later-reopen and bounded UX correction candidate — 2026-10-06
+
+The latest candidate passed `flutter analyze --no-pub` and the full serial test
+suite (`629 passed / 9 skipped / 0 failed`). The nine skips remain explicitly
+skips; in particular, optional environment-gated forensic copy runs are not
+represented as executed. The independent golden consistency test for all
+1,008 SCENARIO records passed. The prior photo-slider preview work now debounces
+and dispatches image processing to a worker isolate; real-photo interaction
+performance remains runtime evidence debt.
+
+Sequential release builds completed successfully: Android production APK,
+79,633,175 bytes, SHA-256
+`51146613B171B59EB59CACC4C9406712BCF4CFC06BD53FCA84B9B09D03FAEB75`; and
+Windows release, with fresh `data/app.so` (13,190,064 bytes, SHA-256
+`84343801CA4754519F1DD79067651494A70D13F2FDED48F1BC151959CC78F7BC`). The
+Windows native runner executable was unchanged because no native runner source
+changed. These are build artifacts, not installed-runtime proof.
+
+`git diff --check` passed. The pre-write active-source package was `7/7 PASS`
+and the protected comparison was `26/28` with the two previously documented
+D1 divergences. A post-change read-only comparison against the local 28-row
+baseline copy is `24/28`: those two D1 paths, the newly changed protected
+`predmeti_repository.dart`, and the local-only pseudocode map. The control
+package and baseline file were not changed. A controlled rebaseline is
+required but deferred until Logos review/OWNER runtime acceptance and separate
+authorization. No staging, commit or push occurred. Logos post-implementation
+review is pending; OWNER runtime testing is intentionally deferred until that
+review. Detailed causal analysis, corrected findings, verification boundaries
+and package contents are recorded in
+[`OPC_SCENARIO_HISTORICAL_WORKING_KERNEL_DIFFERENTIAL_RECOVERY_REPORT.md`](tasks/OPC_SCENARIO_HISTORICAL_WORKING_KERNEL_DIFFERENTIAL_RECOVERY_REPORT.md).
+
+## 15. SCENARIO + BIOHAZARD correction — physical closure — 2026-10-09
+
+The accepted physical Android closure passed the original authorized targets:
+
+- fresh `OPELO NE→DA→NE`: `Komplet za opelo` was added once, survived save and
+  restart, was removed on reverse change, and remained absent after the second
+  save/restart/reopen without a repeated KIT proposal;
+- fresh incomplete→complete SCENARIO facts established current applied state;
+  that state remained durable after save/restart/reopen without repeating the
+  bootstrap proposal;
+- a fresh valid `NEDEFINISANA` case reconciled and rendered IRiU, including the
+  expected `ZARAZNA BOLEST` labels and safety instruction, without
+  assertion/render failure.
+
+These are scoped runtime results, not a broad SCENARIO map revalidation. The
+incomplete first evaluation does not establish partial applied ownership;
+eligible mutable `OTVOREN` / `ZATVOREN` cases may establish current state from
+complete present facts, while historical reconstruction and `ZAVRŠEN` /
+`ANONIMIZOVAN` recovery remain excluded. Manual/unrelated IRiU rows remain
+protected. BIOHAZARD continues to use the canonical conditional policy; a
+`NEDEFINISANA` cause alone does not imply a blanket consequence.
+
+The accepted technical chain remains `flutter analyze — PASS`, full serialized
+suite `636 PASS / 9 SKIP / 0 FAIL`, Windows release `PASS`, and Android
+production release `PASS`. This documentation update does not rerun those
+commands. Physical screenshots, the expected/observed matrix, the historical
+PREDMET `NOT FOUND` result, and the OWNER-directed exclusion of the incidental
+Lemovanje observation are preserved in the external package
+[`OPC_SCENARIO_BIOHAZARD_DEFECT_CLOSURE_20261009_PHYSICAL_COMPLETE.zip`](../../REVIEW/OPC_SCENARIO_BIOHAZARD_DEFECT_CLOSURE_20261009_PHYSICAL_COMPLETE.zip)
+(SHA-256 `350FC182999FADCF48A701FEF2CFBECE2AFF4EBD6F27708DC7BFA7ADB8C85195`).
+The prior §§14 and earlier candidate/runtime-pending wording are historical and
+are superseded for these correction targets by this closure record.
+
+## 16. PARTE / CEREMONIJA Narrow UX and synchronization corrections — 2026-10-10
+
+The bounded UX corrections have focused widget coverage and passed the full
+serialized suite:
+
+- `UX-01` PARTE text/content block disclosure collapsed by default and remains
+  expandable — PASS;
+- `UX-02` text size uses integrated 0.5 pt increment/decrement actions in the
+  `Veličina` field, displays the fitted preview value and disables at bounds —
+  PASS;
+- `UX-03` compact semantic `DIMENZIJE` icon actions fit one Narrow row — PASS;
+- `UX-04` cemetery name field width is responsive and an enabled empty manual
+  field is visibly inviting, returning to normal treatment when populated —
+  PASS. Global font size was not reduced.
+
+The source investigation did not prove a database update on every keystroke.
+CEREMONIJA autosave is debounced by 800 ms, the PREDMET repository skips the
+SQL update for an unchanged row, and reminder refresh previously could reread
+the row for unchanged reminder inputs and was not awaited after the save. The
+bounded correction compares a key of all reminder-output inputs, skips that
+unchanged reminder-path read, and awaits PREDMET persistence before reminder
+refresh. This addresses the source-proven redundant read/order issue; the
+broader perceived-latency cause and physical fluidity are not established
+without device observation.
+
+Verification, in sequence:
+
+- focused PARTE/CEREMONIJA tests:
+  `14 passed / 0 failed`;
+- `flutter analyze --no-pub`: PASS, `No issues found!`;
+- first full serial suite attempt: `636 passed / 9 skipped / 1 failed`; the
+  existing `scenario_katalog_clean_start_delete_protection_test.dart` case
+  `clean-start bootstrap is idempotent and preserves a renamed label` reached
+  its fixed 30-second test timeout;
+- focused rerun of that test file: `5 passed / 0 failed`;
+- final full serial suite:
+  `637 passed / 9 skipped / 0 failed`, exit code `0`;
+- `flutter build windows --release --no-pub`: PASS, exit code `0`; fresh
+  `data/app.so` is 13,190,064 bytes, SHA-256
+  `ABE75452B99D3CDBF18FC9C403F2631D600F0FED7DD3669287512C91A4664A80`;
+- `flutter build apk --release --flavor production --no-pub`: PASS, exit code
+  `0`; production APK is 79,633,103 bytes, SHA-256
+  `CDE7D0FCF164FB4C66194798D5560A44168D4BA65738CA8E2BAFC60866260876`.
+
+The isolated timeout did not recur in the focused rerun or the final complete
+suite. The nine skips are preserved as skips, including environment-gated
+forensic tests; no result is inferred for them. This task did not perform
+physical-device PARTE gesture/persistence or real-photo fluidity acceptance;
+those remain runtime evidence debt. The artifacts are build evidence, not
+installed-runtime proof. Full task continuity, source/test evidence, backup
+integrity and finding disposition are indexed in the external review package
+`REVIEW/CURRENT_TASK/OPC_NIGHT_UI_UX_CORRECTION_20261009`.
+
+## 17. Current implementation and acceptance state — 2026-10-10
+
+OWNER supplied the final review outcome:
+
+`IMPLEMENTATION COMPLETE – AUTOMATED QA GREEN – LOGOS REVIEW ACCEPTED – PHYSICAL RUNTIME PENDING OWNER VERIFICATION`
+
+For the NIGHT UI/UX correction, the latest recorded technical chain is focused
+tests 14/14 PASS, analyzer PASS, full serial suite 637 PASS / 9 SKIP / 0 FAIL,
+Windows release PASS and Android production release PASS. The final package
+was reported internally consistent and Logos review accepted it. During the
+2026-10-10 documentation reconciliation the ZIP was independently reopened
+and all 15 manifest-listed hashes matched. None of the tests, analyzer or
+builds were repeated for this documentation update. The older §14 candidate
+and its Logos-pending statement remain historical intermediate status and are
+superseded for the accepted correction package by this section and §16.
+
+Physical NIGHT runtime remains pending OWNER verification for PARTE Narrow
+gesture/scroll arbitration, element move/resize persistence through reopen,
+real-photo effect fluidity, observed application responsiveness and actual
+PREDMET/PODSETNIK save-refresh synchronization. Automated tests and build
+artifacts do not establish these device outcomes. The bounded SCENARIO /
+BIOHAZARD physical acceptance is separately recorded in §15 and its
+integrity-checked evidence package; it does not close the NIGHT UI runtime
+matrix. No new runtime defect is inferred from these outstanding checks.
+
+## 18. NIGHT UX refinement continuation — 2026-10-11
+
+Final automated verification for the authorized nine-requirement NIGHT UX
+continuation:
+
+- focused UX/regression set: `52 passed / 0 failed`;
+- `flutter analyze --no-pub`: PASS, `No issues found!`;
+- first full serial-suite attempt: `643 passed / 9 skipped / 5 failed`;
+  three STANJE ROBE assertions still expected the removed redundant status
+  sentence, the former section-navigation test assumed the old initial
+  section, and the new `ZATVORI` OutlinedButton exposed a `TextStyle.lerp`
+  assertion. The source style was corrected and only the stale presentation
+  expectations were updated; business handlers were unchanged;
+- focused rerun after correction: `52 passed / 0 failed`;
+- final full serial suite: `648 passed / 9 skipped / 0 failed`, exit code `0`;
+- `flutter build windows --release --no-pub`: PASS, exit code `0`; `OPC.exe`
+  89,600 bytes (SHA-256
+  `E6C2805D1F99621DDA30260B916289AF8CF3A1115BD7B28C80B13A0C5F830BAD`),
+  `data/app.so` 13,239,216 bytes (SHA-256
+  `86579248E59B09693E459DD0A686ED360A96D4CA2006548DA72D80EE422DC933`);
+- `flutter build apk --release --flavor production --no-pub`: PASS, exit code
+  `0`; `app-production-release.apk` 79,682,339 bytes (SHA-256
+  `850AE74FF0A700A43F2026FC98639F03675F350AD15196F0387B17A8ECEF274D`).
+
+Nine environment/legacy-gated tests remain reported as skips. These tests and
+release builds do not establish physical runtime or owner acceptance. UX-08
+remains deferred because no source-proven scroll-jump cause was established.
+Active-source precheck remains `20/28 LITERAL MATCH – 8/8 PROVENANCE
+RESOLVED`; its protected CSV was not changed or rebaselined. Physical runtime
+is deferred until Logos/OWNER review. The task-local review package is the
+navigation record for scope, documentation delta, source-learning, QA/build
+evidence and incidental-finding disposition.
+
+## 19. NIGHT UX residual correction — UX-01A/01B/05/06 — 2026-10-11
+
+The bounded OWNER-authorized residual correction passed its focused regression
+set (26/26), `flutter analyze --no-pub`, the full serialized Flutter suite
+(651 PASS / 9 SKIP / 0 FAIL), Windows release build and Android production
+release build. Nine existing legacy/environment/copy-gated tests remain
+reported as skips; they are not treated as passes.
+
+Windows release outputs:
+
+- `OPC.exe`: 89,600 bytes; SHA-256
+  `E6C2805D1F99621DDA30260B916289AF8CF3A1115BD7B28C80B13A0C5F830BAD`.
+- `data/app.so`: 13,239,216 bytes; SHA-256
+  `62637680ECCB41A276EAB1E83340C67D21D32E3804956962CE2992CF7B29950C`.
+
+Android production output:
+
+- `app-production-release.apk`: 79,682,339 bytes; SHA-256
+  `958774004A3082D6A6C35560AA00C18BE2832CD4A820062A8B768A9584FBF110`.
+
+These release builds do not establish installed-device behavior. No physical
+runtime was performed. The protected active-source control was not changed or
+rebaselined; its accepted pre-task 20/28 literal-match result is not a current
+post-edit PASS claim. A separate UX-06 test attempt observed a 45 px Narrow
+Segment 2 dropdown overflow; it is recorded out of scope for this task and
+deferred to a separately authorized responsive-layout review. Full
+requirement/source/test traceability and task-local package integrity evidence
+are in
+[`OPC_NIGHT_UX_RESIDUAL_CORRECTION_20261011_TRACEABILITY.md`](tasks/OPC_NIGHT_UX_RESIDUAL_CORRECTION_20261011_TRACEABILITY.md)
+and the external review package. Status:
+`READY FOR LOGOS/OWNER REVIEW`.
+
+## 20. Residual UX and user-facing text reconciliation — 2026-10-11
+
+For the OWNER-authorized COR-01..COR-05 and AUD-01 scope, focused regressions
+passed `28/28`, `flutter analyze --no-pub` passed with `No issues found!`, and
+the full serial suite passed `655 / 9 skipped / 0 failed` (exit 0). The nine
+skips are existing environment-, copy- or forensic-gated cases and are not
+counted as executed passes. Windows release build passed (exit 0; 147.5 s).
+Android production release build passed (exit 0; 916.4 s). The generated
+release outputs are recorded in the task traceability report and QA evidence;
+their existence does not establish installed-device behavior.
+
+No physical runtime was authorized. AUD-01 is source-diagnosed but retains the
+runtime evidence gap: the Android Wide screenshot shows the Segment 7
+`+9 / −0 STAVKI` toast during segment opening, but there is no post-event DB
+snapshot or interaction trace to prove its exact trigger or resulting durable
+rows. No SCENARIO/IRiU implementation was changed. The active-source control
+CSV remains unchanged; the accepted historical pre-task result remains
+`20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED`, with no rebaseline.
+
+The QA runner did not preserve absolute CLI start/end clock times. Evidence
+records the verified run date, observed execution sequence, terminal exit
+codes, summaries and build durations; no missing wall-clock time is inferred.
+The final handoff is `READY FOR LOGOS/OWNER REVIEW`, pending independent Logos
+review and OWNER acceptance.
+
+## 21. COR-04 / COR-05 bounded correction evidence — 2026-10-11
+
+The final bounded COR-04/COR-05 correction completed the required sequence:
+focused responsive and settings tests `16/16` passed; `flutter analyze
+--no-pub` passed with no issues; the serialized full suite passed `656`, with
+`9` gated skips and `0` failures; Windows release and Android production
+release builds both exited 0. The responsive regression checks Wide geometry
+for Android and Windows and retains Narrow coverage. Exact command timestamps,
+exit codes, summaries and artifact SHA-256 values are recorded in the
+task-local QA JSON and report. No physical runtime was authorized or run.
+
+## 22. Extended COR-05 guide and contextual help — 2026-10-12
+
+The focused guide/settings/chrome regressions passed `24/24`, including an
+edge tap inside the 48×48 POMOĆ target. The final serialized
+`flutter test --no-pub --concurrency=1` run exited 0 with `662` passed, `9`
+gated skips and `0` failures (1,701.9 s). `flutter analyze --no-pub` exited 0
+with no issues (345.3 s). Sequential Windows release and Android production
+APK builds both exited 0 (234.3 s and 803.7 s). The APK is 79,360,017 bytes,
+SHA-256
+`541DADBE326E7C9E616DA62D3C01C7EB4AC1EA570609817F6C705917B0369E51`; Windows
+`data/app.so` is 13,140,912 bytes, SHA-256
+`435F687502EA1E38A43D9ACDEFBC5FEB4F73FB26009CFB2ADDE9284950D3E16A`; the
+unchanged-size 89,600-byte runner SHA-256 is
+`E6C2805D1F99621DDA30260B916289AF8CF3A1115BD7B28C80B13A0C5F830BAD`. The
+guide resource (18,739 bytes; SHA-256
+`01F2920F1F49C0186419D959B4EE1564401BA828D2B4B4E45B3E7F1D0DB7C70E`) is
+present in the Android APK and Windows Flutter assets. Build
+outputs do not prove installation or physical runtime behavior. No physical
+runtime was authorized. Exact commands, outputs and review limitations are in
+the linked task traceability report and external review package.
+
+## 23. OWNER-approved final guide content — 2026-10-12
+
+Focused guide regressions passed `7/7`. `flutter analyze --no-pub` exited 0
+with no issues in 14.9 s. The first complete serial suite had two existing
+migration tests exceed the default 30-second per-test timeout; isolated
+retries passed in 55 s and 46 s. The complete serial rerun
+`flutter test --no-pub --concurrency=1 --timeout 2m` exited 0 with
+`663 PASS / 9 SKIP / 0 FAIL` in 26:07. The nine skips are existing
+environment-, forensic- or copy-gated cases. The per-test threshold was
+raised based on measured isolated runtimes; no command-level timeout was used.
+
+`flutter build windows --release --no-pub` exited 0 in 179.6 s;
+`data/app.so` is 13,140,912 bytes, SHA-256
+`F7A1FD9A0634523E105C6EF3C306CAFD5AA8F18D3B6FB92C962251A4CDC70C04`.
+The unchanged 89,600-byte Windows runner SHA-256 remains
+`E6C2805D1F99621DDA30260B916289AF8CF3A1115BD7B28C80B13A0C5F830BAD`.
+`flutter build apk --release --flavor production --no-pub` exited 0 in
+890.8 s; the APK is 79,364,113 bytes, SHA-256
+`2C98AFF3CFB3A37A3C0412DE8DC3AC2DC63D8AEF85EBB3F4E28CE4CA6CCF8489`.
+The packaged JSON resource in both platform outputs matches the source at
+36,424 bytes, SHA-256
+`53F24B8525DF09C251CD550AF113EB260CA55582D920E88953F13BBCAF42FBF7`.
+
+QA wall-clock start/end values were not captured when commands started;
+reported durations are tool-reported elapsed times and no absolute timestamps
+are inferred. These builds do not establish physical runtime behavior. No
+physical runtime, commit, push or rebaseline was performed; the protected
+active-source CSV remains unchanged. Full evidence is in
+[`OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md`](tasks/OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md)
+and the external canonical review package.
+
+The timestamped final closure rerun supersedes the untimestamped durations
+above for this task's completion ordering. `flutter analyze --no-pub` passed
+with no issues, exit 0, from `2026-10-12T22:07:04.0677909Z` to
+`2026-10-12T22:07:23.5539217Z`. The full serial suite
+`flutter test --no-pub --concurrency=1 --timeout 2m` passed with
+`663 PASS / 9 SKIP / 0 FAIL`, exit 0, from `2026-10-12T22:07:35.0970405Z` to
+`2026-10-12T22:30:25.0152830Z`. The Windows release build passed, exit 0,
+from `2026-10-12T22:30:32.0263118Z` to `2026-10-12T22:31:36.3943827Z`; the
+Android production APK build passed, exit 0, from `2026-10-12T22:31:41.5987500Z`
+to `2026-10-12T22:32:29.1275400Z`. See the task traceability report and
+canonical external QA JSON for commands, artifact hashes and full chronology.
+# OPC v1.5 final development closure — 2026-10-13
+
+OWNER accepted the current OPC v1.5 product as stable, functionally correct
+and final. The OWNER-approved final guide integration on 2026-10-12 was the
+last v1.5 development/correction task. The scoped Android Narrow/Wide
+delta-runtime on 2026-10-13 was accepted only for the cases it executed; its
+report remains `PARTIAL` for comprehensive guide/chapter-route coverage.
+Windows physical runtime, signing, distribution and formal release handover
+are separate states and are not claimed complete here.
+
+The source, tests, guide asset, QA and release-build evidence retained for this
+closure is indexed by `OPC_V15_FINAL_CLOSURE_REPORT.md` and its external review
+package. The historical active-source control remains at its accepted
+`20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED` result; it was not rebaselined.
+No new QA/build was necessary for this documentation-only closure record.

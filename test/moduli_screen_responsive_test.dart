@@ -37,15 +37,20 @@ void main() {
     for (final key in moduleKeys) {
       expect(find.byKey(ValueKey(key)), findsOneWidget);
     }
+    expect(
+      find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
+      findsOneWidget,
+    );
+    expect(find.text('Status: operativno isključeno'), findsNothing);
+    expect(find.text('STANJE ROBE AKTIVNO'), findsNothing);
+    expect(find.text('Isključivanje ne briše postojeće podatke'), findsNothing);
     expect(tester.takeException(), isNull);
 
     final scenario = find.byKey(const ValueKey('moduli-scenario-card'));
     final podsetnik = find.byKey(const ValueKey('moduli-podsetnik-card'));
     final parte = find.byKey(const ValueKey('moduli-parte-card'));
     final citulje = find.byKey(const ValueKey('moduli-citulje-card'));
-    final stanjeRobe = find.byKey(
-      const ValueKey('moduli-stanje-robe-card'),
-    );
+    final stanjeRobe = find.byKey(const ValueKey('moduli-stanje-robe-card'));
 
     expect(
       tester.getTopLeft(scenario).dy,
@@ -107,7 +112,9 @@ void main() {
       closeTo(tester.getTopLeft(scenario).dx, 0.1),
     );
 
-    await tester.ensureVisible(find.byKey(const ValueKey('moduli-citulje-card')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('moduli-citulje-card')),
+    );
     await tester.tap(find.text('ČITULJE'));
     await tester.pumpAndSettle();
     expect(find.text('MODUL ČITULJE'), findsOneWidget);
@@ -121,18 +128,13 @@ Widget _screen(AppDatabase db) => MaterialApp(
     podesavanjaRepository: _StaticPodesavanjaRepository(db),
     session: SessionService(),
     entitlementPolicy: const OpcEntitlementPolicy.fromSource(
-      OpcDemoTestEntitlementSource(
-        packageLevel: OpcPackageLevel.potpun,
-      ),
+      OpcDemoTestEntitlementSource(packageLevel: OpcPackageLevel.potpun),
     ),
   ),
 );
 
 AppDatabase _createResponsiveTestDatabase() => AppDatabase.forTesting(
-  DatabaseConnection(
-    NativeDatabase.memory(),
-    closeStreamsSynchronously: true,
-  ),
+  DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
 );
 
 class _StaticPodesavanjaRepository extends PodesavanjaRepository {

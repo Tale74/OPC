@@ -16,6 +16,7 @@ import '../core_v2/scenario/scenario_persistence_contract.dart';
 import '../core_v2/scenario/scenario_rule_engine.dart';
 import '../core_v2/scenario/scenario_module_repository.dart';
 import '../core_v2/scenario/owner_scenario_policy_kernel.dart';
+import 'predmeti_repository.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
@@ -49,21 +50,120 @@ class IriuRepository {
 
   AppDatabase get db => _db;
 
-  /// True only when an assignment snapshot exists and every current IRiU
-  /// occurrence has durable provenance. Incomplete transfer/legacy evidence
-  /// must not trigger automatic reconciliation merely because this screen was
-  /// opened; an explicit new-PREDMET path or a current PREDMET fact change is
-  /// required instead.
+  /// True when an assignment snapshot exists and every SCENARIO-managed
+  /// occurrence has durable SCENARIO provenance. Manual and unrelated-module
+  /// rows are outside this evidence set and must not block reconciliation.
+  /// A row explicitly marked as SCENARIO-managed without valid provenance
+  /// remains fail-closed because its historical ownership is unreliable.
   Future<bool> hasCompleteAppliedScenarioEvidence(int predmetId) async {
     final snapshot = await _readScenarioSnapshot(predmetId);
     if (snapshot == null) return false;
     final rows = await getIriu(predmetId);
     if (rows.isEmpty) return true;
-    final provenance = await (_db.select(
-      _db.iriuProvenance,
-    )..where((item) => item.iriuId.isIn(rows.map((row) => row.id).toList()))).get();
-    final provenIds = provenance.map((item) => item.iriuId).toSet();
-    return rows.every((row) => provenIds.contains(row.id));
+    final provenance =
+        await (_db.select(_db.iriuProvenance)..where(
+              (item) => item.iriuId.isIn(rows.map((row) => row.id).toList()),
+            ))
+            .get();
+    final provenanceByIriuId = {
+      for (final item in provenance) item.iriuId: item,
+    };
+    return rows.every((row) {
+      final item = provenanceByIriuId[row.id];
+      if (item?.moduleId == 'scenario') {
+        return item!.origin == 'OSNOVNI_PAKET' ||
+            item.origin == 'SCENARIO_PAKET';
+      }
+      if (item != null) return true;
+      return !row.scenarioUpravlja;
+    });
+  }
+
+  /// Returns a lifecycle reconciliation intent only when the PREDMET is in an
+  /// active editable state and durable evidence supports current-state
+  /// establishment or a current-vs-applied input difference. Unknown history
+  /// remains passive and fail-closed.
+  Future<({bool shouldReconcile, bool allowLegacyBaselineEstablishment})>
+  scenarioOpenReconciliationIntent({
+    required int predmetId,
+    required PredmetiData currentPredmet,
+  }) async {
+    const noIntent = (
+      shouldReconcile: false,
+      allowLegacyBaselineEstablishment: false,
+    );
+    final currentInput = OwnerScenarioInput.fromPredmet(currentPredmet);
+    const eligibleStatuses = {'OTVOREN', 'ZATVOREN'};
+    if (!eligibleStatuses.contains(currentPredmet.status) ||
+        !currentInput.isComplete) {
+      return noIntent;
+    }
+
+    final storedSnapshot = await _readScenarioSnapshot(predmetId);
+    if (storedSnapshot == null) {
+      return await _hasTrustedOsnovniBootstrapEvidence(predmetId)
+          ? (shouldReconcile: true, allowLegacyBaselineEstablishment: true)
+          : noIntent;
+    }
+    if (!await hasCompleteAppliedScenarioEvidence(predmetId)) {
+      return noIntent;
+    }
+    final assignment = ScenarioAssignmentSnapshot.fromJsonMap(
+      jsonDecode(storedSnapshot.snapshotJson) as Map<String, dynamic>,
+    );
+    final appliedInput = assignment.appliedEvaluationBaseline;
+    if (appliedInput != null) {
+      return appliedInput.hasSameEvaluationInputsAs(currentInput)
+          ? noIntent
+          : (shouldReconcile: true, allowLegacyBaselineEstablishment: false);
+    }
+    final hasSavedInputChange = await PredmetiRepository(_db)
+        .hasScenarioInputSaveAfterAppliedAt(
+          predmetId: predmetId,
+          appliedAt: assignment.assignedAt,
+        );
+    return hasSavedInputChange
+        ? (shouldReconcile: true, allowLegacyBaselineEstablishment: true)
+        : noIntent;
+  }
+
+  Future<bool> _hasTrustedOsnovniBootstrapEvidence(int predmetId) async {
+    final rows = await _rawIriu(predmetId);
+    if (rows.isEmpty) return false;
+    final provenance =
+        await (_db.select(_db.iriuProvenance)..where(
+              (item) => item.iriuId.isIn(rows.map((row) => row.id).toList()),
+            ))
+            .get();
+    final byIriuId = {for (final item in provenance) item.iriuId: item};
+    var foundExplicitBaseRow = false;
+    for (final row in rows) {
+      final source = byIriuId[row.id];
+      final isExplicitBaseRow =
+          source != null &&
+          source.moduleId == 'scenario' &&
+          source.origin == 'OSNOVNI_PAKET' &&
+          source.scenarioId == null &&
+          source.scenarioVersion == null &&
+          source.ruleId == null;
+      if (isExplicitBaseRow) {
+        if (row.cekaOdlukuKorisnika) return false;
+        foundExplicitBaseRow = true;
+        continue;
+      }
+      // Manual and other-module rows do not invalidate explicit creation
+      // provenance. A managed flag on an explicitly OSNOVNI-origin row does
+      // not prove that an applied SCENARIO snapshot was committed: incomplete
+      // first evaluation could set that flag before any snapshot existed.
+      // Any other uncertain row that claims SCENARIO ownership still keeps
+      // automatic lifecycle reconciliation fail-closed.
+      if (source?.moduleId == 'scenario' ||
+          row.scenarioUpravlja ||
+          row.cekaOdlukuKorisnika) {
+        return false;
+      }
+    }
+    return foundExplicitBaseRow;
   }
 
   StanjeRobeLifecycleService _stanjeRobeLifecycleService() {
@@ -93,6 +193,7 @@ class IriuRepository {
     required List<ScenarioDefinition> scenarios,
     required Set<String> osnovniPaket,
     bool applyScenarioChange = true,
+    bool allowLegacyBaselineEstablishment = false,
     Map<int, bool> conditionChangeDecisions = const <int, bool>{},
   }) async {
     final hasOwnerPolicyDefinitions = scenarios.any(
@@ -101,6 +202,17 @@ class IriuRepository {
     final ownerResult = hasOwnerPolicyDefinitions
         ? const OwnerScenarioPolicyKernel().evaluate(predmet)
         : null;
+    if (ownerResult != null && !ownerResult.isComplete) {
+      // An incomplete first evaluation may expose OSNOVNI categories for
+      // display, but it has not established an applied SCENARIO state. Leave
+      // creation ownership/provenance untouched so a later complete normal
+      // lifecycle can bootstrap from the durable OSNOVNI origin.
+      return const ScenarioSyncResult(
+        matchedScenarioIds: <String>[],
+        addedCategories: <String>[],
+        removedCategories: <String>[],
+      );
+    }
     final previousSnapshot = await _readScenarioSnapshot(predmetId);
     final decodedPreviousSnapshot = previousSnapshot == null
         ? null
@@ -118,16 +230,40 @@ class IriuRepository {
         '${ownerResult!.scenarioId}.',
       );
     }
-    final sameAssignedScenario =
+    final sameAssignedScenarioId =
         ownerResult?.isComplete == true &&
         decodedPreviousSnapshot?.scenarioId == ownerResult!.scenarioId;
+    final previousAppliedEvaluation =
+        decodedPreviousSnapshot?.appliedEvaluationBaseline;
+    // Older snapshots intentionally remain unbaselined. They keep their
+    // historical applied definition on passive open; only snapshots carrying
+    // a durable applied-input baseline can prove a later current-input change.
+    final sameAssignedScenario =
+        sameAssignedScenarioId &&
+        (previousAppliedEvaluation == null
+            ? !allowLegacyBaselineEstablishment
+            : previousAppliedEvaluation.hasSameEvaluationInputsAs(
+                ownerResult.input,
+              ));
+    if (sameAssignedScenarioId &&
+        previousAppliedEvaluation == null &&
+        !allowLegacyBaselineEstablishment) {
+      return ScenarioSyncResult(
+        matchedScenarioIds: ownerResult.scenarioId == null
+            ? const <String>[]
+            : <String>[ownerResult.scenarioId!],
+        addedCategories: const <String>[],
+        removedCategories: const <String>[],
+      );
+    }
     final effectiveOwnerDefinition = sameAssignedScenario
         ? decodedPreviousSnapshot!.scenario
         : ownerDefinition;
     final effectiveBasePackage = sameAssignedScenario
         ? decodedPreviousSnapshot!.osnovniPaket
         : osnovniPaket;
-    final evaluation = ownerResult != null && ownerDefinition != null
+    final evaluation =
+        ownerResult != null && ownerDefinition != null && sameAssignedScenario
         ? const ScenarioRuleEngine().evaluate(
             scenarios: [effectiveOwnerDefinition!],
             predmet: predmet,
@@ -145,6 +281,7 @@ class IriuRepository {
             result: ownerResult!,
             osnovniPaket: evaluation.baseCategories,
             definition: ownerDefinition,
+            appliedEvaluationBaseline: ownerResult.input,
           )
         : null;
     final scenarioSnapshotChanged =
@@ -323,23 +460,26 @@ class IriuRepository {
         (row) => desired.contains(row.interniNaziv),
       )) {
         final decision = evaluation.decisions[row.interniNaziv]!;
-        if (_scenarioDecisionChanged(row, decision) || !row.scenarioUpravlja) {
+        final rowNeedsUpdate =
+            _scenarioDecisionChanged(row, decision) ||
+            !row.scenarioUpravlja ||
+            row.cekaOdlukuKorisnika;
+        if (rowNeedsUpdate) {
           orderingInvalidated = true;
+          await azurirajStavku(
+            row.id,
+            IriuCompanion(
+              poslovniStatus: Value(decision.businessStatus),
+              obezbedjuje: Value(decision.provider.name),
+              poslovnoUpozorenje: Value(decision.warning),
+              poslovniRazlog: Value(decision.reason),
+              poslovnaCelina: Value(decision.section),
+              poslovniRedosled: Value(decision.order),
+              scenarioUpravlja: const Value(true),
+              cekaOdlukuKorisnika: const Value(false),
+            ),
+          );
         }
-        await azurirajStavku(
-          row.id,
-          IriuCompanion(
-            poslovniStatus: Value(decision.businessStatus),
-            obezbedjuje: Value(decision.provider.name),
-            poslovnoUpozorenje: Value(decision.warning),
-            poslovniRazlog: Value(decision.reason),
-            poslovnaCelina: Value(decision.section),
-            poslovniRedosled: Value(decision.order),
-            finansijskiUkljuceno: Value(decision.financiallyIncluded),
-            scenarioUpravlja: const Value(true),
-            cekaOdlukuKorisnika: const Value(false),
-          ),
-        );
         final isBase = evaluation.baseCategories.contains(row.interniNaziv);
         final consequence = evaluation.scenarioCategories.firstWhere(
           (item) => item.katalogCategoryInternalName == row.interniNaziv,
@@ -348,22 +488,34 @@ class IriuRepository {
             action: ScenarioConsequenceAction.recommended,
           ),
         );
-        await (_db.update(
-          _db.iriuProvenance,
-        )..where((item) => item.iriuId.equals(row.id))).write(
-          IriuProvenanceCompanion(
-            origin: Value(isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET'),
-            scenarioId: Value(
-              isBase || evaluation.matchedScenarioIds.isEmpty
-                  ? null
-                  : evaluation.sourceScenarioIds[row.interniNaziv],
+        final expectedOrigin = isBase ? 'OSNOVNI_PAKET' : 'SCENARIO_PAKET';
+        final expectedScenarioId =
+            isBase || evaluation.matchedScenarioIds.isEmpty
+            ? null
+            : evaluation.sourceScenarioIds[row.interniNaziv];
+        final expectedScenarioVersion = isBase ? null : 1;
+        final expectedRuleId = isBase
+            ? null
+            : consequence.katalogCategoryInternalName;
+        final existingProvenance = provenanceByIriuId[row.id];
+        if (existingProvenance == null ||
+            existingProvenance.moduleId != 'scenario' ||
+            existingProvenance.origin != expectedOrigin ||
+            existingProvenance.scenarioId != expectedScenarioId ||
+            existingProvenance.scenarioVersion != expectedScenarioVersion ||
+            existingProvenance.ruleId != expectedRuleId) {
+          await (_db.update(
+            _db.iriuProvenance,
+          )..where((item) => item.iriuId.equals(row.id))).write(
+            IriuProvenanceCompanion(
+              origin: Value(expectedOrigin),
+              moduleId: const Value('scenario'),
+              scenarioId: Value(expectedScenarioId),
+              scenarioVersion: Value(expectedScenarioVersion),
+              ruleId: Value(expectedRuleId),
             ),
-            scenarioVersion: Value(isBase ? null : 1),
-            ruleId: Value(
-              isBase ? null : consequence.katalogCategoryInternalName,
-            ),
-          ),
-        );
+          );
+        }
       }
       if (removals.isNotEmpty || additions.isNotEmpty || orderingInvalidated) {
         await _rebuildBusinessOrdering(predmetId);
@@ -474,6 +626,7 @@ class IriuRepository {
         result: result,
         osnovniPaket: result.baseCategories,
         definition: definition,
+        appliedEvaluationBaseline: result.input,
       ),
       predmetId: predmet.id,
     );
@@ -501,6 +654,7 @@ class IriuRepository {
   ScenarioAssignmentSnapshot _ownerScenarioSnapshot({
     required OwnerScenarioResult result,
     required Set<String> osnovniPaket,
+    OwnerScenarioInput? appliedEvaluationBaseline,
     ScenarioDefinition? definition,
   }) {
     final key = result.key!;
@@ -589,6 +743,7 @@ class IriuRepository {
       scenario: definition ?? generatedDefinition,
       osnovniPaket: osnovniPaket,
       assignedAt: DateTime.now().toUtc().toIso8601String(),
+      appliedEvaluationBaseline: appliedEvaluationBaseline,
     );
   }
 

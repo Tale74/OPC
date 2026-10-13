@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../data/kontakt_lica_repository.dart';
 import 'predmet_decision_controls.dart';
 
@@ -36,6 +37,7 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
 
   // Block A - top level
   String _naruTip = 'FIZICKO_LICE';
+
   /// A1 sub-tip: 'BRACNI_DRUG' | 'DRUGO_LICE'
   String _naruFizSubTip = 'DRUGO_LICE';
 
@@ -71,8 +73,10 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
 
   // Block B - top level
   String _jkpTip = 'FIZICKO_LICE';
+
   /// B1 sub-tip: 'BRACNI_DRUG' | 'DRUGO_LICE'
   String _jkpFizSubTip = 'DRUGO_LICE';
+
   /// B2 sub-tip: 'ZASTUPNIK' | 'DRUGO_PRAVNO_LICE'
   String _jkpPravnoSubTip = 'DRUGO_PRAVNO_LICE';
 
@@ -323,23 +327,22 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     final isBd = _naruFizSubTip == 'BRACNI_DRUG';
     _naruBdAdresaCtrl = TextEditingController(text: isBd ? d.naruAdresa : '');
     _naruBdBrojLkCtrl = TextEditingController(text: isBd ? d.naruBrojLk : '');
-    _naruBdTelefon1Ctrl =
-        TextEditingController(text: isBd ? d.naruTelefon1 : '');
-    _naruBdTelefon2Ctrl =
-        TextEditingController(text: isBd ? d.naruTelefon2 : '');
+    _naruBdTelefon1Ctrl = TextEditingController(
+      text: isBd ? d.naruTelefon1 : '',
+    );
+    _naruBdTelefon2Ctrl = TextEditingController(
+      text: isBd ? d.naruTelefon2 : '',
+    );
     _naruBdEmailCtrl = TextEditingController(text: isBd ? d.naruEmail : '');
 
     // A1 DRUGO LICE
     _naruImeCtrl = TextEditingController(text: isBd ? '' : d.naruIme);
-    _naruPrezimeCtrl =
-        TextEditingController(text: isBd ? '' : d.naruPrezime);
+    _naruPrezimeCtrl = TextEditingController(text: isBd ? '' : d.naruPrezime);
     _naruJmbgCtrl = TextEditingController(text: isBd ? '' : d.naruJmbg);
     _naruAdresaCtrl = TextEditingController(text: isBd ? '' : d.naruAdresa);
     _naruBrojLkCtrl = TextEditingController(text: isBd ? '' : d.naruBrojLk);
-    _naruTelefon1Ctrl =
-        TextEditingController(text: isBd ? '' : d.naruTelefon1);
-    _naruTelefon2Ctrl =
-        TextEditingController(text: isBd ? '' : d.naruTelefon2);
+    _naruTelefon1Ctrl = TextEditingController(text: isBd ? '' : d.naruTelefon1);
+    _naruTelefon2Ctrl = TextEditingController(text: isBd ? '' : d.naruTelefon2);
     _naruEmailCtrl = TextEditingController(text: isBd ? '' : d.naruEmail);
 
     // A2 PRAVNO LICE
@@ -347,8 +350,9 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     _naruPlAdresaCtrl = TextEditingController(text: d.naruPlAdresa);
     _naruPlPibCtrl = TextEditingController(text: d.naruPlPib);
     _naruPlMbCtrl = TextEditingController(text: d.naruPlMb);
-    _naruPlOdgovornoLiceCtrl =
-        TextEditingController(text: d.naruPlOdgovornoLice);
+    _naruPlOdgovornoLiceCtrl = TextEditingController(
+      text: d.naruPlOdgovornoLice,
+    );
     _naruPlTelefon1Ctrl = TextEditingController(text: d.naruPlTelefon1);
     _naruPlTelefon2Ctrl = TextEditingController(text: d.naruPlTelefon2);
     _naruPlEmailCtrl = TextEditingController(text: d.naruPlEmail);
@@ -365,9 +369,7 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     }
 
     // Infer B2 sub-tip (ZASTUPNIK if firma data matches)
-    if (f.naziv.isNotEmpty &&
-        d.jkpPlNaziv == f.naziv &&
-        d.jkpPlPib == f.pib) {
+    if (f.naziv.isNotEmpty && d.jkpPlNaziv == f.naziv && d.jkpPlPib == f.pib) {
       _jkpPravnoSubTip = 'ZASTUPNIK';
     }
 
@@ -375,43 +377,48 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     final isZastupnik = _jkpPravnoSubTip == 'ZASTUPNIK';
 
     // B1 BRACNI DRUG extra fields
-    _jkpBdAdresaCtrl =
-        TextEditingController(text: isJkpBd ? d.jkpAdresa : '');
-    _jkpBdBrojLkCtrl =
-        TextEditingController(text: isJkpBd ? d.jkpBrojLk : '');
-    _jkpBdTelefon1Ctrl =
-        TextEditingController(text: isJkpBd ? d.jkpTelefon1 : '');
-    _jkpBdTelefon2Ctrl =
-        TextEditingController(text: isJkpBd ? d.jkpTelefon2 : '');
+    _jkpBdAdresaCtrl = TextEditingController(text: isJkpBd ? d.jkpAdresa : '');
+    _jkpBdBrojLkCtrl = TextEditingController(text: isJkpBd ? d.jkpBrojLk : '');
+    _jkpBdTelefon1Ctrl = TextEditingController(
+      text: isJkpBd ? d.jkpTelefon1 : '',
+    );
+    _jkpBdTelefon2Ctrl = TextEditingController(
+      text: isJkpBd ? d.jkpTelefon2 : '',
+    );
     _jkpBdEmailCtrl = TextEditingController(text: isJkpBd ? d.jkpEmail : '');
 
     // B1 DRUGO LICE
     _jkpImeCtrl = TextEditingController(text: isJkpBd ? '' : d.jkpIme);
-    _jkpPrezimeCtrl =
-        TextEditingController(text: isJkpBd ? '' : d.jkpPrezime);
+    _jkpPrezimeCtrl = TextEditingController(text: isJkpBd ? '' : d.jkpPrezime);
     _jkpJmbgCtrl = TextEditingController(text: isJkpBd ? '' : d.jkpJmbg);
     _jkpAdresaCtrl = TextEditingController(text: isJkpBd ? '' : d.jkpAdresa);
     _jkpBrojLkCtrl = TextEditingController(text: isJkpBd ? '' : d.jkpBrojLk);
-    _jkpTelefon1Ctrl =
-        TextEditingController(text: isJkpBd ? '' : d.jkpTelefon1);
-    _jkpTelefon2Ctrl =
-        TextEditingController(text: isJkpBd ? '' : d.jkpTelefon2);
+    _jkpTelefon1Ctrl = TextEditingController(
+      text: isJkpBd ? '' : d.jkpTelefon1,
+    );
+    _jkpTelefon2Ctrl = TextEditingController(
+      text: isJkpBd ? '' : d.jkpTelefon2,
+    );
     _jkpEmailCtrl = TextEditingController(text: isJkpBd ? '' : d.jkpEmail);
 
     // B2 DRUGO PRAVNO LICE
-    _jkpPlNazivCtrl =
-        TextEditingController(text: isZastupnik ? '' : d.jkpPlNaziv);
-    _jkpPlAdresaCtrl =
-        TextEditingController(text: isZastupnik ? '' : d.jkpPlAdresa);
-    _jkpPlPibCtrl =
-        TextEditingController(text: isZastupnik ? '' : d.jkpPlPib);
+    _jkpPlNazivCtrl = TextEditingController(
+      text: isZastupnik ? '' : d.jkpPlNaziv,
+    );
+    _jkpPlAdresaCtrl = TextEditingController(
+      text: isZastupnik ? '' : d.jkpPlAdresa,
+    );
+    _jkpPlPibCtrl = TextEditingController(text: isZastupnik ? '' : d.jkpPlPib);
     _jkpPlMbCtrl = TextEditingController(text: isZastupnik ? '' : d.jkpPlMb);
-    _jkpPlOdgovornoLiceCtrl =
-        TextEditingController(text: isZastupnik ? '' : d.jkpPlOdgovornoLice);
-    _jkpPlTelefon1Ctrl =
-        TextEditingController(text: isZastupnik ? '' : d.jkpPlTelefon1);
-    _jkpPlEmailCtrl =
-        TextEditingController(text: isZastupnik ? '' : d.jkpPlEmail);
+    _jkpPlOdgovornoLiceCtrl = TextEditingController(
+      text: isZastupnik ? '' : d.jkpPlOdgovornoLice,
+    );
+    _jkpPlTelefon1Ctrl = TextEditingController(
+      text: isZastupnik ? '' : d.jkpPlTelefon1,
+    );
+    _jkpPlEmailCtrl = TextEditingController(
+      text: isZastupnik ? '' : d.jkpPlEmail,
+    );
 
     // Blur validation listeners
     _naruImeFocus.addListener(() {
@@ -467,25 +474,56 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
   void dispose() {
     _debounce?.cancel();
     for (final c in [
-      _naruBdAdresaCtrl, _naruBdBrojLkCtrl, _naruBdTelefon1Ctrl,
-      _naruBdTelefon2Ctrl, _naruBdEmailCtrl,
-      _naruImeCtrl, _naruPrezimeCtrl, _naruJmbgCtrl, _naruAdresaCtrl,
-      _naruBrojLkCtrl, _naruTelefon1Ctrl, _naruTelefon2Ctrl, _naruEmailCtrl,
-      _naruPlNazivCtrl, _naruPlAdresaCtrl, _naruPlPibCtrl, _naruPlMbCtrl,
-      _naruPlOdgovornoLiceCtrl, _naruPlTelefon1Ctrl, _naruPlTelefon2Ctrl,
+      _naruBdAdresaCtrl,
+      _naruBdBrojLkCtrl,
+      _naruBdTelefon1Ctrl,
+      _naruBdTelefon2Ctrl,
+      _naruBdEmailCtrl,
+      _naruImeCtrl,
+      _naruPrezimeCtrl,
+      _naruJmbgCtrl,
+      _naruAdresaCtrl,
+      _naruBrojLkCtrl,
+      _naruTelefon1Ctrl,
+      _naruTelefon2Ctrl,
+      _naruEmailCtrl,
+      _naruPlNazivCtrl,
+      _naruPlAdresaCtrl,
+      _naruPlPibCtrl,
+      _naruPlMbCtrl,
+      _naruPlOdgovornoLiceCtrl,
+      _naruPlTelefon1Ctrl,
+      _naruPlTelefon2Ctrl,
       _naruPlEmailCtrl,
-      _jkpBdAdresaCtrl, _jkpBdBrojLkCtrl, _jkpBdTelefon1Ctrl,
-      _jkpBdTelefon2Ctrl, _jkpBdEmailCtrl,
-      _jkpImeCtrl, _jkpPrezimeCtrl, _jkpJmbgCtrl, _jkpAdresaCtrl,
-      _jkpBrojLkCtrl, _jkpTelefon1Ctrl, _jkpTelefon2Ctrl, _jkpEmailCtrl,
-      _jkpPlNazivCtrl, _jkpPlAdresaCtrl, _jkpPlPibCtrl, _jkpPlMbCtrl,
-      _jkpPlOdgovornoLiceCtrl, _jkpPlTelefon1Ctrl, _jkpPlEmailCtrl,
+      _jkpBdAdresaCtrl,
+      _jkpBdBrojLkCtrl,
+      _jkpBdTelefon1Ctrl,
+      _jkpBdTelefon2Ctrl,
+      _jkpBdEmailCtrl,
+      _jkpImeCtrl,
+      _jkpPrezimeCtrl,
+      _jkpJmbgCtrl,
+      _jkpAdresaCtrl,
+      _jkpBrojLkCtrl,
+      _jkpTelefon1Ctrl,
+      _jkpTelefon2Ctrl,
+      _jkpEmailCtrl,
+      _jkpPlNazivCtrl,
+      _jkpPlAdresaCtrl,
+      _jkpPlPibCtrl,
+      _jkpPlMbCtrl,
+      _jkpPlOdgovornoLiceCtrl,
+      _jkpPlTelefon1Ctrl,
+      _jkpPlEmailCtrl,
     ]) {
       c.dispose();
     }
     for (final f in [
-      _naruImeFocus, _naruPrezimeFocus, _naruPlNazivFocus,
-      _naruTelefon1Focus, _naruPlTelefon1Focus,
+      _naruImeFocus,
+      _naruPrezimeFocus,
+      _naruPlNazivFocus,
+      _naruTelefon1Focus,
+      _naruPlTelefon1Focus,
     ]) {
       f.dispose();
     }
@@ -509,8 +547,7 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
         naruTip: Value(_naruTip),
         naruIme: Value(_cNaruIme),
         naruPrezime: Value(_cNaruPrezime),
-        naruImePrezime:
-            Value('$_cNaruPrezime $_cNaruIme'.trim()),
+        naruImePrezime: Value('$_cNaruPrezime $_cNaruIme'.trim()),
         naruJmbg: Value(_cNaruJmbg),
         naruAdresa: Value(_cNaruAdresa),
         naruBrojLk: Value(_cNaruBrojLk),
@@ -562,10 +599,14 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
             // BLOCK A - PLATILAC OPREME I USLUGA
             _blockHeader(context, 'PLATILAC ROBE I USLUGA'),
             const SizedBox(height: 12),
-            _tipSelector(_naruTip, e, (v) => setState(() {
-                  _naruTip = v;
-                  _scheduleSave();
-                })),
+            _tipSelector(
+              _naruTip,
+              e,
+              (v) => setState(() {
+                _naruTip = v;
+                _scheduleSave();
+              }),
+            ),
             const SizedBox(height: 12),
 
             if (_naruTip == 'FIZICKO_LICE') ...[
@@ -586,95 +627,133 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                 const SizedBox(height: 12),
               ] else ...[
                 _NapomenaBracniDrug(
-                    bracnoStanje: widget.initialData.bracnoStanje),
+                  bracnoStanje: widget.initialData.bracnoStanje,
+                ),
                 const SizedBox(height: 8),
               ],
 
               // A1 / BRACNI DRUG
               if (_naruFizSubTip == 'BRACNI_DRUG' && _mozeBracniDrug) ...[
-                _roFull(context, 'IME',
-                    widget.initialData.bracniDrugIme),
+                _roFull(context, 'IME', widget.initialData.bracniDrugIme),
                 const SizedBox(height: 12),
-                _roFull(context, 'PREZIME',
-                    widget.initialData.bracniDrugPrezime),
+                _roFull(
+                  context,
+                  'PREZIME',
+                  widget.initialData.bracniDrugPrezime,
+                ),
                 const SizedBox(height: 12),
-                _roFull(context, 'JMBG',
-                    widget.initialData.bracniDrugJmbg),
+                _roFull(context, 'JMBG', widget.initialData.bracniDrugJmbg),
                 const SizedBox(height: 12),
                 _fFull('ADRESA', _naruBdAdresaCtrl, e, caps: true),
                 const SizedBox(height: 12),
                 _row([
                   _f('BROJ LK / PASO\u0160', _naruBdBrojLkCtrl, e),
-                  _f('TELEFON 1', _naruBdTelefon1Ctrl, e,
-                      keyboard: TextInputType.phone,
-                      focusNode: _naruTelefon1Focus,
-                      errorText: _naruTelefon1Touched &&
-                              _naruBdTelefon1Ctrl.text.isEmpty
-                          ? 'Obavezan kontakt'
-                          : null),
+                  _f(
+                    'TELEFON 1',
+                    _naruBdTelefon1Ctrl,
+                    e,
+                    keyboard: TextInputType.phone,
+                    focusNode: _naruTelefon1Focus,
+                    errorText:
+                        _naruTelefon1Touched && _naruBdTelefon1Ctrl.text.isEmpty
+                        ? 'Obavezan kontakt'
+                        : null,
+                  ),
                 ]),
                 const SizedBox(height: 12),
                 _row([
-                  _f('TELEFON 2', _naruBdTelefon2Ctrl, e,
-                      keyboard: TextInputType.phone),
-                  _f('E-MAIL', _naruBdEmailCtrl, e,
-                      keyboard: TextInputType.emailAddress),
+                  _f(
+                    'TELEFON 2',
+                    _naruBdTelefon2Ctrl,
+                    e,
+                    keyboard: TextInputType.phone,
+                  ),
+                  _f(
+                    'E-MAIL',
+                    _naruBdEmailCtrl,
+                    e,
+                    keyboard: TextInputType.emailAddress,
+                  ),
                 ]),
               ]
               // A1 / DRUGO LICE
               else ...[
                 _row([
-                  _f('IME', _naruImeCtrl, e,
-                      caps: true,
-                      focusNode: _naruImeFocus,
-                      errorText: (_naruImeTouched || _naruPrezimeTouched) &&
-                              _naruImeCtrl.text.isEmpty &&
-                              _naruPrezimeCtrl.text.isEmpty
-                          ? 'Obavezno'
-                          : null),
-                  _f('PREZIME', _naruPrezimeCtrl, e,
-                      caps: true,
-                      focusNode: _naruPrezimeFocus,
-                      errorText: (_naruImeTouched || _naruPrezimeTouched) &&
-                              _naruImeCtrl.text.isEmpty &&
-                              _naruPrezimeCtrl.text.isEmpty
-                          ? 'Obavezno'
-                          : null),
+                  _f(
+                    'IME',
+                    _naruImeCtrl,
+                    e,
+                    caps: true,
+                    focusNode: _naruImeFocus,
+                    errorText:
+                        (_naruImeTouched || _naruPrezimeTouched) &&
+                            _naruImeCtrl.text.isEmpty &&
+                            _naruPrezimeCtrl.text.isEmpty
+                        ? 'Obavezno'
+                        : null,
+                  ),
+                  _f(
+                    'PREZIME',
+                    _naruPrezimeCtrl,
+                    e,
+                    caps: true,
+                    focusNode: _naruPrezimeFocus,
+                    errorText:
+                        (_naruImeTouched || _naruPrezimeTouched) &&
+                            _naruImeCtrl.text.isEmpty &&
+                            _naruPrezimeCtrl.text.isEmpty
+                        ? 'Obavezno'
+                        : null,
+                  ),
                 ]),
                 const SizedBox(height: 12),
                 _row([
-                  _f('JMBG', _naruJmbgCtrl, e,
-                      keyboard: TextInputType.number),
+                  _f('JMBG', _naruJmbgCtrl, e, keyboard: TextInputType.number),
                   _f('BROJ LK / PASO\u0160', _naruBrojLkCtrl, e),
                 ]),
                 const SizedBox(height: 12),
                 _fFull('ADRESA', _naruAdresaCtrl, e, caps: true),
                 const SizedBox(height: 12),
                 _row([
-                  _f('TELEFON 1', _naruTelefon1Ctrl, e,
-                      keyboard: TextInputType.phone,
-                      focusNode: _naruTelefon1Focus,
-                      errorText: _naruTelefon1Touched &&
-                              _naruTelefon1Ctrl.text.isEmpty
-                          ? 'Obavezan kontakt'
-                          : null),
-                  _f('TELEFON 2', _naruTelefon2Ctrl, e,
-                      keyboard: TextInputType.phone),
+                  _f(
+                    'TELEFON 1',
+                    _naruTelefon1Ctrl,
+                    e,
+                    keyboard: TextInputType.phone,
+                    focusNode: _naruTelefon1Focus,
+                    errorText:
+                        _naruTelefon1Touched && _naruTelefon1Ctrl.text.isEmpty
+                        ? 'Obavezan kontakt'
+                        : null,
+                  ),
+                  _f(
+                    'TELEFON 2',
+                    _naruTelefon2Ctrl,
+                    e,
+                    keyboard: TextInputType.phone,
+                  ),
                 ]),
                 const SizedBox(height: 12),
-                _fFull('E-MAIL', _naruEmailCtrl, e,
-                    keyboard: TextInputType.emailAddress),
+                _fFull(
+                  'E-MAIL',
+                  _naruEmailCtrl,
+                  e,
+                  keyboard: TextInputType.emailAddress,
+                ),
               ],
             ]
             // A2 - PRAVNO LICE
             else ...[
-              _fFull('NAZIV PRAVNOG LICA', _naruPlNazivCtrl, e,
-                  caps: true,
-                  focusNode: _naruPlNazivFocus,
-                  errorText: _naruPlNazivTouched &&
-                          _naruPlNazivCtrl.text.isEmpty
-                      ? 'Obavezno'
-                      : null),
+              _fFull(
+                'NAZIV PRAVNOG LICA',
+                _naruPlNazivCtrl,
+                e,
+                caps: true,
+                focusNode: _naruPlNazivFocus,
+                errorText: _naruPlNazivTouched && _naruPlNazivCtrl.text.isEmpty
+                    ? 'Obavezno'
+                    : null,
+              ),
               const SizedBox(height: 12),
               _fFull('ADRESA', _naruPlAdresaCtrl, e, caps: true),
               const SizedBox(height: 12),
@@ -683,23 +762,34 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                 _f('MATI\u010CNI BROJ', _naruPlMbCtrl, e),
               ]),
               const SizedBox(height: 12),
-              _fFull('ODGOVORNO LICE', _naruPlOdgovornoLiceCtrl, e,
-                  caps: true),
+              _fFull('ODGOVORNO LICE', _naruPlOdgovornoLiceCtrl, e, caps: true),
               const SizedBox(height: 12),
               _row([
-                _f('TELEFON 1', _naruPlTelefon1Ctrl, e,
-                    keyboard: TextInputType.phone,
-                    focusNode: _naruPlTelefon1Focus,
-                    errorText: _naruPlTelefon1Touched &&
-                            _naruPlTelefon1Ctrl.text.isEmpty
-                        ? 'Obavezan kontakt'
-                        : null),
-                _f('TELEFON 2', _naruPlTelefon2Ctrl, e,
-                    keyboard: TextInputType.phone),
+                _f(
+                  'TELEFON 1',
+                  _naruPlTelefon1Ctrl,
+                  e,
+                  keyboard: TextInputType.phone,
+                  focusNode: _naruPlTelefon1Focus,
+                  errorText:
+                      _naruPlTelefon1Touched && _naruPlTelefon1Ctrl.text.isEmpty
+                      ? 'Obavezan kontakt'
+                      : null,
+                ),
+                _f(
+                  'TELEFON 2',
+                  _naruPlTelefon2Ctrl,
+                  e,
+                  keyboard: TextInputType.phone,
+                ),
               ]),
               const SizedBox(height: 12),
-              _fFull('E-MAIL', _naruPlEmailCtrl, e,
-                  keyboard: TextInputType.emailAddress),
+              _fFull(
+                'E-MAIL',
+                _naruPlEmailCtrl,
+                e,
+                keyboard: TextInputType.emailAddress,
+              ),
             ],
 
             const SizedBox(height: 8),
@@ -721,33 +811,35 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                   value: _naruIstiZaJkp,
                   enabled: e,
                   onChanged: (checked) {
-                          setState(() => _naruIstiZaJkp = checked);
-                          if (!checked) {
-                            // Clear all jkp_* columns on uncheck
-                            widget.onSave(const PredmetiCompanion(
-                              jkpTip: Value('FIZICKO_LICE'),
-                              jkpIme: Value(''),
-                              jkpPrezime: Value(''),
-                              jkpImePrezime: Value(''),
-                              jkpJmbg: Value(''),
-                              jkpAdresa: Value(''),
-                              jkpBrojLk: Value(''),
-                              jkpTelefon1: Value(''),
-                              jkpTelefon2: Value(''),
-                              jkpEmail: Value(''),
-                              jkpPlNaziv: Value(''),
-                              jkpPlAdresa: Value(''),
-                              jkpPlPib: Value(''),
-                              jkpPlMb: Value(''),
-                              jkpPlOdgovornoLice: Value(''),
-                              jkpPlTelefon1: Value(''),
-                              jkpPlEmail: Value(''),
-                              naruIstiZaJkp: Value(false),
-                            ));
-                          } else {
-                            _scheduleSave();
-                          }
-                        },
+                    setState(() => _naruIstiZaJkp = checked);
+                    if (!checked) {
+                      // Clear all jkp_* columns on uncheck
+                      widget.onSave(
+                        const PredmetiCompanion(
+                          jkpTip: Value('FIZICKO_LICE'),
+                          jkpIme: Value(''),
+                          jkpPrezime: Value(''),
+                          jkpImePrezime: Value(''),
+                          jkpJmbg: Value(''),
+                          jkpAdresa: Value(''),
+                          jkpBrojLk: Value(''),
+                          jkpTelefon1: Value(''),
+                          jkpTelefon2: Value(''),
+                          jkpEmail: Value(''),
+                          jkpPlNaziv: Value(''),
+                          jkpPlAdresa: Value(''),
+                          jkpPlPib: Value(''),
+                          jkpPlMb: Value(''),
+                          jkpPlOdgovornoLice: Value(''),
+                          jkpPlTelefon1: Value(''),
+                          jkpPlEmail: Value(''),
+                          naruIstiZaJkp: Value(false),
+                        ),
+                      );
+                    } else {
+                      _scheduleSave();
+                    }
+                  },
                 );
               },
             ),
@@ -812,10 +904,14 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                 enabled: e,
               ),
             ] else ...[
-              _tipSelector(_jkpTip, e, (v) => setState(() {
-                    _jkpTip = v;
-                    _scheduleSave();
-                  })),
+              _tipSelector(
+                _jkpTip,
+                e,
+                (v) => setState(() {
+                  _jkpTip = v;
+                  _scheduleSave();
+                }),
+              ),
               const SizedBox(height: 12),
 
               if (_jkpTip == 'FIZICKO_LICE') ...[
@@ -835,34 +931,48 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                   const SizedBox(height: 12),
                 ] else ...[
                   _NapomenaBracniDrug(
-                      bracnoStanje: widget.initialData.bracnoStanje),
+                    bracnoStanje: widget.initialData.bracnoStanje,
+                  ),
                   const SizedBox(height: 8),
                 ],
 
                 // B1 / BRACNI DRUG
                 if (_jkpFizSubTip == 'BRACNI_DRUG' && _mozeBracniDrug) ...[
-                  _roFull(context, 'IME',
-                      widget.initialData.bracniDrugIme),
+                  _roFull(context, 'IME', widget.initialData.bracniDrugIme),
                   const SizedBox(height: 12),
-                  _roFull(context, 'PREZIME',
-                      widget.initialData.bracniDrugPrezime),
+                  _roFull(
+                    context,
+                    'PREZIME',
+                    widget.initialData.bracniDrugPrezime,
+                  ),
                   const SizedBox(height: 12),
-                  _roFull(context, 'JMBG',
-                      widget.initialData.bracniDrugJmbg),
+                  _roFull(context, 'JMBG', widget.initialData.bracniDrugJmbg),
                   const SizedBox(height: 12),
                   _fFull('ADRESA', _jkpBdAdresaCtrl, e, caps: true),
                   const SizedBox(height: 12),
                   _row([
                     _f('BROJ LK / PASO\u0160', _jkpBdBrojLkCtrl, e),
-                    _f('TELEFON 1', _jkpBdTelefon1Ctrl, e,
-                        keyboard: TextInputType.phone),
+                    _f(
+                      'TELEFON 1',
+                      _jkpBdTelefon1Ctrl,
+                      e,
+                      keyboard: TextInputType.phone,
+                    ),
                   ]),
                   const SizedBox(height: 12),
                   _row([
-                    _f('TELEFON 2', _jkpBdTelefon2Ctrl, e,
-                        keyboard: TextInputType.phone),
-                    _f('E-MAIL', _jkpBdEmailCtrl, e,
-                        keyboard: TextInputType.emailAddress),
+                    _f(
+                      'TELEFON 2',
+                      _jkpBdTelefon2Ctrl,
+                      e,
+                      keyboard: TextInputType.phone,
+                    ),
+                    _f(
+                      'E-MAIL',
+                      _jkpBdEmailCtrl,
+                      e,
+                      keyboard: TextInputType.emailAddress,
+                    ),
                   ]),
                 ]
                 // B1 / DRUGO LICE
@@ -873,22 +983,33 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                   ]),
                   const SizedBox(height: 12),
                   _row([
-                    _f('JMBG', _jkpJmbgCtrl, e,
-                        keyboard: TextInputType.number),
+                    _f('JMBG', _jkpJmbgCtrl, e, keyboard: TextInputType.number),
                     _f('BROJ LK / PASO\u0160', _jkpBrojLkCtrl, e),
                   ]),
                   const SizedBox(height: 12),
                   _fFull('ADRESA', _jkpAdresaCtrl, e, caps: true),
                   const SizedBox(height: 12),
                   _row([
-                    _f('TELEFON 1', _jkpTelefon1Ctrl, e,
-                        keyboard: TextInputType.phone),
-                    _f('TELEFON 2', _jkpTelefon2Ctrl, e,
-                        keyboard: TextInputType.phone),
+                    _f(
+                      'TELEFON 1',
+                      _jkpTelefon1Ctrl,
+                      e,
+                      keyboard: TextInputType.phone,
+                    ),
+                    _f(
+                      'TELEFON 2',
+                      _jkpTelefon2Ctrl,
+                      e,
+                      keyboard: TextInputType.phone,
+                    ),
                   ]),
                   const SizedBox(height: 12),
-                  _fFull('E-MAIL', _jkpEmailCtrl, e,
-                      keyboard: TextInputType.emailAddress),
+                  _fFull(
+                    'E-MAIL',
+                    _jkpEmailCtrl,
+                    e,
+                    keyboard: TextInputType.emailAddress,
+                  ),
                 ],
               ]
               // B2 - PRAVNO LICE
@@ -919,17 +1040,18 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                     _roExp(context, 'MATI\u010CNI BROJ', widget.firmaPodaci.mb),
                   ]),
                   const SizedBox(height: 12),
-                  _roFull(context, 'ODGOVORNO LICE',
-                      widget.firmaPodaci.odgovornoLice),
+                  _roFull(
+                    context,
+                    'ODGOVORNO LICE',
+                    widget.firmaPodaci.odgovornoLice,
+                  ),
                   const SizedBox(height: 12),
                   _row([
                     _roExp(context, 'TELEFON', widget.firmaPodaci.telefon),
                     _roExp(context, 'E-MAIL', widget.firmaPodaci.email),
                   ]),
-                ]
-                else ...[
-                  _fFull('NAZIV PRAVNOG LICA', _jkpPlNazivCtrl, e,
-                      caps: true),
+                ] else ...[
+                  _fFull('NAZIV PRAVNOG LICA', _jkpPlNazivCtrl, e, caps: true),
                   const SizedBox(height: 12),
                   _fFull('ADRESA', _jkpPlAdresaCtrl, e, caps: true),
                   const SizedBox(height: 12),
@@ -938,14 +1060,26 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                     _f('MATI\u010CNI BROJ', _jkpPlMbCtrl, e),
                   ]),
                   const SizedBox(height: 12),
-                  _fFull('ODGOVORNO LICE', _jkpPlOdgovornoLiceCtrl, e,
-                      caps: true),
+                  _fFull(
+                    'ODGOVORNO LICE',
+                    _jkpPlOdgovornoLiceCtrl,
+                    e,
+                    caps: true,
+                  ),
                   const SizedBox(height: 12),
                   _row([
-                    _f('TELEFON 1', _jkpPlTelefon1Ctrl, e,
-                        keyboard: TextInputType.phone),
-                    _f('E-MAIL', _jkpPlEmailCtrl, e,
-                        keyboard: TextInputType.emailAddress),
+                    _f(
+                      'TELEFON 1',
+                      _jkpPlTelefon1Ctrl,
+                      e,
+                      keyboard: TextInputType.phone,
+                    ),
+                    _f(
+                      'E-MAIL',
+                      _jkpPlEmailCtrl,
+                      e,
+                      keyboard: TextInputType.emailAddress,
+                    ),
                   ]),
                 ],
               ],
@@ -964,109 +1098,105 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     );
   }
 
-
   Widget _blockHeader(BuildContext context, String title) => Container(
-        width: double.infinity,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-            letterSpacing: 0.5,
-          ),
-        ),
-      );
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Text(
+      title,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.onPrimaryContainer,
+        letterSpacing: 0.5,
+      ),
+    ),
+  );
 
   Widget _zastupnikNote(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color:
-              Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(4),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          Icons.info_outline,
+          size: 15,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        child: Row(
-          children: [
-            Icon(Icons.info_outline,
-                size: 15,
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
-            const SizedBox(width: 8),
-            Text(
-              'Podaci iz Pode\u0161avanja',
-              style: TextStyle(
-                fontSize: 12,
-                color:
-                    Theme.of(context).colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
+        const SizedBox(width: 8),
+        Text(
+          'Podaci iz Pode\u0161avanja',
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontStyle: FontStyle.italic,
+          ),
         ),
-      );
+      ],
+    ),
+  );
 
   Widget _tipSelector(
-          String value, bool enabled, ValueChanged<String> onChanged) =>
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SegmentedButton<String>(
-          segments: const [
-            ButtonSegment(
-                value: 'FIZICKO_LICE', label: Text('FIZI\u010CKO LICE')),
-            ButtonSegment(
-                value: 'PRAVNO_LICE', label: Text('PRAVNO LICE')),
-          ],
-          selected: {value},
-          onSelectionChanged: enabled ? (s) => onChanged(s.first) : null,
-          style: const ButtonStyle(visualDensity: VisualDensity.compact),
-        ),
-      );
+    String value,
+    bool enabled,
+    ValueChanged<String> onChanged,
+  ) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: SegmentedButton<String>(
+      segments: const [
+        ButtonSegment(value: 'FIZICKO_LICE', label: Text('FIZI\u010CKO LICE')),
+        ButtonSegment(value: 'PRAVNO_LICE', label: Text('PRAVNO LICE')),
+      ],
+      selected: {value},
+      onSelectionChanged: enabled ? (s) => onChanged(s.first) : null,
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
+    ),
+  );
 
   Widget _subSelector({
     required String current,
     required bool enabled,
     required List<(String, String)> options,
     required ValueChanged<String> onChanged,
-  }) =>
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SegmentedButton<String>(
-          segments: options
-              .map((o) => ButtonSegment(value: o.$1, label: Text(o.$2)))
-              .toList(),
-          selected: {current},
-          onSelectionChanged: enabled ? (s) => onChanged(s.first) : null,
-          style: const ButtonStyle(visualDensity: VisualDensity.compact),
-        ),
-      );
+  }) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: SegmentedButton<String>(
+      segments: options
+          .map((o) => ButtonSegment(value: o.$1, label: Text(o.$2)))
+          .toList(),
+      selected: {current},
+      onSelectionChanged: enabled ? (s) => onChanged(s.first) : null,
+      style: const ButtonStyle(visualDensity: VisualDensity.compact),
+    ),
+  );
 
   Widget _roPreuFull(BuildContext context, String label, String value) =>
       _isProtectedFieldLabel(label) && _isRedactedValue(value)
-          ? PredmetRedactedField(
-              labelText: label,
-              fillColor: _preuzetoFieldFillColor(context),
-            )
-          :
-      TextFormField(
-        key: ValueKey('preu_$label:$value'),
-        initialValue: value.isEmpty ? '\u2014' : value,
-        readOnly: true,
-        style: _readOnlyFieldTextStyle(
-          context,
-          color: _preuzetoFieldTextColor(context),
-        ),
-        decoration: _readOnlyDecoration(
-          context,
-          label,
+      ? PredmetRedactedField(
+          labelText: label,
           fillColor: _preuzetoFieldFillColor(context),
-          labelColor: _preuzetoFieldLabelColor(context),
-        ),
-      );
+        )
+      : TextFormField(
+          key: ValueKey('preu_$label:$value'),
+          initialValue: value.isEmpty ? '\u2014' : value,
+          readOnly: true,
+          style: _readOnlyFieldTextStyle(
+            context,
+            color: _preuzetoFieldTextColor(context),
+          ),
+          decoration: _readOnlyDecoration(
+            context,
+            label,
+            fillColor: _preuzetoFieldFillColor(context),
+            labelColor: _preuzetoFieldLabelColor(context),
+          ),
+        );
 
   Widget _roPreuExp(BuildContext context, String label, String value) =>
       Expanded(child: _roPreuFull(context, label, value));
@@ -1074,21 +1204,20 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
   /// Full-width read-only field.
   Widget _roFull(BuildContext context, String label, String value) =>
       _isProtectedFieldLabel(label) && _isRedactedValue(value)
-          ? PredmetRedactedField(
-              labelText: label,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            )
-          :
-      TextFormField(
-        initialValue: value.isEmpty ? '\u2014' : value,
-        readOnly: true,
-        style: _readOnlyFieldTextStyle(context),
-        decoration: _readOnlyDecoration(
-          context,
-          label,
+      ? PredmetRedactedField(
+          labelText: label,
           fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        ),
-      );
+        )
+      : TextFormField(
+          initialValue: value.isEmpty ? '\u2014' : value,
+          readOnly: true,
+          style: _readOnlyFieldTextStyle(context),
+          decoration: _readOnlyDecoration(
+            context,
+            label,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          ),
+        );
 
   /// Expanded read-only field (for use inside _row).
   Widget _roExp(BuildContext context, String label, String value) =>
@@ -1119,12 +1248,8 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     );
   }
 
-  TextStyle _readOnlyFieldTextStyle(
-    BuildContext context, {
-    Color? color,
-  }) => TextStyle(
-        color: color ?? Theme.of(context).colorScheme.onSurface,
-      );
+  TextStyle _readOnlyFieldTextStyle(BuildContext context, {Color? color}) =>
+      TextStyle(color: color ?? Theme.of(context).colorScheme.onSurface);
 
   Color _preuzetoFieldTextColor(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
@@ -1136,10 +1261,9 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
 
   Color _preuzetoFieldLabelColor(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      return Theme.of(context)
-          .colorScheme
-          .onSurfaceVariant
-          .withValues(alpha: 0.92);
+      return Theme.of(
+        context,
+      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.92);
     }
 
     return Theme.of(context).colorScheme.onSurfaceVariant;
@@ -1147,10 +1271,9 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
 
   Color _preuzetoSupportingColor(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      return Theme.of(context)
-          .colorScheme
-          .onSurfaceVariant
-          .withValues(alpha: 0.92);
+      return Theme.of(
+        context,
+      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.92);
     }
 
     return Theme.of(context).colorScheme.onSurfaceVariant;
@@ -1178,36 +1301,41 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     bool caps = false,
     String? errorText,
     FocusNode? focusNode,
-  }) =>
-      Expanded(
-        child: _isProtectedFieldLabel(label)
-            ? PredmetProtectedTextField(
+  }) => Expanded(
+    child: ManualEntryAffordance(
+      controller: ctrl,
+      enabled: enabled,
+      child: _isProtectedFieldLabel(label)
+          ? PredmetProtectedTextField(
+              labelText: label,
+              controller: ctrl,
+              enabled: enabled,
+              keyboardType: keyboard,
+              focusNode: focusNode,
+              textCapitalization: caps
+                  ? TextCapitalization.characters
+                  : TextCapitalization.none,
+              errorText: errorText,
+              onChanged: (_) => _scheduleSave(),
+            )
+          : TextFormField(
+              controller: ctrl,
+              enabled: enabled,
+              keyboardType: keyboard,
+              focusNode: focusNode,
+              textCapitalization: caps
+                  ? TextCapitalization.characters
+                  : TextCapitalization.none,
+              decoration: InputDecoration(
                 labelText: label,
-                controller: ctrl,
-                enabled: enabled,
-                keyboardType: keyboard,
-                focusNode: focusNode,
-                textCapitalization:
-                    caps ? TextCapitalization.characters : TextCapitalization.none,
+                border: const OutlineInputBorder(),
+                isDense: true,
                 errorText: errorText,
-                onChanged: (_) => _scheduleSave(),
-              )
-            : TextFormField(
-          controller: ctrl,
-          enabled: enabled,
-          keyboardType: keyboard,
-          focusNode: focusNode,
-          textCapitalization:
-              caps ? TextCapitalization.characters : TextCapitalization.none,
-          decoration: InputDecoration(
-            labelText: label,
-            border: const OutlineInputBorder(),
-            isDense: true,
-            errorText: errorText,
-          ),
-          onChanged: (_) => _scheduleSave(),
-        ),
-      );
+              ),
+              onChanged: (_) => _scheduleSave(),
+            ),
+    ),
+  );
 
   Widget _fFull(
     String label,
@@ -1217,34 +1345,39 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
     bool caps = false,
     String? errorText,
     FocusNode? focusNode,
-  }) =>
-      _isProtectedFieldLabel(label)
-          ? PredmetProtectedTextField(
+  }) => ManualEntryAffordance(
+    controller: ctrl,
+    enabled: enabled,
+    child: _isProtectedFieldLabel(label)
+        ? PredmetProtectedTextField(
+            labelText: label,
+            controller: ctrl,
+            enabled: enabled,
+            keyboardType: keyboard,
+            focusNode: focusNode,
+            textCapitalization: caps
+                ? TextCapitalization.characters
+                : TextCapitalization.none,
+            errorText: errorText,
+            onChanged: (_) => _scheduleSave(),
+          )
+        : TextFormField(
+            controller: ctrl,
+            enabled: enabled,
+            keyboardType: keyboard,
+            focusNode: focusNode,
+            textCapitalization: caps
+                ? TextCapitalization.characters
+                : TextCapitalization.none,
+            decoration: InputDecoration(
               labelText: label,
-              controller: ctrl,
-              enabled: enabled,
-              keyboardType: keyboard,
-              focusNode: focusNode,
-              textCapitalization:
-                  caps ? TextCapitalization.characters : TextCapitalization.none,
+              border: const OutlineInputBorder(),
+              isDense: true,
               errorText: errorText,
-              onChanged: (_) => _scheduleSave(),
-            )
-          : TextFormField(
-        controller: ctrl,
-        enabled: enabled,
-        keyboardType: keyboard,
-        focusNode: focusNode,
-        textCapitalization:
-            caps ? TextCapitalization.characters : TextCapitalization.none,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          isDense: true,
-          errorText: errorText,
-        ),
-        onChanged: (_) => _scheduleSave(),
-      );
+            ),
+            onChanged: (_) => _scheduleSave(),
+          ),
+  );
 
   bool _isProtectedFieldLabel(String label) {
     final normalized = label.toUpperCase();
@@ -1260,33 +1393,33 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
       value.trim().toLowerCase() == 'redacted';
 
   Widget _row(List<Widget> children) => LayoutBuilder(
-        builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 420;
-          final wideChildren = children
-              .map<Widget>((w) => w is Expanded ? w : Expanded(child: w))
-              .toList();
-          final narrowChildren = children
+    builder: (context, constraints) {
+      final isNarrow = constraints.maxWidth < 420;
+      final wideChildren = children
+          .map<Widget>((w) => w is Expanded ? w : Expanded(child: w))
+          .toList();
+      final narrowChildren =
+          children
               .map<Widget>(_unwrapFlexChild)
               .expand((w) => [w, const SizedBox(height: 12)])
               .toList()
             ..removeLast();
 
-          if (isNarrow) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: narrowChildren,
-            );
-          }
+      if (isNarrow) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: narrowChildren,
+        );
+      }
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: wideChildren
-                .expand((w) => [w, const SizedBox(width: 12)])
-                .toList()
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:
+            wideChildren.expand((w) => [w, const SizedBox(width: 12)]).toList()
               ..removeLast(),
-          );
-        },
       );
+    },
+  );
 
   Widget _unwrapFlexChild(Widget widget) {
     if (widget is Expanded) return widget.child;
@@ -1297,7 +1430,6 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
 }
-
 
 class _KontaktBlok extends StatelessWidget {
   const _KontaktBlok({
@@ -1328,10 +1460,8 @@ class _KontaktBlok extends StatelessWidget {
               Text(
                 'KONTAKT LICA',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 4),
               ...lista.map(
@@ -1353,7 +1483,9 @@ class _KontaktBlok extends StatelessWidget {
                     label: const Text('DODATNI KONTAKT PODACI'),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       textStyle: const TextStyle(fontSize: 12),
                     ),
                     onPressed: () => kontaktRepo.dodaj(
@@ -1399,10 +1531,10 @@ class _KontaktRowState extends State<_KontaktRow> {
     super.initState();
     final k = widget.kontakt;
     final parts = k.imePrezime.trim().split(' ');
-    _imeCtrl = TextEditingController(
-        text: parts.isNotEmpty ? parts.first : '');
+    _imeCtrl = TextEditingController(text: parts.isNotEmpty ? parts.first : '');
     _prezimeCtrl = TextEditingController(
-        text: parts.length > 1 ? parts.sublist(1).join(' ') : '');
+      text: parts.length > 1 ? parts.sublist(1).join(' ') : '',
+    );
     _telefonCtrl = TextEditingController(text: k.telefon);
     _emailCtrl = TextEditingController(text: k.email);
   }
@@ -1423,8 +1555,9 @@ class _KontaktRowState extends State<_KontaktRow> {
         widget.kontakt.id,
         KontaktLicaCompanion(
           imePrezime: Value(
-              '${normalizeText(_imeCtrl.text)} ${normalizeText(_prezimeCtrl.text)}'
-                  .trim()),
+            '${normalizeText(_imeCtrl.text)} ${normalizeText(_prezimeCtrl.text)}'
+                .trim(),
+          ),
           telefon: Value(normalizeText(_telefonCtrl.text)),
           email: Value(normalizeText(_emailCtrl.text)),
         ),
@@ -1435,41 +1568,57 @@ class _KontaktRowState extends State<_KontaktRow> {
   @override
   Widget build(BuildContext context) {
     final e = widget.enabled;
-    final imeField = TextFormField(
+    final imeField = ManualEntryAffordance(
       controller: _imeCtrl,
       enabled: e,
-      textCapitalization: TextCapitalization.words,
-      decoration: const InputDecoration(
-        labelText: 'IME',
-        border: OutlineInputBorder(),
-        isDense: true,
+      child: TextFormField(
+        controller: _imeCtrl,
+        enabled: e,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+          labelText: 'IME',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        onChanged: (_) => _scheduleSave(),
       ),
-      onChanged: (_) => _scheduleSave(),
     );
-    final prezimeField = TextFormField(
+    final prezimeField = ManualEntryAffordance(
       controller: _prezimeCtrl,
       enabled: e,
-      textCapitalization: TextCapitalization.words,
-      decoration: const InputDecoration(
-        labelText: 'PREZIME',
-        border: OutlineInputBorder(),
-        isDense: true,
+      child: TextFormField(
+        controller: _prezimeCtrl,
+        enabled: e,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+          labelText: 'PREZIME',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        onChanged: (_) => _scheduleSave(),
       ),
-      onChanged: (_) => _scheduleSave(),
     );
-    final telefonField = PredmetProtectedTextField(
-      labelText: 'TELEFON',
+    final telefonField = ManualEntryAffordance(
       controller: _telefonCtrl,
       enabled: e,
-      keyboardType: TextInputType.phone,
-      onChanged: (_) => _scheduleSave(),
+      child: PredmetProtectedTextField(
+        labelText: 'TELEFON',
+        controller: _telefonCtrl,
+        enabled: e,
+        keyboardType: TextInputType.phone,
+        onChanged: (_) => _scheduleSave(),
+      ),
     );
-    final emailField = PredmetProtectedTextField(
-      labelText: 'E-MAIL',
+    final emailField = ManualEntryAffordance(
       controller: _emailCtrl,
       enabled: e,
-      keyboardType: TextInputType.emailAddress,
-      onChanged: (_) => _scheduleSave(),
+      child: PredmetProtectedTextField(
+        labelText: 'E-MAIL',
+        controller: _emailCtrl,
+        enabled: e,
+        keyboardType: TextInputType.emailAddress,
+        onChanged: (_) => _scheduleSave(),
+      ),
     );
     final deleteButton = IconButton(
       icon: const Icon(Icons.delete_outline, size: 18),
@@ -1496,10 +1645,7 @@ class _KontaktRowState extends State<_KontaktRow> {
                 const SizedBox(height: 8),
                 emailField,
                 if (e)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: deleteButton,
-                  ),
+                  Align(alignment: Alignment.centerRight, child: deleteButton),
               ],
             );
           }
@@ -1514,10 +1660,7 @@ class _KontaktRowState extends State<_KontaktRow> {
               Expanded(flex: 2, child: telefonField),
               const SizedBox(width: 8),
               Expanded(flex: 2, child: emailField),
-              if (e) ...[
-                const SizedBox(width: 4),
-                deleteButton,
-              ],
+              if (e) ...[const SizedBox(width: 4), deleteButton],
             ],
           );
         },
@@ -1525,7 +1668,6 @@ class _KontaktRowState extends State<_KontaktRow> {
     );
   }
 }
-
 
 class _NapomenaBracniDrug extends StatelessWidget {
   const _NapomenaBracniDrug({required this.bracnoStanje});
@@ -1556,9 +1698,11 @@ class _NapomenaBracniDrug extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(Icons.info_outline,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.info_outline,
+            size: 16,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

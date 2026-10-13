@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/help/opc_help.dart';
 import '../../../../core/database/database.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../../../core/format/app_date_format.dart';
 import '../../data/predmeti_repository.dart';
 import '../data/citulje_preparation_repository.dart';
@@ -123,7 +125,10 @@ class _CituljeModuleScreenState extends State<CituljeModuleScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('MODUL ČITULJE'),
+      title: const OpcHelpTitle(
+        title: Text('MODUL ČITULJE'),
+        chapterId: 'citulje.list',
+      ),
       actions: [
         IconButton(
           onPressed: _refresh,
@@ -233,7 +238,14 @@ class _CituljePreparationScreenState extends State<CituljePreparationScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text('ČITULJE · ${widget.predmet.brojPredmeta}'),
+      title: OpcHelpTitle(
+        title: Text(
+          _cituljeHeaderIdentity(widget.predmet),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        chapterId: 'citulje.preparation',
+      ),
       actions: [
         IconButton(
           onPressed: _reload,
@@ -263,6 +275,11 @@ class _CituljePreparationScreenState extends State<CituljePreparationScreen> {
       },
     ),
   );
+}
+
+String _cituljeHeaderIdentity(PredmetiData predmet) {
+  final name = '${predmet.ime.trim()} ${predmet.prezime.trim()}'.trim();
+  return name.isEmpty ? 'ČITULJE' : 'ČITULJE · $name';
 }
 
 class _CituljePreparationCard extends StatefulWidget {
@@ -568,20 +585,24 @@ class _CituljePreparationCardState extends State<_CituljePreparationCard> {
         suffixIcon: Icon(Icons.calendar_month_outlined),
       ),
     );
-    final publicationTextField = TextField(
-      key: const Key('citulje-publication-text'),
+    final publicationTextField = ManualEntryAffordance(
       controller: _text,
-      enabled:
-          locked ||
-          (_mode == CituljeParteTextMode.ne ||
-              _row.state ==
-                  CituljePreparationState.parteSnapshotAvailable.dbValue),
-      minLines: 4,
-      maxLines: 8,
-      onChanged: (_) => setState(() {}),
-      decoration: InputDecoration(
-        labelText: 'Tekst objave',
-        helperText: 'Informativno: $wordCount reči',
+      enabled: !locked,
+      child: TextField(
+        key: const Key('citulje-publication-text'),
+        controller: _text,
+        enabled:
+            locked ||
+            (_mode == CituljeParteTextMode.ne ||
+                _row.state ==
+                    CituljePreparationState.parteSnapshotAvailable.dbValue),
+        minLines: 4,
+        maxLines: 8,
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          labelText: 'Tekst objave',
+          helperText: 'Informativno: $wordCount reči',
+        ),
       ),
     );
     final actionControls = !locked

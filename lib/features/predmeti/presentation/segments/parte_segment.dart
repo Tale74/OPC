@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/format/app_text_format.dart';
 import '../../../../core/format/app_time_format.dart';
 import '../../../../core/database/database.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import 'predmet_decision_controls.dart';
 
 /// Segment 4: PARTE — simbol, pismo, atributi, tekst parte.
@@ -435,15 +436,19 @@ class _ParteSegmentState extends State<ParteSegment> {
               const SizedBox(height: 8),
               // ── Titula ────────────────────────────────────────────────────
               _ParteFieldWithDecision(
-                field: TextFormField(
+                field: ManualEntryAffordance(
                   controller: _titulaCtrl,
                   enabled: e,
-                  decoration: const InputDecoration(
-                    labelText: 'TITULA',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  child: TextFormField(
+                    controller: _titulaCtrl,
+                    enabled: e,
+                    decoration: const InputDecoration(
+                      labelText: 'TITULA',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: (_) => _scheduleSave(),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 decision: PredmetBooleanDecisionTile(
                   title: 'Titula ispred imena',
@@ -459,15 +464,19 @@ class _ParteSegmentState extends State<ParteSegment> {
               const SizedBox(height: 10),
               // ── Zanimanje ─────────────────────────────────────────────────
               _ParteFieldWithDecision(
-                field: TextFormField(
+                field: ManualEntryAffordance(
                   controller: _zanimanjeCtrl,
                   enabled: e,
-                  decoration: const InputDecoration(
-                    labelText: 'ZANIMANJE',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  child: TextFormField(
+                    controller: _zanimanjeCtrl,
+                    enabled: e,
+                    decoration: const InputDecoration(
+                      labelText: 'ZANIMANJE',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: (_) => _scheduleSave(),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 decision: PredmetBooleanDecisionTile(
                   title: 'Zanimanje na parti',
@@ -510,15 +519,19 @@ class _ParteSegmentState extends State<ParteSegment> {
               const SizedBox(height: 4),
               // ── Nadimak ───────────────────────────────────────────────────
               _ParteFieldWithDecision(
-                field: TextFormField(
+                field: ManualEntryAffordance(
                   controller: _nadimakCtrl,
                   enabled: e,
-                  decoration: const InputDecoration(
-                    labelText: 'NADIMAK',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                  child: TextFormField(
+                    controller: _nadimakCtrl,
+                    enabled: e,
+                    decoration: const InputDecoration(
+                      labelText: 'NADIMAK',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    onChanged: (_) => _scheduleSave(),
                   ),
-                  onChanged: (_) => _scheduleSave(),
                 ),
                 decision: PredmetBooleanDecisionTile(
                   title: 'Nadimak na parti',
@@ -580,18 +593,22 @@ class _ParteSegmentState extends State<ParteSegment> {
               const Divider(),
               const SizedBox(height: 8),
               // ── Ožalošćeni ────────────────────────────────────────────────
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _ozaloseniCtrl,
                 enabled: e,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'OŽALOŠĆENI',
-                  hintText: 'Ožalošćeni...',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                  alignLabelWithHint: true,
+                child: TextFormField(
+                  controller: _ozaloseniCtrl,
+                  enabled: e,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'OŽALOŠĆENI',
+                    hintText: 'Ožalošćeni...',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    alignLabelWithHint: true,
+                  ),
+                  onChanged: (_) => setState(_scheduleSave),
                 ),
-                onChanged: (_) => setState(_scheduleSave),
               ),
             ],
           ),

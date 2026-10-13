@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/help/opc_help.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import '../data/auth_repository.dart';
 import '../domain/session_service.dart';
 import 'pin_input_widget.dart';
@@ -98,19 +100,28 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
           color: Theme.of(context).colorScheme.primary,
         ),
         const SizedBox(height: 16),
-        Text(
-          'OPC',
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const OpcHelpButton(
+              chapterId: 'first_launch',
+              tooltip: 'POMOĆ za prvo pokretanje',
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'OPC',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
           'Organizator pogrebne ceremonije',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 24),
         _StepIndicator(korak: _korak),
@@ -126,9 +137,9 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
         children: [
           Text(
             'Korak 1 od 2 — Administrator',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -138,21 +149,25 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          TextFormField(
+          ManualEntryAffordance(
             controller: _imeCtrl,
-            textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(
-              labelText: 'IME I PREZIME',
-              prefixIcon: Icon(Icons.person_outline),
-              border: OutlineInputBorder(),
+            enabled: true,
+            child: TextFormField(
+              controller: _imeCtrl,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                labelText: 'IME I PREZIME',
+                prefixIcon: Icon(Icons.person_outline),
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Ime i prezime je obavezno.';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _dalje(),
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) {
-                return 'Ime i prezime je obavezno.';
-              }
-              return null;
-            },
-            onFieldSubmitted: (_) => _dalje(),
           ),
           const SizedBox(height: 24),
           FilledButton(
@@ -178,17 +193,17 @@ class _FirstLaunchScreenState extends State<FirstLaunchScreen> {
       children: [
         Text(
           'Korak 2 od 2 — Postavite PIN',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
         Text(
           'Unesite 4-cifreni PIN za prijavu.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),

@@ -351,6 +351,11 @@ This document describes current architecture. It does not select a target folder
 
 ## 12. SCENARIO historical applied-state boundary — 2026-09-30
 
+**Status:** dated historical checkpoint; the bounded incomplete-to-complete
+current-state recovery added on 2026-10-09 supersedes this section only for
+eligible mutable PREDMETs with trusted explicit bootstrap evidence. It does
+not supersede the fail-closed rules for ambiguous historical provenance.
+
 An absent historical assignment snapshot is not proof that SCENARIO was never
 applied. The MODULI → SCENARIO selected-PREDMET path is read-only. First
 application is tied to the new-PREDMET creation lifecycle, while ordinary
@@ -360,3 +365,62 @@ when that lifecycle creates them; current category matching is not historical
 origin evidence. PREDMET remains the only business source of truth. The
 correction adds no database/schema or JSON state; see
 [`OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md`](tasks/OPC_TASK_SCENARIO_CARRIERLESS_HISTORICAL_INTEGRITY_CORRECTION_REPORT.md).
+
+## 13. Current SCENARIO recovery and Narrow UX boundary — 2026-10-10
+
+The later bounded correction distinguishes current-state establishment from
+historical reconstruction. An incomplete initial evaluation does not create
+partial applied ownership. On ordinary open, an eligible OTVOREN/ZATVOREN
+PREDMET with complete current normalized inputs may establish current applied
+state only when explicit trusted OSNOVNI bootstrap evidence supports it. The
+normal SCENARIO/IRiU lifecycle persists the resulting state; manual/unrelated
+rows remain protected and ZAVRŠEN/ANONIMIZOVAN remain excluded. The physical
+Android result is scoped to the disposable cases in the external
+SCENARIO/BIOHAZARD closure package; it does not claim a map-wide runtime pass.
+
+For the accepted PARTE/CEREMONIJA Narrow correction, content blocks start
+collapsed but remain expandable, text size has integrated bounded 0.5 pt
+controls, and DIMENZIJE uses compact directional controls. CEREMONIJA autosave
+uses the existing 800 ms debounce, PREDMET persistence skips an equal-row
+update, and reminder refresh follows save completion while unchanged reminder
+inputs avoid the redundant reread. These source facts explain the bounded
+synchronization correction; they do not establish physical gesture
+arbitration, persistence after device reopen, real-photo fluidity or overall
+latency acceptance. See the current development state and the project-history
+reconciliation report for named QA/runtime evidence.
+
+## 14. Offline guide and contextual help — 2026-10-12
+
+The About screen's approved identity and short description remain in the
+existing settings presentation. The former licensing/activation and database
+diagnostic panels are no longer rendered there; their underlying installation,
+licensing, database and security mechanisms are retained. `RAD U APLIKACIJI`
+opens a full-screen guide backed by the single bundled
+`assets/opc_user_guide.json` resource. The resource is loaded only after a user
+opens the guide or invokes contextual help; no online service or operational
+database was added.
+
+Shared `OpcHelpButton`/`OpcHelpTitle` components place explicit POMOĆ actions
+before applicable screen titles and route to a chapter identifier. PREDMET
+segment identifiers map to the corresponding ten guide chapters. The guide
+route is pushed over the current screen, leaving its data and navigation state
+owned by that screen. Responsive and widget tests cover Windows, Android Narrow
+and Android Wide layouts; no installed-device runtime claim follows from those
+tests or release builds. See
+[`OPC_EXTENDED_COR05_IMPLEMENTATION_20261012_TRACEABILITY.md`](tasks/OPC_EXTENDED_COR05_IMPLEMENTATION_20261012_TRACEABILITY.md).
+
+## 15. OWNER-approved final guide content and italic presentation — 2026-10-12
+
+The next bounded guide integration uses the OWNER-approved consolidated
+33-chapter document in the same bundled JSON resource. It preserves all stable
+chapter IDs, order, shared contextual routing and the `PREDMETI` entry title.
+Guide text, including chapter and section headings, is rendered in italic per
+the subsequent OWNER decision. Content notes distinguish eight business-data
+entry segments from the additional numbered `DOKUMENTI` and `PREGLED I
+POTVRDA` sections. The Roba i usluge chapter describes OSNOVNI PAKET,
+condition-dependent additional SCENARIO packages, user selection of concrete
+KATALOG articles, and reconciliation decisions without changing SCENARIO
+behavior. No product data contract or business behavior changes. See
+[`OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md`](tasks/OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md)
+for source findings, content deltas and QA evidence. Automated checks and
+builds remain distinct from physical runtime acceptance.

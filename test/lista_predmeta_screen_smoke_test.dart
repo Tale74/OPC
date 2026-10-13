@@ -66,9 +66,32 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('OPC — LISTA PREDMETA'), findsOneWidget);
+    expect(find.text('PREDMETI'), findsOneWidget);
+    expect(find.text('OPC — LISTA PREDMETA'), findsNothing);
     expect(find.text('NOVI PREDMET'), findsOneWidget);
     expect(find.byKey(const Key('predmeti-moduli-action')), findsOneWidget);
+    expect(find.byType(ChoiceChip), findsNothing);
+    expect(find.byType(FilterChip), findsNothing);
+    final statusFilter = find.byKey(const Key('predmeti-status-filter'));
+    expect(statusFilter, findsOneWidget);
+    await tester.tap(statusFilter);
+    await tester.pumpAndSettle();
+    for (final status in const [
+      'SVE',
+      'OTVOREN',
+      'ZATVOREN',
+      'ZAVRŠEN',
+      'ANONIMIZOVAN',
+    ]) {
+      expect(find.text(status).evaluate(), isNotEmpty);
+    }
+    expect(find.text('ANONIMIZOVAN'), findsOneWidget);
+    await tester.tap(find.text('ANONIMIZOVAN'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DropdownButtonFormField<String>>(statusFilter).initialValue,
+      'ANONIMIZOVAN',
+    );
     await tester.tap(find.byKey(const Key('predmeti-moduli-action')));
     await tester.pumpAndSettle();
     expect(find.text('MODULI'), findsOneWidget);
