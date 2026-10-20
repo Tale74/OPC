@@ -1,28 +1,16 @@
-enum OpcPackageLevel {
-  osnovni,
-  srednji,
-  potpun,
-}
+enum OpcPackageLevel { osnovni, srednji, potpun }
 
 enum OpcEntitlementSourceKind {
   localLicense,
   saas,
   developerAllUnlocked,
   demoTest,
+  presentationOwner,
 }
 
-enum OpcEntitlementEnvironment {
-  production,
-  test,
-  developer,
-}
+enum OpcEntitlementEnvironment { production, test, developer }
 
-enum OpcAddOn {
-  stanjeRobe,
-  advancedParte,
-  cituljeSaDeklaracijom,
-  lkOcr,
-}
+enum OpcAddOn { stanjeRobe, advancedParte, cituljeSaDeklaracijom, lkOcr }
 
 enum OpcModule {
   predmetCore,
@@ -54,13 +42,26 @@ enum OpcSettingsSection {
 }
 
 enum OpcDocumentAction {
-  predmetPdfSnapshot,
   listaPdf,
   predracunPdf,
   specifikacijaTroskovaPdf,
   nalogZaOpremanjePdf,
+  nalogCvecariPdf,
   jsonTransfer,
   racunPdf,
+  racunDocx,
+}
+
+/// Stage 1 owner policy for the native Windows/Android product.
+///
+/// Package and licence payloads are still parsed and retained as compatibility
+/// diagnostics, but they no longer decide whether an existing native feature
+/// is available. Role checks and business prerequisites remain at their
+/// existing application/domain boundaries.
+abstract final class OpcNativeAccessPolicy {
+  static const bool unrestrictedFunctionality = true;
+  static const String diagnosticsLabel =
+      'owner_policy_unrestricted_native_functionality_stage_1';
 }
 
 final class OpcEntitlementPayload {
@@ -97,6 +98,20 @@ final class OpcEntitlementPayload {
     diagnosticsLabel: 'developer_all_unlocked',
   );
 
+  static const presentationPotpun = OpcEntitlementPayload(
+    schemaVersion: currentSchemaVersion,
+    sourceKind: OpcEntitlementSourceKind.presentationOwner,
+    environment: OpcEntitlementEnvironment.test,
+    packageLevel: OpcPackageLevel.potpun,
+    enabledAddOns: <OpcAddOn>{
+      OpcAddOn.stanjeRobe,
+      OpcAddOn.advancedParte,
+      OpcAddOn.cituljeSaDeklaracijom,
+      OpcAddOn.lkOcr,
+    },
+    diagnosticsLabel: 'presentation_potpun_owner_build',
+  );
+
   final int schemaVersion;
   final OpcEntitlementSourceKind sourceKind;
   final OpcEntitlementEnvironment environment;
@@ -115,6 +130,49 @@ final class OpcEntitlementPayload {
   bool get isDeveloperAllUnlocked =>
       sourceKind == OpcEntitlementSourceKind.developerAllUnlocked &&
       environment != OpcEntitlementEnvironment.production;
+}
+
+final class OpcPresentationBuildMode {
+  const OpcPresentationBuildMode._();
+
+  static const bool presentationPotpunRequested = bool.fromEnvironment(
+    'OPC_PRESENTATION_POTPUN',
+    defaultValue: false,
+  );
+}
+
+/// Temporary owner-approved native development/runtime-validation boundary.
+///
+/// The raw define is validated so an unknown value can neither unlock POTPUN
+/// nor silently degrade an approved development build to OSNOVNI.
+final class OpcNativeDevelopmentBuildMode {
+  const OpcNativeDevelopmentBuildMode._();
+
+  static const String configuredFinalPackageLicensing = String.fromEnvironment(
+    'OPC_FINAL_PACKAGE_LICENSING',
+    defaultValue: 'false',
+  );
+
+  static const bool configurationValid =
+      configuredFinalPackageLicensing == 'false' ||
+      configuredFinalPackageLicensing == 'true';
+
+  static const bool finalPackageLicensingRequested =
+      configurationValid && configuredFinalPackageLicensing == 'true';
+
+  static const bool developmentPotpunActive =
+      configurationValid &&
+      (OpcPresentationBuildMode.presentationPotpunRequested ||
+          !finalPackageLicensingRequested);
+
+  static void requireValidConfiguration() {
+    if (!configurationValid) {
+      throw StateError(
+        'Nepoznata OPC_FINAL_PACKAGE_LICENSING build vrednost. '
+        'Dozvoljeno je samo true ili false.',
+      );
+    }
+  }
 }
 
 abstract interface class OpcEntitlementSource {
@@ -194,6 +252,16 @@ final class OpcDemoTestEntitlementSource implements OpcEntitlementSource {
   }
 }
 
+final class OpcPresentationPotpunEntitlementSource
+    implements OpcEntitlementSource {
+  const OpcPresentationPotpunEntitlementSource();
+
+  @override
+  OpcEntitlementPayload loadPayload() {
+    return OpcEntitlementPayload.presentationPotpun;
+  }
+}
+
 final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
   const OpcSelectedEntitlementSource();
 
@@ -220,8 +288,13 @@ final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
 
   @override
   OpcEntitlementPayload loadPayload() {
+    OpcNativeDevelopmentBuildMode.requireValidConfiguration();
     final environment = _environmentFromValue(_requestedEnvironment);
     final source = _normalized(_requestedSource);
+
+    if (OpcNativeDevelopmentBuildMode.developmentPotpunActive) {
+      return const OpcPresentationPotpunEntitlementSource().loadPayload();
+    }
 
     if (_developerAllUnlockedRequested || source == 'developerallunlocked') {
       return OpcDeveloperAllUnlockedEntitlementSource(
@@ -290,11 +363,7 @@ final class OpcSelectedEntitlementSource implements OpcEntitlementSource {
   }
 
   static String _normalized(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll('_', '')
-        .replaceAll('-', '');
+    return value.trim().toLowerCase().replaceAll('_', '').replaceAll('-', '');
   }
 }
 
@@ -337,6 +406,9 @@ final class OpcEntitlementDiagnostics {
 
   Map<String, Object?> toSafeMap() {
     return <String, Object?>{
+      'effectiveAccessPolicy': OpcNativeAccessPolicy.diagnosticsLabel,
+      'allNativeFunctionalityAvailable':
+          OpcNativeAccessPolicy.unrestrictedFunctionality,
       'sourceKind': sourceKind.name,
       'environment': environment.name,
       'packageLevel': packageLevel.name,
@@ -352,13 +424,13 @@ final class OpcEntitlementPolicy {
   const OpcEntitlementPolicy._(this._source);
 
   const OpcEntitlementPolicy.current()
-      : this._(const OpcSelectedEntitlementSource());
+    : this._(const OpcSelectedEntitlementSource());
 
   const OpcEntitlementPolicy.fromSource(OpcEntitlementSource source)
-      : this._(source);
+    : this._(source);
 
   OpcEntitlementPolicy.fromPayload(OpcEntitlementPayload payload)
-      : this._(_StaticOpcEntitlementSource(payload));
+    : this._(_StaticOpcEntitlementSource(payload));
 
   final OpcEntitlementSource _source;
 
@@ -398,13 +470,13 @@ final class OpcEntitlementPolicy {
     OpcSettingsSection.podaciFirme,
     OpcSettingsSection.refundacijaPio,
     OpcSettingsSection.katalog,
-    OpcSettingsSection.moduli,
     OpcSettingsSection.korisnici,
     OpcSettingsSection.uputstvoZaPlacanje,
     OpcSettingsSection.oAplikaciji,
   ];
 
   bool isAddOnEnabled(OpcAddOn addOn) {
+    if (OpcNativeAccessPolicy.unrestrictedFunctionality) return true;
     return isDeveloperAllUnlocked || enabledAddOns.contains(addOn);
   }
 
@@ -418,6 +490,7 @@ final class OpcEntitlementPolicy {
   }
 
   bool isModuleAvailable(OpcModule module) {
+    if (OpcNativeAccessPolicy.unrestrictedFunctionality) return true;
     if (isDeveloperAllUnlocked) return true;
 
     return switch (module) {
@@ -429,18 +502,17 @@ final class OpcEntitlementPolicy {
       OpcModule.operationalDocuments ||
       OpcModule.jsonSinglePredmetTransfer ||
       OpcModule.authRecovery => true,
-      OpcModule.podsetnik || OpcModule.nalogCvecari =>
-        _isSrednjiOrPotpun(),
-      OpcModule.advancedParte =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.advancedParte),
-      OpcModule.cituljeSaDeklaracijom =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.cituljeSaDeklaracijom),
+      OpcModule.podsetnik || OpcModule.nalogCvecari => _isSrednjiOrPotpun(),
+      OpcModule.advancedParte => _isPotpunOrSrednjiAddOn(
+        OpcAddOn.advancedParte,
+      ),
+      OpcModule.cituljeSaDeklaracijom => _isPotpunOrSrednjiAddOn(
+        OpcAddOn.cituljeSaDeklaracijom,
+      ),
       OpcModule.androidLkChipReading ||
       OpcModule.windowsMupCelikIntegration ||
-      OpcModule.ocrIdPassport =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.lkOcr),
-      OpcModule.stanjeRobe =>
-        _isPotpunOrSrednjiAddOn(OpcAddOn.stanjeRobe),
+      OpcModule.ocrIdPassport => _isPotpunOrSrednjiAddOn(OpcAddOn.lkOcr),
+      OpcModule.stanjeRobe => _isPotpunOrSrednjiAddOn(OpcAddOn.stanjeRobe),
     };
   }
 
@@ -452,21 +524,23 @@ final class OpcEntitlementPolicy {
       OpcSettingsSection.korisnici ||
       OpcSettingsSection.uputstvoZaPlacanje ||
       OpcSettingsSection.oAplikaciji => true,
-      OpcSettingsSection.moduli => isModuleAvailable(OpcModule.stanjeRobe),
+      OpcSettingsSection.moduli => false,
     };
   }
 
   bool isDocumentActionVisible(OpcDocumentAction action) {
     return switch (action) {
-      OpcDocumentAction.predmetPdfSnapshot ||
       OpcDocumentAction.listaPdf ||
       OpcDocumentAction.predracunPdf ||
       OpcDocumentAction.specifikacijaTroskovaPdf ||
-      OpcDocumentAction.nalogZaOpremanjePdf =>
-        isModuleAvailable(OpcModule.operationalDocuments),
-      OpcDocumentAction.jsonTransfer =>
-        isModuleAvailable(OpcModule.jsonSinglePredmetTransfer),
-      OpcDocumentAction.racunPdf =>
+      OpcDocumentAction.nalogZaOpremanjePdf ||
+      OpcDocumentAction.nalogCvecariPdf => isModuleAvailable(
+        OpcModule.operationalDocuments,
+      ),
+      OpcDocumentAction.jsonTransfer => isModuleAvailable(
+        OpcModule.jsonSinglePredmetTransfer,
+      ),
+      OpcDocumentAction.racunPdf || OpcDocumentAction.racunDocx =>
         isModuleAvailable(OpcModule.operationalDocuments),
     };
   }

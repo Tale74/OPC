@@ -7,33 +7,27 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
+import '../../../../core/widgets/manual_entry_affordance.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
 import '../../../podesavanja/presentation/katalog_photo_policy.dart';
 import '../../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../../stanje_robe/data/stanje_robe_posledice_repository.dart';
 import '../../core_v2/models/iriu_truth_models.dart';
-import '../../core_v2/services/blok2_iriu_lifecycle_service.dart';
 import '../../core_v2/rules/iriu_truth_rules.dart';
-import '../../core_v2/services/mesto_smrti_iriu_lifecycle_service.dart';
 import '../../core_v2/services/predmet_iriu_truth_service.dart';
+import '../../core_v2/scenario/scenario_module_repository.dart';
+import '../../core_v2/scenario/owner_scenario_policy_kernel.dart';
 import '../../data/iriu_repository.dart';
+import '../../domain/iriu_catalog_selection.dart';
+import 'iriu_cvece_ribbon_fields.dart';
 import 'iriu_row_tile.dart';
-
-bool shouldAutoAddLimeniUlozak(PredmetiData predmet) {
-  return IriuTruthRules.autoManagedBlok2Categories(
-    predmet: predmet,
-  ).contains(IriuK.limeniUlozak);
-}
-
-bool shouldAutoAddLemovanje(PredmetiData predmet) {
-  return IriuTruthRules.autoManagedBlok2Categories(
-    predmet: predmet,
-  ).contains(IriuK.lemovanje);
-}
 
 const String iriuStatusPreporuceno = 'PREPORUČENO';
 const double _iriuNarrowLayoutBreakpoint = 640;
+
+double _dialogWidth(BuildContext context, double maximum) =>
+    (MediaQuery.sizeOf(context).width - 48).clamp(280.0, maximum).toDouble();
 
 String? resolveIriuRuntimeStatus({
   required IriuData stavka,
@@ -50,7 +44,10 @@ class IriuSegment extends StatefulWidget {
     required this.podesavanjaRepo,
     required this.enabled,
     required this.onNapomenaSave,
+    this.isNewPredmetCreationFlow = false,
     this.initialNapomena,
+    this.initialFocusInterniNaziv,
+    this.onRowsChanged,
   });
 
   final int predmetId;
@@ -59,7 +56,10 @@ class IriuSegment extends StatefulWidget {
   final PodesavanjaRepository podesavanjaRepo;
   final bool enabled;
   final void Function(String) onNapomenaSave;
+  final bool isNewPredmetCreationFlow;
   final String? initialNapomena;
+  final String? initialFocusInterniNaziv;
+  final ValueChanged<List<IriuData>>? onRowsChanged;
 
   @override
   State<IriuSegment> createState() => _IriuSegmentState();
@@ -67,8 +67,6 @@ class IriuSegment extends StatefulWidget {
 
 class _IriuSegmentState extends State<IriuSegment> {
   static const _predmetIriuTruthService = PredmetIriuTruthService();
-  static const _mestoSmrtiLifecycleService = MestoSmrtiIriuLifecycleService();
-  static const _blok2LifecycleService = Blok2IriuLifecycleService();
   Timer? _napomenaDebounce;
   late final TextEditingController _napomenaCtrl;
   late final StanjeRobePoslediceRepository _stockConsequencesRepo;
@@ -77,6 +75,26 @@ class _IriuSegmentState extends State<IriuSegment> {
   String? _lastIriuTruthSignature;
   PredmetIriuTruthSnapshot? _cachedTruthSnapshot;
   Map<int, IriuTruthRow> _cachedTruthRowsById = const {};
+  final GlobalKey _initialFocusKey = GlobalKey();
+  bool _initialFocusScheduled = false;
+  late final ScenarioModuleRepository _scenarioRepository;
+
+  void _scheduleInitialFocus(List<IriuData> stavke) {
+    final target = widget.initialFocusInterniNaziv;
+    if (_initialFocusScheduled || target == null) return;
+    if (!stavke.any((row) => row.interniNaziv == target)) return;
+    _initialFocusScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final targetContext = _initialFocusKey.currentContext;
+      if (!mounted || targetContext == null) return;
+      Scrollable.ensureVisible(
+        targetContext,
+        alignment: 0.2,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   String _normalizedText(String value) => normalizeText(value);
 
@@ -113,6 +131,7 @@ class _IriuSegmentState extends State<IriuSegment> {
       predmet.vrstaCeremonije,
       predmet.sahranaVanSrbije,
       predmet.docekPosmrtnihOstataka,
+      predmet.promenaSanduka,
     ].join('|');
   }
 
@@ -137,6 +156,7 @@ class _IriuSegmentState extends State<IriuSegment> {
     final snapshot = _predmetIriuTruthService.evaluate(
       predmet: widget.predmetData,
       storedRows: stavke,
+      preserveInputOrder: true,
     );
     final rowsById = <int, IriuTruthRow>{
       for (final row in snapshot.rows) row.storedRow.id: row,
@@ -247,9 +267,25 @@ class _IriuSegmentState extends State<IriuSegment> {
   void initState() {
     super.initState();
     _stockConsequencesRepo = StanjeRobePoslediceRepository(widget.iriuRepo.db);
+    _scenarioRepository = ScenarioModuleRepository(widget.iriuRepo.db);
     _napomenaCtrl = TextEditingController(text: widget.initialNapomena ?? '');
-    unawaited(_runMestoSmrtiLifecycleSync(widget.predmetData));
-    unawaited(_runBlok2LifecycleSync(widget.predmetData));
+    unawaited(_reconcileOnOpen(widget.predmetData));
+  }
+
+  Future<void> _reconcileOnOpen(PredmetiData predmet) async {
+    if (widget.isNewPredmetCreationFlow) {
+      await _runScenarioSync(predmet, forceCurrentApplication: true);
+      return;
+    }
+    final intent = await widget.iriuRepo.scenarioOpenReconciliationIntent(
+      predmetId: widget.predmetId,
+      currentPredmet: predmet,
+    );
+    if (!mounted || !intent.shouldReconcile) return;
+    await _runScenarioSync(
+      predmet,
+      forceCurrentApplication: intent.allowLegacyBaselineEstablishment,
+    );
   }
 
   @override
@@ -273,241 +309,88 @@ class _IriuSegmentState extends State<IriuSegment> {
       previous: old,
       current: cur,
     );
+    final previousScenarioInput = OwnerScenarioInput.fromPredmet(old);
+    final currentScenarioInput = OwnerScenarioInput.fromPredmet(cur);
+    final scenarioInputsChanged = !previousScenarioInput
+        .hasSameEvaluationInputsAs(currentScenarioInput);
 
-    if (promenjeniMestoSmrtiUslovi) {
-      unawaited(
-        _resolveConditionChangeConflicts(
-          previousPredmet: old,
-          currentPredmet: cur,
-        ),
-      );
-    }
-    if (promenjeniBlok2Uslovi) {
-      unawaited(
-        _resolveBlok2ConditionChangeConflicts(
-          previousPredmet: old,
-          currentPredmet: cur,
-        ),
-      );
-    }
-    if (!old.sahranaVanSrbije && cur.sahranaVanSrbije) _autoInsertVanSrbije();
-    if (!old.docekPosmrtnihOstataka && cur.docekPosmrtnihOstataka) {
-      _predloziStavke([IriuK.cargoTroskovi]);
-    }
-    if (old.tipGrobnogMesta != cur.tipGrobnogMesta) {
-      _onTipGrobnogMestaChanged(cur);
-    }
-    if (old.opelo != cur.opelo && cur.opelo == 'DA') {
-      _predloziStavke([IriuK.kompletZaOpelo]);
+    if (promenjeniMestoSmrtiUslovi ||
+        promenjeniBlok2Uslovi ||
+        scenarioInputsChanged) {
+      unawaited(_runScenarioSync(cur, forceCurrentApplication: true));
     }
   }
 
-  Future<void> _resolveConditionChangeConflicts({
-    required PredmetiData previousPredmet,
-    required PredmetiData currentPredmet,
+  Future<void> _runScenarioSync(
+    PredmetiData predmet, {
+    bool forceCurrentApplication = false,
   }) async {
-    final storedRows = await widget.iriuRepo.getIriu(widget.predmetId);
-    if (!mounted) return;
-    final dismissedCategories = await widget.iriuRepo
-        .getDismissedMestoSmrtiCategories(widget.predmetId);
-    final plan = _mestoSmrtiLifecycleService.planForConditionChange(
-      previousPredmet: previousPredmet,
-      currentPredmet: currentPredmet,
-      storedRows: storedRows,
-      dismissedCategories: dismissedCategories,
-    );
-
-    for (final conflict in plan.conflicts) {
-      if (!mounted) return;
-      final decision = await _showConditionConflictDialog(conflict.row);
-      if (!mounted) return;
-      if (decision == _ConditionConflictDecision.remove &&
-          conflict.row.manualDeletionAllowed) {
-        await widget.iriuRepo.obrisiStavkuSaLifecycleMemorijom(
-          predmetId: widget.predmetId,
-          row: conflict.row.storedRow,
-          rememberManualDeletion: false,
-        );
-      }
-    }
-
-    await widget.iriuRepo.syncMestoSmrtiManagedRows(
+    final module = await _scenarioRepository.ensureModuleAndDefaults();
+    final scenarios = await _scenarioRepository.getActiveDefinitions();
+    final preview = await widget.iriuRepo.syncScenarioRows(
       predmetId: widget.predmetId,
-      predmet: currentPredmet,
-      lifecycleService: _mestoSmrtiLifecycleService,
+      predmet: predmet,
+      scenarios: scenarios,
+      osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
+      applyScenarioChange: false,
+      allowLegacyBaselineEstablishment: forceCurrentApplication,
     );
-  }
-
-  Future<_ConditionConflictDecision?> _showConditionConflictDialog(
-    IriuTruthRow row,
-  ) {
-    final naziv = normalizeText(row.storedRow.nazivPrikaz).isNotEmpty
-        ? normalizeText(row.storedRow.nazivPrikaz)
-        : resolveDisplayLabel(
-            internalName: row.storedRow.interniNaziv,
-            fallbackDisplayLabels: IriuK.naziviPrikaz,
-          );
-    return showDialog<_ConditionConflictDecision>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Uslov se promenio'),
-        content: Text(
-          'Stavka "$naziv" više ne odgovara trenutnim uslovima predmeta.\n\n'
-          'Možete da je zadržite kao red koji se ne prikazuje i odlučite kasnije, '
-          'ili da je sada uklonite.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx, _ConditionConflictDecision.keep),
-            child: const Text('ZADRŽI'),
-          ),
-          FilledButton(
-            onPressed: row.manualDeletionAllowed
-                ? () => Navigator.pop(ctx, _ConditionConflictDecision.remove)
-                : null,
-            child: const Text('UKLONI'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _runMestoSmrtiLifecycleSync(PredmetiData predmet) {
-    return widget.iriuRepo.syncMestoSmrtiManagedRows(
-      predmetId: widget.predmetId,
-      predmet: predmet.copyWith(
-        mestoSmrti: IriuTruthRules.normalizeMestoSmrti(predmet.mestoSmrti),
-      ),
-      lifecycleService: _mestoSmrtiLifecycleService,
-    );
-  }
-
-  Future<void> _resolveBlok2ConditionChangeConflicts({
-    required PredmetiData previousPredmet,
-    required PredmetiData currentPredmet,
-  }) async {
-    final storedRows = await widget.iriuRepo.getIriu(widget.predmetId);
-    if (!mounted) return;
-    final dismissedCategories = await widget.iriuRepo
-        .getDismissedBlok2Categories(widget.predmetId);
-    final plan = _blok2LifecycleService.planForConditionChange(
-      previousPredmet: previousPredmet,
-      currentPredmet: currentPredmet,
-      storedRows: storedRows,
-      dismissedCategories: dismissedCategories,
-    );
-
-    for (final conflict in plan.conflicts) {
-      if (!mounted) return;
-      final decision = await _showConditionConflictDialog(conflict.row);
-      if (!mounted) return;
-      if (decision == _ConditionConflictDecision.remove &&
-          conflict.row.manualDeletionAllowed) {
-        await widget.iriuRepo.obrisiStavkuSaLifecycleMemorijom(
-          predmetId: widget.predmetId,
-          row: conflict.row.storedRow,
-          rememberManualDeletion: false,
-        );
-      }
-    }
-
-    for (final internalName in plan.additionsRequiringConfirmation) {
-      if (!mounted) return;
-      final decision = await _showConditionAdditionDialog(internalName);
-      if (!mounted) return;
-      if (decision == _ConditionAdditionDecision.add) {
-        await _dodajUpravljanuBlok2Stavku(internalName);
-      } else {
-        await widget.iriuRepo.rememberBlok2ManagedDismissal(
-          predmetId: widget.predmetId,
-          interniNaziv: internalName,
-        );
-      }
-    }
-  }
-
-  Future<void> _runBlok2LifecycleSync(PredmetiData predmet) {
-    return widget.iriuRepo.syncBlok2ManagedRows(
-      predmetId: widget.predmetId,
-      predmet: predmet.copyWith(
-        mestoSmrti: IriuTruthRules.normalizeMestoSmrti(predmet.mestoSmrti),
-      ),
-      lifecycleService: _blok2LifecycleService,
-    );
-  }
-
-  Future<_ConditionAdditionDecision?> _showConditionAdditionDialog(
-    String internalName,
-  ) {
-    final label = resolveDisplayLabel(
-      internalName: internalName,
-      fallbackDisplayLabels: IriuK.naziviPrikaz,
-    );
-    return showDialog<_ConditionAdditionDecision>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('POTVRDA IRiU DODAVANJA'),
-        content: Text(
-          'Promena uslova predmeta sada zahteva stavku "$label". '
-          'Možete da je dodate u IRiU ili da je ne dodate sada.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(_ConditionAdditionDecision.skip),
-            child: const Text('NE DODAJ'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(_ConditionAdditionDecision.add),
-            child: const Text('DODAJ'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _dodajUpravljanuBlok2Stavku(String internalName) async {
-    final red = await widget.iriuRepo.redosledPosleKategorije(
-      widget.predmetId,
-      internalName,
-    );
-    await widget.iriuRepo.dodajStavku(
-      predmetId: widget.predmetId,
-      interniNaziv: internalName,
-      nazivPrikaz: resolveDisplayLabel(
-        internalName: internalName,
-        fallbackDisplayLabels: IriuK.naziviPrikaz,
-      ),
-      redosled: red,
-    );
-  }
-
-  /// Opšti helper - predlaže listu stavki po internom nazivu (idempotentno).
-  Future<void> _predloziStavke(List<String> intNazivi) async {
-    for (final n in intNazivi) {
-      final red = await widget.iriuRepo.sledeciredosled(widget.predmetId);
-      await widget.iriuRepo.predloziAkoNema(
-        predmetId: widget.predmetId,
-        interniNaziv: n,
-        nazivPrikaz: resolveDisplayLabel(
-          internalName: n,
-          fallbackDisplayLabels: IriuK.naziviPrikaz,
-        ),
-        redosled: red,
+    if (!mounted || (!preview.changed && !forceCurrentApplication)) return;
+    if (preview.scenarioSnapshotChanged) {
+      final confirmed = await _confirmScenarioDiff(
+        context,
+        preview,
+        predmet.brojPredmeta,
       );
+      if (!mounted || confirmed != true) return;
     }
+    final decisions = <int, bool>{};
+    for (final row in preview.pendingUserDecisionRows) {
+      if (!mounted) return;
+      final keep = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('PROMENJENE OKOLNOSTI'),
+          content: Text(
+            '${row.nazivPrikaz} više ne pripada rezultatu prema trenutnim '
+            'okolnostima PREDMETA. Red nije uklonjen. Šta želite da uradite?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('ZADRŽI RED'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('UKLONI RED'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted || keep == null) return;
+      decisions[row.id] = keep;
+    }
+    final result = await widget.iriuRepo.syncScenarioRows(
+      predmetId: widget.predmetId,
+      predmet: predmet,
+      scenarios: scenarios,
+      osnovniPaket: _scenarioRepository.readOsnovniPaket(module),
+      applyScenarioChange: true,
+      allowLegacyBaselineEstablishment: forceCurrentApplication,
+      conditionChangeDecisions: decisions,
+    );
+    if (!mounted) return;
+    final added = result.addedCategories.length;
+    final removed = result.removedCategories.length;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Ponuda je usklađena: +$added / −$removed STAVKI.'),
+      ),
+    );
   }
 
-  Future<void> _autoInsertVanSrbije() => _predloziStavke([
-    IriuK.medjunarodniPrevoz,
-    IriuK.medjunarodnaDocumentacija,
-    IriuK.balsamovanje,
-  ]);
-
-  Future<void> _onTipGrobnogMestaChanged(PredmetiData _) async {}
-
+  // ignore: unused_element
   // Dodaj iz kataloga
 
   Future<void> _dodajIzKataloga() async {
@@ -541,12 +424,15 @@ class _IriuSegmentState extends State<IriuSegment> {
             widget.predmetId,
             interniNaziv,
           );
-          await widget.iriuRepo.dodajStavku(
+          await widget.iriuRepo.dodajKatalogSelection(
             predmetId: widget.predmetId,
-            interniNaziv: interniNaziv,
-            nazivPrikaz: naziv,
-            katalogStableArticleId: katalogStableArticleId,
-            iznos: iznos,
+            selection: IriuCatalogSelection(
+              interniNaziv: interniNaziv,
+              nazivPrikaz: naziv,
+              katalogStableArticleId: katalogStableArticleId,
+              cena: iznos,
+              iznos: iznos,
+            ),
             redosled: red,
           );
         },
@@ -591,17 +477,10 @@ class _IriuSegmentState extends State<IriuSegment> {
     );
     if (result == null || !mounted) return;
 
-    String interniNaziv;
-    if (result.tip == 'KATALOSKA') {
-      interniNaziv = 'KORISNIK_${DateTime.now().millisecondsSinceEpoch}';
-      await widget.podesavanjaRepo.dodajKorisnickaKategoriju(
-        interniNaziv: interniNaziv,
-        nazivPrikaz: result.naziv,
-        tip: 'KATALOSKA',
-      );
-    } else {
-      interniNaziv = 'RUCNO_${DateTime.now().millisecondsSinceEpoch}';
-    }
+    // Ručni unos je uvek PREDMET-specifičan snapshot. Čak i kada korisnik
+    // izabere KATALOŠKA, ovaj tok ne kreira kategoriju niti politiku KATALOGA.
+    final interniNaziv =
+        'RUCNO_${result.tip}_${DateTime.now().millisecondsSinceEpoch}';
 
     final red = await widget.iriuRepo.sledeciredosled(widget.predmetId);
     await widget.iriuRepo.dodajStavku(
@@ -705,6 +584,18 @@ class _IriuSegmentState extends State<IriuSegment> {
                           stream: widget.iriuRepo.watchIriu(widget.predmetId),
                           builder: (context, snap) {
                             final stavke = snap.data ?? [];
+                            if (snap.hasData) {
+                              widget.onRowsChanged?.call(stavke);
+                            }
+                            _scheduleInitialFocus(stavke);
+                            final focusTargetMissing =
+                                widget.initialFocusInterniNaziv != null &&
+                                snap.hasData &&
+                                !stavke.any(
+                                  (row) =>
+                                      row.interniNaziv ==
+                                      widget.initialFocusInterniNaziv,
+                                );
                             final truthState = _resolveTruthState(stavke);
                             final truthRowsById = truthState.rowsById;
                             if (stavke.isEmpty) {
@@ -713,7 +604,9 @@ class _IriuSegmentState extends State<IriuSegment> {
                                   vertical: 16,
                                 ),
                                 child: Text(
-                                  'DODAJTE KATEGORIJE - iz kataloga ili ručnim unosom',
+                                  focusTargetMissing
+                                      ? 'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama. Dodajte ih iz kataloga ako su potrebne.'
+                                      : 'DODAJTE KATEGORIJE - iz kataloga ili ručnim unosom',
                                   style: TextStyle(
                                     color: Theme.of(
                                       context,
@@ -723,28 +616,75 @@ class _IriuSegmentState extends State<IriuSegment> {
                                 ),
                               );
                             }
-                            return Column(
-                              children: stavke
-                                  .map(
-                                    (s) => IriuRowTile(
-                                      key: ValueKey(
-                                        '${s.id}:${s.interniNaziv}:${s.redosled}',
+                            return StreamBuilder<List<IriuKatalogConfigData>>(
+                              stream: widget.podesavanjaRepo.watchKatalog(),
+                              builder: (context, catalogSnap) {
+                                final catalogDisplayNames = <String, String>{
+                                  for (final item
+                                      in catalogSnap.data ??
+                                          const <IriuKatalogConfigData>[])
+                                    if (item.nazivPrikaz.trim().isNotEmpty)
+                                      item.interniNaziv: item.nazivPrikaz
+                                          .trim(),
+                                };
+                                return Column(
+                                  children: [
+                                    if (focusTargetMissing)
+                                      const ListTile(
+                                        key: Key(
+                                          'iriu-parte-focus-unavailable',
+                                        ),
+                                        leading: Icon(Icons.info_outline),
+                                        title: Text(
+                                          'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama.',
+                                        ),
+                                        subtitle: Text(
+                                          'Dodajte ih iz postojećeg kataloga ako su potrebne.',
+                                        ),
                                       ),
-                                      stavka: s,
-                                      iriuRepo: widget.iriuRepo,
-                                      podesavanjaRepo: widget.podesavanjaRepo,
-                                      imaArtikalaStream: _imaArtikalaStreamFor(
-                                        s.interniNaziv,
+                                    ...stavke.map(
+                                      (s) => IriuRowTile(
+                                        key:
+                                            s.interniNaziv ==
+                                                widget.initialFocusInterniNaziv
+                                            ? _initialFocusKey
+                                            : ValueKey(
+                                                '${s.id}:${s.interniNaziv}:${s.redosled}',
+                                              ),
+                                        stavka: s,
+                                        iriuRepo: widget.iriuRepo,
+                                        podesavanjaRepo: widget.podesavanjaRepo,
+                                        imaArtikalaStream:
+                                            _imaArtikalaStreamFor(
+                                              s.interniNaziv,
+                                            ),
+                                        enabled: e,
+                                        truthRow: truthRowsById[s.id],
+                                        stockConsequence:
+                                            consequencesByIriuId[s.id],
+                                        catalogDisplayNames:
+                                            catalogDisplayNames,
+                                        isNarrowAndroid: isNarrowAndroid,
+                                        preporucenoLabel: iriuStatusPreporuceno,
                                       ),
-                                      enabled: e,
-                                      truthRow: truthRowsById[s.id],
-                                      stockConsequence:
-                                          consequencesByIriuId[s.id],
-                                      isNarrowAndroid: isNarrowAndroid,
-                                      preporucenoLabel: iriuStatusPreporuceno,
                                     ),
-                                  )
-                                  .toList(),
+                                    if (stavke.any(
+                                      (row) => row.interniNaziv == IriuK.cvece,
+                                    ))
+                                      IriuCveceRibbonFields(
+                                        database: widget.iriuRepo.db,
+                                        rows: stavke
+                                            .where(
+                                              (row) =>
+                                                  row.interniNaziv ==
+                                                  IriuK.cvece,
+                                            )
+                                            .toList(growable: false),
+                                        enabled: e,
+                                      ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         );
@@ -841,23 +781,27 @@ class _IriuSegmentState extends State<IriuSegment> {
                 const Divider(),
                 // Napomena
                 const SizedBox(height: 4),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _napomenaCtrl,
                   enabled: e,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'NAPOMENA',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                    alignLabelWithHint: true,
+                  child: TextFormField(
+                    controller: _napomenaCtrl,
+                    enabled: e,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'NAPOMENA',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      alignLabelWithHint: true,
+                    ),
+                    onChanged: (v) {
+                      _napomenaDebounce?.cancel();
+                      _napomenaDebounce = Timer(
+                        const Duration(milliseconds: 800),
+                        () => widget.onNapomenaSave(_normalizedText(v)),
+                      );
+                    },
                   ),
-                  onChanged: (v) {
-                    _napomenaDebounce?.cancel();
-                    _napomenaDebounce = Timer(
-                      const Duration(milliseconds: 800),
-                      () => widget.onNapomenaSave(_normalizedText(v)),
-                    );
-                  },
                 ),
               ],
             ),
@@ -868,9 +812,68 @@ class _IriuSegmentState extends State<IriuSegment> {
   }
 }
 
-enum _ConditionConflictDecision { keep, remove }
-
-enum _ConditionAdditionDecision { skip, add }
+Future<bool?> _confirmScenarioDiff(
+  BuildContext context,
+  ScenarioSyncResult result,
+  String brojPredmeta,
+) {
+  final additions = result.addedCategoryLabels.isEmpty
+      ? 'Nema novih stavki.'
+      : result.addedCategoryLabels.join(', ');
+  final removals = result.removedCategoryLabels.isEmpty
+      ? 'Nema stavki za uklanjanje.'
+      : result.removedCategoryLabels.join(', ');
+  final changes = result.changedCategoryLabels.isEmpty
+      ? 'Nema promena atributa.'
+      : result.changedCategoryLabels.join(', ');
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) => AlertDialog(
+      title: Text('PROMENA USLOVA SCENARIJA — PREDMET $brojPredmeta'),
+      content: SizedBox(
+        width: _dialogWidth(context, 560),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('PREDMET je dobio drugu potpunu poslovnu kombinaciju.'),
+            const SizedBox(height: 12),
+            const Text(
+              'DODATE STAVKE',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(additions),
+            const SizedBox(height: 8),
+            const Text(
+              'STAVKE VAN NOVOG SCENARIJA',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(removals),
+            const SizedBox(height: 8),
+            const Text(
+              'MENJA SE',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(changes),
+            const SizedBox(height: 12),
+            const Text('Ručno dodate IRiU stavke ostaju nepromenjene.'),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('ODUSTANI'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('POTVRDI PROMENU'),
+        ),
+      ],
+    ),
+  );
+}
 
 // Katalog picker dijalog
 
@@ -1064,7 +1067,9 @@ class _KatalogPickerDialogState extends State<_KatalogPickerDialog> {
                       style: const TextStyle(fontSize: 13),
                     ),
                     trailing: Text(
-                      'FIKSNA',
+                      kat.cena > 0
+                          ? 'FIKSNA · ${formatMoneyNumber(kat.cena)} RSD'
+                          : 'FIKSNA',
                       style: TextStyle(
                         fontSize: 11,
                         color: cs.onSurfaceVariant,
@@ -1074,7 +1079,7 @@ class _KatalogPickerDialogState extends State<_KatalogPickerDialog> {
                       context,
                       kat.interniNaziv,
                       kat.nazivPrikaz,
-                      0.0,
+                      kat.cena,
                       null,
                     ),
                   );
@@ -1343,19 +1348,23 @@ class _RucnoDialogState extends State<_RucnoDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            ManualEntryAffordance(
               controller: _nazivCtrl,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Naziv stavke',
-                border: const OutlineInputBorder(),
-                isDense: true,
-                errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+              enabled: true,
+              child: TextField(
+                controller: _nazivCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Naziv stavke',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+                ),
+                onChanged: (_) {
+                  if (_greskaNaziv) setState(() => _greskaNaziv = false);
+                },
+                onSubmitted: (_) => _potvrdi(),
               ),
-              onChanged: (_) {
-                if (_greskaNaziv) setState(() => _greskaNaziv = false);
-              },
-              onSubmitted: (_) => _potvrdi(),
             ),
             const SizedBox(height: 16),
             Text(
@@ -1386,7 +1395,7 @@ class _RucnoDialogState extends State<_RucnoDialog> {
             Text(
               _tip == 'FIKSNA'
                   ? 'Cena se unosi ručno po predmetu'
-                  : 'Artikli se biraju iz kataloga (unosite ih u Podešavanja)',
+                  : 'Lokalna kataloška stavka samo za ovaj PREDMET',
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

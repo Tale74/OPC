@@ -1,42 +1,43 @@
 import '../../../core/database/database.dart';
 import '../../../core/format/app_date_format.dart';
+import 'podsetnik_eligibility.dart';
 
 class ReminderMvpEntry {
   const ReminderMvpEntry({
     required this.predmetId,
     required this.brojPredmeta,
-    required this.prikazImena,
+    required this.ime,
+    required this.prezime,
+    required this.vrstaCeremonije,
     required this.datumCeremonije,
     required this.vremeCeremonije,
+    this.groblje = '',
     required this.daysUntilCeremony,
   });
 
   final int predmetId;
   final String brojPredmeta;
-  final String prikazImena;
+  final String ime;
+  final String prezime;
+  final String vrstaCeremonije;
   final String datumCeremonije;
   final String vremeCeremonije;
+  final String groblje;
   final int daysUntilCeremony;
 
   String get sessionKey => '$predmetId:$daysUntilCeremony';
 
   String get windowsLeadLabel => switch (daysUntilCeremony) {
-        2 => 'ZA 2 DANA',
-        1 => 'SUTRA',
-        _ => 'DANAS',
-      };
+    2 => 'ZA 2 DANA',
+    1 => 'SUTRA',
+    _ => 'DANAS',
+  };
 
   DateTime? get parsedDate => parseDateValue(datumCeremonije);
 }
 
 class ReminderMvpService {
   ReminderMvpService();
-
-  bool _isEligibleStatus(String status) =>
-      status == 'OTVOREN' || status == 'ZATVOREN';
-
-  String _displayName(PredmetiData predmet) =>
-      '${predmet.prezime} ${predmet.ime}'.trim();
 
   DateTime? _ceremonyDate(PredmetiData predmet) =>
       parseDateValue(predmet.datumCeremonije);
@@ -52,7 +53,7 @@ class ReminderMvpService {
     final entries = <ReminderMvpEntry>[];
 
     for (final predmet in predmeti) {
-      if (!_isEligibleStatus(predmet.status)) continue;
+      if (!isPodsetnikEligibleStatus(predmet.status)) continue;
       final ceremonyDate = _ceremonyDate(predmet);
       if (ceremonyDate == null) continue;
 
@@ -63,9 +64,12 @@ class ReminderMvpService {
         ReminderMvpEntry(
           predmetId: predmet.id,
           brojPredmeta: predmet.brojPredmeta,
-          prikazImena: _displayName(predmet),
+          ime: predmet.ime,
+          prezime: predmet.prezime,
+          vrstaCeremonije: predmet.vrstaCeremonije,
           datumCeremonije: predmet.datumCeremonije,
           vremeCeremonije: predmet.vremeCeremonije,
+          groblje: predmet.groblje,
           daysUntilCeremony: delta,
         ),
       );
@@ -74,8 +78,9 @@ class ReminderMvpService {
     entries.sort((a, b) {
       final byDays = a.daysUntilCeremony.compareTo(b.daysUntilCeremony);
       if (byDays != 0) return byDays;
-      final byDate = (a.parsedDate ?? DateTime(9999))
-          .compareTo(b.parsedDate ?? DateTime(9999));
+      final byDate = (a.parsedDate ?? DateTime(9999)).compareTo(
+        b.parsedDate ?? DateTime(9999),
+      );
       if (byDate != 0) return byDate;
       return a.brojPredmeta.compareTo(b.brojPredmeta);
     });

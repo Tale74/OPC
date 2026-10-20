@@ -9,20 +9,30 @@ import '../models/iriu_truth_models.dart';
 class FinancialTruthService {
   const FinancialTruthService();
 
-  FinancialTruthBasis buildRobaIUsluge(
-    PredmetIriuTruthSnapshot snapshot,
-  ) {
+  /// Calculates the displayed receivable amount from its current finance
+  /// inputs. The same calculation is used by FINANSIJE and PODSETNIK so the
+  /// F-09 threshold cannot drift from the finance segment's displayed total.
+  double calculateZaNaplatu({
+    required double robaIUsluge,
+    required double refundacijaPio,
+    required double avans,
+    required double troskoviJkp,
+    required bool jkpPlacaSamostalno,
+    required double popust,
+  }) {
+    final posleRefundacije = robaIUsluge - refundacijaPio;
+    final ostatak = avans > 0 ? posleRefundacije - avans : posleRefundacije;
+    final jkpDodatak = jkpPlacaSamostalno ? 0.0 : troskoviJkp;
+    return ostatak + jkpDodatak - popust;
+  }
+
+  FinancialTruthBasis buildRobaIUsluge(PredmetIriuTruthSnapshot snapshot) {
     final included = <FinancialTruthLine>[];
     final excluded = <FinancialTruthExclusion>[];
 
     for (final row in snapshot.rows) {
       if (row.countsForFinancialTruth) {
-        included.add(
-          FinancialTruthLine(
-            row: row,
-            amount: row.storedRow.iznos,
-          ),
-        );
+        included.add(FinancialTruthLine(row: row, amount: row.storedRow.iznos));
         continue;
       }
 
@@ -35,8 +45,10 @@ class FinancialTruthService {
       );
     }
 
-    final robaIUsluge =
-        included.fold<double>(0.0, (sum, line) => sum + line.amount);
+    final robaIUsluge = included.fold<double>(
+      0.0,
+      (sum, line) => sum + line.amount,
+    );
 
     return FinancialTruthBasis(
       included: List<FinancialTruthLine>.unmodifiable(included),

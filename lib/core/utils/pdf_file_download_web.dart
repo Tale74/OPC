@@ -1,0 +1,28 @@
+import 'dart:js_interop';
+import 'dart:typed_data';
+
+import 'package:web/web.dart';
+
+/// Starts a direct PDF download from the already-generated document bytes.
+void downloadPdfBytes(Uint8List bytes, String filename) {
+  final blob = Blob(
+    <JSAny>[bytes.toJS].toJS,
+    BlobPropertyBag(type: 'application/pdf'),
+  );
+  final objectUrl = URL.createObjectURL(blob);
+  final anchor = HTMLAnchorElement()
+    ..href = objectUrl
+    ..download = filename
+    ..style.display = 'none';
+
+  document.body?.append(anchor);
+  try {
+    anchor.click();
+  } finally {
+    anchor.remove();
+    Future<void>.delayed(
+      const Duration(seconds: 1),
+      () => URL.revokeObjectURL(objectUrl),
+    );
+  }
+}

@@ -1,16 +1,28 @@
-import 'package:flutter/widgets.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:opc_v4/core/constants/iriu_constants.dart';
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/podesavanja/data/podesavanja_repository.dart';
+import 'package:opc_v4/features/podsetnik/data/podsetnik_obligation_repository.dart';
 import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
 import 'package:opc_v4/features/predmeti/presentation/lista_predmeta_screen.dart';
 
 import 'test_bootstrap.dart';
 
 void main() {
+  test('past-day labels use the OWNER-approved singular rule', () {
+    expect(formatRelativePastDayLabel(1), 'Pre 1 dan');
+    for (final days in [2, 3, 4, 5, 11, 21, 22]) {
+      expect(formatRelativePastDayLabel(days), 'Pre $days dana');
+    }
+  });
+
   testWidgets('lista predmeta screen opens with stable actions', (
     tester,
   ) async {
@@ -54,7 +66,382 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('OPC — LISTA PREDMETA'), findsOneWidget);
+    expect(find.text('PREDMETI'), findsOneWidget);
+    expect(find.text('OPC — LISTA PREDMETA'), findsNothing);
     expect(find.text('NOVI PREDMET'), findsOneWidget);
+    expect(find.byKey(const Key('predmeti-moduli-action')), findsOneWidget);
+    expect(find.byType(ChoiceChip), findsNothing);
+    expect(find.byType(FilterChip), findsNothing);
+    final statusFilter = find.byKey(const Key('predmeti-status-filter'));
+    expect(statusFilter, findsOneWidget);
+    await tester.tap(statusFilter);
+    await tester.pumpAndSettle();
+    for (final status in const [
+      'SVE',
+      'OTVOREN',
+      'ZATVOREN',
+      'ZAVRŠEN',
+      'ANONIMIZOVAN',
+    ]) {
+      expect(find.text(status).evaluate(), isNotEmpty);
+    }
+    expect(find.text('ANONIMIZOVAN'), findsOneWidget);
+    await tester.tap(find.text('ANONIMIZOVAN'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DropdownButtonFormField<String>>(statusFilter).initialValue,
+      'ANONIMIZOVAN',
+    );
+    await tester.tap(find.byKey(const Key('predmeti-moduli-action')));
+    await tester.pumpAndSettle();
+    expect(find.text('MODULI'), findsOneWidget);
+    expect(find.text('PODSETNIK'), findsOneWidget);
+    expect(find.text('PARTE'), findsOneWidget);
+    expect(find.text('STANJE ROBE'), findsWidgets);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
   });
+
+  testWidgets('opening a PREDMET first shows its segment overview', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final db = AppDatabase.forTesting(
+      DatabaseConnection(
+        NativeDatabase.memory(),
+        closeStreamsSynchronously: true,
+      ),
+    );
+    final session = SessionService();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await tester.idle();
+      await tester.pump(const Duration(milliseconds: 1));
+      await tester.pumpAndSettle();
+      session.dispose();
+      await db.close();
+    });
+
+    final authRepo = AuthRepository(db);
+    final podesavanjaRepo = PodesavanjaRepository(db);
+    final predmetiRepo = PredmetiRepository(db);
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Sintetički savetnik',
+      pin: '1234',
+    );
+    session.prijavi(admin);
+    final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
+    await (db.update(
+      db.predmeti,
+    )..where((row) => row.id.equals(predmetId))).write(
+      const PredmetiCompanion(
+        ime: Value('Sintetičko'),
+        prezime: Value('Lice'),
+        brojPredmeta: Value('NAV-ANDROID-001'),
+      ),
+    );
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((row) => row.id.equals(predmetId))).getSingle();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(platform: TargetPlatform.android),
+        home: ListaPredmetaScreen(
+          predmetiRepo: predmetiRepo,
+          authRepo: authRepo,
+          podesavanjaRepo: podesavanjaRepo,
+          session: session,
+          predmetiStreamOverride: Stream.value([predmet]),
+          runStartupSideEffects: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lice Sintetičko'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('predmet-segment-number-hub-1')),
+      findsOneWidget,
+    );
+    expect(find.byType(TextFormField), findsNothing);
+    await tester.tap(find.byKey(const Key('predmet-segment-number-hub-1')));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsWidgets);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('predmet-segment-number-hub-1')),
+      findsOneWidget,
+    );
+    expect(find.byType(TextFormField), findsNothing);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('Podsetnik shortcut opens native PODSETNIK module settings', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final podesavanjaRepo = PodesavanjaRepository(db);
+    final predmetiRepo = PredmetiRepository(db);
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Test Administrator',
+      pin: '1234',
+    );
+    session.prijavi(admin);
+    final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
+    await db
+        .into(db.iriu)
+        .insert(
+          IriuCompanion(
+            predmetId: Value(predmetId),
+            portableOccurrenceId: const Value('r5-review-bar'),
+            interniNaziv: const Value(IriuK.cituljaP),
+            nazivPrikaz: const Value('Čitulje'),
+          ),
+        );
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((row) => row.id.equals(predmetId))).getSingle();
+    final podsetnikPolicy = OpcEntitlementPolicy.fromPayload(
+      const OpcEntitlementPayload(
+        schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+        sourceKind: OpcEntitlementSourceKind.demoTest,
+        environment: OpcEntitlementEnvironment.test,
+        packageLevel: OpcPackageLevel.potpun,
+      ),
+    );
+
+    await tester.pumpWidget(
+      wrapForTest(
+        ListaPredmetaScreen(
+          predmetiRepo: predmetiRepo,
+          authRepo: authRepo,
+          podesavanjaRepo: podesavanjaRepo,
+          session: session,
+          predmetiStreamOverride: Stream.value([predmet]),
+          runStartupSideEffects: false,
+          entitlementPolicy: podsetnikPolicy,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('ČITULJA'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    final shortcut = find.text('Podsetnik');
+    expect(shortcut, findsOneWidget);
+    await tester.tap(shortcut);
+    await tester.pumpAndSettle();
+
+    expect(find.text('MODULI / PODSETNIK'), findsOneWidget);
+    expect(find.byKey(const Key('podsetnik-module-settings')), findsOneWidget);
+    expect(
+      find.byKey(const Key('podsetnik-reminders-enabled')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('ceremony-reminders-enabled')), findsNothing);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await db.close();
+    await tester.pump();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+    'REVIEW BAR refreshes after PODSETNIK completion without restart',
+    (tester) async {
+      final db = AppDatabase.forTesting(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        await tester.idle();
+        await tester.pump(const Duration(milliseconds: 1));
+        await tester.pumpAndSettle();
+        await db.close();
+      });
+
+      final authRepo = AuthRepository(db);
+      final session = SessionService();
+      final podesavanjaRepo = PodesavanjaRepository(db);
+      final predmetiRepo = PredmetiRepository(db);
+      final admin = await authRepo.kreirajPrvogAdmina(
+        imePrezime: 'Test Administrator',
+        pin: '1234',
+      );
+      session.prijavi(admin);
+      final predmetId = await predmetiRepo.kreirajPredmet(savetnikId: admin.id);
+      await db
+          .into(db.iriu)
+          .insert(
+            IriuCompanion(
+              predmetId: Value(predmetId),
+              portableOccurrenceId: const Value('live-review-bar-cvece'),
+              interniNaziv: const Value(IriuK.cvece),
+              nazivPrikaz: const Value('CVEĆE'),
+            ),
+          );
+      final predmet = await (db.select(
+        db.predmeti,
+      )..where((row) => row.id.equals(predmetId))).getSingle();
+      final policy = OpcEntitlementPolicy.fromPayload(
+        OpcEntitlementPayload.safeProductionFallback,
+      );
+
+      await tester.pumpWidget(
+        wrapForTest(
+          ListaPredmetaScreen(
+            predmetiRepo: predmetiRepo,
+            authRepo: authRepo,
+            podesavanjaRepo: podesavanjaRepo,
+            session: session,
+            predmetiStreamOverride: Stream.value([predmet]),
+            runStartupSideEffects: false,
+            entitlementPolicy: policy,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('podsetnik-overview-bar')), findsOneWidget);
+      expect(find.text('CVEĆE'), findsOneWidget);
+
+      await PodsetnikObligationRepository(db).setAtomicCompletion(
+        predmetId: predmetId,
+        stableRuleId: 'goods.flowers',
+        completed: true,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('CVEĆE'), findsNothing);
+      expect(find.text('OBAVEZE ISPUNJENE'), findsOneWidget);
+
+      await (db.update(db.predmeti)..where((row) => row.id.equals(predmetId)))
+          .write(const PredmetiCompanion(troskoviJkp: Value(25)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('FINANSIJE'), findsOneWidget);
+      expect(find.text('OBAVEZE ISPUNJENE'), findsNothing);
+
+      await (db.update(db.predmeti)..where((row) => row.id.equals(predmetId)))
+          .write(const PredmetiCompanion(troskoviJkp: Value(0)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('FINANSIJE'), findsNothing);
+      expect(find.text('OBAVEZE ISPUNJENE'), findsOneWidget);
+    },
+  );
+
+  test('Osnovni no longer disables Podsetnik shortcut', () {
+    expect(
+      podsetnikShortcutEnabled(
+        entitlementPolicy: OpcEntitlementPolicy.fromPayload(
+          OpcEntitlementPayload.safeProductionFallback,
+        ),
+        predmetStatus: 'OTVOREN',
+      ),
+      isTrue,
+    );
+  });
+
+  test('retained package levels do not restrict Podsetnik', () {
+    for (final package in OpcPackageLevel.values) {
+      final policy = OpcEntitlementPolicy.fromPayload(
+        OpcEntitlementPayload(
+          schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+          sourceKind: OpcEntitlementSourceKind.demoTest,
+          environment: OpcEntitlementEnvironment.test,
+          packageLevel: package,
+        ),
+      );
+      expect(policy.isModuleAvailable(OpcModule.podsetnik), isTrue);
+    }
+  });
+
+  test('only active lifecycle statuses enable the Podsetnik shortcut', () {
+    for (final status in const ['OTVOREN', 'ZATVOREN']) {
+      expect(
+        podsetnikShortcutEnabled(
+          entitlementPolicy: _potpunPolicy(),
+          predmetStatus: status,
+        ),
+        isTrue,
+      );
+    }
+    for (final status in const [
+      'ZAVRŠEN',
+      'ANONIMIZOVAN',
+      'U_OBRADI',
+      'NEPOZNAT',
+    ]) {
+      expect(
+        podsetnikShortcutEnabled(
+          entitlementPolicy: _potpunPolicy(),
+          predmetStatus: status,
+        ),
+        isFalse,
+      );
+    }
+  });
+
+  testWidgets(
+    'reminder dialog rows use spacing and alternating theme surfaces',
+    (tester) async {
+      await tester.pumpWidget(
+        wrapForTest(
+          const Scaffold(
+            body: CeremonyReminderEventList(
+              events: ['Prvi događaj', 'Drugi događaj'],
+            ),
+          ),
+        ),
+      );
+
+      final first = tester.widget<Container>(
+        find.byKey(const Key('ceremony-reminder-event-0')),
+      );
+      final second = tester.widget<Container>(
+        find.byKey(const Key('ceremony-reminder-event-1')),
+      );
+      final firstDecoration = first.decoration! as BoxDecoration;
+      final secondDecoration = second.decoration! as BoxDecoration;
+
+      expect(firstDecoration.color, isNot(secondDecoration.color));
+      expect(find.byType(SizedBox), findsWidgets);
+    },
+  );
+}
+
+OpcEntitlementPolicy _potpunPolicy() {
+  return OpcEntitlementPolicy.fromPayload(
+    const OpcEntitlementPayload(
+      schemaVersion: OpcEntitlementPayload.currentSchemaVersion,
+      sourceKind: OpcEntitlementSourceKind.demoTest,
+      environment: OpcEntitlementEnvironment.test,
+      packageLevel: OpcPackageLevel.potpun,
+    ),
+  );
 }

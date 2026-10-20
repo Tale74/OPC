@@ -1,0 +1,167 @@
+name: OPC reproducible platform builds
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Analyze and test
+    runs-on: windows-2025
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pinned Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.41.7
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze
+        run: flutter analyze
+      - name: Run serial test suite
+        run: flutter test --concurrency=1
+      - name: Build version-matched Drift Web worker
+        shell: bash
+        run: bash tool/ci/build_drift_worker.sh
+      - name: Compile experimental Flutter Web output
+        run: flutter build web --release --no-pub
+
+  build-windows:
+    name: Windows release build
+    needs: validate
+    runs-on: windows-2025
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pinned Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          flutter-version: 3.41.7
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Build Windows
+        run: flutter build windows --release --no-pub
+      - name: Stage complete Windows release directory
+        shell: pwsh
+        run: ./tool/ci/package_windows.ps1
+      - name: Upload Windows release artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: opc-v15-windows-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/opc-windows-release/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  build-android:
+    name: Android production APK build
+    needs: validate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21.0.10+7'
+      - name: Set up pinned Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.41.7
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Build Android production APK
+        run: flutter build apk --flavor production --release --no-pub
+      - name: Stage production APK and build information
+        shell: bash
+        run: bash tool/ci/package_android.sh
+      - name: Upload Android production APK artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: opc-v15-android-production-apk-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/opc-android-production/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  build-macos:
+    name: macOS compile and app bundle
+    needs: validate
+    runs-on: macos-15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pinned Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.41.7
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Generate macOS Flutter and plugin configuration
+        run: flutter build macos --release --no-pub --config-only
+      - name: Compile macOS app without code signing
+        run: >-
+          xcodebuild
+          -workspace macos/Runner.xcworkspace
+          -scheme Runner
+          -configuration Release
+          -derivedDataPath build/macos/Build
+          -destination 'generic/platform=macOS'
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGN_IDENTITY=
+          build
+      - name: Package unsigned macOS app as a technical DMG
+        shell: bash
+        run: bash tool/ci/package_macos.sh
+      - name: Upload macOS technical artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: opc-v15-macos-technical-not-signed-not-notarized-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/opc-macos-technical/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  build-ios:
+    name: iOS compile validation (not installable)
+    needs: validate
+    runs-on: macos-15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pinned Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: 3.41.7
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Build iOS without signing
+        run: flutter build ios --release --no-codesign --no-pub
+      - name: Package iOS compile-validation output
+        shell: bash
+        run: bash tool/ci/package_ios.sh
+      - name: Upload iOS compile-validation artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: opc-v15-ios-compile-validation-no-codesign-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/opc-ios-compile-validation/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

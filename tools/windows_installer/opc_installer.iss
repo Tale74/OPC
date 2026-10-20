@@ -42,6 +42,11 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupIconFile=..\..\windows\runner\resources\app_icon.ico
+; Refuse program-file replacement while the accepted OPC process owns its
+; per-user singleton mutex. The installer never terminates OPC and never uses
+; the canonical database as a running-app lock.
+AppMutex=Local\OPC_ORGANIZATOR_POGREBNE_CEREMONIJE_SINGLE_INSTANCE
+CloseApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

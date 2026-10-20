@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
@@ -10,6 +9,7 @@ import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/document_text_codec.dart';
 import '../../../core/utils/export_utils.dart';
+import '../data/iriu_repository.dart';
 import 'memorandum_logo.dart';
 import 'nalog_za_opremanje_pdf_data_builder.dart';
 
@@ -28,24 +28,21 @@ Future<void> izvoziNalogZaOpremanjePdf({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(db.predmeti)
-          ..where((t) => t.id.equals(predmetId)))
-        .getSingle();
-    final iriuStavke = await (db.select(db.iriu)
-          ..where((t) => t.predmetId.equals(predmetId))
-          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-        .get();
-    final firma = await (db.select(db.firmaPodaci)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
-    final app = await (db.select(db.appPodesavanja)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((t) => t.id.equals(predmetId))).getSingle();
+    final iriuStavke = await IriuRepository(db).getIriu(predmetId);
+    final firma = await (db.select(
+      db.firmaPodaci,
+    )..where((t) => t.id.equals(1))).getSingle();
+    final app = await (db.select(
+      db.appPodesavanja,
+    )..where((t) => t.id.equals(1))).getSingle();
     final savetnik = predmet.savetnikId == null
         ? null
-        : await (db.select(db.korisnici)
-              ..where((t) => t.id.equals(predmet.savetnikId!)))
-            .getSingleOrNull();
+        : await (db.select(
+            db.korisnici,
+          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
 
     final bytes = await _buildNalogZaOpremanjePdf(
       predmet: predmet,
@@ -62,7 +59,6 @@ Future<void> izvoziNalogZaOpremanjePdf({
     );
     final fajl = await sacuvajKoricePdfFajlDetalji(naziv, bytes);
     final lokacija = koriceFajlLokacija(fajl);
-
 
     if (!ctx.mounted) return;
     ScaffoldMessenger.of(ctx).showSnackBar(
@@ -121,9 +117,10 @@ Future<Uint8List> _buildNalogZaOpremanjePdf({
     iriuStavke: iriuStavke,
   );
   final savetnikIme = documentTextCodec.normalize(
-    savetnik?.imePrezime.trim().isNotEmpty == true
-        ? savetnik!.imePrezime.trim()
-        : '',
+    resolveSavetnikDisplayName(
+      localUser: savetnik,
+      portableName: predmet.businessResponsibleName,
+    ),
   );
   final dokumentVerzija = 'v${predmet.verzija}';
 
@@ -172,32 +169,28 @@ pw.Widget _buildPage({
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.stretch,
     children: [
-      _buildHeader(
-        predmet: predmet,
-        firma: firma,
-        app: app,
-      ),
+      _buildHeader(predmet: predmet, firma: firma, app: app),
       pw.SizedBox(height: _kSectionGap),
-      _buildSection(
-        'PODACI O PREMINULOM LICU',
-        <NalogZaOpremanjePdfField>[
-          NalogZaOpremanjePdfField('IME I PREZIME:', prepared.fullName),
-          NalogZaOpremanjePdfField('GODINA RO\u0110ENJA:', prepared.godinaRodjenja),
-          NalogZaOpremanjePdfField('GODINA SMRTI:', prepared.godinaSmrti),
-          NalogZaOpremanjePdfField('MESTO SMRTI:', prepared.mestoSmrti),
-        ],
-      ),
+      _buildSection('PODACI O PREMINULOM LICU', <NalogZaOpremanjePdfField>[
+        NalogZaOpremanjePdfField('IME I PREZIME:', prepared.fullName),
+        NalogZaOpremanjePdfField(
+          'GODINA RO\u0110ENJA:',
+          prepared.godinaRodjenja,
+        ),
+        NalogZaOpremanjePdfField('GODINA SMRTI:', prepared.godinaSmrti),
+        NalogZaOpremanjePdfField('MESTO SMRTI:', prepared.mestoSmrti),
+      ]),
       pw.SizedBox(height: _kSectionGap),
       _buildSection(
         _ceremonySectionTitle(prepared.vrstaCeremonije),
         <NalogZaOpremanjePdfField>[
           NalogZaOpremanjePdfField('Groblje:', prepared.mestoCeremonije),
           NalogZaOpremanjePdfField(
-            _ceremonyDateLabel(prepared.vrstaCeremonije),
+            nalogZaOpremanjeDateLabel(prepared.vrstaCeremonije),
             prepared.datumCeremonije,
           ),
           NalogZaOpremanjePdfField(
-            _ceremonyTimeLabel(prepared.vrstaCeremonije),
+            nalogZaOpremanjeTimeLabel(prepared.vrstaCeremonije),
             prepared.vremeCeremonije,
           ),
         ],
@@ -230,11 +223,11 @@ pw.Widget _buildHeader({
     if (firma.sajt.trim().isNotEmpty) firma.sajt.trim(),
   ].join(' | ');
 
-  final identitet = <String>[
-    if (firma.pib.trim().isNotEmpty) 'PIB ${firma.pib.trim()}',
-    if (firma.mb.trim().isNotEmpty) 'MB ${firma.mb.trim()}',
-    if (app.ziroRacun.trim().isNotEmpty) 'Ra\u010Dun ${app.ziroRacun.trim()}',
-  ].join(' | ');
+  final identityRows = buildMemorandumIdentityRows(
+    pib: firma.pib,
+    mb: firma.mb,
+    racun: app.ziroRacun,
+  );
 
   return pw.Container(
     padding: const pw.EdgeInsets.only(bottom: 8),
@@ -276,11 +269,11 @@ pw.Widget _buildHeader({
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
-                  if (identitet.isNotEmpty)
+                  for (final identityRow in identityRows)
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(identitet),
+                        documentTextCodec.normalize(identityRow),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
@@ -288,11 +281,7 @@ pw.Widget _buildHeader({
               ),
             ),
             if (firma.logo?.isNotEmpty ?? false)
-              buildMemorandumLogo(
-                firma.logo!,
-                reservedWidth: 72,
-                reservedHeight: 52,
-              ),
+              buildMemorandumLogo(firma.logo!),
           ],
         ),
         pw.SizedBox(height: 7),
@@ -350,30 +339,15 @@ String _ceremonySectionTitle(String ceremonyType) {
   };
 }
 
-String _ceremonyDateLabel(String ceremonyType) {
-  return switch (ceremonyType.trim()) {
-    'Sahrana' => 'Datum sahrane:',
-    'Kremacija' => 'Datum kremacije:',
-    'Sme\u0161taj urne' => 'Datum sme\u0161taja urne:',
-    'Rasipanje pepela' => 'Datum rasipanja pepela:',
-    _ => 'Datum ceremonije:',
-  };
+String nalogZaOpremanjeDateLabel(String ceremonyType) {
+  return 'Datum:';
 }
 
-String _ceremonyTimeLabel(String ceremonyType) {
-  return switch (ceremonyType.trim()) {
-    'Sahrana' => 'Vreme sahrane:',
-    'Kremacija' => 'Vreme kremacije:',
-    'Sme\u0161taj urne' => 'Vreme sme\u0161taja urne:',
-    'Rasipanje pepela' => 'Vreme rasipanja pepela:',
-    _ => 'Vreme ceremonije:',
-  };
+String nalogZaOpremanjeTimeLabel(String ceremonyType) {
+  return 'Vreme:';
 }
 
-pw.Widget _buildSection(
-  String title,
-  List<NalogZaOpremanjePdfField> fields,
-) {
+pw.Widget _buildSection(String title, List<NalogZaOpremanjePdfField> fields) {
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.stretch,
     children: [
@@ -443,8 +417,9 @@ pw.Widget _buildFieldRow(NalogZaOpremanjePdfField field) {
                   ),
                   decoration: pw.BoxDecoration(
                     color: PdfColor.fromHex('#FDECEA'),
-                    borderRadius:
-                        const pw.BorderRadius.all(pw.Radius.circular(3)),
+                    borderRadius: const pw.BorderRadius.all(
+                      pw.Radius.circular(3),
+                    ),
                     border: pw.Border.all(
                       color: PdfColor.fromHex('#C0392B'),
                       width: 0.6,
@@ -520,13 +495,9 @@ pw.Widget _buildSignatures() {
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Expanded(
-          child: _buildSignatureBlock('Nalog izdao:'),
-        ),
+        pw.Expanded(child: _buildSignatureBlock('Nalog izdao:')),
         pw.SizedBox(width: 32),
-        pw.Expanded(
-          child: _buildSignatureBlock('Opremanje izvr\u0161io:'),
-        ),
+        pw.Expanded(child: _buildSignatureBlock('Opremanje izvr\u0161io:')),
       ],
     ),
   );
@@ -538,21 +509,10 @@ pw.Widget _buildSignatureBlock(String label) {
     children: [
       pw.Text(
         documentTextCodec.normalize(label),
-        style: const pw.TextStyle(
-          color: PdfColors.grey700,
-          fontSize: 9,
-        ),
+        style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 9),
       ),
       pw.SizedBox(height: 28),
-      pw.Container(
-        height: 1,
-        color: PdfColors.grey600,
-      ),
+      pw.Container(height: 1, color: PdfColors.grey600),
     ],
   );
 }
-
-
-
-
-

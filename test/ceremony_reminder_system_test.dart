@@ -1,0 +1,332 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/features/predmeti/presentation/lista_predmeta_screen.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_notification_gateway.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_coordinator.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_model.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_repository.dart';
+import 'package:opc_v4/features/predmeti/reminders/ceremony_reminder_text.dart';
+
+void main() {
+  group('ceremony reminder model', () {
+    final ceremonyAt = DateTime(2026, 7, 10, 12);
+
+    test('default clock time is scheduled on 2 / 1 / 0 day windows', () {
+      final occurrences = buildCeremonyReminderOccurrences(
+        predmetId: 7,
+        ceremonyAt: ceremonyAt,
+        config: const CeremonyReminderConfig(),
+        now: DateTime(2026, 7, 1),
+      );
+      expect(occurrences.map((item) => item.scheduledAt), [
+        DateTime(2026, 7, 8, 9),
+        DateTime(2026, 7, 9, 9),
+        DateTime(2026, 7, 10, 9),
+      ]);
+    });
+
+    test('supports multiple user-selected clock times', () {
+      final occurrences = buildCeremonyReminderOccurrences(
+        predmetId: 7,
+        ceremonyAt: ceremonyAt,
+        config: const CeremonyReminderConfig(deliveryTimes: ['09:00', '19:00']),
+        now: DateTime(2026, 7, 1),
+      );
+      expect(occurrences, hasLength(5));
+      expect(occurrences.first.scheduledAt, DateTime(2026, 7, 8, 9));
+      expect(occurrences.last.scheduledAt, DateTime(2026, 7, 10, 9));
+    });
+
+    test('skips past delivery times without immediate spam', () {
+      final occurrences = buildCeremonyReminderOccurrences(
+        predmetId: 7,
+        ceremonyAt: ceremonyAt,
+        config: const CeremonyReminderConfig(deliveryTimes: ['09:00', '19:00']),
+        now: DateTime(2026, 7, 9, 16),
+      );
+      expect(
+        occurrences.every(
+          (item) => item.scheduledAt.isAfter(DateTime(2026, 7, 9, 16)),
+        ),
+        isTrue,
+      );
+      expect(occurrences.map((item) => item.scheduledAt), [
+        DateTime(2026, 7, 9, 19),
+        DateTime(2026, 7, 10, 9),
+      ]);
+    });
+
+    test('active slot follows selected clock time on reminder day', () {
+      expect(
+        activeCeremonyReminderSlot(
+          ceremonyAt: ceremonyAt,
+          config: const CeremonyReminderConfig(
+            deliveryTimes: ['09:00', '19:00'],
+          ),
+          now: DateTime(2026, 7, 9, 18),
+        ),
+        DateTime(2026, 7, 9, 9),
+      );
+    });
+
+    test('future platform scheduling is separate from the current trigger', () {
+      final distantCeremony = DateTime(2026, 8, 31, 12);
+      final now = DateTime(2026, 7, 30, 18, 49);
+
+      final futurePlatformSlots = buildCeremonyReminderOccurrences(
+        predmetId: 7,
+        ceremonyAt: distantCeremony,
+        config: const CeremonyReminderConfig(),
+        now: now,
+      );
+      final currentTrigger = activeCeremonyReminderSlot(
+        ceremonyAt: distantCeremony,
+        config: const CeremonyReminderConfig(),
+        now: now,
+      );
+
+      expect(futurePlatformSlots, isNotEmpty);
+      expect(currentTrigger, null);
+    });
+
+    test('disabled reminders produce no occurrences', () {
+      expect(
+        buildCeremonyReminderOccurrences(
+          predmetId: 7,
+          ceremonyAt: ceremonyAt,
+          config: const CeremonyReminderConfig(enabled: false),
+          now: DateTime(2026, 7, 1),
+        ),
+        isEmpty,
+      );
+    });
+  });
+
+  test('reschedule cancels and replaces local notification ids', () async {
+    final store = _FakeStore();
+    final gateway = _FakeGateway();
+    final coordinator = CeremonyReminderCoordinator(
+      repository: store,
+      gateway: gateway,
+    );
+    final ceremonyAt = DateTime(2026, 7, 10, 12);
+
+    await coordinator.reschedule(
+      predmetId: 7,
+      predmetStatus: 'OTVOREN',
+      ceremonyType: 'SAHRANA',
+      deceasedFirstName: 'Petar',
+      deceasedLastName: 'Petrović',
+      ceremonyDate: '10.07.2026.',
+      ceremonyTime: '12:00',
+      ceremonyAt: ceremonyAt,
+      now: DateTime(2026, 7, 1),
+    );
+    final firstIds = Set<int>.from(store.ids);
+    await coordinator.reschedule(
+      predmetId: 7,
+      predmetStatus: 'OTVOREN',
+      ceremonyType: 'SAHRANA',
+      deceasedFirstName: 'Petar',
+      deceasedLastName: 'Petrović',
+      ceremonyDate: '10.07.2026.',
+      ceremonyTime: '13:00',
+      ceremonyAt: ceremonyAt.add(const Duration(hours: 1)),
+      now: DateTime(2026, 7, 1),
+    );
+
+    expect(gateway.cancelled, containsAll(firstIds));
+    expect(gateway.pending.keys.toSet(), store.ids.toSet());
+    expect(
+      gateway.lastBody,
+      'SAHRANA ZA Petar Petrović JE 10.07.2026. U '
+      '13:00. DOVRŠITE NEOPHODNE PRIPREME.',
+    );
+  });
+
+  test(
+    'ineligible status cancels ids and cannot schedule replacements',
+    () async {
+      for (final status in const [
+        'ZAVRŠEN',
+        'ANONIMIZOVAN',
+        'U_OBRADI',
+        'NEPOZNAT',
+      ]) {
+        final store = _FakeStore()..ids = [7001, 7002];
+        final gateway = _FakeGateway();
+        final coordinator = CeremonyReminderCoordinator(
+          repository: store,
+          gateway: gateway,
+        );
+
+        final occurrences = await coordinator.reschedule(
+          predmetId: 7,
+          predmetStatus: status,
+          ceremonyType: 'SAHRANA',
+          deceasedFirstName: 'Petar',
+          deceasedLastName: 'Petrović',
+          ceremonyDate: '10.07.2026.',
+          ceremonyTime: '12:00',
+          ceremonyAt: DateTime(2026, 7, 10, 12),
+          now: DateTime(2026, 7, 1),
+        );
+
+        expect(occurrences, isEmpty);
+        expect(gateway.cancelled, containsAll([7001, 7002]));
+        expect(gateway.pending, isEmpty);
+        expect(store.ids, isEmpty);
+      }
+    },
+  );
+
+  test(
+    'owner-approved reminder text includes all PREDMET ceremony identity',
+    () {
+      expect(
+        buildCeremonyReminderText(
+          ceremonyType: 'KREMACIJA',
+          deceasedFirstName: 'Ana',
+          deceasedLastName: 'Jovanović',
+          ceremonyDate: '11.07.2026.',
+          ceremonyTime: '15:30',
+        ),
+        'KREMACIJA ZA Ana Jovanović JE 11.07.2026. U '
+        '15:30. DOVRŠITE NEOPHODNE PRIPREME.',
+      );
+    },
+  );
+
+  test(
+    'persists local reminder configuration outside PREDMET fields',
+    () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      final predmetId = await db
+          .into(db.predmeti)
+          .insert(
+            PredmetiCompanion.insert(
+              brojPredmeta: const Value('REMINDER-001/2026'),
+              datumKreiranja: const Value('2026-07-01T09:00:00.000'),
+            ),
+          );
+      final repository = CeremonyReminderRepository(db);
+
+      await repository.saveConfig(
+        predmetId,
+        const CeremonyReminderConfig(
+          enabled: true,
+          deliveryTimes: ['09:00', '19:00'],
+        ),
+      );
+      await repository.saveScheduledIds(predmetId, [11, 12]);
+      final stored = await repository.getForPredmet(predmetId);
+
+      expect(stored.config.enabled, isTrue);
+      expect(stored.config.normalizedDeliveryTimes, ['09:00', '19:00']);
+      expect(stored.scheduledNotificationIds, [11, 12]);
+    },
+  );
+
+  test('re-saving identical notification ids preserves stored row', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+    final predmetId = await db
+        .into(db.predmeti)
+        .insert(
+          PredmetiCompanion.insert(
+            brojPredmeta: const Value('REMINDER-IDEMPOTENT/2026'),
+            datumKreiranja: const Value('2026-07-01T09:00:00.000'),
+          ),
+        );
+    final repository = CeremonyReminderRepository(db);
+    await repository.saveScheduledIds(predmetId, [11, 12]);
+    await db.customStatement(
+      'UPDATE ceremony_reminder_settings SET updated_at = ? '
+      'WHERE predmet_id = ?',
+      ['fixed-evidence-timestamp', predmetId],
+    );
+
+    await repository.saveScheduledIds(predmetId, [11, 12]);
+    final unchanged = await db
+        .customSelect(
+          'SELECT updated_at FROM ceremony_reminder_settings WHERE predmet_id = ?',
+          variables: [Variable.withInt(predmetId)],
+        )
+        .getSingle();
+    expect(unchanged.read<String>('updated_at'), 'fixed-evidence-timestamp');
+
+    await repository.saveScheduledIds(predmetId, [13]);
+    final changed = await db
+        .customSelect(
+          'SELECT updated_at FROM ceremony_reminder_settings WHERE predmet_id = ?',
+          variables: [Variable.withInt(predmetId)],
+        )
+        .getSingle();
+    expect(
+      changed.read<String>('updated_at'),
+      isNot('fixed-evidence-timestamp'),
+    );
+  });
+
+  test('automatic GDPR startup dialog is retired', () {
+    expect(automaticGdprStartupDialogEnabled, isFalse);
+    expect(manualGdprActionAvailable('ZAVRŠEN'), isTrue);
+    expect(manualGdprActionAvailable('OTVOREN'), isFalse);
+  });
+}
+
+class _FakeStore implements CeremonyReminderStore {
+  List<int> ids = [];
+
+  @override
+  Future<CeremonyReminderStoredConfig> getForPredmet(int predmetId) async {
+    return CeremonyReminderStoredConfig(
+      config: const CeremonyReminderConfig(),
+      scheduledNotificationIds: List<int>.from(ids),
+      scheduledUrnaNotificationIds: const [],
+    );
+  }
+
+  @override
+  Future<void> saveScheduledIds(int predmetId, List<int> ids) async {
+    this.ids = List<int>.from(ids);
+  }
+
+  @override
+  Future<void> saveUrnaScheduledIds(int predmetId, List<int> ids) async {}
+
+  @override
+  Future<bool> isUrnaObligationCompleted(int predmetId) async => false;
+}
+
+class _FakeGateway implements CeremonyNotificationGateway {
+  final Map<int, DateTime> pending = {};
+  final List<int> cancelled = [];
+  String lastBody = '';
+
+  @override
+  Future<void> initialize({required bool requestPermission}) async {}
+
+  @override
+  Future<void> cancel(int id) async {
+    cancelled.add(id);
+    pending.remove(id);
+  }
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required DateTime scheduledAt,
+    required String title,
+    required String body,
+    required String payload,
+    bool repeatDaily = false,
+  }) async {
+    pending[id] = scheduledAt;
+    lastBody = body;
+  }
+}

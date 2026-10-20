@@ -8,6 +8,11 @@ class Predmeti extends Table {
   TextColumn get status => text().withDefault(const Constant('OTVOREN'))();
   TextColumn get datumKreiranja => text().withDefault(const Constant(''))();
   IntColumn get savetnikId => integer().nullable()();
+
+  /// Portable PREDMET business truth for the SAVETNIK. The local
+  /// [savetnikId] remains a destination-database binding/cache.
+  TextColumn get businessResponsibleName => text().nullable()();
+  TextColumn get businessResponsibleRole => text().nullable()();
   IntColumn get verzija => integer().withDefault(const Constant(1))();
   TextColumn get businessScenarioId =>
       text().withDefault(const Constant('default_funeral_ceremony_policy'))();
@@ -75,8 +80,7 @@ class Predmeti extends Table {
       text().withDefault(const Constant('NE'))();
   TextColumn get bracniDrugJePenzioner =>
       text().withDefault(const Constant('NE'))();
-  TextColumn get penzionerNapomena =>
-      text().withDefault(const Constant(''))();
+  TextColumn get penzionerNapomena => text().withDefault(const Constant(''))();
 
   // ── Naručilac opreme i usluga ────────────────────────────────────────────
   // FIZICKO_LICE / PRAVNO_LICE
@@ -118,28 +122,31 @@ class Predmeti extends Table {
   TextColumn get jkpPlAdresa => text().withDefault(const Constant(''))();
   TextColumn get jkpPlPib => text().withDefault(const Constant(''))();
   TextColumn get jkpPlMb => text().withDefault(const Constant(''))();
-  TextColumn get jkpPlOdgovornoLice =>
-      text().withDefault(const Constant(''))();
+  TextColumn get jkpPlOdgovornoLice => text().withDefault(const Constant(''))();
   TextColumn get jkpPlTelefon1 => text().withDefault(const Constant(''))();
   TextColumn get jkpPlEmail => text().withDefault(const Constant(''))();
 
   // ── Ceremonija ───────────────────────────────────────────────────────────
   TextColumn get groblje => text().withDefault(const Constant(''))();
+  TextColumn get grobljePolaganjaUrne =>
+      text().withDefault(const Constant(''))();
   // GRADSKO / LOKALNO
-  TextColumn get tipGroblja =>
-      text().withDefault(const Constant('GRADSKO'))();
+  TextColumn get tipGroblja => text().withDefault(const Constant('GRADSKO'))();
   TextColumn get vrstaCeremonije =>
       text().withDefault(const Constant('SAHRANA'))();
   TextColumn get datumCeremonije => text().withDefault(const Constant(''))();
   TextColumn get vremeCeremonije => text().withDefault(const Constant(''))();
   // DA / NE
   TextColumn get opelo => text().withDefault(const Constant('NE'))();
+
+  /// DA / NE when OPELO is active; empty means legacy/unknown and is fail-safe.
+  TextColumn get obavestitiSvestenika =>
+      text().withDefault(const Constant(''))();
   TextColumn get opeloMesto => text().withDefault(const Constant(''))();
   TextColumn get vremeOpela => text().withDefault(const Constant(''))();
   TextColumn get vremeIspracaja => text().withDefault(const Constant(''))();
   // NOVO / POSTOJECE
-  TextColumn get grobnoMesto =>
-      text().withDefault(const Constant('NOVO'))();
+  TextColumn get grobnoMesto => text().withDefault(const Constant('NOVO'))();
   // GROB / GROBNICA
   TextColumn get tipGrobnogMesta =>
       text().withDefault(const Constant('GROB'))();
@@ -162,15 +169,21 @@ class Predmeti extends Table {
   TextColumn get svisGrad => text().withDefault(const Constant(''))();
   BoolColumn get docekPosmrtnihOstataka =>
       boolean().withDefault(const Constant(false))();
+
+  /// Internal DOČEK condition. It is not a separate scenario key.
+  BoolColumn get promenaSanduka =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get docekMesto => text().withDefault(const Constant(''))();
+  TextColumn get docekDatum => text().withDefault(const Constant(''))();
   TextColumn get docekVreme => text().withDefault(const Constant(''))();
 
   // ── Parte ────────────────────────────────────────────────────────────────
+  BoolColumn get partePotrebna =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get simbol =>
       text().withDefault(const Constant('PRAVOSLAVNI_KRST_SVETOSAVSKI'))();
   // LATINICA / CIRILICA
-  TextColumn get pismo =>
-      text().withDefault(const Constant('LATINICA'))();
+  TextColumn get pismo => text().withDefault(const Constant('LATINICA'))();
   TextColumn get parteIme => text().withDefault(const Constant(''))();
   TextColumn get ozaloseni => text().withDefault(const Constant(''))();
 

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -11,12 +13,18 @@ import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/entitlements/opc_license_public_key_registry.dart';
 import '../../../core/entitlements/opc_local_license_bootstrap_service.dart';
 import '../../../core/installation/opc_installation_id_repository.dart';
+import '../../../core/help/opc_help.dart';
+import '../../../core/help/opc_guide_screen.dart';
 import '../../../core/format/app_format.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import '../../../core/utils/json_export_import.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/auth_security_repository.dart';
 import '../../auth/domain/session_service.dart';
 import '../../auth/presentation/korisnici_screen.dart';
+import '../../podsetnik/presentation/podsetnik_module_screen.dart';
+import '../../predmeti/parte/presentation/parte_module_screen.dart';
+import '../../predmeti/data/predmeti_repository.dart';
 import '../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../stanje_robe/data/stanje_robe_posledice_repository.dart';
 import '../../stanje_robe/data/stanje_robe_repository.dart';
@@ -24,6 +32,18 @@ import '../../stanje_robe/presentation/stanje_robe_admin_screen.dart';
 import '../data/podesavanja_repository.dart';
 import '../domain/nbs_ips_qr_payload_builder.dart';
 import 'katalog_tab.dart';
+
+const _opcShortDescription =
+    'OPC pomaže u organizaciji i vođenju pogrebnih poslova. Na jednom mestu omogućava pregled predmeta, pripremu dokumentacije, praćenje obaveza i evidenciju robe i usluga.';
+
+String _platformDisplayName(TargetPlatform platform) => switch (platform) {
+  TargetPlatform.android => 'Android',
+  TargetPlatform.iOS => 'iOS',
+  TargetPlatform.windows => 'Windows desktop',
+  TargetPlatform.macOS => 'macOS',
+  TargetPlatform.linux => 'Linux desktop',
+  TargetPlatform.fuchsia => 'Fuchsia',
+};
 
 class PodesavanjaScreen extends StatefulWidget {
   const PodesavanjaScreen({
@@ -66,10 +86,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         unselectedLabelColor: scheme.onSurfaceVariant,
         indicatorColor: scheme.primary,
         dividerColor: scheme.outlineVariant.withValues(alpha: 0.5),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-        ),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 13,
@@ -83,7 +100,11 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   }
 
   Future<void> _uvoziBazu() async {
-    await uvoziIzFajla(ctx: context, db: widget.repo.db);
+    await uvoziIzFajla(
+      ctx: context,
+      db: widget.repo.db,
+      localActorKorisnikId: widget.session.korisnik?.id,
+    );
   }
 
   Future<String?> _prikaziDijalog() {
@@ -116,13 +137,18 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   @override
   Widget build(BuildContext context) {
     final visibleSections = OpcEntitlementPolicy.currentSettingsSections
-        .where(widget.entitlementPolicy.isSettingsSectionVisible)
+        .where(
+          (section) =>
+              widget.session.jeAdmin &&
+                  widget.entitlementPolicy.isSettingsSectionVisible(section) ||
+              !widget.session.jeAdmin &&
+                  section == OpcSettingsSection.oAplikaciji,
+        )
         .toList(growable: false);
     final requestedInitialIndex = widget.initialSection == null
         ? -1
         : visibleSections.indexOf(widget.initialSection!);
-    final initialIndex =
-        requestedInitialIndex >= 0 ? requestedInitialIndex : 0;
+    final initialIndex = requestedInitialIndex >= 0 ? requestedInitialIndex : 0;
     return PopScope(
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {
@@ -150,21 +176,52 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         initialIndex: initialIndex,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text(
-              'PODEŠAVANJA',
-              overflow: TextOverflow.ellipsis,
+            title: Builder(
+              builder: (context) {
+                final controller = DefaultTabController.of(context);
+                return AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    final index = controller.index;
+                    final chapterId =
+                        index >= 0 && index < visibleSections.length
+                        ? switch (visibleSections[index]) {
+                            OpcSettingsSection.podaciFirme =>
+                              'settings.company',
+                            OpcSettingsSection.refundacijaPio =>
+                              'settings.refundacija',
+                            OpcSettingsSection.katalog => 'settings.catalog',
+                            OpcSettingsSection.moduli => 'settings.modules',
+                            OpcSettingsSection.korisnici => 'settings.users',
+                            OpcSettingsSection.uputstvoZaPlacanje =>
+                              'settings.payment',
+                            OpcSettingsSection.oAplikaciji => 'settings.about',
+                          }
+                        : 'settings';
+                    return OpcHelpTitle(
+                      chapterId: chapterId,
+                      title: const Text(
+                        'PODEŠAVANJA',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  },
+                );
+              },
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.save_alt_outlined),
-                tooltip: 'Izvoz baze',
-                onPressed: _izveziBazu,
-              ),
-              IconButton(
-                icon: const Icon(Icons.restore_outlined),
-                tooltip: 'Uvoz JSON',
-                onPressed: _uvoziBazu,
-              ),
+              if (widget.session.mozeBackup) ...[
+                IconButton(
+                  icon: const Icon(Icons.save_alt_outlined),
+                  tooltip: 'Izvoz baze',
+                  onPressed: _izveziBazu,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.restore_outlined),
+                  tooltip: 'Uvoz JSON',
+                  onPressed: _uvoziBazu,
+                ),
+              ],
             ],
           ),
           body: Column(
@@ -197,13 +254,13 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   Tab _buildTabForSection(OpcSettingsSection section) {
     return switch (section) {
       OpcSettingsSection.podaciFirme => const Tab(text: 'PODACI FIRME'),
-      OpcSettingsSection.refundacijaPio =>
-        const Tab(text: 'REFUNDACIJA PIO'),
+      OpcSettingsSection.refundacijaPio => const Tab(text: 'REFUNDACIJA PIO'),
       OpcSettingsSection.katalog => const Tab(text: 'KATALOG'),
       OpcSettingsSection.moduli => const Tab(text: 'MODULI'),
       OpcSettingsSection.korisnici => const Tab(text: 'KORISNICI'),
-      OpcSettingsSection.uputstvoZaPlacanje =>
-        const Tab(text: 'UPUTSTVO ZA PLAĆANJE'),
+      OpcSettingsSection.uputstvoZaPlacanje => const Tab(
+        text: 'UPUTSTVO ZA PLAĆANJE',
+      ),
       OpcSettingsSection.oAplikaciji => const Tab(text: 'O APLIKACIJI'),
     };
   }
@@ -211,36 +268,35 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
   Widget _buildTabViewForSection(OpcSettingsSection section) {
     return switch (section) {
       OpcSettingsSection.podaciFirme => _FirmaTab(
-          key: _firmaKey,
-          repo: widget.repo,
-          prikaziOnboarding: widget.prikaziOnboarding,
-          onDirtyChanged: (v) => setState(() => _firmaIsDirty = v),
-        ),
+        key: _firmaKey,
+        repo: widget.repo,
+        prikaziOnboarding: widget.prikaziOnboarding,
+        onDirtyChanged: (v) => setState(() => _firmaIsDirty = v),
+      ),
       OpcSettingsSection.refundacijaPio => _RefundacijaTab(
-          key: _refKey,
-          repo: widget.repo,
-          onDirtyChanged: (v) => setState(() => _refIsDirty = v),
-        ),
+        key: _refKey,
+        repo: widget.repo,
+        onDirtyChanged: (v) => setState(() => _refIsDirty = v),
+      ),
       OpcSettingsSection.katalog => KatalogTab(repo: widget.repo),
       OpcSettingsSection.moduli => _ModuliTab(
-          repo: widget.repo,
-          session: widget.session,
-          entitlementPolicy: widget.entitlementPolicy,
-        ),
+        repo: widget.repo,
+        session: widget.session,
+        entitlementPolicy: widget.entitlementPolicy,
+      ),
       OpcSettingsSection.korisnici => _KorisniciSecurityTab(
-          db: widget.repo.db,
-          authRepo: widget.authRepo,
-          session: widget.session,
-        ),
+        db: widget.repo.db,
+        authRepo: widget.authRepo,
+        session: widget.session,
+      ),
       OpcSettingsSection.uputstvoZaPlacanje => _UputstvoZaPlacanjeTab(
-          key: _uputstvoKey,
-          repo: widget.repo,
-          onDirtyChanged: (v) => setState(() => _uputstvoIsDirty = v),
-        ),
-      OpcSettingsSection.oAplikaciji => _OAplikacijiTab(
-          session: widget.session,
-          entitlementPolicy: widget.entitlementPolicy,
-        ),
+        key: _uputstvoKey,
+        repo: widget.repo,
+        onDirtyChanged: (v) => setState(() => _uputstvoIsDirty = v),
+      ),
+      OpcSettingsSection.oAplikaciji => const _OAplikacijiTab(
+        key: ValueKey('settings-about-tab'),
+      ),
     };
   }
 }
@@ -306,69 +362,146 @@ class _ModuliTab extends StatelessWidget {
           child: StreamBuilder<StanjeRobeOperationalStatus>(
             stream: availability.watchStatus(),
             builder: (context, snap) {
-              final status = snap.data ?? StanjeRobeOperationalStatus.notLicensed;
+              final status =
+                  snap.data ?? StanjeRobeOperationalStatus.notLicensed;
               final enabled = status == StanjeRobeOperationalStatus.active;
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'STANJE ROBE',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+              return Column(
+                children: [
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.notifications_outlined),
+                      title: const Text('PODSETNIK'),
+                      subtitle: Text(
+                        entitlementPolicy.isModuleAvailable(OpcModule.podsetnik)
+                            ? 'Modul je dostupan. Podešavanja se čuvaju po PREDMETU.'
+                            : 'Nije dostupno u trenutnom paketu/licenci.',
                       ),
-                      const SizedBox(height: 8),
-                      _StanjeRobeStatusBanner(status: status),
-                      const SizedBox(height: 12),
-                      if (!session.jeAdmin)
-                        const Text(
-                          'Samo ADMINISTRATOR može da uključi ili isključi ovaj modul.',
-                        )
-                      else if (status == StanjeRobeOperationalStatus.notLicensed)
-                        const Text(
-                          'Podešavanje nije dostupno jer trenutni paket/licenca ne dozvoljava STANJE ROBE.',
-                        )
-                      else
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text('STANJE ROBE aktivno'),
-                          subtitle: const Text(
-                            'Isključivanje ne briše zalihe, primenjene efekte niti nerazrešene posledice.',
-                          ),
-                          value: enabled,
-                          onChanged: (value) => repo
-                              .setStanjeRobeOperativnoOmoguceno(value),
-                        ),
-                      if (session.jeAdmin &&
-                          status != StanjeRobeOperationalStatus.notLicensed)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: FilledButton.icon(
-                            onPressed: () => Navigator.push<void>(
+                      trailing: const Icon(Icons.chevron_right),
+                      enabled: entitlementPolicy.isModuleAvailable(
+                        OpcModule.podsetnik,
+                      ),
+                      onTap:
+                          entitlementPolicy.isModuleAvailable(
+                            OpcModule.podsetnik,
+                          )
+                          ? () => Navigator.push<void>(
                               context,
                               MaterialPageRoute<void>(
-                                builder: (_) => StanjeRobeAdminScreen(
+                                builder: (_) => PodsetnikModuleScreen(
+                                  predmetiRepository: PredmetiRepository(
+                                    repo.db,
+                                  ),
                                   session: session,
-                                  podesavanjaRepository: repo,
-                                  stanjeRobeRepository:
-                                      StanjeRobeRepository(repo.db),
-                                  poslediceRepository:
-                                      StanjeRobePoslediceRepository(repo.db),
-                                  entitlementPolicy: entitlementPolicy,
                                 ),
                               ),
-                            ),
-                            icon: const Icon(Icons.inventory_2_outlined),
-                            label: const Text('Upravljaj stanjem robe'),
-                          ),
-                        ),
-                    ],
+                            )
+                          : null,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.article_outlined),
+                      title: const Text('PARTE'),
+                      subtitle: Text(
+                        entitlementPolicy.isModuleAvailable(
+                              OpcModule.advancedParte,
+                            )
+                            ? 'Izaberite otvoren PREDMET i pokrenite ili nastavite pripremu.'
+                            : 'Nije dostupno u trenutnom paketu/licenci.',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      enabled:
+                          entitlementPolicy.isModuleAvailable(
+                            OpcModule.advancedParte,
+                          ) &&
+                          session.korisnik != null,
+                      onTap:
+                          entitlementPolicy.isModuleAvailable(
+                                OpcModule.advancedParte,
+                              ) &&
+                              session.korisnik != null
+                          ? () => Navigator.push<void>(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => ParteModuleScreen(
+                                  predmetiRepository: PredmetiRepository(
+                                    repo.db,
+                                  ),
+                                  actor: session.korisnik!,
+                                  entitlement: entitlementPolicy,
+                                  session: session,
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'STANJE ROBE',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          _StanjeRobeStatusBanner(status: status),
+                          const SizedBox(height: 12),
+                          if (!session.jeAdmin)
+                            const Text(
+                              'Samo ADMINISTRATOR može da uključi ili isključi ovaj modul.',
+                            )
+                          else if (status ==
+                              StanjeRobeOperationalStatus.notLicensed)
+                            const Text(
+                              'Podešavanje nije dostupno jer trenutni paket/licenca ne dozvoljava STANJE ROBE.',
+                            )
+                          else
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text('STANJE ROBE aktivno'),
+                              subtitle: const Text(
+                                'Isključivanje ne briše zalihe, primenjene efekte niti nerazrešene posledice.',
+                              ),
+                              value: enabled,
+                              onChanged: (value) =>
+                                  repo.setStanjeRobeOperativnoOmoguceno(value),
+                            ),
+                          if (session.jeAdmin &&
+                              status != StanjeRobeOperationalStatus.notLicensed)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: FilledButton.icon(
+                                onPressed: () => Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => StanjeRobeAdminScreen(
+                                      session: session,
+                                      podesavanjaRepository: repo,
+                                      stanjeRobeRepository:
+                                          StanjeRobeRepository(repo.db),
+                                      poslediceRepository:
+                                          StanjeRobePoslediceRepository(
+                                            repo.db,
+                                          ),
+                                      entitlementPolicy: entitlementPolicy,
+                                    ),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.inventory_2_outlined),
+                                label: const Text('Upravljaj stanjem robe'),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -482,11 +615,12 @@ class _RecoveryMaterialCardState extends State<_RecoveryMaterialCard> {
 
     setState(() => _creating = true);
     try {
-      final result = await widget.securityRepo.createInstallationRecoveryMaterial(
-        actorType: 'USER',
-        actorUserId: adminId,
-        details: 'Initial setup from PODEŠAVANJA',
-      );
+      final result = await widget.securityRepo
+          .createInstallationRecoveryMaterial(
+            actorType: 'USER',
+            actorUserId: adminId,
+            details: 'Initial setup from PODEŠAVANJA',
+          );
       if (!mounted) return;
       await showDialog<void>(
         context: context,
@@ -504,9 +638,9 @@ class _RecoveryMaterialCardState extends State<_RecoveryMaterialCard> {
               SelectableText(
                 result.plaintext,
                 style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
               ),
             ],
           ),
@@ -573,18 +707,14 @@ class _RecoveryMaterialCardState extends State<_RecoveryMaterialCard> {
                         children: [
                           Text(
                             'Oporavak pristupa aplikaciji',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 8),
                           if (snap.connectionState == ConnectionState.waiting)
                             const Text('Učitavanje statusa...')
                           else if (missing) ...[
-                            const Text(
-                              'Sigurnosni kod nije podešen.',
-                            ),
+                            const Text('Sigurnosni kod nije podešen.'),
                             const SizedBox(height: 4),
                             const Text(
                               'Podesite ga da bi opcija Zaboravljen PIN mogla bezbedno da se koristi.',
@@ -654,6 +784,7 @@ class _FirmaTab extends StatefulWidget {
 class _FirmaTabState extends State<_FirmaTab> {
   bool _ucitava = true;
   bool _cuva = false;
+  bool _racunOmogucen = true;
 
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nazivCtrl;
@@ -685,8 +816,15 @@ class _FirmaTabState extends State<_FirmaTab> {
     _emailCtrl = TextEditingController();
     _sajtCtrl = TextEditingController();
     for (final c in [
-      _nazivCtrl, _adresaCtrl, _pibCtrl, _mbCtrl, _sifraCtrl,
-      _telefonCtrl, _odgovornoCtrl, _emailCtrl, _sajtCtrl,
+      _nazivCtrl,
+      _adresaCtrl,
+      _pibCtrl,
+      _mbCtrl,
+      _sifraCtrl,
+      _telefonCtrl,
+      _odgovornoCtrl,
+      _emailCtrl,
+      _sajtCtrl,
     ]) {
       c.addListener(_setDirty);
     }
@@ -721,6 +859,7 @@ class _FirmaTabState extends State<_FirmaTab> {
       _emailCtrl.text = firma.email;
       _sajtCtrl.text = firma.sajt;
       _logo = firma.logo;
+      _racunOmogucen = firma.racunOmogucen;
       _ucitava = false;
     });
     if (widget.prikaziOnboarding) {
@@ -771,12 +910,11 @@ class _FirmaTabState extends State<_FirmaTab> {
         email: Value(_emailCtrl.text.trim()),
         sajt: Value(_sajtCtrl.text.trim()),
         logo: Value(_logo),
+        racunOmogucen: Value(_racunOmogucen),
       ),
     );
     await widget.repo.saveAppPodesavanja(
-      AppPodesavanjaCompanion(
-        qrPrimalacNaziv: Value(nazivFirme),
-      ),
+      AppPodesavanjaCompanion(qrPrimalacNaziv: Value(nazivFirme)),
     );
     if (!mounted) return;
     setState(() => _cuva = false);
@@ -834,21 +972,29 @@ class _FirmaTabState extends State<_FirmaTab> {
               children: [
                 _buildLogoSekcija(context),
                 const SizedBox(height: 24),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _nazivCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'NAZIV FIRME',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _nazivCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      labelText: 'NAZIV FIRME',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _adresaCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'ADRESA',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _adresaCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'ADRESA',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -859,19 +1005,27 @@ class _FirmaTabState extends State<_FirmaTab> {
                     if (isNarrow) {
                       return Column(
                         children: [
-                          TextFormField(
+                          ManualEntryAffordance(
                             controller: _pibCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'PIB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _pibCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'PIB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
+                          ManualEntryAffordance(
                             controller: _mbCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'MB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _mbCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'MB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ],
@@ -881,21 +1035,29 @@ class _FirmaTabState extends State<_FirmaTab> {
                     return Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
+                          child: ManualEntryAffordance(
                             controller: _pibCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'PIB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _pibCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'PIB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: TextFormField(
+                          child: ManualEntryAffordance(
                             controller: _mbCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'MB',
-                              border: OutlineInputBorder(),
+                            enabled: true,
+                            child: TextFormField(
+                              controller: _mbCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'MB',
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ),
@@ -904,49 +1066,85 @@ class _FirmaTabState extends State<_FirmaTab> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _sifraCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'ŠIFRA DELATNOSTI',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _sifraCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'ŠIFRA DELATNOSTI',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _telefonCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'TELEFON',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _telefonCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'TELEFON',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _odgovornoCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'ODGOVORNO LICE',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _odgovornoCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'ODGOVORNO LICE',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'E-MAIL',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'E-MAIL',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                ManualEntryAffordance(
                   controller: _sajtCtrl,
-                  keyboardType: TextInputType.url,
-                  decoration: const InputDecoration(
-                    labelText: 'SAJT',
-                    border: OutlineInputBorder(),
+                  enabled: true,
+                  child: TextFormField(
+                    controller: _sajtCtrl,
+                    keyboardType: TextInputType.url,
+                    decoration: const InputDecoration(
+                      labelText: 'SAJT',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('RAČUN'),
+                  subtitle: const Text(
+                    'Račun može da se formira ukoliko je pravno lice '
+                    'preduzetnik i nije u sistemu PDV',
+                  ),
+                  value: _racunOmogucen,
+                  onChanged: _cuva
+                      ? null
+                      : (value) {
+                          setState(() => _racunOmogucen = value);
+                          _setDirty();
+                        },
+                ),
+                const SizedBox(height: 16),
                 FilledButton(
                   onPressed: _cuva ? null : _sacuvaj,
                   child: _cuva
@@ -1022,11 +1220,7 @@ class _FirmaTabState extends State<_FirmaTab> {
             if (isNarrow) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  preview,
-                  const SizedBox(height: 16),
-                  details,
-                ],
+                children: [preview, const SizedBox(height: 16), details],
               );
             }
 
@@ -1125,26 +1319,32 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _refundacijaCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                textAlign: TextAlign.right,
-                decoration: const InputDecoration(
-                  labelText: 'IZNOS REFUNDACIJE PIO (RSD)',
-                  hintText: '0,00',
-                  suffixText: 'RSD',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _refundacijaCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textAlign: TextAlign.right,
+                  decoration: const InputDecoration(
+                    labelText: 'IZNOS REFUNDACIJE PIO (RSD)',
+                    hintText: '0,00',
+                    suffixText: 'RSD',
+                    border: OutlineInputBorder(),
+                  ),
+                  onEditingComplete: () {
+                    final v = parsirajBroj(_refundacijaCtrl.text);
+                    final f = v > 0 ? formatBroj(v) : '';
+                    if (f != _refundacijaCtrl.text) {
+                      _refundacijaCtrl.text = f;
+                      _refundacijaCtrl.selection = TextSelection.collapsed(
+                        offset: f.length,
+                      );
+                    }
+                  },
                 ),
-                onEditingComplete: () {
-                  final v = parsirajBroj(_refundacijaCtrl.text);
-                  final f = v > 0 ? formatBroj(v) : '';
-                  if (f != _refundacijaCtrl.text) {
-                    _refundacijaCtrl.text = f;
-                    _refundacijaCtrl.selection =
-                        TextSelection.collapsed(offset: f.length);
-                  }
-                },
               ),
               const SizedBox(height: 16),
               FilledButton(
@@ -1166,45 +1366,10 @@ class _RefundacijaTabState extends State<_RefundacijaTab> {
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Pravo na refundaciju ostvaruje se pod sledećim uslovima:',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 12),
-                    const _InfoRed(
-                      ikona: Icons.check_circle_outline,
-                      tekst:
-                          'Preminuli je penzioner Republike Srbije (PENZIONER R. SRBIJE = DA)',
-                    ),
-                    const SizedBox(height: 8),
-                    const _InfoRed(
-                      ikona: Icons.check_circle_outline,
-                      tekst: 'Naručilac opreme i usluga je fizičko lice',
-                    ),
-                    const SizedBox(height: 8),
-                    const _InfoRed(
-                      ikona: Icons.check_circle_outline,
-                      tekst:
-                          'Platilac ne refundira samostalno (PLATILAC REFUNDIRA = NE)',
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Iznos refundacije oduzima se od ukupnog iznosa robe i usluga '
-                      'pri obračunu u segmentu FINANSIJE.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
-                    ),
-                  ],
+                child: Text(
+                  'Unesite iznos naknade pogrebnih troškova preko Republičkog fonda '
+                  'za penzijsko i invalidsko osiguranje (PIO fond) za tekući period.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
             ],
@@ -1226,8 +1391,7 @@ class _UputstvoZaPlacanjeTab extends StatefulWidget {
   final ValueChanged<bool>? onDirtyChanged;
 
   @override
-  State<_UputstvoZaPlacanjeTab> createState() =>
-      _UputstvoZaPlacanjeTabState();
+  State<_UputstvoZaPlacanjeTab> createState() => _UputstvoZaPlacanjeTabState();
 }
 
 class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
@@ -1296,10 +1460,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
     final greska = NbsIpsQrPayloadBuilder.validateConfig(config);
     if (greska != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(greska),
-          backgroundColor: Colors.red.shade700,
-        ),
+        SnackBar(content: Text(greska), backgroundColor: Colors.red.shade700),
       );
       return;
     }
@@ -1310,10 +1471,12 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
         nazivBanke: Value(_bankaCtrl.text.trim()),
         qrPrimalacNaziv: Value(nazivFirme),
         qrSifraPlacanja: Value(_qrSifraCtrl.text.trim()),
-        qrSvrhaPlacanja:
-            const Value(NbsIpsQrPayloadBuilder.obaveznaSvrhaPlacanja),
-        pozivNaBrojTip:
-            const Value(NbsIpsQrPayloadBuilder.obavezniPozivNaBrojTip),
+        qrSvrhaPlacanja: const Value(
+          NbsIpsQrPayloadBuilder.obaveznaSvrhaPlacanja,
+        ),
+        pozivNaBrojTip: const Value(
+          NbsIpsQrPayloadBuilder.obavezniPozivNaBrojTip,
+        ),
       ),
     );
     if (!mounted) return;
@@ -1343,24 +1506,32 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Podaci sa ove strane koriste se za prikaz uputstva za plaćanje i za zaključani NBS IPS QR config model.',
+                'Ovi podaci se koriste u uputstvu za plaćanje i NBS IPS QR kodu.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 24),
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _ziroCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'TEKUĆI RAČUN',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _ziroCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'TEKUĆI RAČUN',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _bankaCtrl,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'NAZIV BANKE',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _bankaCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'NAZIV BANKE',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1374,13 +1545,17 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
                 ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              ManualEntryAffordance(
                 controller: _qrSifraCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'QR ŠIFRA PLAĆANJA',
-                  helperText: 'Obavezno 3 cifre, npr. 289',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextFormField(
+                  controller: _qrSifraCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'QR ŠIFRA PLAĆANJA',
+                    helperText: 'Obavezno 3 cifre, npr. 289',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1397,8 +1572,8 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
               Text(
                 'POZIV NA BROJ — TIP',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -1420,7 +1595,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Za NBS IPS QR engine ovde se čuva samo config sloj. QR naziv primaoca se preuzima iz naziva firme, svrha plaćanja je zaključana na "Transakcija po nalogu", a poziv na broj koristi PREMINULO LICE. Dinamički ulaz dolazi kasnije iz konkretnog predmeta kao iznos za naplatu. RO se u ovom modelu za sada ne koristi.',
+                  'QR kod koristi naziv firme kao primaoca i svrhu „Transakcija po nalogu“. Poziv na broj koristi ime i prezime preminulog, a iznos se preuzima iz konkretnog predmeta. Polje RO se ne koristi.',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -1446,13 +1621,7 @@ class _UputstvoZaPlacanjeTabState extends State<_UputstvoZaPlacanjeTab> {
 // ── Tab 4: O aplikaciji ───────────────────────────────────────────────────────
 
 class _OAplikacijiTab extends StatelessWidget {
-  const _OAplikacijiTab({
-    required this.session,
-    required this.entitlementPolicy,
-  });
-
-  final SessionService session;
-  final OpcEntitlementPolicy entitlementPolicy;
+  const _OAplikacijiTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1471,23 +1640,43 @@ class _OAplikacijiTab extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Icon(Icons.business_center_outlined,
-                        size: 64, color: colorScheme.primary),
+                    Icon(
+                      Icons.business_center_outlined,
+                      size: 64,
+                      color: colorScheme.primary,
+                    ),
                     const SizedBox(height: 12),
-                    Text('OPC',
-                        style: textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'OPC',
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Organizator pogrebne ceremonije',
+                    Text(
+                      'Organizator pogrebne ceremonije',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: Text(
+                        _opcShortDescription,
+                        textAlign: TextAlign.center,
                         style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant)),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
-                      onPressed: () => showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        showDragHandle: true,
-                        builder: (_) => const _OAplikacijiDrugaStranaSheet(),
+                      key: const Key('opc-open-user-guide'),
+                      onPressed: () => Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const OpcGuideScreen(),
+                        ),
                       ),
                       icon: const Icon(Icons.menu_book_outlined),
                       label: const Text('RAD U APLIKACIJI'),
@@ -1498,61 +1687,132 @@ class _OAplikacijiTab extends StatelessWidget {
               const SizedBox(height: 32),
               const Divider(),
               const SizedBox(height: 16),
-              Text('DEVELOPER',
-                  style: textTheme.labelLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
-              const SizedBox(height: 12),
-              const _InfoRed(ikona: Icons.person_outline, tekst: 'Saša Andonov'),
+              Text(
+                'PRIVATNOST I ČUVANJE PODATAKA',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 8),
-              const _InfoRed(
-                  ikona: Icons.email_outlined, tekst: 'sasa.andonov@gmail.com'),
+              Text(
+                'OPC funkcioniše nezavisno od internet veze. Svi podaci koji '
+                'se unose u aplikaciju čuvaju se lokalno, na uređaju korisnika.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 8),
-              const _InfoRed(
-                  ikona: Icons.location_on_outlined, tekst: 'Republika Srbija'),
+              Text(
+                'Aplikacija nije dizajnirana da šalje korisničke podatke '
+                'developeru niti da ih prenosi na udaljene servere. Developer '
+                'nema ni posredan ni neposredan pristup podacima sačuvanim na '
+                'uređaju korisnika.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 8),
-              const _InfoRed(
-                  ikona: Icons.code_outlined,
-                  tekst: 'Flutter / Dart — Windows desktop'),
+              Text(
+                'Izvoz, prenos i čuvanje rezervnih kopija pokreće i kontroliše '
+                'korisnik.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-              Text('LICENCA',
-                  style: textTheme.labelLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              Text(
+                'ZAŠTITA PODATAKA O LIČNOSTI',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'OPC sadrži ugrađene mehanizme za zaštitu podataka o ličnosti, '
+                'uključujući lokalnu kontrolu pristupa i mogućnost '
+                'anonimizacije podataka u okviru PREDMETA.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ovi mehanizmi namenjeni su zaštiti privatnosti i podršci '
+                'odgovornom postupanju sa podacima o ličnosti. Korisnik '
+                'zadržava odgovornost za način obrade, čuvanja i razmene '
+                'podataka u skladu sa važećim propisima.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+              Text(
+                'DEVELOPER',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const _InfoRed(
+                ikona: Icons.person_outline,
+                tekst: 'Saša Andonov',
+              ),
+              const SizedBox(height: 8),
+              const _InfoRed(
+                ikona: Icons.email_outlined,
+                tekst: 'sasa.andonov@gmail.com',
+              ),
+              const SizedBox(height: 8),
+              const _InfoRed(
+                ikona: Icons.location_on_outlined,
+                tekst: 'Republika Srbija',
+              ),
+              const SizedBox(height: 8),
+              _InfoRed(
+                ikona: Icons.code_outlined,
+                tekst:
+                    'Platforma: ${_platformDisplayName(defaultTargetPlatform)}',
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+              Text(
+                'LICENCA',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 'Ova aplikacija je vlasništvo korisnika.\n'
                 'Zabranjeno kopiranje, distribucija i modifikacija '
                 'bez pisane saglasnosti developera.',
-                style: textTheme.bodySmall
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
-              Text('NAPOMENA',
-                  style: textTheme.labelLarge
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
+              Text(
+                'NAPOMENA',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 'Aplikacija je u razvoju. Sve izmene i dopune se vrše '
                 'po dogovoru sa korisnikom.\n\n'
-                'Baza podataka se čuva lokalno na računaru korisnika.',
-                style: textTheme.bodySmall
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              if (session.jeAdmin) ...[
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
-                _LicenseActivationDiagnosticPanel(
-                  entitlementPolicy: entitlementPolicy,
+                'Baza podataka se čuva lokalno na uređaju korisnika.',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
-                const _DatabaseLaneDiagnosticPanel(),
-              ],
+              ),
             ],
           ),
         ),
@@ -1561,10 +1821,9 @@ class _OAplikacijiTab extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _LicenseActivationDiagnosticPanel extends StatefulWidget {
-  const _LicenseActivationDiagnosticPanel({
-    required this.entitlementPolicy,
-  });
+  const _LicenseActivationDiagnosticPanel({required this.entitlementPolicy});
 
   final OpcEntitlementPolicy entitlementPolicy;
 
@@ -1615,9 +1874,9 @@ class _LicenseActivationDiagnosticPanelState
 
   Future<OpcLocalLicenseBootstrapResult> _readBootstrapResult() async {
     try {
-      return await _bootstrapService
-          .evaluateInstalledLicense()
-          .timeout(const Duration(seconds: 2));
+      return await _bootstrapService.evaluateInstalledLicense().timeout(
+        const Duration(seconds: 2),
+      );
     } catch (_) {
       return const OpcLocalLicenseBootstrapResult.invalid(
         safeReason: OpcLocalLicenseBootstrapSafeReason.readFailed,
@@ -1654,10 +1913,7 @@ class _LicenseActivationDiagnosticPanelState
               children: [
                 Icon(
                   _licenseStatusIcon(result?.status),
-                  color: _licenseStatusColor(
-                    colorScheme,
-                    result?.status,
-                  ),
+                  color: _licenseStatusColor(colorScheme, result?.status),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1695,9 +1951,8 @@ class _LicenseActivationDiagnosticPanelState
               Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  onPressed: () => _copyInstallationId(
-                    diagnostic.installationId,
-                  ),
+                  onPressed: () =>
+                      _copyInstallationId(diagnostic.installationId),
                   icon: const Icon(Icons.copy_outlined),
                   label: const Text('Kopiraj ID instalacije'),
                 ),
@@ -1705,9 +1960,10 @@ class _LicenseActivationDiagnosticPanelState
               const SizedBox(height: 12),
               _InfoRed(
                 ikona: Icons.workspace_premium_outlined,
-                tekst:
-                    'Instalirana lokalna licenca - paket: '
-                    '${_packageLabel(result.effectivePackage)}',
+                tekst: _localLicensePackageMessage(
+                  result,
+                  diagnostic.activeEntitlementDiagnostics,
+                ),
               ),
               const SizedBox(height: 8),
               _InfoRed(
@@ -1742,18 +1998,24 @@ class _LicenseActivationDiagnosticPanelState
               _InfoRed(
                 ikona: Icons.workspace_premium_outlined,
                 tekst:
-                    'Aktivni paket runtime-a: '
+                    'Kompatibilni sačuvani paket (ne ograničava funkcije): '
                     '${_packageLabel(diagnostic.activeEntitlementDiagnostics.packageLevel)}',
               ),
               const SizedBox(height: 8),
               _InfoRed(
                 ikona: Icons.info_outline,
-                tekst: _statusMessage(result),
+                tekst: _runtimeLicenseStatusMessage(
+                  result,
+                  diagnostic.activeEntitlementDiagnostics,
+                ),
               ),
               const SizedBox(height: 8),
               _InfoRed(
                 ikona: Icons.rule_outlined,
-                tekst: _reasonMessage(result),
+                tekst: _runtimeLicenseReasonMessage(
+                  result,
+                  diagnostic.activeEntitlementDiagnostics,
+                ),
               ),
               if (diagnostic.productionRegistryEmpty) ...[
                 const SizedBox(height: 12),
@@ -1761,12 +2023,11 @@ class _LicenseActivationDiagnosticPanelState
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color:
-                        colorScheme.secondaryContainer.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: colorScheme.outlineVariant,
+                    color: colorScheme.secondaryContainer.withValues(
+                      alpha: 0.55,
                     ),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Text(
                     'Produkcioni javni ključ još nije dodat, pa produkciona '
@@ -1801,8 +2062,8 @@ IconData _licenseStatusIcon(OpcLocalLicenseBootstrapStatus? status) {
   return switch (status) {
     OpcLocalLicenseBootstrapStatus.valid => Icons.verified_outlined,
     OpcLocalLicenseBootstrapStatus.invalid => Icons.warning_amber_rounded,
-    OpcLocalLicenseBootstrapStatus.missing || null =>
-      Icons.admin_panel_settings_outlined,
+    OpcLocalLicenseBootstrapStatus.missing ||
+    null => Icons.admin_panel_settings_outlined,
   };
 }
 
@@ -1817,13 +2078,52 @@ Color _licenseStatusColor(
   };
 }
 
+String _localLicensePackageMessage(
+  OpcLocalLicenseBootstrapResult result,
+  OpcEntitlementDiagnostics diagnostics,
+) {
+  final package = _packageLabel(result.effectivePackage);
+  if (diagnostics.sourceKind == OpcEntitlementSourceKind.presentationOwner) {
+    final storedState = switch (result.status) {
+      OpcLocalLicenseBootstrapStatus.valid => 'važeća',
+      OpcLocalLicenseBootstrapStatus.invalid => 'nevažeća',
+      OpcLocalLicenseBootstrapStatus.missing => 'nije instalirana',
+    };
+    return 'Lokalna licenca (neaktivna u razvojnom POTPUN režimu): '
+        '$storedState; paket: $package';
+  }
+  return 'Instalirana lokalna licenca - paket: $package';
+}
+
+String _runtimeLicenseStatusMessage(
+  OpcLocalLicenseBootstrapResult result,
+  OpcEntitlementDiagnostics diagnostics,
+) {
+  if (diagnostics.sourceKind == OpcEntitlementSourceKind.presentationOwner) {
+    return 'Razvojni/runtime-validation režim je aktivan: POTPUN. Primena '
+        'lokalnog licenciranja je privremeno isključena za ovaj build.';
+  }
+  return _statusMessage(result);
+}
+
+String _runtimeLicenseReasonMessage(
+  OpcLocalLicenseBootstrapResult result,
+  OpcEntitlementDiagnostics diagnostics,
+) {
+  if (diagnostics.sourceKind == OpcEntitlementSourceKind.presentationOwner) {
+    return 'Lokalna licenca nije izvor aktivnih prava; final-package licensing ostaje očuvan iza eksplicitne build konfiguracije.';
+  }
+  return _reasonMessage(result);
+}
+
 String _statusMessage(OpcLocalLicenseBootstrapResult result) {
   return switch (result.status) {
     OpcLocalLicenseBootstrapStatus.missing =>
-      'Licenca nije instalirana. Aplikacija radi u osnovnom režimu.',
+      'Licenca nije instalirana. Sve postojeće funkcije su dostupne po odluci vlasnika.',
     OpcLocalLicenseBootstrapStatus.invalid =>
-      'Instalirana licenca nije važeća. Aplikacija radi u osnovnom režimu.',
-    OpcLocalLicenseBootstrapStatus.valid => 'Licenca je tehnički važeća.',
+      'Instalirana licenca nije važeća, ali ne ograničava funkcije u Stage 1 režimu.',
+    OpcLocalLicenseBootstrapStatus.valid =>
+      'Licenca je tehnički važeća i zadržana samo radi kompatibilnosti.',
   };
 }
 
@@ -1845,19 +2145,14 @@ String _reasonMessage(OpcLocalLicenseBootstrapResult result) {
 }
 
 String _activeEntitlementMessage(OpcEntitlementDiagnostics diagnostics) {
-  return 'Aktivni entitlement runtime-a: '
+  return 'Sve postojeće Windows/Android funkcije su dostupne po odluci vlasnika. '
+      'Kompatibilni entitlement zapis: '
       '${_entitlementSourceLabel(diagnostics.sourceKind)} / '
       '${_entitlementEnvironmentLabel(diagnostics.environment)}.';
 }
 
-String? _activeModulesMessage(OpcEntitlementDiagnostics diagnostics) {
-  final modules = <String>[];
-  if (diagnostics.packageLevel == OpcPackageLevel.potpun ||
-      diagnostics.enabledAddOns.contains(OpcAddOn.stanjeRobe)) {
-    modules.add('STANJE ROBE');
-  }
-  if (modules.isEmpty) return null;
-  return 'Aktivni moduli/dodaci: ${modules.join(', ')}.';
+String? _activeModulesMessage(OpcEntitlementDiagnostics _) {
+  return 'Stage 1 owner policy: nema paketnih ni add-on zaključavanja; uloge i poslovni uslovi ostaju aktivni.';
 }
 
 String _entitlementSourceLabel(OpcEntitlementSourceKind sourceKind) {
@@ -1866,6 +2161,7 @@ String _entitlementSourceLabel(OpcEntitlementSourceKind sourceKind) {
     OpcEntitlementSourceKind.saas => 'SaaS',
     OpcEntitlementSourceKind.developerAllUnlocked => 'developer',
     OpcEntitlementSourceKind.demoTest => 'demo/test',
+    OpcEntitlementSourceKind.presentationOwner => 'razvojni POTPUN režim',
   };
 }
 
@@ -1885,6 +2181,7 @@ String _packageLabel(OpcPackageLevel packageLevel) {
   };
 }
 
+// ignore: unused_element
 class _DatabaseLaneDiagnosticPanel extends StatefulWidget {
   const _DatabaseLaneDiagnosticPanel();
 
@@ -1918,7 +2215,8 @@ class _DatabaseLaneDiagnosticPanelState
       future: _diagnosticFuture,
       builder: (context, snap) {
         final diagnostic = snap.data;
-        final alternateLanes = diagnostic?.existingAlternateLanes ??
+        final alternateLanes =
+            diagnostic?.existingAlternateLanes ??
             const <DatabaseLaneFileInfo>[];
         final hasAlternate = alternateLanes.isNotEmpty;
 
@@ -2067,118 +2365,6 @@ String _formatDateTime(DateTime? value) {
   return '$day.$month.$year. $hour:$minute';
 }
 
-class _OAplikacijiDrugaStranaSheet extends StatelessWidget {
-  const _OAplikacijiDrugaStranaSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'RAD U APLIKACIJI',
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Kratak pregled namene, osnovnog toka rada i poslovnih pravila aplikacije OPC.',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const _AboutTextBlock(
-                title: 'ŠTA JE OPC',
-                body:
-                    'OPC je radni alat za vođenje pogrebne ceremonije kroz jedan predmet kao centralno mesto unosa, pregleda i organizacije podataka. '
-                    'Njegova namena nije samo čuvanje podataka, već svakodnevni operativni rad kroz konkretan predmet, od prijema informacija do završnih dokumenata.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'KAKO OPC RADI',
-                body:
-                    'U OPC-u se svi važni podaci vode kroz jedan predmet. '
-                    'Podaci o preminulom licu, ceremoniji, robi, uslugama i finansijama objedinjeni su na jednom mestu, a potrebni dokumenti nastaju iz tog unosa. '
-                    'Na taj način se smanjuje prepisivanje, olakšava provera podataka i održava doslednost tokom rada.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'SVAKODNEVNA OPERATIVNA KORIST',
-                body:
-                    'U svakodnevnom radu OPC pomaže da podaci budu pregledni i dostupni na jednom mestu. '
-                    'Korisnik ne mora da vodi odvojene beleške za ono što je već uneseno, jer aplikacija objedinjuje radne informacije u jedinstven tok rada i olakšava snalaženje kroz predmet.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'DOKUMENTI IZ PREDMETA',
-                body:
-                    'Jedna od najvažnijih praktičnih koristi OPC-a je izrada dokumenata direktno iz podataka koji su već uneti u predmet. '
-                    'Kada su podaci pravilno evidentirani, aplikacija iz njih formira potrebne PDF dokumente bez dodatnog ručnog prekucavanja. '
-                    'Time se ubrzava rad, smanjuje mogućnost greške i olakšava arhiviranje.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'PODSETNIK I KONTROLA RADA',
-                body:
-                    'OPC ima i ulogu radnog podsetnika. Pregled predmeta pomaže korisniku da vidi šta je uneseno, šta je potvrđeno i šta još zahteva pažnju. '
-                    'Tako aplikacija ne služi samo kao evidencija, već i kao pomoć u organizaciji rada i proveri potpunosti podataka.',
-              ),
-              const SizedBox(height: 20),
-              const _AboutTextBlock(
-                title: 'KRATKO KORISNIČKO UPUTSTVO',
-                body:
-                    'Rad u aplikaciji počinje otvaranjem ili izborom predmeta. '
-                    'Podaci se unose u odgovarajuće segmente, a dokumenti se izrađuju iz već unetih podataka. '
-                    'Zato je najvažnije da predmet bude uredno i tačno popunjen, jer se iz njega dobijaju i pregled i dokumenti potrebni za dalji rad.',
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AboutTextBlock extends StatelessWidget {
-  const _AboutTextBlock({required this.title, required this.body});
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: textTheme.labelLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          body,
-          style: textTheme.bodyMedium,
-        ),
-      ],
-    );
-  }
-}
-
 class _InfoRed extends StatelessWidget {
   const _InfoRed({required this.ikona, required this.tekst});
 
@@ -2189,11 +2375,15 @@ class _InfoRed extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(ikona,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant),
+        Icon(
+          ikona,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 12),
-        Expanded(child: Text(tekst, style: Theme.of(context).textTheme.bodyMedium)),
+        Expanded(
+          child: Text(tekst, style: Theme.of(context).textTheme.bodyMedium),
+        ),
       ],
     );
   }

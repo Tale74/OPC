@@ -533,6 +533,33 @@ class $FirmaPodaciTable extends FirmaPodaci
     type: DriftSqlType.blob,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _parteDefaultTemplateIdMeta =
+      const VerificationMeta('parteDefaultTemplateId');
+  @override
+  late final GeneratedColumn<String> parteDefaultTemplateId =
+      GeneratedColumn<String>(
+        'parte_default_template_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('builtin_parte_standard_v1'),
+      );
+  static const VerificationMeta _racunOmogucenMeta = const VerificationMeta(
+    'racunOmogucen',
+  );
+  @override
+  late final GeneratedColumn<bool> racunOmogucen = GeneratedColumn<bool>(
+    'racun_omogucen',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("racun_omogucen" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -546,6 +573,8 @@ class $FirmaPodaciTable extends FirmaPodaci
     email,
     sajt,
     logo,
+    parteDefaultTemplateId,
+    racunOmogucen,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -625,6 +654,24 @@ class $FirmaPodaciTable extends FirmaPodaci
         logo.isAcceptableOrUnknown(data['logo']!, _logoMeta),
       );
     }
+    if (data.containsKey('parte_default_template_id')) {
+      context.handle(
+        _parteDefaultTemplateIdMeta,
+        parteDefaultTemplateId.isAcceptableOrUnknown(
+          data['parte_default_template_id']!,
+          _parteDefaultTemplateIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('racun_omogucen')) {
+      context.handle(
+        _racunOmogucenMeta,
+        racunOmogucen.isAcceptableOrUnknown(
+          data['racun_omogucen']!,
+          _racunOmogucenMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -678,6 +725,14 @@ class $FirmaPodaciTable extends FirmaPodaci
         DriftSqlType.blob,
         data['${effectivePrefix}logo'],
       ),
+      parteDefaultTemplateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parte_default_template_id'],
+      )!,
+      racunOmogucen: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}racun_omogucen'],
+      )!,
     );
   }
 
@@ -699,6 +754,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
   final String email;
   final String sajt;
   final Uint8List? logo;
+  final String parteDefaultTemplateId;
+  final bool racunOmogucen;
   const FirmaPodaciData({
     required this.id,
     required this.naziv,
@@ -711,6 +768,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     required this.email,
     required this.sajt,
     this.logo,
+    required this.parteDefaultTemplateId,
+    required this.racunOmogucen,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -728,6 +787,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     if (!nullToAbsent || logo != null) {
       map['logo'] = Variable<Uint8List>(logo);
     }
+    map['parte_default_template_id'] = Variable<String>(parteDefaultTemplateId);
+    map['racun_omogucen'] = Variable<bool>(racunOmogucen);
     return map;
   }
 
@@ -744,6 +805,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       email: Value(email),
       sajt: Value(sajt),
       logo: logo == null && nullToAbsent ? const Value.absent() : Value(logo),
+      parteDefaultTemplateId: Value(parteDefaultTemplateId),
+      racunOmogucen: Value(racunOmogucen),
     );
   }
 
@@ -764,6 +827,10 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       email: serializer.fromJson<String>(json['email']),
       sajt: serializer.fromJson<String>(json['sajt']),
       logo: serializer.fromJson<Uint8List?>(json['logo']),
+      parteDefaultTemplateId: serializer.fromJson<String>(
+        json['parteDefaultTemplateId'],
+      ),
+      racunOmogucen: serializer.fromJson<bool>(json['racunOmogucen']),
     );
   }
   @override
@@ -781,6 +848,10 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       'email': serializer.toJson<String>(email),
       'sajt': serializer.toJson<String>(sajt),
       'logo': serializer.toJson<Uint8List?>(logo),
+      'parteDefaultTemplateId': serializer.toJson<String>(
+        parteDefaultTemplateId,
+      ),
+      'racunOmogucen': serializer.toJson<bool>(racunOmogucen),
     };
   }
 
@@ -796,6 +867,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     String? email,
     String? sajt,
     Value<Uint8List?> logo = const Value.absent(),
+    String? parteDefaultTemplateId,
+    bool? racunOmogucen,
   }) => FirmaPodaciData(
     id: id ?? this.id,
     naziv: naziv ?? this.naziv,
@@ -808,6 +881,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     email: email ?? this.email,
     sajt: sajt ?? this.sajt,
     logo: logo.present ? logo.value : this.logo,
+    parteDefaultTemplateId:
+        parteDefaultTemplateId ?? this.parteDefaultTemplateId,
+    racunOmogucen: racunOmogucen ?? this.racunOmogucen,
   );
   FirmaPodaciData copyWithCompanion(FirmaPodaciCompanion data) {
     return FirmaPodaciData(
@@ -826,6 +902,12 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
       email: data.email.present ? data.email.value : this.email,
       sajt: data.sajt.present ? data.sajt.value : this.sajt,
       logo: data.logo.present ? data.logo.value : this.logo,
+      parteDefaultTemplateId: data.parteDefaultTemplateId.present
+          ? data.parteDefaultTemplateId.value
+          : this.parteDefaultTemplateId,
+      racunOmogucen: data.racunOmogucen.present
+          ? data.racunOmogucen.value
+          : this.racunOmogucen,
     );
   }
 
@@ -842,7 +924,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
           ..write('odgovornoLice: $odgovornoLice, ')
           ..write('email: $email, ')
           ..write('sajt: $sajt, ')
-          ..write('logo: $logo')
+          ..write('logo: $logo, ')
+          ..write('parteDefaultTemplateId: $parteDefaultTemplateId, ')
+          ..write('racunOmogucen: $racunOmogucen')
           ..write(')'))
         .toString();
   }
@@ -860,6 +944,8 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
     email,
     sajt,
     $driftBlobEquality.hash(logo),
+    parteDefaultTemplateId,
+    racunOmogucen,
   );
   @override
   bool operator ==(Object other) =>
@@ -875,7 +961,9 @@ class FirmaPodaciData extends DataClass implements Insertable<FirmaPodaciData> {
           other.odgovornoLice == this.odgovornoLice &&
           other.email == this.email &&
           other.sajt == this.sajt &&
-          $driftBlobEquality.equals(other.logo, this.logo));
+          $driftBlobEquality.equals(other.logo, this.logo) &&
+          other.parteDefaultTemplateId == this.parteDefaultTemplateId &&
+          other.racunOmogucen == this.racunOmogucen);
 }
 
 class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
@@ -890,6 +978,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
   final Value<String> email;
   final Value<String> sajt;
   final Value<Uint8List?> logo;
+  final Value<String> parteDefaultTemplateId;
+  final Value<bool> racunOmogucen;
   const FirmaPodaciCompanion({
     this.id = const Value.absent(),
     this.naziv = const Value.absent(),
@@ -902,6 +992,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     this.email = const Value.absent(),
     this.sajt = const Value.absent(),
     this.logo = const Value.absent(),
+    this.parteDefaultTemplateId = const Value.absent(),
+    this.racunOmogucen = const Value.absent(),
   });
   FirmaPodaciCompanion.insert({
     this.id = const Value.absent(),
@@ -915,6 +1007,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     this.email = const Value.absent(),
     this.sajt = const Value.absent(),
     this.logo = const Value.absent(),
+    this.parteDefaultTemplateId = const Value.absent(),
+    this.racunOmogucen = const Value.absent(),
   });
   static Insertable<FirmaPodaciData> custom({
     Expression<int>? id,
@@ -928,6 +1022,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     Expression<String>? email,
     Expression<String>? sajt,
     Expression<Uint8List>? logo,
+    Expression<String>? parteDefaultTemplateId,
+    Expression<bool>? racunOmogucen,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -941,6 +1037,9 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
       if (email != null) 'email': email,
       if (sajt != null) 'sajt': sajt,
       if (logo != null) 'logo': logo,
+      if (parteDefaultTemplateId != null)
+        'parte_default_template_id': parteDefaultTemplateId,
+      if (racunOmogucen != null) 'racun_omogucen': racunOmogucen,
     });
   }
 
@@ -956,6 +1055,8 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     Value<String>? email,
     Value<String>? sajt,
     Value<Uint8List?>? logo,
+    Value<String>? parteDefaultTemplateId,
+    Value<bool>? racunOmogucen,
   }) {
     return FirmaPodaciCompanion(
       id: id ?? this.id,
@@ -969,6 +1070,9 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
       email: email ?? this.email,
       sajt: sajt ?? this.sajt,
       logo: logo ?? this.logo,
+      parteDefaultTemplateId:
+          parteDefaultTemplateId ?? this.parteDefaultTemplateId,
+      racunOmogucen: racunOmogucen ?? this.racunOmogucen,
     );
   }
 
@@ -1008,6 +1112,14 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
     if (logo.present) {
       map['logo'] = Variable<Uint8List>(logo.value);
     }
+    if (parteDefaultTemplateId.present) {
+      map['parte_default_template_id'] = Variable<String>(
+        parteDefaultTemplateId.value,
+      );
+    }
+    if (racunOmogucen.present) {
+      map['racun_omogucen'] = Variable<bool>(racunOmogucen.value);
+    }
     return map;
   }
 
@@ -1024,7 +1136,9 @@ class FirmaPodaciCompanion extends UpdateCompanion<FirmaPodaciData> {
           ..write('odgovornoLice: $odgovornoLice, ')
           ..write('email: $email, ')
           ..write('sajt: $sajt, ')
-          ..write('logo: $logo')
+          ..write('logo: $logo, ')
+          ..write('parteDefaultTemplateId: $parteDefaultTemplateId, ')
+          ..write('racunOmogucen: $racunOmogucen')
           ..write(')'))
         .toString();
   }
@@ -1686,6 +1800,28 @@ class $PredmetiTable extends Predmeti
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _businessResponsibleNameMeta =
+      const VerificationMeta('businessResponsibleName');
+  @override
+  late final GeneratedColumn<String> businessResponsibleName =
+      GeneratedColumn<String>(
+        'business_responsible_name',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _businessResponsibleRoleMeta =
+      const VerificationMeta('businessResponsibleRole');
+  @override
+  late final GeneratedColumn<String> businessResponsibleRole =
+      GeneratedColumn<String>(
+        'business_responsible_role',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _verzijaMeta = const VerificationMeta(
     'verzija',
   );
@@ -2695,6 +2831,18 @@ class $PredmetiTable extends Predmeti
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _grobljePolaganjaUrneMeta =
+      const VerificationMeta('grobljePolaganjaUrne');
+  @override
+  late final GeneratedColumn<String> grobljePolaganjaUrne =
+      GeneratedColumn<String>(
+        'groblje_polaganja_urne',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
   static const VerificationMeta _tipGrobljaMeta = const VerificationMeta(
     'tipGroblja',
   );
@@ -2753,6 +2901,18 @@ class $PredmetiTable extends Predmeti
     requiredDuringInsert: false,
     defaultValue: const Constant('NE'),
   );
+  static const VerificationMeta _obavestitiSvestenikaMeta =
+      const VerificationMeta('obavestitiSvestenika');
+  @override
+  late final GeneratedColumn<String> obavestitiSvestenika =
+      GeneratedColumn<String>(
+        'obavestiti_svestenika',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
   static const VerificationMeta _opeloMestoMeta = const VerificationMeta(
     'opeloMesto',
   );
@@ -2997,12 +3157,39 @@ class $PredmetiTable extends Predmeti
         ),
         defaultValue: const Constant(false),
       );
+  static const VerificationMeta _promenaSandukaMeta = const VerificationMeta(
+    'promenaSanduka',
+  );
+  @override
+  late final GeneratedColumn<bool> promenaSanduka = GeneratedColumn<bool>(
+    'promena_sanduka',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("promena_sanduka" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _docekMestoMeta = const VerificationMeta(
     'docekMesto',
   );
   @override
   late final GeneratedColumn<String> docekMesto = GeneratedColumn<String>(
     'docek_mesto',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _docekDatumMeta = const VerificationMeta(
+    'docekDatum',
+  );
+  @override
+  late final GeneratedColumn<String> docekDatum = GeneratedColumn<String>(
+    'docek_datum',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -3020,6 +3207,21 @@ class $PredmetiTable extends Predmeti
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _partePotrebnaMeta = const VerificationMeta(
+    'partePotrebna',
+  );
+  @override
+  late final GeneratedColumn<bool> partePotrebna = GeneratedColumn<bool>(
+    'parte_potrebna',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("parte_potrebna" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   static const VerificationMeta _simbolMeta = const VerificationMeta('simbol');
   @override
@@ -3166,6 +3368,8 @@ class $PredmetiTable extends Predmeti
     status,
     datumKreiranja,
     savetnikId,
+    businessResponsibleName,
+    businessResponsibleRole,
     verzija,
     businessScenarioId,
     sourceIdentity,
@@ -3250,11 +3454,13 @@ class $PredmetiTable extends Predmeti
     jkpPlTelefon1,
     jkpPlEmail,
     groblje,
+    grobljePolaganjaUrne,
     tipGroblja,
     vrstaCeremonije,
     datumCeremonije,
     vremeCeremonije,
     opelo,
+    obavestitiSvestenika,
     opeloMesto,
     vremeOpela,
     vremeIspracaja,
@@ -3275,8 +3481,11 @@ class $PredmetiTable extends Predmeti
     svisZemlja,
     svisGrad,
     docekPosmrtnihOstataka,
+    promenaSanduka,
     docekMesto,
+    docekDatum,
     docekVreme,
+    partePotrebna,
     simbol,
     pismo,
     parteIme,
@@ -3333,6 +3542,24 @@ class $PredmetiTable extends Predmeti
       context.handle(
         _savetnikIdMeta,
         savetnikId.isAcceptableOrUnknown(data['savetnik_id']!, _savetnikIdMeta),
+      );
+    }
+    if (data.containsKey('business_responsible_name')) {
+      context.handle(
+        _businessResponsibleNameMeta,
+        businessResponsibleName.isAcceptableOrUnknown(
+          data['business_responsible_name']!,
+          _businessResponsibleNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('business_responsible_role')) {
+      context.handle(
+        _businessResponsibleRoleMeta,
+        businessResponsibleRole.isAcceptableOrUnknown(
+          data['business_responsible_role']!,
+          _businessResponsibleRoleMeta,
+        ),
       );
     }
     if (data.containsKey('verzija')) {
@@ -3989,6 +4216,15 @@ class $PredmetiTable extends Predmeti
         groblje.isAcceptableOrUnknown(data['groblje']!, _grobljeMeta),
       );
     }
+    if (data.containsKey('groblje_polaganja_urne')) {
+      context.handle(
+        _grobljePolaganjaUrneMeta,
+        grobljePolaganjaUrne.isAcceptableOrUnknown(
+          data['groblje_polaganja_urne']!,
+          _grobljePolaganjaUrneMeta,
+        ),
+      );
+    }
     if (data.containsKey('tip_groblja')) {
       context.handle(
         _tipGrobljaMeta,
@@ -4026,6 +4262,15 @@ class $PredmetiTable extends Predmeti
       context.handle(
         _opeloMeta,
         opelo.isAcceptableOrUnknown(data['opelo']!, _opeloMeta),
+      );
+    }
+    if (data.containsKey('obavestiti_svestenika')) {
+      context.handle(
+        _obavestitiSvestenikaMeta,
+        obavestitiSvestenika.isAcceptableOrUnknown(
+          data['obavestiti_svestenika']!,
+          _obavestitiSvestenikaMeta,
+        ),
       );
     }
     if (data.containsKey('opelo_mesto')) {
@@ -4169,16 +4414,40 @@ class $PredmetiTable extends Predmeti
         ),
       );
     }
+    if (data.containsKey('promena_sanduka')) {
+      context.handle(
+        _promenaSandukaMeta,
+        promenaSanduka.isAcceptableOrUnknown(
+          data['promena_sanduka']!,
+          _promenaSandukaMeta,
+        ),
+      );
+    }
     if (data.containsKey('docek_mesto')) {
       context.handle(
         _docekMestoMeta,
         docekMesto.isAcceptableOrUnknown(data['docek_mesto']!, _docekMestoMeta),
       );
     }
+    if (data.containsKey('docek_datum')) {
+      context.handle(
+        _docekDatumMeta,
+        docekDatum.isAcceptableOrUnknown(data['docek_datum']!, _docekDatumMeta),
+      );
+    }
     if (data.containsKey('docek_vreme')) {
       context.handle(
         _docekVremeMeta,
         docekVreme.isAcceptableOrUnknown(data['docek_vreme']!, _docekVremeMeta),
+      );
+    }
+    if (data.containsKey('parte_potrebna')) {
+      context.handle(
+        _partePotrebnaMeta,
+        partePotrebna.isAcceptableOrUnknown(
+          data['parte_potrebna']!,
+          _partePotrebnaMeta,
+        ),
       );
     }
     if (data.containsKey('simbol')) {
@@ -4296,6 +4565,14 @@ class $PredmetiTable extends Predmeti
       savetnikId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}savetnik_id'],
+      ),
+      businessResponsibleName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_responsible_name'],
+      ),
+      businessResponsibleRole: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_responsible_role'],
       ),
       verzija: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -4633,6 +4910,10 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.string,
         data['${effectivePrefix}groblje'],
       )!,
+      grobljePolaganjaUrne: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}groblje_polaganja_urne'],
+      )!,
       tipGroblja: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}tip_groblja'],
@@ -4652,6 +4933,10 @@ class $PredmetiTable extends Predmeti
       opelo: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}opelo'],
+      )!,
+      obavestitiSvestenika: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}obavestiti_svestenika'],
       )!,
       opeloMesto: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -4733,13 +5018,25 @@ class $PredmetiTable extends Predmeti
         DriftSqlType.bool,
         data['${effectivePrefix}docek_posmrtnih_ostataka'],
       )!,
+      promenaSanduka: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}promena_sanduka'],
+      )!,
       docekMesto: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}docek_mesto'],
       )!,
+      docekDatum: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}docek_datum'],
+      )!,
       docekVreme: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}docek_vreme'],
+      )!,
+      partePotrebna: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}parte_potrebna'],
       )!,
       simbol: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -4804,6 +5101,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String status;
   final String datumKreiranja;
   final int? savetnikId;
+
+  /// Portable PREDMET business truth for the SAVETNIK. The local
+  /// [savetnikId] remains a destination-database binding/cache.
+  final String? businessResponsibleName;
+  final String? businessResponsibleRole;
   final int verzija;
   final String businessScenarioId;
   final String sourceIdentity;
@@ -4888,11 +5190,15 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String jkpPlTelefon1;
   final String jkpPlEmail;
   final String groblje;
+  final String grobljePolaganjaUrne;
   final String tipGroblja;
   final String vrstaCeremonije;
   final String datumCeremonije;
   final String vremeCeremonije;
   final String opelo;
+
+  /// DA / NE when OPELO is active; empty means legacy/unknown and is fail-safe.
+  final String obavestitiSvestenika;
   final String opeloMesto;
   final String vremeOpela;
   final String vremeIspracaja;
@@ -4913,8 +5219,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
   final String svisZemlja;
   final String svisGrad;
   final bool docekPosmrtnihOstataka;
+
+  /// Internal DOČEK condition. It is not a separate scenario key.
+  final bool promenaSanduka;
   final String docekMesto;
+  final String docekDatum;
   final String docekVreme;
+  final bool partePotrebna;
   final String simbol;
   final String pismo;
   final String parteIme;
@@ -4935,6 +5246,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.status,
     required this.datumKreiranja,
     this.savetnikId,
+    this.businessResponsibleName,
+    this.businessResponsibleRole,
     required this.verzija,
     required this.businessScenarioId,
     required this.sourceIdentity,
@@ -5019,11 +5332,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.jkpPlTelefon1,
     required this.jkpPlEmail,
     required this.groblje,
+    required this.grobljePolaganjaUrne,
     required this.tipGroblja,
     required this.vrstaCeremonije,
     required this.datumCeremonije,
     required this.vremeCeremonije,
     required this.opelo,
+    required this.obavestitiSvestenika,
     required this.opeloMesto,
     required this.vremeOpela,
     required this.vremeIspracaja,
@@ -5044,8 +5359,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     required this.svisZemlja,
     required this.svisGrad,
     required this.docekPosmrtnihOstataka,
+    required this.promenaSanduka,
     required this.docekMesto,
+    required this.docekDatum,
     required this.docekVreme,
+    required this.partePotrebna,
     required this.simbol,
     required this.pismo,
     required this.parteIme,
@@ -5068,6 +5386,16 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['datum_kreiranja'] = Variable<String>(datumKreiranja);
     if (!nullToAbsent || savetnikId != null) {
       map['savetnik_id'] = Variable<int>(savetnikId);
+    }
+    if (!nullToAbsent || businessResponsibleName != null) {
+      map['business_responsible_name'] = Variable<String>(
+        businessResponsibleName,
+      );
+    }
+    if (!nullToAbsent || businessResponsibleRole != null) {
+      map['business_responsible_role'] = Variable<String>(
+        businessResponsibleRole,
+      );
     }
     map['verzija'] = Variable<int>(verzija);
     map['business_scenario_id'] = Variable<String>(businessScenarioId);
@@ -5165,11 +5493,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['jkp_pl_telefon1'] = Variable<String>(jkpPlTelefon1);
     map['jkp_pl_email'] = Variable<String>(jkpPlEmail);
     map['groblje'] = Variable<String>(groblje);
+    map['groblje_polaganja_urne'] = Variable<String>(grobljePolaganjaUrne);
     map['tip_groblja'] = Variable<String>(tipGroblja);
     map['vrsta_ceremonije'] = Variable<String>(vrstaCeremonije);
     map['datum_ceremonije'] = Variable<String>(datumCeremonije);
     map['vreme_ceremonije'] = Variable<String>(vremeCeremonije);
     map['opelo'] = Variable<String>(opelo);
+    map['obavestiti_svestenika'] = Variable<String>(obavestitiSvestenika);
     map['opelo_mesto'] = Variable<String>(opeloMesto);
     map['vreme_opela'] = Variable<String>(vremeOpela);
     map['vreme_ispracaja'] = Variable<String>(vremeIspracaja);
@@ -5190,8 +5520,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     map['svis_zemlja'] = Variable<String>(svisZemlja);
     map['svis_grad'] = Variable<String>(svisGrad);
     map['docek_posmrtnih_ostataka'] = Variable<bool>(docekPosmrtnihOstataka);
+    map['promena_sanduka'] = Variable<bool>(promenaSanduka);
     map['docek_mesto'] = Variable<String>(docekMesto);
+    map['docek_datum'] = Variable<String>(docekDatum);
     map['docek_vreme'] = Variable<String>(docekVreme);
+    map['parte_potrebna'] = Variable<bool>(partePotrebna);
     map['simbol'] = Variable<String>(simbol);
     map['pismo'] = Variable<String>(pismo);
     map['parte_ime'] = Variable<String>(parteIme);
@@ -5216,6 +5549,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       savetnikId: savetnikId == null && nullToAbsent
           ? const Value.absent()
           : Value(savetnikId),
+      businessResponsibleName: businessResponsibleName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessResponsibleName),
+      businessResponsibleRole: businessResponsibleRole == null && nullToAbsent
+          ? const Value.absent()
+          : Value(businessResponsibleRole),
       verzija: Value(verzija),
       businessScenarioId: Value(businessScenarioId),
       sourceIdentity: Value(sourceIdentity),
@@ -5307,11 +5646,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       jkpPlTelefon1: Value(jkpPlTelefon1),
       jkpPlEmail: Value(jkpPlEmail),
       groblje: Value(groblje),
+      grobljePolaganjaUrne: Value(grobljePolaganjaUrne),
       tipGroblja: Value(tipGroblja),
       vrstaCeremonije: Value(vrstaCeremonije),
       datumCeremonije: Value(datumCeremonije),
       vremeCeremonije: Value(vremeCeremonije),
       opelo: Value(opelo),
+      obavestitiSvestenika: Value(obavestitiSvestenika),
       opeloMesto: Value(opeloMesto),
       vremeOpela: Value(vremeOpela),
       vremeIspracaja: Value(vremeIspracaja),
@@ -5332,8 +5673,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       svisZemlja: Value(svisZemlja),
       svisGrad: Value(svisGrad),
       docekPosmrtnihOstataka: Value(docekPosmrtnihOstataka),
+      promenaSanduka: Value(promenaSanduka),
       docekMesto: Value(docekMesto),
+      docekDatum: Value(docekDatum),
       docekVreme: Value(docekVreme),
+      partePotrebna: Value(partePotrebna),
       simbol: Value(simbol),
       pismo: Value(pismo),
       parteIme: Value(parteIme),
@@ -5360,6 +5704,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       status: serializer.fromJson<String>(json['status']),
       datumKreiranja: serializer.fromJson<String>(json['datumKreiranja']),
       savetnikId: serializer.fromJson<int?>(json['savetnikId']),
+      businessResponsibleName: serializer.fromJson<String?>(
+        json['businessResponsibleName'],
+      ),
+      businessResponsibleRole: serializer.fromJson<String?>(
+        json['businessResponsibleRole'],
+      ),
       verzija: serializer.fromJson<int>(json['verzija']),
       businessScenarioId: serializer.fromJson<String>(
         json['businessScenarioId'],
@@ -5464,11 +5814,17 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       jkpPlTelefon1: serializer.fromJson<String>(json['jkpPlTelefon1']),
       jkpPlEmail: serializer.fromJson<String>(json['jkpPlEmail']),
       groblje: serializer.fromJson<String>(json['groblje']),
+      grobljePolaganjaUrne: serializer.fromJson<String>(
+        json['grobljePolaganjaUrne'],
+      ),
       tipGroblja: serializer.fromJson<String>(json['tipGroblja']),
       vrstaCeremonije: serializer.fromJson<String>(json['vrstaCeremonije']),
       datumCeremonije: serializer.fromJson<String>(json['datumCeremonije']),
       vremeCeremonije: serializer.fromJson<String>(json['vremeCeremonije']),
       opelo: serializer.fromJson<String>(json['opelo']),
+      obavestitiSvestenika: serializer.fromJson<String>(
+        json['obavestitiSvestenika'],
+      ),
       opeloMesto: serializer.fromJson<String>(json['opeloMesto']),
       vremeOpela: serializer.fromJson<String>(json['vremeOpela']),
       vremeIspracaja: serializer.fromJson<String>(json['vremeIspracaja']),
@@ -5491,8 +5847,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekPosmrtnihOstataka: serializer.fromJson<bool>(
         json['docekPosmrtnihOstataka'],
       ),
+      promenaSanduka: serializer.fromJson<bool>(json['promenaSanduka']),
       docekMesto: serializer.fromJson<String>(json['docekMesto']),
+      docekDatum: serializer.fromJson<String>(json['docekDatum']),
       docekVreme: serializer.fromJson<String>(json['docekVreme']),
+      partePotrebna: serializer.fromJson<bool>(json['partePotrebna']),
       simbol: serializer.fromJson<String>(json['simbol']),
       pismo: serializer.fromJson<String>(json['pismo']),
       parteIme: serializer.fromJson<String>(json['parteIme']),
@@ -5516,6 +5875,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'status': serializer.toJson<String>(status),
       'datumKreiranja': serializer.toJson<String>(datumKreiranja),
       'savetnikId': serializer.toJson<int?>(savetnikId),
+      'businessResponsibleName': serializer.toJson<String?>(
+        businessResponsibleName,
+      ),
+      'businessResponsibleRole': serializer.toJson<String?>(
+        businessResponsibleRole,
+      ),
       'verzija': serializer.toJson<int>(verzija),
       'businessScenarioId': serializer.toJson<String>(businessScenarioId),
       'sourceIdentity': serializer.toJson<String>(sourceIdentity),
@@ -5606,11 +5971,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'jkpPlTelefon1': serializer.toJson<String>(jkpPlTelefon1),
       'jkpPlEmail': serializer.toJson<String>(jkpPlEmail),
       'groblje': serializer.toJson<String>(groblje),
+      'grobljePolaganjaUrne': serializer.toJson<String>(grobljePolaganjaUrne),
       'tipGroblja': serializer.toJson<String>(tipGroblja),
       'vrstaCeremonije': serializer.toJson<String>(vrstaCeremonije),
       'datumCeremonije': serializer.toJson<String>(datumCeremonije),
       'vremeCeremonije': serializer.toJson<String>(vremeCeremonije),
       'opelo': serializer.toJson<String>(opelo),
+      'obavestitiSvestenika': serializer.toJson<String>(obavestitiSvestenika),
       'opeloMesto': serializer.toJson<String>(opeloMesto),
       'vremeOpela': serializer.toJson<String>(vremeOpela),
       'vremeIspracaja': serializer.toJson<String>(vremeIspracaja),
@@ -5631,8 +5998,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       'svisZemlja': serializer.toJson<String>(svisZemlja),
       'svisGrad': serializer.toJson<String>(svisGrad),
       'docekPosmrtnihOstataka': serializer.toJson<bool>(docekPosmrtnihOstataka),
+      'promenaSanduka': serializer.toJson<bool>(promenaSanduka),
       'docekMesto': serializer.toJson<String>(docekMesto),
+      'docekDatum': serializer.toJson<String>(docekDatum),
       'docekVreme': serializer.toJson<String>(docekVreme),
+      'partePotrebna': serializer.toJson<bool>(partePotrebna),
       'simbol': serializer.toJson<String>(simbol),
       'pismo': serializer.toJson<String>(pismo),
       'parteIme': serializer.toJson<String>(parteIme),
@@ -5654,6 +6024,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? status,
     String? datumKreiranja,
     Value<int?> savetnikId = const Value.absent(),
+    Value<String?> businessResponsibleName = const Value.absent(),
+    Value<String?> businessResponsibleRole = const Value.absent(),
     int? verzija,
     String? businessScenarioId,
     String? sourceIdentity,
@@ -5738,11 +6110,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? jkpPlTelefon1,
     String? jkpPlEmail,
     String? groblje,
+    String? grobljePolaganjaUrne,
     String? tipGroblja,
     String? vrstaCeremonije,
     String? datumCeremonije,
     String? vremeCeremonije,
     String? opelo,
+    String? obavestitiSvestenika,
     String? opeloMesto,
     String? vremeOpela,
     String? vremeIspracaja,
@@ -5763,8 +6137,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     String? svisZemlja,
     String? svisGrad,
     bool? docekPosmrtnihOstataka,
+    bool? promenaSanduka,
     String? docekMesto,
+    String? docekDatum,
     String? docekVreme,
+    bool? partePotrebna,
     String? simbol,
     String? pismo,
     String? parteIme,
@@ -5783,6 +6160,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     status: status ?? this.status,
     datumKreiranja: datumKreiranja ?? this.datumKreiranja,
     savetnikId: savetnikId.present ? savetnikId.value : this.savetnikId,
+    businessResponsibleName: businessResponsibleName.present
+        ? businessResponsibleName.value
+        : this.businessResponsibleName,
+    businessResponsibleRole: businessResponsibleRole.present
+        ? businessResponsibleRole.value
+        : this.businessResponsibleRole,
     verzija: verzija ?? this.verzija,
     businessScenarioId: businessScenarioId ?? this.businessScenarioId,
     sourceIdentity: sourceIdentity ?? this.sourceIdentity,
@@ -5874,11 +6257,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     jkpPlTelefon1: jkpPlTelefon1 ?? this.jkpPlTelefon1,
     jkpPlEmail: jkpPlEmail ?? this.jkpPlEmail,
     groblje: groblje ?? this.groblje,
+    grobljePolaganjaUrne: grobljePolaganjaUrne ?? this.grobljePolaganjaUrne,
     tipGroblja: tipGroblja ?? this.tipGroblja,
     vrstaCeremonije: vrstaCeremonije ?? this.vrstaCeremonije,
     datumCeremonije: datumCeremonije ?? this.datumCeremonije,
     vremeCeremonije: vremeCeremonije ?? this.vremeCeremonije,
     opelo: opelo ?? this.opelo,
+    obavestitiSvestenika: obavestitiSvestenika ?? this.obavestitiSvestenika,
     opeloMesto: opeloMesto ?? this.opeloMesto,
     vremeOpela: vremeOpela ?? this.vremeOpela,
     vremeIspracaja: vremeIspracaja ?? this.vremeIspracaja,
@@ -5900,8 +6285,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     svisGrad: svisGrad ?? this.svisGrad,
     docekPosmrtnihOstataka:
         docekPosmrtnihOstataka ?? this.docekPosmrtnihOstataka,
+    promenaSanduka: promenaSanduka ?? this.promenaSanduka,
     docekMesto: docekMesto ?? this.docekMesto,
+    docekDatum: docekDatum ?? this.docekDatum,
     docekVreme: docekVreme ?? this.docekVreme,
+    partePotrebna: partePotrebna ?? this.partePotrebna,
     simbol: simbol ?? this.simbol,
     pismo: pismo ?? this.pismo,
     parteIme: parteIme ?? this.parteIme,
@@ -5928,6 +6316,12 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       savetnikId: data.savetnikId.present
           ? data.savetnikId.value
           : this.savetnikId,
+      businessResponsibleName: data.businessResponsibleName.present
+          ? data.businessResponsibleName.value
+          : this.businessResponsibleName,
+      businessResponsibleRole: data.businessResponsibleRole.present
+          ? data.businessResponsibleRole.value
+          : this.businessResponsibleRole,
       verzija: data.verzija.present ? data.verzija.value : this.verzija,
       businessScenarioId: data.businessScenarioId.present
           ? data.businessScenarioId.value
@@ -6123,6 +6517,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ? data.jkpPlEmail.value
           : this.jkpPlEmail,
       groblje: data.groblje.present ? data.groblje.value : this.groblje,
+      grobljePolaganjaUrne: data.grobljePolaganjaUrne.present
+          ? data.grobljePolaganjaUrne.value
+          : this.grobljePolaganjaUrne,
       tipGroblja: data.tipGroblja.present
           ? data.tipGroblja.value
           : this.tipGroblja,
@@ -6136,6 +6533,9 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ? data.vremeCeremonije.value
           : this.vremeCeremonije,
       opelo: data.opelo.present ? data.opelo.value : this.opelo,
+      obavestitiSvestenika: data.obavestitiSvestenika.present
+          ? data.obavestitiSvestenika.value
+          : this.obavestitiSvestenika,
       opeloMesto: data.opeloMesto.present
           ? data.opeloMesto.value
           : this.opeloMesto,
@@ -6176,12 +6576,21 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
       docekPosmrtnihOstataka: data.docekPosmrtnihOstataka.present
           ? data.docekPosmrtnihOstataka.value
           : this.docekPosmrtnihOstataka,
+      promenaSanduka: data.promenaSanduka.present
+          ? data.promenaSanduka.value
+          : this.promenaSanduka,
       docekMesto: data.docekMesto.present
           ? data.docekMesto.value
           : this.docekMesto,
+      docekDatum: data.docekDatum.present
+          ? data.docekDatum.value
+          : this.docekDatum,
       docekVreme: data.docekVreme.present
           ? data.docekVreme.value
           : this.docekVreme,
+      partePotrebna: data.partePotrebna.present
+          ? data.partePotrebna.value
+          : this.partePotrebna,
       simbol: data.simbol.present ? data.simbol.value : this.simbol,
       pismo: data.pismo.present ? data.pismo.value : this.pismo,
       parteIme: data.parteIme.present ? data.parteIme.value : this.parteIme,
@@ -6215,6 +6624,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('status: $status, ')
           ..write('datumKreiranja: $datumKreiranja, ')
           ..write('savetnikId: $savetnikId, ')
+          ..write('businessResponsibleName: $businessResponsibleName, ')
+          ..write('businessResponsibleRole: $businessResponsibleRole, ')
           ..write('verzija: $verzija, ')
           ..write('businessScenarioId: $businessScenarioId, ')
           ..write('sourceIdentity: $sourceIdentity, ')
@@ -6301,11 +6712,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('jkpPlTelefon1: $jkpPlTelefon1, ')
           ..write('jkpPlEmail: $jkpPlEmail, ')
           ..write('groblje: $groblje, ')
+          ..write('grobljePolaganjaUrne: $grobljePolaganjaUrne, ')
           ..write('tipGroblja: $tipGroblja, ')
           ..write('vrstaCeremonije: $vrstaCeremonije, ')
           ..write('datumCeremonije: $datumCeremonije, ')
           ..write('vremeCeremonije: $vremeCeremonije, ')
           ..write('opelo: $opelo, ')
+          ..write('obavestitiSvestenika: $obavestitiSvestenika, ')
           ..write('opeloMesto: $opeloMesto, ')
           ..write('vremeOpela: $vremeOpela, ')
           ..write('vremeIspracaja: $vremeIspracaja, ')
@@ -6326,8 +6739,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           ..write('svisZemlja: $svisZemlja, ')
           ..write('svisGrad: $svisGrad, ')
           ..write('docekPosmrtnihOstataka: $docekPosmrtnihOstataka, ')
+          ..write('promenaSanduka: $promenaSanduka, ')
           ..write('docekMesto: $docekMesto, ')
+          ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
+          ..write('partePotrebna: $partePotrebna, ')
           ..write('simbol: $simbol, ')
           ..write('pismo: $pismo, ')
           ..write('parteIme: $parteIme, ')
@@ -6351,6 +6767,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     status,
     datumKreiranja,
     savetnikId,
+    businessResponsibleName,
+    businessResponsibleRole,
     verzija,
     businessScenarioId,
     sourceIdentity,
@@ -6435,11 +6853,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     jkpPlTelefon1,
     jkpPlEmail,
     groblje,
+    grobljePolaganjaUrne,
     tipGroblja,
     vrstaCeremonije,
     datumCeremonije,
     vremeCeremonije,
     opelo,
+    obavestitiSvestenika,
     opeloMesto,
     vremeOpela,
     vremeIspracaja,
@@ -6460,8 +6880,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
     svisZemlja,
     svisGrad,
     docekPosmrtnihOstataka,
+    promenaSanduka,
     docekMesto,
+    docekDatum,
     docekVreme,
+    partePotrebna,
     simbol,
     pismo,
     parteIme,
@@ -6484,6 +6907,8 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.status == this.status &&
           other.datumKreiranja == this.datumKreiranja &&
           other.savetnikId == this.savetnikId &&
+          other.businessResponsibleName == this.businessResponsibleName &&
+          other.businessResponsibleRole == this.businessResponsibleRole &&
           other.verzija == this.verzija &&
           other.businessScenarioId == this.businessScenarioId &&
           other.sourceIdentity == this.sourceIdentity &&
@@ -6569,11 +6994,13 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.jkpPlTelefon1 == this.jkpPlTelefon1 &&
           other.jkpPlEmail == this.jkpPlEmail &&
           other.groblje == this.groblje &&
+          other.grobljePolaganjaUrne == this.grobljePolaganjaUrne &&
           other.tipGroblja == this.tipGroblja &&
           other.vrstaCeremonije == this.vrstaCeremonije &&
           other.datumCeremonije == this.datumCeremonije &&
           other.vremeCeremonije == this.vremeCeremonije &&
           other.opelo == this.opelo &&
+          other.obavestitiSvestenika == this.obavestitiSvestenika &&
           other.opeloMesto == this.opeloMesto &&
           other.vremeOpela == this.vremeOpela &&
           other.vremeIspracaja == this.vremeIspracaja &&
@@ -6594,8 +7021,11 @@ class PredmetiData extends DataClass implements Insertable<PredmetiData> {
           other.svisZemlja == this.svisZemlja &&
           other.svisGrad == this.svisGrad &&
           other.docekPosmrtnihOstataka == this.docekPosmrtnihOstataka &&
+          other.promenaSanduka == this.promenaSanduka &&
           other.docekMesto == this.docekMesto &&
+          other.docekDatum == this.docekDatum &&
           other.docekVreme == this.docekVreme &&
+          other.partePotrebna == this.partePotrebna &&
           other.simbol == this.simbol &&
           other.pismo == this.pismo &&
           other.parteIme == this.parteIme &&
@@ -6616,6 +7046,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> status;
   final Value<String> datumKreiranja;
   final Value<int?> savetnikId;
+  final Value<String?> businessResponsibleName;
+  final Value<String?> businessResponsibleRole;
   final Value<int> verzija;
   final Value<String> businessScenarioId;
   final Value<String> sourceIdentity;
@@ -6700,11 +7132,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> jkpPlTelefon1;
   final Value<String> jkpPlEmail;
   final Value<String> groblje;
+  final Value<String> grobljePolaganjaUrne;
   final Value<String> tipGroblja;
   final Value<String> vrstaCeremonije;
   final Value<String> datumCeremonije;
   final Value<String> vremeCeremonije;
   final Value<String> opelo;
+  final Value<String> obavestitiSvestenika;
   final Value<String> opeloMesto;
   final Value<String> vremeOpela;
   final Value<String> vremeIspracaja;
@@ -6725,8 +7159,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
   final Value<String> svisZemlja;
   final Value<String> svisGrad;
   final Value<bool> docekPosmrtnihOstataka;
+  final Value<bool> promenaSanduka;
   final Value<String> docekMesto;
+  final Value<String> docekDatum;
   final Value<String> docekVreme;
+  final Value<bool> partePotrebna;
   final Value<String> simbol;
   final Value<String> pismo;
   final Value<String> parteIme;
@@ -6745,6 +7182,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.status = const Value.absent(),
     this.datumKreiranja = const Value.absent(),
     this.savetnikId = const Value.absent(),
+    this.businessResponsibleName = const Value.absent(),
+    this.businessResponsibleRole = const Value.absent(),
     this.verzija = const Value.absent(),
     this.businessScenarioId = const Value.absent(),
     this.sourceIdentity = const Value.absent(),
@@ -6829,11 +7268,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.jkpPlTelefon1 = const Value.absent(),
     this.jkpPlEmail = const Value.absent(),
     this.groblje = const Value.absent(),
+    this.grobljePolaganjaUrne = const Value.absent(),
     this.tipGroblja = const Value.absent(),
     this.vrstaCeremonije = const Value.absent(),
     this.datumCeremonije = const Value.absent(),
     this.vremeCeremonije = const Value.absent(),
     this.opelo = const Value.absent(),
+    this.obavestitiSvestenika = const Value.absent(),
     this.opeloMesto = const Value.absent(),
     this.vremeOpela = const Value.absent(),
     this.vremeIspracaja = const Value.absent(),
@@ -6854,8 +7295,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.svisZemlja = const Value.absent(),
     this.svisGrad = const Value.absent(),
     this.docekPosmrtnihOstataka = const Value.absent(),
+    this.promenaSanduka = const Value.absent(),
     this.docekMesto = const Value.absent(),
+    this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
+    this.partePotrebna = const Value.absent(),
     this.simbol = const Value.absent(),
     this.pismo = const Value.absent(),
     this.parteIme = const Value.absent(),
@@ -6875,6 +7319,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.status = const Value.absent(),
     this.datumKreiranja = const Value.absent(),
     this.savetnikId = const Value.absent(),
+    this.businessResponsibleName = const Value.absent(),
+    this.businessResponsibleRole = const Value.absent(),
     this.verzija = const Value.absent(),
     this.businessScenarioId = const Value.absent(),
     this.sourceIdentity = const Value.absent(),
@@ -6959,11 +7405,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.jkpPlTelefon1 = const Value.absent(),
     this.jkpPlEmail = const Value.absent(),
     this.groblje = const Value.absent(),
+    this.grobljePolaganjaUrne = const Value.absent(),
     this.tipGroblja = const Value.absent(),
     this.vrstaCeremonije = const Value.absent(),
     this.datumCeremonije = const Value.absent(),
     this.vremeCeremonije = const Value.absent(),
     this.opelo = const Value.absent(),
+    this.obavestitiSvestenika = const Value.absent(),
     this.opeloMesto = const Value.absent(),
     this.vremeOpela = const Value.absent(),
     this.vremeIspracaja = const Value.absent(),
@@ -6984,8 +7432,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     this.svisZemlja = const Value.absent(),
     this.svisGrad = const Value.absent(),
     this.docekPosmrtnihOstataka = const Value.absent(),
+    this.promenaSanduka = const Value.absent(),
     this.docekMesto = const Value.absent(),
+    this.docekDatum = const Value.absent(),
     this.docekVreme = const Value.absent(),
+    this.partePotrebna = const Value.absent(),
     this.simbol = const Value.absent(),
     this.pismo = const Value.absent(),
     this.parteIme = const Value.absent(),
@@ -7005,6 +7456,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? status,
     Expression<String>? datumKreiranja,
     Expression<int>? savetnikId,
+    Expression<String>? businessResponsibleName,
+    Expression<String>? businessResponsibleRole,
     Expression<int>? verzija,
     Expression<String>? businessScenarioId,
     Expression<String>? sourceIdentity,
@@ -7089,11 +7542,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? jkpPlTelefon1,
     Expression<String>? jkpPlEmail,
     Expression<String>? groblje,
+    Expression<String>? grobljePolaganjaUrne,
     Expression<String>? tipGroblja,
     Expression<String>? vrstaCeremonije,
     Expression<String>? datumCeremonije,
     Expression<String>? vremeCeremonije,
     Expression<String>? opelo,
+    Expression<String>? obavestitiSvestenika,
     Expression<String>? opeloMesto,
     Expression<String>? vremeOpela,
     Expression<String>? vremeIspracaja,
@@ -7114,8 +7569,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Expression<String>? svisZemlja,
     Expression<String>? svisGrad,
     Expression<bool>? docekPosmrtnihOstataka,
+    Expression<bool>? promenaSanduka,
     Expression<String>? docekMesto,
+    Expression<String>? docekDatum,
     Expression<String>? docekVreme,
+    Expression<bool>? partePotrebna,
     Expression<String>? simbol,
     Expression<String>? pismo,
     Expression<String>? parteIme,
@@ -7135,6 +7593,10 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (status != null) 'status': status,
       if (datumKreiranja != null) 'datum_kreiranja': datumKreiranja,
       if (savetnikId != null) 'savetnik_id': savetnikId,
+      if (businessResponsibleName != null)
+        'business_responsible_name': businessResponsibleName,
+      if (businessResponsibleRole != null)
+        'business_responsible_role': businessResponsibleRole,
       if (verzija != null) 'verzija': verzija,
       if (businessScenarioId != null)
         'business_scenario_id': businessScenarioId,
@@ -7229,11 +7691,15 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (jkpPlTelefon1 != null) 'jkp_pl_telefon1': jkpPlTelefon1,
       if (jkpPlEmail != null) 'jkp_pl_email': jkpPlEmail,
       if (groblje != null) 'groblje': groblje,
+      if (grobljePolaganjaUrne != null)
+        'groblje_polaganja_urne': grobljePolaganjaUrne,
       if (tipGroblja != null) 'tip_groblja': tipGroblja,
       if (vrstaCeremonije != null) 'vrsta_ceremonije': vrstaCeremonije,
       if (datumCeremonije != null) 'datum_ceremonije': datumCeremonije,
       if (vremeCeremonije != null) 'vreme_ceremonije': vremeCeremonije,
       if (opelo != null) 'opelo': opelo,
+      if (obavestitiSvestenika != null)
+        'obavestiti_svestenika': obavestitiSvestenika,
       if (opeloMesto != null) 'opelo_mesto': opeloMesto,
       if (vremeOpela != null) 'vreme_opela': vremeOpela,
       if (vremeIspracaja != null) 'vreme_ispracaja': vremeIspracaja,
@@ -7255,8 +7721,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       if (svisGrad != null) 'svis_grad': svisGrad,
       if (docekPosmrtnihOstataka != null)
         'docek_posmrtnih_ostataka': docekPosmrtnihOstataka,
+      if (promenaSanduka != null) 'promena_sanduka': promenaSanduka,
       if (docekMesto != null) 'docek_mesto': docekMesto,
+      if (docekDatum != null) 'docek_datum': docekDatum,
       if (docekVreme != null) 'docek_vreme': docekVreme,
+      if (partePotrebna != null) 'parte_potrebna': partePotrebna,
       if (simbol != null) 'simbol': simbol,
       if (pismo != null) 'pismo': pismo,
       if (parteIme != null) 'parte_ime': parteIme,
@@ -7279,6 +7748,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? status,
     Value<String>? datumKreiranja,
     Value<int?>? savetnikId,
+    Value<String?>? businessResponsibleName,
+    Value<String?>? businessResponsibleRole,
     Value<int>? verzija,
     Value<String>? businessScenarioId,
     Value<String>? sourceIdentity,
@@ -7363,11 +7834,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? jkpPlTelefon1,
     Value<String>? jkpPlEmail,
     Value<String>? groblje,
+    Value<String>? grobljePolaganjaUrne,
     Value<String>? tipGroblja,
     Value<String>? vrstaCeremonije,
     Value<String>? datumCeremonije,
     Value<String>? vremeCeremonije,
     Value<String>? opelo,
+    Value<String>? obavestitiSvestenika,
     Value<String>? opeloMesto,
     Value<String>? vremeOpela,
     Value<String>? vremeIspracaja,
@@ -7388,8 +7861,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     Value<String>? svisZemlja,
     Value<String>? svisGrad,
     Value<bool>? docekPosmrtnihOstataka,
+    Value<bool>? promenaSanduka,
     Value<String>? docekMesto,
+    Value<String>? docekDatum,
     Value<String>? docekVreme,
+    Value<bool>? partePotrebna,
     Value<String>? simbol,
     Value<String>? pismo,
     Value<String>? parteIme,
@@ -7409,6 +7885,10 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       status: status ?? this.status,
       datumKreiranja: datumKreiranja ?? this.datumKreiranja,
       savetnikId: savetnikId ?? this.savetnikId,
+      businessResponsibleName:
+          businessResponsibleName ?? this.businessResponsibleName,
+      businessResponsibleRole:
+          businessResponsibleRole ?? this.businessResponsibleRole,
       verzija: verzija ?? this.verzija,
       businessScenarioId: businessScenarioId ?? this.businessScenarioId,
       sourceIdentity: sourceIdentity ?? this.sourceIdentity,
@@ -7498,11 +7978,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       jkpPlTelefon1: jkpPlTelefon1 ?? this.jkpPlTelefon1,
       jkpPlEmail: jkpPlEmail ?? this.jkpPlEmail,
       groblje: groblje ?? this.groblje,
+      grobljePolaganjaUrne: grobljePolaganjaUrne ?? this.grobljePolaganjaUrne,
       tipGroblja: tipGroblja ?? this.tipGroblja,
       vrstaCeremonije: vrstaCeremonije ?? this.vrstaCeremonije,
       datumCeremonije: datumCeremonije ?? this.datumCeremonije,
       vremeCeremonije: vremeCeremonije ?? this.vremeCeremonije,
       opelo: opelo ?? this.opelo,
+      obavestitiSvestenika: obavestitiSvestenika ?? this.obavestitiSvestenika,
       opeloMesto: opeloMesto ?? this.opeloMesto,
       vremeOpela: vremeOpela ?? this.vremeOpela,
       vremeIspracaja: vremeIspracaja ?? this.vremeIspracaja,
@@ -7524,8 +8006,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
       svisGrad: svisGrad ?? this.svisGrad,
       docekPosmrtnihOstataka:
           docekPosmrtnihOstataka ?? this.docekPosmrtnihOstataka,
+      promenaSanduka: promenaSanduka ?? this.promenaSanduka,
       docekMesto: docekMesto ?? this.docekMesto,
+      docekDatum: docekDatum ?? this.docekDatum,
       docekVreme: docekVreme ?? this.docekVreme,
+      partePotrebna: partePotrebna ?? this.partePotrebna,
       simbol: simbol ?? this.simbol,
       pismo: pismo ?? this.pismo,
       parteIme: parteIme ?? this.parteIme,
@@ -7558,6 +8043,16 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     }
     if (savetnikId.present) {
       map['savetnik_id'] = Variable<int>(savetnikId.value);
+    }
+    if (businessResponsibleName.present) {
+      map['business_responsible_name'] = Variable<String>(
+        businessResponsibleName.value,
+      );
+    }
+    if (businessResponsibleRole.present) {
+      map['business_responsible_role'] = Variable<String>(
+        businessResponsibleRole.value,
+      );
     }
     if (verzija.present) {
       map['verzija'] = Variable<int>(verzija.value);
@@ -7823,6 +8318,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     if (groblje.present) {
       map['groblje'] = Variable<String>(groblje.value);
     }
+    if (grobljePolaganjaUrne.present) {
+      map['groblje_polaganja_urne'] = Variable<String>(
+        grobljePolaganjaUrne.value,
+      );
+    }
     if (tipGroblja.present) {
       map['tip_groblja'] = Variable<String>(tipGroblja.value);
     }
@@ -7837,6 +8337,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
     }
     if (opelo.present) {
       map['opelo'] = Variable<String>(opelo.value);
+    }
+    if (obavestitiSvestenika.present) {
+      map['obavestiti_svestenika'] = Variable<String>(
+        obavestitiSvestenika.value,
+      );
     }
     if (opeloMesto.present) {
       map['opelo_mesto'] = Variable<String>(opeloMesto.value);
@@ -7900,11 +8405,20 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
         docekPosmrtnihOstataka.value,
       );
     }
+    if (promenaSanduka.present) {
+      map['promena_sanduka'] = Variable<bool>(promenaSanduka.value);
+    }
     if (docekMesto.present) {
       map['docek_mesto'] = Variable<String>(docekMesto.value);
     }
+    if (docekDatum.present) {
+      map['docek_datum'] = Variable<String>(docekDatum.value);
+    }
     if (docekVreme.present) {
       map['docek_vreme'] = Variable<String>(docekVreme.value);
+    }
+    if (partePotrebna.present) {
+      map['parte_potrebna'] = Variable<bool>(partePotrebna.value);
     }
     if (simbol.present) {
       map['simbol'] = Variable<String>(simbol.value);
@@ -7953,6 +8467,8 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('status: $status, ')
           ..write('datumKreiranja: $datumKreiranja, ')
           ..write('savetnikId: $savetnikId, ')
+          ..write('businessResponsibleName: $businessResponsibleName, ')
+          ..write('businessResponsibleRole: $businessResponsibleRole, ')
           ..write('verzija: $verzija, ')
           ..write('businessScenarioId: $businessScenarioId, ')
           ..write('sourceIdentity: $sourceIdentity, ')
@@ -8039,11 +8555,13 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('jkpPlTelefon1: $jkpPlTelefon1, ')
           ..write('jkpPlEmail: $jkpPlEmail, ')
           ..write('groblje: $groblje, ')
+          ..write('grobljePolaganjaUrne: $grobljePolaganjaUrne, ')
           ..write('tipGroblja: $tipGroblja, ')
           ..write('vrstaCeremonije: $vrstaCeremonije, ')
           ..write('datumCeremonije: $datumCeremonije, ')
           ..write('vremeCeremonije: $vremeCeremonije, ')
           ..write('opelo: $opelo, ')
+          ..write('obavestitiSvestenika: $obavestitiSvestenika, ')
           ..write('opeloMesto: $opeloMesto, ')
           ..write('vremeOpela: $vremeOpela, ')
           ..write('vremeIspracaja: $vremeIspracaja, ')
@@ -8064,8 +8582,11 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('svisZemlja: $svisZemlja, ')
           ..write('svisGrad: $svisGrad, ')
           ..write('docekPosmrtnihOstataka: $docekPosmrtnihOstataka, ')
+          ..write('promenaSanduka: $promenaSanduka, ')
           ..write('docekMesto: $docekMesto, ')
+          ..write('docekDatum: $docekDatum, ')
           ..write('docekVreme: $docekVreme, ')
+          ..write('partePotrebna: $partePotrebna, ')
           ..write('simbol: $simbol, ')
           ..write('pismo: $pismo, ')
           ..write('parteIme: $parteIme, ')
@@ -8078,6 +8599,1473 @@ class PredmetiCompanion extends UpdateCompanion<PredmetiData> {
           ..write('napomenaPlacanja: $napomenaPlacanja, ')
           ..write('napomena: $napomena, ')
           ..write('exportVerzija: $exportVerzija')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CituljePripremeTable extends CituljePripreme
+    with TableInfo<$CituljePripremeTable, CituljePripremeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CituljePripremeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _portableOccurrenceIdMeta =
+      const VerificationMeta('portableOccurrenceId');
+  @override
+  late final GeneratedColumn<String> portableOccurrenceId =
+      GeneratedColumn<String>(
+        'portable_occurrence_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _articleTypeMeta = const VerificationMeta(
+    'articleType',
+  );
+  @override
+  late final GeneratedColumn<String> articleType = GeneratedColumn<String>(
+    'article_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _parteTextModeMeta = const VerificationMeta(
+    'parteTextMode',
+  );
+  @override
+  late final GeneratedColumn<String> parteTextMode = GeneratedColumn<String>(
+    'parte_text_mode',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _publicationDateMeta = const VerificationMeta(
+    'publicationDate',
+  );
+  @override
+  late final GeneratedColumn<String> publicationDate = GeneratedColumn<String>(
+    'publication_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _publicationTextMeta = const VerificationMeta(
+    'publicationText',
+  );
+  @override
+  late final GeneratedColumn<String> publicationText = GeneratedColumn<String>(
+    'publication_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+    'state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('UNCONFIGURED'),
+  );
+  static const VerificationMeta _finalizedMeta = const VerificationMeta(
+    'finalized',
+  );
+  @override
+  late final GeneratedColumn<bool> finalized = GeneratedColumn<bool>(
+    'finalized',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("finalized" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _finalizedAtMeta = const VerificationMeta(
+    'finalizedAt',
+  );
+  @override
+  late final GeneratedColumn<String> finalizedAt = GeneratedColumn<String>(
+    'finalized_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parteSnapshotFingerprintMeta =
+      const VerificationMeta('parteSnapshotFingerprint');
+  @override
+  late final GeneratedColumn<String> parteSnapshotFingerprint =
+      GeneratedColumn<String>(
+        'parte_snapshot_fingerprint',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    predmetId,
+    portableOccurrenceId,
+    articleType,
+    parteTextMode,
+    publicationDate,
+    publicationText,
+    note,
+    state,
+    finalized,
+    finalizedAt,
+    parteSnapshotFingerprint,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'citulje_pripreme';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CituljePripremeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetIdMeta);
+    }
+    if (data.containsKey('portable_occurrence_id')) {
+      context.handle(
+        _portableOccurrenceIdMeta,
+        portableOccurrenceId.isAcceptableOrUnknown(
+          data['portable_occurrence_id']!,
+          _portableOccurrenceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_portableOccurrenceIdMeta);
+    }
+    if (data.containsKey('article_type')) {
+      context.handle(
+        _articleTypeMeta,
+        articleType.isAcceptableOrUnknown(
+          data['article_type']!,
+          _articleTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_articleTypeMeta);
+    }
+    if (data.containsKey('parte_text_mode')) {
+      context.handle(
+        _parteTextModeMeta,
+        parteTextMode.isAcceptableOrUnknown(
+          data['parte_text_mode']!,
+          _parteTextModeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('publication_date')) {
+      context.handle(
+        _publicationDateMeta,
+        publicationDate.isAcceptableOrUnknown(
+          data['publication_date']!,
+          _publicationDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('publication_text')) {
+      context.handle(
+        _publicationTextMeta,
+        publicationText.isAcceptableOrUnknown(
+          data['publication_text']!,
+          _publicationTextMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+        _stateMeta,
+        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
+      );
+    }
+    if (data.containsKey('finalized')) {
+      context.handle(
+        _finalizedMeta,
+        finalized.isAcceptableOrUnknown(data['finalized']!, _finalizedMeta),
+      );
+    }
+    if (data.containsKey('finalized_at')) {
+      context.handle(
+        _finalizedAtMeta,
+        finalizedAt.isAcceptableOrUnknown(
+          data['finalized_at']!,
+          _finalizedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parte_snapshot_fingerprint')) {
+      context.handle(
+        _parteSnapshotFingerprintMeta,
+        parteSnapshotFingerprint.isAcceptableOrUnknown(
+          data['parte_snapshot_fingerprint']!,
+          _parteSnapshotFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {predmetId, portableOccurrenceId},
+  ];
+  @override
+  CituljePripremeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CituljePripremeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      portableOccurrenceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}portable_occurrence_id'],
+      )!,
+      articleType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}article_type'],
+      )!,
+      parteTextMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parte_text_mode'],
+      ),
+      publicationDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}publication_date'],
+      ),
+      publicationText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}publication_text'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      state: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}state'],
+      )!,
+      finalized: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}finalized'],
+      )!,
+      finalizedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}finalized_at'],
+      ),
+      parteSnapshotFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parte_snapshot_fingerprint'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CituljePripremeTable createAlias(String alias) {
+    return $CituljePripremeTable(attachedDatabase, alias);
+  }
+}
+
+class CituljePripremeData extends DataClass
+    implements Insertable<CituljePripremeData> {
+  final int id;
+  final int predmetId;
+  final String portableOccurrenceId;
+  final String articleType;
+  final String? parteTextMode;
+  final String? publicationDate;
+  final String publicationText;
+  final String note;
+  final String state;
+  final bool finalized;
+  final String? finalizedAt;
+  final String? parteSnapshotFingerprint;
+  final String createdAt;
+  final String updatedAt;
+  const CituljePripremeData({
+    required this.id,
+    required this.predmetId,
+    required this.portableOccurrenceId,
+    required this.articleType,
+    this.parteTextMode,
+    this.publicationDate,
+    required this.publicationText,
+    required this.note,
+    required this.state,
+    required this.finalized,
+    this.finalizedAt,
+    this.parteSnapshotFingerprint,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['portable_occurrence_id'] = Variable<String>(portableOccurrenceId);
+    map['article_type'] = Variable<String>(articleType);
+    if (!nullToAbsent || parteTextMode != null) {
+      map['parte_text_mode'] = Variable<String>(parteTextMode);
+    }
+    if (!nullToAbsent || publicationDate != null) {
+      map['publication_date'] = Variable<String>(publicationDate);
+    }
+    map['publication_text'] = Variable<String>(publicationText);
+    map['note'] = Variable<String>(note);
+    map['state'] = Variable<String>(state);
+    map['finalized'] = Variable<bool>(finalized);
+    if (!nullToAbsent || finalizedAt != null) {
+      map['finalized_at'] = Variable<String>(finalizedAt);
+    }
+    if (!nullToAbsent || parteSnapshotFingerprint != null) {
+      map['parte_snapshot_fingerprint'] = Variable<String>(
+        parteSnapshotFingerprint,
+      );
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  CituljePripremeCompanion toCompanion(bool nullToAbsent) {
+    return CituljePripremeCompanion(
+      id: Value(id),
+      predmetId: Value(predmetId),
+      portableOccurrenceId: Value(portableOccurrenceId),
+      articleType: Value(articleType),
+      parteTextMode: parteTextMode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parteTextMode),
+      publicationDate: publicationDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(publicationDate),
+      publicationText: Value(publicationText),
+      note: Value(note),
+      state: Value(state),
+      finalized: Value(finalized),
+      finalizedAt: finalizedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(finalizedAt),
+      parteSnapshotFingerprint: parteSnapshotFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parteSnapshotFingerprint),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CituljePripremeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CituljePripremeData(
+      id: serializer.fromJson<int>(json['id']),
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      portableOccurrenceId: serializer.fromJson<String>(
+        json['portableOccurrenceId'],
+      ),
+      articleType: serializer.fromJson<String>(json['articleType']),
+      parteTextMode: serializer.fromJson<String?>(json['parteTextMode']),
+      publicationDate: serializer.fromJson<String?>(json['publicationDate']),
+      publicationText: serializer.fromJson<String>(json['publicationText']),
+      note: serializer.fromJson<String>(json['note']),
+      state: serializer.fromJson<String>(json['state']),
+      finalized: serializer.fromJson<bool>(json['finalized']),
+      finalizedAt: serializer.fromJson<String?>(json['finalizedAt']),
+      parteSnapshotFingerprint: serializer.fromJson<String?>(
+        json['parteSnapshotFingerprint'],
+      ),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'predmetId': serializer.toJson<int>(predmetId),
+      'portableOccurrenceId': serializer.toJson<String>(portableOccurrenceId),
+      'articleType': serializer.toJson<String>(articleType),
+      'parteTextMode': serializer.toJson<String?>(parteTextMode),
+      'publicationDate': serializer.toJson<String?>(publicationDate),
+      'publicationText': serializer.toJson<String>(publicationText),
+      'note': serializer.toJson<String>(note),
+      'state': serializer.toJson<String>(state),
+      'finalized': serializer.toJson<bool>(finalized),
+      'finalizedAt': serializer.toJson<String?>(finalizedAt),
+      'parteSnapshotFingerprint': serializer.toJson<String?>(
+        parteSnapshotFingerprint,
+      ),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  CituljePripremeData copyWith({
+    int? id,
+    int? predmetId,
+    String? portableOccurrenceId,
+    String? articleType,
+    Value<String?> parteTextMode = const Value.absent(),
+    Value<String?> publicationDate = const Value.absent(),
+    String? publicationText,
+    String? note,
+    String? state,
+    bool? finalized,
+    Value<String?> finalizedAt = const Value.absent(),
+    Value<String?> parteSnapshotFingerprint = const Value.absent(),
+    String? createdAt,
+    String? updatedAt,
+  }) => CituljePripremeData(
+    id: id ?? this.id,
+    predmetId: predmetId ?? this.predmetId,
+    portableOccurrenceId: portableOccurrenceId ?? this.portableOccurrenceId,
+    articleType: articleType ?? this.articleType,
+    parteTextMode: parteTextMode.present
+        ? parteTextMode.value
+        : this.parteTextMode,
+    publicationDate: publicationDate.present
+        ? publicationDate.value
+        : this.publicationDate,
+    publicationText: publicationText ?? this.publicationText,
+    note: note ?? this.note,
+    state: state ?? this.state,
+    finalized: finalized ?? this.finalized,
+    finalizedAt: finalizedAt.present ? finalizedAt.value : this.finalizedAt,
+    parteSnapshotFingerprint: parteSnapshotFingerprint.present
+        ? parteSnapshotFingerprint.value
+        : this.parteSnapshotFingerprint,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CituljePripremeData copyWithCompanion(CituljePripremeCompanion data) {
+    return CituljePripremeData(
+      id: data.id.present ? data.id.value : this.id,
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      portableOccurrenceId: data.portableOccurrenceId.present
+          ? data.portableOccurrenceId.value
+          : this.portableOccurrenceId,
+      articleType: data.articleType.present
+          ? data.articleType.value
+          : this.articleType,
+      parteTextMode: data.parteTextMode.present
+          ? data.parteTextMode.value
+          : this.parteTextMode,
+      publicationDate: data.publicationDate.present
+          ? data.publicationDate.value
+          : this.publicationDate,
+      publicationText: data.publicationText.present
+          ? data.publicationText.value
+          : this.publicationText,
+      note: data.note.present ? data.note.value : this.note,
+      state: data.state.present ? data.state.value : this.state,
+      finalized: data.finalized.present ? data.finalized.value : this.finalized,
+      finalizedAt: data.finalizedAt.present
+          ? data.finalizedAt.value
+          : this.finalizedAt,
+      parteSnapshotFingerprint: data.parteSnapshotFingerprint.present
+          ? data.parteSnapshotFingerprint.value
+          : this.parteSnapshotFingerprint,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CituljePripremeData(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('portableOccurrenceId: $portableOccurrenceId, ')
+          ..write('articleType: $articleType, ')
+          ..write('parteTextMode: $parteTextMode, ')
+          ..write('publicationDate: $publicationDate, ')
+          ..write('publicationText: $publicationText, ')
+          ..write('note: $note, ')
+          ..write('state: $state, ')
+          ..write('finalized: $finalized, ')
+          ..write('finalizedAt: $finalizedAt, ')
+          ..write('parteSnapshotFingerprint: $parteSnapshotFingerprint, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    predmetId,
+    portableOccurrenceId,
+    articleType,
+    parteTextMode,
+    publicationDate,
+    publicationText,
+    note,
+    state,
+    finalized,
+    finalizedAt,
+    parteSnapshotFingerprint,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CituljePripremeData &&
+          other.id == this.id &&
+          other.predmetId == this.predmetId &&
+          other.portableOccurrenceId == this.portableOccurrenceId &&
+          other.articleType == this.articleType &&
+          other.parteTextMode == this.parteTextMode &&
+          other.publicationDate == this.publicationDate &&
+          other.publicationText == this.publicationText &&
+          other.note == this.note &&
+          other.state == this.state &&
+          other.finalized == this.finalized &&
+          other.finalizedAt == this.finalizedAt &&
+          other.parteSnapshotFingerprint == this.parteSnapshotFingerprint &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CituljePripremeCompanion extends UpdateCompanion<CituljePripremeData> {
+  final Value<int> id;
+  final Value<int> predmetId;
+  final Value<String> portableOccurrenceId;
+  final Value<String> articleType;
+  final Value<String?> parteTextMode;
+  final Value<String?> publicationDate;
+  final Value<String> publicationText;
+  final Value<String> note;
+  final Value<String> state;
+  final Value<bool> finalized;
+  final Value<String?> finalizedAt;
+  final Value<String?> parteSnapshotFingerprint;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  const CituljePripremeCompanion({
+    this.id = const Value.absent(),
+    this.predmetId = const Value.absent(),
+    this.portableOccurrenceId = const Value.absent(),
+    this.articleType = const Value.absent(),
+    this.parteTextMode = const Value.absent(),
+    this.publicationDate = const Value.absent(),
+    this.publicationText = const Value.absent(),
+    this.note = const Value.absent(),
+    this.state = const Value.absent(),
+    this.finalized = const Value.absent(),
+    this.finalizedAt = const Value.absent(),
+    this.parteSnapshotFingerprint = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  CituljePripremeCompanion.insert({
+    this.id = const Value.absent(),
+    required int predmetId,
+    required String portableOccurrenceId,
+    required String articleType,
+    this.parteTextMode = const Value.absent(),
+    this.publicationDate = const Value.absent(),
+    this.publicationText = const Value.absent(),
+    this.note = const Value.absent(),
+    this.state = const Value.absent(),
+    this.finalized = const Value.absent(),
+    this.finalizedAt = const Value.absent(),
+    this.parteSnapshotFingerprint = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+  }) : predmetId = Value(predmetId),
+       portableOccurrenceId = Value(portableOccurrenceId),
+       articleType = Value(articleType),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<CituljePripremeData> custom({
+    Expression<int>? id,
+    Expression<int>? predmetId,
+    Expression<String>? portableOccurrenceId,
+    Expression<String>? articleType,
+    Expression<String>? parteTextMode,
+    Expression<String>? publicationDate,
+    Expression<String>? publicationText,
+    Expression<String>? note,
+    Expression<String>? state,
+    Expression<bool>? finalized,
+    Expression<String>? finalizedAt,
+    Expression<String>? parteSnapshotFingerprint,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (portableOccurrenceId != null)
+        'portable_occurrence_id': portableOccurrenceId,
+      if (articleType != null) 'article_type': articleType,
+      if (parteTextMode != null) 'parte_text_mode': parteTextMode,
+      if (publicationDate != null) 'publication_date': publicationDate,
+      if (publicationText != null) 'publication_text': publicationText,
+      if (note != null) 'note': note,
+      if (state != null) 'state': state,
+      if (finalized != null) 'finalized': finalized,
+      if (finalizedAt != null) 'finalized_at': finalizedAt,
+      if (parteSnapshotFingerprint != null)
+        'parte_snapshot_fingerprint': parteSnapshotFingerprint,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  CituljePripremeCompanion copyWith({
+    Value<int>? id,
+    Value<int>? predmetId,
+    Value<String>? portableOccurrenceId,
+    Value<String>? articleType,
+    Value<String?>? parteTextMode,
+    Value<String?>? publicationDate,
+    Value<String>? publicationText,
+    Value<String>? note,
+    Value<String>? state,
+    Value<bool>? finalized,
+    Value<String?>? finalizedAt,
+    Value<String?>? parteSnapshotFingerprint,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+  }) {
+    return CituljePripremeCompanion(
+      id: id ?? this.id,
+      predmetId: predmetId ?? this.predmetId,
+      portableOccurrenceId: portableOccurrenceId ?? this.portableOccurrenceId,
+      articleType: articleType ?? this.articleType,
+      parteTextMode: parteTextMode ?? this.parteTextMode,
+      publicationDate: publicationDate ?? this.publicationDate,
+      publicationText: publicationText ?? this.publicationText,
+      note: note ?? this.note,
+      state: state ?? this.state,
+      finalized: finalized ?? this.finalized,
+      finalizedAt: finalizedAt ?? this.finalizedAt,
+      parteSnapshotFingerprint:
+          parteSnapshotFingerprint ?? this.parteSnapshotFingerprint,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (portableOccurrenceId.present) {
+      map['portable_occurrence_id'] = Variable<String>(
+        portableOccurrenceId.value,
+      );
+    }
+    if (articleType.present) {
+      map['article_type'] = Variable<String>(articleType.value);
+    }
+    if (parteTextMode.present) {
+      map['parte_text_mode'] = Variable<String>(parteTextMode.value);
+    }
+    if (publicationDate.present) {
+      map['publication_date'] = Variable<String>(publicationDate.value);
+    }
+    if (publicationText.present) {
+      map['publication_text'] = Variable<String>(publicationText.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (finalized.present) {
+      map['finalized'] = Variable<bool>(finalized.value);
+    }
+    if (finalizedAt.present) {
+      map['finalized_at'] = Variable<String>(finalizedAt.value);
+    }
+    if (parteSnapshotFingerprint.present) {
+      map['parte_snapshot_fingerprint'] = Variable<String>(
+        parteSnapshotFingerprint.value,
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CituljePripremeCompanion(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('portableOccurrenceId: $portableOccurrenceId, ')
+          ..write('articleType: $articleType, ')
+          ..write('parteTextMode: $parteTextMode, ')
+          ..write('publicationDate: $publicationDate, ')
+          ..write('publicationText: $publicationText, ')
+          ..write('note: $note, ')
+          ..write('state: $state, ')
+          ..write('finalized: $finalized, ')
+          ..write('finalizedAt: $finalizedAt, ')
+          ..write('parteSnapshotFingerprint: $parteSnapshotFingerprint, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PodsetnikObavezeTable extends PodsetnikObaveze
+    with TableInfo<$PodsetnikObavezeTable, PodsetnikObavezeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PodsetnikObavezeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _stableRuleIdMeta = const VerificationMeta(
+    'stableRuleId',
+  );
+  @override
+  late final GeneratedColumn<String> stableRuleId = GeneratedColumn<String>(
+    'stable_rule_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phaseMeta = const VerificationMeta('phase');
+  @override
+  late final GeneratedColumn<String> phase = GeneratedColumn<String>(
+    'phase',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('PRE_CEREMONY'),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('ATOMIC'),
+  );
+  static const VerificationMeta _parentRuleIdMeta = const VerificationMeta(
+    'parentRuleId',
+  );
+  @override
+  late final GeneratedColumn<String> parentRuleId = GeneratedColumn<String>(
+    'parent_rule_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceFingerprintMeta = const VerificationMeta(
+    'sourceFingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> sourceFingerprint =
+      GeneratedColumn<String>(
+        'source_fingerprint',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _completedMeta = const VerificationMeta(
+    'completed',
+  );
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
+    'completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    predmetId,
+    stableRuleId,
+    phase,
+    kind,
+    parentRuleId,
+    sourceFingerprint,
+    completed,
+    completedAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'podsetnik_obaveze';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PodsetnikObavezeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetIdMeta);
+    }
+    if (data.containsKey('stable_rule_id')) {
+      context.handle(
+        _stableRuleIdMeta,
+        stableRuleId.isAcceptableOrUnknown(
+          data['stable_rule_id']!,
+          _stableRuleIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_stableRuleIdMeta);
+    }
+    if (data.containsKey('phase')) {
+      context.handle(
+        _phaseMeta,
+        phase.isAcceptableOrUnknown(data['phase']!, _phaseMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('parent_rule_id')) {
+      context.handle(
+        _parentRuleIdMeta,
+        parentRuleId.isAcceptableOrUnknown(
+          data['parent_rule_id']!,
+          _parentRuleIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_fingerprint')) {
+      context.handle(
+        _sourceFingerprintMeta,
+        sourceFingerprint.isAcceptableOrUnknown(
+          data['source_fingerprint']!,
+          _sourceFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed')) {
+      context.handle(
+        _completedMeta,
+        completed.isAcceptableOrUnknown(data['completed']!, _completedMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {predmetId, stableRuleId},
+  ];
+  @override
+  PodsetnikObavezeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PodsetnikObavezeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      stableRuleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}stable_rule_id'],
+      )!,
+      phase: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phase'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      parentRuleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_rule_id'],
+      ),
+      sourceFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_fingerprint'],
+      )!,
+      completed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}completed'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PodsetnikObavezeTable createAlias(String alias) {
+    return $PodsetnikObavezeTable(attachedDatabase, alias);
+  }
+}
+
+class PodsetnikObavezeData extends DataClass
+    implements Insertable<PodsetnikObavezeData> {
+  final int id;
+  final int predmetId;
+  final String stableRuleId;
+  final String phase;
+  final String kind;
+  final String? parentRuleId;
+  final String sourceFingerprint;
+  final bool completed;
+  final String? completedAt;
+  final String updatedAt;
+  const PodsetnikObavezeData({
+    required this.id,
+    required this.predmetId,
+    required this.stableRuleId,
+    required this.phase,
+    required this.kind,
+    this.parentRuleId,
+    required this.sourceFingerprint,
+    required this.completed,
+    this.completedAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['stable_rule_id'] = Variable<String>(stableRuleId);
+    map['phase'] = Variable<String>(phase);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || parentRuleId != null) {
+      map['parent_rule_id'] = Variable<String>(parentRuleId);
+    }
+    map['source_fingerprint'] = Variable<String>(sourceFingerprint);
+    map['completed'] = Variable<bool>(completed);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  PodsetnikObavezeCompanion toCompanion(bool nullToAbsent) {
+    return PodsetnikObavezeCompanion(
+      id: Value(id),
+      predmetId: Value(predmetId),
+      stableRuleId: Value(stableRuleId),
+      phase: Value(phase),
+      kind: Value(kind),
+      parentRuleId: parentRuleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentRuleId),
+      sourceFingerprint: Value(sourceFingerprint),
+      completed: Value(completed),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PodsetnikObavezeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PodsetnikObavezeData(
+      id: serializer.fromJson<int>(json['id']),
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      stableRuleId: serializer.fromJson<String>(json['stableRuleId']),
+      phase: serializer.fromJson<String>(json['phase']),
+      kind: serializer.fromJson<String>(json['kind']),
+      parentRuleId: serializer.fromJson<String?>(json['parentRuleId']),
+      sourceFingerprint: serializer.fromJson<String>(json['sourceFingerprint']),
+      completed: serializer.fromJson<bool>(json['completed']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'predmetId': serializer.toJson<int>(predmetId),
+      'stableRuleId': serializer.toJson<String>(stableRuleId),
+      'phase': serializer.toJson<String>(phase),
+      'kind': serializer.toJson<String>(kind),
+      'parentRuleId': serializer.toJson<String?>(parentRuleId),
+      'sourceFingerprint': serializer.toJson<String>(sourceFingerprint),
+      'completed': serializer.toJson<bool>(completed),
+      'completedAt': serializer.toJson<String?>(completedAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  PodsetnikObavezeData copyWith({
+    int? id,
+    int? predmetId,
+    String? stableRuleId,
+    String? phase,
+    String? kind,
+    Value<String?> parentRuleId = const Value.absent(),
+    String? sourceFingerprint,
+    bool? completed,
+    Value<String?> completedAt = const Value.absent(),
+    String? updatedAt,
+  }) => PodsetnikObavezeData(
+    id: id ?? this.id,
+    predmetId: predmetId ?? this.predmetId,
+    stableRuleId: stableRuleId ?? this.stableRuleId,
+    phase: phase ?? this.phase,
+    kind: kind ?? this.kind,
+    parentRuleId: parentRuleId.present ? parentRuleId.value : this.parentRuleId,
+    sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+    completed: completed ?? this.completed,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PodsetnikObavezeData copyWithCompanion(PodsetnikObavezeCompanion data) {
+    return PodsetnikObavezeData(
+      id: data.id.present ? data.id.value : this.id,
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      stableRuleId: data.stableRuleId.present
+          ? data.stableRuleId.value
+          : this.stableRuleId,
+      phase: data.phase.present ? data.phase.value : this.phase,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      parentRuleId: data.parentRuleId.present
+          ? data.parentRuleId.value
+          : this.parentRuleId,
+      sourceFingerprint: data.sourceFingerprint.present
+          ? data.sourceFingerprint.value
+          : this.sourceFingerprint,
+      completed: data.completed.present ? data.completed.value : this.completed,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PodsetnikObavezeData(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('stableRuleId: $stableRuleId, ')
+          ..write('phase: $phase, ')
+          ..write('kind: $kind, ')
+          ..write('parentRuleId: $parentRuleId, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('completed: $completed, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    predmetId,
+    stableRuleId,
+    phase,
+    kind,
+    parentRuleId,
+    sourceFingerprint,
+    completed,
+    completedAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PodsetnikObavezeData &&
+          other.id == this.id &&
+          other.predmetId == this.predmetId &&
+          other.stableRuleId == this.stableRuleId &&
+          other.phase == this.phase &&
+          other.kind == this.kind &&
+          other.parentRuleId == this.parentRuleId &&
+          other.sourceFingerprint == this.sourceFingerprint &&
+          other.completed == this.completed &&
+          other.completedAt == this.completedAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PodsetnikObavezeCompanion extends UpdateCompanion<PodsetnikObavezeData> {
+  final Value<int> id;
+  final Value<int> predmetId;
+  final Value<String> stableRuleId;
+  final Value<String> phase;
+  final Value<String> kind;
+  final Value<String?> parentRuleId;
+  final Value<String> sourceFingerprint;
+  final Value<bool> completed;
+  final Value<String?> completedAt;
+  final Value<String> updatedAt;
+  const PodsetnikObavezeCompanion({
+    this.id = const Value.absent(),
+    this.predmetId = const Value.absent(),
+    this.stableRuleId = const Value.absent(),
+    this.phase = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.parentRuleId = const Value.absent(),
+    this.sourceFingerprint = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  PodsetnikObavezeCompanion.insert({
+    this.id = const Value.absent(),
+    required int predmetId,
+    required String stableRuleId,
+    this.phase = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.parentRuleId = const Value.absent(),
+    this.sourceFingerprint = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : predmetId = Value(predmetId),
+       stableRuleId = Value(stableRuleId);
+  static Insertable<PodsetnikObavezeData> custom({
+    Expression<int>? id,
+    Expression<int>? predmetId,
+    Expression<String>? stableRuleId,
+    Expression<String>? phase,
+    Expression<String>? kind,
+    Expression<String>? parentRuleId,
+    Expression<String>? sourceFingerprint,
+    Expression<bool>? completed,
+    Expression<String>? completedAt,
+    Expression<String>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (stableRuleId != null) 'stable_rule_id': stableRuleId,
+      if (phase != null) 'phase': phase,
+      if (kind != null) 'kind': kind,
+      if (parentRuleId != null) 'parent_rule_id': parentRuleId,
+      if (sourceFingerprint != null) 'source_fingerprint': sourceFingerprint,
+      if (completed != null) 'completed': completed,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  PodsetnikObavezeCompanion copyWith({
+    Value<int>? id,
+    Value<int>? predmetId,
+    Value<String>? stableRuleId,
+    Value<String>? phase,
+    Value<String>? kind,
+    Value<String?>? parentRuleId,
+    Value<String>? sourceFingerprint,
+    Value<bool>? completed,
+    Value<String?>? completedAt,
+    Value<String>? updatedAt,
+  }) {
+    return PodsetnikObavezeCompanion(
+      id: id ?? this.id,
+      predmetId: predmetId ?? this.predmetId,
+      stableRuleId: stableRuleId ?? this.stableRuleId,
+      phase: phase ?? this.phase,
+      kind: kind ?? this.kind,
+      parentRuleId: parentRuleId ?? this.parentRuleId,
+      sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+      completed: completed ?? this.completed,
+      completedAt: completedAt ?? this.completedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (stableRuleId.present) {
+      map['stable_rule_id'] = Variable<String>(stableRuleId.value);
+    }
+    if (phase.present) {
+      map['phase'] = Variable<String>(phase.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (parentRuleId.present) {
+      map['parent_rule_id'] = Variable<String>(parentRuleId.value);
+    }
+    if (sourceFingerprint.present) {
+      map['source_fingerprint'] = Variable<String>(sourceFingerprint.value);
+    }
+    if (completed.present) {
+      map['completed'] = Variable<bool>(completed.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PodsetnikObavezeCompanion(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('stableRuleId: $stableRuleId, ')
+          ..write('phase: $phase, ')
+          ..write('kind: $kind, ')
+          ..write('parentRuleId: $parentRuleId, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('completed: $completed, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -8608,6 +10596,17 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
       'REFERENCES predmeti (id) ON DELETE CASCADE',
     ),
   );
+  static const VerificationMeta _portableOccurrenceIdMeta =
+      const VerificationMeta('portableOccurrenceId');
+  @override
+  late final GeneratedColumn<String> portableOccurrenceId =
+      GeneratedColumn<String>(
+        'portable_occurrence_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _katalogStableArticleIdMeta =
       const VerificationMeta('katalogStableArticleId');
   @override
@@ -8642,6 +10641,17 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _tekstTrakeMeta = const VerificationMeta(
+    'tekstTrake',
+  );
+  @override
+  late final GeneratedColumn<String> tekstTrake = GeneratedColumn<String>(
+    'tekst_trake',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _komMeta = const VerificationMeta('kom');
   @override
   late final GeneratedColumn<String> kom = GeneratedColumn<String>(
@@ -8651,6 +10661,16 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _cenaMeta = const VerificationMeta('cena');
+  @override
+  late final GeneratedColumn<double> cena = GeneratedColumn<double>(
+    'cena',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
   );
   static const VerificationMeta _iznosMeta = const VerificationMeta('iznos');
   @override
@@ -8689,17 +10709,144 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _poslovniStatusMeta = const VerificationMeta(
+    'poslovniStatus',
+  );
+  @override
+  late final GeneratedColumn<String> poslovniStatus = GeneratedColumn<String>(
+    'poslovni_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('AKTIVNO'),
+  );
+  static const VerificationMeta _obezbedjujeMeta = const VerificationMeta(
+    'obezbedjuje',
+  );
+  @override
+  late final GeneratedColumn<String> obezbedjuje = GeneratedColumn<String>(
+    'obezbedjuje',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('FIRMA'),
+  );
+  static const VerificationMeta _poslovnoUpozorenjeMeta =
+      const VerificationMeta('poslovnoUpozorenje');
+  @override
+  late final GeneratedColumn<String> poslovnoUpozorenje =
+      GeneratedColumn<String>(
+        'poslovno_upozorenje',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _poslovniRazlogMeta = const VerificationMeta(
+    'poslovniRazlog',
+  );
+  @override
+  late final GeneratedColumn<String> poslovniRazlog = GeneratedColumn<String>(
+    'poslovni_razlog',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _poslovnaCelinaMeta = const VerificationMeta(
+    'poslovnaCelina',
+  );
+  @override
+  late final GeneratedColumn<int> poslovnaCelina = GeneratedColumn<int>(
+    'poslovna_celina',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(6),
+  );
+  static const VerificationMeta _poslovniRedosledMeta = const VerificationMeta(
+    'poslovniRedosled',
+  );
+  @override
+  late final GeneratedColumn<int> poslovniRedosled = GeneratedColumn<int>(
+    'poslovni_redosled',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _finansijskiUkljucenoMeta =
+      const VerificationMeta('finansijskiUkljuceno');
+  @override
+  late final GeneratedColumn<bool> finansijskiUkljuceno = GeneratedColumn<bool>(
+    'finansijski_ukljuceno',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("finansijski_ukljuceno" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _scenarioUpravljaMeta = const VerificationMeta(
+    'scenarioUpravlja',
+  );
+  @override
+  late final GeneratedColumn<bool> scenarioUpravlja = GeneratedColumn<bool>(
+    'scenario_upravlja',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("scenario_upravlja" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _cekaOdlukuKorisnikaMeta =
+      const VerificationMeta('cekaOdlukuKorisnika');
+  @override
+  late final GeneratedColumn<bool> cekaOdlukuKorisnika = GeneratedColumn<bool>(
+    'ceka_odluku_korisnika',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ceka_odluku_korisnika" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     predmetId,
+    portableOccurrenceId,
     katalogStableArticleId,
     interniNaziv,
     nazivPrikaz,
+    tekstTrake,
     kom,
+    cena,
     iznos,
     cekiran,
     redosled,
+    poslovniStatus,
+    obezbedjuje,
+    poslovnoUpozorenje,
+    poslovniRazlog,
+    poslovnaCelina,
+    poslovniRedosled,
+    finansijskiUkljuceno,
+    scenarioUpravlja,
+    cekaOdlukuKorisnika,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8723,6 +10870,15 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
       );
     } else if (isInserting) {
       context.missing(_predmetIdMeta);
+    }
+    if (data.containsKey('portable_occurrence_id')) {
+      context.handle(
+        _portableOccurrenceIdMeta,
+        portableOccurrenceId.isAcceptableOrUnknown(
+          data['portable_occurrence_id']!,
+          _portableOccurrenceIdMeta,
+        ),
+      );
     }
     if (data.containsKey('katalog_stable_article_id')) {
       context.handle(
@@ -8753,10 +10909,22 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         ),
       );
     }
+    if (data.containsKey('tekst_trake')) {
+      context.handle(
+        _tekstTrakeMeta,
+        tekstTrake.isAcceptableOrUnknown(data['tekst_trake']!, _tekstTrakeMeta),
+      );
+    }
     if (data.containsKey('kom')) {
       context.handle(
         _komMeta,
         kom.isAcceptableOrUnknown(data['kom']!, _komMeta),
+      );
+    }
+    if (data.containsKey('cena')) {
+      context.handle(
+        _cenaMeta,
+        cena.isAcceptableOrUnknown(data['cena']!, _cenaMeta),
       );
     }
     if (data.containsKey('iznos')) {
@@ -8777,6 +10945,87 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         redosled.isAcceptableOrUnknown(data['redosled']!, _redosledMeta),
       );
     }
+    if (data.containsKey('poslovni_status')) {
+      context.handle(
+        _poslovniStatusMeta,
+        poslovniStatus.isAcceptableOrUnknown(
+          data['poslovni_status']!,
+          _poslovniStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('obezbedjuje')) {
+      context.handle(
+        _obezbedjujeMeta,
+        obezbedjuje.isAcceptableOrUnknown(
+          data['obezbedjuje']!,
+          _obezbedjujeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovno_upozorenje')) {
+      context.handle(
+        _poslovnoUpozorenjeMeta,
+        poslovnoUpozorenje.isAcceptableOrUnknown(
+          data['poslovno_upozorenje']!,
+          _poslovnoUpozorenjeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovni_razlog')) {
+      context.handle(
+        _poslovniRazlogMeta,
+        poslovniRazlog.isAcceptableOrUnknown(
+          data['poslovni_razlog']!,
+          _poslovniRazlogMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovna_celina')) {
+      context.handle(
+        _poslovnaCelinaMeta,
+        poslovnaCelina.isAcceptableOrUnknown(
+          data['poslovna_celina']!,
+          _poslovnaCelinaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poslovni_redosled')) {
+      context.handle(
+        _poslovniRedosledMeta,
+        poslovniRedosled.isAcceptableOrUnknown(
+          data['poslovni_redosled']!,
+          _poslovniRedosledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('finansijski_ukljuceno')) {
+      context.handle(
+        _finansijskiUkljucenoMeta,
+        finansijskiUkljuceno.isAcceptableOrUnknown(
+          data['finansijski_ukljuceno']!,
+          _finansijskiUkljucenoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scenario_upravlja')) {
+      context.handle(
+        _scenarioUpravljaMeta,
+        scenarioUpravlja.isAcceptableOrUnknown(
+          data['scenario_upravlja']!,
+          _scenarioUpravljaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ceka_odluku_korisnika')) {
+      context.handle(
+        _cekaOdlukuKorisnikaMeta,
+        cekaOdlukuKorisnika.isAcceptableOrUnknown(
+          data['ceka_odluku_korisnika']!,
+          _cekaOdlukuKorisnikaMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -8794,6 +11043,10 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         DriftSqlType.int,
         data['${effectivePrefix}predmet_id'],
       )!,
+      portableOccurrenceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}portable_occurrence_id'],
+      ),
       katalogStableArticleId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}katalog_stable_article_id'],
@@ -8806,9 +11059,17 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         DriftSqlType.string,
         data['${effectivePrefix}naziv_prikaz'],
       )!,
+      tekstTrake: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tekst_trake'],
+      ),
       kom: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}kom'],
+      )!,
+      cena: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cena'],
       )!,
       iznos: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
@@ -8822,6 +11083,42 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
         DriftSqlType.int,
         data['${effectivePrefix}redosled'],
       )!,
+      poslovniStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}poslovni_status'],
+      )!,
+      obezbedjuje: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}obezbedjuje'],
+      )!,
+      poslovnoUpozorenje: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}poslovno_upozorenje'],
+      )!,
+      poslovniRazlog: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}poslovni_razlog'],
+      )!,
+      poslovnaCelina: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poslovna_celina'],
+      )!,
+      poslovniRedosled: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poslovni_redosled'],
+      )!,
+      finansijskiUkljuceno: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}finansijski_ukljuceno'],
+      )!,
+      scenarioUpravlja: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}scenario_upravlja'],
+      )!,
+      cekaOdlukuKorisnika: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ceka_odluku_korisnika'],
+      )!,
     );
   }
 
@@ -8834,6 +11131,13 @@ class $IriuTable extends Iriu with TableInfo<$IriuTable, IriuData> {
 class IriuData extends DataClass implements Insertable<IriuData> {
   final int id;
   final int predmetId;
+
+  /// Opaque portable identity of this concrete PREDMET/IRiU occurrence.
+  ///
+  /// Nullable for additive compatibility with legacy/direct rows. Production
+  /// creation and transfer paths materialize it; startup/export repair fills
+  /// legacy gaps without changing IRiU membership or display ordering.
+  final String? portableOccurrenceId;
   final String? katalogStableArticleId;
 
   /// Interni naziv kategorije — nepromenjiv string (npr. SANDUK, LIMENI_ULOZAK).
@@ -8843,29 +11147,65 @@ class IriuData extends DataClass implements Insertable<IriuData> {
   /// Naziv za prikaz — vidljiv korisniku, editabilan.
   final String nazivPrikaz;
 
-  /// Količina — slobodan tekst (informativno, ne ulazi u formulu).
+  /// Free-form ribbon/dedication text for the current concrete CVEĆE row.
+  /// It belongs to this PREDMET/IRiU occurrence and is intentionally nullable
+  /// so legacy rows and non-CVEĆE rows remain unchanged.
+  final String? tekstTrake;
+
+  /// Količina — slobodan tekst; when a unit price is applied it drives IZNOS.
   final String kom;
+
+  /// Applied unit-price snapshot. KATALOG changes never rewrite an existing
+  /// PREDMET row; the row keeps the price that was applied at selection time.
+  final double cena;
 
   /// Iznos se čuva kao REAL (float sa tačkom). Konverzija u srpski format SAMO pri prikazu.
   final double iznos;
   final bool cekiran;
   final int redosled;
+
+  /// Materijalizovani, objašnjivi rezultat jedinog SCENARIO evaluatora.
+  /// PREDMET ostaje izvor činjenica; ova polja su izvedeni rezultat za red.
+  final String poslovniStatus;
+  final String obezbedjuje;
+  final String poslovnoUpozorenje;
+  final String poslovniRazlog;
+  final int poslovnaCelina;
+  final int poslovniRedosled;
+  final bool finansijskiUkljuceno;
+  final bool scenarioUpravlja;
+  final bool cekaOdlukuKorisnika;
   const IriuData({
     required this.id,
     required this.predmetId,
+    this.portableOccurrenceId,
     this.katalogStableArticleId,
     required this.interniNaziv,
     required this.nazivPrikaz,
+    this.tekstTrake,
     required this.kom,
+    required this.cena,
     required this.iznos,
     required this.cekiran,
     required this.redosled,
+    required this.poslovniStatus,
+    required this.obezbedjuje,
+    required this.poslovnoUpozorenje,
+    required this.poslovniRazlog,
+    required this.poslovnaCelina,
+    required this.poslovniRedosled,
+    required this.finansijskiUkljuceno,
+    required this.scenarioUpravlja,
+    required this.cekaOdlukuKorisnika,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['predmet_id'] = Variable<int>(predmetId);
+    if (!nullToAbsent || portableOccurrenceId != null) {
+      map['portable_occurrence_id'] = Variable<String>(portableOccurrenceId);
+    }
     if (!nullToAbsent || katalogStableArticleId != null) {
       map['katalog_stable_article_id'] = Variable<String>(
         katalogStableArticleId,
@@ -8873,10 +11213,23 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     }
     map['interni_naziv'] = Variable<String>(interniNaziv);
     map['naziv_prikaz'] = Variable<String>(nazivPrikaz);
+    if (!nullToAbsent || tekstTrake != null) {
+      map['tekst_trake'] = Variable<String>(tekstTrake);
+    }
     map['kom'] = Variable<String>(kom);
+    map['cena'] = Variable<double>(cena);
     map['iznos'] = Variable<double>(iznos);
     map['cekiran'] = Variable<bool>(cekiran);
     map['redosled'] = Variable<int>(redosled);
+    map['poslovni_status'] = Variable<String>(poslovniStatus);
+    map['obezbedjuje'] = Variable<String>(obezbedjuje);
+    map['poslovno_upozorenje'] = Variable<String>(poslovnoUpozorenje);
+    map['poslovni_razlog'] = Variable<String>(poslovniRazlog);
+    map['poslovna_celina'] = Variable<int>(poslovnaCelina);
+    map['poslovni_redosled'] = Variable<int>(poslovniRedosled);
+    map['finansijski_ukljuceno'] = Variable<bool>(finansijskiUkljuceno);
+    map['scenario_upravlja'] = Variable<bool>(scenarioUpravlja);
+    map['ceka_odluku_korisnika'] = Variable<bool>(cekaOdlukuKorisnika);
     return map;
   }
 
@@ -8884,15 +11237,31 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     return IriuCompanion(
       id: Value(id),
       predmetId: Value(predmetId),
+      portableOccurrenceId: portableOccurrenceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(portableOccurrenceId),
       katalogStableArticleId: katalogStableArticleId == null && nullToAbsent
           ? const Value.absent()
           : Value(katalogStableArticleId),
       interniNaziv: Value(interniNaziv),
       nazivPrikaz: Value(nazivPrikaz),
+      tekstTrake: tekstTrake == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tekstTrake),
       kom: Value(kom),
+      cena: Value(cena),
       iznos: Value(iznos),
       cekiran: Value(cekiran),
       redosled: Value(redosled),
+      poslovniStatus: Value(poslovniStatus),
+      obezbedjuje: Value(obezbedjuje),
+      poslovnoUpozorenje: Value(poslovnoUpozorenje),
+      poslovniRazlog: Value(poslovniRazlog),
+      poslovnaCelina: Value(poslovnaCelina),
+      poslovniRedosled: Value(poslovniRedosled),
+      finansijskiUkljuceno: Value(finansijskiUkljuceno),
+      scenarioUpravlja: Value(scenarioUpravlja),
+      cekaOdlukuKorisnika: Value(cekaOdlukuKorisnika),
     );
   }
 
@@ -8904,15 +11273,35 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     return IriuData(
       id: serializer.fromJson<int>(json['id']),
       predmetId: serializer.fromJson<int>(json['predmetId']),
+      portableOccurrenceId: serializer.fromJson<String?>(
+        json['portableOccurrenceId'],
+      ),
       katalogStableArticleId: serializer.fromJson<String?>(
         json['katalogStableArticleId'],
       ),
       interniNaziv: serializer.fromJson<String>(json['interniNaziv']),
       nazivPrikaz: serializer.fromJson<String>(json['nazivPrikaz']),
+      tekstTrake: serializer.fromJson<String?>(json['tekstTrake']),
       kom: serializer.fromJson<String>(json['kom']),
+      cena: serializer.fromJson<double>(json['cena']),
       iznos: serializer.fromJson<double>(json['iznos']),
       cekiran: serializer.fromJson<bool>(json['cekiran']),
       redosled: serializer.fromJson<int>(json['redosled']),
+      poslovniStatus: serializer.fromJson<String>(json['poslovniStatus']),
+      obezbedjuje: serializer.fromJson<String>(json['obezbedjuje']),
+      poslovnoUpozorenje: serializer.fromJson<String>(
+        json['poslovnoUpozorenje'],
+      ),
+      poslovniRazlog: serializer.fromJson<String>(json['poslovniRazlog']),
+      poslovnaCelina: serializer.fromJson<int>(json['poslovnaCelina']),
+      poslovniRedosled: serializer.fromJson<int>(json['poslovniRedosled']),
+      finansijskiUkljuceno: serializer.fromJson<bool>(
+        json['finansijskiUkljuceno'],
+      ),
+      scenarioUpravlja: serializer.fromJson<bool>(json['scenarioUpravlja']),
+      cekaOdlukuKorisnika: serializer.fromJson<bool>(
+        json['cekaOdlukuKorisnika'],
+      ),
     );
   }
   @override
@@ -8921,45 +11310,86 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'predmetId': serializer.toJson<int>(predmetId),
+      'portableOccurrenceId': serializer.toJson<String?>(portableOccurrenceId),
       'katalogStableArticleId': serializer.toJson<String?>(
         katalogStableArticleId,
       ),
       'interniNaziv': serializer.toJson<String>(interniNaziv),
       'nazivPrikaz': serializer.toJson<String>(nazivPrikaz),
+      'tekstTrake': serializer.toJson<String?>(tekstTrake),
       'kom': serializer.toJson<String>(kom),
+      'cena': serializer.toJson<double>(cena),
       'iznos': serializer.toJson<double>(iznos),
       'cekiran': serializer.toJson<bool>(cekiran),
       'redosled': serializer.toJson<int>(redosled),
+      'poslovniStatus': serializer.toJson<String>(poslovniStatus),
+      'obezbedjuje': serializer.toJson<String>(obezbedjuje),
+      'poslovnoUpozorenje': serializer.toJson<String>(poslovnoUpozorenje),
+      'poslovniRazlog': serializer.toJson<String>(poslovniRazlog),
+      'poslovnaCelina': serializer.toJson<int>(poslovnaCelina),
+      'poslovniRedosled': serializer.toJson<int>(poslovniRedosled),
+      'finansijskiUkljuceno': serializer.toJson<bool>(finansijskiUkljuceno),
+      'scenarioUpravlja': serializer.toJson<bool>(scenarioUpravlja),
+      'cekaOdlukuKorisnika': serializer.toJson<bool>(cekaOdlukuKorisnika),
     };
   }
 
   IriuData copyWith({
     int? id,
     int? predmetId,
+    Value<String?> portableOccurrenceId = const Value.absent(),
     Value<String?> katalogStableArticleId = const Value.absent(),
     String? interniNaziv,
     String? nazivPrikaz,
+    Value<String?> tekstTrake = const Value.absent(),
     String? kom,
+    double? cena,
     double? iznos,
     bool? cekiran,
     int? redosled,
+    String? poslovniStatus,
+    String? obezbedjuje,
+    String? poslovnoUpozorenje,
+    String? poslovniRazlog,
+    int? poslovnaCelina,
+    int? poslovniRedosled,
+    bool? finansijskiUkljuceno,
+    bool? scenarioUpravlja,
+    bool? cekaOdlukuKorisnika,
   }) => IriuData(
     id: id ?? this.id,
     predmetId: predmetId ?? this.predmetId,
+    portableOccurrenceId: portableOccurrenceId.present
+        ? portableOccurrenceId.value
+        : this.portableOccurrenceId,
     katalogStableArticleId: katalogStableArticleId.present
         ? katalogStableArticleId.value
         : this.katalogStableArticleId,
     interniNaziv: interniNaziv ?? this.interniNaziv,
     nazivPrikaz: nazivPrikaz ?? this.nazivPrikaz,
+    tekstTrake: tekstTrake.present ? tekstTrake.value : this.tekstTrake,
     kom: kom ?? this.kom,
+    cena: cena ?? this.cena,
     iznos: iznos ?? this.iznos,
     cekiran: cekiran ?? this.cekiran,
     redosled: redosled ?? this.redosled,
+    poslovniStatus: poslovniStatus ?? this.poslovniStatus,
+    obezbedjuje: obezbedjuje ?? this.obezbedjuje,
+    poslovnoUpozorenje: poslovnoUpozorenje ?? this.poslovnoUpozorenje,
+    poslovniRazlog: poslovniRazlog ?? this.poslovniRazlog,
+    poslovnaCelina: poslovnaCelina ?? this.poslovnaCelina,
+    poslovniRedosled: poslovniRedosled ?? this.poslovniRedosled,
+    finansijskiUkljuceno: finansijskiUkljuceno ?? this.finansijskiUkljuceno,
+    scenarioUpravlja: scenarioUpravlja ?? this.scenarioUpravlja,
+    cekaOdlukuKorisnika: cekaOdlukuKorisnika ?? this.cekaOdlukuKorisnika,
   );
   IriuData copyWithCompanion(IriuCompanion data) {
     return IriuData(
       id: data.id.present ? data.id.value : this.id,
       predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      portableOccurrenceId: data.portableOccurrenceId.present
+          ? data.portableOccurrenceId.value
+          : this.portableOccurrenceId,
       katalogStableArticleId: data.katalogStableArticleId.present
           ? data.katalogStableArticleId.value
           : this.katalogStableArticleId,
@@ -8969,10 +11399,41 @@ class IriuData extends DataClass implements Insertable<IriuData> {
       nazivPrikaz: data.nazivPrikaz.present
           ? data.nazivPrikaz.value
           : this.nazivPrikaz,
+      tekstTrake: data.tekstTrake.present
+          ? data.tekstTrake.value
+          : this.tekstTrake,
       kom: data.kom.present ? data.kom.value : this.kom,
+      cena: data.cena.present ? data.cena.value : this.cena,
       iznos: data.iznos.present ? data.iznos.value : this.iznos,
       cekiran: data.cekiran.present ? data.cekiran.value : this.cekiran,
       redosled: data.redosled.present ? data.redosled.value : this.redosled,
+      poslovniStatus: data.poslovniStatus.present
+          ? data.poslovniStatus.value
+          : this.poslovniStatus,
+      obezbedjuje: data.obezbedjuje.present
+          ? data.obezbedjuje.value
+          : this.obezbedjuje,
+      poslovnoUpozorenje: data.poslovnoUpozorenje.present
+          ? data.poslovnoUpozorenje.value
+          : this.poslovnoUpozorenje,
+      poslovniRazlog: data.poslovniRazlog.present
+          ? data.poslovniRazlog.value
+          : this.poslovniRazlog,
+      poslovnaCelina: data.poslovnaCelina.present
+          ? data.poslovnaCelina.value
+          : this.poslovnaCelina,
+      poslovniRedosled: data.poslovniRedosled.present
+          ? data.poslovniRedosled.value
+          : this.poslovniRedosled,
+      finansijskiUkljuceno: data.finansijskiUkljuceno.present
+          ? data.finansijskiUkljuceno.value
+          : this.finansijskiUkljuceno,
+      scenarioUpravlja: data.scenarioUpravlja.present
+          ? data.scenarioUpravlja.value
+          : this.scenarioUpravlja,
+      cekaOdlukuKorisnika: data.cekaOdlukuKorisnika.present
+          ? data.cekaOdlukuKorisnika.value
+          : this.cekaOdlukuKorisnika,
     );
   }
 
@@ -8981,124 +11442,247 @@ class IriuData extends DataClass implements Insertable<IriuData> {
     return (StringBuffer('IriuData(')
           ..write('id: $id, ')
           ..write('predmetId: $predmetId, ')
+          ..write('portableOccurrenceId: $portableOccurrenceId, ')
           ..write('katalogStableArticleId: $katalogStableArticleId, ')
           ..write('interniNaziv: $interniNaziv, ')
           ..write('nazivPrikaz: $nazivPrikaz, ')
+          ..write('tekstTrake: $tekstTrake, ')
           ..write('kom: $kom, ')
+          ..write('cena: $cena, ')
           ..write('iznos: $iznos, ')
           ..write('cekiran: $cekiran, ')
-          ..write('redosled: $redosled')
+          ..write('redosled: $redosled, ')
+          ..write('poslovniStatus: $poslovniStatus, ')
+          ..write('obezbedjuje: $obezbedjuje, ')
+          ..write('poslovnoUpozorenje: $poslovnoUpozorenje, ')
+          ..write('poslovniRazlog: $poslovniRazlog, ')
+          ..write('poslovnaCelina: $poslovnaCelina, ')
+          ..write('poslovniRedosled: $poslovniRedosled, ')
+          ..write('finansijskiUkljuceno: $finansijskiUkljuceno, ')
+          ..write('scenarioUpravlja: $scenarioUpravlja, ')
+          ..write('cekaOdlukuKorisnika: $cekaOdlukuKorisnika')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     predmetId,
+    portableOccurrenceId,
     katalogStableArticleId,
     interniNaziv,
     nazivPrikaz,
+    tekstTrake,
     kom,
+    cena,
     iznos,
     cekiran,
     redosled,
-  );
+    poslovniStatus,
+    obezbedjuje,
+    poslovnoUpozorenje,
+    poslovniRazlog,
+    poslovnaCelina,
+    poslovniRedosled,
+    finansijskiUkljuceno,
+    scenarioUpravlja,
+    cekaOdlukuKorisnika,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is IriuData &&
           other.id == this.id &&
           other.predmetId == this.predmetId &&
+          other.portableOccurrenceId == this.portableOccurrenceId &&
           other.katalogStableArticleId == this.katalogStableArticleId &&
           other.interniNaziv == this.interniNaziv &&
           other.nazivPrikaz == this.nazivPrikaz &&
+          other.tekstTrake == this.tekstTrake &&
           other.kom == this.kom &&
+          other.cena == this.cena &&
           other.iznos == this.iznos &&
           other.cekiran == this.cekiran &&
-          other.redosled == this.redosled);
+          other.redosled == this.redosled &&
+          other.poslovniStatus == this.poslovniStatus &&
+          other.obezbedjuje == this.obezbedjuje &&
+          other.poslovnoUpozorenje == this.poslovnoUpozorenje &&
+          other.poslovniRazlog == this.poslovniRazlog &&
+          other.poslovnaCelina == this.poslovnaCelina &&
+          other.poslovniRedosled == this.poslovniRedosled &&
+          other.finansijskiUkljuceno == this.finansijskiUkljuceno &&
+          other.scenarioUpravlja == this.scenarioUpravlja &&
+          other.cekaOdlukuKorisnika == this.cekaOdlukuKorisnika);
 }
 
 class IriuCompanion extends UpdateCompanion<IriuData> {
   final Value<int> id;
   final Value<int> predmetId;
+  final Value<String?> portableOccurrenceId;
   final Value<String?> katalogStableArticleId;
   final Value<String> interniNaziv;
   final Value<String> nazivPrikaz;
+  final Value<String?> tekstTrake;
   final Value<String> kom;
+  final Value<double> cena;
   final Value<double> iznos;
   final Value<bool> cekiran;
   final Value<int> redosled;
+  final Value<String> poslovniStatus;
+  final Value<String> obezbedjuje;
+  final Value<String> poslovnoUpozorenje;
+  final Value<String> poslovniRazlog;
+  final Value<int> poslovnaCelina;
+  final Value<int> poslovniRedosled;
+  final Value<bool> finansijskiUkljuceno;
+  final Value<bool> scenarioUpravlja;
+  final Value<bool> cekaOdlukuKorisnika;
   const IriuCompanion({
     this.id = const Value.absent(),
     this.predmetId = const Value.absent(),
+    this.portableOccurrenceId = const Value.absent(),
     this.katalogStableArticleId = const Value.absent(),
     this.interniNaziv = const Value.absent(),
     this.nazivPrikaz = const Value.absent(),
+    this.tekstTrake = const Value.absent(),
     this.kom = const Value.absent(),
+    this.cena = const Value.absent(),
     this.iznos = const Value.absent(),
     this.cekiran = const Value.absent(),
     this.redosled = const Value.absent(),
+    this.poslovniStatus = const Value.absent(),
+    this.obezbedjuje = const Value.absent(),
+    this.poslovnoUpozorenje = const Value.absent(),
+    this.poslovniRazlog = const Value.absent(),
+    this.poslovnaCelina = const Value.absent(),
+    this.poslovniRedosled = const Value.absent(),
+    this.finansijskiUkljuceno = const Value.absent(),
+    this.scenarioUpravlja = const Value.absent(),
+    this.cekaOdlukuKorisnika = const Value.absent(),
   });
   IriuCompanion.insert({
     this.id = const Value.absent(),
     required int predmetId,
+    this.portableOccurrenceId = const Value.absent(),
     this.katalogStableArticleId = const Value.absent(),
     required String interniNaziv,
     this.nazivPrikaz = const Value.absent(),
+    this.tekstTrake = const Value.absent(),
     this.kom = const Value.absent(),
+    this.cena = const Value.absent(),
     this.iznos = const Value.absent(),
     this.cekiran = const Value.absent(),
     this.redosled = const Value.absent(),
+    this.poslovniStatus = const Value.absent(),
+    this.obezbedjuje = const Value.absent(),
+    this.poslovnoUpozorenje = const Value.absent(),
+    this.poslovniRazlog = const Value.absent(),
+    this.poslovnaCelina = const Value.absent(),
+    this.poslovniRedosled = const Value.absent(),
+    this.finansijskiUkljuceno = const Value.absent(),
+    this.scenarioUpravlja = const Value.absent(),
+    this.cekaOdlukuKorisnika = const Value.absent(),
   }) : predmetId = Value(predmetId),
        interniNaziv = Value(interniNaziv);
   static Insertable<IriuData> custom({
     Expression<int>? id,
     Expression<int>? predmetId,
+    Expression<String>? portableOccurrenceId,
     Expression<String>? katalogStableArticleId,
     Expression<String>? interniNaziv,
     Expression<String>? nazivPrikaz,
+    Expression<String>? tekstTrake,
     Expression<String>? kom,
+    Expression<double>? cena,
     Expression<double>? iznos,
     Expression<bool>? cekiran,
     Expression<int>? redosled,
+    Expression<String>? poslovniStatus,
+    Expression<String>? obezbedjuje,
+    Expression<String>? poslovnoUpozorenje,
+    Expression<String>? poslovniRazlog,
+    Expression<int>? poslovnaCelina,
+    Expression<int>? poslovniRedosled,
+    Expression<bool>? finansijskiUkljuceno,
+    Expression<bool>? scenarioUpravlja,
+    Expression<bool>? cekaOdlukuKorisnika,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (predmetId != null) 'predmet_id': predmetId,
+      if (portableOccurrenceId != null)
+        'portable_occurrence_id': portableOccurrenceId,
       if (katalogStableArticleId != null)
         'katalog_stable_article_id': katalogStableArticleId,
       if (interniNaziv != null) 'interni_naziv': interniNaziv,
       if (nazivPrikaz != null) 'naziv_prikaz': nazivPrikaz,
+      if (tekstTrake != null) 'tekst_trake': tekstTrake,
       if (kom != null) 'kom': kom,
+      if (cena != null) 'cena': cena,
       if (iznos != null) 'iznos': iznos,
       if (cekiran != null) 'cekiran': cekiran,
       if (redosled != null) 'redosled': redosled,
+      if (poslovniStatus != null) 'poslovni_status': poslovniStatus,
+      if (obezbedjuje != null) 'obezbedjuje': obezbedjuje,
+      if (poslovnoUpozorenje != null) 'poslovno_upozorenje': poslovnoUpozorenje,
+      if (poslovniRazlog != null) 'poslovni_razlog': poslovniRazlog,
+      if (poslovnaCelina != null) 'poslovna_celina': poslovnaCelina,
+      if (poslovniRedosled != null) 'poslovni_redosled': poslovniRedosled,
+      if (finansijskiUkljuceno != null)
+        'finansijski_ukljuceno': finansijskiUkljuceno,
+      if (scenarioUpravlja != null) 'scenario_upravlja': scenarioUpravlja,
+      if (cekaOdlukuKorisnika != null)
+        'ceka_odluku_korisnika': cekaOdlukuKorisnika,
     });
   }
 
   IriuCompanion copyWith({
     Value<int>? id,
     Value<int>? predmetId,
+    Value<String?>? portableOccurrenceId,
     Value<String?>? katalogStableArticleId,
     Value<String>? interniNaziv,
     Value<String>? nazivPrikaz,
+    Value<String?>? tekstTrake,
     Value<String>? kom,
+    Value<double>? cena,
     Value<double>? iznos,
     Value<bool>? cekiran,
     Value<int>? redosled,
+    Value<String>? poslovniStatus,
+    Value<String>? obezbedjuje,
+    Value<String>? poslovnoUpozorenje,
+    Value<String>? poslovniRazlog,
+    Value<int>? poslovnaCelina,
+    Value<int>? poslovniRedosled,
+    Value<bool>? finansijskiUkljuceno,
+    Value<bool>? scenarioUpravlja,
+    Value<bool>? cekaOdlukuKorisnika,
   }) {
     return IriuCompanion(
       id: id ?? this.id,
       predmetId: predmetId ?? this.predmetId,
+      portableOccurrenceId: portableOccurrenceId ?? this.portableOccurrenceId,
       katalogStableArticleId:
           katalogStableArticleId ?? this.katalogStableArticleId,
       interniNaziv: interniNaziv ?? this.interniNaziv,
       nazivPrikaz: nazivPrikaz ?? this.nazivPrikaz,
+      tekstTrake: tekstTrake ?? this.tekstTrake,
       kom: kom ?? this.kom,
+      cena: cena ?? this.cena,
       iznos: iznos ?? this.iznos,
       cekiran: cekiran ?? this.cekiran,
       redosled: redosled ?? this.redosled,
+      poslovniStatus: poslovniStatus ?? this.poslovniStatus,
+      obezbedjuje: obezbedjuje ?? this.obezbedjuje,
+      poslovnoUpozorenje: poslovnoUpozorenje ?? this.poslovnoUpozorenje,
+      poslovniRazlog: poslovniRazlog ?? this.poslovniRazlog,
+      poslovnaCelina: poslovnaCelina ?? this.poslovnaCelina,
+      poslovniRedosled: poslovniRedosled ?? this.poslovniRedosled,
+      finansijskiUkljuceno: finansijskiUkljuceno ?? this.finansijskiUkljuceno,
+      scenarioUpravlja: scenarioUpravlja ?? this.scenarioUpravlja,
+      cekaOdlukuKorisnika: cekaOdlukuKorisnika ?? this.cekaOdlukuKorisnika,
     );
   }
 
@@ -9111,6 +11695,11 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     if (predmetId.present) {
       map['predmet_id'] = Variable<int>(predmetId.value);
     }
+    if (portableOccurrenceId.present) {
+      map['portable_occurrence_id'] = Variable<String>(
+        portableOccurrenceId.value,
+      );
+    }
     if (katalogStableArticleId.present) {
       map['katalog_stable_article_id'] = Variable<String>(
         katalogStableArticleId.value,
@@ -9122,8 +11711,14 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     if (nazivPrikaz.present) {
       map['naziv_prikaz'] = Variable<String>(nazivPrikaz.value);
     }
+    if (tekstTrake.present) {
+      map['tekst_trake'] = Variable<String>(tekstTrake.value);
+    }
     if (kom.present) {
       map['kom'] = Variable<String>(kom.value);
+    }
+    if (cena.present) {
+      map['cena'] = Variable<double>(cena.value);
     }
     if (iznos.present) {
       map['iznos'] = Variable<double>(iznos.value);
@@ -9134,6 +11729,33 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     if (redosled.present) {
       map['redosled'] = Variable<int>(redosled.value);
     }
+    if (poslovniStatus.present) {
+      map['poslovni_status'] = Variable<String>(poslovniStatus.value);
+    }
+    if (obezbedjuje.present) {
+      map['obezbedjuje'] = Variable<String>(obezbedjuje.value);
+    }
+    if (poslovnoUpozorenje.present) {
+      map['poslovno_upozorenje'] = Variable<String>(poslovnoUpozorenje.value);
+    }
+    if (poslovniRazlog.present) {
+      map['poslovni_razlog'] = Variable<String>(poslovniRazlog.value);
+    }
+    if (poslovnaCelina.present) {
+      map['poslovna_celina'] = Variable<int>(poslovnaCelina.value);
+    }
+    if (poslovniRedosled.present) {
+      map['poslovni_redosled'] = Variable<int>(poslovniRedosled.value);
+    }
+    if (finansijskiUkljuceno.present) {
+      map['finansijski_ukljuceno'] = Variable<bool>(finansijskiUkljuceno.value);
+    }
+    if (scenarioUpravlja.present) {
+      map['scenario_upravlja'] = Variable<bool>(scenarioUpravlja.value);
+    }
+    if (cekaOdlukuKorisnika.present) {
+      map['ceka_odluku_korisnika'] = Variable<bool>(cekaOdlukuKorisnika.value);
+    }
     return map;
   }
 
@@ -9142,13 +11764,545 @@ class IriuCompanion extends UpdateCompanion<IriuData> {
     return (StringBuffer('IriuCompanion(')
           ..write('id: $id, ')
           ..write('predmetId: $predmetId, ')
+          ..write('portableOccurrenceId: $portableOccurrenceId, ')
           ..write('katalogStableArticleId: $katalogStableArticleId, ')
           ..write('interniNaziv: $interniNaziv, ')
           ..write('nazivPrikaz: $nazivPrikaz, ')
+          ..write('tekstTrake: $tekstTrake, ')
           ..write('kom: $kom, ')
+          ..write('cena: $cena, ')
           ..write('iznos: $iznos, ')
           ..write('cekiran: $cekiran, ')
-          ..write('redosled: $redosled')
+          ..write('redosled: $redosled, ')
+          ..write('poslovniStatus: $poslovniStatus, ')
+          ..write('obezbedjuje: $obezbedjuje, ')
+          ..write('poslovnoUpozorenje: $poslovnoUpozorenje, ')
+          ..write('poslovniRazlog: $poslovniRazlog, ')
+          ..write('poslovnaCelina: $poslovnaCelina, ')
+          ..write('poslovniRedosled: $poslovniRedosled, ')
+          ..write('finansijskiUkljuceno: $finansijskiUkljuceno, ')
+          ..write('scenarioUpravlja: $scenarioUpravlja, ')
+          ..write('cekaOdlukuKorisnika: $cekaOdlukuKorisnika')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $IriuProvenanceTable extends IriuProvenance
+    with TableInfo<$IriuProvenanceTable, IriuProvenanceData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IriuProvenanceTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _iriuIdMeta = const VerificationMeta('iriuId');
+  @override
+  late final GeneratedColumn<int> iriuId = GeneratedColumn<int>(
+    'iriu_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES iriu (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _originMeta = const VerificationMeta('origin');
+  @override
+  late final GeneratedColumn<String> origin = GeneratedColumn<String>(
+    'origin',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _moduleIdMeta = const VerificationMeta(
+    'moduleId',
+  );
+  @override
+  late final GeneratedColumn<String> moduleId = GeneratedColumn<String>(
+    'module_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scenarioIdMeta = const VerificationMeta(
+    'scenarioId',
+  );
+  @override
+  late final GeneratedColumn<String> scenarioId = GeneratedColumn<String>(
+    'scenario_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scenarioVersionMeta = const VerificationMeta(
+    'scenarioVersion',
+  );
+  @override
+  late final GeneratedColumn<int> scenarioVersion = GeneratedColumn<int>(
+    'scenario_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ruleIdMeta = const VerificationMeta('ruleId');
+  @override
+  late final GeneratedColumn<String> ruleId = GeneratedColumn<String>(
+    'rule_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _operationIdMeta = const VerificationMeta(
+    'operationId',
+  );
+  @override
+  late final GeneratedColumn<String> operationId = GeneratedColumn<String>(
+    'operation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    iriuId,
+    origin,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    ruleId,
+    operationId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'iriu_provenance';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IriuProvenanceData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('iriu_id')) {
+      context.handle(
+        _iriuIdMeta,
+        iriuId.isAcceptableOrUnknown(data['iriu_id']!, _iriuIdMeta),
+      );
+    }
+    if (data.containsKey('origin')) {
+      context.handle(
+        _originMeta,
+        origin.isAcceptableOrUnknown(data['origin']!, _originMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_originMeta);
+    }
+    if (data.containsKey('module_id')) {
+      context.handle(
+        _moduleIdMeta,
+        moduleId.isAcceptableOrUnknown(data['module_id']!, _moduleIdMeta),
+      );
+    }
+    if (data.containsKey('scenario_id')) {
+      context.handle(
+        _scenarioIdMeta,
+        scenarioId.isAcceptableOrUnknown(data['scenario_id']!, _scenarioIdMeta),
+      );
+    }
+    if (data.containsKey('scenario_version')) {
+      context.handle(
+        _scenarioVersionMeta,
+        scenarioVersion.isAcceptableOrUnknown(
+          data['scenario_version']!,
+          _scenarioVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('rule_id')) {
+      context.handle(
+        _ruleIdMeta,
+        ruleId.isAcceptableOrUnknown(data['rule_id']!, _ruleIdMeta),
+      );
+    }
+    if (data.containsKey('operation_id')) {
+      context.handle(
+        _operationIdMeta,
+        operationId.isAcceptableOrUnknown(
+          data['operation_id']!,
+          _operationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {iriuId};
+  @override
+  IriuProvenanceData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IriuProvenanceData(
+      iriuId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}iriu_id'],
+      )!,
+      origin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origin'],
+      )!,
+      moduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}module_id'],
+      ),
+      scenarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scenario_id'],
+      ),
+      scenarioVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}scenario_version'],
+      ),
+      ruleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rule_id'],
+      ),
+      operationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operation_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IriuProvenanceTable createAlias(String alias) {
+    return $IriuProvenanceTable(attachedDatabase, alias);
+  }
+}
+
+class IriuProvenanceData extends DataClass
+    implements Insertable<IriuProvenanceData> {
+  final int iriuId;
+  final String origin;
+  final String? moduleId;
+  final String? scenarioId;
+  final int? scenarioVersion;
+  final String? ruleId;
+  final String? operationId;
+  final String createdAt;
+  const IriuProvenanceData({
+    required this.iriuId,
+    required this.origin,
+    this.moduleId,
+    this.scenarioId,
+    this.scenarioVersion,
+    this.ruleId,
+    this.operationId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['iriu_id'] = Variable<int>(iriuId);
+    map['origin'] = Variable<String>(origin);
+    if (!nullToAbsent || moduleId != null) {
+      map['module_id'] = Variable<String>(moduleId);
+    }
+    if (!nullToAbsent || scenarioId != null) {
+      map['scenario_id'] = Variable<String>(scenarioId);
+    }
+    if (!nullToAbsent || scenarioVersion != null) {
+      map['scenario_version'] = Variable<int>(scenarioVersion);
+    }
+    if (!nullToAbsent || ruleId != null) {
+      map['rule_id'] = Variable<String>(ruleId);
+    }
+    if (!nullToAbsent || operationId != null) {
+      map['operation_id'] = Variable<String>(operationId);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  IriuProvenanceCompanion toCompanion(bool nullToAbsent) {
+    return IriuProvenanceCompanion(
+      iriuId: Value(iriuId),
+      origin: Value(origin),
+      moduleId: moduleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moduleId),
+      scenarioId: scenarioId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scenarioId),
+      scenarioVersion: scenarioVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scenarioVersion),
+      ruleId: ruleId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ruleId),
+      operationId: operationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operationId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory IriuProvenanceData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IriuProvenanceData(
+      iriuId: serializer.fromJson<int>(json['iriuId']),
+      origin: serializer.fromJson<String>(json['origin']),
+      moduleId: serializer.fromJson<String?>(json['moduleId']),
+      scenarioId: serializer.fromJson<String?>(json['scenarioId']),
+      scenarioVersion: serializer.fromJson<int?>(json['scenarioVersion']),
+      ruleId: serializer.fromJson<String?>(json['ruleId']),
+      operationId: serializer.fromJson<String?>(json['operationId']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'iriuId': serializer.toJson<int>(iriuId),
+      'origin': serializer.toJson<String>(origin),
+      'moduleId': serializer.toJson<String?>(moduleId),
+      'scenarioId': serializer.toJson<String?>(scenarioId),
+      'scenarioVersion': serializer.toJson<int?>(scenarioVersion),
+      'ruleId': serializer.toJson<String?>(ruleId),
+      'operationId': serializer.toJson<String?>(operationId),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  IriuProvenanceData copyWith({
+    int? iriuId,
+    String? origin,
+    Value<String?> moduleId = const Value.absent(),
+    Value<String?> scenarioId = const Value.absent(),
+    Value<int?> scenarioVersion = const Value.absent(),
+    Value<String?> ruleId = const Value.absent(),
+    Value<String?> operationId = const Value.absent(),
+    String? createdAt,
+  }) => IriuProvenanceData(
+    iriuId: iriuId ?? this.iriuId,
+    origin: origin ?? this.origin,
+    moduleId: moduleId.present ? moduleId.value : this.moduleId,
+    scenarioId: scenarioId.present ? scenarioId.value : this.scenarioId,
+    scenarioVersion: scenarioVersion.present
+        ? scenarioVersion.value
+        : this.scenarioVersion,
+    ruleId: ruleId.present ? ruleId.value : this.ruleId,
+    operationId: operationId.present ? operationId.value : this.operationId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  IriuProvenanceData copyWithCompanion(IriuProvenanceCompanion data) {
+    return IriuProvenanceData(
+      iriuId: data.iriuId.present ? data.iriuId.value : this.iriuId,
+      origin: data.origin.present ? data.origin.value : this.origin,
+      moduleId: data.moduleId.present ? data.moduleId.value : this.moduleId,
+      scenarioId: data.scenarioId.present
+          ? data.scenarioId.value
+          : this.scenarioId,
+      scenarioVersion: data.scenarioVersion.present
+          ? data.scenarioVersion.value
+          : this.scenarioVersion,
+      ruleId: data.ruleId.present ? data.ruleId.value : this.ruleId,
+      operationId: data.operationId.present
+          ? data.operationId.value
+          : this.operationId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IriuProvenanceData(')
+          ..write('iriuId: $iriuId, ')
+          ..write('origin: $origin, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('operationId: $operationId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    iriuId,
+    origin,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    ruleId,
+    operationId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IriuProvenanceData &&
+          other.iriuId == this.iriuId &&
+          other.origin == this.origin &&
+          other.moduleId == this.moduleId &&
+          other.scenarioId == this.scenarioId &&
+          other.scenarioVersion == this.scenarioVersion &&
+          other.ruleId == this.ruleId &&
+          other.operationId == this.operationId &&
+          other.createdAt == this.createdAt);
+}
+
+class IriuProvenanceCompanion extends UpdateCompanion<IriuProvenanceData> {
+  final Value<int> iriuId;
+  final Value<String> origin;
+  final Value<String?> moduleId;
+  final Value<String?> scenarioId;
+  final Value<int?> scenarioVersion;
+  final Value<String?> ruleId;
+  final Value<String?> operationId;
+  final Value<String> createdAt;
+  const IriuProvenanceCompanion({
+    this.iriuId = const Value.absent(),
+    this.origin = const Value.absent(),
+    this.moduleId = const Value.absent(),
+    this.scenarioId = const Value.absent(),
+    this.scenarioVersion = const Value.absent(),
+    this.ruleId = const Value.absent(),
+    this.operationId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  IriuProvenanceCompanion.insert({
+    this.iriuId = const Value.absent(),
+    required String origin,
+    this.moduleId = const Value.absent(),
+    this.scenarioId = const Value.absent(),
+    this.scenarioVersion = const Value.absent(),
+    this.ruleId = const Value.absent(),
+    this.operationId = const Value.absent(),
+    required String createdAt,
+  }) : origin = Value(origin),
+       createdAt = Value(createdAt);
+  static Insertable<IriuProvenanceData> custom({
+    Expression<int>? iriuId,
+    Expression<String>? origin,
+    Expression<String>? moduleId,
+    Expression<String>? scenarioId,
+    Expression<int>? scenarioVersion,
+    Expression<String>? ruleId,
+    Expression<String>? operationId,
+    Expression<String>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (iriuId != null) 'iriu_id': iriuId,
+      if (origin != null) 'origin': origin,
+      if (moduleId != null) 'module_id': moduleId,
+      if (scenarioId != null) 'scenario_id': scenarioId,
+      if (scenarioVersion != null) 'scenario_version': scenarioVersion,
+      if (ruleId != null) 'rule_id': ruleId,
+      if (operationId != null) 'operation_id': operationId,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  IriuProvenanceCompanion copyWith({
+    Value<int>? iriuId,
+    Value<String>? origin,
+    Value<String?>? moduleId,
+    Value<String?>? scenarioId,
+    Value<int?>? scenarioVersion,
+    Value<String?>? ruleId,
+    Value<String?>? operationId,
+    Value<String>? createdAt,
+  }) {
+    return IriuProvenanceCompanion(
+      iriuId: iriuId ?? this.iriuId,
+      origin: origin ?? this.origin,
+      moduleId: moduleId ?? this.moduleId,
+      scenarioId: scenarioId ?? this.scenarioId,
+      scenarioVersion: scenarioVersion ?? this.scenarioVersion,
+      ruleId: ruleId ?? this.ruleId,
+      operationId: operationId ?? this.operationId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (iriuId.present) {
+      map['iriu_id'] = Variable<int>(iriuId.value);
+    }
+    if (origin.present) {
+      map['origin'] = Variable<String>(origin.value);
+    }
+    if (moduleId.present) {
+      map['module_id'] = Variable<String>(moduleId.value);
+    }
+    if (scenarioId.present) {
+      map['scenario_id'] = Variable<String>(scenarioId.value);
+    }
+    if (scenarioVersion.present) {
+      map['scenario_version'] = Variable<int>(scenarioVersion.value);
+    }
+    if (ruleId.present) {
+      map['rule_id'] = Variable<String>(ruleId.value);
+    }
+    if (operationId.present) {
+      map['operation_id'] = Variable<String>(operationId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IriuProvenanceCompanion(')
+          ..write('iriuId: $iriuId, ')
+          ..write('origin: $origin, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('operationId: $operationId, ')
+          ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
@@ -9222,6 +12376,16 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     requiredDuringInsert: false,
     defaultValue: const Constant('FIKSNA'),
   );
+  static const VerificationMeta _cenaMeta = const VerificationMeta('cena');
+  @override
+  late final GeneratedColumn<double> cena = GeneratedColumn<double>(
+    'cena',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   static const VerificationMeta _jeKorisnickaMeta = const VerificationMeta(
     'jeKorisnicka',
   );
@@ -9237,6 +12401,21 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _osnovnaUSvakomPredmetuMeta =
+      const VerificationMeta('osnovnaUSvakomPredmetu');
+  @override
+  late final GeneratedColumn<bool> osnovnaUSvakomPredmetu =
+      GeneratedColumn<bool>(
+        'osnovna_u_svakom_predmetu',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("osnovna_u_svakom_predmetu" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   static const VerificationMeta _redosledMeta = const VerificationMeta(
     'redosled',
   );
@@ -9256,7 +12435,9 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
     vidljiv,
     uvekPrikazati,
     tip,
+    cena,
     jeKorisnicka,
+    osnovnaUSvakomPredmetu,
     redosled,
   ];
   @override
@@ -9314,12 +12495,27 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
         tip.isAcceptableOrUnknown(data['tip']!, _tipMeta),
       );
     }
+    if (data.containsKey('cena')) {
+      context.handle(
+        _cenaMeta,
+        cena.isAcceptableOrUnknown(data['cena']!, _cenaMeta),
+      );
+    }
     if (data.containsKey('je_korisnicka')) {
       context.handle(
         _jeKorisnickaMeta,
         jeKorisnicka.isAcceptableOrUnknown(
           data['je_korisnicka']!,
           _jeKorisnickaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('osnovna_u_svakom_predmetu')) {
+      context.handle(
+        _osnovnaUSvakomPredmetuMeta,
+        osnovnaUSvakomPredmetu.isAcceptableOrUnknown(
+          data['osnovna_u_svakom_predmetu']!,
+          _osnovnaUSvakomPredmetuMeta,
         ),
       );
     }
@@ -9358,9 +12554,17 @@ class $IriuKatalogConfigTable extends IriuKatalogConfig
         DriftSqlType.string,
         data['${effectivePrefix}tip'],
       )!,
+      cena: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cena'],
+      )!,
       jeKorisnicka: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}je_korisnicka'],
+      )!,
+      osnovnaUSvakomPredmetu: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}osnovna_u_svakom_predmetu'],
       )!,
       redosled: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -9385,7 +12589,15 @@ class IriuKatalogConfigData extends DataClass
   /// true = štampa se čak i ako je prazno; false = samo ako je popunjeno.
   final bool uvekPrikazati;
   final String tip;
+
+  /// Category-level unit price used by FIKSNA entries. KATALOSKA prices live
+  /// on their KatalogArtikli rows and this field remains unused for them.
+  final double cena;
   final bool jeKorisnicka;
+
+  /// Persistent KATALOG policy: materialize this category only in future
+  /// PREDMETI. Existing IRIU rows are intentionally never reconciled from it.
+  final bool osnovnaUSvakomPredmetu;
   final int redosled;
   const IriuKatalogConfigData({
     required this.interniNaziv,
@@ -9393,7 +12605,9 @@ class IriuKatalogConfigData extends DataClass
     required this.vidljiv,
     required this.uvekPrikazati,
     required this.tip,
+    required this.cena,
     required this.jeKorisnicka,
+    required this.osnovnaUSvakomPredmetu,
     required this.redosled,
   });
   @override
@@ -9404,7 +12618,9 @@ class IriuKatalogConfigData extends DataClass
     map['vidljiv'] = Variable<bool>(vidljiv);
     map['uvek_prikazati'] = Variable<bool>(uvekPrikazati);
     map['tip'] = Variable<String>(tip);
+    map['cena'] = Variable<double>(cena);
     map['je_korisnicka'] = Variable<bool>(jeKorisnicka);
+    map['osnovna_u_svakom_predmetu'] = Variable<bool>(osnovnaUSvakomPredmetu);
     map['redosled'] = Variable<int>(redosled);
     return map;
   }
@@ -9416,7 +12632,9 @@ class IriuKatalogConfigData extends DataClass
       vidljiv: Value(vidljiv),
       uvekPrikazati: Value(uvekPrikazati),
       tip: Value(tip),
+      cena: Value(cena),
       jeKorisnicka: Value(jeKorisnicka),
+      osnovnaUSvakomPredmetu: Value(osnovnaUSvakomPredmetu),
       redosled: Value(redosled),
     );
   }
@@ -9432,7 +12650,11 @@ class IriuKatalogConfigData extends DataClass
       vidljiv: serializer.fromJson<bool>(json['vidljiv']),
       uvekPrikazati: serializer.fromJson<bool>(json['uvekPrikazati']),
       tip: serializer.fromJson<String>(json['tip']),
+      cena: serializer.fromJson<double>(json['cena']),
       jeKorisnicka: serializer.fromJson<bool>(json['jeKorisnicka']),
+      osnovnaUSvakomPredmetu: serializer.fromJson<bool>(
+        json['osnovnaUSvakomPredmetu'],
+      ),
       redosled: serializer.fromJson<int>(json['redosled']),
     );
   }
@@ -9445,7 +12667,9 @@ class IriuKatalogConfigData extends DataClass
       'vidljiv': serializer.toJson<bool>(vidljiv),
       'uvekPrikazati': serializer.toJson<bool>(uvekPrikazati),
       'tip': serializer.toJson<String>(tip),
+      'cena': serializer.toJson<double>(cena),
       'jeKorisnicka': serializer.toJson<bool>(jeKorisnicka),
+      'osnovnaUSvakomPredmetu': serializer.toJson<bool>(osnovnaUSvakomPredmetu),
       'redosled': serializer.toJson<int>(redosled),
     };
   }
@@ -9456,7 +12680,9 @@ class IriuKatalogConfigData extends DataClass
     bool? vidljiv,
     bool? uvekPrikazati,
     String? tip,
+    double? cena,
     bool? jeKorisnicka,
+    bool? osnovnaUSvakomPredmetu,
     int? redosled,
   }) => IriuKatalogConfigData(
     interniNaziv: interniNaziv ?? this.interniNaziv,
@@ -9464,7 +12690,10 @@ class IriuKatalogConfigData extends DataClass
     vidljiv: vidljiv ?? this.vidljiv,
     uvekPrikazati: uvekPrikazati ?? this.uvekPrikazati,
     tip: tip ?? this.tip,
+    cena: cena ?? this.cena,
     jeKorisnicka: jeKorisnicka ?? this.jeKorisnicka,
+    osnovnaUSvakomPredmetu:
+        osnovnaUSvakomPredmetu ?? this.osnovnaUSvakomPredmetu,
     redosled: redosled ?? this.redosled,
   );
   IriuKatalogConfigData copyWithCompanion(IriuKatalogConfigCompanion data) {
@@ -9480,9 +12709,13 @@ class IriuKatalogConfigData extends DataClass
           ? data.uvekPrikazati.value
           : this.uvekPrikazati,
       tip: data.tip.present ? data.tip.value : this.tip,
+      cena: data.cena.present ? data.cena.value : this.cena,
       jeKorisnicka: data.jeKorisnicka.present
           ? data.jeKorisnicka.value
           : this.jeKorisnicka,
+      osnovnaUSvakomPredmetu: data.osnovnaUSvakomPredmetu.present
+          ? data.osnovnaUSvakomPredmetu.value
+          : this.osnovnaUSvakomPredmetu,
       redosled: data.redosled.present ? data.redosled.value : this.redosled,
     );
   }
@@ -9495,7 +12728,9 @@ class IriuKatalogConfigData extends DataClass
           ..write('vidljiv: $vidljiv, ')
           ..write('uvekPrikazati: $uvekPrikazati, ')
           ..write('tip: $tip, ')
+          ..write('cena: $cena, ')
           ..write('jeKorisnicka: $jeKorisnicka, ')
+          ..write('osnovnaUSvakomPredmetu: $osnovnaUSvakomPredmetu, ')
           ..write('redosled: $redosled')
           ..write(')'))
         .toString();
@@ -9508,7 +12743,9 @@ class IriuKatalogConfigData extends DataClass
     vidljiv,
     uvekPrikazati,
     tip,
+    cena,
     jeKorisnicka,
+    osnovnaUSvakomPredmetu,
     redosled,
   );
   @override
@@ -9520,7 +12757,9 @@ class IriuKatalogConfigData extends DataClass
           other.vidljiv == this.vidljiv &&
           other.uvekPrikazati == this.uvekPrikazati &&
           other.tip == this.tip &&
+          other.cena == this.cena &&
           other.jeKorisnicka == this.jeKorisnicka &&
+          other.osnovnaUSvakomPredmetu == this.osnovnaUSvakomPredmetu &&
           other.redosled == this.redosled);
 }
 
@@ -9531,7 +12770,9 @@ class IriuKatalogConfigCompanion
   final Value<bool> vidljiv;
   final Value<bool> uvekPrikazati;
   final Value<String> tip;
+  final Value<double> cena;
   final Value<bool> jeKorisnicka;
+  final Value<bool> osnovnaUSvakomPredmetu;
   final Value<int> redosled;
   final Value<int> rowid;
   const IriuKatalogConfigCompanion({
@@ -9540,7 +12781,9 @@ class IriuKatalogConfigCompanion
     this.vidljiv = const Value.absent(),
     this.uvekPrikazati = const Value.absent(),
     this.tip = const Value.absent(),
+    this.cena = const Value.absent(),
     this.jeKorisnicka = const Value.absent(),
+    this.osnovnaUSvakomPredmetu = const Value.absent(),
     this.redosled = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -9550,7 +12793,9 @@ class IriuKatalogConfigCompanion
     this.vidljiv = const Value.absent(),
     this.uvekPrikazati = const Value.absent(),
     this.tip = const Value.absent(),
+    this.cena = const Value.absent(),
     this.jeKorisnicka = const Value.absent(),
+    this.osnovnaUSvakomPredmetu = const Value.absent(),
     this.redosled = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : interniNaziv = Value(interniNaziv),
@@ -9561,7 +12806,9 @@ class IriuKatalogConfigCompanion
     Expression<bool>? vidljiv,
     Expression<bool>? uvekPrikazati,
     Expression<String>? tip,
+    Expression<double>? cena,
     Expression<bool>? jeKorisnicka,
+    Expression<bool>? osnovnaUSvakomPredmetu,
     Expression<int>? redosled,
     Expression<int>? rowid,
   }) {
@@ -9571,7 +12818,10 @@ class IriuKatalogConfigCompanion
       if (vidljiv != null) 'vidljiv': vidljiv,
       if (uvekPrikazati != null) 'uvek_prikazati': uvekPrikazati,
       if (tip != null) 'tip': tip,
+      if (cena != null) 'cena': cena,
       if (jeKorisnicka != null) 'je_korisnicka': jeKorisnicka,
+      if (osnovnaUSvakomPredmetu != null)
+        'osnovna_u_svakom_predmetu': osnovnaUSvakomPredmetu,
       if (redosled != null) 'redosled': redosled,
       if (rowid != null) 'rowid': rowid,
     });
@@ -9583,7 +12833,9 @@ class IriuKatalogConfigCompanion
     Value<bool>? vidljiv,
     Value<bool>? uvekPrikazati,
     Value<String>? tip,
+    Value<double>? cena,
     Value<bool>? jeKorisnicka,
+    Value<bool>? osnovnaUSvakomPredmetu,
     Value<int>? redosled,
     Value<int>? rowid,
   }) {
@@ -9593,7 +12845,10 @@ class IriuKatalogConfigCompanion
       vidljiv: vidljiv ?? this.vidljiv,
       uvekPrikazati: uvekPrikazati ?? this.uvekPrikazati,
       tip: tip ?? this.tip,
+      cena: cena ?? this.cena,
       jeKorisnicka: jeKorisnicka ?? this.jeKorisnicka,
+      osnovnaUSvakomPredmetu:
+          osnovnaUSvakomPredmetu ?? this.osnovnaUSvakomPredmetu,
       redosled: redosled ?? this.redosled,
       rowid: rowid ?? this.rowid,
     );
@@ -9617,8 +12872,16 @@ class IriuKatalogConfigCompanion
     if (tip.present) {
       map['tip'] = Variable<String>(tip.value);
     }
+    if (cena.present) {
+      map['cena'] = Variable<double>(cena.value);
+    }
     if (jeKorisnicka.present) {
       map['je_korisnicka'] = Variable<bool>(jeKorisnicka.value);
+    }
+    if (osnovnaUSvakomPredmetu.present) {
+      map['osnovna_u_svakom_predmetu'] = Variable<bool>(
+        osnovnaUSvakomPredmetu.value,
+      );
     }
     if (redosled.present) {
       map['redosled'] = Variable<int>(redosled.value);
@@ -9637,7 +12900,9 @@ class IriuKatalogConfigCompanion
           ..write('vidljiv: $vidljiv, ')
           ..write('uvekPrikazati: $uvekPrikazati, ')
           ..write('tip: $tip, ')
+          ..write('cena: $cena, ')
           ..write('jeKorisnicka: $jeKorisnicka, ')
+          ..write('osnovnaUSvakomPredmetu: $osnovnaUSvakomPredmetu, ')
           ..write('redosled: $redosled, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -12753,6 +16018,1854 @@ class PredlosciDokumenataCompanion
   }
 }
 
+class $PartePredlosciTable extends PartePredlosci
+    with TableInfo<$PartePredlosciTable, PartePredlosciData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PartePredlosciTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _firmaIdMeta = const VerificationMeta(
+    'firmaId',
+  );
+  @override
+  late final GeneratedColumn<int> firmaId = GeneratedColumn<int>(
+    'firma_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _nazivMeta = const VerificationMeta('naziv');
+  @override
+  late final GeneratedColumn<String> naziv = GeneratedColumn<String>(
+    'naziv',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _schemaVersionMeta = const VerificationMeta(
+    'schemaVersion',
+  );
+  @override
+  late final GeneratedColumn<int> schemaVersion = GeneratedColumn<int>(
+    'schema_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _configJsonMeta = const VerificationMeta(
+    'configJson',
+  );
+  @override
+  late final GeneratedColumn<String> configJson = GeneratedColumn<String>(
+    'config_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    firmaId,
+    naziv,
+    schemaVersion,
+    configJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'parte_predlosci';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PartePredlosciData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('firma_id')) {
+      context.handle(
+        _firmaIdMeta,
+        firmaId.isAcceptableOrUnknown(data['firma_id']!, _firmaIdMeta),
+      );
+    }
+    if (data.containsKey('naziv')) {
+      context.handle(
+        _nazivMeta,
+        naziv.isAcceptableOrUnknown(data['naziv']!, _nazivMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nazivMeta);
+    }
+    if (data.containsKey('schema_version')) {
+      context.handle(
+        _schemaVersionMeta,
+        schemaVersion.isAcceptableOrUnknown(
+          data['schema_version']!,
+          _schemaVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('config_json')) {
+      context.handle(
+        _configJsonMeta,
+        configJson.isAcceptableOrUnknown(data['config_json']!, _configJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_configJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PartePredlosciData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PartePredlosciData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      firmaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}firma_id'],
+      )!,
+      naziv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}naziv'],
+      )!,
+      schemaVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}schema_version'],
+      )!,
+      configJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PartePredlosciTable createAlias(String alias) {
+    return $PartePredlosciTable(attachedDatabase, alias);
+  }
+}
+
+class PartePredlosciData extends DataClass
+    implements Insertable<PartePredlosciData> {
+  final String id;
+  final int firmaId;
+  final String naziv;
+  final int schemaVersion;
+  final String configJson;
+  final String createdAt;
+  final String updatedAt;
+  const PartePredlosciData({
+    required this.id,
+    required this.firmaId,
+    required this.naziv,
+    required this.schemaVersion,
+    required this.configJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['firma_id'] = Variable<int>(firmaId);
+    map['naziv'] = Variable<String>(naziv);
+    map['schema_version'] = Variable<int>(schemaVersion);
+    map['config_json'] = Variable<String>(configJson);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  PartePredlosciCompanion toCompanion(bool nullToAbsent) {
+    return PartePredlosciCompanion(
+      id: Value(id),
+      firmaId: Value(firmaId),
+      naziv: Value(naziv),
+      schemaVersion: Value(schemaVersion),
+      configJson: Value(configJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PartePredlosciData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PartePredlosciData(
+      id: serializer.fromJson<String>(json['id']),
+      firmaId: serializer.fromJson<int>(json['firmaId']),
+      naziv: serializer.fromJson<String>(json['naziv']),
+      schemaVersion: serializer.fromJson<int>(json['schemaVersion']),
+      configJson: serializer.fromJson<String>(json['configJson']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'firmaId': serializer.toJson<int>(firmaId),
+      'naziv': serializer.toJson<String>(naziv),
+      'schemaVersion': serializer.toJson<int>(schemaVersion),
+      'configJson': serializer.toJson<String>(configJson),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  PartePredlosciData copyWith({
+    String? id,
+    int? firmaId,
+    String? naziv,
+    int? schemaVersion,
+    String? configJson,
+    String? createdAt,
+    String? updatedAt,
+  }) => PartePredlosciData(
+    id: id ?? this.id,
+    firmaId: firmaId ?? this.firmaId,
+    naziv: naziv ?? this.naziv,
+    schemaVersion: schemaVersion ?? this.schemaVersion,
+    configJson: configJson ?? this.configJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PartePredlosciData copyWithCompanion(PartePredlosciCompanion data) {
+    return PartePredlosciData(
+      id: data.id.present ? data.id.value : this.id,
+      firmaId: data.firmaId.present ? data.firmaId.value : this.firmaId,
+      naziv: data.naziv.present ? data.naziv.value : this.naziv,
+      schemaVersion: data.schemaVersion.present
+          ? data.schemaVersion.value
+          : this.schemaVersion,
+      configJson: data.configJson.present
+          ? data.configJson.value
+          : this.configJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePredlosciData(')
+          ..write('id: $id, ')
+          ..write('firmaId: $firmaId, ')
+          ..write('naziv: $naziv, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('configJson: $configJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    firmaId,
+    naziv,
+    schemaVersion,
+    configJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PartePredlosciData &&
+          other.id == this.id &&
+          other.firmaId == this.firmaId &&
+          other.naziv == this.naziv &&
+          other.schemaVersion == this.schemaVersion &&
+          other.configJson == this.configJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PartePredlosciCompanion extends UpdateCompanion<PartePredlosciData> {
+  final Value<String> id;
+  final Value<int> firmaId;
+  final Value<String> naziv;
+  final Value<int> schemaVersion;
+  final Value<String> configJson;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const PartePredlosciCompanion({
+    this.id = const Value.absent(),
+    this.firmaId = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.configJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PartePredlosciCompanion.insert({
+    required String id,
+    this.firmaId = const Value.absent(),
+    required String naziv,
+    this.schemaVersion = const Value.absent(),
+    required String configJson,
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       naziv = Value(naziv),
+       configJson = Value(configJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<PartePredlosciData> custom({
+    Expression<String>? id,
+    Expression<int>? firmaId,
+    Expression<String>? naziv,
+    Expression<int>? schemaVersion,
+    Expression<String>? configJson,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (firmaId != null) 'firma_id': firmaId,
+      if (naziv != null) 'naziv': naziv,
+      if (schemaVersion != null) 'schema_version': schemaVersion,
+      if (configJson != null) 'config_json': configJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PartePredlosciCompanion copyWith({
+    Value<String>? id,
+    Value<int>? firmaId,
+    Value<String>? naziv,
+    Value<int>? schemaVersion,
+    Value<String>? configJson,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PartePredlosciCompanion(
+      id: id ?? this.id,
+      firmaId: firmaId ?? this.firmaId,
+      naziv: naziv ?? this.naziv,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      configJson: configJson ?? this.configJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (firmaId.present) {
+      map['firma_id'] = Variable<int>(firmaId.value);
+    }
+    if (naziv.present) {
+      map['naziv'] = Variable<String>(naziv.value);
+    }
+    if (schemaVersion.present) {
+      map['schema_version'] = Variable<int>(schemaVersion.value);
+    }
+    if (configJson.present) {
+      map['config_json'] = Variable<String>(configJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePredlosciCompanion(')
+          ..write('id: $id, ')
+          ..write('firmaId: $firmaId, ')
+          ..write('naziv: $naziv, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('configJson: $configJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PartePripremeTable extends PartePripreme
+    with TableInfo<$PartePripremeTable, PartePripremeData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PartePripremeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _predmetBrojMeta = const VerificationMeta(
+    'predmetBroj',
+  );
+  @override
+  late final GeneratedColumn<String> predmetBroj = GeneratedColumn<String>(
+    'predmet_broj',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('IN_PROGRESS'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceFingerprintMeta = const VerificationMeta(
+    'sourceFingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> sourceFingerprint =
+      GeneratedColumn<String>(
+        'source_fingerprint',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _templateSnapshotJsonMeta =
+      const VerificationMeta('templateSnapshotJson');
+  @override
+  late final GeneratedColumn<String> templateSnapshotJson =
+      GeneratedColumn<String>(
+        'template_snapshot_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _draftJsonMeta = const VerificationMeta(
+    'draftJson',
+  );
+  @override
+  late final GeneratedColumn<String> draftJson = GeneratedColumn<String>(
+    'draft_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _photoMediaKeyMeta = const VerificationMeta(
+    'photoMediaKey',
+  );
+  @override
+  late final GeneratedColumn<String> photoMediaKey = GeneratedColumn<String>(
+    'photo_media_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customSymbolMediaKeyMeta =
+      const VerificationMeta('customSymbolMediaKey');
+  @override
+  late final GeneratedColumn<String> customSymbolMediaKey =
+      GeneratedColumn<String>(
+        'custom_symbol_media_key',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _previewConfirmedFingerprintMeta =
+      const VerificationMeta('previewConfirmedFingerprint');
+  @override
+  late final GeneratedColumn<String> previewConfirmedFingerprint =
+      GeneratedColumn<String>(
+        'preview_confirmed_fingerprint',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _exportedRenderFingerprintMeta =
+      const VerificationMeta('exportedRenderFingerprint');
+  @override
+  late final GeneratedColumn<String> exportedRenderFingerprint =
+      GeneratedColumn<String>(
+        'exported_render_fingerprint',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _exportedFilenameMeta = const VerificationMeta(
+    'exportedFilename',
+  );
+  @override
+  late final GeneratedColumn<String> exportedFilename = GeneratedColumn<String>(
+    'exported_filename',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exportedLocationMeta = const VerificationMeta(
+    'exportedLocation',
+  );
+  @override
+  late final GeneratedColumn<String> exportedLocation = GeneratedColumn<String>(
+    'exported_location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exportedSuccessfullyMeta =
+      const VerificationMeta('exportedSuccessfully');
+  @override
+  late final GeneratedColumn<bool> exportedSuccessfully = GeneratedColumn<bool>(
+    'exported_successfully',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("exported_successfully" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _cleanupPendingMeta = const VerificationMeta(
+    'cleanupPending',
+  );
+  @override
+  late final GeneratedColumn<bool> cleanupPending = GeneratedColumn<bool>(
+    'cleanup_pending',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("cleanup_pending" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _noPhotoAcceptedMeta = const VerificationMeta(
+    'noPhotoAccepted',
+  );
+  @override
+  late final GeneratedColumn<bool> noPhotoAccepted = GeneratedColumn<bool>(
+    'no_photo_accepted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("no_photo_accepted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _noCustomSymbolAcceptedMeta =
+      const VerificationMeta('noCustomSymbolAccepted');
+  @override
+  late final GeneratedColumn<bool> noCustomSymbolAccepted =
+      GeneratedColumn<bool>(
+        'no_custom_symbol_accepted',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("no_custom_symbol_accepted" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _lowResolutionAcceptedMeta =
+      const VerificationMeta('lowResolutionAccepted');
+  @override
+  late final GeneratedColumn<bool> lowResolutionAccepted =
+      GeneratedColumn<bool>(
+        'low_resolution_accepted',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("low_resolution_accepted" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _grammarVerifiedMeta = const VerificationMeta(
+    'grammarVerified',
+  );
+  @override
+  late final GeneratedColumn<bool> grammarVerified = GeneratedColumn<bool>(
+    'grammar_verified',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("grammar_verified" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    predmetId,
+    predmetBroj,
+    status,
+    createdAt,
+    updatedAt,
+    sourceFingerprint,
+    templateId,
+    templateSnapshotJson,
+    draftJson,
+    photoMediaKey,
+    customSymbolMediaKey,
+    previewConfirmedFingerprint,
+    exportedRenderFingerprint,
+    exportedFilename,
+    exportedLocation,
+    exportedSuccessfully,
+    cleanupPending,
+    noPhotoAccepted,
+    noCustomSymbolAccepted,
+    lowResolutionAccepted,
+    grammarVerified,
+    completedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'parte_pripreme';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PartePripremeData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetIdMeta);
+    }
+    if (data.containsKey('predmet_broj')) {
+      context.handle(
+        _predmetBrojMeta,
+        predmetBroj.isAcceptableOrUnknown(
+          data['predmet_broj']!,
+          _predmetBrojMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_predmetBrojMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('source_fingerprint')) {
+      context.handle(
+        _sourceFingerprintMeta,
+        sourceFingerprint.isAcceptableOrUnknown(
+          data['source_fingerprint']!,
+          _sourceFingerprintMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceFingerprintMeta);
+    }
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('template_snapshot_json')) {
+      context.handle(
+        _templateSnapshotJsonMeta,
+        templateSnapshotJson.isAcceptableOrUnknown(
+          data['template_snapshot_json']!,
+          _templateSnapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_templateSnapshotJsonMeta);
+    }
+    if (data.containsKey('draft_json')) {
+      context.handle(
+        _draftJsonMeta,
+        draftJson.isAcceptableOrUnknown(data['draft_json']!, _draftJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_draftJsonMeta);
+    }
+    if (data.containsKey('photo_media_key')) {
+      context.handle(
+        _photoMediaKeyMeta,
+        photoMediaKey.isAcceptableOrUnknown(
+          data['photo_media_key']!,
+          _photoMediaKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_symbol_media_key')) {
+      context.handle(
+        _customSymbolMediaKeyMeta,
+        customSymbolMediaKey.isAcceptableOrUnknown(
+          data['custom_symbol_media_key']!,
+          _customSymbolMediaKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('preview_confirmed_fingerprint')) {
+      context.handle(
+        _previewConfirmedFingerprintMeta,
+        previewConfirmedFingerprint.isAcceptableOrUnknown(
+          data['preview_confirmed_fingerprint']!,
+          _previewConfirmedFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_render_fingerprint')) {
+      context.handle(
+        _exportedRenderFingerprintMeta,
+        exportedRenderFingerprint.isAcceptableOrUnknown(
+          data['exported_render_fingerprint']!,
+          _exportedRenderFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_filename')) {
+      context.handle(
+        _exportedFilenameMeta,
+        exportedFilename.isAcceptableOrUnknown(
+          data['exported_filename']!,
+          _exportedFilenameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_location')) {
+      context.handle(
+        _exportedLocationMeta,
+        exportedLocation.isAcceptableOrUnknown(
+          data['exported_location']!,
+          _exportedLocationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exported_successfully')) {
+      context.handle(
+        _exportedSuccessfullyMeta,
+        exportedSuccessfully.isAcceptableOrUnknown(
+          data['exported_successfully']!,
+          _exportedSuccessfullyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cleanup_pending')) {
+      context.handle(
+        _cleanupPendingMeta,
+        cleanupPending.isAcceptableOrUnknown(
+          data['cleanup_pending']!,
+          _cleanupPendingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('no_photo_accepted')) {
+      context.handle(
+        _noPhotoAcceptedMeta,
+        noPhotoAccepted.isAcceptableOrUnknown(
+          data['no_photo_accepted']!,
+          _noPhotoAcceptedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('no_custom_symbol_accepted')) {
+      context.handle(
+        _noCustomSymbolAcceptedMeta,
+        noCustomSymbolAccepted.isAcceptableOrUnknown(
+          data['no_custom_symbol_accepted']!,
+          _noCustomSymbolAcceptedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('low_resolution_accepted')) {
+      context.handle(
+        _lowResolutionAcceptedMeta,
+        lowResolutionAccepted.isAcceptableOrUnknown(
+          data['low_resolution_accepted']!,
+          _lowResolutionAcceptedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('grammar_verified')) {
+      context.handle(
+        _grammarVerifiedMeta,
+        grammarVerified.isAcceptableOrUnknown(
+          data['grammar_verified']!,
+          _grammarVerifiedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {predmetId},
+  ];
+  @override
+  PartePripremeData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PartePripremeData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      predmetBroj: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}predmet_broj'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      sourceFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_fingerprint'],
+      )!,
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      )!,
+      templateSnapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_snapshot_json'],
+      )!,
+      draftJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}draft_json'],
+      )!,
+      photoMediaKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_media_key'],
+      ),
+      customSymbolMediaKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_symbol_media_key'],
+      ),
+      previewConfirmedFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}preview_confirmed_fingerprint'],
+      ),
+      exportedRenderFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exported_render_fingerprint'],
+      ),
+      exportedFilename: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exported_filename'],
+      ),
+      exportedLocation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exported_location'],
+      ),
+      exportedSuccessfully: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}exported_successfully'],
+      )!,
+      cleanupPending: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}cleanup_pending'],
+      )!,
+      noPhotoAccepted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}no_photo_accepted'],
+      )!,
+      noCustomSymbolAccepted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}no_custom_symbol_accepted'],
+      )!,
+      lowResolutionAccepted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}low_resolution_accepted'],
+      )!,
+      grammarVerified: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}grammar_verified'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
+    );
+  }
+
+  @override
+  $PartePripremeTable createAlias(String alias) {
+    return $PartePripremeTable(attachedDatabase, alias);
+  }
+}
+
+class PartePripremeData extends DataClass
+    implements Insertable<PartePripremeData> {
+  final int id;
+  final int predmetId;
+  final String predmetBroj;
+  final String status;
+  final String createdAt;
+  final String updatedAt;
+  final String sourceFingerprint;
+  final String templateId;
+  final String templateSnapshotJson;
+  final String draftJson;
+  final String? photoMediaKey;
+  final String? customSymbolMediaKey;
+  final String? previewConfirmedFingerprint;
+  final String? exportedRenderFingerprint;
+  final String? exportedFilename;
+  final String? exportedLocation;
+  final bool exportedSuccessfully;
+  final bool cleanupPending;
+  final bool noPhotoAccepted;
+  final bool noCustomSymbolAccepted;
+  final bool lowResolutionAccepted;
+  final bool grammarVerified;
+  final String? completedAt;
+  const PartePripremeData({
+    required this.id,
+    required this.predmetId,
+    required this.predmetBroj,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.sourceFingerprint,
+    required this.templateId,
+    required this.templateSnapshotJson,
+    required this.draftJson,
+    this.photoMediaKey,
+    this.customSymbolMediaKey,
+    this.previewConfirmedFingerprint,
+    this.exportedRenderFingerprint,
+    this.exportedFilename,
+    this.exportedLocation,
+    required this.exportedSuccessfully,
+    required this.cleanupPending,
+    required this.noPhotoAccepted,
+    required this.noCustomSymbolAccepted,
+    required this.lowResolutionAccepted,
+    required this.grammarVerified,
+    this.completedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['predmet_broj'] = Variable<String>(predmetBroj);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    map['source_fingerprint'] = Variable<String>(sourceFingerprint);
+    map['template_id'] = Variable<String>(templateId);
+    map['template_snapshot_json'] = Variable<String>(templateSnapshotJson);
+    map['draft_json'] = Variable<String>(draftJson);
+    if (!nullToAbsent || photoMediaKey != null) {
+      map['photo_media_key'] = Variable<String>(photoMediaKey);
+    }
+    if (!nullToAbsent || customSymbolMediaKey != null) {
+      map['custom_symbol_media_key'] = Variable<String>(customSymbolMediaKey);
+    }
+    if (!nullToAbsent || previewConfirmedFingerprint != null) {
+      map['preview_confirmed_fingerprint'] = Variable<String>(
+        previewConfirmedFingerprint,
+      );
+    }
+    if (!nullToAbsent || exportedRenderFingerprint != null) {
+      map['exported_render_fingerprint'] = Variable<String>(
+        exportedRenderFingerprint,
+      );
+    }
+    if (!nullToAbsent || exportedFilename != null) {
+      map['exported_filename'] = Variable<String>(exportedFilename);
+    }
+    if (!nullToAbsent || exportedLocation != null) {
+      map['exported_location'] = Variable<String>(exportedLocation);
+    }
+    map['exported_successfully'] = Variable<bool>(exportedSuccessfully);
+    map['cleanup_pending'] = Variable<bool>(cleanupPending);
+    map['no_photo_accepted'] = Variable<bool>(noPhotoAccepted);
+    map['no_custom_symbol_accepted'] = Variable<bool>(noCustomSymbolAccepted);
+    map['low_resolution_accepted'] = Variable<bool>(lowResolutionAccepted);
+    map['grammar_verified'] = Variable<bool>(grammarVerified);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
+    return map;
+  }
+
+  PartePripremeCompanion toCompanion(bool nullToAbsent) {
+    return PartePripremeCompanion(
+      id: Value(id),
+      predmetId: Value(predmetId),
+      predmetBroj: Value(predmetBroj),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      sourceFingerprint: Value(sourceFingerprint),
+      templateId: Value(templateId),
+      templateSnapshotJson: Value(templateSnapshotJson),
+      draftJson: Value(draftJson),
+      photoMediaKey: photoMediaKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoMediaKey),
+      customSymbolMediaKey: customSymbolMediaKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customSymbolMediaKey),
+      previewConfirmedFingerprint:
+          previewConfirmedFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previewConfirmedFingerprint),
+      exportedRenderFingerprint:
+          exportedRenderFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exportedRenderFingerprint),
+      exportedFilename: exportedFilename == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exportedFilename),
+      exportedLocation: exportedLocation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exportedLocation),
+      exportedSuccessfully: Value(exportedSuccessfully),
+      cleanupPending: Value(cleanupPending),
+      noPhotoAccepted: Value(noPhotoAccepted),
+      noCustomSymbolAccepted: Value(noCustomSymbolAccepted),
+      lowResolutionAccepted: Value(lowResolutionAccepted),
+      grammarVerified: Value(grammarVerified),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+    );
+  }
+
+  factory PartePripremeData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PartePripremeData(
+      id: serializer.fromJson<int>(json['id']),
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      predmetBroj: serializer.fromJson<String>(json['predmetBroj']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+      sourceFingerprint: serializer.fromJson<String>(json['sourceFingerprint']),
+      templateId: serializer.fromJson<String>(json['templateId']),
+      templateSnapshotJson: serializer.fromJson<String>(
+        json['templateSnapshotJson'],
+      ),
+      draftJson: serializer.fromJson<String>(json['draftJson']),
+      photoMediaKey: serializer.fromJson<String?>(json['photoMediaKey']),
+      customSymbolMediaKey: serializer.fromJson<String?>(
+        json['customSymbolMediaKey'],
+      ),
+      previewConfirmedFingerprint: serializer.fromJson<String?>(
+        json['previewConfirmedFingerprint'],
+      ),
+      exportedRenderFingerprint: serializer.fromJson<String?>(
+        json['exportedRenderFingerprint'],
+      ),
+      exportedFilename: serializer.fromJson<String?>(json['exportedFilename']),
+      exportedLocation: serializer.fromJson<String?>(json['exportedLocation']),
+      exportedSuccessfully: serializer.fromJson<bool>(
+        json['exportedSuccessfully'],
+      ),
+      cleanupPending: serializer.fromJson<bool>(json['cleanupPending']),
+      noPhotoAccepted: serializer.fromJson<bool>(json['noPhotoAccepted']),
+      noCustomSymbolAccepted: serializer.fromJson<bool>(
+        json['noCustomSymbolAccepted'],
+      ),
+      lowResolutionAccepted: serializer.fromJson<bool>(
+        json['lowResolutionAccepted'],
+      ),
+      grammarVerified: serializer.fromJson<bool>(json['grammarVerified']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'predmetId': serializer.toJson<int>(predmetId),
+      'predmetBroj': serializer.toJson<String>(predmetBroj),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+      'sourceFingerprint': serializer.toJson<String>(sourceFingerprint),
+      'templateId': serializer.toJson<String>(templateId),
+      'templateSnapshotJson': serializer.toJson<String>(templateSnapshotJson),
+      'draftJson': serializer.toJson<String>(draftJson),
+      'photoMediaKey': serializer.toJson<String?>(photoMediaKey),
+      'customSymbolMediaKey': serializer.toJson<String?>(customSymbolMediaKey),
+      'previewConfirmedFingerprint': serializer.toJson<String?>(
+        previewConfirmedFingerprint,
+      ),
+      'exportedRenderFingerprint': serializer.toJson<String?>(
+        exportedRenderFingerprint,
+      ),
+      'exportedFilename': serializer.toJson<String?>(exportedFilename),
+      'exportedLocation': serializer.toJson<String?>(exportedLocation),
+      'exportedSuccessfully': serializer.toJson<bool>(exportedSuccessfully),
+      'cleanupPending': serializer.toJson<bool>(cleanupPending),
+      'noPhotoAccepted': serializer.toJson<bool>(noPhotoAccepted),
+      'noCustomSymbolAccepted': serializer.toJson<bool>(noCustomSymbolAccepted),
+      'lowResolutionAccepted': serializer.toJson<bool>(lowResolutionAccepted),
+      'grammarVerified': serializer.toJson<bool>(grammarVerified),
+      'completedAt': serializer.toJson<String?>(completedAt),
+    };
+  }
+
+  PartePripremeData copyWith({
+    int? id,
+    int? predmetId,
+    String? predmetBroj,
+    String? status,
+    String? createdAt,
+    String? updatedAt,
+    String? sourceFingerprint,
+    String? templateId,
+    String? templateSnapshotJson,
+    String? draftJson,
+    Value<String?> photoMediaKey = const Value.absent(),
+    Value<String?> customSymbolMediaKey = const Value.absent(),
+    Value<String?> previewConfirmedFingerprint = const Value.absent(),
+    Value<String?> exportedRenderFingerprint = const Value.absent(),
+    Value<String?> exportedFilename = const Value.absent(),
+    Value<String?> exportedLocation = const Value.absent(),
+    bool? exportedSuccessfully,
+    bool? cleanupPending,
+    bool? noPhotoAccepted,
+    bool? noCustomSymbolAccepted,
+    bool? lowResolutionAccepted,
+    bool? grammarVerified,
+    Value<String?> completedAt = const Value.absent(),
+  }) => PartePripremeData(
+    id: id ?? this.id,
+    predmetId: predmetId ?? this.predmetId,
+    predmetBroj: predmetBroj ?? this.predmetBroj,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+    templateId: templateId ?? this.templateId,
+    templateSnapshotJson: templateSnapshotJson ?? this.templateSnapshotJson,
+    draftJson: draftJson ?? this.draftJson,
+    photoMediaKey: photoMediaKey.present
+        ? photoMediaKey.value
+        : this.photoMediaKey,
+    customSymbolMediaKey: customSymbolMediaKey.present
+        ? customSymbolMediaKey.value
+        : this.customSymbolMediaKey,
+    previewConfirmedFingerprint: previewConfirmedFingerprint.present
+        ? previewConfirmedFingerprint.value
+        : this.previewConfirmedFingerprint,
+    exportedRenderFingerprint: exportedRenderFingerprint.present
+        ? exportedRenderFingerprint.value
+        : this.exportedRenderFingerprint,
+    exportedFilename: exportedFilename.present
+        ? exportedFilename.value
+        : this.exportedFilename,
+    exportedLocation: exportedLocation.present
+        ? exportedLocation.value
+        : this.exportedLocation,
+    exportedSuccessfully: exportedSuccessfully ?? this.exportedSuccessfully,
+    cleanupPending: cleanupPending ?? this.cleanupPending,
+    noPhotoAccepted: noPhotoAccepted ?? this.noPhotoAccepted,
+    noCustomSymbolAccepted:
+        noCustomSymbolAccepted ?? this.noCustomSymbolAccepted,
+    lowResolutionAccepted: lowResolutionAccepted ?? this.lowResolutionAccepted,
+    grammarVerified: grammarVerified ?? this.grammarVerified,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+  );
+  PartePripremeData copyWithCompanion(PartePripremeCompanion data) {
+    return PartePripremeData(
+      id: data.id.present ? data.id.value : this.id,
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      predmetBroj: data.predmetBroj.present
+          ? data.predmetBroj.value
+          : this.predmetBroj,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      sourceFingerprint: data.sourceFingerprint.present
+          ? data.sourceFingerprint.value
+          : this.sourceFingerprint,
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      templateSnapshotJson: data.templateSnapshotJson.present
+          ? data.templateSnapshotJson.value
+          : this.templateSnapshotJson,
+      draftJson: data.draftJson.present ? data.draftJson.value : this.draftJson,
+      photoMediaKey: data.photoMediaKey.present
+          ? data.photoMediaKey.value
+          : this.photoMediaKey,
+      customSymbolMediaKey: data.customSymbolMediaKey.present
+          ? data.customSymbolMediaKey.value
+          : this.customSymbolMediaKey,
+      previewConfirmedFingerprint: data.previewConfirmedFingerprint.present
+          ? data.previewConfirmedFingerprint.value
+          : this.previewConfirmedFingerprint,
+      exportedRenderFingerprint: data.exportedRenderFingerprint.present
+          ? data.exportedRenderFingerprint.value
+          : this.exportedRenderFingerprint,
+      exportedFilename: data.exportedFilename.present
+          ? data.exportedFilename.value
+          : this.exportedFilename,
+      exportedLocation: data.exportedLocation.present
+          ? data.exportedLocation.value
+          : this.exportedLocation,
+      exportedSuccessfully: data.exportedSuccessfully.present
+          ? data.exportedSuccessfully.value
+          : this.exportedSuccessfully,
+      cleanupPending: data.cleanupPending.present
+          ? data.cleanupPending.value
+          : this.cleanupPending,
+      noPhotoAccepted: data.noPhotoAccepted.present
+          ? data.noPhotoAccepted.value
+          : this.noPhotoAccepted,
+      noCustomSymbolAccepted: data.noCustomSymbolAccepted.present
+          ? data.noCustomSymbolAccepted.value
+          : this.noCustomSymbolAccepted,
+      lowResolutionAccepted: data.lowResolutionAccepted.present
+          ? data.lowResolutionAccepted.value
+          : this.lowResolutionAccepted,
+      grammarVerified: data.grammarVerified.present
+          ? data.grammarVerified.value
+          : this.grammarVerified,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePripremeData(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('predmetBroj: $predmetBroj, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('templateId: $templateId, ')
+          ..write('templateSnapshotJson: $templateSnapshotJson, ')
+          ..write('draftJson: $draftJson, ')
+          ..write('photoMediaKey: $photoMediaKey, ')
+          ..write('customSymbolMediaKey: $customSymbolMediaKey, ')
+          ..write('previewConfirmedFingerprint: $previewConfirmedFingerprint, ')
+          ..write('exportedRenderFingerprint: $exportedRenderFingerprint, ')
+          ..write('exportedFilename: $exportedFilename, ')
+          ..write('exportedLocation: $exportedLocation, ')
+          ..write('exportedSuccessfully: $exportedSuccessfully, ')
+          ..write('cleanupPending: $cleanupPending, ')
+          ..write('noPhotoAccepted: $noPhotoAccepted, ')
+          ..write('noCustomSymbolAccepted: $noCustomSymbolAccepted, ')
+          ..write('lowResolutionAccepted: $lowResolutionAccepted, ')
+          ..write('grammarVerified: $grammarVerified, ')
+          ..write('completedAt: $completedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    predmetId,
+    predmetBroj,
+    status,
+    createdAt,
+    updatedAt,
+    sourceFingerprint,
+    templateId,
+    templateSnapshotJson,
+    draftJson,
+    photoMediaKey,
+    customSymbolMediaKey,
+    previewConfirmedFingerprint,
+    exportedRenderFingerprint,
+    exportedFilename,
+    exportedLocation,
+    exportedSuccessfully,
+    cleanupPending,
+    noPhotoAccepted,
+    noCustomSymbolAccepted,
+    lowResolutionAccepted,
+    grammarVerified,
+    completedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PartePripremeData &&
+          other.id == this.id &&
+          other.predmetId == this.predmetId &&
+          other.predmetBroj == this.predmetBroj &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.sourceFingerprint == this.sourceFingerprint &&
+          other.templateId == this.templateId &&
+          other.templateSnapshotJson == this.templateSnapshotJson &&
+          other.draftJson == this.draftJson &&
+          other.photoMediaKey == this.photoMediaKey &&
+          other.customSymbolMediaKey == this.customSymbolMediaKey &&
+          other.previewConfirmedFingerprint ==
+              this.previewConfirmedFingerprint &&
+          other.exportedRenderFingerprint == this.exportedRenderFingerprint &&
+          other.exportedFilename == this.exportedFilename &&
+          other.exportedLocation == this.exportedLocation &&
+          other.exportedSuccessfully == this.exportedSuccessfully &&
+          other.cleanupPending == this.cleanupPending &&
+          other.noPhotoAccepted == this.noPhotoAccepted &&
+          other.noCustomSymbolAccepted == this.noCustomSymbolAccepted &&
+          other.lowResolutionAccepted == this.lowResolutionAccepted &&
+          other.grammarVerified == this.grammarVerified &&
+          other.completedAt == this.completedAt);
+}
+
+class PartePripremeCompanion extends UpdateCompanion<PartePripremeData> {
+  final Value<int> id;
+  final Value<int> predmetId;
+  final Value<String> predmetBroj;
+  final Value<String> status;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<String> sourceFingerprint;
+  final Value<String> templateId;
+  final Value<String> templateSnapshotJson;
+  final Value<String> draftJson;
+  final Value<String?> photoMediaKey;
+  final Value<String?> customSymbolMediaKey;
+  final Value<String?> previewConfirmedFingerprint;
+  final Value<String?> exportedRenderFingerprint;
+  final Value<String?> exportedFilename;
+  final Value<String?> exportedLocation;
+  final Value<bool> exportedSuccessfully;
+  final Value<bool> cleanupPending;
+  final Value<bool> noPhotoAccepted;
+  final Value<bool> noCustomSymbolAccepted;
+  final Value<bool> lowResolutionAccepted;
+  final Value<bool> grammarVerified;
+  final Value<String?> completedAt;
+  const PartePripremeCompanion({
+    this.id = const Value.absent(),
+    this.predmetId = const Value.absent(),
+    this.predmetBroj = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.sourceFingerprint = const Value.absent(),
+    this.templateId = const Value.absent(),
+    this.templateSnapshotJson = const Value.absent(),
+    this.draftJson = const Value.absent(),
+    this.photoMediaKey = const Value.absent(),
+    this.customSymbolMediaKey = const Value.absent(),
+    this.previewConfirmedFingerprint = const Value.absent(),
+    this.exportedRenderFingerprint = const Value.absent(),
+    this.exportedFilename = const Value.absent(),
+    this.exportedLocation = const Value.absent(),
+    this.exportedSuccessfully = const Value.absent(),
+    this.cleanupPending = const Value.absent(),
+    this.noPhotoAccepted = const Value.absent(),
+    this.noCustomSymbolAccepted = const Value.absent(),
+    this.lowResolutionAccepted = const Value.absent(),
+    this.grammarVerified = const Value.absent(),
+    this.completedAt = const Value.absent(),
+  });
+  PartePripremeCompanion.insert({
+    this.id = const Value.absent(),
+    required int predmetId,
+    required String predmetBroj,
+    this.status = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    required String sourceFingerprint,
+    required String templateId,
+    required String templateSnapshotJson,
+    required String draftJson,
+    this.photoMediaKey = const Value.absent(),
+    this.customSymbolMediaKey = const Value.absent(),
+    this.previewConfirmedFingerprint = const Value.absent(),
+    this.exportedRenderFingerprint = const Value.absent(),
+    this.exportedFilename = const Value.absent(),
+    this.exportedLocation = const Value.absent(),
+    this.exportedSuccessfully = const Value.absent(),
+    this.cleanupPending = const Value.absent(),
+    this.noPhotoAccepted = const Value.absent(),
+    this.noCustomSymbolAccepted = const Value.absent(),
+    this.lowResolutionAccepted = const Value.absent(),
+    this.grammarVerified = const Value.absent(),
+    this.completedAt = const Value.absent(),
+  }) : predmetId = Value(predmetId),
+       predmetBroj = Value(predmetBroj),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       sourceFingerprint = Value(sourceFingerprint),
+       templateId = Value(templateId),
+       templateSnapshotJson = Value(templateSnapshotJson),
+       draftJson = Value(draftJson);
+  static Insertable<PartePripremeData> custom({
+    Expression<int>? id,
+    Expression<int>? predmetId,
+    Expression<String>? predmetBroj,
+    Expression<String>? status,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<String>? sourceFingerprint,
+    Expression<String>? templateId,
+    Expression<String>? templateSnapshotJson,
+    Expression<String>? draftJson,
+    Expression<String>? photoMediaKey,
+    Expression<String>? customSymbolMediaKey,
+    Expression<String>? previewConfirmedFingerprint,
+    Expression<String>? exportedRenderFingerprint,
+    Expression<String>? exportedFilename,
+    Expression<String>? exportedLocation,
+    Expression<bool>? exportedSuccessfully,
+    Expression<bool>? cleanupPending,
+    Expression<bool>? noPhotoAccepted,
+    Expression<bool>? noCustomSymbolAccepted,
+    Expression<bool>? lowResolutionAccepted,
+    Expression<bool>? grammarVerified,
+    Expression<String>? completedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (predmetBroj != null) 'predmet_broj': predmetBroj,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (sourceFingerprint != null) 'source_fingerprint': sourceFingerprint,
+      if (templateId != null) 'template_id': templateId,
+      if (templateSnapshotJson != null)
+        'template_snapshot_json': templateSnapshotJson,
+      if (draftJson != null) 'draft_json': draftJson,
+      if (photoMediaKey != null) 'photo_media_key': photoMediaKey,
+      if (customSymbolMediaKey != null)
+        'custom_symbol_media_key': customSymbolMediaKey,
+      if (previewConfirmedFingerprint != null)
+        'preview_confirmed_fingerprint': previewConfirmedFingerprint,
+      if (exportedRenderFingerprint != null)
+        'exported_render_fingerprint': exportedRenderFingerprint,
+      if (exportedFilename != null) 'exported_filename': exportedFilename,
+      if (exportedLocation != null) 'exported_location': exportedLocation,
+      if (exportedSuccessfully != null)
+        'exported_successfully': exportedSuccessfully,
+      if (cleanupPending != null) 'cleanup_pending': cleanupPending,
+      if (noPhotoAccepted != null) 'no_photo_accepted': noPhotoAccepted,
+      if (noCustomSymbolAccepted != null)
+        'no_custom_symbol_accepted': noCustomSymbolAccepted,
+      if (lowResolutionAccepted != null)
+        'low_resolution_accepted': lowResolutionAccepted,
+      if (grammarVerified != null) 'grammar_verified': grammarVerified,
+      if (completedAt != null) 'completed_at': completedAt,
+    });
+  }
+
+  PartePripremeCompanion copyWith({
+    Value<int>? id,
+    Value<int>? predmetId,
+    Value<String>? predmetBroj,
+    Value<String>? status,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<String>? sourceFingerprint,
+    Value<String>? templateId,
+    Value<String>? templateSnapshotJson,
+    Value<String>? draftJson,
+    Value<String?>? photoMediaKey,
+    Value<String?>? customSymbolMediaKey,
+    Value<String?>? previewConfirmedFingerprint,
+    Value<String?>? exportedRenderFingerprint,
+    Value<String?>? exportedFilename,
+    Value<String?>? exportedLocation,
+    Value<bool>? exportedSuccessfully,
+    Value<bool>? cleanupPending,
+    Value<bool>? noPhotoAccepted,
+    Value<bool>? noCustomSymbolAccepted,
+    Value<bool>? lowResolutionAccepted,
+    Value<bool>? grammarVerified,
+    Value<String?>? completedAt,
+  }) {
+    return PartePripremeCompanion(
+      id: id ?? this.id,
+      predmetId: predmetId ?? this.predmetId,
+      predmetBroj: predmetBroj ?? this.predmetBroj,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      sourceFingerprint: sourceFingerprint ?? this.sourceFingerprint,
+      templateId: templateId ?? this.templateId,
+      templateSnapshotJson: templateSnapshotJson ?? this.templateSnapshotJson,
+      draftJson: draftJson ?? this.draftJson,
+      photoMediaKey: photoMediaKey ?? this.photoMediaKey,
+      customSymbolMediaKey: customSymbolMediaKey ?? this.customSymbolMediaKey,
+      previewConfirmedFingerprint:
+          previewConfirmedFingerprint ?? this.previewConfirmedFingerprint,
+      exportedRenderFingerprint:
+          exportedRenderFingerprint ?? this.exportedRenderFingerprint,
+      exportedFilename: exportedFilename ?? this.exportedFilename,
+      exportedLocation: exportedLocation ?? this.exportedLocation,
+      exportedSuccessfully: exportedSuccessfully ?? this.exportedSuccessfully,
+      cleanupPending: cleanupPending ?? this.cleanupPending,
+      noPhotoAccepted: noPhotoAccepted ?? this.noPhotoAccepted,
+      noCustomSymbolAccepted:
+          noCustomSymbolAccepted ?? this.noCustomSymbolAccepted,
+      lowResolutionAccepted:
+          lowResolutionAccepted ?? this.lowResolutionAccepted,
+      grammarVerified: grammarVerified ?? this.grammarVerified,
+      completedAt: completedAt ?? this.completedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (predmetBroj.present) {
+      map['predmet_broj'] = Variable<String>(predmetBroj.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (sourceFingerprint.present) {
+      map['source_fingerprint'] = Variable<String>(sourceFingerprint.value);
+    }
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (templateSnapshotJson.present) {
+      map['template_snapshot_json'] = Variable<String>(
+        templateSnapshotJson.value,
+      );
+    }
+    if (draftJson.present) {
+      map['draft_json'] = Variable<String>(draftJson.value);
+    }
+    if (photoMediaKey.present) {
+      map['photo_media_key'] = Variable<String>(photoMediaKey.value);
+    }
+    if (customSymbolMediaKey.present) {
+      map['custom_symbol_media_key'] = Variable<String>(
+        customSymbolMediaKey.value,
+      );
+    }
+    if (previewConfirmedFingerprint.present) {
+      map['preview_confirmed_fingerprint'] = Variable<String>(
+        previewConfirmedFingerprint.value,
+      );
+    }
+    if (exportedRenderFingerprint.present) {
+      map['exported_render_fingerprint'] = Variable<String>(
+        exportedRenderFingerprint.value,
+      );
+    }
+    if (exportedFilename.present) {
+      map['exported_filename'] = Variable<String>(exportedFilename.value);
+    }
+    if (exportedLocation.present) {
+      map['exported_location'] = Variable<String>(exportedLocation.value);
+    }
+    if (exportedSuccessfully.present) {
+      map['exported_successfully'] = Variable<bool>(exportedSuccessfully.value);
+    }
+    if (cleanupPending.present) {
+      map['cleanup_pending'] = Variable<bool>(cleanupPending.value);
+    }
+    if (noPhotoAccepted.present) {
+      map['no_photo_accepted'] = Variable<bool>(noPhotoAccepted.value);
+    }
+    if (noCustomSymbolAccepted.present) {
+      map['no_custom_symbol_accepted'] = Variable<bool>(
+        noCustomSymbolAccepted.value,
+      );
+    }
+    if (lowResolutionAccepted.present) {
+      map['low_resolution_accepted'] = Variable<bool>(
+        lowResolutionAccepted.value,
+      );
+    }
+    if (grammarVerified.present) {
+      map['grammar_verified'] = Variable<bool>(grammarVerified.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartePripremeCompanion(')
+          ..write('id: $id, ')
+          ..write('predmetId: $predmetId, ')
+          ..write('predmetBroj: $predmetBroj, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('sourceFingerprint: $sourceFingerprint, ')
+          ..write('templateId: $templateId, ')
+          ..write('templateSnapshotJson: $templateSnapshotJson, ')
+          ..write('draftJson: $draftJson, ')
+          ..write('photoMediaKey: $photoMediaKey, ')
+          ..write('customSymbolMediaKey: $customSymbolMediaKey, ')
+          ..write('previewConfirmedFingerprint: $previewConfirmedFingerprint, ')
+          ..write('exportedRenderFingerprint: $exportedRenderFingerprint, ')
+          ..write('exportedFilename: $exportedFilename, ')
+          ..write('exportedLocation: $exportedLocation, ')
+          ..write('exportedSuccessfully: $exportedSuccessfully, ')
+          ..write('cleanupPending: $cleanupPending, ')
+          ..write('noPhotoAccepted: $noPhotoAccepted, ')
+          ..write('noCustomSymbolAccepted: $noCustomSymbolAccepted, ')
+          ..write('lowResolutionAccepted: $lowResolutionAccepted, ')
+          ..write('grammarVerified: $grammarVerified, ')
+          ..write('completedAt: $completedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LogIzmenaTable extends LogIzmena
     with TableInfo<$LogIzmenaTable, LogIzmenaData> {
   @override
@@ -13218,6 +18331,1634 @@ class LogIzmenaCompanion extends UpdateCompanion<LogIzmenaData> {
   }
 }
 
+class $ScenarioModulesTable extends ScenarioModules
+    with TableInfo<$ScenarioModulesTable, ScenarioModule> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScenarioModulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nazivMeta = const VerificationMeta('naziv');
+  @override
+  late final GeneratedColumn<String> naziv = GeneratedColumn<String>(
+    'naziv',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('AKTIVAN'),
+  );
+  static const VerificationMeta _schemaVersionMeta = const VerificationMeta(
+    'schemaVersion',
+  );
+  @override
+  late final GeneratedColumn<int> schemaVersion = GeneratedColumn<int>(
+    'schema_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _osnovniPaketJsonMeta = const VerificationMeta(
+    'osnovniPaketJson',
+  );
+  @override
+  late final GeneratedColumn<String> osnovniPaketJson = GeneratedColumn<String>(
+    'osnovni_paket_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    naziv,
+    status,
+    schemaVersion,
+    osnovniPaketJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'scenario_modules';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScenarioModule> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('naziv')) {
+      context.handle(
+        _nazivMeta,
+        naziv.isAcceptableOrUnknown(data['naziv']!, _nazivMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('schema_version')) {
+      context.handle(
+        _schemaVersionMeta,
+        schemaVersion.isAcceptableOrUnknown(
+          data['schema_version']!,
+          _schemaVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('osnovni_paket_json')) {
+      context.handle(
+        _osnovniPaketJsonMeta,
+        osnovniPaketJson.isAcceptableOrUnknown(
+          data['osnovni_paket_json']!,
+          _osnovniPaketJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ScenarioModule map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScenarioModule(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      naziv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}naziv'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      schemaVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}schema_version'],
+      )!,
+      osnovniPaketJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}osnovni_paket_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScenarioModulesTable createAlias(String alias) {
+    return $ScenarioModulesTable(attachedDatabase, alias);
+  }
+}
+
+class ScenarioModule extends DataClass implements Insertable<ScenarioModule> {
+  final String id;
+  final String naziv;
+  final String status;
+  final int schemaVersion;
+  final String osnovniPaketJson;
+  final String createdAt;
+  final String updatedAt;
+  const ScenarioModule({
+    required this.id,
+    required this.naziv,
+    required this.status,
+    required this.schemaVersion,
+    required this.osnovniPaketJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['naziv'] = Variable<String>(naziv);
+    map['status'] = Variable<String>(status);
+    map['schema_version'] = Variable<int>(schemaVersion);
+    map['osnovni_paket_json'] = Variable<String>(osnovniPaketJson);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  ScenarioModulesCompanion toCompanion(bool nullToAbsent) {
+    return ScenarioModulesCompanion(
+      id: Value(id),
+      naziv: Value(naziv),
+      status: Value(status),
+      schemaVersion: Value(schemaVersion),
+      osnovniPaketJson: Value(osnovniPaketJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScenarioModule.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScenarioModule(
+      id: serializer.fromJson<String>(json['id']),
+      naziv: serializer.fromJson<String>(json['naziv']),
+      status: serializer.fromJson<String>(json['status']),
+      schemaVersion: serializer.fromJson<int>(json['schemaVersion']),
+      osnovniPaketJson: serializer.fromJson<String>(json['osnovniPaketJson']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'naziv': serializer.toJson<String>(naziv),
+      'status': serializer.toJson<String>(status),
+      'schemaVersion': serializer.toJson<int>(schemaVersion),
+      'osnovniPaketJson': serializer.toJson<String>(osnovniPaketJson),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  ScenarioModule copyWith({
+    String? id,
+    String? naziv,
+    String? status,
+    int? schemaVersion,
+    String? osnovniPaketJson,
+    String? createdAt,
+    String? updatedAt,
+  }) => ScenarioModule(
+    id: id ?? this.id,
+    naziv: naziv ?? this.naziv,
+    status: status ?? this.status,
+    schemaVersion: schemaVersion ?? this.schemaVersion,
+    osnovniPaketJson: osnovniPaketJson ?? this.osnovniPaketJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScenarioModule copyWithCompanion(ScenarioModulesCompanion data) {
+    return ScenarioModule(
+      id: data.id.present ? data.id.value : this.id,
+      naziv: data.naziv.present ? data.naziv.value : this.naziv,
+      status: data.status.present ? data.status.value : this.status,
+      schemaVersion: data.schemaVersion.present
+          ? data.schemaVersion.value
+          : this.schemaVersion,
+      osnovniPaketJson: data.osnovniPaketJson.present
+          ? data.osnovniPaketJson.value
+          : this.osnovniPaketJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioModule(')
+          ..write('id: $id, ')
+          ..write('naziv: $naziv, ')
+          ..write('status: $status, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('osnovniPaketJson: $osnovniPaketJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    naziv,
+    status,
+    schemaVersion,
+    osnovniPaketJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScenarioModule &&
+          other.id == this.id &&
+          other.naziv == this.naziv &&
+          other.status == this.status &&
+          other.schemaVersion == this.schemaVersion &&
+          other.osnovniPaketJson == this.osnovniPaketJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScenarioModulesCompanion extends UpdateCompanion<ScenarioModule> {
+  final Value<String> id;
+  final Value<String> naziv;
+  final Value<String> status;
+  final Value<int> schemaVersion;
+  final Value<String> osnovniPaketJson;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const ScenarioModulesCompanion({
+    this.id = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.status = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.osnovniPaketJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScenarioModulesCompanion.insert({
+    required String id,
+    this.naziv = const Value.absent(),
+    this.status = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.osnovniPaketJson = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScenarioModule> custom({
+    Expression<String>? id,
+    Expression<String>? naziv,
+    Expression<String>? status,
+    Expression<int>? schemaVersion,
+    Expression<String>? osnovniPaketJson,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (naziv != null) 'naziv': naziv,
+      if (status != null) 'status': status,
+      if (schemaVersion != null) 'schema_version': schemaVersion,
+      if (osnovniPaketJson != null) 'osnovni_paket_json': osnovniPaketJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScenarioModulesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? naziv,
+    Value<String>? status,
+    Value<int>? schemaVersion,
+    Value<String>? osnovniPaketJson,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScenarioModulesCompanion(
+      id: id ?? this.id,
+      naziv: naziv ?? this.naziv,
+      status: status ?? this.status,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      osnovniPaketJson: osnovniPaketJson ?? this.osnovniPaketJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (naziv.present) {
+      map['naziv'] = Variable<String>(naziv.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (schemaVersion.present) {
+      map['schema_version'] = Variable<int>(schemaVersion.value);
+    }
+    if (osnovniPaketJson.present) {
+      map['osnovni_paket_json'] = Variable<String>(osnovniPaketJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioModulesCompanion(')
+          ..write('id: $id, ')
+          ..write('naziv: $naziv, ')
+          ..write('status: $status, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('osnovniPaketJson: $osnovniPaketJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ScenarioDefinitionsTable extends ScenarioDefinitions
+    with TableInfo<$ScenarioDefinitionsTable, ScenarioDefinitionRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScenarioDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _moduleIdMeta = const VerificationMeta(
+    'moduleId',
+  );
+  @override
+  late final GeneratedColumn<String> moduleId = GeneratedColumn<String>(
+    'module_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES scenario_modules (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('DRAFT'),
+  );
+  static const VerificationMeta _nazivMeta = const VerificationMeta('naziv');
+  @override
+  late final GeneratedColumn<String> naziv = GeneratedColumn<String>(
+    'naziv',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _conditionJsonMeta = const VerificationMeta(
+    'conditionJson',
+  );
+  @override
+  late final GeneratedColumn<String> conditionJson = GeneratedColumn<String>(
+    'condition_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _consequencesJsonMeta = const VerificationMeta(
+    'consequencesJson',
+  );
+  @override
+  late final GeneratedColumn<String> consequencesJson = GeneratedColumn<String>(
+    'consequences_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _jePodrazumevaniMeta = const VerificationMeta(
+    'jePodrazumevani',
+  );
+  @override
+  late final GeneratedColumn<bool> jePodrazumevani = GeneratedColumn<bool>(
+    'je_podrazumevani',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("je_podrazumevani" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    moduleId,
+    version,
+    status,
+    naziv,
+    conditionJson,
+    consequencesJson,
+    jePodrazumevani,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'scenario_definitions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScenarioDefinitionRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('module_id')) {
+      context.handle(
+        _moduleIdMeta,
+        moduleId.isAcceptableOrUnknown(data['module_id']!, _moduleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moduleIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('naziv')) {
+      context.handle(
+        _nazivMeta,
+        naziv.isAcceptableOrUnknown(data['naziv']!, _nazivMeta),
+      );
+    }
+    if (data.containsKey('condition_json')) {
+      context.handle(
+        _conditionJsonMeta,
+        conditionJson.isAcceptableOrUnknown(
+          data['condition_json']!,
+          _conditionJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('consequences_json')) {
+      context.handle(
+        _consequencesJsonMeta,
+        consequencesJson.isAcceptableOrUnknown(
+          data['consequences_json']!,
+          _consequencesJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('je_podrazumevani')) {
+      context.handle(
+        _jePodrazumevaniMeta,
+        jePodrazumevani.isAcceptableOrUnknown(
+          data['je_podrazumevani']!,
+          _jePodrazumevaniMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id, version};
+  @override
+  ScenarioDefinitionRecord map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScenarioDefinitionRecord(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      moduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}module_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      naziv: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}naziv'],
+      )!,
+      conditionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}condition_json'],
+      )!,
+      consequencesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}consequences_json'],
+      )!,
+      jePodrazumevani: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}je_podrazumevani'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScenarioDefinitionsTable createAlias(String alias) {
+    return $ScenarioDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class ScenarioDefinitionRecord extends DataClass
+    implements Insertable<ScenarioDefinitionRecord> {
+  final String id;
+  final String moduleId;
+  final int version;
+  final String status;
+  final String naziv;
+  final String conditionJson;
+  final String consequencesJson;
+  final bool jePodrazumevani;
+  final String createdAt;
+  final String updatedAt;
+  const ScenarioDefinitionRecord({
+    required this.id,
+    required this.moduleId,
+    required this.version,
+    required this.status,
+    required this.naziv,
+    required this.conditionJson,
+    required this.consequencesJson,
+    required this.jePodrazumevani,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['module_id'] = Variable<String>(moduleId);
+    map['version'] = Variable<int>(version);
+    map['status'] = Variable<String>(status);
+    map['naziv'] = Variable<String>(naziv);
+    map['condition_json'] = Variable<String>(conditionJson);
+    map['consequences_json'] = Variable<String>(consequencesJson);
+    map['je_podrazumevani'] = Variable<bool>(jePodrazumevani);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  ScenarioDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return ScenarioDefinitionsCompanion(
+      id: Value(id),
+      moduleId: Value(moduleId),
+      version: Value(version),
+      status: Value(status),
+      naziv: Value(naziv),
+      conditionJson: Value(conditionJson),
+      consequencesJson: Value(consequencesJson),
+      jePodrazumevani: Value(jePodrazumevani),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScenarioDefinitionRecord.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScenarioDefinitionRecord(
+      id: serializer.fromJson<String>(json['id']),
+      moduleId: serializer.fromJson<String>(json['moduleId']),
+      version: serializer.fromJson<int>(json['version']),
+      status: serializer.fromJson<String>(json['status']),
+      naziv: serializer.fromJson<String>(json['naziv']),
+      conditionJson: serializer.fromJson<String>(json['conditionJson']),
+      consequencesJson: serializer.fromJson<String>(json['consequencesJson']),
+      jePodrazumevani: serializer.fromJson<bool>(json['jePodrazumevani']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'moduleId': serializer.toJson<String>(moduleId),
+      'version': serializer.toJson<int>(version),
+      'status': serializer.toJson<String>(status),
+      'naziv': serializer.toJson<String>(naziv),
+      'conditionJson': serializer.toJson<String>(conditionJson),
+      'consequencesJson': serializer.toJson<String>(consequencesJson),
+      'jePodrazumevani': serializer.toJson<bool>(jePodrazumevani),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  ScenarioDefinitionRecord copyWith({
+    String? id,
+    String? moduleId,
+    int? version,
+    String? status,
+    String? naziv,
+    String? conditionJson,
+    String? consequencesJson,
+    bool? jePodrazumevani,
+    String? createdAt,
+    String? updatedAt,
+  }) => ScenarioDefinitionRecord(
+    id: id ?? this.id,
+    moduleId: moduleId ?? this.moduleId,
+    version: version ?? this.version,
+    status: status ?? this.status,
+    naziv: naziv ?? this.naziv,
+    conditionJson: conditionJson ?? this.conditionJson,
+    consequencesJson: consequencesJson ?? this.consequencesJson,
+    jePodrazumevani: jePodrazumevani ?? this.jePodrazumevani,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScenarioDefinitionRecord copyWithCompanion(
+    ScenarioDefinitionsCompanion data,
+  ) {
+    return ScenarioDefinitionRecord(
+      id: data.id.present ? data.id.value : this.id,
+      moduleId: data.moduleId.present ? data.moduleId.value : this.moduleId,
+      version: data.version.present ? data.version.value : this.version,
+      status: data.status.present ? data.status.value : this.status,
+      naziv: data.naziv.present ? data.naziv.value : this.naziv,
+      conditionJson: data.conditionJson.present
+          ? data.conditionJson.value
+          : this.conditionJson,
+      consequencesJson: data.consequencesJson.present
+          ? data.consequencesJson.value
+          : this.consequencesJson,
+      jePodrazumevani: data.jePodrazumevani.present
+          ? data.jePodrazumevani.value
+          : this.jePodrazumevani,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioDefinitionRecord(')
+          ..write('id: $id, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('version: $version, ')
+          ..write('status: $status, ')
+          ..write('naziv: $naziv, ')
+          ..write('conditionJson: $conditionJson, ')
+          ..write('consequencesJson: $consequencesJson, ')
+          ..write('jePodrazumevani: $jePodrazumevani, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    moduleId,
+    version,
+    status,
+    naziv,
+    conditionJson,
+    consequencesJson,
+    jePodrazumevani,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScenarioDefinitionRecord &&
+          other.id == this.id &&
+          other.moduleId == this.moduleId &&
+          other.version == this.version &&
+          other.status == this.status &&
+          other.naziv == this.naziv &&
+          other.conditionJson == this.conditionJson &&
+          other.consequencesJson == this.consequencesJson &&
+          other.jePodrazumevani == this.jePodrazumevani &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScenarioDefinitionsCompanion
+    extends UpdateCompanion<ScenarioDefinitionRecord> {
+  final Value<String> id;
+  final Value<String> moduleId;
+  final Value<int> version;
+  final Value<String> status;
+  final Value<String> naziv;
+  final Value<String> conditionJson;
+  final Value<String> consequencesJson;
+  final Value<bool> jePodrazumevani;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const ScenarioDefinitionsCompanion({
+    this.id = const Value.absent(),
+    this.moduleId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.status = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.conditionJson = const Value.absent(),
+    this.consequencesJson = const Value.absent(),
+    this.jePodrazumevani = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScenarioDefinitionsCompanion.insert({
+    required String id,
+    required String moduleId,
+    required int version,
+    this.status = const Value.absent(),
+    this.naziv = const Value.absent(),
+    this.conditionJson = const Value.absent(),
+    this.consequencesJson = const Value.absent(),
+    this.jePodrazumevani = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       moduleId = Value(moduleId),
+       version = Value(version),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScenarioDefinitionRecord> custom({
+    Expression<String>? id,
+    Expression<String>? moduleId,
+    Expression<int>? version,
+    Expression<String>? status,
+    Expression<String>? naziv,
+    Expression<String>? conditionJson,
+    Expression<String>? consequencesJson,
+    Expression<bool>? jePodrazumevani,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (moduleId != null) 'module_id': moduleId,
+      if (version != null) 'version': version,
+      if (status != null) 'status': status,
+      if (naziv != null) 'naziv': naziv,
+      if (conditionJson != null) 'condition_json': conditionJson,
+      if (consequencesJson != null) 'consequences_json': consequencesJson,
+      if (jePodrazumevani != null) 'je_podrazumevani': jePodrazumevani,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScenarioDefinitionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? moduleId,
+    Value<int>? version,
+    Value<String>? status,
+    Value<String>? naziv,
+    Value<String>? conditionJson,
+    Value<String>? consequencesJson,
+    Value<bool>? jePodrazumevani,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScenarioDefinitionsCompanion(
+      id: id ?? this.id,
+      moduleId: moduleId ?? this.moduleId,
+      version: version ?? this.version,
+      status: status ?? this.status,
+      naziv: naziv ?? this.naziv,
+      conditionJson: conditionJson ?? this.conditionJson,
+      consequencesJson: consequencesJson ?? this.consequencesJson,
+      jePodrazumevani: jePodrazumevani ?? this.jePodrazumevani,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (moduleId.present) {
+      map['module_id'] = Variable<String>(moduleId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (naziv.present) {
+      map['naziv'] = Variable<String>(naziv.value);
+    }
+    if (conditionJson.present) {
+      map['condition_json'] = Variable<String>(conditionJson.value);
+    }
+    if (consequencesJson.present) {
+      map['consequences_json'] = Variable<String>(consequencesJson.value);
+    }
+    if (jePodrazumevani.present) {
+      map['je_podrazumevani'] = Variable<bool>(jePodrazumevani.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScenarioDefinitionsCompanion(')
+          ..write('id: $id, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('version: $version, ')
+          ..write('status: $status, ')
+          ..write('naziv: $naziv, ')
+          ..write('conditionJson: $conditionJson, ')
+          ..write('consequencesJson: $consequencesJson, ')
+          ..write('jePodrazumevani: $jePodrazumevani, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PredmetScenarioSnapshotsTable extends PredmetScenarioSnapshots
+    with TableInfo<$PredmetScenarioSnapshotsTable, PredmetScenarioSnapshot> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PredmetScenarioSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _predmetIdMeta = const VerificationMeta(
+    'predmetId',
+  );
+  @override
+  late final GeneratedColumn<int> predmetId = GeneratedColumn<int>(
+    'predmet_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES predmeti (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _moduleIdMeta = const VerificationMeta(
+    'moduleId',
+  );
+  @override
+  late final GeneratedColumn<String> moduleId = GeneratedColumn<String>(
+    'module_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scenarioIdMeta = const VerificationMeta(
+    'scenarioId',
+  );
+  @override
+  late final GeneratedColumn<String> scenarioId = GeneratedColumn<String>(
+    'scenario_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scenarioVersionMeta = const VerificationMeta(
+    'scenarioVersion',
+  );
+  @override
+  late final GeneratedColumn<int> scenarioVersion = GeneratedColumn<int>(
+    'scenario_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotHashMeta = const VerificationMeta(
+    'snapshotHash',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotHash = GeneratedColumn<String>(
+    'snapshot_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _assignedAtMeta = const VerificationMeta(
+    'assignedAt',
+  );
+  @override
+  late final GeneratedColumn<String> assignedAt = GeneratedColumn<String>(
+    'assigned_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _assignedByKorisnikIdMeta =
+      const VerificationMeta('assignedByKorisnikId');
+  @override
+  late final GeneratedColumn<int> assignedByKorisnikId = GeneratedColumn<int>(
+    'assigned_by_korisnik_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    predmetId,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    snapshotJson,
+    snapshotHash,
+    assignedAt,
+    assignedByKorisnikId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'predmet_scenario_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PredmetScenarioSnapshot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('predmet_id')) {
+      context.handle(
+        _predmetIdMeta,
+        predmetId.isAcceptableOrUnknown(data['predmet_id']!, _predmetIdMeta),
+      );
+    }
+    if (data.containsKey('module_id')) {
+      context.handle(
+        _moduleIdMeta,
+        moduleId.isAcceptableOrUnknown(data['module_id']!, _moduleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moduleIdMeta);
+    }
+    if (data.containsKey('scenario_id')) {
+      context.handle(
+        _scenarioIdMeta,
+        scenarioId.isAcceptableOrUnknown(data['scenario_id']!, _scenarioIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scenarioIdMeta);
+    }
+    if (data.containsKey('scenario_version')) {
+      context.handle(
+        _scenarioVersionMeta,
+        scenarioVersion.isAcceptableOrUnknown(
+          data['scenario_version']!,
+          _scenarioVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scenarioVersionMeta);
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotJsonMeta);
+    }
+    if (data.containsKey('snapshot_hash')) {
+      context.handle(
+        _snapshotHashMeta,
+        snapshotHash.isAcceptableOrUnknown(
+          data['snapshot_hash']!,
+          _snapshotHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotHashMeta);
+    }
+    if (data.containsKey('assigned_at')) {
+      context.handle(
+        _assignedAtMeta,
+        assignedAt.isAcceptableOrUnknown(data['assigned_at']!, _assignedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_assignedAtMeta);
+    }
+    if (data.containsKey('assigned_by_korisnik_id')) {
+      context.handle(
+        _assignedByKorisnikIdMeta,
+        assignedByKorisnikId.isAcceptableOrUnknown(
+          data['assigned_by_korisnik_id']!,
+          _assignedByKorisnikIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {predmetId};
+  @override
+  PredmetScenarioSnapshot map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PredmetScenarioSnapshot(
+      predmetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}predmet_id'],
+      )!,
+      moduleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}module_id'],
+      )!,
+      scenarioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scenario_id'],
+      )!,
+      scenarioVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}scenario_version'],
+      )!,
+      snapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_json'],
+      )!,
+      snapshotHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_hash'],
+      )!,
+      assignedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assigned_at'],
+      )!,
+      assignedByKorisnikId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}assigned_by_korisnik_id'],
+      ),
+    );
+  }
+
+  @override
+  $PredmetScenarioSnapshotsTable createAlias(String alias) {
+    return $PredmetScenarioSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class PredmetScenarioSnapshot extends DataClass
+    implements Insertable<PredmetScenarioSnapshot> {
+  final int predmetId;
+  final String moduleId;
+  final String scenarioId;
+  final int scenarioVersion;
+  final String snapshotJson;
+  final String snapshotHash;
+  final String assignedAt;
+  final int? assignedByKorisnikId;
+  const PredmetScenarioSnapshot({
+    required this.predmetId,
+    required this.moduleId,
+    required this.scenarioId,
+    required this.scenarioVersion,
+    required this.snapshotJson,
+    required this.snapshotHash,
+    required this.assignedAt,
+    this.assignedByKorisnikId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['predmet_id'] = Variable<int>(predmetId);
+    map['module_id'] = Variable<String>(moduleId);
+    map['scenario_id'] = Variable<String>(scenarioId);
+    map['scenario_version'] = Variable<int>(scenarioVersion);
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    map['snapshot_hash'] = Variable<String>(snapshotHash);
+    map['assigned_at'] = Variable<String>(assignedAt);
+    if (!nullToAbsent || assignedByKorisnikId != null) {
+      map['assigned_by_korisnik_id'] = Variable<int>(assignedByKorisnikId);
+    }
+    return map;
+  }
+
+  PredmetScenarioSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return PredmetScenarioSnapshotsCompanion(
+      predmetId: Value(predmetId),
+      moduleId: Value(moduleId),
+      scenarioId: Value(scenarioId),
+      scenarioVersion: Value(scenarioVersion),
+      snapshotJson: Value(snapshotJson),
+      snapshotHash: Value(snapshotHash),
+      assignedAt: Value(assignedAt),
+      assignedByKorisnikId: assignedByKorisnikId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedByKorisnikId),
+    );
+  }
+
+  factory PredmetScenarioSnapshot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PredmetScenarioSnapshot(
+      predmetId: serializer.fromJson<int>(json['predmetId']),
+      moduleId: serializer.fromJson<String>(json['moduleId']),
+      scenarioId: serializer.fromJson<String>(json['scenarioId']),
+      scenarioVersion: serializer.fromJson<int>(json['scenarioVersion']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+      snapshotHash: serializer.fromJson<String>(json['snapshotHash']),
+      assignedAt: serializer.fromJson<String>(json['assignedAt']),
+      assignedByKorisnikId: serializer.fromJson<int?>(
+        json['assignedByKorisnikId'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'predmetId': serializer.toJson<int>(predmetId),
+      'moduleId': serializer.toJson<String>(moduleId),
+      'scenarioId': serializer.toJson<String>(scenarioId),
+      'scenarioVersion': serializer.toJson<int>(scenarioVersion),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+      'snapshotHash': serializer.toJson<String>(snapshotHash),
+      'assignedAt': serializer.toJson<String>(assignedAt),
+      'assignedByKorisnikId': serializer.toJson<int?>(assignedByKorisnikId),
+    };
+  }
+
+  PredmetScenarioSnapshot copyWith({
+    int? predmetId,
+    String? moduleId,
+    String? scenarioId,
+    int? scenarioVersion,
+    String? snapshotJson,
+    String? snapshotHash,
+    String? assignedAt,
+    Value<int?> assignedByKorisnikId = const Value.absent(),
+  }) => PredmetScenarioSnapshot(
+    predmetId: predmetId ?? this.predmetId,
+    moduleId: moduleId ?? this.moduleId,
+    scenarioId: scenarioId ?? this.scenarioId,
+    scenarioVersion: scenarioVersion ?? this.scenarioVersion,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+    snapshotHash: snapshotHash ?? this.snapshotHash,
+    assignedAt: assignedAt ?? this.assignedAt,
+    assignedByKorisnikId: assignedByKorisnikId.present
+        ? assignedByKorisnikId.value
+        : this.assignedByKorisnikId,
+  );
+  PredmetScenarioSnapshot copyWithCompanion(
+    PredmetScenarioSnapshotsCompanion data,
+  ) {
+    return PredmetScenarioSnapshot(
+      predmetId: data.predmetId.present ? data.predmetId.value : this.predmetId,
+      moduleId: data.moduleId.present ? data.moduleId.value : this.moduleId,
+      scenarioId: data.scenarioId.present
+          ? data.scenarioId.value
+          : this.scenarioId,
+      scenarioVersion: data.scenarioVersion.present
+          ? data.scenarioVersion.value
+          : this.scenarioVersion,
+      snapshotJson: data.snapshotJson.present
+          ? data.snapshotJson.value
+          : this.snapshotJson,
+      snapshotHash: data.snapshotHash.present
+          ? data.snapshotHash.value
+          : this.snapshotHash,
+      assignedAt: data.assignedAt.present
+          ? data.assignedAt.value
+          : this.assignedAt,
+      assignedByKorisnikId: data.assignedByKorisnikId.present
+          ? data.assignedByKorisnikId.value
+          : this.assignedByKorisnikId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PredmetScenarioSnapshot(')
+          ..write('predmetId: $predmetId, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('snapshotHash: $snapshotHash, ')
+          ..write('assignedAt: $assignedAt, ')
+          ..write('assignedByKorisnikId: $assignedByKorisnikId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    predmetId,
+    moduleId,
+    scenarioId,
+    scenarioVersion,
+    snapshotJson,
+    snapshotHash,
+    assignedAt,
+    assignedByKorisnikId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PredmetScenarioSnapshot &&
+          other.predmetId == this.predmetId &&
+          other.moduleId == this.moduleId &&
+          other.scenarioId == this.scenarioId &&
+          other.scenarioVersion == this.scenarioVersion &&
+          other.snapshotJson == this.snapshotJson &&
+          other.snapshotHash == this.snapshotHash &&
+          other.assignedAt == this.assignedAt &&
+          other.assignedByKorisnikId == this.assignedByKorisnikId);
+}
+
+class PredmetScenarioSnapshotsCompanion
+    extends UpdateCompanion<PredmetScenarioSnapshot> {
+  final Value<int> predmetId;
+  final Value<String> moduleId;
+  final Value<String> scenarioId;
+  final Value<int> scenarioVersion;
+  final Value<String> snapshotJson;
+  final Value<String> snapshotHash;
+  final Value<String> assignedAt;
+  final Value<int?> assignedByKorisnikId;
+  const PredmetScenarioSnapshotsCompanion({
+    this.predmetId = const Value.absent(),
+    this.moduleId = const Value.absent(),
+    this.scenarioId = const Value.absent(),
+    this.scenarioVersion = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.snapshotHash = const Value.absent(),
+    this.assignedAt = const Value.absent(),
+    this.assignedByKorisnikId = const Value.absent(),
+  });
+  PredmetScenarioSnapshotsCompanion.insert({
+    this.predmetId = const Value.absent(),
+    required String moduleId,
+    required String scenarioId,
+    required int scenarioVersion,
+    required String snapshotJson,
+    required String snapshotHash,
+    required String assignedAt,
+    this.assignedByKorisnikId = const Value.absent(),
+  }) : moduleId = Value(moduleId),
+       scenarioId = Value(scenarioId),
+       scenarioVersion = Value(scenarioVersion),
+       snapshotJson = Value(snapshotJson),
+       snapshotHash = Value(snapshotHash),
+       assignedAt = Value(assignedAt);
+  static Insertable<PredmetScenarioSnapshot> custom({
+    Expression<int>? predmetId,
+    Expression<String>? moduleId,
+    Expression<String>? scenarioId,
+    Expression<int>? scenarioVersion,
+    Expression<String>? snapshotJson,
+    Expression<String>? snapshotHash,
+    Expression<String>? assignedAt,
+    Expression<int>? assignedByKorisnikId,
+  }) {
+    return RawValuesInsertable({
+      if (predmetId != null) 'predmet_id': predmetId,
+      if (moduleId != null) 'module_id': moduleId,
+      if (scenarioId != null) 'scenario_id': scenarioId,
+      if (scenarioVersion != null) 'scenario_version': scenarioVersion,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (snapshotHash != null) 'snapshot_hash': snapshotHash,
+      if (assignedAt != null) 'assigned_at': assignedAt,
+      if (assignedByKorisnikId != null)
+        'assigned_by_korisnik_id': assignedByKorisnikId,
+    });
+  }
+
+  PredmetScenarioSnapshotsCompanion copyWith({
+    Value<int>? predmetId,
+    Value<String>? moduleId,
+    Value<String>? scenarioId,
+    Value<int>? scenarioVersion,
+    Value<String>? snapshotJson,
+    Value<String>? snapshotHash,
+    Value<String>? assignedAt,
+    Value<int?>? assignedByKorisnikId,
+  }) {
+    return PredmetScenarioSnapshotsCompanion(
+      predmetId: predmetId ?? this.predmetId,
+      moduleId: moduleId ?? this.moduleId,
+      scenarioId: scenarioId ?? this.scenarioId,
+      scenarioVersion: scenarioVersion ?? this.scenarioVersion,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      snapshotHash: snapshotHash ?? this.snapshotHash,
+      assignedAt: assignedAt ?? this.assignedAt,
+      assignedByKorisnikId: assignedByKorisnikId ?? this.assignedByKorisnikId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (predmetId.present) {
+      map['predmet_id'] = Variable<int>(predmetId.value);
+    }
+    if (moduleId.present) {
+      map['module_id'] = Variable<String>(moduleId.value);
+    }
+    if (scenarioId.present) {
+      map['scenario_id'] = Variable<String>(scenarioId.value);
+    }
+    if (scenarioVersion.present) {
+      map['scenario_version'] = Variable<int>(scenarioVersion.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (snapshotHash.present) {
+      map['snapshot_hash'] = Variable<String>(snapshotHash.value);
+    }
+    if (assignedAt.present) {
+      map['assigned_at'] = Variable<String>(assignedAt.value);
+    }
+    if (assignedByKorisnikId.present) {
+      map['assigned_by_korisnik_id'] = Variable<int>(
+        assignedByKorisnikId.value,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PredmetScenarioSnapshotsCompanion(')
+          ..write('predmetId: $predmetId, ')
+          ..write('moduleId: $moduleId, ')
+          ..write('scenarioId: $scenarioId, ')
+          ..write('scenarioVersion: $scenarioVersion, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('snapshotHash: $snapshotHash, ')
+          ..write('assignedAt: $assignedAt, ')
+          ..write('assignedByKorisnikId: $assignedByKorisnikId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -13225,8 +19966,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FirmaPodaciTable firmaPodaci = $FirmaPodaciTable(this);
   late final $AppPodesavanjaTable appPodesavanja = $AppPodesavanjaTable(this);
   late final $PredmetiTable predmeti = $PredmetiTable(this);
+  late final $CituljePripremeTable cituljePripreme = $CituljePripremeTable(
+    this,
+  );
+  late final $PodsetnikObavezeTable podsetnikObaveze = $PodsetnikObavezeTable(
+    this,
+  );
   late final $KontaktLicaTable kontaktLica = $KontaktLicaTable(this);
   late final $IriuTable iriu = $IriuTable(this);
+  late final $IriuProvenanceTable iriuProvenance = $IriuProvenanceTable(this);
   late final $IriuKatalogConfigTable iriuKatalogConfig =
       $IriuKatalogConfigTable(this);
   late final $KatalogArtikliTable katalogArtikli = $KatalogArtikliTable(this);
@@ -13239,7 +19987,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $StanjeRobePoslediceTable(this);
   late final $PredlosciDokumenataTable predlosciDokumenata =
       $PredlosciDokumenataTable(this);
+  late final $PartePredlosciTable partePredlosci = $PartePredlosciTable(this);
+  late final $PartePripremeTable partePripreme = $PartePripremeTable(this);
   late final $LogIzmenaTable logIzmena = $LogIzmenaTable(this);
+  late final $ScenarioModulesTable scenarioModules = $ScenarioModulesTable(
+    this,
+  );
+  late final $ScenarioDefinitionsTable scenarioDefinitions =
+      $ScenarioDefinitionsTable(this);
+  late final $PredmetScenarioSnapshotsTable predmetScenarioSnapshots =
+      $PredmetScenarioSnapshotsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -13249,18 +20006,40 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     firmaPodaci,
     appPodesavanja,
     predmeti,
+    cituljePripreme,
+    podsetnikObaveze,
     kontaktLica,
     iriu,
+    iriuProvenance,
     iriuKatalogConfig,
     katalogArtikli,
     stanjeRobeStavke,
     stanjeRobeAppliedEffects,
     stanjeRobePosledice,
     predlosciDokumenata,
+    partePredlosci,
+    partePripreme,
     logIzmena,
+    scenarioModules,
+    scenarioDefinitions,
+    predmetScenarioSnapshots,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('citulje_pripreme', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('podsetnik_obaveze', kind: UpdateKind.delete)],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'predmeti',
@@ -13274,6 +20053,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('iriu', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'iriu',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('iriu_provenance', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -13294,7 +20080,30 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         'predmeti',
         limitUpdateKind: UpdateKind.delete,
       ),
+      result: [TableUpdate('parte_pripreme', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
       result: [TableUpdate('log_izmena', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'scenario_modules',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('scenario_definitions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'predmeti',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('predmet_scenario_snapshots', kind: UpdateKind.delete),
+      ],
     ),
   ]);
 }
@@ -13529,6 +20338,8 @@ typedef $$FirmaPodaciTableCreateCompanionBuilder =
       Value<String> email,
       Value<String> sajt,
       Value<Uint8List?> logo,
+      Value<String> parteDefaultTemplateId,
+      Value<bool> racunOmogucen,
     });
 typedef $$FirmaPodaciTableUpdateCompanionBuilder =
     FirmaPodaciCompanion Function({
@@ -13543,6 +20354,8 @@ typedef $$FirmaPodaciTableUpdateCompanionBuilder =
       Value<String> email,
       Value<String> sajt,
       Value<Uint8List?> logo,
+      Value<String> parteDefaultTemplateId,
+      Value<bool> racunOmogucen,
     });
 
 class $$FirmaPodaciTableFilterComposer
@@ -13606,6 +20419,16 @@ class $$FirmaPodaciTableFilterComposer
 
   ColumnFilters<Uint8List> get logo => $composableBuilder(
     column: $table.logo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parteDefaultTemplateId => $composableBuilder(
+    column: $table.parteDefaultTemplateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get racunOmogucen => $composableBuilder(
+    column: $table.racunOmogucen,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -13673,6 +20496,16 @@ class $$FirmaPodaciTableOrderingComposer
     column: $table.logo,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get parteDefaultTemplateId => $composableBuilder(
+    column: $table.parteDefaultTemplateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get racunOmogucen => $composableBuilder(
+    column: $table.racunOmogucen,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FirmaPodaciTableAnnotationComposer
@@ -13720,6 +20553,16 @@ class $$FirmaPodaciTableAnnotationComposer
 
   GeneratedColumn<Uint8List> get logo =>
       $composableBuilder(column: $table.logo, builder: (column) => column);
+
+  GeneratedColumn<String> get parteDefaultTemplateId => $composableBuilder(
+    column: $table.parteDefaultTemplateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get racunOmogucen => $composableBuilder(
+    column: $table.racunOmogucen,
+    builder: (column) => column,
+  );
 }
 
 class $$FirmaPodaciTableTableManager
@@ -13764,6 +20607,8 @@ class $$FirmaPodaciTableTableManager
                 Value<String> email = const Value.absent(),
                 Value<String> sajt = const Value.absent(),
                 Value<Uint8List?> logo = const Value.absent(),
+                Value<String> parteDefaultTemplateId = const Value.absent(),
+                Value<bool> racunOmogucen = const Value.absent(),
               }) => FirmaPodaciCompanion(
                 id: id,
                 naziv: naziv,
@@ -13776,6 +20621,8 @@ class $$FirmaPodaciTableTableManager
                 email: email,
                 sajt: sajt,
                 logo: logo,
+                parteDefaultTemplateId: parteDefaultTemplateId,
+                racunOmogucen: racunOmogucen,
               ),
           createCompanionCallback:
               ({
@@ -13790,6 +20637,8 @@ class $$FirmaPodaciTableTableManager
                 Value<String> email = const Value.absent(),
                 Value<String> sajt = const Value.absent(),
                 Value<Uint8List?> logo = const Value.absent(),
+                Value<String> parteDefaultTemplateId = const Value.absent(),
+                Value<bool> racunOmogucen = const Value.absent(),
               }) => FirmaPodaciCompanion.insert(
                 id: id,
                 naziv: naziv,
@@ -13802,6 +20651,8 @@ class $$FirmaPodaciTableTableManager
                 email: email,
                 sajt: sajt,
                 logo: logo,
+                parteDefaultTemplateId: parteDefaultTemplateId,
+                racunOmogucen: racunOmogucen,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -14127,6 +20978,8 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> status,
       Value<String> datumKreiranja,
       Value<int?> savetnikId,
+      Value<String?> businessResponsibleName,
+      Value<String?> businessResponsibleRole,
       Value<int> verzija,
       Value<String> businessScenarioId,
       Value<String> sourceIdentity,
@@ -14211,11 +21064,13 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> jkpPlTelefon1,
       Value<String> jkpPlEmail,
       Value<String> groblje,
+      Value<String> grobljePolaganjaUrne,
       Value<String> tipGroblja,
       Value<String> vrstaCeremonije,
       Value<String> datumCeremonije,
       Value<String> vremeCeremonije,
       Value<String> opelo,
+      Value<String> obavestitiSvestenika,
       Value<String> opeloMesto,
       Value<String> vremeOpela,
       Value<String> vremeIspracaja,
@@ -14236,8 +21091,11 @@ typedef $$PredmetiTableCreateCompanionBuilder =
       Value<String> svisZemlja,
       Value<String> svisGrad,
       Value<bool> docekPosmrtnihOstataka,
+      Value<bool> promenaSanduka,
       Value<String> docekMesto,
+      Value<String> docekDatum,
       Value<String> docekVreme,
+      Value<bool> partePotrebna,
       Value<String> simbol,
       Value<String> pismo,
       Value<String> parteIme,
@@ -14258,6 +21116,8 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String> datumKreiranja,
       Value<int?> savetnikId,
+      Value<String?> businessResponsibleName,
+      Value<String?> businessResponsibleRole,
       Value<int> verzija,
       Value<String> businessScenarioId,
       Value<String> sourceIdentity,
@@ -14342,11 +21202,13 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> jkpPlTelefon1,
       Value<String> jkpPlEmail,
       Value<String> groblje,
+      Value<String> grobljePolaganjaUrne,
       Value<String> tipGroblja,
       Value<String> vrstaCeremonije,
       Value<String> datumCeremonije,
       Value<String> vremeCeremonije,
       Value<String> opelo,
+      Value<String> obavestitiSvestenika,
       Value<String> opeloMesto,
       Value<String> vremeOpela,
       Value<String> vremeIspracaja,
@@ -14367,8 +21229,11 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
       Value<String> svisZemlja,
       Value<String> svisGrad,
       Value<bool> docekPosmrtnihOstataka,
+      Value<bool> promenaSanduka,
       Value<String> docekMesto,
+      Value<String> docekDatum,
       Value<String> docekVreme,
+      Value<bool> partePotrebna,
       Value<String> simbol,
       Value<String> pismo,
       Value<String> parteIme,
@@ -14386,6 +21251,52 @@ typedef $$PredmetiTableUpdateCompanionBuilder =
 final class $$PredmetiTableReferences
     extends BaseReferences<_$AppDatabase, $PredmetiTable, PredmetiData> {
   $$PredmetiTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$CituljePripremeTable, List<CituljePripremeData>>
+  _cituljePripremeRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.cituljePripreme,
+    aliasName: $_aliasNameGenerator(
+      db.predmeti.id,
+      db.cituljePripreme.predmetId,
+    ),
+  );
+
+  $$CituljePripremeTableProcessedTableManager get cituljePripremeRefs {
+    final manager = $$CituljePripremeTableTableManager(
+      $_db,
+      $_db.cituljePripreme,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _cituljePripremeRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PodsetnikObavezeTable, List<PodsetnikObavezeData>>
+  _podsetnikObavezeRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.podsetnikObaveze,
+    aliasName: $_aliasNameGenerator(
+      db.predmeti.id,
+      db.podsetnikObaveze.predmetId,
+    ),
+  );
+
+  $$PodsetnikObavezeTableProcessedTableManager get podsetnikObavezeRefs {
+    final manager = $$PodsetnikObavezeTableTableManager(
+      $_db,
+      $_db.podsetnikObaveze,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _podsetnikObavezeRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$KontaktLicaTable, List<KontaktLicaData>>
   _kontaktLicaRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -14451,6 +21362,24 @@ final class $$PredmetiTableReferences
     );
   }
 
+  static MultiTypedResultKey<$PartePripremeTable, List<PartePripremeData>>
+  _partePripremeRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.partePripreme,
+    aliasName: $_aliasNameGenerator(db.predmeti.id, db.partePripreme.predmetId),
+  );
+
+  $$PartePripremeTableProcessedTableManager get partePripremeRefs {
+    final manager = $$PartePripremeTableTableManager(
+      $_db,
+      $_db.partePripreme,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_partePripremeRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$LogIzmenaTable, List<LogIzmenaData>>
   _logIzmenaRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.logIzmena,
@@ -14464,6 +21393,34 @@ final class $$PredmetiTableReferences
     ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_logIzmenaRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PredmetScenarioSnapshotsTable,
+    List<PredmetScenarioSnapshot>
+  >
+  _predmetScenarioSnapshotsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.predmetScenarioSnapshots,
+        aliasName: $_aliasNameGenerator(
+          db.predmeti.id,
+          db.predmetScenarioSnapshots.predmetId,
+        ),
+      );
+
+  $$PredmetScenarioSnapshotsTableProcessedTableManager
+  get predmetScenarioSnapshotsRefs {
+    final manager = $$PredmetScenarioSnapshotsTableTableManager(
+      $_db,
+      $_db.predmetScenarioSnapshots,
+    ).filter((f) => f.predmetId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _predmetScenarioSnapshotsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -14501,6 +21458,16 @@ class $$PredmetiTableFilterComposer
 
   ColumnFilters<int> get savetnikId => $composableBuilder(
     column: $table.savetnikId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessResponsibleName => $composableBuilder(
+    column: $table.businessResponsibleName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessResponsibleRole => $composableBuilder(
+    column: $table.businessResponsibleRole,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14924,6 +21891,11 @@ class $$PredmetiTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get grobljePolaganjaUrne => $composableBuilder(
+    column: $table.grobljePolaganjaUrne,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get tipGroblja => $composableBuilder(
     column: $table.tipGroblja,
     builder: (column) => ColumnFilters(column),
@@ -14946,6 +21918,11 @@ class $$PredmetiTableFilterComposer
 
   ColumnFilters<String> get opelo => $composableBuilder(
     column: $table.opelo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get obavestitiSvestenika => $composableBuilder(
+    column: $table.obavestitiSvestenika,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15049,13 +22026,28 @@ class $$PredmetiTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get promenaSanduka => $composableBuilder(
+    column: $table.promenaSanduka,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get docekMesto => $composableBuilder(
     column: $table.docekMesto,
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get docekDatum => $composableBuilder(
+    column: $table.docekDatum,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get docekVreme => $composableBuilder(
     column: $table.docekVreme,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get partePotrebna => $composableBuilder(
+    column: $table.partePotrebna,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15118,6 +22110,56 @@ class $$PredmetiTableFilterComposer
     column: $table.exportVerzija,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> cituljePripremeRefs(
+    Expression<bool> Function($$CituljePripremeTableFilterComposer f) f,
+  ) {
+    final $$CituljePripremeTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.cituljePripreme,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CituljePripremeTableFilterComposer(
+            $db: $db,
+            $table: $db.cituljePripreme,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> podsetnikObavezeRefs(
+    Expression<bool> Function($$PodsetnikObavezeTableFilterComposer f) f,
+  ) {
+    final $$PodsetnikObavezeTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.podsetnikObaveze,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PodsetnikObavezeTableFilterComposer(
+            $db: $db,
+            $table: $db.podsetnikObaveze,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> kontaktLicaRefs(
     Expression<bool> Function($$KontaktLicaTableFilterComposer f) f,
@@ -15194,6 +22236,31 @@ class $$PredmetiTableFilterComposer
     return f(composer);
   }
 
+  Expression<bool> partePripremeRefs(
+    Expression<bool> Function($$PartePripremeTableFilterComposer f) f,
+  ) {
+    final $$PartePripremeTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.partePripreme,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PartePripremeTableFilterComposer(
+            $db: $db,
+            $table: $db.partePripreme,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<bool> logIzmenaRefs(
     Expression<bool> Function($$LogIzmenaTableFilterComposer f) f,
   ) {
@@ -15216,6 +22283,33 @@ class $$PredmetiTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> predmetScenarioSnapshotsRefs(
+    Expression<bool> Function($$PredmetScenarioSnapshotsTableFilterComposer f)
+    f,
+  ) {
+    final $$PredmetScenarioSnapshotsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.predmetScenarioSnapshots,
+          getReferencedColumn: (t) => t.predmetId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PredmetScenarioSnapshotsTableFilterComposer(
+                $db: $db,
+                $table: $db.predmetScenarioSnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -15251,6 +22345,16 @@ class $$PredmetiTableOrderingComposer
 
   ColumnOrderings<int> get savetnikId => $composableBuilder(
     column: $table.savetnikId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessResponsibleName => $composableBuilder(
+    column: $table.businessResponsibleName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessResponsibleRole => $composableBuilder(
+    column: $table.businessResponsibleRole,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15675,6 +22779,11 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get grobljePolaganjaUrne => $composableBuilder(
+    column: $table.grobljePolaganjaUrne,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tipGroblja => $composableBuilder(
     column: $table.tipGroblja,
     builder: (column) => ColumnOrderings(column),
@@ -15697,6 +22806,11 @@ class $$PredmetiTableOrderingComposer
 
   ColumnOrderings<String> get opelo => $composableBuilder(
     column: $table.opelo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get obavestitiSvestenika => $composableBuilder(
+    column: $table.obavestitiSvestenika,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15800,13 +22914,28 @@ class $$PredmetiTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get promenaSanduka => $composableBuilder(
+    column: $table.promenaSanduka,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get docekMesto => $composableBuilder(
     column: $table.docekMesto,
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get docekDatum => $composableBuilder(
+    column: $table.docekDatum,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get docekVreme => $composableBuilder(
     column: $table.docekVreme,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get partePotrebna => $composableBuilder(
+    column: $table.partePotrebna,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15898,6 +23027,16 @@ class $$PredmetiTableAnnotationComposer
 
   GeneratedColumn<int> get savetnikId => $composableBuilder(
     column: $table.savetnikId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get businessResponsibleName => $composableBuilder(
+    column: $table.businessResponsibleName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get businessResponsibleRole => $composableBuilder(
+    column: $table.businessResponsibleRole,
     builder: (column) => column,
   );
 
@@ -16264,6 +23403,11 @@ class $$PredmetiTableAnnotationComposer
   GeneratedColumn<String> get groblje =>
       $composableBuilder(column: $table.groblje, builder: (column) => column);
 
+  GeneratedColumn<String> get grobljePolaganjaUrne => $composableBuilder(
+    column: $table.grobljePolaganjaUrne,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get tipGroblja => $composableBuilder(
     column: $table.tipGroblja,
     builder: (column) => column,
@@ -16286,6 +23430,11 @@ class $$PredmetiTableAnnotationComposer
 
   GeneratedColumn<String> get opelo =>
       $composableBuilder(column: $table.opelo, builder: (column) => column);
+
+  GeneratedColumn<String> get obavestitiSvestenika => $composableBuilder(
+    column: $table.obavestitiSvestenika,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get opeloMesto => $composableBuilder(
     column: $table.opeloMesto,
@@ -16367,13 +23516,28 @@ class $$PredmetiTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get promenaSanduka => $composableBuilder(
+    column: $table.promenaSanduka,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get docekMesto => $composableBuilder(
     column: $table.docekMesto,
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get docekDatum => $composableBuilder(
+    column: $table.docekDatum,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get docekVreme => $composableBuilder(
     column: $table.docekVreme,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get partePotrebna => $composableBuilder(
+    column: $table.partePotrebna,
     builder: (column) => column,
   );
 
@@ -16422,6 +23586,56 @@ class $$PredmetiTableAnnotationComposer
     column: $table.exportVerzija,
     builder: (column) => column,
   );
+
+  Expression<T> cituljePripremeRefs<T extends Object>(
+    Expression<T> Function($$CituljePripremeTableAnnotationComposer a) f,
+  ) {
+    final $$CituljePripremeTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.cituljePripreme,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CituljePripremeTableAnnotationComposer(
+            $db: $db,
+            $table: $db.cituljePripreme,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> podsetnikObavezeRefs<T extends Object>(
+    Expression<T> Function($$PodsetnikObavezeTableAnnotationComposer a) f,
+  ) {
+    final $$PodsetnikObavezeTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.podsetnikObaveze,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PodsetnikObavezeTableAnnotationComposer(
+            $db: $db,
+            $table: $db.podsetnikObaveze,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<T> kontaktLicaRefs<T extends Object>(
     Expression<T> Function($$KontaktLicaTableAnnotationComposer a) f,
@@ -16499,6 +23713,31 @@ class $$PredmetiTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> partePripremeRefs<T extends Object>(
+    Expression<T> Function($$PartePripremeTableAnnotationComposer a) f,
+  ) {
+    final $$PartePripremeTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.partePripreme,
+      getReferencedColumn: (t) => t.predmetId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PartePripremeTableAnnotationComposer(
+            $db: $db,
+            $table: $db.partePripreme,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> logIzmenaRefs<T extends Object>(
     Expression<T> Function($$LogIzmenaTableAnnotationComposer a) f,
   ) {
@@ -16523,6 +23762,33 @@ class $$PredmetiTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> predmetScenarioSnapshotsRefs<T extends Object>(
+    Expression<T> Function($$PredmetScenarioSnapshotsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PredmetScenarioSnapshotsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.predmetScenarioSnapshots,
+          getReferencedColumn: (t) => t.predmetId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PredmetScenarioSnapshotsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.predmetScenarioSnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$PredmetiTableTableManager
@@ -16539,10 +23805,14 @@ class $$PredmetiTableTableManager
           (PredmetiData, $$PredmetiTableReferences),
           PredmetiData,
           PrefetchHooks Function({
+            bool cituljePripremeRefs,
+            bool podsetnikObavezeRefs,
             bool kontaktLicaRefs,
             bool iriuRefs,
             bool stanjeRobePoslediceRefs,
+            bool partePripremeRefs,
             bool logIzmenaRefs,
+            bool predmetScenarioSnapshotsRefs,
           })
         > {
   $$PredmetiTableTableManager(_$AppDatabase db, $PredmetiTable table)
@@ -16563,6 +23833,8 @@ class $$PredmetiTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String> datumKreiranja = const Value.absent(),
                 Value<int?> savetnikId = const Value.absent(),
+                Value<String?> businessResponsibleName = const Value.absent(),
+                Value<String?> businessResponsibleRole = const Value.absent(),
                 Value<int> verzija = const Value.absent(),
                 Value<String> businessScenarioId = const Value.absent(),
                 Value<String> sourceIdentity = const Value.absent(),
@@ -16648,11 +23920,13 @@ class $$PredmetiTableTableManager
                 Value<String> jkpPlTelefon1 = const Value.absent(),
                 Value<String> jkpPlEmail = const Value.absent(),
                 Value<String> groblje = const Value.absent(),
+                Value<String> grobljePolaganjaUrne = const Value.absent(),
                 Value<String> tipGroblja = const Value.absent(),
                 Value<String> vrstaCeremonije = const Value.absent(),
                 Value<String> datumCeremonije = const Value.absent(),
                 Value<String> vremeCeremonije = const Value.absent(),
                 Value<String> opelo = const Value.absent(),
+                Value<String> obavestitiSvestenika = const Value.absent(),
                 Value<String> opeloMesto = const Value.absent(),
                 Value<String> vremeOpela = const Value.absent(),
                 Value<String> vremeIspracaja = const Value.absent(),
@@ -16673,8 +23947,11 @@ class $$PredmetiTableTableManager
                 Value<String> svisZemlja = const Value.absent(),
                 Value<String> svisGrad = const Value.absent(),
                 Value<bool> docekPosmrtnihOstataka = const Value.absent(),
+                Value<bool> promenaSanduka = const Value.absent(),
                 Value<String> docekMesto = const Value.absent(),
+                Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
+                Value<bool> partePotrebna = const Value.absent(),
                 Value<String> simbol = const Value.absent(),
                 Value<String> pismo = const Value.absent(),
                 Value<String> parteIme = const Value.absent(),
@@ -16693,6 +23970,8 @@ class $$PredmetiTableTableManager
                 status: status,
                 datumKreiranja: datumKreiranja,
                 savetnikId: savetnikId,
+                businessResponsibleName: businessResponsibleName,
+                businessResponsibleRole: businessResponsibleRole,
                 verzija: verzija,
                 businessScenarioId: businessScenarioId,
                 sourceIdentity: sourceIdentity,
@@ -16778,11 +24057,13 @@ class $$PredmetiTableTableManager
                 jkpPlTelefon1: jkpPlTelefon1,
                 jkpPlEmail: jkpPlEmail,
                 groblje: groblje,
+                grobljePolaganjaUrne: grobljePolaganjaUrne,
                 tipGroblja: tipGroblja,
                 vrstaCeremonije: vrstaCeremonije,
                 datumCeremonije: datumCeremonije,
                 vremeCeremonije: vremeCeremonije,
                 opelo: opelo,
+                obavestitiSvestenika: obavestitiSvestenika,
                 opeloMesto: opeloMesto,
                 vremeOpela: vremeOpela,
                 vremeIspracaja: vremeIspracaja,
@@ -16803,8 +24084,11 @@ class $$PredmetiTableTableManager
                 svisZemlja: svisZemlja,
                 svisGrad: svisGrad,
                 docekPosmrtnihOstataka: docekPosmrtnihOstataka,
+                promenaSanduka: promenaSanduka,
                 docekMesto: docekMesto,
+                docekDatum: docekDatum,
                 docekVreme: docekVreme,
+                partePotrebna: partePotrebna,
                 simbol: simbol,
                 pismo: pismo,
                 parteIme: parteIme,
@@ -16825,6 +24109,8 @@ class $$PredmetiTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String> datumKreiranja = const Value.absent(),
                 Value<int?> savetnikId = const Value.absent(),
+                Value<String?> businessResponsibleName = const Value.absent(),
+                Value<String?> businessResponsibleRole = const Value.absent(),
                 Value<int> verzija = const Value.absent(),
                 Value<String> businessScenarioId = const Value.absent(),
                 Value<String> sourceIdentity = const Value.absent(),
@@ -16910,11 +24196,13 @@ class $$PredmetiTableTableManager
                 Value<String> jkpPlTelefon1 = const Value.absent(),
                 Value<String> jkpPlEmail = const Value.absent(),
                 Value<String> groblje = const Value.absent(),
+                Value<String> grobljePolaganjaUrne = const Value.absent(),
                 Value<String> tipGroblja = const Value.absent(),
                 Value<String> vrstaCeremonije = const Value.absent(),
                 Value<String> datumCeremonije = const Value.absent(),
                 Value<String> vremeCeremonije = const Value.absent(),
                 Value<String> opelo = const Value.absent(),
+                Value<String> obavestitiSvestenika = const Value.absent(),
                 Value<String> opeloMesto = const Value.absent(),
                 Value<String> vremeOpela = const Value.absent(),
                 Value<String> vremeIspracaja = const Value.absent(),
@@ -16935,8 +24223,11 @@ class $$PredmetiTableTableManager
                 Value<String> svisZemlja = const Value.absent(),
                 Value<String> svisGrad = const Value.absent(),
                 Value<bool> docekPosmrtnihOstataka = const Value.absent(),
+                Value<bool> promenaSanduka = const Value.absent(),
                 Value<String> docekMesto = const Value.absent(),
+                Value<String> docekDatum = const Value.absent(),
                 Value<String> docekVreme = const Value.absent(),
+                Value<bool> partePotrebna = const Value.absent(),
                 Value<String> simbol = const Value.absent(),
                 Value<String> pismo = const Value.absent(),
                 Value<String> parteIme = const Value.absent(),
@@ -16955,6 +24246,8 @@ class $$PredmetiTableTableManager
                 status: status,
                 datumKreiranja: datumKreiranja,
                 savetnikId: savetnikId,
+                businessResponsibleName: businessResponsibleName,
+                businessResponsibleRole: businessResponsibleRole,
                 verzija: verzija,
                 businessScenarioId: businessScenarioId,
                 sourceIdentity: sourceIdentity,
@@ -17040,11 +24333,13 @@ class $$PredmetiTableTableManager
                 jkpPlTelefon1: jkpPlTelefon1,
                 jkpPlEmail: jkpPlEmail,
                 groblje: groblje,
+                grobljePolaganjaUrne: grobljePolaganjaUrne,
                 tipGroblja: tipGroblja,
                 vrstaCeremonije: vrstaCeremonije,
                 datumCeremonije: datumCeremonije,
                 vremeCeremonije: vremeCeremonije,
                 opelo: opelo,
+                obavestitiSvestenika: obavestitiSvestenika,
                 opeloMesto: opeloMesto,
                 vremeOpela: vremeOpela,
                 vremeIspracaja: vremeIspracaja,
@@ -17065,8 +24360,11 @@ class $$PredmetiTableTableManager
                 svisZemlja: svisZemlja,
                 svisGrad: svisGrad,
                 docekPosmrtnihOstataka: docekPosmrtnihOstataka,
+                promenaSanduka: promenaSanduka,
                 docekMesto: docekMesto,
+                docekDatum: docekDatum,
                 docekVreme: docekVreme,
+                partePotrebna: partePotrebna,
                 simbol: simbol,
                 pismo: pismo,
                 parteIme: parteIme,
@@ -17090,22 +24388,73 @@ class $$PredmetiTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                cituljePripremeRefs = false,
+                podsetnikObavezeRefs = false,
                 kontaktLicaRefs = false,
                 iriuRefs = false,
                 stanjeRobePoslediceRefs = false,
+                partePripremeRefs = false,
                 logIzmenaRefs = false,
+                predmetScenarioSnapshotsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (cituljePripremeRefs) db.cituljePripreme,
+                    if (podsetnikObavezeRefs) db.podsetnikObaveze,
                     if (kontaktLicaRefs) db.kontaktLica,
                     if (iriuRefs) db.iriu,
                     if (stanjeRobePoslediceRefs) db.stanjeRobePosledice,
+                    if (partePripremeRefs) db.partePripreme,
                     if (logIzmenaRefs) db.logIzmena,
+                    if (predmetScenarioSnapshotsRefs)
+                      db.predmetScenarioSnapshots,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (cituljePripremeRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          CituljePripremeData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._cituljePripremeRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).cituljePripremeRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (podsetnikObavezeRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          PodsetnikObavezeData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._podsetnikObavezeRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).podsetnikObavezeRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (kontaktLicaRefs)
                         await $_getPrefetchedData<
                           PredmetiData,
@@ -17165,6 +24514,27 @@ class $$PredmetiTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (partePripremeRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          PartePripremeData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._partePripremeRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).partePripremeRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (logIzmenaRefs)
                         await $_getPrefetchedData<
                           PredmetiData,
@@ -17180,6 +24550,27 @@ class $$PredmetiTableTableManager
                                 table,
                                 p0,
                               ).logIzmenaRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.predmetId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (predmetScenarioSnapshotsRefs)
+                        await $_getPrefetchedData<
+                          PredmetiData,
+                          $PredmetiTable,
+                          PredmetScenarioSnapshot
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PredmetiTableReferences
+                              ._predmetScenarioSnapshotsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PredmetiTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).predmetScenarioSnapshotsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.predmetId == item.id,
@@ -17207,11 +24598,955 @@ typedef $$PredmetiTableProcessedTableManager =
       (PredmetiData, $$PredmetiTableReferences),
       PredmetiData,
       PrefetchHooks Function({
+        bool cituljePripremeRefs,
+        bool podsetnikObavezeRefs,
         bool kontaktLicaRefs,
         bool iriuRefs,
         bool stanjeRobePoslediceRefs,
+        bool partePripremeRefs,
         bool logIzmenaRefs,
+        bool predmetScenarioSnapshotsRefs,
       })
+    >;
+typedef $$CituljePripremeTableCreateCompanionBuilder =
+    CituljePripremeCompanion Function({
+      Value<int> id,
+      required int predmetId,
+      required String portableOccurrenceId,
+      required String articleType,
+      Value<String?> parteTextMode,
+      Value<String?> publicationDate,
+      Value<String> publicationText,
+      Value<String> note,
+      Value<String> state,
+      Value<bool> finalized,
+      Value<String?> finalizedAt,
+      Value<String?> parteSnapshotFingerprint,
+      required String createdAt,
+      required String updatedAt,
+    });
+typedef $$CituljePripremeTableUpdateCompanionBuilder =
+    CituljePripremeCompanion Function({
+      Value<int> id,
+      Value<int> predmetId,
+      Value<String> portableOccurrenceId,
+      Value<String> articleType,
+      Value<String?> parteTextMode,
+      Value<String?> publicationDate,
+      Value<String> publicationText,
+      Value<String> note,
+      Value<String> state,
+      Value<bool> finalized,
+      Value<String?> finalizedAt,
+      Value<String?> parteSnapshotFingerprint,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+    });
+
+final class $$CituljePripremeTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $CituljePripremeTable,
+          CituljePripremeData
+        > {
+  $$CituljePripremeTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(db.cituljePripreme.predmetId, db.predmeti.id),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CituljePripremeTableFilterComposer
+    extends Composer<_$AppDatabase, $CituljePripremeTable> {
+  $$CituljePripremeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get portableOccurrenceId => $composableBuilder(
+    column: $table.portableOccurrenceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get articleType => $composableBuilder(
+    column: $table.articleType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parteTextMode => $composableBuilder(
+    column: $table.parteTextMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get publicationDate => $composableBuilder(
+    column: $table.publicationDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get publicationText => $composableBuilder(
+    column: $table.publicationText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get finalized => $composableBuilder(
+    column: $table.finalized,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get finalizedAt => $composableBuilder(
+    column: $table.finalizedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parteSnapshotFingerprint => $composableBuilder(
+    column: $table.parteSnapshotFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CituljePripremeTableOrderingComposer
+    extends Composer<_$AppDatabase, $CituljePripremeTable> {
+  $$CituljePripremeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get portableOccurrenceId => $composableBuilder(
+    column: $table.portableOccurrenceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get articleType => $composableBuilder(
+    column: $table.articleType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parteTextMode => $composableBuilder(
+    column: $table.parteTextMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get publicationDate => $composableBuilder(
+    column: $table.publicationDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get publicationText => $composableBuilder(
+    column: $table.publicationText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get finalized => $composableBuilder(
+    column: $table.finalized,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get finalizedAt => $composableBuilder(
+    column: $table.finalizedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parteSnapshotFingerprint => $composableBuilder(
+    column: $table.parteSnapshotFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CituljePripremeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CituljePripremeTable> {
+  $$CituljePripremeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get portableOccurrenceId => $composableBuilder(
+    column: $table.portableOccurrenceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get articleType => $composableBuilder(
+    column: $table.articleType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parteTextMode => $composableBuilder(
+    column: $table.parteTextMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get publicationDate => $composableBuilder(
+    column: $table.publicationDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get publicationText => $composableBuilder(
+    column: $table.publicationText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<bool> get finalized =>
+      $composableBuilder(column: $table.finalized, builder: (column) => column);
+
+  GeneratedColumn<String> get finalizedAt => $composableBuilder(
+    column: $table.finalizedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parteSnapshotFingerprint => $composableBuilder(
+    column: $table.parteSnapshotFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CituljePripremeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CituljePripremeTable,
+          CituljePripremeData,
+          $$CituljePripremeTableFilterComposer,
+          $$CituljePripremeTableOrderingComposer,
+          $$CituljePripremeTableAnnotationComposer,
+          $$CituljePripremeTableCreateCompanionBuilder,
+          $$CituljePripremeTableUpdateCompanionBuilder,
+          (CituljePripremeData, $$CituljePripremeTableReferences),
+          CituljePripremeData,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$CituljePripremeTableTableManager(
+    _$AppDatabase db,
+    $CituljePripremeTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CituljePripremeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CituljePripremeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CituljePripremeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> predmetId = const Value.absent(),
+                Value<String> portableOccurrenceId = const Value.absent(),
+                Value<String> articleType = const Value.absent(),
+                Value<String?> parteTextMode = const Value.absent(),
+                Value<String?> publicationDate = const Value.absent(),
+                Value<String> publicationText = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<bool> finalized = const Value.absent(),
+                Value<String?> finalizedAt = const Value.absent(),
+                Value<String?> parteSnapshotFingerprint = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+              }) => CituljePripremeCompanion(
+                id: id,
+                predmetId: predmetId,
+                portableOccurrenceId: portableOccurrenceId,
+                articleType: articleType,
+                parteTextMode: parteTextMode,
+                publicationDate: publicationDate,
+                publicationText: publicationText,
+                note: note,
+                state: state,
+                finalized: finalized,
+                finalizedAt: finalizedAt,
+                parteSnapshotFingerprint: parteSnapshotFingerprint,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int predmetId,
+                required String portableOccurrenceId,
+                required String articleType,
+                Value<String?> parteTextMode = const Value.absent(),
+                Value<String?> publicationDate = const Value.absent(),
+                Value<String> publicationText = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<bool> finalized = const Value.absent(),
+                Value<String?> finalizedAt = const Value.absent(),
+                Value<String?> parteSnapshotFingerprint = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+              }) => CituljePripremeCompanion.insert(
+                id: id,
+                predmetId: predmetId,
+                portableOccurrenceId: portableOccurrenceId,
+                articleType: articleType,
+                parteTextMode: parteTextMode,
+                publicationDate: publicationDate,
+                publicationText: publicationText,
+                note: note,
+                state: state,
+                finalized: finalized,
+                finalizedAt: finalizedAt,
+                parteSnapshotFingerprint: parteSnapshotFingerprint,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CituljePripremeTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable:
+                                    $$CituljePripremeTableReferences
+                                        ._predmetIdTable(db),
+                                referencedColumn:
+                                    $$CituljePripremeTableReferences
+                                        ._predmetIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CituljePripremeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CituljePripremeTable,
+      CituljePripremeData,
+      $$CituljePripremeTableFilterComposer,
+      $$CituljePripremeTableOrderingComposer,
+      $$CituljePripremeTableAnnotationComposer,
+      $$CituljePripremeTableCreateCompanionBuilder,
+      $$CituljePripremeTableUpdateCompanionBuilder,
+      (CituljePripremeData, $$CituljePripremeTableReferences),
+      CituljePripremeData,
+      PrefetchHooks Function({bool predmetId})
+    >;
+typedef $$PodsetnikObavezeTableCreateCompanionBuilder =
+    PodsetnikObavezeCompanion Function({
+      Value<int> id,
+      required int predmetId,
+      required String stableRuleId,
+      Value<String> phase,
+      Value<String> kind,
+      Value<String?> parentRuleId,
+      Value<String> sourceFingerprint,
+      Value<bool> completed,
+      Value<String?> completedAt,
+      Value<String> updatedAt,
+    });
+typedef $$PodsetnikObavezeTableUpdateCompanionBuilder =
+    PodsetnikObavezeCompanion Function({
+      Value<int> id,
+      Value<int> predmetId,
+      Value<String> stableRuleId,
+      Value<String> phase,
+      Value<String> kind,
+      Value<String?> parentRuleId,
+      Value<String> sourceFingerprint,
+      Value<bool> completed,
+      Value<String?> completedAt,
+      Value<String> updatedAt,
+    });
+
+final class $$PodsetnikObavezeTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PodsetnikObavezeTable,
+          PodsetnikObavezeData
+        > {
+  $$PodsetnikObavezeTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(db.podsetnikObaveze.predmetId, db.predmeti.id),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PodsetnikObavezeTableFilterComposer
+    extends Composer<_$AppDatabase, $PodsetnikObavezeTable> {
+  $$PodsetnikObavezeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stableRuleId => $composableBuilder(
+    column: $table.stableRuleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phase => $composableBuilder(
+    column: $table.phase,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentRuleId => $composableBuilder(
+    column: $table.parentRuleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PodsetnikObavezeTableOrderingComposer
+    extends Composer<_$AppDatabase, $PodsetnikObavezeTable> {
+  $$PodsetnikObavezeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stableRuleId => $composableBuilder(
+    column: $table.stableRuleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phase => $composableBuilder(
+    column: $table.phase,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentRuleId => $composableBuilder(
+    column: $table.parentRuleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PodsetnikObavezeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PodsetnikObavezeTable> {
+  $$PodsetnikObavezeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get stableRuleId => $composableBuilder(
+    column: $table.stableRuleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phase =>
+      $composableBuilder(column: $table.phase, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get parentRuleId => $composableBuilder(
+    column: $table.parentRuleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get completed =>
+      $composableBuilder(column: $table.completed, builder: (column) => column);
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PodsetnikObavezeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PodsetnikObavezeTable,
+          PodsetnikObavezeData,
+          $$PodsetnikObavezeTableFilterComposer,
+          $$PodsetnikObavezeTableOrderingComposer,
+          $$PodsetnikObavezeTableAnnotationComposer,
+          $$PodsetnikObavezeTableCreateCompanionBuilder,
+          $$PodsetnikObavezeTableUpdateCompanionBuilder,
+          (PodsetnikObavezeData, $$PodsetnikObavezeTableReferences),
+          PodsetnikObavezeData,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$PodsetnikObavezeTableTableManager(
+    _$AppDatabase db,
+    $PodsetnikObavezeTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PodsetnikObavezeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PodsetnikObavezeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PodsetnikObavezeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> predmetId = const Value.absent(),
+                Value<String> stableRuleId = const Value.absent(),
+                Value<String> phase = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> parentRuleId = const Value.absent(),
+                Value<String> sourceFingerprint = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+              }) => PodsetnikObavezeCompanion(
+                id: id,
+                predmetId: predmetId,
+                stableRuleId: stableRuleId,
+                phase: phase,
+                kind: kind,
+                parentRuleId: parentRuleId,
+                sourceFingerprint: sourceFingerprint,
+                completed: completed,
+                completedAt: completedAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int predmetId,
+                required String stableRuleId,
+                Value<String> phase = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> parentRuleId = const Value.absent(),
+                Value<String> sourceFingerprint = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+              }) => PodsetnikObavezeCompanion.insert(
+                id: id,
+                predmetId: predmetId,
+                stableRuleId: stableRuleId,
+                phase: phase,
+                kind: kind,
+                parentRuleId: parentRuleId,
+                sourceFingerprint: sourceFingerprint,
+                completed: completed,
+                completedAt: completedAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PodsetnikObavezeTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable:
+                                    $$PodsetnikObavezeTableReferences
+                                        ._predmetIdTable(db),
+                                referencedColumn:
+                                    $$PodsetnikObavezeTableReferences
+                                        ._predmetIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PodsetnikObavezeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PodsetnikObavezeTable,
+      PodsetnikObavezeData,
+      $$PodsetnikObavezeTableFilterComposer,
+      $$PodsetnikObavezeTableOrderingComposer,
+      $$PodsetnikObavezeTableAnnotationComposer,
+      $$PodsetnikObavezeTableCreateCompanionBuilder,
+      $$PodsetnikObavezeTableUpdateCompanionBuilder,
+      (PodsetnikObavezeData, $$PodsetnikObavezeTableReferences),
+      PodsetnikObavezeData,
+      PrefetchHooks Function({bool predmetId})
     >;
 typedef $$KontaktLicaTableCreateCompanionBuilder =
     KontaktLicaCompanion Function({
@@ -17589,25 +25924,49 @@ typedef $$IriuTableCreateCompanionBuilder =
     IriuCompanion Function({
       Value<int> id,
       required int predmetId,
+      Value<String?> portableOccurrenceId,
       Value<String?> katalogStableArticleId,
       required String interniNaziv,
       Value<String> nazivPrikaz,
+      Value<String?> tekstTrake,
       Value<String> kom,
+      Value<double> cena,
       Value<double> iznos,
       Value<bool> cekiran,
       Value<int> redosled,
+      Value<String> poslovniStatus,
+      Value<String> obezbedjuje,
+      Value<String> poslovnoUpozorenje,
+      Value<String> poslovniRazlog,
+      Value<int> poslovnaCelina,
+      Value<int> poslovniRedosled,
+      Value<bool> finansijskiUkljuceno,
+      Value<bool> scenarioUpravlja,
+      Value<bool> cekaOdlukuKorisnika,
     });
 typedef $$IriuTableUpdateCompanionBuilder =
     IriuCompanion Function({
       Value<int> id,
       Value<int> predmetId,
+      Value<String?> portableOccurrenceId,
       Value<String?> katalogStableArticleId,
       Value<String> interniNaziv,
       Value<String> nazivPrikaz,
+      Value<String?> tekstTrake,
       Value<String> kom,
+      Value<double> cena,
       Value<double> iznos,
       Value<bool> cekiran,
       Value<int> redosled,
+      Value<String> poslovniStatus,
+      Value<String> obezbedjuje,
+      Value<String> poslovnoUpozorenje,
+      Value<String> poslovniRazlog,
+      Value<int> poslovnaCelina,
+      Value<int> poslovniRedosled,
+      Value<bool> finansijskiUkljuceno,
+      Value<bool> scenarioUpravlja,
+      Value<bool> cekaOdlukuKorisnika,
     });
 
 final class $$IriuTableReferences
@@ -17628,6 +25987,24 @@ final class $$IriuTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$IriuProvenanceTable, List<IriuProvenanceData>>
+  _iriuProvenanceRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.iriuProvenance,
+    aliasName: $_aliasNameGenerator(db.iriu.id, db.iriuProvenance.iriuId),
+  );
+
+  $$IriuProvenanceTableProcessedTableManager get iriuProvenanceRefs {
+    final manager = $$IriuProvenanceTableTableManager(
+      $_db,
+      $_db.iriuProvenance,
+    ).filter((f) => f.iriuId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_iriuProvenanceRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
@@ -17672,6 +26049,11 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get portableOccurrenceId => $composableBuilder(
+    column: $table.portableOccurrenceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get katalogStableArticleId => $composableBuilder(
     column: $table.katalogStableArticleId,
     builder: (column) => ColumnFilters(column),
@@ -17687,8 +26069,18 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get tekstTrake => $composableBuilder(
+    column: $table.tekstTrake,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get kom => $composableBuilder(
     column: $table.kom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cena => $composableBuilder(
+    column: $table.cena,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17704,6 +26096,51 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
 
   ColumnFilters<int> get redosled => $composableBuilder(
     column: $table.redosled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poslovniStatus => $composableBuilder(
+    column: $table.poslovniStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get obezbedjuje => $composableBuilder(
+    column: $table.obezbedjuje,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poslovnoUpozorenje => $composableBuilder(
+    column: $table.poslovnoUpozorenje,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poslovniRazlog => $composableBuilder(
+    column: $table.poslovniRazlog,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get poslovnaCelina => $composableBuilder(
+    column: $table.poslovnaCelina,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get poslovniRedosled => $composableBuilder(
+    column: $table.poslovniRedosled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get finansijskiUkljuceno => $composableBuilder(
+    column: $table.finansijskiUkljuceno,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get scenarioUpravlja => $composableBuilder(
+    column: $table.scenarioUpravlja,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get cekaOdlukuKorisnika => $composableBuilder(
+    column: $table.cekaOdlukuKorisnika,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17728,6 +26165,31 @@ class $$IriuTableFilterComposer extends Composer<_$AppDatabase, $IriuTable> {
           ),
     );
     return composer;
+  }
+
+  Expression<bool> iriuProvenanceRefs(
+    Expression<bool> Function($$IriuProvenanceTableFilterComposer f) f,
+  ) {
+    final $$IriuProvenanceTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.iriuProvenance,
+      getReferencedColumn: (t) => t.iriuId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuProvenanceTableFilterComposer(
+            $db: $db,
+            $table: $db.iriuProvenance,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> stanjeRobePoslediceRefs(
@@ -17769,6 +26231,11 @@ class $$IriuTableOrderingComposer extends Composer<_$AppDatabase, $IriuTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get portableOccurrenceId => $composableBuilder(
+    column: $table.portableOccurrenceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get katalogStableArticleId => $composableBuilder(
     column: $table.katalogStableArticleId,
     builder: (column) => ColumnOrderings(column),
@@ -17784,8 +26251,18 @@ class $$IriuTableOrderingComposer extends Composer<_$AppDatabase, $IriuTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get tekstTrake => $composableBuilder(
+    column: $table.tekstTrake,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get kom => $composableBuilder(
     column: $table.kom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get cena => $composableBuilder(
+    column: $table.cena,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -17801,6 +26278,51 @@ class $$IriuTableOrderingComposer extends Composer<_$AppDatabase, $IriuTable> {
 
   ColumnOrderings<int> get redosled => $composableBuilder(
     column: $table.redosled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get poslovniStatus => $composableBuilder(
+    column: $table.poslovniStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get obezbedjuje => $composableBuilder(
+    column: $table.obezbedjuje,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get poslovnoUpozorenje => $composableBuilder(
+    column: $table.poslovnoUpozorenje,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get poslovniRazlog => $composableBuilder(
+    column: $table.poslovniRazlog,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get poslovnaCelina => $composableBuilder(
+    column: $table.poslovnaCelina,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get poslovniRedosled => $composableBuilder(
+    column: $table.poslovniRedosled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get finansijskiUkljuceno => $composableBuilder(
+    column: $table.finansijskiUkljuceno,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get scenarioUpravlja => $composableBuilder(
+    column: $table.scenarioUpravlja,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get cekaOdlukuKorisnika => $composableBuilder(
+    column: $table.cekaOdlukuKorisnika,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -17840,6 +26362,11 @@ class $$IriuTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get portableOccurrenceId => $composableBuilder(
+    column: $table.portableOccurrenceId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get katalogStableArticleId => $composableBuilder(
     column: $table.katalogStableArticleId,
     builder: (column) => column,
@@ -17855,8 +26382,16 @@ class $$IriuTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get tekstTrake => $composableBuilder(
+    column: $table.tekstTrake,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get kom =>
       $composableBuilder(column: $table.kom, builder: (column) => column);
+
+  GeneratedColumn<double> get cena =>
+      $composableBuilder(column: $table.cena, builder: (column) => column);
 
   GeneratedColumn<double> get iznos =>
       $composableBuilder(column: $table.iznos, builder: (column) => column);
@@ -17866,6 +26401,51 @@ class $$IriuTableAnnotationComposer
 
   GeneratedColumn<int> get redosled =>
       $composableBuilder(column: $table.redosled, builder: (column) => column);
+
+  GeneratedColumn<String> get poslovniStatus => $composableBuilder(
+    column: $table.poslovniStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get obezbedjuje => $composableBuilder(
+    column: $table.obezbedjuje,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get poslovnoUpozorenje => $composableBuilder(
+    column: $table.poslovnoUpozorenje,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get poslovniRazlog => $composableBuilder(
+    column: $table.poslovniRazlog,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get poslovnaCelina => $composableBuilder(
+    column: $table.poslovnaCelina,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get poslovniRedosled => $composableBuilder(
+    column: $table.poslovniRedosled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get finansijskiUkljuceno => $composableBuilder(
+    column: $table.finansijskiUkljuceno,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get scenarioUpravlja => $composableBuilder(
+    column: $table.scenarioUpravlja,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get cekaOdlukuKorisnika => $composableBuilder(
+    column: $table.cekaOdlukuKorisnika,
+    builder: (column) => column,
+  );
 
   $$PredmetiTableAnnotationComposer get predmetId {
     final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
@@ -17888,6 +26468,31 @@ class $$IriuTableAnnotationComposer
           ),
     );
     return composer;
+  }
+
+  Expression<T> iriuProvenanceRefs<T extends Object>(
+    Expression<T> Function($$IriuProvenanceTableAnnotationComposer a) f,
+  ) {
+    final $$IriuProvenanceTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.iriuProvenance,
+      getReferencedColumn: (t) => t.iriuId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuProvenanceTableAnnotationComposer(
+            $db: $db,
+            $table: $db.iriuProvenance,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<T> stanjeRobePoslediceRefs<T extends Object>(
@@ -17930,7 +26535,11 @@ class $$IriuTableTableManager
           $$IriuTableUpdateCompanionBuilder,
           (IriuData, $$IriuTableReferences),
           IriuData,
-          PrefetchHooks Function({bool predmetId, bool stanjeRobePoslediceRefs})
+          PrefetchHooks Function({
+            bool predmetId,
+            bool iriuProvenanceRefs,
+            bool stanjeRobePoslediceRefs,
+          })
         > {
   $$IriuTableTableManager(_$AppDatabase db, $IriuTable table)
     : super(
@@ -17947,45 +26556,93 @@ class $$IriuTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> predmetId = const Value.absent(),
+                Value<String?> portableOccurrenceId = const Value.absent(),
                 Value<String?> katalogStableArticleId = const Value.absent(),
                 Value<String> interniNaziv = const Value.absent(),
                 Value<String> nazivPrikaz = const Value.absent(),
+                Value<String?> tekstTrake = const Value.absent(),
                 Value<String> kom = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<double> iznos = const Value.absent(),
                 Value<bool> cekiran = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
+                Value<String> poslovniStatus = const Value.absent(),
+                Value<String> obezbedjuje = const Value.absent(),
+                Value<String> poslovnoUpozorenje = const Value.absent(),
+                Value<String> poslovniRazlog = const Value.absent(),
+                Value<int> poslovnaCelina = const Value.absent(),
+                Value<int> poslovniRedosled = const Value.absent(),
+                Value<bool> finansijskiUkljuceno = const Value.absent(),
+                Value<bool> scenarioUpravlja = const Value.absent(),
+                Value<bool> cekaOdlukuKorisnika = const Value.absent(),
               }) => IriuCompanion(
                 id: id,
                 predmetId: predmetId,
+                portableOccurrenceId: portableOccurrenceId,
                 katalogStableArticleId: katalogStableArticleId,
                 interniNaziv: interniNaziv,
                 nazivPrikaz: nazivPrikaz,
+                tekstTrake: tekstTrake,
                 kom: kom,
+                cena: cena,
                 iznos: iznos,
                 cekiran: cekiran,
                 redosled: redosled,
+                poslovniStatus: poslovniStatus,
+                obezbedjuje: obezbedjuje,
+                poslovnoUpozorenje: poslovnoUpozorenje,
+                poslovniRazlog: poslovniRazlog,
+                poslovnaCelina: poslovnaCelina,
+                poslovniRedosled: poslovniRedosled,
+                finansijskiUkljuceno: finansijskiUkljuceno,
+                scenarioUpravlja: scenarioUpravlja,
+                cekaOdlukuKorisnika: cekaOdlukuKorisnika,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required int predmetId,
+                Value<String?> portableOccurrenceId = const Value.absent(),
                 Value<String?> katalogStableArticleId = const Value.absent(),
                 required String interniNaziv,
                 Value<String> nazivPrikaz = const Value.absent(),
+                Value<String?> tekstTrake = const Value.absent(),
                 Value<String> kom = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<double> iznos = const Value.absent(),
                 Value<bool> cekiran = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
+                Value<String> poslovniStatus = const Value.absent(),
+                Value<String> obezbedjuje = const Value.absent(),
+                Value<String> poslovnoUpozorenje = const Value.absent(),
+                Value<String> poslovniRazlog = const Value.absent(),
+                Value<int> poslovnaCelina = const Value.absent(),
+                Value<int> poslovniRedosled = const Value.absent(),
+                Value<bool> finansijskiUkljuceno = const Value.absent(),
+                Value<bool> scenarioUpravlja = const Value.absent(),
+                Value<bool> cekaOdlukuKorisnika = const Value.absent(),
               }) => IriuCompanion.insert(
                 id: id,
                 predmetId: predmetId,
+                portableOccurrenceId: portableOccurrenceId,
                 katalogStableArticleId: katalogStableArticleId,
                 interniNaziv: interniNaziv,
                 nazivPrikaz: nazivPrikaz,
+                tekstTrake: tekstTrake,
                 kom: kom,
+                cena: cena,
                 iznos: iznos,
                 cekiran: cekiran,
                 redosled: redosled,
+                poslovniStatus: poslovniStatus,
+                obezbedjuje: obezbedjuje,
+                poslovnoUpozorenje: poslovnoUpozorenje,
+                poslovniRazlog: poslovniRazlog,
+                poslovnaCelina: poslovnaCelina,
+                poslovniRedosled: poslovniRedosled,
+                finansijskiUkljuceno: finansijskiUkljuceno,
+                scenarioUpravlja: scenarioUpravlja,
+                cekaOdlukuKorisnika: cekaOdlukuKorisnika,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -17994,10 +26651,15 @@ class $$IriuTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({predmetId = false, stanjeRobePoslediceRefs = false}) {
+              ({
+                predmetId = false,
+                iriuProvenanceRefs = false,
+                stanjeRobePoslediceRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (iriuProvenanceRefs) db.iriuProvenance,
                     if (stanjeRobePoslediceRefs) db.stanjeRobePosledice,
                   ],
                   addJoins:
@@ -18034,6 +26696,26 @@ class $$IriuTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (iriuProvenanceRefs)
+                        await $_getPrefetchedData<
+                          IriuData,
+                          $IriuTable,
+                          IriuProvenanceData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$IriuTableReferences
+                              ._iriuProvenanceRefsTable(db),
+                          managerFromTypedResult: (p0) => $$IriuTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).iriuProvenanceRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.iriuId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (stanjeRobePoslediceRefs)
                         await $_getPrefetchedData<
                           IriuData,
@@ -18074,7 +26756,398 @@ typedef $$IriuTableProcessedTableManager =
       $$IriuTableUpdateCompanionBuilder,
       (IriuData, $$IriuTableReferences),
       IriuData,
-      PrefetchHooks Function({bool predmetId, bool stanjeRobePoslediceRefs})
+      PrefetchHooks Function({
+        bool predmetId,
+        bool iriuProvenanceRefs,
+        bool stanjeRobePoslediceRefs,
+      })
+    >;
+typedef $$IriuProvenanceTableCreateCompanionBuilder =
+    IriuProvenanceCompanion Function({
+      Value<int> iriuId,
+      required String origin,
+      Value<String?> moduleId,
+      Value<String?> scenarioId,
+      Value<int?> scenarioVersion,
+      Value<String?> ruleId,
+      Value<String?> operationId,
+      required String createdAt,
+    });
+typedef $$IriuProvenanceTableUpdateCompanionBuilder =
+    IriuProvenanceCompanion Function({
+      Value<int> iriuId,
+      Value<String> origin,
+      Value<String?> moduleId,
+      Value<String?> scenarioId,
+      Value<int?> scenarioVersion,
+      Value<String?> ruleId,
+      Value<String?> operationId,
+      Value<String> createdAt,
+    });
+
+final class $$IriuProvenanceTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $IriuProvenanceTable,
+          IriuProvenanceData
+        > {
+  $$IriuProvenanceTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $IriuTable _iriuIdTable(_$AppDatabase db) => db.iriu.createAlias(
+    $_aliasNameGenerator(db.iriuProvenance.iriuId, db.iriu.id),
+  );
+
+  $$IriuTableProcessedTableManager get iriuId {
+    final $_column = $_itemColumn<int>('iriu_id')!;
+
+    final manager = $$IriuTableTableManager(
+      $_db,
+      $_db.iriu,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_iriuIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$IriuProvenanceTableFilterComposer
+    extends Composer<_$AppDatabase, $IriuProvenanceTable> {
+  $$IriuProvenanceTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get origin => $composableBuilder(
+    column: $table.origin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operationId => $composableBuilder(
+    column: $table.operationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$IriuTableFilterComposer get iriuId {
+    final $$IriuTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.iriuId,
+      referencedTable: $db.iriu,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuTableFilterComposer(
+            $db: $db,
+            $table: $db.iriu,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IriuProvenanceTableOrderingComposer
+    extends Composer<_$AppDatabase, $IriuProvenanceTable> {
+  $$IriuProvenanceTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get origin => $composableBuilder(
+    column: $table.origin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get operationId => $composableBuilder(
+    column: $table.operationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$IriuTableOrderingComposer get iriuId {
+    final $$IriuTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.iriuId,
+      referencedTable: $db.iriu,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuTableOrderingComposer(
+            $db: $db,
+            $table: $db.iriu,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IriuProvenanceTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IriuProvenanceTable> {
+  $$IriuProvenanceTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get origin =>
+      $composableBuilder(column: $table.origin, builder: (column) => column);
+
+  GeneratedColumn<String> get moduleId =>
+      $composableBuilder(column: $table.moduleId, builder: (column) => column);
+
+  GeneratedColumn<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ruleId =>
+      $composableBuilder(column: $table.ruleId, builder: (column) => column);
+
+  GeneratedColumn<String> get operationId => $composableBuilder(
+    column: $table.operationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$IriuTableAnnotationComposer get iriuId {
+    final $$IriuTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.iriuId,
+      referencedTable: $db.iriu,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$IriuTableAnnotationComposer(
+            $db: $db,
+            $table: $db.iriu,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$IriuProvenanceTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IriuProvenanceTable,
+          IriuProvenanceData,
+          $$IriuProvenanceTableFilterComposer,
+          $$IriuProvenanceTableOrderingComposer,
+          $$IriuProvenanceTableAnnotationComposer,
+          $$IriuProvenanceTableCreateCompanionBuilder,
+          $$IriuProvenanceTableUpdateCompanionBuilder,
+          (IriuProvenanceData, $$IriuProvenanceTableReferences),
+          IriuProvenanceData,
+          PrefetchHooks Function({bool iriuId})
+        > {
+  $$IriuProvenanceTableTableManager(
+    _$AppDatabase db,
+    $IriuProvenanceTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IriuProvenanceTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IriuProvenanceTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IriuProvenanceTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> iriuId = const Value.absent(),
+                Value<String> origin = const Value.absent(),
+                Value<String?> moduleId = const Value.absent(),
+                Value<String?> scenarioId = const Value.absent(),
+                Value<int?> scenarioVersion = const Value.absent(),
+                Value<String?> ruleId = const Value.absent(),
+                Value<String?> operationId = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+              }) => IriuProvenanceCompanion(
+                iriuId: iriuId,
+                origin: origin,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                ruleId: ruleId,
+                operationId: operationId,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> iriuId = const Value.absent(),
+                required String origin,
+                Value<String?> moduleId = const Value.absent(),
+                Value<String?> scenarioId = const Value.absent(),
+                Value<int?> scenarioVersion = const Value.absent(),
+                Value<String?> ruleId = const Value.absent(),
+                Value<String?> operationId = const Value.absent(),
+                required String createdAt,
+              }) => IriuProvenanceCompanion.insert(
+                iriuId: iriuId,
+                origin: origin,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                ruleId: ruleId,
+                operationId: operationId,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$IriuProvenanceTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({iriuId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (iriuId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.iriuId,
+                                referencedTable: $$IriuProvenanceTableReferences
+                                    ._iriuIdTable(db),
+                                referencedColumn:
+                                    $$IriuProvenanceTableReferences
+                                        ._iriuIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$IriuProvenanceTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IriuProvenanceTable,
+      IriuProvenanceData,
+      $$IriuProvenanceTableFilterComposer,
+      $$IriuProvenanceTableOrderingComposer,
+      $$IriuProvenanceTableAnnotationComposer,
+      $$IriuProvenanceTableCreateCompanionBuilder,
+      $$IriuProvenanceTableUpdateCompanionBuilder,
+      (IriuProvenanceData, $$IriuProvenanceTableReferences),
+      IriuProvenanceData,
+      PrefetchHooks Function({bool iriuId})
     >;
 typedef $$IriuKatalogConfigTableCreateCompanionBuilder =
     IriuKatalogConfigCompanion Function({
@@ -18083,7 +27156,9 @@ typedef $$IriuKatalogConfigTableCreateCompanionBuilder =
       Value<bool> vidljiv,
       Value<bool> uvekPrikazati,
       Value<String> tip,
+      Value<double> cena,
       Value<bool> jeKorisnicka,
+      Value<bool> osnovnaUSvakomPredmetu,
       Value<int> redosled,
       Value<int> rowid,
     });
@@ -18094,7 +27169,9 @@ typedef $$IriuKatalogConfigTableUpdateCompanionBuilder =
       Value<bool> vidljiv,
       Value<bool> uvekPrikazati,
       Value<String> tip,
+      Value<double> cena,
       Value<bool> jeKorisnicka,
+      Value<bool> osnovnaUSvakomPredmetu,
       Value<int> redosled,
       Value<int> rowid,
     });
@@ -18133,8 +27210,18 @@ class $$IriuKatalogConfigTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<double> get cena => $composableBuilder(
+    column: $table.cena,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get osnovnaUSvakomPredmetu => $composableBuilder(
+    column: $table.osnovnaUSvakomPredmetu,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18178,8 +27265,18 @@ class $$IriuKatalogConfigTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get cena => $composableBuilder(
+    column: $table.cena,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get osnovnaUSvakomPredmetu => $composableBuilder(
+    column: $table.osnovnaUSvakomPredmetu,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -18219,8 +27316,16 @@ class $$IriuKatalogConfigTableAnnotationComposer
   GeneratedColumn<String> get tip =>
       $composableBuilder(column: $table.tip, builder: (column) => column);
 
+  GeneratedColumn<double> get cena =>
+      $composableBuilder(column: $table.cena, builder: (column) => column);
+
   GeneratedColumn<bool> get jeKorisnicka => $composableBuilder(
     column: $table.jeKorisnicka,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get osnovnaUSvakomPredmetu => $composableBuilder(
+    column: $table.osnovnaUSvakomPredmetu,
     builder: (column) => column,
   );
 
@@ -18273,7 +27378,9 @@ class $$IriuKatalogConfigTableTableManager
                 Value<bool> vidljiv = const Value.absent(),
                 Value<bool> uvekPrikazati = const Value.absent(),
                 Value<String> tip = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<bool> jeKorisnicka = const Value.absent(),
+                Value<bool> osnovnaUSvakomPredmetu = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => IriuKatalogConfigCompanion(
@@ -18282,7 +27389,9 @@ class $$IriuKatalogConfigTableTableManager
                 vidljiv: vidljiv,
                 uvekPrikazati: uvekPrikazati,
                 tip: tip,
+                cena: cena,
                 jeKorisnicka: jeKorisnicka,
+                osnovnaUSvakomPredmetu: osnovnaUSvakomPredmetu,
                 redosled: redosled,
                 rowid: rowid,
               ),
@@ -18293,7 +27402,9 @@ class $$IriuKatalogConfigTableTableManager
                 Value<bool> vidljiv = const Value.absent(),
                 Value<bool> uvekPrikazati = const Value.absent(),
                 Value<String> tip = const Value.absent(),
+                Value<double> cena = const Value.absent(),
                 Value<bool> jeKorisnicka = const Value.absent(),
+                Value<bool> osnovnaUSvakomPredmetu = const Value.absent(),
                 Value<int> redosled = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => IriuKatalogConfigCompanion.insert(
@@ -18302,7 +27413,9 @@ class $$IriuKatalogConfigTableTableManager
                 vidljiv: vidljiv,
                 uvekPrikazati: uvekPrikazati,
                 tip: tip,
+                cena: cena,
                 jeKorisnicka: jeKorisnicka,
+                osnovnaUSvakomPredmetu: osnovnaUSvakomPredmetu,
                 redosled: redosled,
                 rowid: rowid,
               ),
@@ -20082,6 +29195,950 @@ typedef $$PredlosciDokumenataTableProcessedTableManager =
       PredlosciDokumenataData,
       PrefetchHooks Function()
     >;
+typedef $$PartePredlosciTableCreateCompanionBuilder =
+    PartePredlosciCompanion Function({
+      required String id,
+      Value<int> firmaId,
+      required String naziv,
+      Value<int> schemaVersion,
+      required String configJson,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PartePredlosciTableUpdateCompanionBuilder =
+    PartePredlosciCompanion Function({
+      Value<String> id,
+      Value<int> firmaId,
+      Value<String> naziv,
+      Value<int> schemaVersion,
+      Value<String> configJson,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$PartePredlosciTableFilterComposer
+    extends Composer<_$AppDatabase, $PartePredlosciTable> {
+  $$PartePredlosciTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get firmaId => $composableBuilder(
+    column: $table.firmaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PartePredlosciTableOrderingComposer
+    extends Composer<_$AppDatabase, $PartePredlosciTable> {
+  $$PartePredlosciTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get firmaId => $composableBuilder(
+    column: $table.firmaId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PartePredlosciTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PartePredlosciTable> {
+  $$PartePredlosciTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get firmaId =>
+      $composableBuilder(column: $table.firmaId, builder: (column) => column);
+
+  GeneratedColumn<String> get naziv =>
+      $composableBuilder(column: $table.naziv, builder: (column) => column);
+
+  GeneratedColumn<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$PartePredlosciTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PartePredlosciTable,
+          PartePredlosciData,
+          $$PartePredlosciTableFilterComposer,
+          $$PartePredlosciTableOrderingComposer,
+          $$PartePredlosciTableAnnotationComposer,
+          $$PartePredlosciTableCreateCompanionBuilder,
+          $$PartePredlosciTableUpdateCompanionBuilder,
+          (
+            PartePredlosciData,
+            BaseReferences<
+              _$AppDatabase,
+              $PartePredlosciTable,
+              PartePredlosciData
+            >,
+          ),
+          PartePredlosciData,
+          PrefetchHooks Function()
+        > {
+  $$PartePredlosciTableTableManager(
+    _$AppDatabase db,
+    $PartePredlosciTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PartePredlosciTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PartePredlosciTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PartePredlosciTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> firmaId = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<String> configJson = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PartePredlosciCompanion(
+                id: id,
+                firmaId: firmaId,
+                naziv: naziv,
+                schemaVersion: schemaVersion,
+                configJson: configJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<int> firmaId = const Value.absent(),
+                required String naziv,
+                Value<int> schemaVersion = const Value.absent(),
+                required String configJson,
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PartePredlosciCompanion.insert(
+                id: id,
+                firmaId: firmaId,
+                naziv: naziv,
+                schemaVersion: schemaVersion,
+                configJson: configJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PartePredlosciTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PartePredlosciTable,
+      PartePredlosciData,
+      $$PartePredlosciTableFilterComposer,
+      $$PartePredlosciTableOrderingComposer,
+      $$PartePredlosciTableAnnotationComposer,
+      $$PartePredlosciTableCreateCompanionBuilder,
+      $$PartePredlosciTableUpdateCompanionBuilder,
+      (
+        PartePredlosciData,
+        BaseReferences<_$AppDatabase, $PartePredlosciTable, PartePredlosciData>,
+      ),
+      PartePredlosciData,
+      PrefetchHooks Function()
+    >;
+typedef $$PartePripremeTableCreateCompanionBuilder =
+    PartePripremeCompanion Function({
+      Value<int> id,
+      required int predmetId,
+      required String predmetBroj,
+      Value<String> status,
+      required String createdAt,
+      required String updatedAt,
+      required String sourceFingerprint,
+      required String templateId,
+      required String templateSnapshotJson,
+      required String draftJson,
+      Value<String?> photoMediaKey,
+      Value<String?> customSymbolMediaKey,
+      Value<String?> previewConfirmedFingerprint,
+      Value<String?> exportedRenderFingerprint,
+      Value<String?> exportedFilename,
+      Value<String?> exportedLocation,
+      Value<bool> exportedSuccessfully,
+      Value<bool> cleanupPending,
+      Value<bool> noPhotoAccepted,
+      Value<bool> noCustomSymbolAccepted,
+      Value<bool> lowResolutionAccepted,
+      Value<bool> grammarVerified,
+      Value<String?> completedAt,
+    });
+typedef $$PartePripremeTableUpdateCompanionBuilder =
+    PartePripremeCompanion Function({
+      Value<int> id,
+      Value<int> predmetId,
+      Value<String> predmetBroj,
+      Value<String> status,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<String> sourceFingerprint,
+      Value<String> templateId,
+      Value<String> templateSnapshotJson,
+      Value<String> draftJson,
+      Value<String?> photoMediaKey,
+      Value<String?> customSymbolMediaKey,
+      Value<String?> previewConfirmedFingerprint,
+      Value<String?> exportedRenderFingerprint,
+      Value<String?> exportedFilename,
+      Value<String?> exportedLocation,
+      Value<bool> exportedSuccessfully,
+      Value<bool> cleanupPending,
+      Value<bool> noPhotoAccepted,
+      Value<bool> noCustomSymbolAccepted,
+      Value<bool> lowResolutionAccepted,
+      Value<bool> grammarVerified,
+      Value<String?> completedAt,
+    });
+
+final class $$PartePripremeTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $PartePripremeTable, PartePripremeData> {
+  $$PartePripremeTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(db.partePripreme.predmetId, db.predmeti.id),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PartePripremeTableFilterComposer
+    extends Composer<_$AppDatabase, $PartePripremeTable> {
+  $$PartePripremeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get predmetBroj => $composableBuilder(
+    column: $table.predmetBroj,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get templateSnapshotJson => $composableBuilder(
+    column: $table.templateSnapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get draftJson => $composableBuilder(
+    column: $table.draftJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoMediaKey => $composableBuilder(
+    column: $table.photoMediaKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customSymbolMediaKey => $composableBuilder(
+    column: $table.customSymbolMediaKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get previewConfirmedFingerprint => $composableBuilder(
+    column: $table.previewConfirmedFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exportedRenderFingerprint => $composableBuilder(
+    column: $table.exportedRenderFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exportedFilename => $composableBuilder(
+    column: $table.exportedFilename,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exportedLocation => $composableBuilder(
+    column: $table.exportedLocation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get exportedSuccessfully => $composableBuilder(
+    column: $table.exportedSuccessfully,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get cleanupPending => $composableBuilder(
+    column: $table.cleanupPending,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get noPhotoAccepted => $composableBuilder(
+    column: $table.noPhotoAccepted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get noCustomSymbolAccepted => $composableBuilder(
+    column: $table.noCustomSymbolAccepted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get lowResolutionAccepted => $composableBuilder(
+    column: $table.lowResolutionAccepted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get grammarVerified => $composableBuilder(
+    column: $table.grammarVerified,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PartePripremeTableOrderingComposer
+    extends Composer<_$AppDatabase, $PartePripremeTable> {
+  $$PartePripremeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get predmetBroj => $composableBuilder(
+    column: $table.predmetBroj,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get templateSnapshotJson => $composableBuilder(
+    column: $table.templateSnapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get draftJson => $composableBuilder(
+    column: $table.draftJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoMediaKey => $composableBuilder(
+    column: $table.photoMediaKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customSymbolMediaKey => $composableBuilder(
+    column: $table.customSymbolMediaKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get previewConfirmedFingerprint => $composableBuilder(
+    column: $table.previewConfirmedFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exportedRenderFingerprint => $composableBuilder(
+    column: $table.exportedRenderFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exportedFilename => $composableBuilder(
+    column: $table.exportedFilename,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exportedLocation => $composableBuilder(
+    column: $table.exportedLocation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get exportedSuccessfully => $composableBuilder(
+    column: $table.exportedSuccessfully,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get cleanupPending => $composableBuilder(
+    column: $table.cleanupPending,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get noPhotoAccepted => $composableBuilder(
+    column: $table.noPhotoAccepted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get noCustomSymbolAccepted => $composableBuilder(
+    column: $table.noCustomSymbolAccepted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get lowResolutionAccepted => $composableBuilder(
+    column: $table.lowResolutionAccepted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get grammarVerified => $composableBuilder(
+    column: $table.grammarVerified,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PartePripremeTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PartePripremeTable> {
+  $$PartePripremeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get predmetBroj => $composableBuilder(
+    column: $table.predmetBroj,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceFingerprint => $composableBuilder(
+    column: $table.sourceFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get templateSnapshotJson => $composableBuilder(
+    column: $table.templateSnapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get draftJson =>
+      $composableBuilder(column: $table.draftJson, builder: (column) => column);
+
+  GeneratedColumn<String> get photoMediaKey => $composableBuilder(
+    column: $table.photoMediaKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customSymbolMediaKey => $composableBuilder(
+    column: $table.customSymbolMediaKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get previewConfirmedFingerprint => $composableBuilder(
+    column: $table.previewConfirmedFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exportedRenderFingerprint => $composableBuilder(
+    column: $table.exportedRenderFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exportedFilename => $composableBuilder(
+    column: $table.exportedFilename,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get exportedLocation => $composableBuilder(
+    column: $table.exportedLocation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get exportedSuccessfully => $composableBuilder(
+    column: $table.exportedSuccessfully,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get cleanupPending => $composableBuilder(
+    column: $table.cleanupPending,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get noPhotoAccepted => $composableBuilder(
+    column: $table.noPhotoAccepted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get noCustomSymbolAccepted => $composableBuilder(
+    column: $table.noCustomSymbolAccepted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get lowResolutionAccepted => $composableBuilder(
+    column: $table.lowResolutionAccepted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get grammarVerified => $composableBuilder(
+    column: $table.grammarVerified,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PartePripremeTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PartePripremeTable,
+          PartePripremeData,
+          $$PartePripremeTableFilterComposer,
+          $$PartePripremeTableOrderingComposer,
+          $$PartePripremeTableAnnotationComposer,
+          $$PartePripremeTableCreateCompanionBuilder,
+          $$PartePripremeTableUpdateCompanionBuilder,
+          (PartePripremeData, $$PartePripremeTableReferences),
+          PartePripremeData,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$PartePripremeTableTableManager(_$AppDatabase db, $PartePripremeTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PartePripremeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PartePripremeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PartePripremeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> predmetId = const Value.absent(),
+                Value<String> predmetBroj = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<String> sourceFingerprint = const Value.absent(),
+                Value<String> templateId = const Value.absent(),
+                Value<String> templateSnapshotJson = const Value.absent(),
+                Value<String> draftJson = const Value.absent(),
+                Value<String?> photoMediaKey = const Value.absent(),
+                Value<String?> customSymbolMediaKey = const Value.absent(),
+                Value<String?> previewConfirmedFingerprint =
+                    const Value.absent(),
+                Value<String?> exportedRenderFingerprint = const Value.absent(),
+                Value<String?> exportedFilename = const Value.absent(),
+                Value<String?> exportedLocation = const Value.absent(),
+                Value<bool> exportedSuccessfully = const Value.absent(),
+                Value<bool> cleanupPending = const Value.absent(),
+                Value<bool> noPhotoAccepted = const Value.absent(),
+                Value<bool> noCustomSymbolAccepted = const Value.absent(),
+                Value<bool> lowResolutionAccepted = const Value.absent(),
+                Value<bool> grammarVerified = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+              }) => PartePripremeCompanion(
+                id: id,
+                predmetId: predmetId,
+                predmetBroj: predmetBroj,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                sourceFingerprint: sourceFingerprint,
+                templateId: templateId,
+                templateSnapshotJson: templateSnapshotJson,
+                draftJson: draftJson,
+                photoMediaKey: photoMediaKey,
+                customSymbolMediaKey: customSymbolMediaKey,
+                previewConfirmedFingerprint: previewConfirmedFingerprint,
+                exportedRenderFingerprint: exportedRenderFingerprint,
+                exportedFilename: exportedFilename,
+                exportedLocation: exportedLocation,
+                exportedSuccessfully: exportedSuccessfully,
+                cleanupPending: cleanupPending,
+                noPhotoAccepted: noPhotoAccepted,
+                noCustomSymbolAccepted: noCustomSymbolAccepted,
+                lowResolutionAccepted: lowResolutionAccepted,
+                grammarVerified: grammarVerified,
+                completedAt: completedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int predmetId,
+                required String predmetBroj,
+                Value<String> status = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                required String sourceFingerprint,
+                required String templateId,
+                required String templateSnapshotJson,
+                required String draftJson,
+                Value<String?> photoMediaKey = const Value.absent(),
+                Value<String?> customSymbolMediaKey = const Value.absent(),
+                Value<String?> previewConfirmedFingerprint =
+                    const Value.absent(),
+                Value<String?> exportedRenderFingerprint = const Value.absent(),
+                Value<String?> exportedFilename = const Value.absent(),
+                Value<String?> exportedLocation = const Value.absent(),
+                Value<bool> exportedSuccessfully = const Value.absent(),
+                Value<bool> cleanupPending = const Value.absent(),
+                Value<bool> noPhotoAccepted = const Value.absent(),
+                Value<bool> noCustomSymbolAccepted = const Value.absent(),
+                Value<bool> lowResolutionAccepted = const Value.absent(),
+                Value<bool> grammarVerified = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+              }) => PartePripremeCompanion.insert(
+                id: id,
+                predmetId: predmetId,
+                predmetBroj: predmetBroj,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                sourceFingerprint: sourceFingerprint,
+                templateId: templateId,
+                templateSnapshotJson: templateSnapshotJson,
+                draftJson: draftJson,
+                photoMediaKey: photoMediaKey,
+                customSymbolMediaKey: customSymbolMediaKey,
+                previewConfirmedFingerprint: previewConfirmedFingerprint,
+                exportedRenderFingerprint: exportedRenderFingerprint,
+                exportedFilename: exportedFilename,
+                exportedLocation: exportedLocation,
+                exportedSuccessfully: exportedSuccessfully,
+                cleanupPending: cleanupPending,
+                noPhotoAccepted: noPhotoAccepted,
+                noCustomSymbolAccepted: noCustomSymbolAccepted,
+                lowResolutionAccepted: lowResolutionAccepted,
+                grammarVerified: grammarVerified,
+                completedAt: completedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PartePripremeTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable: $$PartePripremeTableReferences
+                                    ._predmetIdTable(db),
+                                referencedColumn: $$PartePripremeTableReferences
+                                    ._predmetIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PartePripremeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PartePripremeTable,
+      PartePripremeData,
+      $$PartePripremeTableFilterComposer,
+      $$PartePripremeTableOrderingComposer,
+      $$PartePripremeTableAnnotationComposer,
+      $$PartePripremeTableCreateCompanionBuilder,
+      $$PartePripremeTableUpdateCompanionBuilder,
+      (PartePripremeData, $$PartePripremeTableReferences),
+      PartePripremeData,
+      PrefetchHooks Function({bool predmetId})
+    >;
 typedef $$LogIzmenaTableCreateCompanionBuilder =
     LogIzmenaCompanion Function({
       Value<int> id,
@@ -20441,6 +30498,1217 @@ typedef $$LogIzmenaTableProcessedTableManager =
       LogIzmenaData,
       PrefetchHooks Function({bool predmetId})
     >;
+typedef $$ScenarioModulesTableCreateCompanionBuilder =
+    ScenarioModulesCompanion Function({
+      required String id,
+      Value<String> naziv,
+      Value<String> status,
+      Value<int> schemaVersion,
+      Value<String> osnovniPaketJson,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScenarioModulesTableUpdateCompanionBuilder =
+    ScenarioModulesCompanion Function({
+      Value<String> id,
+      Value<String> naziv,
+      Value<String> status,
+      Value<int> schemaVersion,
+      Value<String> osnovniPaketJson,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScenarioModulesTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ScenarioModulesTable, ScenarioModule> {
+  $$ScenarioModulesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<
+    $ScenarioDefinitionsTable,
+    List<ScenarioDefinitionRecord>
+  >
+  _scenarioDefinitionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.scenarioDefinitions,
+        aliasName: $_aliasNameGenerator(
+          db.scenarioModules.id,
+          db.scenarioDefinitions.moduleId,
+        ),
+      );
+
+  $$ScenarioDefinitionsTableProcessedTableManager get scenarioDefinitionsRefs {
+    final manager = $$ScenarioDefinitionsTableTableManager(
+      $_db,
+      $_db.scenarioDefinitions,
+    ).filter((f) => f.moduleId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _scenarioDefinitionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ScenarioModulesTableFilterComposer
+    extends Composer<_$AppDatabase, $ScenarioModulesTable> {
+  $$ScenarioModulesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get osnovniPaketJson => $composableBuilder(
+    column: $table.osnovniPaketJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> scenarioDefinitionsRefs(
+    Expression<bool> Function($$ScenarioDefinitionsTableFilterComposer f) f,
+  ) {
+    final $$ScenarioDefinitionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.scenarioDefinitions,
+      getReferencedColumn: (t) => t.moduleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioDefinitionsTableFilterComposer(
+            $db: $db,
+            $table: $db.scenarioDefinitions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ScenarioModulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScenarioModulesTable> {
+  $$ScenarioModulesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get osnovniPaketJson => $composableBuilder(
+    column: $table.osnovniPaketJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ScenarioModulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScenarioModulesTable> {
+  $$ScenarioModulesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get naziv =>
+      $composableBuilder(column: $table.naziv, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get osnovniPaketJson => $composableBuilder(
+    column: $table.osnovniPaketJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> scenarioDefinitionsRefs<T extends Object>(
+    Expression<T> Function($$ScenarioDefinitionsTableAnnotationComposer a) f,
+  ) {
+    final $$ScenarioDefinitionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scenarioDefinitions,
+          getReferencedColumn: (t) => t.moduleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScenarioDefinitionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scenarioDefinitions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ScenarioModulesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScenarioModulesTable,
+          ScenarioModule,
+          $$ScenarioModulesTableFilterComposer,
+          $$ScenarioModulesTableOrderingComposer,
+          $$ScenarioModulesTableAnnotationComposer,
+          $$ScenarioModulesTableCreateCompanionBuilder,
+          $$ScenarioModulesTableUpdateCompanionBuilder,
+          (ScenarioModule, $$ScenarioModulesTableReferences),
+          ScenarioModule,
+          PrefetchHooks Function({bool scenarioDefinitionsRefs})
+        > {
+  $$ScenarioModulesTableTableManager(
+    _$AppDatabase db,
+    $ScenarioModulesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScenarioModulesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScenarioModulesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ScenarioModulesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<String> osnovniPaketJson = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioModulesCompanion(
+                id: id,
+                naziv: naziv,
+                status: status,
+                schemaVersion: schemaVersion,
+                osnovniPaketJson: osnovniPaketJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String> naziv = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<String> osnovniPaketJson = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioModulesCompanion.insert(
+                id: id,
+                naziv: naziv,
+                status: status,
+                schemaVersion: schemaVersion,
+                osnovniPaketJson: osnovniPaketJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScenarioModulesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({scenarioDefinitionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (scenarioDefinitionsRefs) db.scenarioDefinitions,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (scenarioDefinitionsRefs)
+                    await $_getPrefetchedData<
+                      ScenarioModule,
+                      $ScenarioModulesTable,
+                      ScenarioDefinitionRecord
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ScenarioModulesTableReferences
+                          ._scenarioDefinitionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ScenarioModulesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).scenarioDefinitionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.moduleId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ScenarioModulesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScenarioModulesTable,
+      ScenarioModule,
+      $$ScenarioModulesTableFilterComposer,
+      $$ScenarioModulesTableOrderingComposer,
+      $$ScenarioModulesTableAnnotationComposer,
+      $$ScenarioModulesTableCreateCompanionBuilder,
+      $$ScenarioModulesTableUpdateCompanionBuilder,
+      (ScenarioModule, $$ScenarioModulesTableReferences),
+      ScenarioModule,
+      PrefetchHooks Function({bool scenarioDefinitionsRefs})
+    >;
+typedef $$ScenarioDefinitionsTableCreateCompanionBuilder =
+    ScenarioDefinitionsCompanion Function({
+      required String id,
+      required String moduleId,
+      required int version,
+      Value<String> status,
+      Value<String> naziv,
+      Value<String> conditionJson,
+      Value<String> consequencesJson,
+      Value<bool> jePodrazumevani,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScenarioDefinitionsTableUpdateCompanionBuilder =
+    ScenarioDefinitionsCompanion Function({
+      Value<String> id,
+      Value<String> moduleId,
+      Value<int> version,
+      Value<String> status,
+      Value<String> naziv,
+      Value<String> conditionJson,
+      Value<String> consequencesJson,
+      Value<bool> jePodrazumevani,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScenarioDefinitionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ScenarioDefinitionsTable,
+          ScenarioDefinitionRecord
+        > {
+  $$ScenarioDefinitionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ScenarioModulesTable _moduleIdTable(_$AppDatabase db) =>
+      db.scenarioModules.createAlias(
+        $_aliasNameGenerator(
+          db.scenarioDefinitions.moduleId,
+          db.scenarioModules.id,
+        ),
+      );
+
+  $$ScenarioModulesTableProcessedTableManager get moduleId {
+    final $_column = $_itemColumn<String>('module_id')!;
+
+    final manager = $$ScenarioModulesTableTableManager(
+      $_db,
+      $_db.scenarioModules,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_moduleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ScenarioDefinitionsTableFilterComposer
+    extends Composer<_$AppDatabase, $ScenarioDefinitionsTable> {
+  $$ScenarioDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conditionJson => $composableBuilder(
+    column: $table.conditionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get consequencesJson => $composableBuilder(
+    column: $table.consequencesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get jePodrazumevani => $composableBuilder(
+    column: $table.jePodrazumevani,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ScenarioModulesTableFilterComposer get moduleId {
+    final $$ScenarioModulesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.moduleId,
+      referencedTable: $db.scenarioModules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioModulesTableFilterComposer(
+            $db: $db,
+            $table: $db.scenarioModules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScenarioDefinitionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScenarioDefinitionsTable> {
+  $$ScenarioDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get naziv => $composableBuilder(
+    column: $table.naziv,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conditionJson => $composableBuilder(
+    column: $table.conditionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get consequencesJson => $composableBuilder(
+    column: $table.consequencesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get jePodrazumevani => $composableBuilder(
+    column: $table.jePodrazumevani,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ScenarioModulesTableOrderingComposer get moduleId {
+    final $$ScenarioModulesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.moduleId,
+      referencedTable: $db.scenarioModules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioModulesTableOrderingComposer(
+            $db: $db,
+            $table: $db.scenarioModules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScenarioDefinitionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScenarioDefinitionsTable> {
+  $$ScenarioDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get naziv =>
+      $composableBuilder(column: $table.naziv, builder: (column) => column);
+
+  GeneratedColumn<String> get conditionJson => $composableBuilder(
+    column: $table.conditionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get consequencesJson => $composableBuilder(
+    column: $table.consequencesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get jePodrazumevani => $composableBuilder(
+    column: $table.jePodrazumevani,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ScenarioModulesTableAnnotationComposer get moduleId {
+    final $$ScenarioModulesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.moduleId,
+      referencedTable: $db.scenarioModules,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScenarioModulesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.scenarioModules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScenarioDefinitionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScenarioDefinitionsTable,
+          ScenarioDefinitionRecord,
+          $$ScenarioDefinitionsTableFilterComposer,
+          $$ScenarioDefinitionsTableOrderingComposer,
+          $$ScenarioDefinitionsTableAnnotationComposer,
+          $$ScenarioDefinitionsTableCreateCompanionBuilder,
+          $$ScenarioDefinitionsTableUpdateCompanionBuilder,
+          (ScenarioDefinitionRecord, $$ScenarioDefinitionsTableReferences),
+          ScenarioDefinitionRecord,
+          PrefetchHooks Function({bool moduleId})
+        > {
+  $$ScenarioDefinitionsTableTableManager(
+    _$AppDatabase db,
+    $ScenarioDefinitionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScenarioDefinitionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScenarioDefinitionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ScenarioDefinitionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> moduleId = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<String> conditionJson = const Value.absent(),
+                Value<String> consequencesJson = const Value.absent(),
+                Value<bool> jePodrazumevani = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioDefinitionsCompanion(
+                id: id,
+                moduleId: moduleId,
+                version: version,
+                status: status,
+                naziv: naziv,
+                conditionJson: conditionJson,
+                consequencesJson: consequencesJson,
+                jePodrazumevani: jePodrazumevani,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String moduleId,
+                required int version,
+                Value<String> status = const Value.absent(),
+                Value<String> naziv = const Value.absent(),
+                Value<String> conditionJson = const Value.absent(),
+                Value<String> consequencesJson = const Value.absent(),
+                Value<bool> jePodrazumevani = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScenarioDefinitionsCompanion.insert(
+                id: id,
+                moduleId: moduleId,
+                version: version,
+                status: status,
+                naziv: naziv,
+                conditionJson: conditionJson,
+                consequencesJson: consequencesJson,
+                jePodrazumevani: jePodrazumevani,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScenarioDefinitionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({moduleId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (moduleId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.moduleId,
+                                referencedTable:
+                                    $$ScenarioDefinitionsTableReferences
+                                        ._moduleIdTable(db),
+                                referencedColumn:
+                                    $$ScenarioDefinitionsTableReferences
+                                        ._moduleIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ScenarioDefinitionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScenarioDefinitionsTable,
+      ScenarioDefinitionRecord,
+      $$ScenarioDefinitionsTableFilterComposer,
+      $$ScenarioDefinitionsTableOrderingComposer,
+      $$ScenarioDefinitionsTableAnnotationComposer,
+      $$ScenarioDefinitionsTableCreateCompanionBuilder,
+      $$ScenarioDefinitionsTableUpdateCompanionBuilder,
+      (ScenarioDefinitionRecord, $$ScenarioDefinitionsTableReferences),
+      ScenarioDefinitionRecord,
+      PrefetchHooks Function({bool moduleId})
+    >;
+typedef $$PredmetScenarioSnapshotsTableCreateCompanionBuilder =
+    PredmetScenarioSnapshotsCompanion Function({
+      Value<int> predmetId,
+      required String moduleId,
+      required String scenarioId,
+      required int scenarioVersion,
+      required String snapshotJson,
+      required String snapshotHash,
+      required String assignedAt,
+      Value<int?> assignedByKorisnikId,
+    });
+typedef $$PredmetScenarioSnapshotsTableUpdateCompanionBuilder =
+    PredmetScenarioSnapshotsCompanion Function({
+      Value<int> predmetId,
+      Value<String> moduleId,
+      Value<String> scenarioId,
+      Value<int> scenarioVersion,
+      Value<String> snapshotJson,
+      Value<String> snapshotHash,
+      Value<String> assignedAt,
+      Value<int?> assignedByKorisnikId,
+    });
+
+final class $$PredmetScenarioSnapshotsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PredmetScenarioSnapshotsTable,
+          PredmetScenarioSnapshot
+        > {
+  $$PredmetScenarioSnapshotsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PredmetiTable _predmetIdTable(_$AppDatabase db) =>
+      db.predmeti.createAlias(
+        $_aliasNameGenerator(
+          db.predmetScenarioSnapshots.predmetId,
+          db.predmeti.id,
+        ),
+      );
+
+  $$PredmetiTableProcessedTableManager get predmetId {
+    final $_column = $_itemColumn<int>('predmet_id')!;
+
+    final manager = $$PredmetiTableTableManager(
+      $_db,
+      $_db.predmeti,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_predmetIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $PredmetScenarioSnapshotsTable> {
+  $$PredmetScenarioSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotHash => $composableBuilder(
+    column: $table.snapshotHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get assignedByKorisnikId => $composableBuilder(
+    column: $table.assignedByKorisnikId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PredmetiTableFilterComposer get predmetId {
+    final $$PredmetiTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableFilterComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PredmetScenarioSnapshotsTable> {
+  $$PredmetScenarioSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get moduleId => $composableBuilder(
+    column: $table.moduleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotHash => $composableBuilder(
+    column: $table.snapshotHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get assignedByKorisnikId => $composableBuilder(
+    column: $table.assignedByKorisnikId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PredmetiTableOrderingComposer get predmetId {
+    final $$PredmetiTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableOrderingComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PredmetScenarioSnapshotsTable> {
+  $$PredmetScenarioSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get moduleId =>
+      $composableBuilder(column: $table.moduleId, builder: (column) => column);
+
+  GeneratedColumn<String> get scenarioId => $composableBuilder(
+    column: $table.scenarioId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get scenarioVersion => $composableBuilder(
+    column: $table.scenarioVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotHash => $composableBuilder(
+    column: $table.snapshotHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get assignedByKorisnikId => $composableBuilder(
+    column: $table.assignedByKorisnikId,
+    builder: (column) => column,
+  );
+
+  $$PredmetiTableAnnotationComposer get predmetId {
+    final $$PredmetiTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.predmetId,
+      referencedTable: $db.predmeti,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredmetiTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predmeti,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredmetScenarioSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PredmetScenarioSnapshotsTable,
+          PredmetScenarioSnapshot,
+          $$PredmetScenarioSnapshotsTableFilterComposer,
+          $$PredmetScenarioSnapshotsTableOrderingComposer,
+          $$PredmetScenarioSnapshotsTableAnnotationComposer,
+          $$PredmetScenarioSnapshotsTableCreateCompanionBuilder,
+          $$PredmetScenarioSnapshotsTableUpdateCompanionBuilder,
+          (PredmetScenarioSnapshot, $$PredmetScenarioSnapshotsTableReferences),
+          PredmetScenarioSnapshot,
+          PrefetchHooks Function({bool predmetId})
+        > {
+  $$PredmetScenarioSnapshotsTableTableManager(
+    _$AppDatabase db,
+    $PredmetScenarioSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PredmetScenarioSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PredmetScenarioSnapshotsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PredmetScenarioSnapshotsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> predmetId = const Value.absent(),
+                Value<String> moduleId = const Value.absent(),
+                Value<String> scenarioId = const Value.absent(),
+                Value<int> scenarioVersion = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<String> snapshotHash = const Value.absent(),
+                Value<String> assignedAt = const Value.absent(),
+                Value<int?> assignedByKorisnikId = const Value.absent(),
+              }) => PredmetScenarioSnapshotsCompanion(
+                predmetId: predmetId,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                snapshotJson: snapshotJson,
+                snapshotHash: snapshotHash,
+                assignedAt: assignedAt,
+                assignedByKorisnikId: assignedByKorisnikId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> predmetId = const Value.absent(),
+                required String moduleId,
+                required String scenarioId,
+                required int scenarioVersion,
+                required String snapshotJson,
+                required String snapshotHash,
+                required String assignedAt,
+                Value<int?> assignedByKorisnikId = const Value.absent(),
+              }) => PredmetScenarioSnapshotsCompanion.insert(
+                predmetId: predmetId,
+                moduleId: moduleId,
+                scenarioId: scenarioId,
+                scenarioVersion: scenarioVersion,
+                snapshotJson: snapshotJson,
+                snapshotHash: snapshotHash,
+                assignedAt: assignedAt,
+                assignedByKorisnikId: assignedByKorisnikId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PredmetScenarioSnapshotsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({predmetId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (predmetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.predmetId,
+                                referencedTable:
+                                    $$PredmetScenarioSnapshotsTableReferences
+                                        ._predmetIdTable(db),
+                                referencedColumn:
+                                    $$PredmetScenarioSnapshotsTableReferences
+                                        ._predmetIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PredmetScenarioSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PredmetScenarioSnapshotsTable,
+      PredmetScenarioSnapshot,
+      $$PredmetScenarioSnapshotsTableFilterComposer,
+      $$PredmetScenarioSnapshotsTableOrderingComposer,
+      $$PredmetScenarioSnapshotsTableAnnotationComposer,
+      $$PredmetScenarioSnapshotsTableCreateCompanionBuilder,
+      $$PredmetScenarioSnapshotsTableUpdateCompanionBuilder,
+      (PredmetScenarioSnapshot, $$PredmetScenarioSnapshotsTableReferences),
+      PredmetScenarioSnapshot,
+      PrefetchHooks Function({bool predmetId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -20453,9 +31721,15 @@ class $AppDatabaseManager {
       $$AppPodesavanjaTableTableManager(_db, _db.appPodesavanja);
   $$PredmetiTableTableManager get predmeti =>
       $$PredmetiTableTableManager(_db, _db.predmeti);
+  $$CituljePripremeTableTableManager get cituljePripreme =>
+      $$CituljePripremeTableTableManager(_db, _db.cituljePripreme);
+  $$PodsetnikObavezeTableTableManager get podsetnikObaveze =>
+      $$PodsetnikObavezeTableTableManager(_db, _db.podsetnikObaveze);
   $$KontaktLicaTableTableManager get kontaktLica =>
       $$KontaktLicaTableTableManager(_db, _db.kontaktLica);
   $$IriuTableTableManager get iriu => $$IriuTableTableManager(_db, _db.iriu);
+  $$IriuProvenanceTableTableManager get iriuProvenance =>
+      $$IriuProvenanceTableTableManager(_db, _db.iriuProvenance);
   $$IriuKatalogConfigTableTableManager get iriuKatalogConfig =>
       $$IriuKatalogConfigTableTableManager(_db, _db.iriuKatalogConfig);
   $$KatalogArtikliTableTableManager get katalogArtikli =>
@@ -20471,6 +31745,19 @@ class $AppDatabaseManager {
       $$StanjeRobePoslediceTableTableManager(_db, _db.stanjeRobePosledice);
   $$PredlosciDokumenataTableTableManager get predlosciDokumenata =>
       $$PredlosciDokumenataTableTableManager(_db, _db.predlosciDokumenata);
+  $$PartePredlosciTableTableManager get partePredlosci =>
+      $$PartePredlosciTableTableManager(_db, _db.partePredlosci);
+  $$PartePripremeTableTableManager get partePripreme =>
+      $$PartePripremeTableTableManager(_db, _db.partePripreme);
   $$LogIzmenaTableTableManager get logIzmena =>
       $$LogIzmenaTableTableManager(_db, _db.logIzmena);
+  $$ScenarioModulesTableTableManager get scenarioModules =>
+      $$ScenarioModulesTableTableManager(_db, _db.scenarioModules);
+  $$ScenarioDefinitionsTableTableManager get scenarioDefinitions =>
+      $$ScenarioDefinitionsTableTableManager(_db, _db.scenarioDefinitions);
+  $$PredmetScenarioSnapshotsTableTableManager get predmetScenarioSnapshots =>
+      $$PredmetScenarioSnapshotsTableTableManager(
+        _db,
+        _db.predmetScenarioSnapshots,
+      );
 }

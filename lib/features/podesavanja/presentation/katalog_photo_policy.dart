@@ -34,6 +34,14 @@ final class KatalogPhotoPolicy {
     return windowsDesktopPreviewDecodeTarget;
   }
 
+  static ({int cacheWidth, int? cacheHeight}) aspectRatioSafePreviewDecode(
+    BuildContext context,
+  ) => aspectRatioSafeDecodeForTarget(previewDecodeTarget(context));
+
+  static ({int cacheWidth, int? cacheHeight}) aspectRatioSafeDecodeForTarget(
+    int target,
+  ) => (cacheWidth: target, cacheHeight: null);
+
   static Image memoryImage(
     Uint8List bytes, {
     double? width,

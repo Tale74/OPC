@@ -10,6 +10,9 @@ class SessionService extends ChangeNotifier {
   KorisniciData? get korisnik => _korisnik;
   bool get prijavljen => _korisnik != null;
   bool get jeAdmin => _korisnik?.uloga == 'ADMINISTRATOR';
+  bool get jeSavetnik => _korisnik?.uloga == 'SAVETNIK';
+  bool get mozeBackup =>
+      _korisnik?.aktivan == true && (jeAdmin || jeSavetnik);
 
   void prijavi(KorisniciData k) {
     _korisnik = k;

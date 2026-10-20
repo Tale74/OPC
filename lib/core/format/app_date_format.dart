@@ -2,8 +2,9 @@ import 'package:intl/intl.dart';
 
 final DateFormat _documentDateFormat = DateFormat('dd.MM.yyyy');
 final RegExp _isoDatePattern = RegExp(r'^(\d{4})-(\d{1,2})-(\d{1,2})$');
-final RegExp _localizedDatePattern =
-    RegExp(r'^(\d{1,2})[./](\d{1,2})[./](\d{4})([./])?$');
+final RegExp _localizedDatePattern = RegExp(
+  r'^(\d{1,2})[./](\d{1,2})[./](\d{4})([./])?$',
+);
 const List<String> _srWeekdays = <String>[
   'ponedeljak',
   'utorak',
@@ -28,7 +29,8 @@ const List<String> _srMonthsGenitive = <String>[
   'decembra',
 ];
 
-String formatDateForDocument(DateTime value) => _documentDateFormat.format(value);
+String formatDateForDocument(DateTime value) =>
+    _documentDateFormat.format(value);
 
 DateTime? parseDateValue(String? input) {
   if (input == null) return null;
@@ -75,6 +77,11 @@ String formatDateUiSr(DateTime? value, {bool trailingDot = false}) {
   return '$formatted.';
 }
 
+String formatCalendarPickerSelection(
+  DateTime value, {
+  bool trailingDot = false,
+}) => formatDateUiSr(value, trailingDot: trailingDot);
+
 String formatDateText(DateTime? value) {
   if (value == null) return '';
   final weekday = _srWeekdays[value.weekday - 1];
@@ -87,7 +94,7 @@ String normalizeDateInput(String input) {
   final trimmed = input.trim();
   final parsed = parseDateValue(trimmed);
   if (parsed == null) return trimmed;
-  return formatDateUi(parsed);
+  return formatDateUiSr(parsed, trailingDot: true);
 }
 
 String normalizeCeremonyDateInput(String input) {

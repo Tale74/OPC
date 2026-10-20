@@ -3,6 +3,57 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/catalog/katalog_category_baseline.dart';
+
+/// Explicit business-fixture setup for tests that exercise SCENARIO/KATALOG
+/// persistence. Production test databases intentionally start empty; callers
+/// opt into this fixture when their scenario contract requires catalog rows.
+Future<void> seedScenarioCatalogForTest(AppDatabase db) async {
+  for (final entry in KatalogCategoryBaseline.entries) {
+    await db
+        .into(db.iriuKatalogConfig)
+        .insert(
+          IriuKatalogConfigCompanion.insert(
+            interniNaziv: entry.internalName,
+            nazivPrikaz: entry.displayName,
+            tip: Value(entry.type),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+  for (final entry in const [
+    ('CITULJA_POLITIKA', 'Test citulja 1'),
+    ('CITULJA_POLITIKA', 'Test citulja 2'),
+  ]) {
+    await db
+        .into(db.katalogArtikli)
+        .insert(
+          KatalogArtikliCompanion.insert(
+            stableArticleId: Value('TEST-${entry.$2.replaceAll(' ', '-')}'),
+            interniNazivKategorije: entry.$1,
+            naziv: entry.$2,
+            cena: const Value(100),
+          ),
+        );
+  }
+}
+
+/// Gives isolated databases an explicit synthetic firm identity when a test
+/// exercises same-FIRMA PREDMET JSON import. Tests for missing or mismatched
+/// identities must set their own values instead of calling this helper.
+Future<void> prepareSameFirmaJsonTransferForTest(AppDatabase db) async {
+  final firma = await db.select(db.firmaPodaci).getSingleOrNull();
+  if (firma == null ||
+      firma.pib.trim().isNotEmpty ||
+      firma.mb.trim().isNotEmpty) {
+    return;
+  }
+  await (db.update(
+    db.firmaPodaci,
+  )..where((row) => row.id.equals(firma.id))).write(
+    const FirmaPodaciCompanion(pib: Value('111111111'), mb: Value('10000001')),
+  );
+}
 
 bool _driftMultipleDatabaseWarningDisabled = false;
 
@@ -15,8 +66,5 @@ AppDatabase createTestDatabase() {
 }
 
 Widget wrapForTest(Widget child) {
-  return MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: child,
-  );
+  return MaterialApp(debugShowCheckedModeBanner: false, home: child);
 }

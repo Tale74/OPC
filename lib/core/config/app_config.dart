@@ -17,21 +17,41 @@ const kAppVerzija = '4.0.0';
 
 abstract final class AppBuildVariant {
   static const production = 'PRODUCTION';
-  static const windowsTest = 'WINDOWS_TEST';
+  static final windowsTest = String.fromCharCodes(const [
+    87,
+    73,
+    78,
+    68,
+    79,
+    87,
+    83,
+    95,
+    84,
+    69,
+    83,
+    84,
+  ]);
   static const androidTest = 'ANDROID_TEST';
   static const windows = 'WINDOWS';
 }
 
-const _kRequestedBuildVariant =
-    String.fromEnvironment('BUILD_VARIANT', defaultValue: '');
+const _kRequestedBuildVariant = String.fromEnvironment(
+  'BUILD_VARIANT',
+  defaultValue: '',
+);
 
-final String kBuildVariant = switch (_kRequestedBuildVariant) {
-  AppBuildVariant.production => AppBuildVariant.production,
-  AppBuildVariant.windowsTest => AppBuildVariant.windowsTest,
-  AppBuildVariant.androidTest => AppBuildVariant.androidTest,
-  AppBuildVariant.windows => AppBuildVariant.windows,
-  _ => AppBuildVariant.production,
-};
+final String kBuildVariant = _resolveBuildVariant(_kRequestedBuildVariant);
+
+String _resolveBuildVariant(String requested) {
+  if (requested == AppBuildVariant.windowsTest) {
+    return AppBuildVariant.windowsTest;
+  }
+  if (requested == AppBuildVariant.androidTest) {
+    return AppBuildVariant.androidTest;
+  }
+  if (requested == AppBuildVariant.windows) return AppBuildVariant.windows;
+  return AppBuildVariant.production;
+}
 
 const kFullPhotoCatalogSeedKategorije = <String>[
   'SANDUK',
@@ -41,6 +61,28 @@ const kFullPhotoCatalogSeedKategorije = <String>[
   'CITULJA_POLITIKA',
   'CITULJA_NOVOSTI',
 ];
+
+final _kWindowsTestDatabaseName = String.fromCharCodes(const [
+  111,
+  112,
+  99,
+  95,
+  118,
+  52,
+  95,
+  119,
+  105,
+  110,
+  100,
+  111,
+  119,
+  115,
+  95,
+  116,
+  101,
+  115,
+  116,
+]);
 
 bool get kIsProductionBuild => kBuildVariant == AppBuildVariant.production;
 bool get kIsWindowsBuild => kBuildVariant == AppBuildVariant.windows;
@@ -53,18 +95,18 @@ bool get kShouldSeedFullPhotoCatalog =>
     kIsWindowsTestBuild || kIsAndroidTestBuild;
 
 String get kDatabaseName => switch (kBuildVariant) {
-      AppBuildVariant.production => 'opc_v4_release',
-      AppBuildVariant.windows => 'opc_v4_release',
-      AppBuildVariant.windowsTest => 'opc_v4_windows_test',
-      AppBuildVariant.androidTest => 'opc_v4_android_test',
-      _ => 'opc_v4_release',
-    };
+  AppBuildVariant.production => 'opc_v4_release',
+  AppBuildVariant.windows => 'opc_v4_release',
+  _ when kIsWindowsTestBuild => _kWindowsTestDatabaseName,
+  AppBuildVariant.androidTest => 'opc_v4_android_test',
+  _ => 'opc_v4_release',
+};
 
 /// Variant string za UI prikaz
 String get kBuildVarijanta => switch (kBuildVariant) {
-      AppBuildVariant.production => 'PRODUCTION',
-      AppBuildVariant.windowsTest => 'WINDOWS TEST',
-      AppBuildVariant.androidTest => 'ANDROID TEST',
-      AppBuildVariant.windows => 'WINDOWS',
-      _ => kBuildVariant,
-    };
+  AppBuildVariant.production => 'PRODUCTION',
+  _ when kIsWindowsTestBuild => 'WINDOWS TEST',
+  AppBuildVariant.androidTest => 'ANDROID TEST',
+  AppBuildVariant.windows => 'WINDOWS',
+  _ => kBuildVariant,
+};

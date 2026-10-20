@@ -1,0 +1,620 @@
+{
+  "version": 1,
+  "chapters": [
+    {
+      "id": "overview",
+      "title": "RAD U APLIKACIJI",
+      "intro": "OPC – Organizator pogrebne ceremonije je alat u kome na jednom mestu upotrebljivo organizujete podatke, robu i usluge, dokumentaciju i obaveze.",
+      "sections": [
+        {
+          "title": "Odakle da krenete",
+          "text": "Ako prvi put koristite OPC, krenite od poglavlja PRVO POKRETANJE, zatim pogledajte PODEŠAVANJA i KATALOG. Kada pripremite osnovne podatke za rad, otvorite PREDMETI i napravite prvi PREDMET."
+        },
+        {
+          "title": "Kako da pronađete objašnjenje",
+          "text": "U sadržaju izaberite naziv ekrana ili posla koji želite da naučite. Ikonica POMOĆ na otvorenom ekranu vodi vas na odgovarajući deo ovog istog uputstva. Kada završite sa čitanjem, vratite se na posao koji ste započeli. Otvaranje uputstva ne unosi i ne čuva podatke umesto vas."
+        },
+        {
+          "title": "Šta je PREDMET",
+          "text": "PREDMET je zasebna celina za jedan pogrebni posao. U PREDMET unosite podatke, birate potrebnu robu i usluge iz KATALOGA i pripremate dokumente. KATALOG služi da unapred pripremite artikle i njihove cene, kako biste ih kasnije lakše birali u PREDMETU. Ne morate unapred imati otvoren nijedan PREDMET da biste uređivali KATALOG. SAVET: pre početka unosa prvog PREDMETA popunite sve sekcije u PODEŠAVANJA."
+        }
+      ]
+    },
+    {
+      "id": "first_launch",
+      "title": "PRVO POKRETANJE",
+      "intro": "",
+      "sections": [
+        {
+          "title": "Prvo otvaranje OPC-a",
+          "text": "Kada prvi put pokrenete OPC na uređaju, aplikacija vas vodi kroz početnu pripremu za rad. Ako na uređaju još nema korisničkih naloga, potrebno je napraviti prvi nalog prema ponuđenim koracima. Taj prvi nalog služi da započnete rad i podesite osnovne podatke."
+        },
+        {
+          "title": "Prvi korisnik",
+          "text": "Pratite prikazana polja za unos prvog korisnika. Unesite tražene podatke i postavite PIN koji ćete koristiti za prijavu. Sačuvajte podatke kada završite. Sačuvajte i sigurnosni kod za oporavak administratorskog pristupa ako zaboravite PIN. Ako oporavak nije podešen ili kod ne može da se potvrdi, obratite se administratoru ili servisnoj podršci. Kada je prvi nalog spreman, možete nastaviti sa podešavanjem firme i ostalih podataka potrebnih za rad."
+        },
+        {
+          "title": "Ako već imate podatke",
+          "text": "Ako OPC već ima pripremljene korisnike i podatke, ne morate ponavljati početno podešavanje. Prijavite se svojim nalogom i nastavite rad. Ako ste dobili rezervnu kopiju podataka, nemojte je uvoziti naslepo: najpre pročitajte poglavlje o uvozu i rezervnoj kopiji u PODEŠAVANJIMA kako biste razumeli šta će se preneti."
+        }
+      ]
+    },
+    {
+      "id": "login",
+      "title": "PRIJAVA",
+      "intro": "Prijava omogućava da OPC zna ko trenutno radi u aplikaciji. Svako treba da koristi svoj nalog i svoj PIN.",
+      "sections": [
+        {
+          "title": "Kako da se prijavite",
+          "text": "Izaberite svoje ime među korisnicima, unesite PIN i potvrdite prijavu. Kada se prijavite, ulazite u svoj radni prostor. Ako ste greškom izabrali drugo ime, vratite se na izbor korisnika."
+        },
+        {
+          "title": "Ako PIN nije prihvaćen",
+          "text": "Poruka „Pogrešan PIN. Pokušajte ponovo.“ znači da treba pažljivo da ponovite unos. Ako OPC prikaže ograničenje broja pokušaja ili drugo upozorenje, sledite objašnjenje na ekranu."
+        },
+        {
+          "title": "Ako ste zaboravili PIN",
+          "text": "Koristite Zaboravljen PIN i pratite postupak koji aplikacija prikaže. Ne pokušavajte da pristupite tuđem nalogu niti da koristite tuđi PIN."
+        }
+      ]
+    },
+    {
+      "id": "forced_pin",
+      "title": "OBAVEZNA PROMENA PIN-A",
+      "intro": "Ako ste dobili privremeni PIN, OPC može zahtevati da ga promenite pre nastavka rada.",
+      "sections": [
+        {
+          "title": "Postavite svoj PIN",
+          "text": "Unesite novi PIN, pa ga ponovite za potvrdu. Ako se dva unosa razlikuju, pažljivo ih ponovite. Nakon uspešne promene nastavite sa prijavom ili radom prema uputstvu na ekranu."
+        },
+        {
+          "title": "Zapamtite",
+          "text": "Novi PIN treba da bude poznat vama, ne drugim korisnicima. Odjava vraća na prijavu i ne služi za menjanje podataka u PREDMETU."
+        }
+      ]
+    },
+    {
+      "id": "lista",
+      "title": "PREDMETI",
+      "intro": "PREDMETI je ekran na kome ćete imati pregled svih vaših PREDMETA u različitim statusima (OTVOREN; ZATVOREN; ZAVRŠEN; ANONIMIZOVAN).",
+      "sections": [
+        {
+          "title": "Napravite prvi PREDMET",
+          "text": "Izaberite NOVI PREDMET. OPC će prikazati obrazac sa segmentima u koje postepeno unosite potrebne podatke."
+        },
+        {
+          "title": "Pronađite ranije otvoren PREDMET",
+          "text": "Kada imate više predmeta, koristite pretragu i dostupne filtere da pronađete željeni. Izaberite odgovarajući red da biste nastavili rad."
+        },
+        {
+          "title": "Gde su ostali poslovi",
+          "text": "Preko MODULI dolazite do dodatnih radnih celina a preko PODEŠAVANJA do podataka firme, kataloga i drugih postavki. Pojedine komande zavise od vašeg korisničkog naloga i dostupnih funkcija."
+        },
+        {
+          "title": "Kada završite",
+          "text": "Iz povezanog ekrana možete da se vratite na pregled PREDMETA. Pre odlaska sa ekrana na kojem ste unosili podatke proverite da li su izmene sačuvane."
+        }
+      ]
+    },
+    {
+      "id": "predmet",
+      "title": "PREDMET",
+      "intro": "U PREDMETU vodite sve što je potrebno za jedan konkretan posao. Podaci za unos raspoređeni su u osam poslovnih segmenata; DOKUMENTI i PREGLED I POTVRDA su još dva numerisana odeljka za pripremu dokumenata i završni pregled.",
+      "sections": [
+        {
+          "title": "Kako da počnete",
+          "text": "Sa ekrana PREDMETI otvorite novi PREDMET. Počnite od osnovnih podataka o preminulom licu, a zatim prelazite na ostale segmente prema informacijama koje imate. Ako neki podatak još nije poznat, ne upisujte proizvoljnu vrednost samo da bi polje bilo popunjeno."
+        },
+        {
+          "title": "Kretanje i čuvanje",
+          "text": "Izaberite naziv segmenta koji želite da otvorite. Na telefonu i na širem ekranu raspored navigacije može izgledati drugačije, ali segmenti imaju istu namenu. Kada promenite podatke, koristite SAČUVAJ i sačekajte poruku o rezultatu. Sama promena prikazanog segmenta nije zamena za čuvanje."
+        },
+        {
+          "title": "Šta OPC povezuje",
+          "text": "Iz podataka PREDMETA nastaju informacije i pregled organizacije, obaveze i dokumenti. Izbori koje unesete mogu uticati na dostupna polja i predloženu robu i usluge. Zbog toga je dobro da podatke unosite pažljivo i da kasnije ispravite ono što se promenilo."
+        },
+        {
+          "title": "Zatvaranje nije isto što i čuvanje",
+          "text": "SAČUVAJ upisuje izmene. ZATVORI PREDMET je posebna radnja koja zatvara PREDMET za slučajne ili namerne izmene do novog otvaranja PREDMETA. Nemojte zatvarati PREDMET samo zato što trenutno nemate više šta da unesete."
+        }
+      ]
+    },
+    {
+      "id": "predmet.preminulo_lice",
+      "title": "PREDMET · PREMINULO LICE",
+      "intro": "Ovo je početni deo PREDMETA. Ovde unosite osnovne podatke o preminulom licu.",
+      "sections": [
+        {
+          "title": "Prvi unos",
+          "text": "Otvorite segment PREMINULO LICE i unesite raspoložive podatke prema dokumentima kojima raspolažete. Posebno proverite ime i prezime, jer ćete ih kasnije videti u pregledima i dokumentima."
+        },
+        {
+          "title": "Ako podaci nisu potpuni",
+          "text": "Unesite samo ono što pouzdano znate. Kada dobijete dodatnu dokumentaciju, ponovo otvorite isti PREDMET, dopunite podatke i izaberite SAČUVAJ."
+        }
+      ]
+    },
+    {
+      "id": "predmet.cinjenice_o_smrti",
+      "title": "PREDMET · ČINJENICE O SMRTI",
+      "intro": "U ovom segmentu beleže se podaci o smrti koji su potrebni za dalju organizaciju i dokumentaciju.",
+      "sections": [
+        {
+          "title": "Unesite ono što je poznato",
+          "text": "Popunite polja za datum, mesto i druge prikazane činjenice prema raspoloživim dokumentima. Za polja sa ponuđenim izborima odaberite odgovarajuću vrednost. Ako se nakon izbora otvore dodatna polja, popunite ih kada imate potrebne informacije."
+        },
+        {
+          "title": "Proverite pre čuvanja",
+          "text": "Datumi i mesta lako se pogrešno prepišu. Još jednom proverite podatke, pa izaberite SAČUVAJ. Ako kasnije dobijete ispravnu ili potpuniju informaciju, vratite se u ovaj segment i unesite ispravku."
+        }
+      ]
+    },
+    {
+      "id": "predmet.statusi",
+      "title": "PREDMET · STATUSI",
+      "intro": "Ovde se vode okolnosti i statusi koji mogu biti važni za obaveze, dokumentaciju i dalji tok posla.",
+      "sections": [
+        {
+          "title": "Prilikom prvog unosa",
+          "text": "Prođite kroz prikazana pitanja i izaberite odgovore na osnovu poznatih činjenica. Pojedini odgovori mogu uticati na to koje će obaveze OPC prikazati."
+        },
+        {
+          "title": "Kada se okolnosti promene",
+          "text": "Ponovo otvorite segment, ispravite podatak i sačuvajte izmene. Proverite zatim odgovarajuće obaveze i finansijske podatke, jer na njih mogu uticati informacije koje ste izmenili."
+        }
+      ]
+    },
+    {
+      "id": "predmet.platilac",
+      "title": "PREDMET · PLATILAC",
+      "intro": "U ovaj deo unosite podatke o licu koje naručuje ili plaća uslugu, prema poljima koja OPC prikazuje.",
+      "sections": [
+        {
+          "title": "Kako da popunite",
+          "text": "Unesite podatke o osobi koja naručuje ili plaća posao u odgovarajuća polja. Proverite ime, kontakt i ostale identifikacione podatke pre nego što sačuvate PREDMET."
+        },
+        {
+          "title": "Zašto je važno",
+          "text": "Podaci iz ovog segmenta mogu biti potrebni u poslovnim dokumentima. Ako se kasnije utvrdi greška, ispravite je u PREDMETU i tek potom pripremajte novi dokument."
+        }
+      ]
+    },
+    {
+      "id": "predmet.ceremonija",
+      "title": "PREDMET · CEREMONIJA",
+      "intro": "Ovde određujete kako, gde i kada će se obaviti ceremonija.",
+      "sections": [
+        {
+          "title": "Izaberite vrstu ceremonije",
+          "text": "Najpre izaberite odgovarajuću vrstu iz ponuđenih mogućnosti. OPC zatim može prikazati dodatna pitanja koja se odnose baš na taj izbor. Unesite datum i vreme kada su dogovoreni."
+        },
+        {
+          "title": "Groblje i mesto",
+          "text": "Popunite GROBLJE i zatim odgovarajuća polja kao što su TIP GROBLJA i GRADSKO/LOKALNO, kada su prikazana."
+        },
+        {
+          "title": "Ako termin još nije dogovoren",
+          "text": "Nemojte izmišljati datum ili mesto. Kada dobijete potvrdu, vratite se u segment, unesite podatke i sačuvajte. Proverite i povezane obaveze koje zavise od vrste ili termina ceremonije."
+        }
+      ]
+    },
+    {
+      "id": "predmet.parte",
+      "title": "PREDMET · PARTE",
+      "intro": "Ovaj segment povezuje podatke PREDMETA sa pripremom PARTE – štampanog ili drugog obaveštenja o ceremoniji.",
+      "sections": [
+        {
+          "title": "Pre početka pripreme",
+          "text": "Najpre proverite podatke koji treba da budu tačni u obaveštenju, naročito ime, datum, vreme i mesto. Potom otvorite dostupnu komandu za pripremu PARTE."
+        },
+        {
+          "title": "Rad se nastavlja u posebnom ekranu",
+          "text": "Tekst i izgled PARTE uređujete u radnom prostoru PARTE PRIPREMA. Tu možete pregledati rezultat, doraditi raspored i sačuvati pripremu. Vratite se u PREDMET kada završite."
+        },
+        {
+          "title": "Važno",
+          "text": "Ako promenite podatke u PREDMETU, proverite da li i priprema PARTE prikazuje ono što želite."
+        }
+      ]
+    },
+    {
+      "id": "predmet.roba_i_usluge",
+      "title": "PREDMET · ROBA I USLUGE",
+      "intro": "Ovde sastavljate spisak robe i usluga potrebnih za konkretan PREDMET. KATALOG je mesto na kojem unapred pripremate ponudu; ovaj segment je mesto na kojem birate šta je potrebno baš za ovaj posao.",
+      "sections": [
+        {
+          "title": "SCENARIO i automatski unos robe i usluga",
+          "text": "Pri otvaranju novog PREDMETA OPC dodaje kategorijske redove iz podešenog OSNOVNOG PAKETA. Kada podaci PREDMETA ispune uslove definisanih pravila SCENARIJA, OPC može dodati odgovarajuće kategorijske redove iz dodatnih paketa. U tim redovima zatim birate konkretne artikle iz KATALOGA; SCENARIO ne bira artikal umesto vas.\n\nKada promenite podatke koji utiču na SCENARIO, OPC ponovo proverava uslove. Ako se rezultat razlikuje, prikazuje predlog usklađivanja; pročitajte prikazane promene i potvrdite ih. Za red koji više ne odgovara novim uslovima možete dobiti izbor da ga zadržite ili uklonite.\n\nStavke koje ste ručno dodali i redovi koji nisu u vlasništvu SCENARIJA ostaju sačuvani. Ručno dodavanje ili uređivanje konkretnih artikala i dalje obavljate u PREDMETU prema potrebama tog posla."
+        },
+        {
+          "title": "Ako počinjete sa praznom bazom",
+          "text": "Najpre u PODEŠAVANJA → KATALOG unesite artikle koje firma koristi, sa odgovarajućim podacima i cenama. Novi PREDMET može već sadržati početne redove iz trenutno podešenog OSNOVNOG PAKETA. U redovima koji nude izbor artikla odaberite konkretnu stavku iz KATALOGA; ako je nema, prvo je dodajte u KATALOG. Početni red nije potvrda da je izabrana konkretna roba ili usluga."
+        },
+        {
+          "title": "Dodavanje stavke",
+          "text": "Kada OPC ponudi izbor, odaberite odgovarajuću kategoriju i konkretan artikal. Proverite da li je izabrana prava stavka. Za količinu koristite polje KOM kada je prikazano. Proverite količinu i po potrebi je promenite."
+        },
+        {
+          "title": "Cena i posebni podaci",
+          "text": "Izabrani artikal može preuzeti početnu cenu iz KATALOGA. Iznos u PREDMETU je podatak tog konkretnog posla; proverite ga i, gde OPC dozvoljava, prilagodite bez očekivanja da se time menja KATALOG. Neka dodatna polja, kao što je TEKST TRAKE ZA CVEĆE, pojavljuju se tek kada izaberete odgovarajući artikal."
+        },
+        {
+          "title": "Završna provera",
+          "text": "Prođite kroz izabranu robu i usluge, količine i iznose. Sačuvajte izmene pre izlaska."
+        }
+      ]
+    },
+    {
+      "id": "predmet.finansije",
+      "title": "PREDMET · FINANSIJE",
+      "intro": "FINANSIJE omogućava da pratite iznose vezane za konkretan PREDMET. Iznosi se popunjavaju tokom rada sa PREDMETOM.",
+      "sections": [
+        {
+          "title": "Redosled rada",
+          "text": "Najpre unesite relevantne podatke o platiocu i izaberite robu i usluge. Zatim otvorite FINANSIJE i proverite prikazane iznose. Polja koja OPC dopušta da uređujete popunite prema stvarnom dogovoru i dokumentaciji."
+        },
+        {
+          "title": "Iznosi koje OPC prikazuje",
+          "text": "Neki iznosi se dobijaju iz prethodno unetih podataka i nisu namenjeni direktnoj izmeni. Ako iznos ne odgovara očekivanom, prvo proverite količine, cene i povezane izbore u PREDMETU."
+        },
+        {
+          "title": "Obaveze u vezi s plaćanjem",
+          "text": "Kada podaci to zahtevaju, OPC može prikazati obaveze povezane s plaćanjem ili naplatom. Proverite ih u PODSETNIKU. Sačuvajte finansijske izmene kada završite."
+        }
+      ]
+    },
+    {
+      "id": "predmet.dokumenti",
+      "title": "PREDMET · DOKUMENTI",
+      "intro": "Iz ovog segmenta pripremate dokumente na osnovu podataka koje ste prethodno uneli u PREDMET.",
+      "sections": [
+        {
+          "title": "Pre prvog dokumenta",
+          "text": "Proverite da li su podaci o firmi pravilno podešeni u PODEŠAVANJIMA i da li su potrebni podaci PREDMETA sačuvani. Ako neki podaci nedostaju, prvo ih dopunite."
+        },
+        {
+          "title": "Kako da pripremite dokument",
+          "text": "Izaberite dokument koji OPC nudi za dati PREDMET. U ovom segmentu dostupni su SPECIFIKACIJA TROŠKOVA PDF, PREDRAČUN PDF, LISTA PDF, NALOG ZA OPREMANJE PDF, NALOG CVEĆARI PDF i RAČUN PDF. Kada je RAČUN uključen u PODEŠAVANJA → PODACI FIRME, ponuđen je i RAČUN DOCX. Dostupnost zavisi od sačuvanih podataka PREDMETA i podešavanja firme."
+        },
+        {
+          "title": "Gde se dokument čuva",
+          "text": "Kada izaberete izvoz ili deljenje, pratite dijalog koji prikaže OPC ili vaš uređaj. Izvezeni dokument namenjen je korišćenju van aplikacije. Ako u njemu nešto nije tačno, ispravite odgovarajući podatak u PREDMETU i pripremite novi dokument."
+        }
+      ]
+    },
+    {
+      "id": "predmet.pregled_i_potvrda",
+      "title": "PREDMET · PREGLED I POTVRDA",
+      "intro": "Ovaj završni segment služi da proverite ono što ste do sada uneli i da obavite dostupne završne radnje.",
+      "sections": [
+        {
+          "title": "Pregledajte predmet",
+          "text": "Prođite kroz prikazane podatke i status. Ako uočite grešku, vratite se u odgovarajući segment, ispravite je i sačuvajte. Ne morate zatvarati PREDMET da biste sačuvali dosadašnji rad."
+        },
+        {
+          "title": "Sačuvati ili zatvoriti",
+          "text": "SAČUVAJ čuva izmene. ZATVORI PREDMET menja stanje PREDMETA i može zahtevati da prethodno završite određene postupke. Ako OPC prijavi prepreku, pročitajte je i vratite se na odgovarajući posao."
+        }
+      ]
+    },
+    {
+      "id": "moduli",
+      "title": "MODULI",
+      "intro": "MODULI je mesto na kojem otvarate dodatne delove OPC-a za posebne poslove.",
+      "sections": [
+        {
+          "title": "Kako da izaberete posao",
+          "text": "Otvorite MODULI i izaberite karticu koja odgovara onome što želite da uradite, na primer PODSETNIK, PARTE, ČITULJE ili drugi dostupan modul."
+        },
+        {
+          "title": "Zašto neka kartica možda nije prikazana",
+          "text": "Prikaz može zavisiti od podešavanja aplikacije i prava prijavljenog korisnika. Ako očekujete modul koji ne vidite, prvo proverite odgovarajuća podešavanja ili se obratite administratoru."
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "PODEŠAVANJA",
+      "intro": "U PODEŠAVANJIMA pripremate OPC za rad svoje firme. Ovo je preporučeno mesto za nastavak posle prvog kreiranja administratorskog naloga.",
+      "sections": [
+        {
+          "title": "Pre prvog PREDMETA",
+          "text": "Proverite PODACI FIRME, potom otvorite KATALOG i dodajte artikle koje koristite. Pregledajte dostupnost modula i, ako će više osoba raditi u OPC-u, pripremite njihove naloge kroz KORISNICI. Ostale stavke podešavajte prema potrebama firme."
+        },
+        {
+          "title": "Podaci firme i dokumenta",
+          "text": "Podaci o firmi koriste se i u dokumentima. Ako su nepotpuni, dokumenti mogu sadržati nepotpune podatke. Zato ih proverite pre prve ponude, predračuna ili druge isprave."
+        },
+        {
+          "title": "Priprema KATALOGA",
+          "text": "U KATALOGU možete napraviti početnu ponudu i kada još nemate nijedan PREDMET. Kategorije organizuju robu i usluge, a artikli su konkretne stavke koje ćete kasnije birati."
+        },
+        {
+          "title": "Prenos i rezervne kopije",
+          "text": "OPC omogućava rad sa JSON datotekama. Uvoz jednog PREDMETA i uvoz potpune OPC rezervne kopije nisu ista radnja. Prvi se odnosi na pojedinačan PREDMET i može tražiti odluku ako već postoji odgovarajući zapis. Uvoz cele rezervne kopije može zameniti lokalne podatke. Zato pre potvrde proverite koju datoteku ste izabrali i pročitajte upozorenje."
+        }
+      ]
+    },
+    {
+      "id": "settings.company",
+      "title": "PODEŠAVANJA · PODACI FIRME",
+      "intro": "Ovde unosite podatke firme koja koristi OPC. Popunite ga pre izrade prvih dokumenata.",
+      "sections": [
+        {
+          "title": "Prvi unos",
+          "text": "Otvorite PODACI FIRME i popunite naziv, adresu i druga polja koja su vam potrebna i koja OPC prikazuje. Proverite ispravnost podataka, zatim izaberite SAČUVAJ."
+        },
+        {
+          "title": "Kasnije izmene",
+          "text": "Ako firma promeni podatak, vratite se na isti ekran, unesite izmenu i sačuvajte. Pre napuštanja ekrana pročitajte ponuđeni izbor ako imate nesačuvane izmene: OSTANI, IZAĐI BEZ ČUVANJA ili SAČUVAJ I IZAĐI."
+        },
+        {
+          "title": "Važno za dokumente",
+          "text": "Podaci firme mogu se prikazivati u dokumentima koje OPC priprema. Posle njihove promene proverite sledeći dokument koji izvezete."
+        }
+      ]
+    },
+    {
+      "id": "settings.refundacija",
+      "title": "PODEŠAVANJA · REFUNDACIJA PIO",
+      "intro": "Na ovom ekranu unosite iznos refundacije PIO za period na koji se podešavanje odnosi.",
+      "sections": [
+        {
+          "title": "Kako da unesete iznos",
+          "text": "Otvorite REFUNDACIJA PIO, unesite iznos u IZNOS REFUNDACIJE PIO (RSD) i izaberite SAČUVAJ. Proverite cifre i jedinicu valute pre potvrde."
+        },
+        {
+          "title": "Kada se iznos promeni",
+          "text": "Vratite se na isti ekran i sačuvajte novu vrednost. Ovo podešavanje nije zamena za podatke i odluke koje unosite u pojedinačnom PREDMETU."
+        }
+      ]
+    },
+    {
+      "id": "settings.modules",
+      "title": "PODEŠAVANJA · MODULI",
+      "intro": "Ovaj ekran služi za uključivanje ili isključivanje dostupnosti pojedinih opcionih modula.",
+      "sections": [
+        {
+          "title": "Prva provera",
+          "text": "Pogledajte koji su moduli dostupni i pročitajte njihove opise. Uključite samo one koje firma planira da koristi. Izmena dostupnosti modula nije isto što i brisanje njegovih ranije unetih poslovnih podataka."
+        },
+        {
+          "title": "Posle promene",
+          "text": "Sačekajte potvrdu aplikacije i proverite da li se odgovarajući modul pojavljuje tamo gde očekujete. Ako određena opcija nije dostupna vašem nalogu, obratite se administratoru."
+        }
+      ]
+    },
+    {
+      "id": "settings.payment",
+      "title": "PODEŠAVANJA · UPUTSTVO ZA PLAĆANJE",
+      "intro": "Ovde se pripremaju podaci koji će se koristiti u uputstvu za plaćanje.",
+      "sections": [
+        {
+          "title": "Početno podešavanje",
+          "text": "Unesite TEKUĆI RAČUN, NAZIV BANKE i QR ŠIFRA PLAĆANJA, prema podacima firme i prikazanim poljima. Proverite sve cifre i nazive, pa pritisnite SAČUVAJ."
+        },
+        {
+          "title": "Kada se podaci koriste",
+          "text": "Ovi podaci mogu biti prikazani u dokumentima. Ako firma promeni račun ili druge podatke, prvo ih ispravite ovde, a zatim proverite novo pripremljeno uputstvo za plaćanje."
+        }
+      ]
+    },
+    {
+      "id": "settings.catalog",
+      "title": "PODEŠAVANJA · KATALOG",
+      "intro": "KATALOG je mesto gde pripremate robu i usluge koje firma nudi. Ako ste upravo instalirali OPC i još nemate unete artikle, počnite ovde. Ne čekajte da otvorite PREDMET da biste pripremili svoju ponudu.",
+      "sections": [
+        {
+          "title": "Kako je katalog organizovan",
+          "text": "Kategorija okuplja srodne stavke, a artikal predstavlja konkretnu robu ili uslugu. Otvorite odgovarajuću kategoriju da dodate ili pregledate artikle. Početni skup kategorija ne znači da su njihovi artikli već popunjeni."
+        },
+        {
+          "title": "Dodajte prvi artikal",
+          "text": "Izaberite kategoriju, zatim komandu za dodavanje artikla. Unesite naziv i druge prikazane podatke, uključujući cenu gde je predviđena. Proverite unos i sačuvajte. Ponovite postupak za artikle koje firma koristi. Kada kasnije radite u PREDMETU, moći ćete da birate te stavke iz KATALOGA."
+        },
+        {
+          "title": "Izmena i dopuna ponude",
+          "text": "Kada se promeni naziv ili cena za buduće poslove, pronađite artikal u KATALOGU, otvorite izmenu i sačuvajte. Promena početne cene u KATALOGU ne znači automatsko prepravljanje iznosa koje ste već zasebno uneli u ranijim PREDMETIMA."
+        },
+        {
+          "title": "Kategorije i SCENARIO",
+          "text": "Ako opcije to dozvoljavaju, kategorije možete dopunjavati i preimenovati. Neke kategorije su povezane s pravilima SCENARIO i zato njihovo brisanje može biti zabranjeno."
+        }
+      ]
+    },
+    {
+      "id": "settings.users",
+      "title": "PODEŠAVANJA · KORISNICI",
+      "intro": "Administrator ovde priprema naloge osoba koje će raditi u OPC-u.",
+      "sections": [
+        {
+          "title": "Ako će raditi više osoba",
+          "text": "Otvorite KORISNICI i izaberite NOVI KORISNIK. Unesite tražene podatke i proverite dodeljenu ulogu. Svaka osoba treba da koristi sopstveni nalog, umesto zajedničkog PIN-a."
+        },
+        {
+          "title": "Uloge",
+          "text": "ADMINISTRATOR upravlja podešavanjima i nalozima za koje ima ovlašćenje. SAVETNIK obavlja dostupne svakodnevne poslove u okviru svojih prava. Ako neki ekran ili komanda nije dostupna, prvo proverite da li je to ograničenje uloge."
+        },
+        {
+          "title": "PIN, deaktiviranje i brisanje",
+          "text": "Resetovanje PIN-a, privremeno onemogućavanje pristupa i trajno brisanje nisu ista radnja. Pre potvrde pažljivo proverite ime korisnika i upozorenje koje OPC prikazuje."
+        }
+      ]
+    },
+    {
+      "id": "settings.about",
+      "title": "O APLIKACIJI",
+      "intro": "Na ekranu O APLIKACIJI nalaze se naziv OPC-a, kratko objašnjenje njegove namene, podaci o developeru, pravna napomena i napomena o aplikaciji.",
+      "sections": [
+        {
+          "title": "Gde je celo uputstvo",
+          "text": "Izaberite RAD U APLIKACIJI. Otvoriće se vodič sa poglavljima za različite ekrane i poslove. Posle čitanja vratite se na prethodni ekran."
+        },
+        {
+          "title": "POMOĆ za otvoreni ekran",
+          "text": "Na ekranima na kojima je dostupna ikonica POMOĆ, njen izbor otvara upravo deo ovog vodiča koji se odnosi na ono što trenutno radite."
+        },
+        {
+          "title": "Gde se čuvaju podaci",
+          "text": "OPC čuva podatke lokalno na uređaju korisnika."
+        }
+      ]
+    },
+    {
+      "id": "statistics",
+      "title": "STATISTIKA",
+      "intro": "STATISTIKA pomaže da sagledate podatke o poslovima koje ste već evidentirali u OPC-u.",
+      "sections": [
+        {
+          "title": "Na početku rada",
+          "text": "Ako još nemate unete PREDMETE, prikaz možda neće sadržati značajne brojeve."
+        },
+        {
+          "title": "Kada se podaci pojave",
+          "text": "Otvorite STATISTIKU i izaberite ponuđeni period ili pregled. Obratite pažnju na naznačeni obuhvat podataka, posebno kada upoređujete više perioda."
+        },
+        {
+          "title": "Kako da ispravite podatak",
+          "text": "Statistika služi za pregled, ne za uređivanje PREDMETA. Ako primetite netačan podatak, otvorite odgovarajući PREDMET, proverite unos i ispravite ga tamo gde je dozvoljeno."
+        }
+      ]
+    },
+    {
+      "id": "scenario",
+      "title": "SCENARIO",
+      "intro": "SCENARIO se otvara iz MODULI i sadrži unapred pripremljena pravila koja mogu da utiču na predlog robe i usluga prema podacima PREDMETA.",
+      "sections": [
+        {
+          "title": "Kako to izgleda u svakodnevnom radu",
+          "text": "Kada u PREDMETU izaberete okolnosti i vrstu ceremonije, OPC može primeniti pravila koja odgovaraju tim podacima. Zbog toga izbori u PREDMETU nisu samo opis: mogu uticati i na ponuđene stavke robe i usluga."
+        },
+        {
+          "title": "Priprema i održavanje pravila",
+          "text": "Ako imate odgovarajuća ovlašćenja, otvorite SCENARIO da pregledate postojeće definicije ili napravite i izmenite pravila kroz dostupne komande. Pre izmene proverite na koje vrste poslova se pravilo odnosi i koje kategorije koristi."
+        },
+        {
+          "title": "Kada promenite podatke u PREDMETU",
+          "text": "OPC može prikazati obaveštenje o razlici između postojećih stavki i novog izbora. Pročitajte šta se predlaže pre potvrde. U segmentu ROBA I USLUGE opisano je kako se primenjuju OSNOVNI PAKET, dodatni paketi i ručno izabrani artikli."
+        }
+      ]
+    },
+    {
+      "id": "reminders",
+      "title": "PODSETNIK",
+      "intro": "PODSETNIK vam pomaže da pratite šta još treba uraditi za otvorene PREDMETE. Na početku rada može biti prazan, jer mnoge obaveze nastaju tek kada u PREDMET unesete odgovarajuće podatke.",
+      "sections": [
+        {
+          "title": "Kako nastaju obaveze",
+          "text": "Kada u PREDMETU unesete vrstu ceremonije, određene usluge ili druge okolnosti, OPC može prikazati odgovarajuće obaveze. Zato, ako očekivana obaveza nedostaje, prvo proverite podatke tog PREDMETA."
+        },
+        {
+          "title": "Glavne obaveze i pojedinačni zadaci",
+          "text": "Neke obaveze prikazane su kao grupa sa nekoliko zadataka. Otvorite grupu da vidite pojedinačne stavke. Kada označite sve njene zadatke kao završene, završena je i grupa. Ako kasnije ponovo otvorite jedan zadatak, grupa više nije potpuno završena. Obeležavanje cele grupe završava njene zadatke."
+        },
+        {
+          "title": "Kako da radite",
+          "text": "Izaberite PREDMET ili stavku koju želite da pregledate, pročitajte obavezu i označite ono što je zaista urađeno. Ne označavajte obavezu kao završenu samo zato što je otvoren njen detalj. Gde su dostupne beleške ili ručno dodate stavke, koristite njihove predviđene komande."
+        }
+      ]
+    },
+    {
+      "id": "parte.list",
+      "title": "MODUL PARTE",
+      "intro": "MODUL PARTE služi da pronađete PREDMET za koji želite da pripremite ili nastavite uređivanje PARTE.",
+      "sections": [
+        {
+          "title": "Prva priprema",
+          "text": "Najpre napravite PREDMET i unesite podatke potrebne za obaveštenje. Zatim otvorite MODUL PARTE ili odgovarajuću prečicu iz PREDMETA i izaberite željeni posao."
+        },
+        {
+          "title": "Ako lista još nema sadržaj",
+          "text": "Proverite da li je odgovarajući PREDMET otvoren i da li su ispunjeni uslovi da se priprema pojavi. Po potrebi koristite Osveži listu."
+        }
+      ]
+    },
+    {
+      "id": "parte.preparation",
+      "title": "PARTE PRIPREMA",
+      "intro": "Ovde oblikujete PARTE: uređujete tekst, raspored i izgled obaveštenja pre konačne upotrebe.",
+      "sections": [
+        {
+          "title": "Početak rada",
+          "text": "Otvorite pripremu povezanu sa odgovarajućim PREDMETOM. Proverite da li su osnovni podaci ispravni. Ako nisu, najpre ih ispravite u PREDMETU, pa se vratite u pripremu."
+        },
+        {
+          "title": "Uređivanje teksta",
+          "text": "Izaberite tekstualni blok koji želite da izmenite. U predviđenim kontrolama podesite njegov tekst i dostupne osobine izgleda. Pratite pregled, jer on pokazuje kako se raspored menja tokom rada."
+        },
+        {
+          "title": "Raspored i dimenzije",
+          "text": "Za pomeranje i dimenzije koristite ponuđene kontrole. Ako OPC prikazuje prilagođavanje veličine teksta, proverite čitljivost celog bloka, ne samo njegovog prvog reda."
+        },
+        {
+          "title": "Šabloni",
+          "text": "Ako želite da krenete od pripremljenog rasporeda, otvorite Šabloni PARTE. Pre primene šablona proverite upozorenje, naročito ako ste već ručno uređivali postojeću pripremu."
+        },
+        {
+          "title": "Čuvanje",
+          "text": "Koristite SAČUVAJ kada želite da sačuvate trenutni rad. Izvoz ili pregled dokumenta ne treba poistovećivati sa završavanjem same pripreme. Kada kasnije menjate podatke PREDMETA, obratite pažnju na mogućnost ponovnog sastavljanja teksta iz PREDMETA i na uticaj te radnje na vaš ručni rad."
+        }
+      ]
+    },
+    {
+      "id": "citulje.list",
+      "title": "MODUL ČITULJE",
+      "intro": "MODUL ČITULJE služi da pripremite obaveštenje za objavljivanje u odgovarajućem formatu.",
+      "sections": [
+        {
+          "title": "Pre prve čitulje",
+          "text": "Najpre otvorite PREDMET i unesite potrebne podatke. Ako se tekst čitulje oslanja na potvrđenu PARTE, prethodno pripremite i potvrdite odgovarajući tekst PARTE. Potom otvorite MODUL ČITULJE."
+        },
+        {
+          "title": "Izbor PREDMETA",
+          "text": "U polju PREDMET izaberite posao za koji radite čitulju. Ako ne vidite očekivani PREDMET, proverite njegove podatke, status i dostupnost pripreme. Ne morate praviti novi PREDMET radi druge verzije čitulje."
+        }
+      ]
+    },
+    {
+      "id": "citulje.preparation",
+      "title": "ČITULJE · PRIPREMA",
+      "intro": "Na ovom ekranu pripremate tekst i podatke potrebne za konkretnu čitulju.",
+      "sections": [
+        {
+          "title": "Kako da počnete",
+          "text": "Izaberite odgovarajući PREDMET i pregledajte dostupne pripreme. Proverite format čitulje i unesite datum objave i tekst u polja koja OPC prikazuje. Pre završavanja pažljivo pročitajte celo obaveštenje."
+        },
+        {
+          "title": "Veza sa PARTE",
+          "text": "Dok čitulja nije završena, nova potvrđena verzija PARTE može osvežiti predloženi tekst čitulje. Zato nakon izmene PARTE proverite i čitulju. Nakon izričitog završavanja čitulje, njena dalja priprema više ne treba automatski da preuzima izmene PARTE."
+        },
+        {
+          "title": "Naknadna ispravka",
+          "text": "Završavanje ne znači da više nikada ne možete ispraviti tekst ili datum. Ako OPC nudi izmenu postojeće završene čitulje, koristite je pažljivo. Uklanjanje same pripreme čitulje nije isto što i brisanje PREDMETA ili njegove robe i usluga."
+        },
+        {
+          "title": "Dokument",
+          "text": "Pre izvoza proverite format, datum objave i tekst. Sačuvani dokument služi za dalje korišćenje, dok se izvorni podaci i priprema vode u OPC-u."
+        }
+      ]
+    },
+    {
+      "id": "stock",
+      "title": "STANJE ROBE",
+      "intro": "STANJE ROBE služi za praćenje zaliha i uočavanje situacija kada za neki posao nema dovoljno robe.",
+      "sections": [
+        {
+          "title": "Prvo podešavanje",
+          "text": "Pre rada sa zalihama proverite da li ste u KATALOG uneli odgovarajuće artikle. KATALOG opisuje šta firma nudi; STANJE ROBE služi za rad sa količinama koje su raspoložive."
+        },
+        {
+          "title": "Praćenje količine",
+          "text": "Otvorite STANJE ROBE, pronađite artikal i pogledajte prikazano stanje. Ako imate ovlašćenje i dostupnu komandu, unesite potrebnu promenu količine i proverite potvrdu pre izvršavanja."
+        },
+        {
+          "title": "Kada robe nema dovoljno",
+          "text": "Ako OPC označi manjak povezan sa PREDMETOM, proverite koji artikal i koja količina nedostaju. Odgovarajuća obaveza može se pojaviti i u PODSETNIKU. Rešavanje manjka nije isto što i promena naziva ili cene artikla u KATALOGU."
+        }
+      ]
+    }
+  ]
+}

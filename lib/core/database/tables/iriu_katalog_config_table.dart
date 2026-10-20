@@ -5,12 +5,21 @@ class IriuKatalogConfig extends Table {
   TextColumn get interniNaziv => text()();
   TextColumn get nazivPrikaz => text()();
   BoolColumn get vidljiv => boolean().withDefault(const Constant(true))();
+
   /// true = štampa se čak i ako je prazno; false = samo ako je popunjeno.
   BoolColumn get uvekPrikazati =>
       boolean().withDefault(const Constant(false))();
   // FIKSNA / KATALOSKA
   TextColumn get tip => text().withDefault(const Constant('FIKSNA'))();
-  BoolColumn get jeKorisnicka =>
+
+  /// Category-level unit price used by FIKSNA entries. KATALOSKA prices live
+  /// on their KatalogArtikli rows and this field remains unused for them.
+  RealColumn get cena => real().withDefault(const Constant(0.0))();
+  BoolColumn get jeKorisnicka => boolean().withDefault(const Constant(false))();
+
+  /// Persistent KATALOG policy: materialize this category only in future
+  /// PREDMETI. Existing IRIU rows are intentionally never reconciled from it.
+  BoolColumn get osnovnaUSvakomPredmetu =>
       boolean().withDefault(const Constant(false))();
   IntColumn get redosled => integer().withDefault(const Constant(0))();
 

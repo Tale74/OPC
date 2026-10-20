@@ -1,11 +1,17 @@
 package com.tale.opc_v4
 
+import android.Manifest
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
 import android.provider.MediaStore
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -15,6 +21,12 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 class MainActivity : FlutterActivity() {
+    private val storagePermissionRequestCode = 4201
+    private val createDocumentRequestCode = 4202
+    private var pendingPermissionResult: MethodChannel.Result? = null
+    private var pendingDocumentResult: MethodChannel.Result? = null
+    private var pendingDocumentBytes: ByteArray? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
@@ -23,6 +35,42 @@ class MainActivity : FlutterActivity() {
             "opc_v4/korice_storage"
         ).setMethodCallHandler { call, result ->
             when (call.method) {
+                "ensureKoriceAccess" -> ensureKoriceAccess(result)
+
+                "openAppSettings" -> {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:$packageName")
+                        )
+                    )
+                    result.success(null)
+                }
+
+                "saveDocumentWithSystemPicker" -> {
+                    val filename = call.argument<String>("filename")
+                    val bytes = call.argument<ByteArray>("bytes")
+                    val mimeType = call.argument<String>("mimeType")
+                    if (filename.isNullOrBlank() || bytes == null || mimeType.isNullOrBlank()) {
+                        result.error("invalid_args", "filename/bytes/mimeType are required", null)
+                        return@setMethodCallHandler
+                    }
+                    if (pendingDocumentResult != null) {
+                        result.error("picker_busy", "Izbor odredišta je već u toku.", null)
+                        return@setMethodCallHandler
+                    }
+                    pendingDocumentResult = result
+                    pendingDocumentBytes = bytes
+                    startActivityForResult(
+                        Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = mimeType
+                            putExtra(Intent.EXTRA_TITLE, filename)
+                        },
+                        createDocumentRequestCode
+                    )
+                }
+
                 "savePdfToDownloadsKorice" -> {
                     val filename = call.argument<String>("filename")
                     val bytes = call.argument<ByteArray>("bytes")
@@ -85,13 +133,14 @@ class MainActivity : FlutterActivity() {
                 "openKoriceFile" -> {
                     val contentUri = call.argument<String>("contentUri")
                     val path = call.argument<String>("path")
+                    val mimeType = call.argument<String>("mimeType")
                     if (contentUri.isNullOrBlank() && path.isNullOrBlank()) {
                         result.error("invalid_args", "contentUri or path is required", null)
                         return@setMethodCallHandler
                     }
 
                     try {
-                        openKoriceFile(contentUri, path)
+                        openKoriceFile(contentUri, path, mimeType)
                         result.success(null)
                     } catch (e: Exception) {
                         result.error("open_failed", e.message, null)
@@ -100,6 +149,88 @@ class MainActivity : FlutterActivity() {
 
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun ensureKoriceAccess(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            result.success(mapOf("mode" to "MEDIA_STORE", "locationLabel" to "Downloads/KORICE"))
+            return
+        }
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            result.success(mapOf("mode" to "LEGACY_GRANTED", "locationLabel" to "Downloads/KORICE"))
+            return
+        }
+        if (pendingPermissionResult != null) {
+            result.error("permission_busy", "Zahtev za pristup je već otvoren.", null)
+            return
+        }
+        pendingPermissionResult = result
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            storagePermissionRequestCode
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != storagePermissionRequestCode) return
+        val result = pendingPermissionResult ?: return
+        pendingPermissionResult = null
+        if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            result.success(mapOf("mode" to "LEGACY_GRANTED", "locationLabel" to "Downloads/KORICE"))
+            return
+        }
+        val permanentlyDenied = !ActivityCompat.shouldShowRequestPermissionRationale(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        result.error(
+            if (permanentlyDenied) "permission_permanently_denied" else "permission_denied",
+            if (permanentlyDenied)
+                "Pristup Downloads/KORICE je trajno odbijen. Omogućite ga u podešavanjima ili izaberite odredište."
+            else
+                "Pristup Downloads/KORICE je odbijen. Pokušajte ponovo ili izaberite odredište.",
+            mapOf("canUseSystemPicker" to true, "canOpenSettings" to permanentlyDenied)
+        )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != createDocumentRequestCode) return
+        val result = pendingDocumentResult ?: return
+        val bytes = pendingDocumentBytes
+        pendingDocumentResult = null
+        pendingDocumentBytes = null
+        val uri = data?.data
+        if (resultCode != Activity.RESULT_OK || uri == null || bytes == null) {
+            result.error("destination_cancelled", "Izbor odredišta je otkazan; fajl nije sačuvan.", null)
+            return
+        }
+        try {
+            contentResolver.openOutputStream(uri, "w")?.use { stream ->
+                stream.write(bytes)
+                stream.flush()
+            } ?: throw IOException("Izabrano odredište nije moguće otvoriti za upis.")
+            result.success(
+                mapOf(
+                    "name" to (uri.lastPathSegment ?: "OPC dokument"),
+                    "contentUri" to uri.toString(),
+                    "locationLabel" to "Izabrana lokacija",
+                    "mimeType" to (contentResolver.getType(uri) ?: "application/octet-stream")
+                )
+            )
+        } catch (e: Exception) {
+            result.error("write_failed", e.message, null)
         }
     }
 
@@ -153,7 +284,8 @@ class MainActivity : FlutterActivity() {
             return mapOf(
                 "name" to filename,
                 "contentUri" to itemUri.toString(),
-                "locationLabel" to "Downloads/KORICE"
+                "locationLabel" to "Downloads/KORICE",
+                "mimeType" to mimeType
             )
         } catch (e: Exception) {
             resolver.delete(itemUri, null, null)
@@ -206,7 +338,8 @@ class MainActivity : FlutterActivity() {
         val projection = arrayOf(
             MediaStore.MediaColumns._ID,
             MediaStore.MediaColumns.DISPLAY_NAME,
-            MediaStore.MediaColumns.DATE_MODIFIED
+            MediaStore.MediaColumns.DATE_MODIFIED,
+            MediaStore.MediaColumns.MIME_TYPE
         )
         val selection = "${MediaStore.MediaColumns.RELATIVE_PATH}=?"
         val args = arrayOf(relativePath)
@@ -224,11 +357,13 @@ class MainActivity : FlutterActivity() {
             val nameIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
             val modifiedIndex =
                 cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
+            val mimeIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idIndex)
                 val name = cursor.getString(nameIndex) ?: continue
                 val modifiedSeconds = cursor.getLong(modifiedIndex)
+                val mimeType = cursor.getString(mimeIndex) ?: "application/octet-stream"
                 val uri = Uri.withAppendedPath(
                     MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                     id.toString()
@@ -239,7 +374,8 @@ class MainActivity : FlutterActivity() {
                         "name" to name,
                         "modifiedEpochMs" to (modifiedSeconds * 1000L),
                         "contentUri" to uri.toString(),
-                        "locationLabel" to "Downloads/KORICE"
+                        "locationLabel" to "Downloads/KORICE",
+                        "mimeType" to mimeType
                     )
                 )
             }
@@ -276,7 +412,7 @@ class MainActivity : FlutterActivity() {
             stream.readBytes()
         } ?: throw IOException("Neuspelo čitanje Downloads/KORICE dokumenta.")
     }
-    private fun openKoriceFile(contentUri: String?, path: String?) {
+    private fun openKoriceFile(contentUri: String?, path: String?, requestedMimeType: String?) {
         val uri = when {
             !contentUri.isNullOrBlank() -> Uri.parse(contentUri)
             !path.isNullOrBlank() -> FileProvider.getUriForFile(
@@ -287,8 +423,13 @@ class MainActivity : FlutterActivity() {
             else -> throw IOException("Nedostaje referenca na KORICE dokument za otvaranje.")
         }
 
+        val resolvedMimeType = requestedMimeType
+            ?: applicationContext.contentResolver.getType(uri)
+            ?: if (path?.lowercase()?.endsWith(".docx") == true)
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            else "application/pdf"
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/pdf")
+            setDataAndType(uri, resolvedMimeType)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }

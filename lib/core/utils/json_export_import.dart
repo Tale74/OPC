@@ -2,34 +2,64 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show InsertMode, OrderingTerm, Value;
+import 'package:drift/drift.dart'
+    show InsertMode, OrderingTerm, Value, Variable;
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 import '../database/database.dart';
+import '../json_transfer/iriu_json_compat.dart';
+import '../constants/iriu_constants.dart';
 import '../format/app_filename_format.dart';
 import '../json_transfer/predmet_json_transfer_core.dart';
+import '../../features/auth/data/auth_security_repository.dart';
+import '../../features/predmeti/application/full_backup_restore_coordinator.dart';
 import '../../features/predmeti/data/predmeti_repository.dart';
+import '../../features/predmeti/core_v2/scenario/scenario_persistence_contract.dart';
+import '../../features/predmeti/core_v2/scenario/scenario_transfer_envelope.dart';
+import '../../features/predmeti/core_v2/scenario/single_predmet_scenario_carrier_contract.dart';
+import '../../features/predmeti/parte/data/parte_media_store.dart';
+import '../../features/predmeti/parte/domain/parte_models.dart';
+import '../../features/predmeti/citulje/data/citulje_preparation_repository.dart';
+import '../../features/predmeti/citulje/domain/citulje_models.dart';
+import '../../features/predmeti/reminders/ceremony_notification_gateway.dart';
+import '../../features/predmeti/reminders/ceremony_reminder_coordinator.dart';
+import '../../features/predmeti/reminders/ceremony_reminder_model.dart';
+import '../../features/predmeti/reminders/ceremony_reminder_repository.dart';
+import '../../features/podsetnik/data/podsetnik_obligation_repository.dart';
+import '../../features/podsetnik/domain/podsetnik_obligation_transfer.dart';
 import '../../features/stanje_robe/data/stanje_robe_posledice_repository.dart';
 import 'document_text_codec.dart';
 import 'export_utils.dart';
+import 'json_file_download_stub.dart'
+    if (dart.library.js_interop) 'json_file_download_web.dart'
+    as json_file_download;
 
-const int _kSchemaVersion = 6;
-const int _kMaxSupportedSchemaVersion = 7;
-const int _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer = 7;
+const int _kPortableResponsibilitySchemaVersion = predmetTransferSchemaVersion;
+const int _kBackupSchemaVersion = 9;
+const int _kMaxSupportedPredmetSchemaVersion =
+    maxSupportedPredmetTransferSchemaVersion;
+const int _kMaxSupportedBackupSchemaVersion = 9;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
 const String _kBackupTransferFormat = 'OPC_BACKUP';
+const String _kParteMediaBackupPolicy = 'bounded-exclusion-v1';
 const String _kStanjeRobeConsequenceTransferBlock =
     'stanjeRobeConsequenceTransfer';
+const String _kSinglePredmetScenarioCarrierBlock = 'singlePredmetScenario';
+const String _kSinglePredmetLifecycleDecisionBlock =
+    iRiuLifecycleDecisionTransferBlockKey;
 const int _kStanjeRobeConsequenceTransferSchemaVersion = 1;
 const String _kStanjeRobeConsequenceTransferPolicy =
     'single_predmet_unresolved_consequence_v1';
 const String _kStockBackupPolicySchema16Complete = 'schema16_stock_complete_v1';
 const String _kDefaultBusinessScenarioId = 'default_funeral_ceremony_policy';
 const String _kDefaultSourceIdentity = 'local_opc';
+
+bool get _isAndroidRuntime => !kIsWeb && Platform.isAndroid;
 
 const Set<String> _kFirmaPodaciBlankTextFields = {
   'naziv',
@@ -41,6 +71,7 @@ const Set<String> _kFirmaPodaciBlankTextFields = {
   'odgovornoLice',
   'email',
   'sajt',
+  'parteDefaultTemplateId',
 };
 
 const Set<String> _kAppPodesavanjaBlankTextFields = {
@@ -120,7 +151,9 @@ const Set<String> _kPredmetBlankTextFields = {
   'jkpPlTelefon1',
   'jkpPlEmail',
   'groblje',
+  'grobljePolaganjaUrne',
   'opeloMesto',
+  'obavestitiSvestenika',
   'parcela',
   'grobBroj',
   'redGrob',
@@ -134,6 +167,7 @@ const Set<String> _kPredmetBlankTextFields = {
   'svisZemlja',
   'svisGrad',
   'docekMesto',
+  'docekDatum',
   'parteIme',
   'ozaloseni',
   'napomenaPlacanja',
@@ -190,6 +224,11 @@ const Set<String> _kPredmetOptionalIntFields = {
   'lastBusinessModifiedByKorisnikId',
 };
 
+const Set<String> _kPredmetOptionalResponsibilityTextFields = {
+  'businessResponsibleName',
+  'businessResponsibleRole',
+};
+
 const Set<String> _kPredmetRequiredBoolFields = {
   'zanimanjeNaParti',
   'titulaIspred',
@@ -200,7 +239,9 @@ const Set<String> _kPredmetRequiredBoolFields = {
   'naruIstiZaJkp',
   'sahranaVanSrbije',
   'docekPosmrtnihOstataka',
+  'promenaSanduka',
   'jkpPlacaSamostalno',
+  'partePotrebna',
 };
 
 const Set<String> _kPredmetRequiredNumberFields = {
@@ -255,6 +296,65 @@ enum _BackupImportStatus {
   nonStockImportedWithoutStockRestore,
 }
 
+enum _BackupFirmIdentityState {
+  sufficientlyConsistent,
+  freshLocalIdentity,
+  incompleteExistingLocalState,
+}
+
+/// Read-only preview of the bounded Case-2 fallback. It never represents a
+/// generic database merge: only new, unambiguous PREDMET families are eligible
+/// for selective import.
+class Case2FallbackPlan {
+  const Case2FallbackPlan({
+    required this.newPredmetCount,
+    required this.sameIdentityConflictCount,
+    required this.ambiguousCount,
+    required this.retainedFamilyCount,
+  });
+
+  final int newPredmetCount;
+  final int sameIdentityConflictCount;
+  final int ambiguousCount;
+  final int retainedFamilyCount;
+
+  bool get hasImportablePredmeti => newPredmetCount > 0;
+}
+
+class Case2FallbackOutcome {
+  const Case2FallbackOutcome({
+    required this.importedPredmetCount,
+    required this.skippedConflictCount,
+    required this.skippedAmbiguousCount,
+  });
+
+  final int importedPredmetCount;
+  final int skippedConflictCount;
+  final int skippedAmbiguousCount;
+
+  String get message {
+    if (importedPredmetCount == 0) {
+      return 'Nijedan novi PREDMET nije uvezen. Lokalni podaci su zadržani; '
+          'konflikti zahtevaju pojedinačni uvoz sa eksplicitnim izborom.';
+    }
+    return 'Uvezeno novih PREDMETA: $importedPredmetCount. Lokalna FIRMA, '
+        'korisnici i konfliktni PREDMETI nisu menjani.';
+  }
+}
+
+class _Case2ImportCandidate {
+  const _Case2ImportCandidate({required this.payload});
+
+  final _PredmetTransferPayload payload;
+}
+
+class _Case2FallbackAnalysis {
+  const _Case2FallbackAnalysis({required this.plan, required this.importable});
+
+  final Case2FallbackPlan plan;
+  final List<_Case2ImportCandidate> importable;
+}
+
 class _ImportBlokiranException implements Exception {
   const _ImportBlokiranException(this.message);
 
@@ -270,12 +370,20 @@ class _PredmetTransferPayload {
     required this.iriu,
     required this.kontaktLica,
     required this.stanjeRobeConsequences,
+    required this.scenarioCarrier,
+    required this.lifecycleDecisions,
+    required this.podsetnikObaveze,
+    required this.cituljePripreme,
   });
 
   final PredmetiData predmet;
   final List<IriuData> iriu;
   final List<KontaktLicaData> kontaktLica;
   final List<_StanjeRobeConsequenceTransferItem> stanjeRobeConsequences;
+  final SinglePredmetScenarioCarrierBlock? scenarioCarrier;
+  final IriuLifecycleDecisionTransferBlock? lifecycleDecisions;
+  final PodsetnikObligationTransferBlock? podsetnikObaveze;
+  final List<CituljePreparationTransfer> cituljePripreme;
 }
 
 class _StanjeRobeConsequenceTransferItem {
@@ -324,19 +432,63 @@ class _StanjeRobeConsequenceTransferItem {
 }
 
 class _BackupImportResult {
-  const _BackupImportResult(this.status);
+  const _BackupImportResult(
+    this.status, {
+    this.reminderSchedulingFailures = 0,
+    this.skippedOrphanReminderSettings = 0,
+    this.skippedOrphanLogEntries = 0,
+  });
 
   final _BackupImportStatus status;
+  final int reminderSchedulingFailures;
+  final int skippedOrphanReminderSettings;
+  final int skippedOrphanLogEntries;
 
   String get message {
-    switch (status) {
-      case _BackupImportStatus.stockCompleteRestored:
-        return 'Baza uspešno uvezena sa podržanim prenosom STANJA ROBE.';
-      case _BackupImportStatus.nonStockImportedWithoutStockRestore:
-        return 'Baza uspešno uvezena. Izabrana kopija ne sadrži '
-            'podržan prenos STANJA ROBE, pa stanje robe nije obnovljeno.';
-    }
+    final baseMessage = switch (status) {
+      _BackupImportStatus.stockCompleteRestored =>
+        'Baza uspešno uvezena sa podržanim prenosom STANJA ROBE.',
+      _BackupImportStatus.nonStockImportedWithoutStockRestore =>
+        'Baza uspešno uvezena. Izabrana kopija ne sadrži '
+            'podržan prenos STANJA ROBE, pa stanje robe nije obnovljeno.',
+    };
+    final warnings = <String>[
+      if (skippedOrphanReminderSettings > 0)
+        'Neka zastarela podešavanja podsetnika nisu preneta '
+            '(broj: $skippedOrphanReminderSettings).',
+      if (skippedOrphanLogEntries > 0)
+        'Neki zastareli zapisi istorije nisu preneti '
+            '(broj: $skippedOrphanLogEntries).',
+      if (reminderSchedulingFailures > 0)
+        'Neke lokalne podsetnike treba ručno proveriti '
+            '(broj: $reminderSchedulingFailures).',
+    ];
+    return warnings.isEmpty
+        ? baseMessage
+        : '$baseMessage ${warnings.join(' ')}';
   }
+}
+
+class _BackupReminderSetting {
+  const _BackupReminderSetting({
+    required this.predmetId,
+    required this.enabled,
+    required this.deliveryTimes,
+  });
+
+  final int predmetId;
+  final bool enabled;
+  final List<String> deliveryTimes;
+}
+
+class _BackupReminderPayload {
+  const _BackupReminderPayload({
+    required this.settings,
+    required this.skippedOrphans,
+  });
+
+  final List<_BackupReminderSetting> settings;
+  final int skippedOrphans;
 }
 
 class _StockBackupPayload {
@@ -382,6 +534,12 @@ Map<String, dynamic> _firmaPodaciToMap(FirmaPodaciData f) {
   return m;
 }
 
+Map<String, dynamic> _firmaIdentitetFromMap(Map<String, dynamic> source) =>
+    <String, dynamic>{
+      'pib': _normalizedIdentityPart(source['pib']),
+      'mb': _normalizedIdentityPart(source['mb']),
+    };
+
 Map<String, dynamic> _katalogArtikliToMap(KatalogArtikliData k) {
   final m = Map<String, dynamic>.from(k.toJson());
   m['fotografija'] = k.fotografija != null
@@ -394,12 +552,109 @@ Map<String, dynamic> _normalizeDocumentMap(Map<String, dynamic> value) {
   return documentTextCodec.normalizeMap(value);
 }
 
-String _serijalizujPredmet(
+Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
+  required AppDatabase db,
+  required int predmetId,
+  required List<IriuData> iriu,
+}) async {
+  final snapshot = await (db.select(
+    db.predmetScenarioSnapshots,
+  )..where((row) => row.predmetId.equals(predmetId))).getSingleOrNull();
+  if (snapshot == null) return null;
+
+  final assignment = ScenarioAssignmentSnapshot.fromJsonMap(
+    (jsonDecode(snapshot.snapshotJson) as Map).cast<String, dynamic>(),
+  );
+  final provenanceRows =
+      await (db.select(db.iriuProvenance)..where(
+            (row) => row.iriuId.isIn(iriu.map((item) => item.id).toList()),
+          ))
+          .get();
+  final provenanceById = {for (final row in provenanceRows) row.iriuId: row};
+  final knownRows = iriu.where((row) => provenanceById.containsKey(row.id));
+  final knownCount = knownRows.length;
+  final coverage = knownCount == iriu.length
+      ? ScenarioIriuProvenanceCoverage.complete
+      : knownCount == 0
+      ? ScenarioIriuProvenanceCoverage.unavailable
+      : ScenarioIriuProvenanceCoverage.partial;
+  final envelope = ScenarioTransferEnvelope.create(
+    assignment: assignment,
+    provenanceCoverage: coverage,
+    provenance: knownRows
+        .map((row) {
+          final item = provenanceById[row.id]!;
+          return ScenarioIriuProvenance(
+            iriuId: row.id,
+            origin: ScenarioIriuOriginKindWire.fromWireName(item.origin),
+            moduleId: item.moduleId,
+            scenarioId: item.scenarioId,
+            scenarioVersion: item.scenarioVersion,
+            ruleId: item.ruleId,
+            operationId: item.operationId,
+          );
+        })
+        .toList(growable: false),
+  );
+  return SinglePredmetScenarioCarrierBlock.fromEnvelope(
+    envelope: envelope,
+    sourceIriuIds: iriu.map((row) => row.id).toList(growable: false),
+  );
+}
+
+Future<IriuLifecycleDecisionTransferBlock?> _lifecycleDecisionsForExport({
+  required AppDatabase db,
+  required int predmetId,
+}) async {
+  final rows = await db
+      .customSelect(
+        '''
+      SELECT interni_naziv, scope_key, decision_key, created_at
+      FROM iriu_lifecycle_decisions
+      WHERE predmet_id = ?
+      ORDER BY id
+    ''',
+        variables: [Variable.withInt(predmetId)],
+        readsFrom: {},
+      )
+      .get();
+  if (rows.isEmpty) return null;
+  return IriuLifecycleDecisionTransferBlock(
+    schemaVersion: iRiuLifecycleDecisionTransferSchemaVersion,
+    policy: iRiuLifecycleDecisionTransferPolicy,
+    items: rows
+        .map(
+          (row) => IriuLifecycleDecisionTransferItem(
+            interniNaziv: row.read<String>('interni_naziv'),
+            scopeKey: row.read<String>('scope_key'),
+            decisionKey: row.read<String>('decision_key'),
+            createdAt: row.read<String>('created_at'),
+          ),
+        )
+        .toList(growable: false),
+  );
+}
+
+Future<List<CituljePreparationTransfer>> _cituljeForPredmetExport({
+  required AppDatabase db,
+  required int predmetId,
+}) async {
+  final repository = CituljePreparationRepository(db);
+  final rows = await repository.ensureCurrentForPredmet(predmetId);
+  return rows.map(repository.toTransfer).toList(growable: false);
+}
+
+Future<String> _serijalizujPredmet(
   PredmetiData p,
   List<IriuData> iriu,
   List<KontaktLicaData> kl,
-  List<StanjeRobePoslediceData> stanjeRobePosledice,
-) {
+  List<StanjeRobePoslediceData> stanjeRobePosledice, {
+  required Map<String, dynamic> firmaIdentitet,
+  List<CituljePreparationTransfer> cituljePripreme = const [],
+  SinglePredmetScenarioCarrierBlock? scenarioCarrier,
+  IriuLifecycleDecisionTransferBlock? lifecycleDecisions,
+  PodsetnikObligationTransferBlock? podsetnikObaveze,
+}) {
   final consequenceTransferItems = _stanjeRobeConsequenceTransferItemsForExport(
     iriu: iriu,
     posledice: stanjeRobePosledice,
@@ -410,17 +665,24 @@ String _serijalizujPredmet(
     'iriu',
     'kontaktLica',
     if (hasConsequenceTransfer) _kStanjeRobeConsequenceTransferBlock,
+    if (cituljePripreme.isNotEmpty) cituljePreparationTransferBlockKey,
+    if (podsetnikObaveze != null) podsetnikObligationTransferKey,
   ];
   final map = <String, dynamic>{
     'format': _kPredmetTransferFormat,
-    'schemaVersion': hasConsequenceTransfer
-        ? _kPredmetSchemaVersionWithStanjeRobeConsequenceTransfer
-        : _kSchemaVersion,
+    // Current writers use the responsibility-aware root contract. The
+    // consequence block keeps its own schema and remains compatible inside
+    // the newer root contract.
+    'schemaVersion': _kPortableResponsibilitySchemaVersion,
     'entityType': 'PREDMET',
     'documentSourceIdentity': 'PREDMET',
     'encoding': 'utf-8',
     'exportVerzija': p.exportVerzija,
     'exportDatum': DateTime.now().toIso8601String(),
+    'firmaPodaci': <String, dynamic>{
+      'pib': firmaIdentitet['pib'],
+      'mb': firmaIdentitet['mb'],
+    },
     'sourceExpectations': <String, dynamic>{
       'parte': <String, dynamic>{
         'source': 'PREDMET',
@@ -434,7 +696,11 @@ String _serijalizujPredmet(
       },
       'jsonTransfer': <String, dynamic>{
         'identity': 'single-PREDMET',
-        'includes': jsonTransferIncludes,
+        'includes': [
+          ...jsonTransferIncludes,
+          if (scenarioCarrier != null) _kSinglePredmetScenarioCarrierBlock,
+          if (lifecycleDecisions != null) _kSinglePredmetLifecycleDecisionBlock,
+        ],
       },
     },
     'predmet': _normalizeDocumentMap(p.toJson()),
@@ -446,9 +712,21 @@ String _serijalizujPredmet(
         'policy': _kStanjeRobeConsequenceTransferPolicy,
         'items': consequenceTransferItems.map((item) => item.toJson()).toList(),
       },
+    if (scenarioCarrier != null)
+      _kSinglePredmetScenarioCarrierBlock: scenarioCarrier.toJsonMap(),
+    if (lifecycleDecisions != null)
+      _kSinglePredmetLifecycleDecisionBlock: lifecycleDecisions.toJsonMap(),
+    if (podsetnikObaveze != null)
+      podsetnikObligationTransferKey: podsetnikObaveze.toJsonMap(),
+    if (cituljePripreme.isNotEmpty)
+      cituljePreparationTransferBlockKey: cituljePripreme
+          .map((item) => item.toJson())
+          .toList(growable: false),
   };
-  return PredmetJsonTransferCore.encodeMap(
-    documentTextCodec.normalizeValue(map) as Map<String, dynamic>,
+  return Future.value(
+    PredmetJsonTransferCore.encodeMap(
+      documentTextCodec.normalizeValue(map) as Map<String, dynamic>,
+    ),
   );
 }
 
@@ -511,7 +789,40 @@ _stanjeRobeConsequenceTransferItemsForExport({
   return items;
 }
 
+PodsetnikObligationTransferBlock? _podsetnikTransferBlockForExport(
+  List<PodsetnikObligationTransferState> states,
+) {
+  if (states.isEmpty) return null;
+  return PodsetnikObligationTransferBlock(items: states);
+}
+
+List<CituljePreparationTransfer> _cituljeForBackupPredmet(
+  Map<String, dynamic> json,
+  int predmetId,
+) => _optionalMapList(json, cituljePreparationTransferBlockKey)
+    .where((row) => row['predmetId'] == predmetId)
+    .map((row) {
+      final transferRow = Map<String, dynamic>.from(row)..remove('predmetId');
+      return CituljePreparationTransfer.fromJson(transferRow);
+    })
+    .toList(growable: false);
+
+PodsetnikObligationTransferBlock? _podsetnikForBackupPredmet(
+  Map<String, dynamic> json,
+  int predmetId,
+) {
+  final items = _optionalMapList(json, podsetnikObligationTransferKey)
+      .where((row) => row['predmetId'] == predmetId)
+      .map((row) {
+        final transferRow = Map<String, dynamic>.from(row)..remove('predmetId');
+        return PodsetnikObligationTransferState.fromJsonMap(transferRow);
+      })
+      .toList(growable: false);
+  return _podsetnikTransferBlockForExport(items);
+}
+
 Future<String> _serijalizujBackup(AppDatabase db) async {
+  await db.backfillMissingIriuPortableOccurrenceIds();
   final predmeti = await db.select(db.predmeti).get();
   final iriu = await db.select(db.iriu).get();
   final kl = await db.select(db.kontaktLica).get();
@@ -525,12 +836,26 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     db.appPodesavanja,
   )..where((t) => t.id.equals(1))).getSingle();
   final predlosci = await db.select(db.predlosciDokumenata).get();
+  final partePredlosci = await db.select(db.partePredlosci).get();
+  final partePripreme = await db.select(db.partePripreme).get();
+  final cituljePripreme = await db.select(db.cituljePripreme).get();
   final log = await db.select(db.logIzmena).get();
   final stanjeRobeStavke = await db.select(db.stanjeRobeStavke).get();
   final stanjeRobeAppliedEffects = await db
       .select(db.stanjeRobeAppliedEffects)
       .get();
   final stanjeRobePosledice = await db.select(db.stanjeRobePosledice).get();
+  final scenarioSnapshots = await db.select(db.predmetScenarioSnapshots).get();
+  final scenarioProvenance = await db.select(db.iriuProvenance).get();
+  final scenarioModules = await db.select(db.scenarioModules).get();
+  final scenarioDefinitions = await db.select(db.scenarioDefinitions).get();
+  final reminderSettings = await db.customSelect('''
+      SELECT predmet_id, enabled, delivery_times
+      FROM ceremony_reminder_settings
+      ORDER BY predmet_id
+    ''').get();
+  final exportedPredmetIds = predmeti.map((item) => item.id).toSet();
+  final exportedIriuIds = iriu.map((item) => item.id).toSet();
   final stanjeRobeAppliedEffectsZaExport =
       _referencijalnoValidniAppliedEffectsZaBackup(
         appliedEffects: stanjeRobeAppliedEffects,
@@ -542,16 +867,44 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
       FROM iriu_lifecycle_decisions
       ORDER BY id
     ''', readsFrom: {}).get();
+  final podsetnikRepository = PodsetnikObligationRepository(db);
+  for (final predmet in predmeti) {
+    await podsetnikRepository.cleanupCituljaStateForPredmet(predmet.id);
+  }
+  final podsetnikObaveze = await db.customSelect('''
+      SELECT predmet_id, stable_rule_id, phase, kind, parent_rule_id,
+             source_fingerprint, completed, completed_at
+      FROM podsetnik_obaveze
+      ORDER BY predmet_id, stable_rule_id
+    ''').get();
+  final manualPodsetnikText = await db.customSelect('''
+      SELECT predmet_id, stable_rule_id, obligation_text
+      FROM podsetnik_manual_obaveze
+    ''').get();
+  final manualTextByKey = {
+    for (final row in manualPodsetnikText)
+      '${row.read<int>('predmet_id')}:${row.read<String>('stable_rule_id')}':
+          row.read<String>('obligation_text'),
+  };
 
   final map = <String, dynamic>{
     'format': _kBackupTransferFormat,
-    'schemaVersion': _kSchemaVersion,
+    'schemaVersion': _kBackupSchemaVersion,
     'exportDatum': DateTime.now().toIso8601String(),
     'entityType': 'FULL_DATABASE_BACKUP',
     'databaseIdentity': 'OPC',
+    'parteMediaPolicy': _kParteMediaBackupPolicy,
     'stockBackupPolicy': _kStockBackupPolicySchema16Complete,
     'predmeti': predmeti.map((p) => p.toJson()).toList(),
     'iriu': iriu.map((i) => i.toJson()).toList(),
+    'predmetScenarioSnapshots': scenarioSnapshots
+        .where((row) => exportedPredmetIds.contains(row.predmetId))
+        .map((row) => row.toJson())
+        .toList(),
+    'iriuProvenance': scenarioProvenance
+        .where((row) => exportedIriuIds.contains(row.iriuId))
+        .map((row) => row.toJson())
+        .toList(),
     'kontaktLica': kl.map((k) => k.toJson()).toList(),
     'iriuLifecycleDecisions': iriuLifecycle.map((row) => row.data).toList(),
     'korisnici': korisnici.map((k) => k.toJson()).toList(),
@@ -560,12 +913,64 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
     'iriuKatalogConfig': iriuKat.map((k) => k.toJson()).toList(),
     'appPodesavanja': apPod.toJson(),
     'predlosciDokumenata': predlosci.map((p) => p.toJson()).toList(),
-    'logIzmena': log.map((l) => l.toJson()).toList(),
+    'partePredlosci': partePredlosci.map((p) => p.toJson()).toList(),
+    'partePripreme': partePripreme
+        .where((row) => exportedPredmetIds.contains(row.predmetId))
+        .map(_partePripremeToBackupMap)
+        .toList(),
+    cituljePreparationTransferBlockKey: cituljePripreme
+        .where((row) => exportedPredmetIds.contains(row.predmetId))
+        .map(_cituljePripremeToBackupMap)
+        .toList(),
+    'scenarioModules': scenarioModules.map((row) => row.toJson()).toList(),
+    'scenarioDefinitions': scenarioDefinitions
+        .map((row) => row.toJson())
+        .toList(),
+    'logIzmena': log
+        .where((item) => exportedPredmetIds.contains(item.predmetId))
+        .map((item) => item.toJson())
+        .toList(),
     'stanjeRobeStavke': stanjeRobeStavke.map((s) => s.toJson()).toList(),
     'stanjeRobeAppliedEffects': stanjeRobeAppliedEffectsZaExport
         .map((e) => e.toJson())
         .toList(),
     'stanjeRobePosledice': stanjeRobePosledice.map((p) => p.toJson()).toList(),
+    'ceremonyReminderSettings': reminderSettings
+        .where(
+          (row) => exportedPredmetIds.contains(row.read<int>('predmet_id')),
+        )
+        .map(
+          (row) => <String, dynamic>{
+            'predmetId': row.read<int>('predmet_id'),
+            'enabled': row.read<int>('enabled') == 1,
+            'deliveryTimes': jsonDecode(row.read<String>('delivery_times')),
+          },
+        )
+        .toList(),
+    'podsetnikObaveze': podsetnikObaveze
+        .where(
+          (row) => exportedPredmetIds.contains(row.read<int>('predmet_id')),
+        )
+        .map(
+          (row) => <String, dynamic>{
+            'predmetId': row.read<int>('predmet_id'),
+            'stableRuleId': row.read<String>('stable_rule_id'),
+            'phase': row.read<String>('phase'),
+            'kind': row.read<String>('kind'),
+            if (row.readNullable<String>('parent_rule_id') != null)
+              'parentRuleId': row.readNullable<String>('parent_rule_id'),
+            'sourceFingerprint': row.read<String>('source_fingerprint'),
+            if (manualTextByKey.containsKey(
+              '${row.read<int>('predmet_id')}:${row.read<String>('stable_rule_id')}',
+            ))
+              'obligationText':
+                  manualTextByKey['${row.read<int>('predmet_id')}:${row.read<String>('stable_rule_id')}'],
+            'completed': row.read<int>('completed') == 1,
+            if (row.readNullable<String>('completed_at') != null)
+              'completedAt': row.readNullable<String>('completed_at'),
+          },
+        )
+        .toList(),
   };
   return const JsonEncoder.withIndent(
     '  ',
@@ -650,6 +1055,8 @@ Map<String, dynamic> _normalizujBackupPredmetMap(Map<String, dynamic> row) {
 
   normalized['businessScenarioId'] ??= _kDefaultBusinessScenarioId;
   normalized['sourceIdentity'] ??= _kDefaultSourceIdentity;
+  normalized['partePotrebna'] ??= false;
+  normalized['promenaSanduka'] ??= false;
 
   _zahtevajBackupTekstPolja(
     normalized,
@@ -657,6 +1064,9 @@ Map<String, dynamic> _normalizujBackupPredmetMap(Map<String, dynamic> row) {
     _kPredmetRequiredTextFields,
   );
   _optionalString(normalized, 'lastBusinessModifiedAt', 'predmeti');
+  for (final key in _kPredmetOptionalResponsibilityTextFields) {
+    _optionalString(normalized, key, 'predmeti');
+  }
 
   for (final key in _kPredmetRequiredIntFields) {
     _requiredInt(normalized, key, 'predmeti');
@@ -691,6 +1101,41 @@ Map<String, dynamic> _normalizujBackupAppPodesavanjaMap(
   return normalized;
 }
 
+Map<String, dynamic> _normalizujBackupFirmaPodaciMap(Map<String, dynamic> row) {
+  final normalized = _normalizujBackupPrazanTekst(
+    row,
+    'firmaPodaci',
+    _kFirmaPodaciBlankTextFields,
+  );
+  if ((normalized['parteDefaultTemplateId'] as String).trim().isEmpty) {
+    normalized['parteDefaultTemplateId'] = parteBuiltinTemplateId;
+  }
+  const racunToggleKey = 'racunOmogucen';
+  if (!normalized.containsKey(racunToggleKey)) {
+    normalized[racunToggleKey] = true;
+  } else {
+    _requiredBool(normalized, racunToggleKey, 'firmaPodaci');
+  }
+  return normalized;
+}
+
+Map<String, dynamic> _normalizujBackupIriuKatalogConfigMap(
+  Map<String, dynamic> row,
+) {
+  final normalized = Map<String, dynamic>.from(row);
+  final internalName = normalized['interniNaziv'];
+  final builtInBasic =
+      internalName is String &&
+      (<String>{
+        ...IriuK.ugradjeneOsnovnePreAgencijskih,
+        IriuK.agencijskeUsluge,
+      }).contains(internalName);
+  normalized['osnovnaUSvakomPredmetu'] ??= builtInBasic;
+  normalized['cena'] ??= 0.0;
+  _requiredBool(normalized, 'osnovnaUSvakomPredmetu', 'iriuKatalogConfig');
+  return normalized;
+}
+
 T _procitajBackupRed<T>(
   String section,
   Map<String, dynamic> row,
@@ -710,43 +1155,432 @@ T _procitajBackupRed<T>(
 Future<void> _uvoziPredmetUBazu(
   AppDatabase db,
   Map<String, dynamic> json,
+  int localActorKorisnikId,
 ) async {
+  await PredmetiRepository(
+    db,
+  ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+  await _validatePredmetFirmaIdentityPreflight(db, json);
   final payload = _procitajPredmetTransferPayload(json);
-  await db.transaction(() async {
-    final newId = await PredmetiRepository(db).uveziPredmetSaPovezanimPodacima(
-      predmet: payload.predmet,
-      iriu: payload.iriu,
-      kontaktLica: payload.kontaktLica,
-    );
-    await _attachImportedStanjeRobeConsequences(
+  await db.transaction(
+    () => _uvoziPredmetPayloadUBazu(
       db: db,
-      predmetId: newId,
-      importedIriu: payload.iriu,
-      consequenceItems: payload.stanjeRobeConsequences,
-    );
-  });
+      payload: payload,
+      localActorKorisnikId: localActorKorisnikId,
+    ),
+  );
 }
 
-Future<void> _zameniPredmetUBazi({
+Future<int> _uvoziPredmetPayloadUBazu({
+  required AppDatabase db,
+  required _PredmetTransferPayload payload,
+  required int localActorKorisnikId,
+}) async {
+  final newId = await PredmetiRepository(db)
+      .uveziPredmetSaPovezanimPodacimaUnutarTransakcije(
+        predmet: payload.predmet,
+        iriu: payload.iriu,
+        kontaktLica: payload.kontaktLica,
+        localActorKorisnikId: localActorKorisnikId,
+      );
+  await _restoreImportedCituljeState(
+    db: db,
+    predmetId: newId,
+    importedIriu: payload.iriu,
+    preparations: payload.cituljePripreme,
+  );
+  await _restoreImportedScenarioCarrier(
+    db: db,
+    predmetId: newId,
+    importedIriu: payload.iriu,
+    carrier: payload.scenarioCarrier,
+  );
+  await _restoreImportedLifecycleDecisions(
+    db: db,
+    predmetId: newId,
+    decisions: payload.lifecycleDecisions,
+  );
+  await _restoreImportedPodsetnikState(
+    db: db,
+    predmetId: newId,
+    state: payload.podsetnikObaveze,
+  );
+  await _attachImportedStanjeRobeConsequences(
+    db: db,
+    predmetId: newId,
+    importedIriu: payload.iriu,
+    consequenceItems: payload.stanjeRobeConsequences,
+  );
+  return newId;
+}
+
+Future<void> _restoreImportedCituljeState({
+  required AppDatabase db,
+  required int predmetId,
+  required List<IriuData> importedIriu,
+  required List<CituljePreparationTransfer> preparations,
+}) async {
+  final now = DateTime.now().toIso8601String();
+  for (final preparation in preparations) {
+    final occurrence = importedIriu.where(
+      (row) =>
+          row.portableOccurrenceId?.trim() == preparation.portableOccurrenceId,
+    );
+    if (occurrence.length != 1 ||
+        occurrence.single.interniNaziv != preparation.articleType) {
+      throw const _ImportBlokiranException(
+        'ČITULJE priprema nema odgovarajuću current IRiU occurrence vezu.',
+      );
+    }
+    await db
+        .into(db.cituljePripreme)
+        .insert(
+          CituljePripremeCompanion.insert(
+            predmetId: predmetId,
+            portableOccurrenceId: preparation.portableOccurrenceId,
+            articleType: preparation.articleType,
+            parteTextMode: Value(preparation.parteTextMode?.dbValue),
+            publicationDate: Value(preparation.publicationDate),
+            publicationText: Value(preparation.publicationText),
+            note: Value(preparation.note),
+            state: Value(preparation.state.dbValue),
+            finalized: Value(preparation.finalized),
+            finalizedAt: Value(preparation.finalizedAt),
+            parteSnapshotFingerprint: Value(
+              preparation.parteSnapshotFingerprint,
+            ),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+  }
+}
+
+Future<void> _restoreImportedPodsetnikState({
+  required AppDatabase db,
+  required int predmetId,
+  required PodsetnikObligationTransferBlock? state,
+}) async {
+  if (state == null) return;
+  await PodsetnikObligationRepository(
+    db,
+  ).importPortableState(predmetId: predmetId, states: state.items);
+}
+
+Future<void> _restoreImportedLifecycleDecisions({
+  required AppDatabase db,
+  required int predmetId,
+  required IriuLifecycleDecisionTransferBlock? decisions,
+}) async {
+  if (decisions == null) return;
+  for (final item in decisions.items) {
+    await db.customStatement(
+      '''
+        INSERT OR IGNORE INTO iriu_lifecycle_decisions (
+          predmet_id, interni_naziv, scope_key, decision_key, created_at
+        ) VALUES (?, ?, ?, ?, ?)
+      ''',
+      [
+        predmetId,
+        item.interniNaziv,
+        item.scopeKey,
+        item.decisionKey,
+        item.createdAt,
+      ],
+    );
+  }
+}
+
+/// Schema-9 is a logical database backup. App-owned PARTE PNG bytes live in
+/// the installation media store and are intentionally excluded from JSON.
+/// Clearing the keys in the exported representation prevents a fresh restore
+/// from manufacturing apparently valid references to unavailable files.
+Map<String, dynamic> _partePripremeToBackupMap(PartePripremeData row) {
+  final map = Map<String, dynamic>.from(row.toJson())
+    ..['photoMediaKey'] = null
+    ..['customSymbolMediaKey'] = null;
+  return map;
+}
+
+Future<String?> _zameniPredmetUBazi({
   required AppDatabase db,
   required int lokalniPredmetId,
   required Map<String, dynamic> json,
+  required int auditKorisnikId,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
 }) async {
+  await PredmetiRepository(db).zahtevajAktivnogLokalnogAktora(auditKorisnikId);
+  await _validatePredmetFirmaIdentityPreflight(db, json);
   final payload = _procitajPredmetTransferPayload(json);
-  await db.transaction(() async {
-    await PredmetiRepository(db).zameniPredmetSaPovezanimPodacima(
-      lokalniPredmetId: lokalniPredmetId,
-      predmet: payload.predmet,
-      iriu: payload.iriu,
-      kontaktLica: payload.kontaktLica,
+  final gateway = notificationGateway ?? AndroidCeremonyNotificationGateway();
+  final store = mediaStore ?? ParteMediaStore();
+  final oldPredmet = await (db.select(
+    db.predmeti,
+  )..where((row) => row.id.equals(lokalniPredmetId))).getSingle();
+  final oldPreparation = await (db.select(
+    db.partePripreme,
+  )..where((row) => row.predmetId.equals(lokalniPredmetId))).getSingleOrNull();
+  final oldReminder = await CeremonyReminderRepository(
+    db,
+  ).getForPredmet(lokalniPredmetId);
+  final hadReminderConfiguration =
+      await db
+          .customSelect(
+            'SELECT 1 FROM ceremony_reminder_settings WHERE predmet_id = ?',
+            variables: [Variable.withInt(lokalniPredmetId)],
+          )
+          .getSingleOrNull() !=
+      null;
+  final stagedMedia = await store.stageOwnedDeletion([
+    oldPreparation?.photoMediaKey ?? '',
+    oldPreparation?.customSymbolMediaKey ?? '',
+  ]);
+  var committed = false;
+  try {
+    for (final id in oldReminder.scheduledNotificationIds) {
+      await gateway.cancel(id);
+    }
+    await db.transaction(() async {
+      await PredmetiRepository(db).zameniPredmetSaPovezanimPodacima(
+        lokalniPredmetId: lokalniPredmetId,
+        predmet: payload.predmet,
+        iriu: payload.iriu,
+        kontaktLica: payload.kontaktLica,
+        auditKorisnikId: auditKorisnikId,
+      );
+      await (db.delete(
+        db.cituljePripreme,
+      )..where((row) => row.predmetId.equals(lokalniPredmetId))).go();
+      await _restoreImportedCituljeState(
+        db: db,
+        predmetId: lokalniPredmetId,
+        importedIriu: payload.iriu,
+        preparations: payload.cituljePripreme,
+      );
+      await _restoreImportedScenarioCarrier(
+        db: db,
+        predmetId: lokalniPredmetId,
+        importedIriu: payload.iriu,
+        carrier: payload.scenarioCarrier,
+      );
+      await _restoreImportedLifecycleDecisions(
+        db: db,
+        predmetId: lokalniPredmetId,
+        decisions: payload.lifecycleDecisions,
+      );
+      await _restoreImportedPodsetnikState(
+        db: db,
+        predmetId: lokalniPredmetId,
+        state: payload.podsetnikObaveze,
+      );
+      await _attachImportedStanjeRobeConsequences(
+        db: db,
+        predmetId: lokalniPredmetId,
+        importedIriu: payload.iriu,
+        consequenceItems: payload.stanjeRobeConsequences,
+      );
+      await (db.delete(
+        db.partePripreme,
+      )..where((row) => row.predmetId.equals(lokalniPredmetId))).go();
+      if (hadReminderConfiguration) {
+        await CeremonyReminderRepository(
+          db,
+        ).saveScheduledIds(lokalniPredmetId, const []);
+      }
+    });
+    committed = true;
+    String? postCommitWarning;
+    PredmetiData? current;
+    try {
+      current = await (db.select(
+        db.predmeti,
+      )..where((row) => row.id.equals(lokalniPredmetId))).getSingle();
+    } catch (_) {
+      postCommitWarning =
+          'PREDMET replacement committed, but post-commit verification failed.';
+    }
+    if (hadReminderConfiguration && current != null) {
+      final trackingGateway = _TrackingNotificationGateway(gateway);
+      try {
+        await CeremonyReminderCoordinator(
+          repository: CeremonyReminderRepository(db),
+          gateway: trackingGateway,
+        ).reschedule(
+          predmetId: current.id,
+          predmetStatus: current.status,
+          ceremonyType: current.vrstaCeremonije,
+          deceasedFirstName: current.ime,
+          deceasedLastName: current.prezime,
+          ceremonyDate: current.datumCeremonije,
+          ceremonyTime: current.vremeCeremonije,
+          ceremonyLocation: current.groblje,
+          ceremonyAt: parseCeremonyReminderDateTime(
+            current.datumCeremonije,
+            current.vremeCeremonije,
+          ),
+        );
+      } catch (_) {
+        for (final id in trackingGateway.attemptedScheduleIds) {
+          try {
+            await gateway.cancel(id);
+          } catch (_) {
+            // The persisted empty inventory remains authoritative; the
+            // warning makes an external cleanup failure visible to the user.
+          }
+        }
+        try {
+          await CeremonyReminderRepository(
+            db,
+          ).saveScheduledIds(lokalniPredmetId, const []);
+        } catch (_) {
+          // Preserve the committed PREDMET truth and surface the auxiliary
+          // persistence failure through the import warning.
+        }
+        postCommitWarning =
+            'PREDMET replacement committed, but PODSETNIK state '
+            'reconciliation failed. Review PODSETNIK.';
+      }
+    }
+    try {
+      await stagedMedia.purge();
+    } catch (_) {
+      try {
+        await stagedMedia.purge();
+      } catch (_) {
+        postCommitWarning = postCommitWarning == null
+            ? 'PREDMET replacement committed, but staged PARTE media '
+                  'cleanup did not complete.'
+            : '$postCommitWarning Staged PARTE media cleanup did not '
+                  'complete.';
+      }
+    }
+    if (postCommitWarning != null) {
+      // The replacement transaction is committed. Do not throw a failure that
+      // would falsely imply that the business replacement was rolled back.
+      return postCommitWarning;
+    }
+  } catch (_) {
+    if (!committed) {
+      try {
+        await stagedMedia.restore();
+      } catch (_) {
+        // Preserve the primary failure; the staged media remains recoverable.
+      }
+      try {
+        if (hadReminderConfiguration) {
+          await CeremonyReminderCoordinator(
+            repository: CeremonyReminderRepository(db),
+            gateway: gateway,
+          ).reschedule(
+            predmetId: oldPredmet.id,
+            predmetStatus: oldPredmet.status,
+            ceremonyType: oldPredmet.vrstaCeremonije,
+            deceasedFirstName: oldPredmet.ime,
+            deceasedLastName: oldPredmet.prezime,
+            ceremonyDate: oldPredmet.datumCeremonije,
+            ceremonyTime: oldPredmet.vremeCeremonije,
+            ceremonyLocation: oldPredmet.groblje,
+            ceremonyAt: parseCeremonyReminderDateTime(
+              oldPredmet.datumCeremonije,
+              oldPredmet.vremeCeremonije,
+            ),
+          );
+        }
+      } catch (_) {
+        // Preserve the primary failure; reminder recovery remains explicit.
+      }
+    }
+    rethrow;
+  }
+  return null;
+}
+
+class _TrackingNotificationGateway implements CeremonyNotificationGateway {
+  _TrackingNotificationGateway(this._delegate);
+
+  final CeremonyNotificationGateway _delegate;
+  final attemptedScheduleIds = <int>[];
+
+  @override
+  Future<void> initialize({required bool requestPermission}) {
+    return _delegate.initialize(requestPermission: requestPermission);
+  }
+
+  @override
+  Future<void> cancel(int id) => _delegate.cancel(id);
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required DateTime scheduledAt,
+    required String title,
+    required String body,
+    required String payload,
+    bool repeatDaily = false,
+  }) async {
+    attemptedScheduleIds.add(id);
+    await _delegate.schedule(
+      id: id,
+      scheduledAt: scheduledAt,
+      title: title,
+      body: body,
+      payload: payload,
+      repeatDaily: repeatDaily,
     );
-    await _attachImportedStanjeRobeConsequences(
-      db: db,
-      predmetId: lokalniPredmetId,
-      importedIriu: payload.iriu,
-      consequenceItems: payload.stanjeRobeConsequences,
+  }
+}
+
+Future<void> _restoreImportedScenarioCarrier({
+  required AppDatabase db,
+  required int predmetId,
+  required List<IriuData> importedIriu,
+  required SinglePredmetScenarioCarrierBlock? carrier,
+}) async {
+  if (carrier == null) return;
+  final localIriu = await _listIriuForImportedPredmet(db, predmetId);
+  if (localIriu.length != importedIriu.length) {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran jer nije bezbedno mapirati SCENARIO carrier na IRIU redove.',
     );
-  });
+  }
+  final envelope = carrier.resolveToEnvelope(
+    destinationIriuIds: localIriu.map((row) => row.id).toList(growable: false),
+  );
+  await db
+      .into(db.predmetScenarioSnapshots)
+      .insertOnConflictUpdate(
+        PredmetScenarioSnapshotsCompanion.insert(
+          predmetId: Value(predmetId),
+          moduleId: envelope.assignment.moduleId,
+          scenarioId: envelope.assignment.scenarioId,
+          scenarioVersion: envelope.assignment.scenarioVersion,
+          snapshotJson: jsonEncode(envelope.assignment.toJsonMap()),
+          snapshotHash: envelope.assignment.snapshotHash,
+          assignedAt: envelope.assignment.assignedAt,
+          assignedByKorisnikId: Value(envelope.assignment.assignedByKorisnikId),
+        ),
+      );
+  if (envelope.provenanceCoverage ==
+      ScenarioIriuProvenanceCoverage.unavailable) {
+    return;
+  }
+  for (final item in envelope.provenance) {
+    await db
+        .into(db.iriuProvenance)
+        .insertOnConflictUpdate(
+          IriuProvenanceCompanion.insert(
+            iriuId: Value(item.iriuId),
+            origin: item.origin.wireName,
+            moduleId: Value(item.moduleId),
+            scenarioId: Value(item.scenarioId),
+            scenarioVersion: Value(item.scenarioVersion),
+            ruleId: Value(item.ruleId),
+            operationId: Value(item.operationId),
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+  }
 }
 
 Future<void> _attachImportedStanjeRobeConsequences({
@@ -799,11 +1633,583 @@ Future<List<IriuData>> _listIriuForImportedPredmet(
       .get();
 }
 
+String _normalizedIdentityPart(Object? value) => value?.toString().trim() ?? '';
+
+const String _kBuiltInParteTemplateId = 'builtin_parte_standard_v1';
+
+Future<bool> _localDatabaseHasBusinessState(
+  AppDatabase db,
+  FirmaPodaciData? localFirma,
+) async {
+  if (localFirma != null) {
+    final firmaFields = <String>[
+      localFirma.naziv,
+      localFirma.adresa,
+      localFirma.pib,
+      localFirma.mb,
+      localFirma.sifraDelatnosti,
+      localFirma.telefon,
+      localFirma.odgovornoLice,
+      localFirma.email,
+      localFirma.sajt,
+    ];
+    if (firmaFields.any((value) => value.trim().isNotEmpty) ||
+        localFirma.logo != null ||
+        localFirma.parteDefaultTemplateId != _kBuiltInParteTemplateId ||
+        !localFirma.racunOmogucen) {
+      return true;
+    }
+  }
+
+  final populated = await Future.wait<bool>([
+    (db.select(db.korisnici)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(db.predmeti)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(db.logIzmena)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(db.kontaktLica)..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.partePripreme,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.iriuProvenance,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.predmetScenarioSnapshots,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.scenarioModules,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.scenarioDefinitions,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.katalogArtikli,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.partePredlosci,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.stanjeRobeStavke,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.stanjeRobeAppliedEffects,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    (db.select(
+      db.stanjeRobePosledice,
+    )..limit(1)).get().then((rows) => rows.isNotEmpty),
+    db
+        .customSelect('SELECT 1 FROM ceremony_reminder_settings LIMIT 1')
+        .get()
+        .then((rows) => rows.isNotEmpty),
+  ]);
+  return populated.any((value) => value);
+}
+
+/// Non-destructive FULL-backup identity preflight. An uninitialised local
+/// installation has blank identity fields and is allowed to receive a backup;
+/// two established, non-blank identities must match before any destructive
+/// restore transaction starts.
+Future<_BackupFirmIdentityState> _validateBackupFirmIdentityPreflight(
+  AppDatabase db,
+  Map<String, dynamic> json, {
+  bool allowIncompleteExistingLocalState = false,
+  String identityMismatchMessage =
+      'Uvoz cele baze je blokiran: PIB/matični broj firme ne odgovara '
+      'lokalnoj instalaciji. Lokalni podaci nisu promenjeni.',
+}) async {
+  final incoming = json['firmaPodaci'];
+  final local = await db.select(db.firmaPodaci).getSingleOrNull();
+  final localPib = _normalizedIdentityPart(local?.pib);
+  final localMb = _normalizedIdentityPart(local?.mb);
+  final incomingMap = incoming is Map
+      ? incoming.cast<String, dynamic>()
+      : const <String, dynamic>{};
+  final incomingPib = _normalizedIdentityPart(incomingMap['pib']);
+  final incomingMb = _normalizedIdentityPart(incomingMap['mb']);
+  final pibMismatch =
+      localPib.isNotEmpty && incomingPib.isNotEmpty && localPib != incomingPib;
+  final mbMismatch =
+      localMb.isNotEmpty && incomingMb.isNotEmpty && localMb != incomingMb;
+  if (pibMismatch || mbMismatch) {
+    throw _ImportBlokiranException(identityMismatchMessage);
+  }
+
+  final backupIdentityComplete =
+      incomingPib.isNotEmpty && incomingMb.isNotEmpty;
+  if (backupIdentityComplete) {
+    return localPib.isEmpty && localMb.isEmpty
+        ? _BackupFirmIdentityState.freshLocalIdentity
+        : _BackupFirmIdentityState.sufficientlyConsistent;
+  }
+  final hasLocalBusinessState = await _localDatabaseHasBusinessState(db, local);
+  if (!hasLocalBusinessState) {
+    return _BackupFirmIdentityState.freshLocalIdentity;
+  }
+  if (allowIncompleteExistingLocalState) {
+    return _BackupFirmIdentityState.incompleteExistingLocalState;
+  }
+  throw const _ImportBlokiranException(
+    'Uvoz cele baze je blokiran: backup nema potpunu FIRMA identifikaciju, '
+    'a lokalna baza sadrzi postojece podatke. Nedostajaca identifikacija '
+    'nije dokaz podudaranja; lokalni podaci nisu promenjeni. Za ovaj '
+    'backup potreban je eksplicitan fallback za spajanje/rekonciliaciju.',
+  );
+}
+
+/// A single-PREDMET import cannot establish a fresh local FIRMA identity.
+/// The identity comparison itself is delegated to the existing full-Backup
+/// preflight so both import formats keep one PIB/MB comparison rule.
+Future<void> _validatePredmetFirmaIdentityPreflight(
+  AppDatabase db,
+  Map<String, dynamic> json,
+) async {
+  final incoming = json['firmaPodaci'];
+  if (incoming is! Map) {
+    throw const _ImportBlokiranException(
+      'Uvoz PREDMETA je blokiran: JSON nema FIRMA identifikaciju. '
+      'Lokalni podaci nisu promenjeni.',
+    );
+  }
+  final incomingIdentity = _firmaIdentitetFromMap(
+    incoming.cast<String, dynamic>(),
+  );
+  if ((incomingIdentity['pib'] as String).isEmpty ||
+      (incomingIdentity['mb'] as String).isEmpty) {
+    throw const _ImportBlokiranException(
+      'Uvoz PREDMETA je blokiran: JSON nema potpunu FIRMA identifikaciju. '
+      'Lokalni podaci nisu promenjeni.',
+    );
+  }
+
+  final identityState = await _validateBackupFirmIdentityPreflight(
+    db,
+    {'firmaPodaci': incomingIdentity},
+    identityMismatchMessage:
+        'PREDMET JSON nije moguće uvesti jer se identitet FIRME razlikuje '
+        'od lokalne instalacije. Lokalni podaci nisu promenjeni.',
+  );
+  final local = await db.select(db.firmaPodaci).getSingleOrNull();
+  if (identityState != _BackupFirmIdentityState.sufficientlyConsistent ||
+      _normalizedIdentityPart(local?.pib).isEmpty ||
+      _normalizedIdentityPart(local?.mb).isEmpty) {
+    throw const _ImportBlokiranException(
+      'Uvoz PREDMETA je blokiran: PIB/matični broj FIRME ne potvrđuje '
+      'podudaranje sa lokalnom instalacijom. Lokalni podaci nisu promenjeni.',
+    );
+  }
+}
+
+/// Parses every supported full-backup section without writing to the local
+/// database. The destructive confirmation must not be shown until this
+/// structural pass and the FIRMA identity comparison both succeed.
+Future<_BackupFirmIdentityState> _validateBackupBeforeDestructiveConfirmation(
+  AppDatabase db,
+  Map<String, dynamic> json, {
+  bool allowIncompleteExistingLocalState = false,
+}) async {
+  _zahtevajPodrzanuJsonSchemaVerziju(json);
+  final identityState = await _validateBackupFirmIdentityPreflight(
+    db,
+    json,
+    allowIncompleteExistingLocalState: allowIncompleteExistingLocalState,
+  );
+  final users = _requiredMapList(json, 'korisnici');
+  final firme = json['firmaPodaci'];
+  if (firme is! Map) {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran jer backup nema validnu FIRMA sekciju.',
+    );
+  }
+  final firmMap = _withDecodedBlob(
+    _normalizujBackupFirmaPodaciMap(firme.cast<String, dynamic>()),
+    'logo',
+  );
+  _procitajBackupRed(
+    'firmaPodaci',
+    firmMap,
+    (row) => FirmaPodaciData.fromJson(row),
+  );
+  for (final row in users) {
+    _zahtevajBackupTekstPolja(row, 'korisnici', const [
+      'imePrezime',
+      'uloga',
+      'pinHash',
+      'datumKreiranja',
+    ]);
+    _procitajBackupRed(
+      'korisnici',
+      row,
+      (value) => KorisniciData.fromJson(value),
+    );
+  }
+  for (final row in _requiredMapList(json, 'katalogArtikli')) {
+    _zahtevajBackupTekstPolja(row, 'katalogArtikli', const [
+      'interniNazivKategorije',
+      'naziv',
+    ]);
+    _procitajBackupRed(
+      'katalogArtikli',
+      _withDecodedBlob(row, 'fotografija'),
+      (value) => KatalogArtikliData.fromJson(value),
+    );
+  }
+  for (final row in _requiredMapList(json, 'iriuKatalogConfig')) {
+    final normalized = _normalizujBackupIriuKatalogConfigMap(row);
+    _zahtevajBackupTekstPolja(normalized, 'iriuKatalogConfig', const [
+      'interniNaziv',
+      'nazivPrikaz',
+      'tip',
+    ]);
+    _procitajBackupRed(
+      'iriuKatalogConfig',
+      normalized,
+      (value) => IriuKatalogConfigData.fromJson(value),
+    );
+  }
+  final app = _normalizujBackupAppPodesavanjaMap(
+    (json['appPodesavanja'] as Map).cast<String, dynamic>(),
+  );
+  _zahtevajBackupTekstPolja(app, 'appPodesavanja', const [
+    'qrSifraPlacanja',
+    'pozivNaBrojTip',
+  ]);
+  _procitajBackupRed(
+    'appPodesavanja',
+    app,
+    (value) => AppPodesavanjaData.fromJson(value),
+  );
+  for (final row in _requiredMapList(json, 'predlosciDokumenata')) {
+    _zahtevajBackupTekstPolja(row, 'predlosciDokumenata', const [
+      'naziv',
+      'segmenti',
+      'format',
+    ]);
+    _procitajBackupRed(
+      'predlosciDokumenata',
+      row,
+      (value) => PredlosciDokumenataData.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(json, 'partePredlosci')) {
+    try {
+      _zahtevajBackupTekstPolja(row, 'partePredlosci', const [
+        'id',
+        'naziv',
+        'configJson',
+        'createdAt',
+        'updatedAt',
+      ]);
+      final parsed = PartePredlosciData.fromJson(row);
+      final config =
+          (jsonDecode(parsed.configJson) as Map).cast<String, dynamic>()
+            ..['id'] = parsed.id
+            ..['name'] = parsed.naziv;
+      ParteTemplate.fromJson(config);
+    } catch (_) {
+      // Keep the existing compatibility rule: malformed optional templates
+      // fall back to the built-in template during restore.
+    }
+  }
+  final scenarioPresent =
+      json['scenarioModules'] is List || json['scenarioDefinitions'] is List;
+  if (scenarioPresent) {
+    for (final row in _optionalMapList(json, 'scenarioModules')) {
+      _procitajBackupRed(
+        'scenarioModules',
+        row,
+        (value) => ScenarioModule.fromJson(value),
+      );
+    }
+    for (final row in _optionalMapList(json, 'scenarioDefinitions')) {
+      _procitajBackupRed(
+        'scenarioDefinitions',
+        row,
+        (value) => ScenarioDefinitionRecord.fromJson(value),
+      );
+    }
+  }
+  final predmetRows = _requiredMapList(json, 'predmeti');
+  final predmetIds = predmetRows.map((row) {
+    final normalized = _normalizujBackupPredmetMap(row);
+    final parsed = _procitajBackupRed(
+      'predmeti',
+      normalized,
+      (value) => PredmetiData.fromJson(value),
+    );
+    return parsed.id;
+  }).toSet();
+  final iriuRows = _requiredMapList(json, 'iriu');
+  final backupPortableIdsByPredmet = <int, Set<String>>{};
+  for (final row in iriuRows) {
+    final normalized = _normalizujBackupPrazanTekst(
+      row,
+      'iriu',
+      _kIriuBlankTextFields,
+    );
+    _zahtevajBackupTekstPolja(normalized, 'iriu', const ['interniNaziv']);
+    final parsed = _procitajBackupRed(
+      'iriu',
+      normalized,
+      (value) => iriuDataFromCompatibleJson(value),
+    );
+    final portableId = parsed.portableOccurrenceId;
+    if (portableId != null && portableId.trim().isNotEmpty) {
+      final seen = backupPortableIdsByPredmet.putIfAbsent(
+        parsed.predmetId,
+        () => <String>{},
+      );
+      if (!seen.add(portableId)) {
+        throw const _ImportBlokiranException(
+          'Neispravan backup: dupliran prenosivi identitet IRiU occurrence.',
+        );
+      }
+    }
+  }
+  for (final row in _requiredMapList(json, 'kontaktLica')) {
+    final normalized = _normalizujBackupPrazanTekst(
+      row,
+      'kontaktLica',
+      _kKontaktLicaBlankTextFields,
+    );
+    _zahtevajBackupTekstPolja(normalized, 'kontaktLica', const ['blok']);
+    _procitajBackupRed(
+      'kontaktLica',
+      normalized,
+      (value) => KontaktLicaData.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(json, 'predmetScenarioSnapshots')) {
+    _procitajBackupRed(
+      'predmetScenarioSnapshots',
+      row,
+      (value) => PredmetScenarioSnapshot.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(json, 'iriuProvenance')) {
+    _procitajBackupRed(
+      'iriuProvenance',
+      row,
+      (value) => IriuProvenanceData.fromJson(value),
+    );
+  }
+  for (final row
+      in (json['iriuLifecycleDecisions'] as List? ?? const [])
+          .cast<Map<String, dynamic>>()) {
+    _requiredInt(row, 'id', 'iriuLifecycleDecisions');
+    _requiredInt(row, 'predmet_id', 'iriuLifecycleDecisions');
+    _requiredString(row, 'interni_naziv', 'iriuLifecycleDecisions');
+    _requiredString(row, 'scope_key', 'iriuLifecycleDecisions');
+    _requiredString(row, 'decision_key', 'iriuLifecycleDecisions');
+    _requiredString(row, 'created_at', 'iriuLifecycleDecisions');
+  }
+  for (final row in _requiredMapList(json, 'logIzmena')) {
+    final normalized = _normalizujBackupPrazanTekst(
+      row,
+      'logIzmena',
+      _kLogIzmenaBlankTextFields,
+    );
+    _zahtevajBackupTekstPolja(normalized, 'logIzmena', const [
+      'datumVreme',
+      'polje',
+    ]);
+    final parsed = _procitajBackupRed(
+      'logIzmena',
+      normalized,
+      (value) => LogIzmenaData.fromJson(value),
+    );
+    if (!predmetIds.contains(parsed.predmetId)) continue;
+  }
+  for (final row in _optionalMapList(json, 'partePripreme')) {
+    final portable = Map<String, dynamic>.from(row)
+      ..['photoMediaKey'] = null
+      ..['customSymbolMediaKey'] = null;
+    _procitajBackupRed(
+      'partePripreme',
+      portable,
+      (value) => PartePripremeData.fromJson(value),
+    );
+  }
+  for (final row in _optionalMapList(
+    json,
+    cituljePreparationTransferBlockKey,
+  )) {
+    _requiredInt(row, 'predmetId', cituljePreparationTransferBlockKey);
+    _procitajBackupRed(
+      cituljePreparationTransferBlockKey,
+      row,
+      (value) => CituljePreparationTransfer.fromJson(value),
+    );
+  }
+  await _procitajStanjeRobeBackupPayload(db, json);
+  _procitajBackupReminderSettings(json);
+  final mediaPolicy = json['parteMediaPolicy'];
+  if (mediaPolicy != null && mediaPolicy != _kParteMediaBackupPolicy) {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran jer PARTE media politika kopije nije podrzana.',
+    );
+  }
+  return identityState;
+}
+
+const int _kCase2RetainedFamilyCount = 8;
+
+Future<_Case2FallbackAnalysis> _analizujCase2Fallback({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+}) async {
+  final identityState = await _validateBackupBeforeDestructiveConfirmation(
+    db,
+    json,
+    allowIncompleteExistingLocalState: true,
+  );
+  if (identityState != _BackupFirmIdentityState.incompleteExistingLocalState) {
+    throw const _ImportBlokiranException(
+      'Case-2 fallback je dozvoljen samo kada backup nema potpunu FIRMA '
+      'identifikaciju, a lokalna baza već sadrži podatke.',
+    );
+  }
+
+  final destination = await db.select(db.predmeti).get();
+  final incomingRows = _requiredMapList(json, 'predmeti');
+  final incomingNumberCounts = <String, int>{};
+  for (final raw in incomingRows) {
+    final normalized = _normalizujBackupPredmetMap(raw);
+    final predmet = _procitajBackupRed(
+      'predmeti',
+      normalized,
+      (row) => PredmetiData.fromJson(row),
+    );
+    final broj = predmet.brojPredmeta.trim();
+    if (broj.isNotEmpty) {
+      incomingNumberCounts.update(
+        broj,
+        (count) => count + 1,
+        ifAbsent: () => 1,
+      );
+    }
+  }
+  final importable = <_Case2ImportCandidate>[];
+  var conflictCount = 0;
+  var ambiguousCount = 0;
+
+  for (final raw in incomingRows) {
+    final normalized = _normalizujBackupPredmetMap(raw);
+    final predmet = _procitajBackupRed(
+      'predmeti',
+      normalized,
+      (row) => PredmetiData.fromJson(row),
+    );
+    final broj = predmet.brojPredmeta.trim();
+    if (broj.isEmpty || incomingNumberCounts[broj] != 1) {
+      ambiguousCount++;
+      continue;
+    }
+
+    final matches = destination
+        .where((local) => local.brojPredmeta.trim() == broj)
+        .toList(growable: false);
+    if (matches.length == 1) {
+      conflictCount++;
+      continue;
+    }
+    if (matches.length > 1) {
+      ambiguousCount++;
+      continue;
+    }
+
+    final iriu = _requiredMapList(json, 'iriu')
+        .where((row) => row['predmetId'] == predmet.id)
+        .map(
+          (row) => iriuDataFromCompatibleJson(
+            _normalizujBackupPrazanTekst(row, 'iriu', _kIriuBlankTextFields),
+          ),
+        )
+        .toList(growable: false);
+    final kontaktLica = _requiredMapList(json, 'kontaktLica')
+        .where((row) => row['predmetId'] == predmet.id)
+        .map(
+          (row) => KontaktLicaData.fromJson(
+            _normalizujBackupPrazanTekst(
+              row,
+              'kontaktLica',
+              _kKontaktLicaBlankTextFields,
+            ),
+          ),
+        )
+        .toList(growable: false);
+    final posledice = _optionalMapList(json, 'stanjeRobePosledice')
+        .where((row) => row['predmetId'] == predmet.id)
+        .map(StanjeRobePoslediceData.fromJson)
+        .toList(growable: false);
+    final transferJson = jsonDecode(
+      await _serijalizujPredmet(
+        predmet,
+        iriu,
+        kontaktLica,
+        posledice,
+        firmaIdentitet: _firmaIdentitetFromMap(
+          (json['firmaPodaci'] as Map).cast<String, dynamic>(),
+        ),
+        cituljePripreme: _cituljeForBackupPredmet(json, predmet.id),
+        podsetnikObaveze: _podsetnikForBackupPredmet(json, predmet.id),
+      ),
+    );
+    final payload = _procitajPredmetTransferPayload(
+      (transferJson as Map).cast<String, dynamic>(),
+    );
+    importable.add(_Case2ImportCandidate(payload: payload));
+  }
+
+  return _Case2FallbackAnalysis(
+    plan: Case2FallbackPlan(
+      newPredmetCount: importable.length,
+      sameIdentityConflictCount: conflictCount,
+      ambiguousCount: ambiguousCount,
+      retainedFamilyCount: _kCase2RetainedFamilyCount,
+    ),
+    importable: importable,
+  );
+}
+
+Future<Case2FallbackOutcome> _primeniCase2Fallback({
+  required AppDatabase db,
+  required _Case2FallbackAnalysis analysis,
+  required int localActorKorisnikId,
+}) async {
+  var imported = 0;
+  await db.transaction(() async {
+    await PredmetiRepository(
+      db,
+    ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+    for (final candidate in analysis.importable) {
+      await _uvoziPredmetPayloadUBazu(
+        db: db,
+        payload: candidate.payload,
+        localActorKorisnikId: localActorKorisnikId,
+      );
+      imported++;
+    }
+  });
+  return Case2FallbackOutcome(
+    importedPredmetCount: imported,
+    skippedConflictCount: analysis.plan.sameIdentityConflictCount,
+    skippedAmbiguousCount: analysis.plan.ambiguousCount,
+  );
+}
+
 Future<_BackupImportResult> _uvoziBackupUBazu(
   AppDatabase db,
   Map<String, dynamic> json,
 ) async {
   final stockPayload = await _procitajStanjeRobeBackupPayload(db, json);
+  final reminderPayload = _procitajBackupReminderSettings(json);
+  final podsetnikPayload = _procitajBackupPodsetnikSettings(json);
+  final backupPredmetIds = _requiredMapList(
+    json,
+    'predmeti',
+  ).map((row) => row['id']).whereType<int>().toSet();
+  final hasScenarioState =
+      json['scenarioModules'] is List || json['scenarioDefinitions'] is List;
+  var skippedOrphanLogEntries = 0;
 
   await db.transaction(() async {
     await db.delete(db.stanjeRobePosledice).go();
@@ -811,6 +2217,15 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.stanjeRobeStavke).go();
     await db.customStatement('DELETE FROM iriu_lifecycle_decisions');
     await db.delete(db.logIzmena).go();
+    await db.customStatement('DELETE FROM ceremony_reminder_settings');
+    await db.delete(db.podsetnikObaveze).go();
+    await db.customStatement('DELETE FROM podsetnik_manual_obaveze');
+    await db.delete(db.cituljePripreme).go();
+    await db.delete(db.partePripreme).go();
+    await db.delete(db.kontaktLica).go();
+    await db.delete(db.predmetScenarioSnapshots).go();
+    await db.delete(db.iriuProvenance).go();
+    await db.delete(db.iriu).go();
     await db.delete(db.predmeti).go();
     await db.delete(db.korisnici).go();
     await db.delete(db.firmaPodaci).go();
@@ -818,6 +2233,11 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.iriuKatalogConfig).go();
     await db.delete(db.appPodesavanja).go();
     await db.delete(db.predlosciDokumenata).go();
+    await db.delete(db.partePredlosci).go();
+    if (hasScenarioState) {
+      await db.delete(db.scenarioDefinitions).go();
+      await db.delete(db.scenarioModules).go();
+    }
 
     for (final k in _requiredMapList(json, 'korisnici')) {
       _zahtevajBackupTekstPolja(k, 'korisnici', const [
@@ -839,10 +2259,8 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     }
 
     final firmMap = _withDecodedBlob(
-      _normalizujBackupPrazanTekst(
+      _normalizujBackupFirmaPodaciMap(
         (json['firmaPodaci'] as Map).cast<String, dynamic>(),
-        'firmaPodaci',
-        _kFirmaPodaciBlankTextFields,
       ),
       'logo',
     );
@@ -876,17 +2294,18 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     }
 
     for (final k in _requiredMapList(json, 'iriuKatalogConfig')) {
-      _zahtevajBackupTekstPolja(k, 'iriuKatalogConfig', const [
-        'interniNaziv',
-        'nazivPrikaz',
-        'tip',
-      ]);
+      final normalizedKatalogConfig = _normalizujBackupIriuKatalogConfigMap(k);
+      _zahtevajBackupTekstPolja(
+        normalizedKatalogConfig,
+        'iriuKatalogConfig',
+        const ['interniNaziv', 'nazivPrikaz', 'tip'],
+      );
       await db
           .into(db.iriuKatalogConfig)
           .insert(
             _procitajBackupRed(
               'iriuKatalogConfig',
-              k,
+              normalizedKatalogConfig,
               (row) => IriuKatalogConfigData.fromJson(row),
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
@@ -929,6 +2348,77 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
           );
     }
 
+    for (final p in _optionalMapList(json, 'partePredlosci')) {
+      try {
+        _zahtevajBackupTekstPolja(p, 'partePredlosci', const [
+          'id',
+          'naziv',
+          'configJson',
+          'createdAt',
+          'updatedAt',
+        ]);
+        final row = PartePredlosciData.fromJson(p);
+        final config =
+            (jsonDecode(row.configJson) as Map).cast<String, dynamic>()
+              ..['id'] = row.id
+              ..['name'] = row.naziv;
+        ParteTemplate.fromJson(config);
+        await db
+            .into(db.partePredlosci)
+            .insert(row.toCompanion(true), mode: InsertMode.insertOrReplace);
+      } catch (_) {
+        // Optional invalid FIRMA templates do not invalidate an otherwise
+        // valid legacy backup. The built-in default remains available.
+      }
+    }
+
+    final importedFirma = await (db.select(
+      db.firmaPodaci,
+    )..where((row) => row.id.equals(1))).getSingle();
+    if (importedFirma.parteDefaultTemplateId != parteBuiltinTemplateId) {
+      final selected =
+          await (db.select(db.partePredlosci)..where(
+                (row) => row.id.equals(importedFirma.parteDefaultTemplateId),
+              ))
+              .getSingleOrNull();
+      if (selected == null) {
+        await (db.update(
+          db.firmaPodaci,
+        )..where((row) => row.id.equals(1))).write(
+          const FirmaPodaciCompanion(
+            parteDefaultTemplateId: Value(parteBuiltinTemplateId),
+          ),
+        );
+      }
+    }
+
+    if (hasScenarioState) {
+      for (final module in _optionalMapList(json, 'scenarioModules')) {
+        await db
+            .into(db.scenarioModules)
+            .insert(
+              _procitajBackupRed(
+                'scenarioModules',
+                module,
+                (row) => ScenarioModule.fromJson(row),
+              ).toCompanion(true),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
+      for (final definition in _optionalMapList(json, 'scenarioDefinitions')) {
+        await db
+            .into(db.scenarioDefinitions)
+            .insert(
+              _procitajBackupRed(
+                'scenarioDefinitions',
+                definition,
+                (row) => ScenarioDefinitionRecord.fromJson(row),
+              ).toCompanion(true),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
+    }
+
     for (final p in _requiredMapList(json, 'predmeti')) {
       final normalizedPredmet = _normalizujBackupPredmetMap(p);
       await db
@@ -941,6 +2431,52 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
+    }
+
+    for (final reminder in reminderPayload.settings) {
+      await db.customStatement(
+        'INSERT INTO ceremony_reminder_settings '
+        '(predmet_id, enabled, delivery_times, scheduled_notification_ids, '
+        'updated_at) VALUES (?, ?, ?, ?, ?)',
+        [
+          reminder.predmetId,
+          reminder.enabled ? 1 : 0,
+          jsonEncode(reminder.deliveryTimes),
+          '[]',
+          DateTime.now().toIso8601String(),
+        ],
+      );
+    }
+
+    for (final item in podsetnikPayload) {
+      if (!backupPredmetIds.contains(item.predmetId)) continue;
+      await db
+          .into(db.podsetnikObaveze)
+          .insert(
+            PodsetnikObavezeCompanion(
+              predmetId: Value(item.predmetId),
+              stableRuleId: Value(item.state.stableRuleId),
+              phase: Value(item.state.phase),
+              kind: Value(item.state.kind),
+              parentRuleId: Value(item.state.parentRuleId),
+              sourceFingerprint: Value(item.state.sourceFingerprint),
+              completed: Value(item.state.completed),
+              completedAt: Value(item.state.completedAt),
+              updatedAt: Value(DateTime.now().toIso8601String()),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+      if (item.state.obligationText?.trim().isNotEmpty == true) {
+        await db.customStatement(
+          'INSERT OR REPLACE INTO podsetnik_manual_obaveze '
+          '(predmet_id, stable_rule_id, obligation_text) VALUES (?, ?, ?)',
+          [
+            item.predmetId,
+            item.state.stableRuleId,
+            item.state.obligationText!.trim(),
+          ],
+        );
+      }
     }
 
     for (final i in _requiredMapList(json, 'iriu')) {
@@ -956,10 +2492,19 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             _procitajBackupRed(
               'iriu',
               normalizedIriu,
-              (row) => IriuData.fromJson(row),
+              (row) => iriuDataFromCompatibleJson(row),
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
+    }
+
+    // Full-backup PODSETNIK rows are loaded before IRiU only for compatibility
+    // with the historical raw-backup shape.  Reconcile after IRiU insertion so
+    // ČITULJA cleanup/attribution can discard stale or invalid rows before the
+    // restored transaction becomes visible.
+    final podsetnikRepository = PodsetnikObligationRepository(db);
+    for (final predmetId in backupPredmetIds) {
+      await podsetnikRepository.cleanupCituljaStateForPredmet(predmetId);
     }
 
     for (final k in _requiredMapList(json, 'kontaktLica')) {
@@ -978,6 +2523,31 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
               'kontaktLica',
               normalizedKontakt,
               (row) => KontaktLicaData.fromJson(row),
+            ).toCompanion(true),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+
+    for (final snapshot in _optionalMapList(json, 'predmetScenarioSnapshots')) {
+      await db
+          .into(db.predmetScenarioSnapshots)
+          .insert(
+            _procitajBackupRed(
+              'predmetScenarioSnapshots',
+              snapshot,
+              (row) => PredmetScenarioSnapshot.fromJson(row),
+            ).toCompanion(true),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    for (final provenance in _optionalMapList(json, 'iriuProvenance')) {
+      await db
+          .into(db.iriuProvenance)
+          .insert(
+            _procitajBackupRed(
+              'iriuProvenance',
+              provenance,
+              (row) => IriuProvenanceData.fromJson(row),
             ).toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
@@ -1018,14 +2588,19 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
         'datumVreme',
         'polje',
       ]);
+      final parsedLog = _procitajBackupRed(
+        'logIzmena',
+        normalizedLog,
+        (row) => LogIzmenaData.fromJson(row),
+      );
+      if (!backupPredmetIds.contains(parsedLog.predmetId)) {
+        skippedOrphanLogEntries++;
+        continue;
+      }
       await db
           .into(db.logIzmena)
           .insert(
-            _procitajBackupRed(
-              'logIzmena',
-              normalizedLog,
-              (row) => LogIzmenaData.fromJson(row),
-            ).toCompanion(true),
+            parsedLog.toCompanion(true),
             mode: InsertMode.insertOrReplace,
           );
     }
@@ -1058,13 +2633,180 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
             );
       }
     }
+
+    final parteMediaPolicy = json['parteMediaPolicy'];
+    if (parteMediaPolicy != null &&
+        parteMediaPolicy != _kParteMediaBackupPolicy) {
+      throw const _ImportBlokiranException(
+        'Uvoz je blokiran jer PARTE media politika kopije nije podrzana.',
+      );
+    }
+    for (final preparation in _optionalMapList(json, 'partePripreme')) {
+      final portablePreparation = Map<String, dynamic>.from(preparation)
+        ..['photoMediaKey'] = null
+        ..['customSymbolMediaKey'] = null;
+      final parsed = _procitajBackupRed(
+        'partePripreme',
+        portablePreparation,
+        (row) => PartePripremeData.fromJson(row),
+      );
+      if (!backupPredmetIds.contains(parsed.predmetId)) continue;
+      await db
+          .into(db.partePripreme)
+          .insert(parsed.toCompanion(true), mode: InsertMode.insertOrReplace);
+    }
+    for (final preparation in _optionalMapList(
+      json,
+      cituljePreparationTransferBlockKey,
+    )) {
+      final parsed = _procitajBackupRed(
+        cituljePreparationTransferBlockKey,
+        preparation,
+        (row) => CituljePreparationTransfer.fromJson(row),
+      );
+      final predmetId = _requiredInt(
+        preparation,
+        'predmetId',
+        cituljePreparationTransferBlockKey,
+      );
+      if (!backupPredmetIds.contains(predmetId)) continue;
+      final currentIriu =
+          (await (db.select(
+                db.iriu,
+              )..where((row) => row.predmetId.equals(predmetId))).get())
+              .where(
+                (row) =>
+                    row.portableOccurrenceId?.trim() ==
+                    parsed.portableOccurrenceId,
+              )
+              .toList(growable: false);
+      if (currentIriu.length != 1 ||
+          currentIriu.single.interniNaziv != parsed.articleType) {
+        throw const _ImportBlokiranException(
+          'Backup ČITULJE priprema nema odgovarajuću IRiU occurrence vezu.',
+        );
+      }
+      await db
+          .into(db.cituljePripreme)
+          .insert(
+            CituljePripremeCompanion.insert(
+              predmetId: predmetId,
+              portableOccurrenceId: parsed.portableOccurrenceId,
+              articleType: parsed.articleType,
+              parteTextMode: Value(parsed.parteTextMode?.dbValue),
+              publicationDate: Value(parsed.publicationDate),
+              publicationText: Value(parsed.publicationText),
+              note: Value(parsed.note),
+              state: Value(parsed.state.dbValue),
+              finalized: Value(parsed.finalized),
+              finalizedAt: Value(parsed.finalizedAt),
+              parteSnapshotFingerprint: Value(parsed.parteSnapshotFingerprint),
+              createdAt: DateTime.now().toIso8601String(),
+              updatedAt: DateTime.now().toIso8601String(),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+    await db.deduplicateCituljeCatalogAndRemapReferences();
+    await db.backfillMissingKatalogStableArticleIds();
+    await db.canonicalizeSeedCatalogStableArticleIds();
+    await AuthSecurityRepository(db).writeAuthAuditEvent(
+      eventType: 'full_backup_restore',
+      actorType: 'SYSTEM',
+      result: 'SUCCESS',
+      details: 'Full backup restored; installation security state preserved.',
+      installContext: 'local_installation',
+    );
   });
-  await db.backfillMissingKatalogStableArticleIds();
-  await db.canonicalizeSeedCatalogStableArticleIds();
   return _BackupImportResult(
     stockPayload.supported
         ? _BackupImportStatus.stockCompleteRestored
         : _BackupImportStatus.nonStockImportedWithoutStockRestore,
+    skippedOrphanReminderSettings: reminderPayload.skippedOrphans,
+    skippedOrphanLogEntries: skippedOrphanLogEntries,
+  );
+}
+
+_BackupReminderPayload _procitajBackupReminderSettings(
+  Map<String, dynamic> json,
+) {
+  final schemaVersion = json['schemaVersion'];
+  final raw = json['ceremonyReminderSettings'];
+  if (raw == null && (schemaVersion is! int || schemaVersion < 8)) {
+    return const _BackupReminderPayload(settings: [], skippedOrphans: 0);
+  }
+  if (raw is! List) {
+    throw const _ImportBlokiranException(
+      'Neispravan backup: nedostaje podrzana sekcija lokalnih podsetnika.',
+    );
+  }
+
+  final predmetIds = _requiredMapList(
+    json,
+    'predmeti',
+  ).map((row) => row['id']).whereType<int>().toSet();
+  final seen = <int>{};
+  final result = <_BackupReminderSetting>[];
+  var skippedOrphans = 0;
+  for (final item in raw) {
+    if (item is! Map) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: sekcija lokalnih podsetnika ima nevazeci red.',
+      );
+    }
+    final row = item.cast<String, dynamic>();
+    final predmetId = row['predmetId'];
+    final enabled = row['enabled'];
+    final deliveryTimes = row['deliveryTimes'];
+    if (predmetId is! int ||
+        enabled is! bool ||
+        deliveryTimes is! List ||
+        deliveryTimes.any((value) => value is! String) ||
+        !seen.add(predmetId) ||
+        row.containsKey('scheduledNotificationIds')) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: sekcija lokalnih podsetnika nije bezbedna.',
+      );
+    }
+    final normalized = CeremonyReminderConfig(
+      enabled: enabled,
+      deliveryTimes: deliveryTimes.cast<String>(),
+    ).normalizedDeliveryTimes;
+    if (!predmetIds.contains(predmetId)) {
+      skippedOrphans++;
+      continue;
+    }
+    result.add(
+      _BackupReminderSetting(
+        predmetId: predmetId,
+        enabled: enabled,
+        deliveryTimes: normalized,
+      ),
+    );
+  }
+  return _BackupReminderPayload(
+    settings: result,
+    skippedOrphans: skippedOrphans,
+  );
+}
+
+Future<_BackupImportResult> _uvoziBackupSaLifecycleKoordinacijom({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
+}) async {
+  final outcome = await FullBackupRestoreCoordinator(
+    db: db,
+    notificationGateway:
+        notificationGateway ?? AndroidCeremonyNotificationGateway(),
+    mediaStore: mediaStore,
+  ).restore(databaseRestore: () => _uvoziBackupUBazu(db, json));
+  return _BackupImportResult(
+    outcome.result.status,
+    reminderSchedulingFailures: outcome.reminderSchedulingFailures,
+    skippedOrphanReminderSettings: outcome.result.skippedOrphanReminderSettings,
+    skippedOrphanLogEntries: outcome.result.skippedOrphanLogEntries,
   );
 }
 
@@ -1179,6 +2921,14 @@ List<Map<String, dynamic>> _requiredMapList(
         return item.cast<String, dynamic>();
       })
       .toList(growable: false);
+}
+
+List<Map<String, dynamic>> _optionalMapList(
+  Map<String, dynamic> json,
+  String key,
+) {
+  if (!json.containsKey(key)) return const <Map<String, dynamic>>[];
+  return _requiredMapList(json, key);
 }
 
 void _validirajStanjeRobePayload(
@@ -1435,9 +3185,16 @@ double? _optionalFiniteNumber(
 
 // I/O HELPERS
 
-void _prikaziSnackBar(BuildContext ctx, String poruka, {bool greska = false}) {
+void _prikaziSnackBar(
+  BuildContext ctx,
+  String poruka, {
+  bool greska = false,
+  bool replacePending = false,
+}) {
   if (!ctx.mounted) return;
-  ScaffoldMessenger.of(ctx).showSnackBar(
+  final messenger = ScaffoldMessenger.of(ctx);
+  if (replacePending) messenger.clearSnackBars();
+  messenger.showSnackBar(
     SnackBar(
       content: Text(poruka),
       duration: const Duration(seconds: 5),
@@ -1483,12 +3240,21 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
   normalized.putIfAbsent('createdByKorisnikId', () => null);
   normalized.putIfAbsent('lastBusinessModifiedByKorisnikId', () => null);
   normalized.putIfAbsent('lastBusinessModifiedAt', () => null);
+  normalized.putIfAbsent('businessResponsibleName', () => null);
+  normalized.putIfAbsent('businessResponsibleRole', () => null);
+  normalized.putIfAbsent('docekDatum', () => '');
+  normalized.putIfAbsent('grobljePolaganjaUrne', () => '');
+  normalized.putIfAbsent('promenaSanduka', () => false);
+  normalized.putIfAbsent('obavestitiSvestenika', () => '');
   return documentTextCodec.normalizeMap(normalized);
 }
 
 void _zahtevajPodrzanuJsonSchemaVerziju(Map<String, dynamic> json) {
   final schemaVersion = json['schemaVersion'];
-  if (schemaVersion is! int || schemaVersion <= _kMaxSupportedSchemaVersion) {
+  final maxSupported = json['format'] == _kBackupTransferFormat
+      ? _kMaxSupportedBackupSchemaVersion
+      : _kMaxSupportedPredmetSchemaVersion;
+  if (schemaVersion is! int || schemaVersion <= maxSupported) {
     return;
   }
 
@@ -1508,8 +3274,12 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     json,
   );
   final iriuList = ((json['iriu'] as List?) ?? const <dynamic>[])
-      .map((item) => IriuData.fromJson((item as Map).cast<String, dynamic>()))
+      .map(
+        (item) =>
+            iriuDataFromCompatibleJson((item as Map).cast<String, dynamic>()),
+      )
       .toList(growable: false);
+  _validatePortableIriuOccurrenceIds(iriuList);
   final klList = ((json['kontaktLica'] as List?) ?? const <dynamic>[])
       .map(
         (item) =>
@@ -1520,12 +3290,121 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     json,
     iriuList,
   );
+  final rawScenarioCarrier = json[_kSinglePredmetScenarioCarrierBlock];
+  final scenarioCarrier = rawScenarioCarrier == null
+      ? null
+      : SinglePredmetScenarioCarrierBlock.fromJsonMap(
+          (rawScenarioCarrier as Map).cast<String, dynamic>(),
+        );
+  final rawLifecycleDecisions = json[_kSinglePredmetLifecycleDecisionBlock];
+  final lifecycleDecisions = rawLifecycleDecisions == null
+      ? null
+      : IriuLifecycleDecisionTransferBlock.fromJsonMap(
+          (rawLifecycleDecisions as Map).cast<String, dynamic>(),
+        );
+  final rawPodsetnik = json[podsetnikObligationTransferKey];
+  final podsetnikObaveze = rawPodsetnik == null
+      ? null
+      : PodsetnikObligationTransferBlock.fromJsonMap(
+          (rawPodsetnik as Map).cast<String, dynamic>(),
+        );
+  final cituljePripreme =
+      _optionalMapList(json, cituljePreparationTransferBlockKey)
+          .map((row) {
+            try {
+              return CituljePreparationTransfer.fromJson(row);
+            } catch (_) {
+              throw const _ImportBlokiranException(
+                'Neispravna ČITULJE sekcija u PREDMET JSON transferu.',
+              );
+            }
+          })
+          .toList(growable: false);
+  final cituljePortableIds = <String>{};
+  for (final item in cituljePripreme) {
+    if (!cituljePortableIds.add(item.portableOccurrenceId)) {
+      throw const _ImportBlokiranException(
+        'Duplirana ČITULJE portable occurrence veza.',
+      );
+    }
+  }
   return _PredmetTransferPayload(
     predmet: PredmetiData.fromJson(predmetMap),
     iriu: iriuList,
     kontaktLica: klList,
     stanjeRobeConsequences: stanjeRobeConsequences,
+    scenarioCarrier: scenarioCarrier,
+    lifecycleDecisions: lifecycleDecisions,
+    podsetnikObaveze: podsetnikObaveze,
+    cituljePripreme: cituljePripreme,
   );
+}
+
+Map<String, dynamic> _cituljePripremeToBackupMap(CituljePripremeData row) =>
+    <String, dynamic>{
+      ...row.toJson(),
+      'schemaVersion': cituljeTransferSchemaVersion,
+      'policy': cituljeTransferPolicy,
+    };
+
+void _validatePortableIriuOccurrenceIds(Iterable<IriuData> rows) {
+  final seenByPredmet = <int, Set<String>>{};
+  for (final row in rows) {
+    final portableId = row.portableOccurrenceId?.trim();
+    if (portableId == null || portableId.isEmpty) {
+      throw const PredmetJsonTransferValidationException(
+        'IRiU occurrence has no portable identity.',
+      );
+    }
+    final seen = seenByPredmet.putIfAbsent(row.predmetId, () => <String>{});
+    if (!seen.add(portableId)) {
+      throw const PredmetJsonTransferValidationException(
+        'IRiU transfer contains a duplicate portable occurrence identity.',
+      );
+    }
+  }
+}
+
+class _BackupPodsetnikSetting {
+  const _BackupPodsetnikSetting({required this.predmetId, required this.state});
+  final int predmetId;
+  final PodsetnikObligationTransferState state;
+}
+
+List<_BackupPodsetnikSetting> _procitajBackupPodsetnikSettings(
+  Map<String, dynamic> json,
+) {
+  final raw = json['podsetnikObaveze'];
+  if (raw == null) return const [];
+  if (raw is! List) {
+    throw const _ImportBlokiranException(
+      'Neispravan backup: PODSETNIK obaveze nisu lista.',
+    );
+  }
+  final seen = <(int, String)>{};
+  final result = <_BackupPodsetnikSetting>[];
+  for (final item in raw) {
+    if (item is! Map) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: PODSETNIK obaveza nije validna.',
+      );
+    }
+    final row = item.cast<String, dynamic>();
+    final predmetId = row['predmetId'];
+    if (predmetId is! int) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: PODSETNIK obaveza nema PREDMET identitet.',
+      );
+    }
+    final state = PodsetnikObligationTransferState.fromJsonMap(row);
+    if (!seen.add((predmetId, state.stableRuleId))) {
+      throw const _ImportBlokiranException(
+        'Neispravan backup: duplirana PODSETNIK obaveza.',
+      );
+    }
+    result.add(_BackupPodsetnikSetting(predmetId: predmetId, state: state));
+  }
+  return result;
 }
 
 List<_StanjeRobeConsequenceTransferItem>
@@ -1755,7 +3634,7 @@ Widget _buildConflictSection(String title, PredmetiData predmet) {
       _buildConflictField('verzija', predmet.verzija),
       _buildConflictField('exportVerzija', predmet.exportVerzija),
       _buildConflictField(
-        'lastBusinessModifiedByKorisnikId',
+        'lastBusinessModifiedByKorisnikId (lokalni ID)',
         predmet.lastBusinessModifiedByKorisnikId,
       ),
       _buildConflictField(
@@ -1765,7 +3644,7 @@ Widget _buildConflictSection(String title, PredmetiData predmet) {
       _buildConflictField('businessScenarioId', predmet.businessScenarioId),
       _buildConflictField('sourceIdentity', predmet.sourceIdentity),
       _buildConflictField('datumKreiranja', predmet.datumKreiranja),
-      _buildConflictField('savetnikId', predmet.savetnikId),
+      _buildConflictField('savetnikId (lokalni ID)', predmet.savetnikId),
     ],
   );
 }
@@ -1820,6 +3699,40 @@ Future<_PredmetConflictChoice?> _prikaziPredmetConflictDialog({
           onPressed: () =>
               Navigator.pop(dlgCtx, _PredmetConflictChoice.replaceImported),
           child: const Text('Zameni uvoznim'),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<bool?> _prikaziCase2FallbackDialog({
+  required BuildContext ctx,
+  required Case2FallbackPlan plan,
+}) {
+  return showDialog<bool>(
+    context: ctx,
+    builder: (dlgCtx) => AlertDialog(
+      title: const Text('Backup nema potpunu FIRMA identifikaciju'),
+      content: Text(
+        'Lokalni podaci neće biti zamenjeni. Mogu se uvesti samo novi i '
+        'nedvosmisleni PREDMETI koji nemaju lokalni konflikt.\n\n'
+        'Novi PREDMETI za uvoz: ${plan.newPredmetCount}\n'
+        'Konflikti istog identiteta: ${plan.sameIdentityConflictCount}\n'
+        'Dvosmisleni zapisi: ${plan.ambiguousCount}\n\n'
+        'Lokalna FIRMA, korisnici, katalog, šabloni, PARTE, podsetnici, '
+        'istorija i SCENARIO podaci ostaju lokalni. Konflikte obradite '
+        'pojedinačnim uvozom sa eksplicitnim izborom.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dlgCtx, false),
+          child: const Text('ODUSTANI'),
+        ),
+        FilledButton(
+          onPressed: plan.hasImportablePredmeti
+              ? () => Navigator.pop(dlgCtx, true)
+              : null,
+          child: const Text('UVEZI SAMO NOVE PREDMETE'),
         ),
       ],
     ),
@@ -1914,6 +3827,7 @@ Future<String> serializePredmetJsonForTest({
   required AppDatabase db,
   required int predmetId,
 }) async {
+  await db.backfillMissingIriuPortableOccurrenceIds(predmetId: predmetId);
   final predmet = await (db.select(
     db.predmeti,
   )..where((r) => r.id.equals(predmetId))).getSingle();
@@ -1926,24 +3840,61 @@ Future<String> serializePredmetJsonForTest({
   final stanjeRobePosledice = await StanjeRobePoslediceRepository(
     db,
   ).listActiveUnresolvedForPredmet(predmetId);
+  final firma = await db.select(db.firmaPodaci).getSingleOrNull();
 
-  return _serijalizujPredmet(predmet, iriuList, klList, stanjeRobePosledice);
+  return _serijalizujPredmet(
+    predmet,
+    iriuList,
+    klList,
+    stanjeRobePosledice,
+    firmaIdentitet: _firmaIdentitetFromMap(<String, dynamic>{
+      'pib': firma?.pib,
+      'mb': firma?.mb,
+    }),
+    cituljePripreme: await _cituljeForPredmetExport(
+      db: db,
+      predmetId: predmetId,
+    ),
+    scenarioCarrier: await _scenarioCarrierForExport(
+      db: db,
+      predmetId: predmetId,
+      iriu: iriuList,
+    ),
+    lifecycleDecisions: await _lifecycleDecisionsForExport(
+      db: db,
+      predmetId: predmetId,
+    ),
+    podsetnikObaveze: _podsetnikTransferBlockForExport(
+      await PodsetnikObligationRepository(db).exportPortableState(predmetId),
+    ),
+  );
 }
 
 @visibleForTesting
-Future<void> importPredmetJsonMapForTest({
+Future<String?> importPredmetJsonMapForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
   int? replaceLocalPredmetId,
+  required int? localActorKorisnikId,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
 }) {
+  if (localActorKorisnikId == null) {
+    return Future.error(
+      StateError('Active local user is required for PREDMET transfer.'),
+    );
+  }
   if (replaceLocalPredmetId != null) {
     return _zameniPredmetUBazi(
       db: db,
       lokalniPredmetId: replaceLocalPredmetId,
       json: json,
+      auditKorisnikId: localActorKorisnikId,
+      notificationGateway: notificationGateway,
+      mediaStore: mediaStore,
     );
   }
-  return _uvoziPredmetUBazu(db, json);
+  return _uvoziPredmetUBazu(db, json, localActorKorisnikId).then((_) => null);
 }
 
 @visibleForTesting
@@ -1952,12 +3903,50 @@ Future<String> serializeBackupJsonForTest({required AppDatabase db}) {
 }
 
 @visibleForTesting
-Future<void> importBackupJsonMapForTest({
+Future<String?> importBackupJsonMapForTest({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+  CeremonyNotificationGateway? notificationGateway,
+  ParteMediaStore? mediaStore,
+  bool coordinateExternalState = false,
+}) async {
+  _zahtevajPodrzanuJsonSchemaVerziju(json);
+  if (!coordinateExternalState) {
+    await _validateBackupBeforeDestructiveConfirmation(db, json);
+  }
+  if (coordinateExternalState) {
+    final result = await _uvoziBackupSaLifecycleKoordinacijom(
+      db: db,
+      json: json,
+      notificationGateway: notificationGateway,
+      mediaStore: mediaStore,
+    );
+    return result.message;
+  }
+  await _uvoziBackupUBazu(db, json);
+  return null;
+}
+
+@visibleForTesting
+Future<Case2FallbackPlan> buildCase2FallbackPlanForTest({
   required AppDatabase db,
   required Map<String, dynamic> json,
 }) async {
-  _zahtevajPodrzanuJsonSchemaVerziju(json);
-  await _uvoziBackupUBazu(db, json);
+  return (await _analizujCase2Fallback(db: db, json: json)).plan;
+}
+
+@visibleForTesting
+Future<Case2FallbackOutcome> applyCase2FallbackForTest({
+  required AppDatabase db,
+  required Map<String, dynamic> json,
+  required int localActorKorisnikId,
+}) async {
+  final analysis = await _analizujCase2Fallback(db: db, json: json);
+  return _primeniCase2Fallback(
+    db: db,
+    analysis: analysis,
+    localActorKorisnikId: localActorKorisnikId,
+  );
 }
 
 /// Legacy entrypoint za izvoz jednog PREDMETA kao JSON transfera.
@@ -1970,6 +3959,7 @@ Future<void> izvoziBeleznica({
   required int predmetId,
 }) async {
   try {
+    await db.backfillMissingIriuPortableOccurrenceIds(predmetId: predmetId);
     final p = await (db.select(
       db.predmeti,
     )..where((r) => r.id.equals(predmetId))).getSingle();
@@ -1990,16 +3980,37 @@ Future<void> izvoziBeleznica({
     final stanjeRobePosledice = await StanjeRobePoslediceRepository(
       db,
     ).listActiveUnresolvedForPredmet(predmetId);
+    final firma = await db.select(db.firmaPodaci).getSingleOrNull();
 
-    final jsonStr = _serijalizujPredmet(
+    final jsonStr = await _serijalizujPredmet(
       pFresh,
       iriuList,
       klList,
       stanjeRobePosledice,
+      firmaIdentitet: _firmaIdentitetFromMap(<String, dynamic>{
+        'pib': firma?.pib,
+        'mb': firma?.mb,
+      }),
+      cituljePripreme: await _cituljeForPredmetExport(
+        db: db,
+        predmetId: predmetId,
+      ),
+      scenarioCarrier: await _scenarioCarrierForExport(
+        db: db,
+        predmetId: predmetId,
+        iriu: iriuList,
+      ),
+      lifecycleDecisions: await _lifecycleDecisionsForExport(
+        db: db,
+        predmetId: predmetId,
+      ),
+      podsetnikObaveze: _podsetnikTransferBlockForExport(
+        await PodsetnikObligationRepository(db).exportPortableState(predmetId),
+      ),
     );
     final naziv = predmetFajlNaziv(pFresh);
 
-    if (Platform.isAndroid) {
+    if (_isAndroidRuntime) {
       final fajl = await sacuvajKoriceDokumentFajlDetalji(
         naziv,
         Uint8List.fromList(utf8.encode(jsonStr)),
@@ -2016,6 +4027,13 @@ Future<void> izvoziBeleznica({
           await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
         },
       );
+    } else if (kIsWeb) {
+      json_file_download.downloadJsonBytes(
+        Uint8List.fromList(utf8.encode(jsonStr)),
+        naziv,
+      );
+      if (!ctx.mounted) return;
+      _prikaziSnackBar(ctx, 'Izvezeno: $naziv');
     } else {
       await _sacuvajFajl(jsonStr, naziv);
       if (!ctx.mounted) return;
@@ -2044,7 +4062,7 @@ Future<void> izvoziBackup({
     final jsonStr = await _serijalizujBackup(db);
     final naziv = backupFajlNaziv();
 
-    if (Platform.isAndroid) {
+    if (_isAndroidRuntime) {
       final fajl = await sacuvajKoriceDokumentFajlDetalji(
         naziv,
         Uint8List.fromList(utf8.encode(jsonStr)),
@@ -2052,6 +4070,13 @@ Future<void> izvoziBackup({
       );
       if (!ctx.mounted) return;
       _prikaziSnackBar(ctx, 'Backup sa\u010Duvan: ${koriceFajlLokacija(fajl)}');
+    } else if (kIsWeb) {
+      json_file_download.downloadJsonBytes(
+        Uint8List.fromList(utf8.encode(jsonStr)),
+        naziv,
+      );
+      if (!ctx.mounted) return;
+      _prikaziSnackBar(ctx, 'Backup preuzet: $naziv');
     } else {
       await _sacuvajFajl(jsonStr, naziv);
       if (!ctx.mounted) return;
@@ -2068,22 +4093,36 @@ Future<void> izvoziBackup({
 Future<void> uveziPredmetIzJson({
   required BuildContext ctx,
   required AppDatabase db,
+  int? localActorKorisnikId,
 }) async {
-  await uvoziIzFajla(ctx: ctx, db: db, allowBackupImport: false);
+  await uvoziIzFajla(
+    ctx: ctx,
+    db: db,
+    allowBackupImport: false,
+    localActorKorisnikId: localActorKorisnikId,
+  );
 }
 
 Future<void> uvoziIzFajla({
   required BuildContext ctx,
   required AppDatabase db,
   bool allowBackupImport = true,
+  int? localActorKorisnikId,
 }) async {
+  var isPredmetImport = false;
   try {
-    final json = await _izaberiJsonMapu(preferDiskPath: Platform.isAndroid);
+    final json = await _izaberiJsonMapu(preferDiskPath: _isAndroidRuntime);
     if (json == null) return;
     final format = json['format'] as String?;
+    isPredmetImport =
+        format == _kPredmetTransferFormat ||
+        format == _kLegacyBeleznicaTransferFormat;
 
-    if (format == _kPredmetTransferFormat ||
-        format == _kLegacyBeleznicaTransferFormat) {
+    if (isPredmetImport) {
+      final localActor = await PredmetiRepository(
+        db,
+      ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+      await _validatePredmetFirmaIdentityPreflight(db, json);
       final payload = _procitajPredmetTransferPayload(json);
       final uvozniPredmet = payload.predmet;
       final brojPredmeta = uvozniPredmet.brojPredmeta.trim();
@@ -2101,6 +4140,7 @@ Future<void> uvoziIzFajla({
               'Postoji više lokalnih PREDMETA sa istim brojem predmeta. '
               'Uvoz je zaustavljen jer zamena nije bezbedna.',
               greska: true,
+              replacePending: true,
             );
             return;
           }
@@ -2114,29 +4154,65 @@ Future<void> uvoziIzFajla({
           if (izbor == _PredmetConflictChoice.cancel || izbor == null) return;
           if (izbor == _PredmetConflictChoice.keepLocal) {
             if (!ctx.mounted) return;
-            _prikaziSnackBar(ctx, 'Zadržan je lokalni PREDMET.');
+            _prikaziSnackBar(
+              ctx,
+              'Zadržan je lokalni PREDMET.',
+              replacePending: true,
+            );
             return;
           }
 
-          await _zameniPredmetUBazi(
+          final replacementWarning = await _zameniPredmetUBazi(
             db: db,
             lokalniPredmetId: existingP.id,
             json: json,
+            auditKorisnikId: localActor.id,
           );
           if (!ctx.mounted) return;
           _prikaziSnackBar(
             ctx,
-            'PREDMET je uspešno zamenjen uvoznim podacima.',
+            replacementWarning ?? 'PREDMET replacement completed.',
+            greska: replacementWarning != null,
+            replacePending: true,
           );
           return;
         }
       }
 
-      await _uvoziPredmetUBazu(db, json);
+      await _uvoziPredmetUBazu(db, json, localActor.id);
       if (!ctx.mounted) return;
-      _prikaziSnackBar(ctx, 'PREDMET uspešno uvezen kao novi lokalni predmet.');
+      _prikaziSnackBar(
+        ctx,
+        'PREDMET uspešno uvezen kao novi lokalni predmet.',
+        replacePending: true,
+      );
     } else if (format == _kBackupTransferFormat && allowBackupImport) {
-      _zahtevajPodrzanuJsonSchemaVerziju(json);
+      final identityState = await _validateBackupBeforeDestructiveConfirmation(
+        db,
+        json,
+        allowIncompleteExistingLocalState: true,
+      );
+      if (identityState ==
+          _BackupFirmIdentityState.incompleteExistingLocalState) {
+        final analysis = await _analizujCase2Fallback(db: db, json: json);
+        if (!ctx.mounted) return;
+        final potvrda = await _prikaziCase2FallbackDialog(
+          ctx: ctx,
+          plan: analysis.plan,
+        );
+        if (potvrda != true) return;
+        final localActor = await PredmetiRepository(
+          db,
+        ).zahtevajAktivnogLokalnogAktora(localActorKorisnikId);
+        final result = await _primeniCase2Fallback(
+          db: db,
+          analysis: analysis,
+          localActorKorisnikId: localActor.id,
+        );
+        if (!ctx.mounted) return;
+        _prikaziSnackBar(ctx, result.message);
+        return;
+      }
 
       if (!ctx.mounted) return;
       final potvrda = await showDialog<bool>(
@@ -2163,7 +4239,10 @@ Future<void> uvoziIzFajla({
         ),
       );
       if (potvrda != true) return;
-      final importResult = await _uvoziBackupUBazu(db, json);
+      final importResult = await _uvoziBackupSaLifecycleKoordinacijom(
+        db: db,
+        json: json,
+      );
       if (!ctx.mounted) return;
       _prikaziSnackBar(ctx, importResult.message);
     } else {
@@ -2178,6 +4257,11 @@ Future<void> uvoziIzFajla({
     }
   } catch (e) {
     if (!ctx.mounted) return;
-    _prikaziSnackBar(ctx, 'Gre\u0161ka pri uvozu: $e', greska: true);
+    _prikaziSnackBar(
+      ctx,
+      'Gre\u0161ka pri uvozu: $e',
+      greska: true,
+      replacePending: isPredmetImport,
+    );
   }
 }

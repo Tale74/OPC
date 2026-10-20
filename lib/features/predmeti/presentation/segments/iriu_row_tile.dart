@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../../../core/constants/iriu_constants.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/format/app_format.dart';
 import '../../../podesavanja/data/podesavanja_repository.dart';
@@ -11,7 +12,25 @@ import '../../../podesavanja/presentation/katalog_photo_policy.dart';
 import '../../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
 import '../../../stanje_robe/application/stanje_robe_operational_availability.dart';
 import '../../core_v2/models/iriu_truth_models.dart';
+import '../../core_v2/services/iriu_display_name_resolver.dart';
 import '../../data/iriu_repository.dart';
+import '../../domain/iriu_catalog_selection.dart';
+
+List<String> resolveIriuCatalogPickerCategoryKeys(String interniNaziv) {
+  if (interniNaziv == IriuK.cituljaP || interniNaziv == IriuK.cituljaNo) {
+    return const [IriuK.cituljaP, IriuK.cituljaNo];
+  }
+  return [interniNaziv];
+}
+
+int resolveCatalogDetailNavigationIndex({
+  required int currentIndex,
+  required int offset,
+  required int articleCount,
+}) {
+  if (articleCount <= 0) return 0;
+  return (currentIndex + offset).clamp(0, articleCount - 1);
+}
 
 /// Presentation-only row tile for one IRIU item.
 ///
@@ -27,6 +46,7 @@ class IriuRowTile extends StatefulWidget {
     required this.enabled,
     required this.truthRow,
     required this.stockConsequence,
+    this.catalogDisplayNames = const <String, String>{},
     required this.isNarrowAndroid,
     required this.preporucenoLabel,
   });
@@ -43,6 +63,7 @@ class IriuRowTile extends StatefulWidget {
   /// The row stays visible but muted instead of being deleted.
   final IriuTruthRow? truthRow;
   final StanjeRobePoslediceData? stockConsequence;
+  final Map<String, String> catalogDisplayNames;
 
   @override
   State<IriuRowTile> createState() => _IriuRowTileState();
@@ -53,6 +74,12 @@ class _IriuRowTileState extends State<IriuRowTile> {
   late final TextEditingController _nazivCtrl;
   late final TextEditingController _komCtrl;
   late final TextEditingController _iznosCtrl;
+  late final FocusNode _iznosFocusNode;
+  late double _lastValidIznos;
+  late double _unitPrice;
+  late double _lastKomValue;
+  bool _iznosInvalid = false;
+  bool _amountManuallyOverridden = false;
 
   bool _mozeIzgledatiKaoDostupanKatalog(bool? imaArtikala) {
     return imaArtikala ?? false;
@@ -61,7 +88,54 @@ class _IriuRowTileState extends State<IriuRowTile> {
   String _normalizedText(TextEditingController ctrl) =>
       normalizeText(ctrl.text);
 
-  double _parsedIznos() => parseMoneyInput(_iznosCtrl.text);
+  double _parsedIznos() =>
+      tryParseSerbianManualAmount(_iznosCtrl.text) ?? _lastValidIznos;
+
+  double _parsedKom() =>
+      tryParseSerbianManualAmount(_komCtrl.text.trim()) ?? _lastKomValue;
+
+  bool _nearlyEquals(double left, double right) => (left - right).abs() < 0.005;
+
+  void _setAutomaticAmount(double amount) {
+    _amountManuallyOverridden = false;
+    _lastValidIznos = amount;
+    _iznosInvalid = false;
+    final formatted = amount > 0 ? formatMoneyNumber(amount) : '';
+    if (_iznosCtrl.text == formatted) return;
+    _iznosCtrl.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  void _onQuantityChanged() {
+    final nextKom = _parsedKom();
+    if (!_amountManuallyOverridden && _unitPrice > 0) {
+      final currentAmount = _parsedIznos();
+      final previousAutomaticAmount = _lastKomValue * _unitPrice;
+      if (_nearlyEquals(currentAmount, previousAutomaticAmount)) {
+        _setAutomaticAmount(nextKom * _unitPrice);
+      }
+    }
+    _lastKomValue = nextKom;
+    _scheduleSave();
+    if (mounted) setState(() {});
+  }
+
+  void _normalizeIznosDisplay() {
+    final formatted = normalizeSerbianManualAmount(_iznosCtrl.text);
+    if (formatted == null) {
+      if (!_iznosInvalid && mounted) setState(() => _iznosInvalid = true);
+      return;
+    }
+    _lastValidIznos = tryParseSerbianManualAmount(_iznosCtrl.text) ?? 0.0;
+    if (formatted == _iznosCtrl.text && !_iznosInvalid) return;
+    setState(() {
+      _iznosInvalid = false;
+      _iznosCtrl.text = formatted;
+      _iznosCtrl.selection = TextSelection.collapsed(offset: formatted.length);
+    });
+  }
 
   bool _showSnackBarSafely(SnackBar snackBar) {
     if (!mounted) return false;
@@ -158,11 +232,57 @@ class _IriuRowTileState extends State<IriuRowTile> {
   void initState() {
     super.initState();
     final s = widget.stavka;
-    _nazivCtrl = TextEditingController(text: s.nazivPrikaz);
+    _nazivCtrl = TextEditingController(
+      text: resolveIriuDisplayName(
+        internalName: s.interniNaziv,
+        catalogDisplayNames: widget.catalogDisplayNames,
+        storedDisplayName: s.nazivPrikaz,
+      ).userFacingText,
+    );
     _komCtrl = TextEditingController(text: s.kom);
     _iznosCtrl = TextEditingController(
       text: s.iznos > 0 ? formatMoneyNumber(s.iznos) : '',
     );
+    _lastValidIznos = s.iznos;
+    _unitPrice = s.cena;
+    _lastKomValue = 1;
+    _lastKomValue = _parsedKom();
+    _amountManuallyOverridden =
+        _unitPrice > 0 &&
+        s.iznos > 0 &&
+        !_nearlyEquals(s.iznos, _lastKomValue * _unitPrice);
+    _iznosFocusNode = FocusNode();
+    _iznosFocusNode.addListener(() {
+      if (!_iznosFocusNode.hasFocus) _normalizeIznosDisplay();
+    });
+  }
+
+  @override
+  void didUpdateWidget(IriuRowTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previousResolved = resolveIriuDisplayName(
+      internalName: oldWidget.stavka.interniNaziv,
+      catalogDisplayNames: oldWidget.catalogDisplayNames,
+      storedDisplayName: oldWidget.stavka.nazivPrikaz,
+    ).userFacingText;
+    final currentResolved = resolveIriuDisplayName(
+      internalName: widget.stavka.interniNaziv,
+      catalogDisplayNames: widget.catalogDisplayNames,
+      storedDisplayName: widget.stavka.nazivPrikaz,
+    ).userFacingText;
+    final currentText = _nazivCtrl.text.trim();
+    final rowIdentityChanged =
+        oldWidget.stavka.interniNaziv != widget.stavka.interniNaziv;
+    final shouldRefresh =
+        rowIdentityChanged ||
+        currentText == previousResolved ||
+        currentText == unresolvedIriuCatalogItemLabel;
+    if (shouldRefresh && currentText != currentResolved) {
+      _nazivCtrl.value = TextEditingValue(
+        text: currentResolved,
+        selection: TextSelection.collapsed(offset: currentResolved.length),
+      );
+    }
   }
 
   @override
@@ -171,14 +291,22 @@ class _IriuRowTileState extends State<IriuRowTile> {
     _nazivCtrl.dispose();
     _komCtrl.dispose();
     _iznosCtrl.dispose();
+    _iznosFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> _otvoriKatalogZaStavku() async {
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
-    final artikli = await widget.podesavanjaRepo
-        .getArtikliZaKategorijuLightweight(widget.stavka.interniNaziv);
+    final kategorije = resolveIriuCatalogPickerCategoryKeys(
+      widget.stavka.interniNaziv,
+    );
+    final artikliPoKategoriji = await Future.wait(
+      kategorije.map(widget.podesavanjaRepo.getArtikliZaKategorijuLightweight),
+    );
+    final artikli = [
+      for (final artikliKategorije in artikliPoKategoriji) ...artikliKategorije,
+    ];
     if (!mounted) return;
 
     if (artikli.isEmpty) {
@@ -220,6 +348,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     String naziv,
     double cena,
     String? katalogStableArticleId,
+    String interniNazivKategorije,
   ) async {
     final accepted = await _confirmInsufficientStockSelectionIfNeeded(
       naziv: naziv,
@@ -230,15 +359,21 @@ class _IriuRowTileState extends State<IriuRowTile> {
     setState(() {
       _nazivCtrl.text = naziv;
       _komCtrl.text = '1';
-      _iznosCtrl.text = cena > 0 ? formatMoneyNumber(cena) : '';
+      _unitPrice = cena;
+      _lastKomValue = 1;
+      _setAutomaticAmount(cena);
     });
     _debounce?.cancel();
-    await widget.iriuRepo.azurirajKatalogIzborStavke(
+    await widget.iriuRepo.azurirajKatalogSelection(
       row: widget.stavka,
-      katalogStableArticleId: katalogStableArticleId,
-      nazivPrikaz: _normalizedText(_nazivCtrl),
-      kom: _normalizedText(_komCtrl),
-      iznos: _parsedIznos(),
+      selection: IriuCatalogSelection(
+        interniNaziv: interniNazivKategorije,
+        nazivPrikaz: _normalizedText(_nazivCtrl),
+        katalogStableArticleId: katalogStableArticleId,
+        cena: cena,
+        kom: _normalizedText(_komCtrl),
+        iznos: _parsedIznos(),
+      ),
     );
   }
 
@@ -301,6 +436,8 @@ class _IriuRowTileState extends State<IriuRowTile> {
     final prikaziPreporuceno =
         truthRow?.recommended == true && !imaValidanIznos;
     final prikaziBiohazard = truthRow?.biohazard == true;
+    final poslovnoUpozorenje = truthRow?.warning.trim() ?? '';
+    final provider = truthRow?.provider ?? 'firma';
     final stockConsequence = widget.stockConsequence;
     final prikaziStanjeRobeUpozorenje = stockConsequence != null;
     final suppressedFill = cs.surfaceContainerHighest.withValues(alpha: 0.4);
@@ -317,22 +454,35 @@ class _IriuRowTileState extends State<IriuRowTile> {
 
     InputDecoration rowDecoration({
       required EdgeInsetsGeometry contentPadding,
+      required TextEditingController controller,
     }) {
+      final inviteInput = fe && controller.text.trim().isEmpty;
+      final borderColor = !aktivan
+          ? suppressedBorder
+          : inviteInput
+          ? cs.primary
+          : cs.outline;
       return InputDecoration(
         border: const OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: aktivan ? cs.outline : suppressedBorder,
+            color: borderColor,
+            width: inviteInput ? 1.5 : 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
             color: aktivan ? cs.primary : suppressedBorder,
+            width: inviteInput ? 2 : 1,
           ),
         ),
         isDense: true,
-        filled: !aktivan,
-        fillColor: aktivan ? null : suppressedFill,
+        filled: !aktivan || inviteInput,
+        fillColor: !aktivan
+            ? suppressedFill
+            : inviteInput
+            ? cs.secondaryContainer
+            : null,
         contentPadding: contentPadding,
       );
     }
@@ -378,6 +528,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
         enabled: fe,
         textAlign: TextAlign.center,
         decoration: rowDecoration(
+          controller: _komCtrl,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 4,
             vertical: 8,
@@ -387,7 +538,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
           fontSize: 13,
           color: aktivan ? null : cs.onSurfaceVariant,
         ),
-        onChanged: (_) => _scheduleSave(),
+        onChanged: (_) => _onQuantityChanged(),
       );
       return width == null ? field : SizedBox(width: width, child: field);
     }
@@ -395,34 +546,40 @@ class _IriuRowTileState extends State<IriuRowTile> {
     Widget amountField({double? width}) {
       final field = TextFormField(
         controller: _iznosCtrl,
+        focusNode: _iznosFocusNode,
         enabled: fe,
         textAlign: TextAlign.right,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: rowDecoration(
+          controller: _iznosCtrl,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 8,
             vertical: 8,
           ),
-        ),
+        ).copyWith(errorText: _iznosInvalid ? 'Neispravan iznos' : null),
         style: TextStyle(
           fontSize: 13,
           color: aktivan ? null : cs.onSurfaceVariant,
         ),
         onChanged: (_) {
-          setState(() {});
-          _scheduleSave();
+          final parsed = tryParseSerbianManualAmount(_iznosCtrl.text);
+          setState(() => _iznosInvalid = parsed == null);
+          if (parsed != null) {
+            _lastValidIznos = parsed;
+            if (_unitPrice > 0) {
+              _amountManuallyOverridden = !_nearlyEquals(
+                parsed,
+                _lastKomValue * _unitPrice,
+              );
+            }
+            _scheduleSave();
+          } else {
+            _debounce?.cancel();
+          }
         },
         onEditingComplete: () {
-          final parsed = _parsedIznos();
-          final formatted = parsed > 0 ? formatMoneyNumber(parsed) : '';
-          if (formatted != _iznosCtrl.text) {
-            setState(() {
-              _iznosCtrl.text = formatted;
-              _iznosCtrl.selection = TextSelection.collapsed(
-                offset: formatted.length,
-              );
-            });
-          }
+          _normalizeIznosDisplay();
+          _iznosFocusNode.unfocus();
         },
       );
       return width == null ? field : SizedBox(width: width, child: field);
@@ -637,6 +794,14 @@ class _IriuRowTileState extends State<IriuRowTile> {
           foregroundColor: cs.onErrorContainer,
           compact: isNarrowAndroid,
         ),
+      if (provider == 'drugaSluzba')
+        statusChip(
+          label: 'OBEZBEĐUJE DRUGA SLUŽBA',
+          backgroundColor: cs.secondaryContainer,
+          borderColor: cs.secondary,
+          foregroundColor: cs.onSecondaryContainer,
+          compact: isNarrowAndroid,
+        ),
       if (prikaziStanjeRobeUpozorenje)
         statusChip(
           label: 'NIJE NA STANJU',
@@ -656,13 +821,17 @@ class _IriuRowTileState extends State<IriuRowTile> {
       controller: _nazivCtrl,
       enabled: fe,
       decoration: rowDecoration(
+        controller: _nazivCtrl,
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       ),
       style: TextStyle(
         fontSize: 13,
         color: aktivan ? null : cs.onSurfaceVariant,
       ),
-      onChanged: (_) => _scheduleSave(),
+      onChanged: (_) {
+        _scheduleSave();
+        setState(() {});
+      },
     );
 
     final row = isNarrowAndroid
@@ -741,6 +910,29 @@ class _IriuRowTileState extends State<IriuRowTile> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           row,
+          if (poslovnoUpozorenje.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.health_and_safety_outlined,
+                  size: 18,
+                  color: cs.error,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    poslovnoUpozorenje,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (prikaziStanjeRobeUpozorenje) ...[
             const SizedBox(height: 8),
             Row(
@@ -782,7 +974,12 @@ class _ArtikliPickerContent extends StatefulWidget {
 
   final PodesavanjaRepository podesavanjaRepo;
   final List<KatalogPickerArticleSummary> artikli;
-  final void Function(String naziv, double cena, String? katalogStableArticleId)
+  final void Function(
+    String naziv,
+    double cena,
+    String? katalogStableArticleId,
+    String interniNazivKategorije,
+  )
   onIzabrano;
   final VoidCallback onZatvori;
   final int crossAxisCount;
@@ -798,7 +995,6 @@ class _ArtikliPickerContent extends StatefulWidget {
 
 class _ArtikliPickerContentState extends State<_ArtikliPickerContent> {
   final Map<int, Future<Uint8List?>> _photoFuturesByArticleId = {};
-  KatalogPickerArticleSummary? _pregledArtikla;
 
   Future<Uint8List?> _photoFutureFor(KatalogPickerArticleSummary artikl) {
     if (!artikl.hasPhoto) {
@@ -810,452 +1006,339 @@ class _ArtikliPickerContentState extends State<_ArtikliPickerContent> {
     );
   }
 
-  void _otvoriPregled(KatalogPickerArticleSummary artikl) {
-    setState(() => _pregledArtikla = artikl);
-  }
-
-  void _zatvoriPregled() {
-    setState(() => _pregledArtikla = null);
+  Future<void> _otvoriPregled(KatalogPickerArticleSummary artikl) async {
+    final selected = await showDialog<KatalogPickerArticleSummary>(
+      context: context,
+      useRootNavigator: true,
+      barrierColor: Colors.black87,
+      builder: (context) => _CatalogArticleDetailViewer(
+        artikli: widget.artikli,
+        initialIndex: widget.artikli.indexOf(artikl),
+        photoFutureFor: _photoFutureFor,
+      ),
+    );
+    if (selected != null && mounted) {
+      _izaberiArtikl(selected);
+    }
   }
 
   void _izaberiArtikl(KatalogPickerArticleSummary artikl) {
-    _zatvoriPregled();
     widget.onZatvori();
-    widget.onIzabrano(artikl.naziv, artikl.cena, artikl.stableArticleId);
+    widget.onIzabrano(
+      artikl.naziv,
+      artikl.cena,
+      artikl.stableArticleId,
+      artikl.interniNazivKategorije,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Stack(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.showDragHandle)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: cs.onSurfaceVariant.withAlpha(76),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
+        if (widget.showDragHandle)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: cs.onSurfaceVariant.withAlpha(76),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-              ),
-            if (widget.showHeader) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Text(
-                  'Izaberi artikl',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              const Divider(height: 1),
-            ],
-            Expanded(
-              child: GridView.builder(
-                controller: widget.scrollCtrl,
-                padding: const EdgeInsets.all(12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: widget.crossAxisCount,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: widget.childAspectRatio,
-                ),
-                itemCount: widget.artikli.length,
-                itemBuilder: (_, i) {
-                  final a = widget.artikli[i];
-                  return _ArtiklKartica(
-                    photoFuture: _photoFutureFor(a),
-                    artikl: a,
-                    onIzabrano: () => _izaberiArtikl(a),
-                    onPregledaj: () => _otvoriPregled(a),
-                  );
-                },
               ),
             ),
-            if (widget.showCancelAction)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: TextButton(
-                  onPressed: widget.onZatvori,
-                  child: const Text('ODUSTANI'),
-                ),
-              ),
-          ],
+          ),
+        if (widget.showHeader) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              'Izaberi artikl',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          const Divider(height: 1),
+        ],
+        Expanded(
+          child: GridView.builder(
+            controller: widget.scrollCtrl,
+            padding: const EdgeInsets.all(12),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: widget.crossAxisCount,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: widget.childAspectRatio,
+            ),
+            itemCount: widget.artikli.length,
+            itemBuilder: (_, i) {
+              final a = widget.artikli[i];
+              return _ArtiklKartica(
+                photoFuture: _photoFutureFor(a),
+                artikl: a,
+                onIzabrano: () => _izaberiArtikl(a),
+                onPregledaj: () => _otvoriPregled(a),
+              );
+            },
+          ),
         ),
-        if (_pregledArtikla != null)
-          Positioned.fill(
-            child: LayoutBuilder(
-              builder: (context, viewportConstraints) {
-                final viewportWidth = viewportConstraints.maxWidth;
-                final viewportHeight = viewportConstraints.maxHeight;
-                final shortOrWidePreview =
-                    viewportWidth >= 720 || viewportWidth > viewportHeight;
-                final dialogHorizontalMargin = shortOrWidePreview ? 20.0 : 8.0;
-                final dialogMaxWidth =
-                    (viewportWidth - (dialogHorizontalMargin * 2))
-                        .clamp(280.0, shortOrWidePreview ? 920.0 : 640.0)
-                        .toDouble();
-                final dialogMaxHeight =
-                    viewportHeight * (shortOrWidePreview ? 0.88 : 0.84);
-                final previewHasPhoto = _pregledArtikla!.hasPhoto;
-
-                Widget previewImage({
-                  required EdgeInsetsGeometry padding,
-                  bool compactNoPhoto = false,
-                }) {
-                  return Padding(
-                    padding: padding,
-                    child: FutureBuilder<Uint8List?>(
-                      future: _photoFutureFor(_pregledArtikla!),
-                      builder: (context, snapshot) {
-                        final bytes = snapshot.data;
-                        if (bytes != null) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: KatalogPhotoPolicy.memoryImage(
-                              bytes,
-                              width: double.infinity,
-                              height: double.infinity,
-                              fit: BoxFit.contain,
-                              cacheWidth:
-                                  KatalogPhotoPolicy.previewDecodeTarget(
-                                    context,
-                                  ),
-                              cacheHeight:
-                                  KatalogPhotoPolicy.previewDecodeTarget(
-                                    context,
-                                  ),
-                              errorBuilder: (_, e, st) => const Center(
-                                child: Icon(
-                                  Icons.broken_image_outlined,
-                                  size: 80,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        if (_pregledArtikla!.hasPhoto &&
-                            snapshot.connectionState != ConnectionState.done) {
-                          return const Center(
-                            child: SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                          );
-                        }
-                        final noPhotoIconSize = compactNoPhoto ? 36.0 : 80.0;
-                        final noPhotoContent = Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.image_not_supported_outlined,
-                              size: noPhotoIconSize,
-                              color: cs.onSurfaceVariant,
-                            ),
-                            if (compactNoPhoto) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                'Nema fotografije',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: cs.onSurfaceVariant),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ],
-                        );
-                        if (compactNoPhoto) {
-                          return Center(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: cs.surfaceContainerHighest.withValues(
-                                  alpha: 0.55,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: cs.outlineVariant),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 14,
-                                ),
-                                child: noPhotoContent,
-                              ),
-                            ),
-                          );
-                        }
-                        return const Center(
-                          child: Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 80,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }
-
-                Widget previewMeta({
-                  required EdgeInsetsGeometry padding,
-                  required Alignment actionsAlignment,
-                  required TextAlign textAlign,
-                }) {
-                  return SingleChildScrollView(
-                    padding: padding,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          _pregledArtikla!.naziv,
-                          style: Theme.of(context).textTheme.titleMedium,
-                          textAlign: textAlign,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${formatMoneyNumber(_pregledArtikla!.cena)} RSD',
-                          style: TextStyle(color: cs.onSurfaceVariant),
-                          textAlign: textAlign,
-                        ),
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: actionsAlignment,
-                          child: OverflowBar(
-                            alignment: MainAxisAlignment.end,
-                            spacing: 8,
-                            children: [
-                              TextButton(
-                                onPressed: _zatvoriPregled,
-                                child: const Text('ZATVORI'),
-                              ),
-                              FilledButton(
-                                onPressed: () =>
-                                    _izaberiArtikl(_pregledArtikla!),
-                                child: const Text('IZABERI'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ColoredBox(
-                  color: Colors.black54,
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: dialogMaxWidth,
-                        maxHeight: dialogMaxHeight,
-                      ),
-                      child: Material(
-                        color:
-                            Theme.of(context).dialogTheme.backgroundColor ??
-                            Theme.of(context).colorScheme.surface,
-                        elevation: 24,
-                        borderRadius: BorderRadius.circular(12),
-                        clipBehavior: Clip.antiAlias,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final useWideLayout =
-                                shortOrWidePreview &&
-                                constraints.maxWidth >= 560 &&
-                                constraints.maxHeight <= 560;
-
-                            if (useWideLayout) {
-                              final sidePanelWidth =
-                                  (constraints.maxWidth * 0.34)
-                                      .clamp(220.0, 300.0)
-                                      .toDouble();
-                              if (!previewHasPhoto) {
-                                return Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    ConstrainedBox(
-                                      constraints: const BoxConstraints(
-                                        maxHeight: 104,
-                                      ),
-                                      child: previewImage(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          12,
-                                          12,
-                                          12,
-                                          8,
-                                        ),
-                                        compactNoPhoto: true,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                            top: BorderSide(
-                                              color: cs.outlineVariant,
-                                            ),
-                                          ),
-                                        ),
-                                        child: previewMeta(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            16,
-                                            12,
-                                            16,
-                                            14,
-                                          ),
-                                          actionsAlignment:
-                                              Alignment.centerRight,
-                                          textAlign: TextAlign.left,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    child: previewImage(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        12,
-                                        12,
-                                        8,
-                                        12,
-                                      ),
-                                    ),
-                                  ),
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxWidth: sidePanelWidth,
-                                    ),
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          left: BorderSide(
-                                            color: cs.outlineVariant,
-                                          ),
-                                        ),
-                                      ),
-                                      child: previewMeta(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          12,
-                                          16,
-                                          12,
-                                          16,
-                                        ),
-                                        actionsAlignment: Alignment.centerRight,
-                                        textAlign: TextAlign.left,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-
-                            final metadataMaxHeight =
-                                constraints.maxHeight * 0.32;
-                            if (!previewHasPhoto) {
-                              final noPhotoMaxHeight =
-                                  (constraints.maxHeight * 0.28)
-                                      .clamp(88.0, 128.0)
-                                      .toDouble();
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxHeight: noPhotoMaxHeight,
-                                    ),
-                                    child: previewImage(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        12,
-                                        12,
-                                        12,
-                                        8,
-                                      ),
-                                      compactNoPhoto: true,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          top: BorderSide(
-                                            color: cs.outlineVariant,
-                                          ),
-                                        ),
-                                      ),
-                                      child: previewMeta(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          12,
-                                          10,
-                                          12,
-                                          14,
-                                        ),
-                                        actionsAlignment: Alignment.centerRight,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Expanded(
-                                  child: previewImage(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      12,
-                                      12,
-                                      12,
-                                      8,
-                                    ),
-                                  ),
-                                ),
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      top: BorderSide(color: cs.outlineVariant),
-                                    ),
-                                  ),
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxHeight: metadataMaxHeight,
-                                    ),
-                                    child: previewMeta(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        12,
-                                        10,
-                                        12,
-                                        14,
-                                      ),
-                                      actionsAlignment: Alignment.centerRight,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+        if (widget.showCancelAction)
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: TextButton(
+              onPressed: widget.onZatvori,
+              child: const Text('ODUSTANI'),
             ),
           ),
       ],
+    );
+  }
+}
+
+class _CatalogArticleDetailViewer extends StatefulWidget {
+  const _CatalogArticleDetailViewer({
+    required this.artikli,
+    required this.initialIndex,
+    required this.photoFutureFor,
+  });
+
+  final List<KatalogPickerArticleSummary> artikli;
+  final int initialIndex;
+  final Future<Uint8List?> Function(KatalogPickerArticleSummary article)
+  photoFutureFor;
+
+  @override
+  State<_CatalogArticleDetailViewer> createState() =>
+      _CatalogArticleDetailViewerState();
+}
+
+class _CatalogArticleDetailViewerState
+    extends State<_CatalogArticleDetailViewer> {
+  late int _currentIndex;
+
+  KatalogPickerArticleSummary get _article => widget.artikli[_currentIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex.clamp(0, widget.artikli.length - 1);
+  }
+
+  void _move(int offset) {
+    final next = resolveCatalogDetailNavigationIndex(
+      currentIndex: _currentIndex,
+      offset: offset,
+      articleCount: widget.artikli.length,
+    );
+    if (next != _currentIndex) {
+      setState(() => _currentIndex = next);
+    }
+  }
+
+  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _move(-1);
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _move(1);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final size = media.size;
+    final isWide = size.width >= 700 || size.width > size.height;
+    final margin = Theme.of(context).platform == TargetPlatform.android
+        ? 8.0
+        : 20.0;
+
+    return Focus(
+      autofocus: true,
+      onKeyEvent: _handleKey,
+      child: Dialog(
+        insetPadding: EdgeInsets.all(margin),
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(
+          width: size.width - margin * 2,
+          height: size.height - media.padding.vertical - margin * 2,
+          child: isWide ? _buildWide(context) : _buildPortrait(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWide(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: _buildImageWithNavigation(context)),
+        SizedBox(width: 300, child: _buildInfo(context, centered: false)),
+      ],
+    );
+  }
+
+  Widget _buildPortrait(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: _buildImageWithNavigation(context)),
+        _buildInfo(context, centered: true),
+      ],
+    );
+  }
+
+  Widget _buildImageWithNavigation(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: FutureBuilder<Uint8List?>(
+            future: widget.photoFutureFor(_article),
+            builder: (context, snapshot) {
+              final bytes = snapshot.data;
+              if (bytes != null) {
+                final decode = KatalogPhotoPolicy.aspectRatioSafePreviewDecode(
+                  context,
+                );
+                return KatalogPhotoPolicy.memoryImage(
+                  bytes,
+                  fit: BoxFit.contain,
+                  cacheWidth: decode.cacheWidth,
+                  cacheHeight: decode.cacheHeight,
+                  errorBuilder: (_, e, st) => const Center(
+                    child: Icon(Icons.broken_image_outlined, size: 80),
+                  ),
+                );
+              }
+              if (_article.hasPhoto &&
+                  snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return const Center(
+                child: Icon(Icons.image_not_supported_outlined, size: 80),
+              );
+            },
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: _navigationButton(
+            key: const Key('catalog-detail-previous'),
+            icon: Icons.chevron_left,
+            tooltip: 'Prethodni artikl',
+            onPressed: _currentIndex > 0 ? () => _move(-1) : null,
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _navigationButton(
+            key: const Key('catalog-detail-next'),
+            icon: Icons.chevron_right,
+            tooltip: 'Sledeci artikl',
+            onPressed: _currentIndex < widget.artikli.length - 1
+                ? () => _move(1)
+                : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _navigationButton({
+    required Key key,
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback? onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Material(
+        color: Colors.black54,
+        shape: const CircleBorder(),
+        child: IconButton(
+          key: key,
+          tooltip: tooltip,
+          color: Colors.white,
+          disabledColor: Colors.white38,
+          iconSize: 36,
+          onPressed: onPressed,
+          icon: Icon(icon),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfo(BuildContext context, {required bool centered}) {
+    final cs = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          top: centered
+              ? BorderSide(color: cs.outlineVariant)
+              : BorderSide.none,
+          left: centered
+              ? BorderSide.none
+              : BorderSide(color: cs.outlineVariant),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: centered ? MainAxisSize.min : MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: centered
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.center,
+            children: [
+              Text(
+                _article.naziv,
+                key: const Key('catalog-detail-title'),
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: centered ? TextAlign.center : TextAlign.left,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${formatMoneyNumber(_article.cena)} RSD',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: cs.onSurfaceVariant),
+                textAlign: centered ? TextAlign.center : TextAlign.left,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${_currentIndex + 1} / ${widget.artikli.length}',
+                textAlign: centered ? TextAlign.center : TextAlign.left,
+              ),
+              const SizedBox(height: 16),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('ZATVORI'),
+                  ),
+                  FilledButton(
+                    key: const Key('catalog-detail-select'),
+                    onPressed: () => Navigator.pop(context, _article),
+                    child: const Text('IZABERI'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1369,7 +1452,12 @@ class _ArtikliPicker extends StatelessWidget {
 
   final PodesavanjaRepository podesavanjaRepo;
   final List<KatalogPickerArticleSummary> artikli;
-  final void Function(String naziv, double cena, String? katalogStableArticleId)
+  final void Function(
+    String naziv,
+    double cena,
+    String? katalogStableArticleId,
+    String interniNazivKategorije,
+  )
   onIzabrano;
 
   @override
@@ -1413,7 +1501,12 @@ class _ArtikliPickerDialog extends StatelessWidget {
 
   final PodesavanjaRepository podesavanjaRepo;
   final List<KatalogPickerArticleSummary> artikli;
-  final void Function(String naziv, double cena, String? katalogStableArticleId)
+  final void Function(
+    String naziv,
+    double cena,
+    String? katalogStableArticleId,
+    String interniNazivKategorije,
+  )
   onIzabrano;
 
   @override

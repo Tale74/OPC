@@ -1,9 +1,10 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'core/database/database.dart';
+import 'core/platform/platform_support.dart';
+import 'core/entitlements/opc_entitlement_policy.dart';
+import 'core/entitlements/opc_runtime_entitlement_resolver.dart';
 import 'core/theme/app_typography.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/domain/session_service.dart';
@@ -30,6 +31,7 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
   late final PodesavanjaRepository _podesavanjaRepo;
   late final PredmetiRepository _predmetiRepo;
   late final ReminderMvpService _reminderService;
+  late final Future<OpcEntitlementPolicy> _entitlementPolicyFuture;
   final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
@@ -40,14 +42,15 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
     _podesavanjaRepo = PodesavanjaRepository(widget.db);
     _predmetiRepo = PredmetiRepository(widget.db);
     _reminderService = ReminderMvpService();
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    _entitlementPolicyFuture = const OpcRuntimeEntitlementResolver().resolve();
+    if (isDesktopRuntime) {
       windowManager.addListener(this);
     }
   }
 
   @override
   void dispose() {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    if (isDesktopRuntime) {
       windowManager.removeListener(this);
     }
     super.dispose();
@@ -89,6 +92,7 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
         podesavanjaRepo: _podesavanjaRepo,
         predmetiRepo: _predmetiRepo,
         reminderService: _reminderService,
+        entitlementPolicyFuture: _entitlementPolicyFuture,
       ),
     );
   }
@@ -118,10 +122,7 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
       seedColor: const Color(0xFF1A5276),
       brightness: brightness,
     );
-    final baseTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: colorScheme,
-    );
+    final baseTheme = ThemeData(useMaterial3: true, colorScheme: colorScheme);
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
@@ -139,10 +140,7 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
           letterSpacing: 0.5,
         ),
       ),
-      cardTheme: const CardThemeData(
-        elevation: 1,
-        margin: EdgeInsets.zero,
-      ),
+      cardTheme: const CardThemeData(elevation: 1, margin: EdgeInsets.zero),
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -163,8 +161,10 @@ class _OpcAppState extends State<OpcApp> with WindowListener {
         indicatorColor: colorScheme.onPrimary,
         dividerColor: Colors.transparent,
         labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-        unselectedLabelStyle:
-            const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 13,
+        ),
       ),
     );
   }
@@ -181,6 +181,7 @@ class _StartRouter extends StatefulWidget {
     required this.podesavanjaRepo,
     required this.predmetiRepo,
     required this.reminderService,
+    required this.entitlementPolicyFuture,
   });
 
   final AuthRepository authRepo;
@@ -188,6 +189,7 @@ class _StartRouter extends StatefulWidget {
   final PodesavanjaRepository podesavanjaRepo;
   final PredmetiRepository predmetiRepo;
   final ReminderMvpService reminderService;
+  final Future<OpcEntitlementPolicy> entitlementPolicyFuture;
 
   @override
   State<_StartRouter> createState() => _StartRouterState();
@@ -209,10 +211,31 @@ class _StartRouterState extends State<_StartRouter> {
     super.dispose();
   }
 
-  void _onSessionChange() => setState(() {});
+  void _onSessionChange() {
+    // User existence can change while this process is alive (for example,
+    // after a full backup restore). Refresh the route guard when the session
+    // changes so logout reflects the current database rather than a startup
+    // snapshot captured before restore.
+    _hasKorisnika = widget.authRepo.hasKorisnika();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<OpcEntitlementPolicy>(
+      future: widget.entitlementPolicyFuture,
+      builder: (context, entitlementSnapshot) {
+        if (!entitlementSnapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildWithEntitlement(entitlementSnapshot.data!);
+      },
+    );
+  }
+
+  Widget _buildWithEntitlement(OpcEntitlementPolicy entitlementPolicy) {
     if (widget.session.prijavljen) {
       return FutureBuilder<bool>(
         future: widget.authRepo.korisnikMoraPromenitiPin(
@@ -240,6 +263,7 @@ class _StartRouterState extends State<_StartRouter> {
             podesavanjaRepo: widget.podesavanjaRepo,
             session: widget.session,
             reminderService: widget.reminderService,
+            entitlementPolicy: entitlementPolicy,
           );
         },
       );

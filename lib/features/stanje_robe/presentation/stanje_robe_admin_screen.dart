@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/help/opc_help.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import '../../auth/domain/session_service.dart';
 import '../../podesavanja/data/podesavanja_repository.dart';
 import '../application/stanje_robe_lifecycle_service.dart';
@@ -29,7 +31,12 @@ class StanjeRobeAdminScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!session.jeAdmin) {
       return Scaffold(
-        appBar: AppBar(title: const Text('STANJE ROBE')),
+        appBar: AppBar(
+          title: const OpcHelpTitle(
+            title: Text('STANJE ROBE'),
+            chapterId: 'stock',
+          ),
+        ),
         body: const Center(
           child: Padding(
             padding: EdgeInsets.all(24),
@@ -48,7 +55,12 @@ class StanjeRobeAdminScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('STANJE ROBE')),
+      appBar: AppBar(
+        title: const OpcHelpTitle(
+          title: Text('STANJE ROBE'),
+          chapterId: 'stock',
+        ),
+      ),
       body: SafeArea(
         child: StreamBuilder<StanjeRobeOperationalStatus>(
           stream: availability.watchStatus(),
@@ -671,16 +683,30 @@ class _StockEditDialogState extends State<_StockEditDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextField(
+          ManualEntryAffordance(
             controller: _currentController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Trenutna količina'),
+            enabled: true,
+            child: TextField(
+              controller: _currentController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(labelText: 'Trenutna količina'),
+            ),
           ),
           const SizedBox(height: 12),
-          TextField(
+          ManualEntryAffordance(
             controller: _minimumController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Minimalna količina'),
+            enabled: true,
+            child: TextField(
+              controller: _minimumController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Minimalna količina',
+              ),
+            ),
           ),
         ],
       ),

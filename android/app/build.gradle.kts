@@ -30,6 +30,22 @@ android {
         multiDexEnabled = true
     }
 
+    // Keep the production package identity as the default, while providing an
+    // explicitly co-installable Android structural-test lane. The Dart lane
+    // is selected separately with BUILD_VARIANT=ANDROID_TEST; both flags are
+    // required together for a test build.
+    flavorDimensions += "opcLane"
+    productFlavors {
+        create("production") {
+            dimension = "opcLane"
+            applicationId = "com.tale.opc_v4"
+        }
+        create("opcTest") {
+            dimension = "opcLane"
+            applicationIdSuffix = ".androidtest"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

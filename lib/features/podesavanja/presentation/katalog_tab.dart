@@ -4,10 +4,13 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/help/opc_help.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
+import '../../../core/widgets/manual_entry_affordance.dart';
 import 'katalog_photo_policy.dart';
 import '../data/podesavanja_repository.dart';
 
@@ -68,8 +71,10 @@ class KatalogTab extends StatelessWidget {
             ),
             Expanded(
               child: ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 itemCount: stavke.length,
                 itemBuilder: (context, i) => _KatalogItemTile(
                   key: ValueKey(stavke[i].interniNaziv),
@@ -88,11 +93,7 @@ class KatalogTab extends StatelessWidget {
 // ── Tile za jednu stavku kataloga ─────────────────────────────────────────────
 
 class _KatalogItemTile extends StatefulWidget {
-  const _KatalogItemTile({
-    super.key,
-    required this.item,
-    required this.repo,
-  });
+  const _KatalogItemTile({super.key, required this.item, required this.repo});
 
   final IriuKatalogConfigData item;
   final PodesavanjaRepository repo;
@@ -105,28 +106,57 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
   bool _expanded = false;
 
   bool get _jeKataloska => widget.item.tip == 'KATALOSKA';
-  bool get _jeKorisnicka => widget.item.jeKorisnicka;
 
   Future<void> _editDialog(BuildContext context) async {
-    final nazivCtrl =
-        TextEditingController(text: widget.item.nazivPrikaz);
+    final nazivCtrl = TextEditingController(text: widget.item.nazivPrikaz);
+    final cenaCtrl = TextEditingController(
+      text: !_jeKataloska && widget.item.cena > 0
+          ? formatBroj(widget.item.cena)
+          : '',
+    );
     bool vidljiv = widget.item.vidljiv;
+    // Legacy database flag is intentionally not editable in KATALOG.
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => AlertDialog(
-          title: const Text('Izmeni stavku'),
+          title: const OpcHelpTitle(
+            title: Text('Izmeni stavku'),
+            chapterId: 'settings.catalog',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              ManualEntryAffordance(
                 controller: nazivCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Naziv prikaza',
-                  border: OutlineInputBorder(),
+                enabled: true,
+                child: TextField(
+                  controller: nazivCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Naziv prikaza',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
+              if (!_jeKataloska) ...[
+                const SizedBox(height: 12),
+                ManualEntryAffordance(
+                  controller: cenaCtrl,
+                  enabled: true,
+                  child: TextField(
+                    controller: cenaCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'CENA (RSD)',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               SwitchListTile(
                 value: vidljiv,
@@ -152,37 +182,50 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
 
     final noviNaziv = nazivCtrl.text.trim();
     nazivCtrl.dispose();
+    final cena = !_jeKataloska ? parsirajBroj(cenaCtrl.text) : 0.0;
+    cenaCtrl.dispose();
 
     if (ok == true && context.mounted) {
-      await widget.repo.azurirajKatalogStavku(
-        widget.item.interniNaziv,
-        IriuKatalogConfigCompanion(
-          nazivPrikaz: Value(
-            noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
+      try {
+        await widget.repo.azurirajKatalogStavku(
+          widget.item.interniNaziv,
+          IriuKatalogConfigCompanion(
+            nazivPrikaz: Value(
+              noviNaziv.isEmpty ? widget.item.nazivPrikaz : noviNaziv,
+            ),
+            vidljiv: Value(vidljiv),
+            cena: _jeKataloska ? const Value.absent() : Value(cena),
+            osnovnaUSvakomPredmetu: const Value.absent(),
           ),
-          vidljiv: Value(vidljiv),
-        ),
-      );
+        );
+      } on KatalogIntegrityException catch (error) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
     }
   }
 
   Future<void> _ukloniIliDeaktiviraj(BuildContext context) async {
-    final status = await widget.repo
-        .proveriKategorijuZaLifecycleAkciju(widget.item.interniNaziv);
+    final status = await widget.repo.proveriKategorijuZaLifecycleAkciju(
+      widget.item.interniNaziv,
+    );
     if (status == null || !context.mounted) return;
-
     final ideNaBrisanje = status.mozeFizickoBrisanje;
     final naslov = ideNaBrisanje
         ? 'Obriši kategoriju'
         : 'Deaktiviraj kategoriju';
     final opis = ideNaBrisanje
         ? 'Kategorija nije korišćena i može biti fizički obrisana.'
+        : status.uScenariju
+        ? 'Kategorija se koristi u postojećem paketu. Ne može se obrisati, ali će biti deaktivirana i sakrivena iz kataloga.'
         : 'Kategorija je korišćena ili povezana, pa će biti bezbedno deaktivirana i sakrivena iz aktivnog kataloga.';
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(naslov),
+        title: OpcHelpTitle(title: Text(naslov), chapterId: 'settings.catalog'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,6 +244,12 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                       ? 'Kategorija ima povezane artikle.'
                       : 'Kategorija nema povezane artikle.',
                 ),
+              if (status.uOsnovnomPaketu)
+                const Text('Kategorija se koristi u osnovnom paketu.'),
+              if (status.uScenariju)
+                const Text(
+                  'Kategorija se koristi u postojećem paketu i ne može se obrisati.',
+                ),
             ],
           ],
         ),
@@ -218,8 +267,9 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
     );
     if (ok != true || !context.mounted) return;
 
-    final ishod = await widget.repo
-        .ukloniIliDeaktivirajKorisnickuKategoriju(widget.item.interniNaziv);
+    final ishod = await widget.repo.ukloniIliDeaktivirajKorisnickuKategoriju(
+      widget.item.interniNaziv,
+    );
     if (!context.mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
@@ -249,8 +299,7 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                 : null,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               child: Row(
                 children: [
                   Expanded(
@@ -259,15 +308,18 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                       children: [
                         Text(
                           widget.item.nazivPrikaz,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
+                        if (!_jeKataloska && widget.item.cena > 0)
+                          Text(
+                            formatRsd(widget.item.cena),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         const SizedBox(height: 3),
                         Wrap(
                           spacing: 4,
-                          children: [
-                            _TipChip(_jeKataloska),
-                          ],
+                          runSpacing: 4,
+                          children: [_TipChip(_jeKataloska)],
                         ),
                       ],
                     ),
@@ -277,17 +329,14 @@ class _KatalogItemTileState extends State<_KatalogItemTile> {
                     tooltip: 'Izmeni',
                     onPressed: () => _editDialog(context),
                   ),
-                  if (_jeKorisnicka)
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Ukloni kategoriju',
-                      onPressed: () => _ukloniIliDeaktiviraj(context),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Ukloni ili zaštiti kategoriju',
+                    onPressed: () => _ukloniIliDeaktiviraj(context),
+                  ),
                   if (_jeKataloska)
                     Icon(
-                      _expanded
-                          ? Icons.expand_less
-                          : Icons.expand_more,
+                      _expanded ? Icons.expand_less : Icons.expand_more,
                       color: scheme.primary,
                     ),
                 ],
@@ -316,8 +365,7 @@ class _NovaKategorijaDialog extends StatefulWidget {
   const _NovaKategorijaDialog();
 
   @override
-  State<_NovaKategorijaDialog> createState() =>
-      _NovaKategorijaDialogState();
+  State<_NovaKategorijaDialog> createState() => _NovaKategorijaDialogState();
 }
 
 class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
@@ -337,42 +385,46 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
       setState(() => _greskaNaziv = true);
       return;
     }
-    Navigator.pop(
-      context,
-      _NovaKategorijaResult(naziv: naziv, tip: _tip),
-    );
+    Navigator.pop(context, _NovaKategorijaResult(naziv: naziv, tip: _tip));
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Dodaj kategoriju'),
+      title: const OpcHelpTitle(
+        title: Text('Dodaj kategoriju'),
+        chapterId: 'settings.catalog',
+      ),
       content: SizedBox(
         width: 380,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            ManualEntryAffordance(
               controller: _nazivCtrl,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Naziv kategorije',
-                border: const OutlineInputBorder(),
-                isDense: true,
-                errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+              enabled: true,
+              child: TextField(
+                controller: _nazivCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Naziv kategorije',
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                  errorText: _greskaNaziv ? 'Naziv je obavezan' : null,
+                ),
+                onChanged: (_) {
+                  if (_greskaNaziv) setState(() => _greskaNaziv = false);
+                },
+                onSubmitted: (_) => _potvrdi(),
               ),
-              onChanged: (_) {
-                if (_greskaNaziv) setState(() => _greskaNaziv = false);
-              },
-              onSubmitted: (_) => _potvrdi(),
             ),
             const SizedBox(height: 16),
             Text(
               'Tip kategorije:',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             SegmentedButton<String>(
@@ -389,17 +441,21 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
                 ),
               ],
               selected: {_tip},
-              onSelectionChanged: (sel) =>
-                  setState(() => _tip = sel.first),
-              style: const ButtonStyle(
-                visualDensity: VisualDensity.compact,
-              ),
+              onSelectionChanged: (sel) => setState(() => _tip = sel.first),
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
             const SizedBox(height: 4),
             Text(
               _tip == 'FIKSNA'
                   ? 'Stavka se koristi kao fiksna kategorija bez podliste artikala.'
                   : 'Kategorija ostaje kompatibilna sa postojećim unosom i izmenom artikala.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              'Podešavanje važi samo za buduće PREDMETE.',
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -413,10 +469,7 @@ class _NovaKategorijaDialogState extends State<_NovaKategorijaDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('ODUSTANI'),
         ),
-        FilledButton(
-          onPressed: _potvrdi,
-          child: const Text('DODAJ'),
-        ),
+        FilledButton(onPressed: _potvrdi, child: const Text('DODAJ')),
       ],
     );
   }
@@ -452,10 +505,7 @@ class _TipChip extends StatelessWidget {
 // ── Lista artikala za KATALOŠKA stavku ────────────────────────────────────────
 
 class _ArtikliSection extends StatefulWidget {
-  const _ArtikliSection({
-    required this.interniNaziv,
-    required this.repo,
-  });
+  const _ArtikliSection({required this.interniNaziv, required this.repo});
 
   final String interniNaziv;
   final PodesavanjaRepository repo;
@@ -468,7 +518,8 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
   bool _ascending = true;
 
   List<KatalogArtikliData> _sortiraj(List<KatalogArtikliData> lista) {
-    final sorted = [...lista]..sort((a, b) {
+    final sorted = [...lista]
+      ..sort((a, b) {
         final byCena = a.cena.compareTo(b.cena);
         if (byCena != 0) return _ascending ? byCena : -byCena;
         final byNaziv = a.naziv.compareTo(b.naziv);
@@ -526,14 +577,14 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
     }
   }
 
-  Future<void> _potvrdiObris(
-    BuildContext context,
-    KatalogArtikliData a,
-  ) async {
+  Future<void> _potvrdiObris(BuildContext context, KatalogArtikliData a) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Obriši artikal'),
+        title: const OpcHelpTitle(
+          title: Text('Obriši artikal'),
+          chapterId: 'settings.catalog',
+        ),
         content: Text('Obrisati "${a.naziv}"?'),
         actions: [
           TextButton(
@@ -577,8 +628,7 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
             const Divider(height: 1),
             // Sort toolbar
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Row(
                 children: [
                   Text(
@@ -588,14 +638,11 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
                   const SizedBox(width: 4),
                   IconButton(
                     icon: Icon(
-                      _ascending
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
+                      _ascending ? Icons.arrow_upward : Icons.arrow_downward,
                       size: 18,
                     ),
                     tooltip: _ascending ? 'Rastuće' : 'Opadajuće',
-                    onPressed: () =>
-                        setState(() => _ascending = !_ascending),
+                    onPressed: () => setState(() => _ascending = !_ascending),
                   ),
                   const Spacer(),
                   TextButton.icon(
@@ -621,10 +668,8 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
                               KatalogPhotoPolicy.smallThumbnailDecodeTarget,
                           cacheHeight:
                               KatalogPhotoPolicy.smallThumbnailDecodeTarget,
-                          errorBuilder: (_, e, st) => const Icon(
-                            Icons.image_outlined,
-                            size: 28,
-                          ),
+                          errorBuilder: (_, e, st) =>
+                              const Icon(Icons.image_outlined, size: 28),
                         ),
                       )
                     : const SizedBox(
@@ -639,8 +684,7 @@ class _ArtikliSectionState extends State<_ArtikliSection> {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 18),
                       tooltip: 'Izmeni',
-                      onPressed: () =>
-                          _artiklDialog(context, existing: a),
+                      onPressed: () => _artiklDialog(context, existing: a),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 18),
@@ -734,29 +778,31 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
   }
 
   void _ukloniSliku() => setState(() {
-        _slika = null;
-        _slikaIzmenjena = true;
-      });
+    _slika = null;
+    _slikaIzmenjena = true;
+  });
 
   void _sacuvaj() {
     final naziv = _nazivCtrl.text.trim();
     if (naziv.isEmpty) return;
-    Navigator.pop<_ArtiklResult>(
-      context,
-      (
-        naziv: naziv,
-        cena: parsirajBroj(_cenaCtrl.text),
-        slika: _slika,
-        slikaIzmenjena: _slikaIzmenjena,
-      ),
-    );
+    Navigator.pop<_ArtiklResult>(context, (
+      naziv: naziv,
+      cena: parsirajBroj(_cenaCtrl.text),
+      slika: _slika,
+      slikaIzmenjena: _slikaIzmenjena,
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Novi artikal' : 'Izmeni artikal'),
+      title: OpcHelpTitle(
+        title: Text(
+          widget.existing == null ? 'Novi artikal' : 'Izmeni artikal',
+        ),
+        chapterId: 'settings.catalog',
+      ),
       content: SizedBox(
         width: 360,
         child: SingleChildScrollView(
@@ -765,26 +811,35 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. NAZIV
-              TextField(
+              ManualEntryAffordance(
                 controller: _nazivCtrl,
-                autofocus: true,
-                textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'NAZIV',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+                enabled: true,
+                child: TextField(
+                  controller: _nazivCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'NAZIV',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               // 2. CENA
-              TextField(
+              ManualEntryAffordance(
                 controller: _cenaCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'CENA (RSD)',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+                enabled: true,
+                child: TextField(
+                  controller: _cenaCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'CENA (RSD)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -833,7 +888,9 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
                     label: const Text('ODABERI'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       textStyle: const TextStyle(fontSize: 12),
                     ),
                     onPressed: _odaberiSliku,
@@ -845,7 +902,9 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
                       label: const Text('UKLONI'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         textStyle: const TextStyle(fontSize: 12),
                       ),
                       onPressed: _ukloniSliku,
@@ -862,10 +921,7 @@ class _ArtiklDialogState extends State<_ArtiklDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('OTKAŽI'),
         ),
-        FilledButton(
-          onPressed: _sacuvaj,
-          child: const Text('SAČUVAJ'),
-        ),
+        FilledButton(onPressed: _sacuvaj, child: const Text('SAČUVAJ')),
       ],
     );
   }

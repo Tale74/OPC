@@ -8,7 +8,8 @@ import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
 import 'package:opc_v4/features/podesavanja/data/podesavanja_repository.dart';
-import 'package:opc_v4/features/podesavanja/presentation/podesavanja_screen.dart';
+import 'package:opc_v4/features/predmeti/data/predmeti_repository.dart';
+import 'package:opc_v4/features/predmeti/presentation/moduli_screen.dart';
 import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 import 'package:opc_v4/features/predmeti/presentation/lista_predmeta_screen.dart';
 import 'package:opc_v4/features/stanje_robe/application/stanje_robe_lifecycle_service.dart';
@@ -44,13 +45,13 @@ void main() {
           StanjeRobeOperationalStatus.active,
         );
 
-        final deniedAvailability = StanjeRobeOperationalAvailability(
+        final osnovniAvailability = StanjeRobeOperationalAvailability(
           podesavanjaRepository: repo,
           entitlementPolicy: _osnovniPolicy(),
         );
         expect(
-          await deniedAvailability.readStatus(),
-          StanjeRobeOperationalStatus.notLicensed,
+          await osnovniAvailability.readStatus(),
+          StanjeRobeOperationalStatus.active,
         );
 
         await repo.setStanjeRobeOperativnoOmoguceno(false);
@@ -70,6 +71,12 @@ void main() {
         final repo = PodesavanjaRepository(db);
         final predmet = await _insertPredmet(db);
         final iriuId = await _insertIriu(db, predmetId: predmet.id);
+        await _insertCatalogArticle(
+          db,
+          stableId: 'catalog-preservation',
+          category: 'SANDUK',
+          name: 'Catalog preservation',
+        );
         await _insertStock(db, stableId: 'stock-stable-toggle', quantity: 3);
         await _insertAppliedEffect(
           db,
@@ -128,10 +135,7 @@ void main() {
           entitlementPolicy: _potpunPolicy(),
         );
 
-        expect(
-          await repo.isStanjeRobeOperativnoOmoguceno(),
-          isFalse,
-        );
+        expect(await repo.isStanjeRobeOperativnoOmoguceno(), isFalse);
         expect(
           await availability.readStatus(),
           StanjeRobeOperationalStatus.disabled,
@@ -386,11 +390,10 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
@@ -398,7 +401,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Status: licencirano i operativno aktivno.'),
+        find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
         findsOneWidget,
       );
       expect(find.byType(SwitchListTile), findsOneWidget);
@@ -432,6 +435,7 @@ void main() {
         category: 'SANDUK',
         name: 'Managed sanduk',
       );
+      await _insertCatalogCategory(db, 'SANDUK');
       await db
           .into(db.stanjeRobeStavke)
           .insert(
@@ -465,17 +469,17 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
       await tester.tap(find.text('Upravljaj stanjem robe'));
       await tester.pumpAndSettle();
 
@@ -558,6 +562,11 @@ void main() {
       );
       session.prijavi(admin);
       await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
+      await _insertCatalogCategories(db, const [
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+      ]);
       await _insertCatalogArticle(
         db,
         stableId: 'stock-init-sanduk',
@@ -585,17 +594,17 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
       await tester.tap(find.text('Upravljaj stanjem robe'));
       await tester.pumpAndSettle();
 
@@ -637,72 +646,76 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('ADMIN initialization includes real SANDUK V-0 catalog article', (
-      tester,
-    ) async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
+    testWidgets(
+      'ADMIN initialization includes real SANDUK V-0 catalog article',
+      (tester) async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
 
-      final authRepo = AuthRepository(db);
-      final session = SessionService();
-      final podesavanjaRepo = PodesavanjaRepository(db);
-      final admin = await authRepo.kreirajPrvogAdmina(
-        imePrezime: 'Test Administrator',
-        pin: '1234',
-      );
-      session.prijavi(admin);
-      await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
-      await _insertCatalogArticle(
-        db,
-        stableId: StockCatalogIdentity.sandukV0StableId,
-        category: 'SANDUK',
-        name: 'SANDUK V-0',
-      );
-      await _insertCatalogArticle(
-        db,
-        stableId: StockCatalogIdentity.sandukV17PolukovcegStableId,
-        category: 'SANDUK',
-        name: 'SANDUK V-17 POLUKOVČEG',
-      );
+        final authRepo = AuthRepository(db);
+        final session = SessionService();
+        final podesavanjaRepo = PodesavanjaRepository(db);
+        final admin = await authRepo.kreirajPrvogAdmina(
+          imePrezime: 'Test Administrator',
+          pin: '1234',
+        );
+        session.prijavi(admin);
+        await podesavanjaRepo.setStanjeRobeOperativnoOmoguceno(true);
+        await _insertCatalogCategory(db, 'SANDUK');
+        await _insertCatalogArticle(
+          db,
+          stableId: StockCatalogIdentity.sandukV0StableId,
+          category: 'SANDUK',
+          name: 'SANDUK V-0',
+        );
+        await _insertCatalogArticle(
+          db,
+          stableId: StockCatalogIdentity.sandukV17PolukovcegStableId,
+          category: 'SANDUK',
+          name: 'SANDUK V-17 POLUKOVČEG',
+        );
 
-      await tester.pumpWidget(
-        wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
-            session: session,
-            initialSection: OpcSettingsSection.moduli,
-            entitlementPolicy: _potpunPolicy(),
+        await tester.pumpWidget(
+          wrapForTest(
+            ModuliScreen(
+              predmetiRepository: PredmetiRepository(db),
+              podesavanjaRepository: podesavanjaRepo,
+              session: session,
+              entitlementPolicy: _potpunPolicy(),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Upravljaj stanjem robe'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Inicijalizuj stanje robe iz kataloga'));
-      await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
+        await tester.tap(find.text('Upravljaj stanjem robe'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Inicijalizuj stanje robe iz kataloga'));
+        await tester.pumpAndSettle();
 
-      final rows = await db.select(db.stanjeRobeStavke).get();
-      final stableIds = rows.map((row) => row.stableArticleId).toSet();
-      expect(
-        stableIds,
-        contains(StockCatalogIdentity.sandukV0StableId),
-      );
-      expect(
-        stableIds,
-        contains(StockCatalogIdentity.sandukV17PolukovcegStableId),
-      );
+        final rows = await db.select(db.stanjeRobeStavke).get();
+        final stableIds = rows.map((row) => row.stableArticleId).toSet();
+        expect(stableIds, contains(StockCatalogIdentity.sandukV0StableId));
+        expect(
+          stableIds,
+          contains(StockCatalogIdentity.sandukV17PolukovcegStableId),
+        );
 
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-    });
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+    );
 
     test('stock catalog read path returns covered catalog articles', () async {
       final db = createTestDatabase();
       addTearDown(db.close);
 
       final repo = PodesavanjaRepository(db);
+      await _insertCatalogCategories(db, const [
+        'SANDUK',
+        'OBELEZJE',
+        'POKROV_GARNITURA',
+      ]);
       await _insertCatalogArticle(
         db,
         stableId: 'stock-read-sanduk',
@@ -750,45 +763,53 @@ void main() {
       expect(stableIds, isNot(contains('stock-read-cvece')));
     });
 
-    test('visible catalog read path includes stock-covered categories', () async {
-      final db = createTestDatabase();
-      addTearDown(db.close);
+    test(
+      'visible catalog read path includes stock-covered categories',
+      () async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
 
-      final repo = PodesavanjaRepository(db);
-      await _insertCatalogArticle(
-        db,
-        stableId: 'visible-sanduk',
-        category: 'SANDUK',
-        name: 'Visible sanduk',
-      );
-      await _insertCatalogArticle(
-        db,
-        stableId: 'visible-obelezje',
-        category: 'OBELEZJE',
-        name: 'Visible obelezje',
-      );
-      await _insertCatalogArticle(
-        db,
-        stableId: 'visible-pokrov',
-        category: 'POKROV_GARNITURA',
-        name: 'Visible pokrov',
-      );
+        final repo = PodesavanjaRepository(db);
+        await _insertCatalogCategories(db, const [
+          'SANDUK',
+          'OBELEZJE',
+          'POKROV_GARNITURA',
+        ]);
+        await _insertCatalogArticle(
+          db,
+          stableId: 'visible-sanduk',
+          category: 'SANDUK',
+          name: 'Visible sanduk',
+        );
+        await _insertCatalogArticle(
+          db,
+          stableId: 'visible-obelezje',
+          category: 'OBELEZJE',
+          name: 'Visible obelezje',
+        );
+        await _insertCatalogArticle(
+          db,
+          stableId: 'visible-pokrov',
+          category: 'POKROV_GARNITURA',
+          name: 'Visible pokrov',
+        );
 
-      final entries = await repo.getKatalogSaArtiklimaLightweight();
-      final articleStableIds = entries
-          .expand((entry) => entry.artikli)
-          .map((article) => article.stableArticleId)
-          .toSet();
+        final entries = await repo.getKatalogSaArtiklimaLightweight();
+        final articleStableIds = entries
+            .expand((entry) => entry.artikli)
+            .map((article) => article.stableArticleId)
+            .toSet();
 
-      expect(
-        articleStableIds,
-        containsAll(<String>{
-          'visible-sanduk',
-          'visible-obelezje',
-          'visible-pokrov',
-        }),
-      );
-    });
+        expect(
+          articleStableIds,
+          containsAll(<String>{
+            'visible-sanduk',
+            'visible-obelezje',
+            'visible-pokrov',
+          }),
+        );
+      },
+    );
 
     testWidgets(
       'ADMIN stock row falls back to stable id when catalog display is missing',
@@ -813,17 +834,17 @@ void main() {
 
         await tester.pumpWidget(
           wrapForTest(
-            PodesavanjaScreen(
-              repo: podesavanjaRepo,
-              authRepo: authRepo,
+            ModuliScreen(
+              predmetiRepository: PredmetiRepository(db),
+              podesavanjaRepository: podesavanjaRepo,
               session: session,
-              initialSection: OpcSettingsSection.moduli,
               entitlementPolicy: _potpunPolicy(),
             ),
           ),
         );
         await tester.pumpAndSettle();
 
+        await tester.ensureVisible(find.text('Upravljaj stanjem robe'));
         await tester.tap(find.text('Upravljaj stanjem robe'));
         await tester.pumpAndSettle();
 
@@ -892,10 +913,7 @@ void main() {
       ]);
 
       expect(await db.select(db.stanjeRobeStavke).get(), hasLength(1));
-      expect(
-        await podesavanjaRepo.isStanjeRobeOperativnoOmoguceno(),
-        isFalse,
-      );
+      expect(await podesavanjaRepo.isStanjeRobeOperativnoOmoguceno(), isFalse);
       expect(
         await StanjeRobeOperationalAvailability(
           podesavanjaRepository: podesavanjaRepo,
@@ -947,7 +965,10 @@ void main() {
         final consequences = await db.select(db.stanjeRobePosledice).get();
         expect(result.outcome, StanjeRobeLifecycleOutcome.unresolvedRecorded);
         expect(effects, hasLength(1));
-        expect(effects.single.stableArticleId, StockCatalogIdentity.sandukV0StableId);
+        expect(
+          effects.single.stableArticleId,
+          StockCatalogIdentity.sandukV0StableId,
+        );
         expect(effects.single.effectStatus, stanjeRobeEffectStatusUnresolved);
         expect(consequences, hasLength(1));
         expect(
@@ -995,13 +1016,13 @@ void main() {
           selectedIznosSnapshot: 49960,
         );
 
-        final stock = await (db.select(db.stanjeRobeStavke)
-              ..where(
-                (s) => s.stableArticleId.equals(
-                  StockCatalogIdentity.sandukV17PolukovcegStableId,
-                ),
-              ))
-            .getSingle();
+        final stock =
+            await (db.select(db.stanjeRobeStavke)..where(
+                  (s) => s.stableArticleId.equals(
+                    StockCatalogIdentity.sandukV17PolukovcegStableId,
+                  ),
+                ))
+                .getSingle();
         final effects = await db.select(db.stanjeRobeAppliedEffects).get();
         final current = await StanjeRobeEffectsRepository(db)
             .getCurrentEffectForSelection(
@@ -1014,7 +1035,10 @@ void main() {
         ).listActiveUnresolvedForPredmet(predmet.id);
 
         expect(applied.outcome, StanjeRobeLifecycleOutcome.applied);
-        expect(replaced.outcome, StanjeRobeLifecycleOutcome.replacedWithUnresolved);
+        expect(
+          replaced.outcome,
+          StanjeRobeLifecycleOutcome.replacedWithUnresolved,
+        );
         expect(stock.trenutnaKolicina, 1);
         expect(effects, hasLength(2));
         expect(
@@ -1062,16 +1086,15 @@ void main() {
           stableId: StockCatalogIdentity.sandukV17PolukovcegStableId,
         );
 
-        final result = await StanjeRobeLifecycleService(
-          db: db,
-        ).replaceSelectionEffectForCoveredCategory(
-          predmetId: predmet.id,
-          iriuId: iriuId,
-          kategorija: 'SANDUK',
-          stableArticleId: StockCatalogIdentity.sandukV0StableId,
-          selectedNazivSnapshot: 'SANDUK V-0',
-          selectedIznosSnapshot: 49960,
-        );
+        final result = await StanjeRobeLifecycleService(db: db)
+            .replaceSelectionEffectForCoveredCategory(
+              predmetId: predmet.id,
+              iriuId: iriuId,
+              kategorija: 'SANDUK',
+              stableArticleId: StockCatalogIdentity.sandukV0StableId,
+              selectedNazivSnapshot: 'SANDUK V-0',
+              selectedIznosSnapshot: 49960,
+            );
 
         final effects = await db.select(db.stanjeRobeAppliedEffects).get();
         final current = await StanjeRobeEffectsRepository(db)
@@ -1085,7 +1108,10 @@ void main() {
         ).listActiveUnresolvedForPredmet(predmet.id);
         final consequences = await db.select(db.stanjeRobePosledice).get();
 
-        expect(result.outcome, StanjeRobeLifecycleOutcome.replacedWithUnresolved);
+        expect(
+          result.outcome,
+          StanjeRobeLifecycleOutcome.replacedWithUnresolved,
+        );
         expect(effects, hasLength(2));
         expect(
           effects.where(
@@ -1178,8 +1204,9 @@ void main() {
                 predmetId: 1,
                 interniNaziv: 'SANDUK',
                 nazivPrikaz: const Value('SANDUK V-0'),
-                katalogStableArticleId:
-                    const Value(StockCatalogIdentity.legacySandukV0StableId),
+                katalogStableArticleId: const Value(
+                  StockCatalogIdentity.legacySandukV0StableId,
+                ),
               ),
             );
         await StanjeRobeRepository(db).sacuvajStanje(
@@ -1221,11 +1248,10 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
@@ -1233,9 +1259,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text(
-          'Status: licencirano, ali operativno isključeno u podešavanjima.',
-        ),
+        find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
         findsOneWidget,
       );
       expect(find.byType(SwitchListTile), findsOneWidget);
@@ -1243,6 +1267,48 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
     });
+
+    testWidgets(
+      'Osnovni ADMIN receives unrestricted module with role controls',
+      (tester) async {
+        final db = createTestDatabase();
+        addTearDown(db.close);
+
+        final authRepo = AuthRepository(db);
+        final session = SessionService();
+        final podesavanjaRepo = PodesavanjaRepository(db);
+        final admin = await authRepo.kreirajPrvogAdmina(
+          imePrezime: 'Test Administrator',
+          pin: '1234',
+        );
+        session.prijavi(admin);
+
+        await tester.pumpWidget(
+          wrapForTest(
+            ModuliScreen(
+              predmetiRepository: PredmetiRepository(db),
+              podesavanjaRepository: podesavanjaRepo,
+              session: session,
+              entitlementPolicy: OpcEntitlementPolicy.fromPayload(
+                OpcEntitlementPayload.safeProductionFallback,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('MODULI'), findsOneWidget);
+        expect(find.text('STANJE ROBE'), findsOneWidget);
+        expect(find.byType(SwitchListTile), findsOneWidget);
+        expect(
+          find.text('Operativno vođenje zaliha i posledica po PREDMETU.'),
+          findsOneWidget,
+        );
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+    );
 
     testWidgets('SAVETNIK cannot control the operational toggle', (
       tester,
@@ -1266,11 +1332,10 @@ void main() {
 
       await tester.pumpWidget(
         wrapForTest(
-          PodesavanjaScreen(
-            repo: podesavanjaRepo,
-            authRepo: authRepo,
+          ModuliScreen(
+            predmetiRepository: PredmetiRepository(db),
+            podesavanjaRepository: podesavanjaRepo,
             session: session,
-            initialSection: OpcSettingsSection.moduli,
             entitlementPolicy: _potpunPolicy(),
           ),
         ),
@@ -1386,6 +1451,28 @@ Future<int> _insertCatalogArticle(
           cena: const Value(100),
         ),
       );
+}
+
+Future<void> _insertCatalogCategory(AppDatabase db, String category) async {
+  await db
+      .into(db.iriuKatalogConfig)
+      .insert(
+        IriuKatalogConfigCompanion.insert(
+          interniNaziv: category,
+          nazivPrikaz: category,
+          tip: const Value('KATALOSKA'),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+}
+
+Future<void> _insertCatalogCategories(
+  AppDatabase db,
+  Iterable<String> categories,
+) async {
+  for (final category in categories) {
+    await _insertCatalogCategory(db, category);
+  }
 }
 
 Future<void> _insertAppliedEffect(

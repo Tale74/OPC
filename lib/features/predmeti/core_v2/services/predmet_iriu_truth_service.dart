@@ -4,6 +4,8 @@ import '../business_policy/business_policy_evaluator.dart';
 import '../business_policy/business_policy_models.dart';
 import '../models/iriu_truth_models.dart';
 import '../rules/iriu_truth_rules.dart';
+import '../scenario/owner_scenario_policy_kernel.dart';
+import '../scenario/scenario_contract.dart';
 
 class PredmetIriuTruthService {
   const PredmetIriuTruthService({
@@ -16,6 +18,7 @@ class PredmetIriuTruthService {
   PredmetIriuTruthSnapshot evaluate({
     required PredmetiData predmet,
     required List<IriuData> storedRows,
+    bool preserveInputOrder = false,
   }) {
     final context = _PredmetIriuTruthEvaluationContext(
       predmet: predmet,
@@ -24,15 +27,12 @@ class PredmetIriuTruthService {
     final normalizedMestoSmrti = _normalizedMestoSmrtiForIriuTruth(context);
     final requiresBiohazardPrecautions =
         _requiresBiohazardPrecautionsForIriuTruth(context);
-    final hasReceptionOfRemains =
-        _hasReceptionOfRemainsForIriuTruth(context);
-    final isInternationalCase =
-        _isInternationalCaseForIriuTruth(context);
-    final isLocalCemetery =
-        _isLocalCemeteryForIriuTruth(context);
+    final hasReceptionOfRemains = _hasReceptionOfRemainsForIriuTruth(context);
+    final isInternationalCase = _isInternationalCaseForIriuTruth(context);
+    final isLocalCemetery = _isLocalCemeteryForIriuTruth(context);
     final isKremacija = _isKremacijaForIriuTruth(context);
     final isHospitalDeath = _isHospitalDeathForIriuTruth(context);
-    final rows = storedRows
+    final evaluatedRows = storedRows
         .map(
           (row) => _evaluateRow(
             context: context,
@@ -46,12 +46,14 @@ class PredmetIriuTruthService {
             isHospitalDeath: isHospitalDeath,
           ),
         )
-        .toList(growable: false)
-      ..sort((a, b) => a.truthOrder.compareTo(b.truthOrder));
+        .toList(growable: true);
+    if (!preserveInputOrder) {
+      evaluatedRows.sort((a, b) => a.truthOrder.compareTo(b.truthOrder));
+    }
 
     return PredmetIriuTruthSnapshot(
       predmet: context.predmet,
-      rows: rows,
+      rows: List<IriuTruthRow>.unmodifiable(evaluatedRows),
     );
   }
 
@@ -110,12 +112,12 @@ class PredmetIriuTruthService {
     );
     final predmet = context.predmet;
     final policy = IriuTruthRules.policyFor(row.interniNaziv);
-    final active = IriuTruthRules.isOperationallyActive(
-      predmet: predmet,
-      row: row,
-    );
+    final active = row.scenarioUpravlja
+        ? row.poslovniStatus != 'NE PRIKAZUJE SE'
+        : IriuTruthRules.isOperationallyActive(predmet: predmet, row: row);
     assert(
-      row.interniNaziv != IriuK.cargoTroskovi || active == hasReceptionOfRemains,
+      row.interniNaziv != IriuK.cargoTroskovi ||
+          active == hasReceptionOfRemains,
       'cargoTroskovi operational activation must remain compatible with the '
       'snapshot reception-of-remains precondition during the no-output-change '
       'migration phase.',
@@ -135,8 +137,7 @@ class PredmetIriuTruthService {
       'the no-output-change migration phase.',
     );
     assert(
-      row.interniNaziv != IriuK.balsamovanje ||
-          active == isInternationalCase,
+      row.interniNaziv != IriuK.balsamovanje || active == isInternationalCase,
       'balsamovanje operational activation must remain compatible with the '
       'snapshot international-case precondition during the no-output-change '
       'migration phase.',
@@ -147,10 +148,9 @@ class PredmetIriuTruthService {
       'snapshot local-cemetery precondition during the no-output-change '
       'migration phase.',
     );
-    final recommended = IriuTruthRules.isRecommended(
-      predmet: predmet,
-      row: row,
-    );
+    final recommended = row.scenarioUpravlja
+        ? row.poslovniStatus == 'PREPORUČENO'
+        : IriuTruthRules.isRecommended(predmet: predmet, row: row);
     assert(
       row.interniNaziv != IriuK.limeniUlozak || !isKremacija || !recommended,
       'limeniUlozak recommendation must remain excluded for cremation cases '
@@ -159,24 +159,21 @@ class PredmetIriuTruthService {
     );
     assert(
       row.interniNaziv != IriuK.lemovanje ||
-          recommended ==
-              _expectedLemovanjeRecommendationForIriuTruth(context),
+          recommended == _expectedLemovanjeRecommendationForIriuTruth(context),
       'lemovanje recommendation must remain compatible with locked Blok 2 '
       'rules during the no-output-change migration phase.',
     );
-    final biohazard = IriuTruthRules.isBiohazard(
-      predmet: predmet,
-      row: row,
-    );
+    final biohazard = row.scenarioUpravlja
+        ? row.poslovnoUpozorenje.trim().isNotEmpty
+        : IriuTruthRules.isBiohazard(predmet: predmet, row: row);
     assert(
       !biohazard || requiresBiohazardPrecautions,
       'BIOHAZARD row activation must remain compatible with the snapshot '
       'precondition during the no-output-change migration phase.',
     );
-    final financialCounts = IriuTruthRules.countsForFinancialTruth(
-      predmet: predmet,
-      row: row,
-    );
+    final financialCounts = row.scenarioUpravlja
+        ? active && row.finansijskiUkljuceno && row.iznos > 0
+        : IriuTruthRules.countsForFinancialTruth(predmet: predmet, row: row);
     final derivativeExclusions = IriuTruthRules.derivativeExclusions(
       predmet: predmet,
       row: row,
@@ -184,6 +181,7 @@ class PredmetIriuTruthService {
 
     final reasons = <String>[
       'stored row from persistent IRIU table',
+      if (row.poslovniRazlog.trim().isNotEmpty) row.poslovniRazlog,
       if (policy.protectedFirstInOrdering)
         'protected anchor category in truth ordering',
       if (policy.kind == IriuManagedKind.recommendedAutoManaged)
@@ -204,11 +202,14 @@ class PredmetIriuTruthService {
 
     return IriuTruthRow(
       storedRow: row,
-      truthOrder: IriuTruthRules.truthOrder(row),
+      truthOrder: row.scenarioUpravlja
+          ? row.poslovnaCelina * 10000 + row.poslovniRedosled
+          : IriuTruthRules.truthOrder(row),
       managedKind: policy.kind,
       stored: true,
-      operationalState:
-          active ? IriuOperationalState.active : IriuOperationalState.suppressed,
+      operationalState: active
+          ? IriuOperationalState.active
+          : IriuOperationalState.suppressed,
       recommendationState: recommended
           ? IriuRecommendationState.recommended
           : IriuRecommendationState.none,
@@ -216,13 +217,16 @@ class PredmetIriuTruthService {
       financialState: financialCounts
           ? IriuFinancialState.counts
           : row.iznos <= 0
-              ? IriuFinancialState.excludedNonPositiveAmount
-              : IriuFinancialState.excludedSuppressed,
+          ? IriuFinancialState.excludedNonPositiveAmount
+          : IriuFinancialState.excludedSuppressed,
       derivativeExclusions: derivativeExclusions,
       manualDeletionAllowed: policy.manualDeletionAllowed,
-      requiresUserResolution:
-          policy.requiresUserResolutionOnConditionChange && !active,
+      requiresUserResolution: row.scenarioUpravlja
+          ? row.cekaOdlukuKorisnika
+          : policy.requiresUserResolutionOnConditionChange && !active,
       reasons: List<String>.unmodifiable(reasons),
+      provider: row.obezbedjuje,
+      warning: row.poslovnoUpozorenje,
     );
   }
 
@@ -243,18 +247,11 @@ class PredmetIriuTruthService {
   bool _requiresBiohazardPrecautionsForIriuTruth(
     _PredmetIriuTruthEvaluationContext context,
   ) {
-    final requiresBiohazardPrecautions =
-        context.policySnapshot.requiresBiohazardPrecautions;
-    final normalizedMestoSmrti =
-        IriuTruthRules.normalizeMestoSmrti(context.predmet.mestoSmrti);
-    assert(
-      requiresBiohazardPrecautions ==
-          (context.predmet.uzrokSmrti == 'ZARAZNA' &&
-              normalizedMestoSmrti.isNotEmpty &&
-              normalizedMestoSmrti != 'BOLNICA'),
-      'BusinessPolicySnapshot requiresBiohazardPrecautions must stay aligned '
-      'with the non-row BIOHAZARD precondition during the no-output-change '
-      'migration phase.',
+    final ownerResult = const OwnerScenarioPolicyKernel().evaluate(
+      context.predmet,
+    );
+    final requiresBiohazardPrecautions = ownerResult.consequences.any(
+      (item) => item.warning.trim().isNotEmpty,
     );
     return requiresBiohazardPrecautions;
   }
@@ -262,8 +259,7 @@ class PredmetIriuTruthService {
   bool _hasReceptionOfRemainsForIriuTruth(
     _PredmetIriuTruthEvaluationContext context,
   ) {
-    final hasReceptionOfRemains =
-        context.policySnapshot.hasReceptionOfRemains;
+    final hasReceptionOfRemains = context.policySnapshot.hasReceptionOfRemains;
     assert(
       hasReceptionOfRemains == context.predmet.docekPosmrtnihOstataka,
       'BusinessPolicySnapshot hasReceptionOfRemains must stay aligned with '
@@ -299,9 +295,7 @@ class PredmetIriuTruthService {
     return isLocalCemetery;
   }
 
-  bool _isKremacijaForIriuTruth(
-    _PredmetIriuTruthEvaluationContext context,
-  ) {
+  bool _isKremacijaForIriuTruth(_PredmetIriuTruthEvaluationContext context) {
     final isKremacija = context.policySnapshot.isKremacija;
     assert(
       isKremacija ==
@@ -332,13 +326,12 @@ class PredmetIriuTruthService {
   bool _expectedLemovanjeRecommendationForIriuTruth(
     _PredmetIriuTruthEvaluationContext context,
   ) {
-    if (context.policySnapshot.isKremacija) {
-      return false;
-    }
-    if (context.policySnapshot.hasUzrokSmrtiOverride) {
-      return true;
-    }
-    return context.policySnapshot.input.tipGrobnogMesta == 'GROBNICA';
+    final result = const OwnerScenarioPolicyKernel().evaluate(context.predmet);
+    return result.consequences.any(
+      (item) =>
+          item.katalogCategoryInternalName == IriuK.lemovanje &&
+          item.action == ScenarioConsequenceAction.recommended,
+    );
   }
 }
 

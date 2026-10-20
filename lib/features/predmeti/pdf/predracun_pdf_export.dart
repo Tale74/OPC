@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
@@ -10,6 +9,7 @@ import '../../../core/database/database.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/document_text_codec.dart';
 import '../../../core/utils/export_utils.dart';
+import '../data/iriu_repository.dart';
 import '../../podesavanja/domain/nbs_ips_qr_payload_builder.dart';
 import 'lista_pdf_data_builder.dart';
 import 'memorandum_logo.dart';
@@ -31,24 +31,21 @@ Future<void> izvoziPredracunPdf({
   required int predmetId,
 }) async {
   try {
-    final predmet = await (db.select(db.predmeti)
-          ..where((t) => t.id.equals(predmetId)))
-        .getSingle();
-    final iriuStavke = await (db.select(db.iriu)
-          ..where((t) => t.predmetId.equals(predmetId))
-          ..orderBy([(t) => OrderingTerm.asc(t.redosled)]))
-        .get();
-    final firma = await (db.select(db.firmaPodaci)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
-    final app = await (db.select(db.appPodesavanja)
-          ..where((t) => t.id.equals(1)))
-        .getSingle();
+    final predmet = await (db.select(
+      db.predmeti,
+    )..where((t) => t.id.equals(predmetId))).getSingle();
+    final iriuStavke = await IriuRepository(db).getIriu(predmetId);
+    final firma = await (db.select(
+      db.firmaPodaci,
+    )..where((t) => t.id.equals(1))).getSingle();
+    final app = await (db.select(
+      db.appPodesavanja,
+    )..where((t) => t.id.equals(1))).getSingle();
     final savetnik = predmet.savetnikId == null
         ? null
-        : await (db.select(db.korisnici)
-              ..where((t) => t.id.equals(predmet.savetnikId!)))
-            .getSingleOrNull();
+        : await (db.select(
+            db.korisnici,
+          )..where((t) => t.id.equals(predmet.savetnikId!))).getSingleOrNull();
 
     final bytes = await _buildPredracunPdf(
       predmet: predmet,
@@ -116,6 +113,7 @@ Future<Uint8List> _buildPredracunPdf({
     firma: firma,
     app: app,
     savetnik: savetnik,
+    portableSavetnikName: predmet.businessResponsibleName,
   );
   final snapshot = _PredracunPdfSnapshot.fromPreparedData(preparedData);
 
@@ -260,12 +258,11 @@ pw.Widget _buildHeader(_PredracunPdfSnapshot snapshot) {
     if (snapshot.firma.sajt.trim().isNotEmpty) snapshot.firma.sajt.trim(),
   ].join(' | ');
 
-  final identitet = <String>[
-    if (snapshot.firma.pib.trim().isNotEmpty) 'PIB ${snapshot.firma.pib.trim()}',
-    if (snapshot.firma.mb.trim().isNotEmpty) 'MB ${snapshot.firma.mb.trim()}',
-    if (snapshot.app.ziroRacun.trim().isNotEmpty)
-      'Ra\u010dun ${snapshot.app.ziroRacun.trim()}',
-  ].join(' | ');
+  final identityRows = buildMemorandumIdentityRows(
+    pib: snapshot.firma.pib,
+    mb: snapshot.firma.mb,
+    racun: snapshot.app.ziroRacun,
+  );
 
   return pw.Container(
     padding: const pw.EdgeInsets.only(bottom: 8),
@@ -295,7 +292,9 @@ pw.Widget _buildHeader(_PredracunPdfSnapshot snapshot) {
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(snapshot.firma.adresa.trim()),
+                        documentTextCodec.normalize(
+                          snapshot.firma.adresa.trim(),
+                        ),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
@@ -307,11 +306,11 @@ pw.Widget _buildHeader(_PredracunPdfSnapshot snapshot) {
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
-                  if (identitet.isNotEmpty)
+                  for (final identityRow in identityRows)
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 2),
                       child: pw.Text(
-                        documentTextCodec.normalize(identitet),
+                        documentTextCodec.normalize(identityRow),
                         style: const pw.TextStyle(fontSize: 8.2),
                       ),
                     ),
@@ -319,11 +318,7 @@ pw.Widget _buildHeader(_PredracunPdfSnapshot snapshot) {
               ),
             ),
             if (snapshot.firma.logo?.isNotEmpty ?? false)
-              buildMemorandumLogo(
-                snapshot.firma.logo!,
-                reservedWidth: 72,
-                reservedHeight: 52,
-              ),
+              buildMemorandumLogo(snapshot.firma.logo!),
           ],
         ),
         pw.SizedBox(height: 7),
@@ -417,13 +412,8 @@ pw.Widget _buildFooter({
   );
 }
 
-pw.Widget _buildSimpleSection({
-  required String title,
-}) {
-  return _buildSectionShell(
-    title: title,
-    child: pw.SizedBox.shrink(),
-  );
+pw.Widget _buildSimpleSection({required String title}) {
+  return _buildSectionShell(title: title, child: pw.SizedBox.shrink());
 }
 
 pw.Widget _buildPayerSection(_PredracunPdfSnapshot snapshot) {
@@ -540,49 +530,47 @@ pw.Widget _buildFinancialSection(List<ListaPdfLabelValue> rows) {
     child: pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: rows
-          .map(
-            (row) {
-              if (row.kind == ListaPdfRowKind.divider) {
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                  child: pw.Divider(
-                    height: 1,
-                    thickness: 0.8,
-                    color: PdfColors.grey500,
-                  ),
-                );
-              }
-
-              final isEmphasis = row.kind == ListaPdfRowKind.emphasis;
-              final fontSize = isEmphasis ? _kHeaderFontSize : _kBodyFontSize;
-
+          .map((row) {
+            if (row.kind == ListaPdfRowKind.divider) {
               return pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Expanded(
-                      child: pw.Text(
-                        documentTextCodec.normalize(row.label),
-                        style: pw.TextStyle(
-                          fontSize: fontSize,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    pw.SizedBox(width: 8),
-                    pw.Text(
-                      documentTextCodec.normalize(row.value),
+                padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                child: pw.Divider(
+                  height: 1,
+                  thickness: 0.8,
+                  color: PdfColors.grey500,
+                ),
+              );
+            }
+
+            final isEmphasis = row.kind == ListaPdfRowKind.emphasis;
+            final fontSize = isEmphasis ? _kHeaderFontSize : _kBodyFontSize;
+
+            return pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 3),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      documentTextCodec.normalize(row.label),
                       style: pw.TextStyle(
                         fontSize: fontSize,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          )
+                  ),
+                  pw.SizedBox(width: 8),
+                  pw.Text(
+                    documentTextCodec.normalize(row.value),
+                    style: pw.TextStyle(
+                      fontSize: fontSize,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          })
           .toList(growable: false),
     ),
   );
@@ -607,10 +595,7 @@ pw.Widget _buildPrimalacUplateSection(_PredracunPdfSnapshot snapshot) {
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Expanded(
-          flex: 3,
-          child: _buildFieldList(levaKolona),
-        ),
+        pw.Expanded(flex: 3, child: _buildFieldList(levaKolona)),
         pw.SizedBox(width: 8),
         pw.Expanded(
           flex: 2,
@@ -630,10 +615,7 @@ pw.Widget _buildPrimalacUplateSection(_PredracunPdfSnapshot snapshot) {
                 height: 110,
                 padding: const pw.EdgeInsets.all(4),
                 decoration: pw.BoxDecoration(
-                  border: pw.Border.all(
-                    color: PdfColors.grey500,
-                    width: 0.8,
-                  ),
+                  border: pw.Border.all(color: PdfColors.grey500, width: 0.8),
                 ),
                 child: pw.BarcodeWidget(
                   barcode: pw.Barcode.qrCode(),
@@ -661,10 +643,7 @@ pw.Widget _buildTableHeaderCell(
     child: pw.Text(
       documentTextCodec.normalize(text),
       textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
-      style: pw.TextStyle(
-        fontSize: 8.0,
-        fontWeight: pw.FontWeight.bold,
-      ),
+      style: pw.TextStyle(fontSize: 8.0, fontWeight: pw.FontWeight.bold),
     ),
   );
 }
@@ -718,9 +697,10 @@ pw.Widget _buildSectionShell({
 }
 
 String _displayName(String ime, String prezime) {
-  final fullName = [ime.trim(), prezime.trim()]
-      .where((value) => value.isNotEmpty)
-      .join(' ');
+  final fullName = [
+    ime.trim(),
+    prezime.trim(),
+  ].where((value) => value.isNotEmpty).join(' ');
   return fullName.isEmpty ? '-' : fullName;
 }
 
@@ -783,8 +763,9 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   int columnCount,
 ) {
   if (values.isEmpty) return const <List<ListaPdfLabelValue>>[];
-  final normalizedCount =
-      values.length < columnCount ? values.length : columnCount;
+  final normalizedCount = values.length < columnCount
+      ? values.length
+      : columnCount;
   final perColumn = (values.length / normalizedCount).ceil();
   final columns = <List<ListaPdfLabelValue>>[];
   for (var i = 0; i < values.length; i += perColumn) {
@@ -793,7 +774,3 @@ List<List<ListaPdfLabelValue>> _splitIntoColumns(
   }
   return List<List<ListaPdfLabelValue>>.unmodifiable(columns);
 }
-
-
-
-

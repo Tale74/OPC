@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/help/opc_help.dart';
 import '../../../core/database/database.dart';
 import '../data/auth_repository.dart';
 import '../domain/session_service.dart';
@@ -92,20 +93,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'OPC',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const OpcHelpButton(
+                        chapterId: 'login',
+                        tooltip: 'POMOĆ za prijavu',
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'OPC',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Organizator pogrebne ceremonije',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 40),
                   if (_selektovan == null)
@@ -165,16 +173,15 @@ class _KorisniciLista extends StatelessWidget {
           children: [
             Text(
               'Izaberite savetnika',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ...lista.map((k) => _KorisnikKartica(
-                  korisnik: k,
-                  onTap: () => onSelekcija(k),
-                )),
+            ...lista.map(
+              (k) => _KorisnikKartica(korisnik: k, onTap: () => onSelekcija(k)),
+            ),
           ],
         );
       },
@@ -227,16 +234,13 @@ class _KorisnikKartica extends StatelessWidget {
                       Text(
                         '(${korisnik.uloga})',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
               ],
             ),
           ),
@@ -271,17 +275,16 @@ class _PinKorak extends StatelessWidget {
       children: [
         Text(
           korisnik.imePrezime,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           '(${korisnik.uloga})',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 24),
         if (ucitava)

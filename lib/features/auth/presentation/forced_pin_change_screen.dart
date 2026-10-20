@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/help/opc_help.dart';
 import '../data/auth_repository.dart';
 import '../domain/session_service.dart';
 import 'pin_input_widget.dart';
@@ -87,7 +88,10 @@ class _ForcedPinChangeScreenState extends State<ForcedPinChangeScreen> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: const Text('OBAVEZNA PROMENA PIN-A'),
+          title: const OpcHelpTitle(
+            title: Text('OBAVEZNA PROMENA PIN-A'),
+            chapterId: 'forced_pin',
+          ),
           actions: [
             TextButton(
               onPressed: _snimam ? null : _odjava,
@@ -117,8 +121,8 @@ class _ForcedPinChangeScreenState extends State<ForcedPinChangeScreen> {
                     Text(
                       'Privremeni PIN mora biti promenjen pre nastavka rada.',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                        fontWeight: FontWeight.w700,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
@@ -127,9 +131,8 @@ class _ForcedPinChangeScreenState extends State<ForcedPinChangeScreen> {
                           ? 'Prijava je uspešna, ali morate da promenite PIN.'
                           : 'Korisnik ${korisnik.imePrezime} mora da postavi novi PIN pre ulaska u aplikaciju.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 28),

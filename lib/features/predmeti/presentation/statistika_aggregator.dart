@@ -18,10 +18,7 @@ const _topKategorijaLabelByKey = <String, String>{
 };
 
 class StatistikaDateRange {
-  const StatistikaDateRange({
-    required this.dateFrom,
-    required this.dateTo,
-  });
+  const StatistikaDateRange({required this.dateFrom, required this.dateTo});
 
   final DateTime dateFrom;
   final DateTime dateTo;
@@ -99,9 +96,7 @@ class StatistikaTopArtikalRow {
 class StatistikaAggregator {
   const StatistikaAggregator();
 
-  StatistikaSnapshot build({
-    required StatistikaPeriodSnapshot source,
-  }) {
+  StatistikaSnapshot build({required StatistikaPeriodSnapshot source}) {
     final savetnikPoId = <int, String>{
       for (final korisnik in source.korisnici)
         korisnik.id: _normalizedLabel(
@@ -136,6 +131,12 @@ class StatistikaAggregator {
         filtriraniPredmeti,
         ukupnoPoPredmetu,
         labelForPredmet: (predmet) {
+          final portableResponsibility = predmet.businessResponsibleName
+              ?.trim();
+          if (portableResponsibility != null &&
+              portableResponsibility.isNotEmpty) {
+            return portableResponsibility;
+          }
           final savetnikId = predmet.savetnikId;
           if (savetnikId == null) return 'Bez savetnika';
           return savetnikPoId[savetnikId] ?? 'Savetnik #$savetnikId';
@@ -165,9 +166,7 @@ class StatistikaAggregator {
           fallback: 'Nedefinisano mesto ceremonije',
         ),
       ),
-      topArtikliPoKategorijama: _buildTopArtikliPoKategorijama(
-        source.predmeti,
-      ),
+      topArtikliPoKategorijama: _buildTopArtikliPoKategorijama(source.predmeti),
     );
   }
 
@@ -182,24 +181,26 @@ class StatistikaAggregator {
       grouped.putIfAbsent(label, () => <PredmetiData>[]).add(predmet);
     }
 
-    final rows = grouped.entries.map((entry) {
-      final ukupno = entry.value.fold<double>(
-        0,
-        (sum, predmet) => sum + (ukupnoPoPredmetu[predmet.id] ?? 0),
-      );
-      final brojPredmeta = entry.value.length;
-      return StatistikaBreakdownRow(
-        label: entry.key,
-        brojPredmeta: brojPredmeta,
-        ukupnaIriuVrednost: ukupno,
-        prosecnaIriuVrednostPoPredmetu:
-            brojPredmeta == 0 ? 0.0 : ukupno / brojPredmeta,
-      );
-    }).toList(growable: false);
+    final rows = grouped.entries
+        .map((entry) {
+          final ukupno = entry.value.fold<double>(
+            0,
+            (sum, predmet) => sum + (ukupnoPoPredmetu[predmet.id] ?? 0),
+          );
+          final brojPredmeta = entry.value.length;
+          return StatistikaBreakdownRow(
+            label: entry.key,
+            brojPredmeta: brojPredmeta,
+            ukupnaIriuVrednost: ukupno,
+            prosecnaIriuVrednostPoPredmetu: brojPredmeta == 0
+                ? 0.0
+                : ukupno / brojPredmeta,
+          );
+        })
+        .toList(growable: false);
 
     rows.sort((a, b) {
-      final totalCompare =
-          b.ukupnaIriuVrednost.compareTo(a.ukupnaIriuVrednost);
+      final totalCompare = b.ukupnaIriuVrednost.compareTo(a.ukupnaIriuVrednost);
       if (totalCompare != 0) return totalCompare;
       final countCompare = b.brojPredmeta.compareTo(a.brojPredmeta);
       if (countCompare != 0) return countCompare;
@@ -226,8 +227,7 @@ class StatistikaAggregator {
           fallback: row.interniNaziv,
           kategorijaKey: kategorijaKey,
         );
-        final occurrenceKey =
-            '$kategorijaKey|${normalizedLabel.identityKey}';
+        final occurrenceKey = '$kategorijaKey|${normalizedLabel.identityKey}';
         byOccurrenceInPredmet.putIfAbsent(
           occurrenceKey,
           () => _ArtikalOccurrence(
@@ -246,8 +246,7 @@ class StatistikaAggregator {
         );
         final current = kategorijaGroup[occurrence.labelIdentityKey];
         if (current == null) {
-          kategorijaGroup[occurrence.labelIdentityKey] =
-              _TopArtikalAccumulator(
+          kategorijaGroup[occurrence.labelIdentityKey] = _TopArtikalAccumulator(
             displayLabel: occurrence.displayLabel,
             predmetIds: <int>{occurrence.predmetId},
           );
@@ -257,36 +256,40 @@ class StatistikaAggregator {
       }
     }
 
-    final sections = grouped.entries.map((entry) {
-      final rows = entry.value.values
-          .map(
-            (artikal) => StatistikaTopArtikalRow(
-              label: artikal.displayLabel,
-              brojPredmeta: artikal.predmetIds.length,
-            ),
-          )
-          .toList(growable: false);
+    final sections = grouped.entries
+        .map((entry) {
+          final rows = entry.value.values
+              .map(
+                (artikal) => StatistikaTopArtikalRow(
+                  label: artikal.displayLabel,
+                  brojPredmeta: artikal.predmetIds.length,
+                ),
+              )
+              .toList(growable: false);
 
-      rows.sort((a, b) {
-        final countCompare = b.brojPredmeta.compareTo(a.brojPredmeta);
-        if (countCompare != 0) return countCompare;
-        return a.label.toLowerCase().compareTo(b.label.toLowerCase());
-      });
+          rows.sort((a, b) {
+            final countCompare = b.brojPredmeta.compareTo(a.brojPredmeta);
+            if (countCompare != 0) return countCompare;
+            return a.label.toLowerCase().compareTo(b.label.toLowerCase());
+          });
 
-      return StatistikaTopKategorijaSection(
-        kategorijaLabel: _topKategorijaLabelByKey[entry.key] ?? entry.key,
-        rows: rows.take(10).toList(growable: false),
-      );
-    }).toList(growable: false);
+          return StatistikaTopKategorijaSection(
+            kategorijaLabel: _topKategorijaLabelByKey[entry.key] ?? entry.key,
+            rows: rows.take(10).toList(growable: false),
+          );
+        })
+        .toList(growable: false);
 
     sections.sort(
       (a, b) =>
           (_topKategorijaOrder[_canonicalTopKategorijaKey(a.kategorijaLabel)] ??
                   999)
               .compareTo(
-        _topKategorijaOrder[_canonicalTopKategorijaKey(b.kategorijaLabel)] ??
-            999,
-      ),
+                _topKategorijaOrder[_canonicalTopKategorijaKey(
+                      b.kategorijaLabel,
+                    )] ??
+                    999,
+              ),
     );
     return sections;
   }
@@ -317,8 +320,9 @@ class StatistikaAggregator {
     required String kategorijaKey,
   }) {
     final candidate = _collapseWhitespace(value);
-    final displayLabel =
-        candidate.isEmpty ? _collapseWhitespace(fallback) : candidate;
+    final displayLabel = candidate.isEmpty
+        ? _collapseWhitespace(fallback)
+        : candidate;
     final identityKey = _normalizeIdentityToken(displayLabel);
 
     if (kategorijaKey == 'CITULJE' &&
@@ -361,10 +365,7 @@ class StatistikaAggregator {
     return value.trim().replaceAll(RegExp(r'\s+'), ' ');
   }
 
-  String _normalizedLabel(
-    String value, {
-    required String fallback,
-  }) {
+  String _normalizedLabel(String value, {required String fallback}) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? fallback : trimmed;
   }
