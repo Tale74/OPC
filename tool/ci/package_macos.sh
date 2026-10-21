@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-products='build/macos/Build/Products/Release'
-mapfile -t apps < <(find "$products" -maxdepth 1 -type d -name '*.app' -print)
+products='build/macos/Build/Build/Products/Release'
+shopt -s nullglob
+apps=("$products"/*.app)
 test "${#apps[@]}" -eq 1
+test -d "${apps[0]}"
 stage="$RUNNER_TEMP/opc-macos-technical"
 test ! -e "$stage/OPC_v1.5_macos_unsigned_technical.dmg"
 mkdir -p "$stage"
