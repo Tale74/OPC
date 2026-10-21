@@ -111,6 +111,12 @@ jobs:
           cache: true
       - name: Resolve locked dependencies
         run: flutter pub get --enforce-lockfile
+      - name: Use the existing Apple Runner scheme
+        shell: bash
+        run: |
+          grep -Eq '^[[:space:]]*default-flavor:[[:space:]]*production[[:space:]]*$' pubspec.yaml
+          awk '!/^[[:space:]]*default-flavor:[[:space:]]*production[[:space:]]*$/' pubspec.yaml > pubspec.apple.yaml
+          mv pubspec.apple.yaml pubspec.yaml
       - name: Generate macOS Flutter and plugin configuration
         run: flutter build macos --release --no-pub --config-only
       - name: Compile macOS app without code signing
@@ -152,6 +158,12 @@ jobs:
           cache: true
       - name: Resolve locked dependencies
         run: flutter pub get --enforce-lockfile
+      - name: Use the existing Apple Runner scheme
+        shell: bash
+        run: |
+          grep -Eq '^[[:space:]]*default-flavor:[[:space:]]*production[[:space:]]*$' pubspec.yaml
+          awk '!/^[[:space:]]*default-flavor:[[:space:]]*production[[:space:]]*$/' pubspec.yaml > pubspec.apple.yaml
+          mv pubspec.apple.yaml pubspec.yaml
       - name: Build iOS without signing
         run: flutter build ios --release --no-codesign --no-pub
       - name: Package iOS compile-validation output
