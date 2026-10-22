@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opc-v15-pwa-shell-v1';
+const CACHE_NAME = 'opc-v15-pwa-shell-official-icon-20261022';
 
 function shellUrls() {
   return [

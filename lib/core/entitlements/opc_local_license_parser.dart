@@ -259,16 +259,21 @@ final class OpcLocalLicenseParser {
           platforms.add(OpcLocalLicensePlatform.windows);
         case 'android':
           platforms.add(OpcLocalLicensePlatform.android);
+        case 'ios':
+          platforms.add(OpcLocalLicensePlatform.ios);
+        case 'macos':
+          platforms.add(OpcLocalLicensePlatform.macos);
+        case 'web':
+          platforms.add(OpcLocalLicensePlatform.web);
       }
     }
     return platforms;
   }
 
   static Set<String> _parseStringSet(Object? value) {
-    return _stringList(value)
-        .map((id) => id.trim())
-        .where((id) => id.isNotEmpty)
-        .toSet();
+    return _stringList(
+      value,
+    ).map((id) => id.trim()).where((id) => id.isNotEmpty).toSet();
   }
 
   static Iterable<String> _stringList(Object? value) {
@@ -287,10 +292,7 @@ final class OpcLocalLicenseParser {
 }
 
 final class _ParsedAddOns {
-  const _ParsedAddOns({
-    required this.addOns,
-    required this.ignoredIds,
-  });
+  const _ParsedAddOns({required this.addOns, required this.ignoredIds});
 
   final Set<OpcAddOn> addOns;
   final Set<String> ignoredIds;
@@ -311,10 +313,7 @@ final class _ParsedPayload {
   const _ParsedPayload.fail(
     OpcLocalLicenseFailureReason reason, {
     Set<String> ignoredAddOnIds = const <String>{},
-  }) : this._(
-          failureReason: reason,
-          ignoredAddOnIds: ignoredAddOnIds,
-        );
+  }) : this._(failureReason: reason, ignoredAddOnIds: ignoredAddOnIds);
 
   final OpcLocalLicensePayload? payload;
   final OpcLocalLicenseFailureReason? failureReason;

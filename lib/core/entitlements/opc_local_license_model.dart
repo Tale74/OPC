@@ -1,10 +1,7 @@
 import 'opc_entitlement_policy.dart';
 import 'opc_license_signature_verifier.dart';
 
-enum OpcLocalLicensePlatform {
-  windows,
-  android,
-}
+enum OpcLocalLicensePlatform { windows, android, ios, macos, web }
 
 enum OpcLocalLicenseFailureReason {
   malformedEnvelope,
@@ -81,22 +78,22 @@ final class OpcLocalLicenseEvaluation {
     required Set<String> ignoredAddOnIds,
     required OpcLicenseSignatureVerificationResult signatureResult,
   }) : this._(
-          isValid: true,
-          payload: payload,
-          ignoredAddOnIds: ignoredAddOnIds,
-          signatureResult: signatureResult,
-        );
+         isValid: true,
+         payload: payload,
+         ignoredAddOnIds: ignoredAddOnIds,
+         signatureResult: signatureResult,
+       );
 
   const OpcLocalLicenseEvaluation.failClosed({
     required OpcLocalLicenseFailureReason reason,
     Set<String> ignoredAddOnIds = const <String>{},
     OpcLicenseSignatureVerificationResult? signatureResult,
   }) : this._(
-          isValid: false,
-          failureReason: reason,
-          ignoredAddOnIds: ignoredAddOnIds,
-          signatureResult: signatureResult,
-        );
+         isValid: false,
+         failureReason: reason,
+         ignoredAddOnIds: ignoredAddOnIds,
+         signatureResult: signatureResult,
+       );
 
   final bool isValid;
   final OpcLocalLicensePayload? payload;

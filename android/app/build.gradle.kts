@@ -7,6 +7,19 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val opcReleaseKeystore = System.getenv("OPC_ANDROID_RELEASE_KEYSTORE")
+val opcReleasePassword = System.getenv("OPC_ANDROID_RELEASE_PASSWORD")
+val opcReleaseAlias = System.getenv("OPC_ANDROID_RELEASE_ALIAS")
+val opcReleaseSigningReady = !opcReleaseKeystore.isNullOrBlank() &&
+    !opcReleasePassword.isNullOrBlank() && !opcReleaseAlias.isNullOrBlank()
+val opcReleaseTaskRequested = gradle.startParameter.taskNames.any {
+    it.contains("Release", ignoreCase = true)
+}
+
+if (opcReleaseTaskRequested && !opcReleaseSigningReady) {
+    throw GradleException("OPC release signing environment is required; refusing unsigned or debug-signed release build")
+}
+
 android {
     namespace = "com.tale.opc_v4"
     compileSdk = flutter.compileSdkVersion
@@ -46,11 +59,22 @@ android {
         }
     }
 
+    signingConfigs {
+        if (opcReleaseSigningReady) {
+            create("opcRelease") {
+                storeFile = file(opcReleaseKeystore!!)
+                storePassword = opcReleasePassword
+                keyAlias = opcReleaseAlias
+                keyPassword = opcReleasePassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (opcReleaseSigningReady) {
+                signingConfig = signingConfigs.getByName("opcRelease")
+            }
         }
     }
 }

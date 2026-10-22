@@ -63,7 +63,11 @@ jobs:
           compression-level: 6
 
   build-android:
-    name: Android production APK build
+    # The production release now fails closed without the private signing key.
+    # Its local signed build is validated separately. Enable this CI lane only
+    # after OWNER-authorized secure custody and CI injection are configured.
+    if: ${{ vars.OPC_ANDROID_RELEASE_CI_ENABLED == 'true' }}
+    name: Android production APK build (signer required)
     needs: validate
     runs-on: ubuntu-24.04
     steps:
@@ -82,7 +86,19 @@ jobs:
           cache: true
       - name: Resolve locked dependencies
         run: flutter pub get --enforce-lockfile
+      - name: Materialize authorized Android release signer
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.OPC_ANDROID_RELEASE_KEYSTORE_B64 }}
+        run: |
+          test -n "$KEYSTORE_B64"
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/opc-release.p12"
+          chmod 600 "$RUNNER_TEMP/opc-release.p12"
+          echo "OPC_ANDROID_RELEASE_KEYSTORE=$RUNNER_TEMP/opc-release.p12" >> "$GITHUB_ENV"
       - name: Build Android production APK
+        env:
+          OPC_ANDROID_RELEASE_PASSWORD: ${{ secrets.OPC_ANDROID_RELEASE_PASSWORD }}
+          OPC_ANDROID_RELEASE_ALIAS: ${{ secrets.OPC_ANDROID_RELEASE_ALIAS }}
         run: flutter build apk --flavor production --release --no-pub
       - name: Stage production APK and build information
         shell: bash

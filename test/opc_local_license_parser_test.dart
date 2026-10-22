@@ -231,16 +231,16 @@ void main() {
       );
     });
 
-    test('production registry is empty and rejects test key license', () async {
+    test('production registry contains owner key and rejects test key license', () async {
       expect(
         OpcLicensePublicKeyRegistry.productionPublicKeysById,
-        isEmpty,
+        contains('opc-owner-20261022'),
       );
-      expect(OpcLicensePublicKeyRegistry.hasProductionPublicKeys, isFalse);
-      expect(OpcLicensePublicKeyRegistry.productionKeyCount, 0);
+      expect(OpcLicensePublicKeyRegistry.hasProductionPublicKeys, isTrue);
+      expect(OpcLicensePublicKeyRegistry.productionKeyCount, 1);
       expect(
         OpcLicensePublicKeyRegistry.productionRegistryStatusLabel,
-        'production_keys_empty',
+        'production_keys_configured',
       );
 
       final fixture = await _signedLicenseFixture();

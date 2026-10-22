@@ -1,11 +1,11 @@
 {
-    "name": "opc_v4",
-    "short_name": "opc_v4",
+    "name": "OPC v1.5",
+    "short_name": "OPC",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#2F3D4F",
+    "theme_color": "#2F3D4F",
+    "description": "Organizator pogrebne ceremonije",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
