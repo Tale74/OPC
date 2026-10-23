@@ -467,6 +467,8 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   Future<void> _showActivationDialog() async {
     final state = _licenseState;
     if (state == null) return;
+    final firma = await widget.podesavanjaRepo.getFirmaPodaci();
+    if (!mounted) return;
     final controller = TextEditingController();
     try {
       await showDialog<void>(
@@ -479,17 +481,21 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Pošaljite OWNER-u identifikator instalacije. '
+                  'Pošaljite OWNER-u PIB i matični broj FIRME. '
                   'Licenca se izdaje van aplikacije i radi bez interneta.',
                 ),
                 const SizedBox(height: 8),
-                SelectableText(state.installationId),
+                SelectableText(
+                  'PIB: ${firma.pib.trim()}  MB: ${firma.mb.trim()}',
+                ),
                 TextButton.icon(
                   onPressed: () => Clipboard.setData(
-                    ClipboardData(text: state.installationId),
+                    ClipboardData(
+                      text: '${firma.pib.trim()} ${firma.mb.trim()}',
+                    ),
                   ),
                   icon: const Icon(Icons.copy),
-                  label: const Text('KOPIRAJ IDENTIFIKATOR'),
+                  label: const Text('KOPIRAJ PIB I MB'),
                 ),
                 TextField(
                   controller: controller,
@@ -522,9 +528,9 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
                   SnackBar(
                     content: Text(
                       accepted == true
-                          ? 'OPC je trajno aktiviran za ovu instalaciju.'
+                          ? 'OPC je trajno aktiviran za ovu FIRMU.'
                           : accepted == false
-                          ? 'Licenca nije važeća za ovu instalaciju.'
+                          ? 'Licenca nije važeća za PIB i MB ove FIRME.'
                           : 'Provera licence nije uspela. Pokušajte ponovo.',
                     ),
                   ),
@@ -968,10 +974,17 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
               ),
               actions: [
                 TextButton(
-                  onPressed: _licenseState == null
+                  onPressed:
+                      _licenseState == null ||
+                          _licenseState!.status ==
+                              OpcPredmetLicenseStatus.activated
                       ? null
                       : _showActivationDialog,
-                  child: const Text('AKTIVACIJA'),
+                  child: Text(
+                    _licenseState?.status == OpcPredmetLicenseStatus.activated
+                        ? 'AKTIVIRANO'
+                        : 'AKTIVACIJA',
+                  ),
                 ),
               ],
             ),

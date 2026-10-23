@@ -28,7 +28,7 @@ final class OpcPredmetLicenseState {
       status == OpcPredmetLicenseStatus.activated;
 }
 
-/// Local, offline, per-installation gate for *manual* opening of a new
+/// Local, offline gate for opening a genuinely new
 /// PREDMET. Its state lives beside, but outside, transferable business backup
 /// tables. Imported/rehydrated existing PREDMET records remain available.
 final class OpcPredmetCreationLicense {
@@ -86,6 +86,7 @@ final class OpcPredmetCreationLicense {
 
   Future<OpcPredmetLicenseState> evaluate() async {
     final record = await _readOrCreate();
+    final firma = await _db.select(_db.firmaPodaci).getSingleOrNull();
     final now = _clock().toUtc();
     final started = DateTime.parse(record['trial_started_utc']!);
     final lastSeen = DateTime.parse(record['max_seen_utc']!);
@@ -101,6 +102,8 @@ final class OpcPredmetCreationLicense {
         license,
         currentPlatform: _platform,
         installationId: installationId,
+        firmaPib: firma?.pib,
+        firmaMb: firma?.mb,
       );
       if (result.isValid && result.payload?.expiresAt == null) {
         await _rememberTime(now, lastSeen);
@@ -126,14 +129,17 @@ final class OpcPredmetCreationLicense {
     );
   }
 
-  /// Accept only a signed, permanent token for this installation and platform.
+  /// Accept a signed same-FIRMA token, or a valid legacy installation token.
   /// Failed input does not replace an existing valid activation.
   Future<bool> installPermanentActivation(String licenseText) async {
     final record = await _readOrCreate();
+    final firma = await _db.select(_db.firmaPodaci).getSingleOrNull();
     final result = await _parser.evaluate(
       licenseText.trim(),
       currentPlatform: _platform,
       installationId: record['installation_id'],
+      firmaPib: firma?.pib,
+      firmaMb: firma?.mb,
     );
     if (!result.isValid || result.payload?.expiresAt != null) return false;
     await _db.customStatement(

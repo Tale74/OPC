@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' show Value;
 
+import 'package:opc_v4/core/database/database.dart';
 import 'package:opc_v4/core/entitlements/opc_entitlement_policy.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 import 'package:opc_v4/features/auth/domain/session_service.dart';
@@ -11,6 +13,59 @@ import 'opc_guide_test_bundle.dart';
 import 'test_bootstrap.dart';
 
 void main() {
+  testWidgets('license entry is available on the first trial day', (
+    tester,
+  ) async {
+    final db = createTestDatabase();
+    addTearDown(db.close);
+    final authRepo = AuthRepository(db);
+    final session = SessionService();
+    final settings = PodesavanjaRepository(db);
+    final admin = await authRepo.kreirajPrvogAdmina(
+      imePrezime: 'Synthetic Administrator',
+      pin: '1234',
+    );
+    session.prijavi(admin);
+    await settings.saveFirmaPodaci(
+      const FirmaPodaciCompanion(
+        pib: Value('111111111'),
+        mb: Value('10000001'),
+      ),
+    );
+
+    await tester.pumpWidget(
+      wrapForTest(
+        PodesavanjaScreen(
+          repo: settings,
+          authRepo: authRepo,
+          session: session,
+          initialSection: OpcSettingsSection.podaciFirme,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('LICENCA'));
+    await tester.pumpAndSettle();
+    expect(find.text('LICENCA / AKTIVACIJA'), findsOneWidget);
+    expect(find.textContaining('Probni period traje do'), findsOneWidget);
+    expect(find.textContaining('PIB: 111111111  MB: 10000001'), findsOneWidget);
+    expect(find.text('Potpisana trajna licenca'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'AKTIVIRAJ'))
+          .onPressed,
+      isNotNull,
+    );
+
+    await tester.enterText(find.byType(TextField).last, 'invalid-token');
+    await tester.tap(find.text('AKTIVIRAJ'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Licenca nije važeća za PIB i MB ove FIRME.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'REFUNDACIJA PIO shows the approved instruction and input actions',
     (tester) async {

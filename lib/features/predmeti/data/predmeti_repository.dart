@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/entitlements/opc_predmet_creation_license.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/stable_id_generator.dart';
 import '../../stanje_robe/application/stanje_robe_lifecycle_service.dart';
@@ -45,7 +46,11 @@ class UrnaAshesCompletionBlockException implements Exception {
 }
 
 class PredmetiRepository {
-  const PredmetiRepository(this._db, {this.notificationGateway});
+  const PredmetiRepository(
+    this._db, {
+    this.notificationGateway,
+    this.creationLicense,
+  });
 
   static const String _saveCommitSnapshotPolje = '__save_commit_snapshot__';
   static const String _confirmedCloseSnapshotPolje =
@@ -58,6 +63,7 @@ class PredmetiRepository {
 
   final AppDatabase _db;
   final CeremonyNotificationGateway? notificationGateway;
+  final OpcPredmetCreationLicense? creationLicense;
 
   /// Izlaže bazu za kreiranje podrepozitorijuma (IriuRepository, KontaktLicaRepository).
   AppDatabase get db => _db;
@@ -197,7 +203,14 @@ class PredmetiRepository {
   }
 
   /// Kreira novi predmet sa generisanim brojem i vraća njegov ID.
-  Future<int> kreirajPredmet({required int savetnikId}) {
+  Future<int> kreirajPredmet({required int savetnikId}) async {
+    final license = await (creationLicense ?? OpcPredmetCreationLicense(_db))
+        .evaluate();
+    if (!license.canCreateNewPredmet) {
+      throw StateError(
+        'Opening a new PREDMET is blocked by the local trial/license state.',
+      );
+    }
     final sada = DateTime.now();
     return _db.transaction(() async {
       final brojPredmeta = await _alocirajJedinstveniBrojPredmeta(sada);

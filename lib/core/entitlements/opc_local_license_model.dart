@@ -12,6 +12,8 @@ enum OpcLocalLicenseFailureReason {
   noAllowedInstallations,
   wrongPlatform,
   wrongInstallation,
+  missingFirmaIdentity,
+  wrongFirma,
   licenseNotYetValid,
   licenseExpired,
   missingSignature,
@@ -41,6 +43,8 @@ final class OpcLocalLicensePayload {
     required this.enabledAddOns,
     required this.allowedPlatforms,
     required this.allowedInstallationIds,
+    this.firmaPib,
+    this.firmaMb,
     required this.issuedAt,
     required this.diagnosticsLabel,
     this.validFrom,
@@ -56,6 +60,10 @@ final class OpcLocalLicensePayload {
   final Set<OpcAddOn> enabledAddOns;
   final Set<OpcLocalLicensePlatform> allowedPlatforms;
   final Set<String> allowedInstallationIds;
+
+  /// Present only for the OWNER's cross-platform, same-FIRMA schema v2 key.
+  final String? firmaPib;
+  final String? firmaMb;
   final DateTime issuedAt;
   final DateTime? validFrom;
   final DateTime? expiresAt;

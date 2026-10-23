@@ -134,7 +134,14 @@ void main() {
     final db = createTestDatabase();
     final auth = AuthRepository(db);
     final session = SessionService();
-    final predmeti = PredmetiRepository(db);
+    var now = DateTime.utc(2026, 10, 22, 9);
+    final license = OpcPredmetCreationLicense(
+      db,
+      clock: () => now,
+      platform: OpcLocalLicensePlatform.windows,
+      random: Random(4),
+    );
+    final predmeti = PredmetiRepository(db, creationLicense: license);
     final admin = await auth.kreirajPrvogAdmina(
       imePrezime: 'Synthetic administrator',
       pin: '1234',
@@ -145,13 +152,6 @@ void main() {
       const PredmetiCompanion(ime: Value('Existing'), prezime: Value('Record')),
     );
     final existing = await predmeti.getPredmet(existingId);
-    var now = DateTime.utc(2026, 10, 22, 9);
-    final license = OpcPredmetCreationLicense(
-      db,
-      clock: () => now,
-      platform: OpcLocalLicensePlatform.windows,
-      random: Random(4),
-    );
     await license.evaluate();
     now = DateTime.utc(2027, 1, 22, 9);
     addTearDown(() async {

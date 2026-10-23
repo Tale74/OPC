@@ -1,7 +1,7 @@
 name: opc_v4
 description: "OPC v4.0 — Organizator pogrebne ceremonije"
 publish_to: 'none'
-version: 4.0.2+3
+version: 4.0.3+4
 
 environment:
   sdk: ^3.11.1

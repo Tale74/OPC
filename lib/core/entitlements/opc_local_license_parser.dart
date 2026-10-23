@@ -11,7 +11,7 @@ final class OpcLocalLicenseParser {
     this.clock,
   });
 
-  static const int supportedSchemaVersion = 1;
+  static const int supportedSchemaVersion = 2;
 
   final OpcLicenseSignatureVerifier verifier;
   final DateTime Function()? clock;
@@ -20,6 +20,8 @@ final class OpcLocalLicenseParser {
     String licenseText, {
     OpcLocalLicensePlatform? currentPlatform,
     String? installationId,
+    String? firmaPib,
+    String? firmaMb,
   }) async {
     final envelope = _parseEnvelope(licenseText);
     if (envelope == null) {
@@ -27,7 +29,8 @@ final class OpcLocalLicenseParser {
         reason: OpcLocalLicenseFailureReason.malformedEnvelope,
       );
     }
-    if (envelope.schemaVersion != supportedSchemaVersion) {
+    if (envelope.schemaVersion != 1 &&
+        envelope.schemaVersion != supportedSchemaVersion) {
       return const OpcLocalLicenseEvaluation.failClosed(
         reason: OpcLocalLicenseFailureReason.unsupportedSchema,
       );
@@ -41,7 +44,7 @@ final class OpcLocalLicenseParser {
       );
     }
 
-    final parsed = _parsePayload(envelope.payload);
+    final parsed = _parsePayload(envelope.payload, envelope.schemaVersion);
     if (parsed.failureReason != null) {
       return OpcLocalLicenseEvaluation.failClosed(
         reason: parsed.failureReason!,
@@ -50,14 +53,28 @@ final class OpcLocalLicenseParser {
     }
 
     final payload = parsed.payload!;
-    if (currentPlatform != null &&
+    if (envelope.schemaVersion == 2) {
+      final currentPib = firmaPib?.trim() ?? '';
+      final currentMb = firmaMb?.trim() ?? '';
+      if (currentPib.isEmpty || currentMb.isEmpty) {
+        return const OpcLocalLicenseEvaluation.failClosed(
+          reason: OpcLocalLicenseFailureReason.missingFirmaIdentity,
+        );
+      }
+      if (payload.firmaPib != currentPib || payload.firmaMb != currentMb) {
+        return const OpcLocalLicenseEvaluation.failClosed(
+          reason: OpcLocalLicenseFailureReason.wrongFirma,
+        );
+      }
+    } else if (currentPlatform != null &&
         !payload.allowedPlatforms.contains(currentPlatform)) {
       return OpcLocalLicenseEvaluation.failClosed(
         reason: OpcLocalLicenseFailureReason.wrongPlatform,
         ignoredAddOnIds: parsed.ignoredAddOnIds,
       );
     }
-    if (installationId != null &&
+    if (envelope.schemaVersion == 1 &&
+        installationId != null &&
         !payload.allowedInstallationIds.contains(installationId)) {
       return OpcLocalLicenseEvaluation.failClosed(
         reason: OpcLocalLicenseFailureReason.wrongInstallation,
@@ -130,7 +147,10 @@ final class OpcLocalLicenseParser {
     }
   }
 
-  _ParsedPayload _parsePayload(Map<String, Object?> payload) {
+  _ParsedPayload _parsePayload(
+    Map<String, Object?> payload,
+    int schemaVersion,
+  ) {
     final licenseId = _requiredString(payload['licenseId']);
     final customerId = _requiredString(payload['customerId']);
     final customerLabel = _requiredString(payload['customerLabel']);
@@ -158,7 +178,7 @@ final class OpcLocalLicenseParser {
 
     final parsedAddOns = _parseAddOns(payload['enabledAddOns']);
     final allowedPlatforms = _parsePlatforms(payload['allowedPlatforms']);
-    if (allowedPlatforms.isEmpty) {
+    if (schemaVersion == 1 && allowedPlatforms.isEmpty) {
       return _ParsedPayload.fail(
         OpcLocalLicenseFailureReason.noSupportedPlatforms,
         ignoredAddOnIds: parsedAddOns.ignoredIds,
@@ -168,10 +188,17 @@ final class OpcLocalLicenseParser {
     final allowedInstallationIds = _parseStringSet(
       payload['allowedInstallationIds'],
     );
-    if (allowedInstallationIds.isEmpty) {
+    if (schemaVersion == 1 && allowedInstallationIds.isEmpty) {
       return _ParsedPayload.fail(
         OpcLocalLicenseFailureReason.noAllowedInstallations,
         ignoredAddOnIds: parsedAddOns.ignoredIds,
+      );
+    }
+    final firmaPib = _requiredString(payload['firmaPib']);
+    final firmaMb = _requiredString(payload['firmaMb']);
+    if (schemaVersion == 2 && (firmaPib == null || firmaMb == null)) {
+      return const _ParsedPayload.fail(
+        OpcLocalLicenseFailureReason.missingFirmaIdentity,
       );
     }
 
@@ -184,6 +211,8 @@ final class OpcLocalLicenseParser {
         enabledAddOns: parsedAddOns.addOns,
         allowedPlatforms: allowedPlatforms,
         allowedInstallationIds: allowedInstallationIds,
+        firmaPib: firmaPib,
+        firmaMb: firmaMb,
         issuedAt: issuedAt,
         validFrom: _parseOptionalDate(payload['validFrom']),
         expiresAt: _parseOptionalDate(payload['expiresAt']),

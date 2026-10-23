@@ -3,8 +3,7 @@
 //
 // dart run tool/opc_license_issuer.dart init <private-key-file>
 // dart run tool/opc_license_issuer.dart issue <private-key-file>
-//   <installation-id> <platform> <customer-id> <customer-label>
-//   <output-file> <license-id>
+//   <firma-pib> <firma-mb> <customer-label> <output-file> <license-id>
 import 'dart:convert';
 import 'dart:io';
 
@@ -33,25 +32,15 @@ Future<void> main(List<String> args) async {
     );
     return;
   }
-  if (args.length == 8 && args[0] == 'issue') {
+  if (args.length == 7 && args[0] == 'issue') {
     final keyFile = File(args[1]);
-    final installationId = args[2].trim();
-    final platform = args[3].trim().toLowerCase();
-    final customerId = args[4].trim();
-    final customerLabel = args[5].trim();
-    final output = File(args[6]);
-    final licenseId = args[7].trim();
-    if (!RegExp(
-          r'^opc_install_[0-9]+_[0-9a-f]{32}$',
-        ).hasMatch(installationId) ||
-        !const {
-          'windows',
-          'android',
-          'ios',
-          'macos',
-          'web',
-        }.contains(platform) ||
-        customerId.isEmpty ||
+    final firmaPib = args[2].trim();
+    final firmaMb = args[3].trim();
+    final customerLabel = args[4].trim();
+    final output = File(args[5]);
+    final licenseId = args[6].trim();
+    if (firmaPib.isEmpty ||
+        firmaMb.isEmpty ||
         customerLabel.isEmpty ||
         licenseId.isEmpty ||
         await output.exists()) {
@@ -63,12 +52,12 @@ Future<void> main(List<String> args) async {
     final pair = await algorithm.newKeyPairFromSeed(seed);
     final payload = <String, Object?>{
       'licenseId': licenseId,
-      'customerId': customerId,
+      'customerId': '$firmaPib:$firmaMb',
       'customerLabel': customerLabel,
+      'firmaPib': firmaPib,
+      'firmaMb': firmaMb,
       'packageLevel': 'potpun',
       'enabledAddOns': <String>[],
-      'allowedPlatforms': <String>[platform],
-      'allowedInstallationIds': <String>[installationId],
       'issuedAt': DateTime.now().toUtc().toIso8601String(),
       'diagnosticsLabel': 'opc_permanent_owner_activation',
     };
@@ -80,7 +69,7 @@ Future<void> main(List<String> args) async {
     await output.parent.create(recursive: true);
     await output.writeAsString(
       jsonEncode(<String, Object?>{
-        'schemaVersion': 1,
+        'schemaVersion': 2,
         'payload': payload,
         'signature': base64Encode(signature.bytes),
         'signatureMetadata': <String, Object?>{
@@ -95,8 +84,7 @@ Future<void> main(List<String> args) async {
   }
   stderr.writeln(
     'Usage: init <private-key-file> | issue <private-key-file> '
-    '<installation-id> <platform> <customer-id> <customer-label> '
-    '<output-file> <license-id>',
+    '<firma-pib> <firma-mb> <customer-label> <output-file> <license-id>',
   );
   exitCode = 64;
 }

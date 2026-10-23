@@ -11,6 +11,7 @@ import '../../../core/database/database.dart';
 import '../../../core/database/database_lane_diagnostics.dart';
 import '../../../core/entitlements/opc_entitlement_policy.dart';
 import '../../../core/entitlements/opc_license_public_key_registry.dart';
+import '../../../core/entitlements/opc_predmet_creation_license.dart';
 import '../../../core/entitlements/opc_local_license_bootstrap_service.dart';
 import '../../../core/installation/opc_installation_id_repository.dart';
 import '../../../core/help/opc_help.dart';
@@ -68,6 +69,88 @@ class PodesavanjaScreen extends StatefulWidget {
 }
 
 class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
+  Future<void> _otvoriLicencu() async {
+    final service = OpcPredmetCreationLicense(widget.repo.db);
+    final firma = await widget.repo.getFirmaPodaci();
+    final state = await service.evaluate();
+    if (!mounted) return;
+    final complete = firma.pib.trim().isNotEmpty && firma.mb.trim().isNotEmpty;
+    var activationText = '';
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('LICENCA / AKTIVACIJA'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(switch (state.status) {
+                OpcPredmetLicenseStatus.trial =>
+                  'Probni period traje do ${state.trialEndsUtc.day}.${state.trialEndsUtc.month}.${state.trialEndsUtc.year}.',
+                OpcPredmetLicenseStatus.expired =>
+                  'Probni period je istekao. Samo novi PREDMET zahteva trajnu aktivaciju.',
+                OpcPredmetLicenseStatus.activated =>
+                  'Ova FIRMA je trajno aktivirana.',
+                OpcPredmetLicenseStatus.clockRollback =>
+                  'Datum uređaja je vraćen unazad. Postojeći rad ostaje dostupan.',
+              }),
+              const SizedBox(height: 12),
+              Text(
+                complete
+                    ? 'PIB: ${firma.pib.trim()}  MB: ${firma.mb.trim()}'
+                    : 'Unesite PIB i matični broj u PODACI FIRME pre aktivacije.',
+              ),
+              if (state.status != OpcPredmetLicenseStatus.activated) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Jedan ključ važi za istu FIRMU na svim podržanim platformama.',
+                ),
+                TextField(
+                  onChanged: (value) => activationText = value,
+                  enabled: complete,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: 'Potpisana trajna licenca',
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('ZATVORI'),
+          ),
+          if (state.status != OpcPredmetLicenseStatus.activated)
+            FilledButton(
+              onPressed: complete
+                  ? () async {
+                      final accepted = await service.installPermanentActivation(
+                        activationText,
+                      );
+                      if (!dialogContext.mounted) return;
+                      Navigator.pop(dialogContext);
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            accepted
+                                ? 'OPC je trajno aktiviran za ovu FIRMU.'
+                                : 'Licenca nije važeća za PIB i MB ove FIRME.',
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
+              child: const Text('AKTIVIRAJ'),
+            ),
+        ],
+      ),
+    );
+  }
+
   bool _firmaIsDirty = false;
   bool _refIsDirty = false;
   bool _uputstvoIsDirty = false;
@@ -210,6 +293,11 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
               },
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.workspace_premium_outlined),
+                tooltip: 'LICENCA',
+                onPressed: _otvoriLicencu,
+              ),
               if (widget.session.mozeBackup) ...[
                 IconButton(
                   icon: const Icon(Icons.save_alt_outlined),
