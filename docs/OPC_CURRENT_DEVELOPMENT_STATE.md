@@ -11,3 +11,11 @@ Detalji ponovljive gradnje, izvornog porekla i nedostajućih Apple uslova su u [
 ## 2026-10-24 korektivni kandidat
 
 Korekcija zahteva za licencu, prikaza trajne aktivacije, Android OWNER issuer UX i nova verzija 4.0.3+5 nalaze se u [CANONICAL_SOURCE_ACCEPTANCE_20261024.md](CANONICAL_SOURCE_ACCEPTANCE_20261024.md). Windows/Android/PWA artefakti su verzionisani u OWNER korenu. OWNER je 24.10.2026. praktično prihvatio Windows i Android 4.0.3+5 u posmatranom opsegu: in-place update, pokretanje, očuvanje baze i licence, uklanjanje suvišnog bannera i prikaz stvarne FIRME u licenci. Cloudflare objava/update i Apple distribucija nad +5 ostaju zasebne provere. Windows Desktop prečica i Android OWNER generator imaju zasebne prihvatne korake.
+
+## Post-runtime zatvaranje — 24.10.2026.
+
+Kanonska +5 korekcija je lokalno zabeležena na grani `codex/opc-v15-canonical-bundlesource-20261024`; GitHub push ove nove grane nije obuhvaćen prethodnim specifičnim gate-om. Windows +5 NSIS instalacija na OWNER testnoj mašini završila se exit 0; Desktop i Start prečice ciljaju instalirani `OPC.exe` 4.0.3+5, instalirani EXE SHA-256 je `BA440EBADA7815A9B3D64CEE915D1715E22CD8F20C8B4AE283ED1264CF1B0B46`, uninstaller postoji, a 5/5 ranije prisutnih lokalnih fajlova ima nepromenjen hash. Uninstall nije izvršen nad tom instalacijom.
+
+Zasebni Android OWNER generator u `C:\Tale\Lic\AndroidIssuer` ima pojednostavljen prvi uvoz na Android-u i objašnjava lokalno zaštićeno pamćenje seed-a/registra. Posle ciljane analize i testova izgrađen je postojeće potpisan APK 1.0.1+2, SHA-256 `AEA2A369CA4CC16E51AA504BA3A2767A0791333538A19D1992E4977C41BDDCDD`, na `E:\LicGen\Android`. Nije ugrađen privatni seed ili registar; Android GUI runtime nove verzije nije praktično proveren jer ADB ne prikazuje uređaj. E: spoljašnji manifest je proverio 24/24 stavke.
+
+Cloudflare `https://opc-srb.pages.dev/version.json` javno vraća 4.0.3+4. Lokalni +5 PWA ZIP SHA-256 `2EEF943FD63F8AF4D4BAC5C990AF471C65B0B07F4FC8BE6EC215925448EA980E` ima 55/55 ispravnih manifest stavki. Objavljivanje +5, same-origin update/offline i posebna installable PWA provera nisu potvrđeni: dostupni Computer Use pozivi `list_apps` i `list_windows` su istekli, a u ovom okruženju nije pronađena autentifikovana Cloudflare CLI sesija. Ne poistovećivati lokalni ZIP sa javnom distribucijom.
