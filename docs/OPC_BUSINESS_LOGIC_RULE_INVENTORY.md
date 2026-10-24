@@ -1,0 +1,466 @@
+# OPC Business Logic Rule Inventory
+
+Status: public audit baseline for current OPC business rules.
+
+This inventory is documentation only. It records policy, owner decisions, source evidence, test evidence, gaps, and future-risk boundaries. It does not authorize source, database, JSON behavior, PDF, UI, Web, sync, storage, payment, role, package, or migration changes.
+
+## RULE-ID: OPC-RULE-PREDMET-001
+
+Name: PREDMET master business truth
+Status: MASTER / CURRENT
+Domain: PREDMET
+Rule statement: `PREDMET` is the central and only master business truth for OPC case work. PDFs, JSON transfers, lists, statistics, reminders, inventory consequences, and operational documents are derived from or organized around PREDMET.
+Evidence classification: DOCUMENTED POLICY
+Evidence locations: `docs/OPC_PURPOSE_AND_ANTI_DRIFT_MANIFEST.md`; `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md`; `docs/OPC_OWNER_DECISION_REPORT.md`
+Current implementation state: Supported by broad source organization around `PredmetiData` and `predmeti` table; not a single code assertion.
+Windows/Android parity: Same product logic must be preserved.
+JSON/PDF/UI relevance: JSON and PDF must stay faithful derivatives.
+Future Web/sync relevance: Critical; Web/sync must not create another master PREDMET database by implication.
+Risk if changed: Loss of business identity, inconsistent case truth, unsafe transfer/sync design.
+Open questions: None for policy; implementation details remain per-domain.
+Recommended next action: Preserve as invariant in all future tasks.
+
+## RULE-ID: OPC-RULE-PREDMET-002
+
+Name: PREDMET lifecycle and versioning
+Status: PARTIALLY IMPLEMENTED / TEST GAP
+Domain: PREDMET lifecycle
+Rule statement: A new PREDMET starts as `OTVOREN`, can be saved as working state, can be confirmed closed as `ZATVOREN`, can be reopened for edit, can become `ZAVRŠEN`, and can be `ANONIMIZOVAN`. Business `verzija` starts at 1 and increments on confirmed close only when a prior confirmed snapshot exists and business data changed.
+Evidence classification: SOURCE-CONFIRMED / TEST GAP
+Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/features/predmeti/presentation/predmet_screen.dart`; prior lifecycle task report
+Current implementation state: Source-confirmed. Tests cover related JSON/STANJE ROBE areas but not the full lifecycle state machine end to end.
+Windows/Android parity: Shared Dart source; runtime parity not freshly confirmed.
+JSON/PDF/UI relevance: `verzija` is exported/imported in PREDMET JSON and displayed in the conflict/UI review. Its former PREDMET PDF SNAPSHOT representation is historical; that offer/exporter has been retired under normal-roadmap Member 3 and is not current product behavior.
+Future Web/sync relevance: Critical for version reasoning, conflict UI, and replica behavior.
+Risk if changed: Incorrect overwrite decisions, false version history, unsafe Web/sync merge assumptions.
+Open questions: Whether `verzija` alone is sufficient for future conflict/version reasoning.
+Recommended next action: Dedicated version model audit and tests before implementation changes.
+
+## RULE-ID: OPC-RULE-IMPORT-001
+
+Name: Same-brojPredmeta keep / replace / cancel
+Status: OWNER CLARIFICATION / SOURCE-CONFIRMED
+Domain: Single-PREDMET JSON import
+Rule statement: When a single-PREDMET JSON has the same non-empty trimmed `brojPredmeta` as exactly one local PREDMET, explicit keep / replace / cancel user choice is intentional business behavior, not a defect. It exists because real business truth may change when `Platilac` or other parties change their mind. Individual PREDMET JSON does not transfer `logIzmena`; import and replacement are recorded as local audit events. Replacement preserves the existing local log and appends a replacement event.
+Evidence classification: OWNER CLARIFICATION / SOURCE-CONFIRMED
+Evidence locations: `lib/core/utils/json_export_import.dart`; `docs/tasks/OPC_TASK_BUSINESS_LOGIC_EXTRACTION_SINGLE_PREDMET_JSON_IMPORT_FRESHNESS_AND_OVERWRITE_GUARD_REPORT.md`
+Current implementation state: UI conflict dialog offers cancel, keep local, or replace imported. Multiple local matches block replacement. Same-identity replacement now preserves destination-local `logIzmena` and appends one local `IMPORT_REPLACE` event in the replacement transaction with the active local actor. New-import event logging remains a separately bounded gap; individual PREDMET JSON still does not carry local history.
+Windows/Android parity: Shared import code; Android layout differs only by dialog sizing/file-read adapter.
+JSON/PDF/UI relevance: Conflict UI displays local/imported metadata and deceased name.
+Future Web/sync relevance: Critical; automatic hard-blocking must not remove owner-approved user choice unless a future owner decision changes the rule.
+Risk if changed: User may be unable to select the correct business version after a legitimate case change.
+Open questions: Which future version warning or guard should accompany the choice. Current snapshot-log privacy/retention remains a technical audit item.
+Recommended next action: Preserve user choice and local replacement history; define any future new-import events or freshness warnings under a separate authorized task.
+
+## RULE-ID: OPC-RULE-FILENAME-001
+
+Name: Single-PREDMET JSON filename is UX only
+Status: OWNER CLARIFICATION
+Domain: Filename / JSON transfer
+Rule statement: `Ime_Prezime`, `PREZIME_IME`, and the single-PREDMET JSON filename are user-facing recognition aids. They are not system identity, conflict key, freshness key, or canonical PREDMET identity.
+Evidence classification: OWNER CLARIFICATION / SOURCE-CONFIRMED
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `lib/core/format/app_filename_format.dart`; `lib/core/utils/json_export_import.dart`
+Current implementation state: Export filename helpers sanitize/display names. Import reads JSON content and does not use filename as conflict key.
+Windows/Android parity: Shared filename/export logic; platform file storage differs.
+JSON/PDF/UI relevance: Filename helps users recognize files; JSON content carries business data.
+Future Web/sync relevance: Critical; do not design identity around filenames.
+Risk if changed: False conflicts, privacy/name ambiguity, unsafe identity matching.
+Open questions: None for policy.
+Recommended next action: Preserve distinction in future import/export docs.
+
+## RULE-ID: OPC-RULE-VERSION-001
+
+Name: `verzija` is PREDMET business-version signal
+Status: OWNER DECISION / SOURCE CURRENT COVERAGE DEFECT / TECHNICAL DESIGN REQUIRED
+Domain: Versioning
+Rule statement: `verzija` identifies a user-confirmed PREDMET business state. New PREDMET starts at `v1`; ordinary save is a working checkpoint; reopen alone does not increment; confirmed close increments only after canonical PREDMET aggregate business change. It is not export time, filename identity, firm identity, global identity, or proof by itself that automatic overwrite is safe.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED / TEST GAP
+Evidence locations: `lib/core/database/tables/predmeti_table.dart`; `lib/features/predmeti/data/predmeti_repository.dart`; `lib/core/utils/json_export_import.dart`; historical former path `lib/features/predmeti/pdf/predmet_pdf_snapshot_export.dart` (retired under Member 3).
+Current implementation state: Defined on PREDMET with default 1; incremented on confirmed close when the raw PREDMET-row checkpoint changes; exported/imported with PREDMET and displayed in the conflict dialog. The former snapshot representation is historical, not a current output. Current checkpoint excludes SCENARIO and all IRiU/contact rows, so business aggregate changes can retain the same version.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: JSON and conflict UI include it. The former PDF snapshot is retired; do not use that path as a current behavior claim. Current document formats retain their own bounded output contracts.
+Future Web/sync relevance: Critical candidate for conflict reasoning.
+Risk if changed: Wrong freshness/overwrite behavior.
+Open questions: None for close/save business meaning. Aggregate field coverage, canonicalization, checkpoint migration, lifecycle-event separation and tests are technical design work. Missing/null/wrong-type import is source-rejected.
+Recommended next action: Design canonical PREDMET aggregate fingerprint and full regression matrix before implementation; preserve explicit import choice meanwhile.
+
+## RULE-ID: OPC-RULE-VERSION-002
+
+Name: `exportDatum` is export metadata only
+Status: OWNER DECISION / SOURCE-CONFIRMED
+Domain: JSON export metadata
+Rule statement: `exportDatum` records when a JSON file was exported. It is not business freshness authority and must not be treated as proof that the exported PREDMET is newer or more correct.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED
+Evidence locations: `lib/core/utils/json_export_import.dart`; `lib/core/json_transfer/predmet_json_transfer_core.dart`; freshness audit report
+Current implementation state: Generated during single-PREDMET and full backup JSON export; decoded as optional metadata by candidate core; not compared in import conflict logic.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: JSON metadata only.
+Future Web/sync relevance: Must not become conflict authority.
+Risk if changed: Exporting an old business state later could falsely appear newer.
+Open questions: Whether future UI should display it only as export time.
+Recommended next action: Keep as metadata; use `verzija`/business model design for future freshness reasoning.
+
+## RULE-ID: OPC-RULE-VERSION-003
+
+Name: Import conflict user choice must be preserved
+Status: OWNER DECISION / SOURCE-CONFIRMED
+Domain: Versioning / single-PREDMET JSON import
+Rule statement: Future use of `verzija` may warn, compare, highlight, or classify local/imported PREDMET versions, but `verzija` alone must not remove keep / replace / cancel user choice unless a later owner decision explicitly authorizes a hard block.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `lib/core/utils/json_export_import.dart`; freshness audit report
+Current implementation state: Current same-`brojPredmeta` import UI shows local/imported metadata and offers `Odustani`, `Zadrži lokalni`, and `Zameni uvoznim`; no version comparator or hard block was found.
+Windows/Android parity: Shared import source; runtime parity not freshly confirmed.
+JSON/PDF/UI relevance: Import conflict UI and JSON transfer.
+Future Web/sync relevance: Critical for conflict-resolution design.
+Risk if changed: The app could incorrectly remove human business arbitration when `Platilac` or other facts change.
+Open questions: Exact warning text and comparison thresholds.
+Recommended next action: Design warning/comparison UI under a future JSON safety task without changing current behavior here.
+
+## RULE-ID: OPC-RULE-VERSION-004
+
+Name: `verzija` is not identity
+Status: OWNER DECISION
+Domain: Versioning / identity
+Rule statement: `verzija` is not an identity key. Future-safe PREDMET identity/conflict scope remains `PIB + Matični broj + brojPredmeta`; `verzija` is only a version signal after the same firm-scoped case has been identified.
+Evidence classification: OWNER DECISION / DOCUMENTED POLICY
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/OPC_LOCKED_RULES_PUBLIC_SUMMARY.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_SEMANTICS_FOR_PREDMET_AND_SINGLE_PREDMET_JSON_IMPORT_REPORT.md`
+Current implementation state: Current import matching still uses `brojPredmeta` only; firm-scoped identity guard is not implemented.
+Windows/Android parity: Shared source; policy applies to all runtimes.
+JSON/PDF/UI relevance: JSON import/export and future conflict UI.
+Future Web/sync relevance: Critical for replica identity and merge safety.
+Risk if changed: Version values could be used to match wrong firm/case.
+Open questions: How firm identity should be encoded and verified in single-PREDMET JSON.
+Recommended next action: Keep identity and versioning separate in future design.
+
+## RULE-ID: OPC-RULE-VERSION-005
+
+Name: Filename `_vN` is not authoritative PREDMET version
+Status: OWNER DECISION / POLICY EXISTS / IMPLEMENTATION NOT FOUND
+Domain: Filename / versioning
+Rule statement: Filename `_vN` in names such as `PREZIME_IME_brojPredmeta_vN.json` is not authoritative `predmet.verzija` unless source/test evidence proves exact mapping and a later owner decision approves that interpretation.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `lib/core/format/app_filename_format.dart`; `lib/core/utils/json_export_import.dart`; freshness audit report
+Current implementation state: Filename is generated for UX recognition; import reads JSON content and no filename `_vN` import authority was found.
+Windows/Android parity: Shared source; platform file adapters differ.
+JSON/PDF/UI relevance: Export filenames and user recognition only.
+Future Web/sync relevance: Prevents filename-based version/identity drift.
+Risk if changed: Wrong version inference from editable or user-renamed files.
+Open questions: Whether filename suffix should ever mirror business `verzija`; no approval exists now.
+Recommended next action: Use JSON content and owner-approved version design, not filename suffix, for future reasoning.
+
+## RULE-ID: OPC-RULE-VERSION-006
+
+Name: Version conflict policy matrix
+Status: OWNER DECISION / IMPLEMENTATION REQUIRED
+Domain: Versioning / single-PREDMET JSON import
+Rule statement: Future same-PREDMET import conflict handling may classify imported higher, imported lower and same valid integer `verzija`. The UI must preserve explicit keep / replace / cancel choice unless a later owner decision authorizes a hard block, prevent silent overwrite, and must not use `exportDatum` as freshness authority. Missing/null/wrong-type import is rejected before DB mutation and is not a conflict choice.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Policy recorded only. Current inspected import behavior displays version metadata but has no approved comparator, warning matrix, automatic replacement, or hard block.
+Windows/Android parity: Policy applies to all runtimes; runtime parity must be audited during implementation.
+JSON/PDF/UI relevance: Single-PREDMET JSON import conflict UI.
+Future Web/sync relevance: Critical for future conflict resolution and replica behavior.
+Risk if changed: Silent overwrite, false freshness decisions, or removal of owner-approved business choice.
+Open questions: Exact warning copy, UI placement, and whether any later hard block is required.
+Recommended next action: Design and implement only under a separate JSON/version conflict task with tests and platform parity checks.
+
+## RULE-ID: OPC-RULE-VERSION-007
+
+Name: Version import boundary validation
+Status: SOURCE-CONFIRMED / TECHNICAL VALIDATION GAP
+Domain: Versioning / JSON compatibility
+Rule statement: Official OPC export writes typed integer `verzija`. Missing, `null` or wrong-type imported `verzija` is rejected by typed deserialization before DB mutation and cannot become a successfully imported PREDMET. The single-PREDMET boundary does not explicitly enforce `verzija >= 1`; integer `0` or a negative value remains a technical validation/test gap.
+Evidence classification: OWNER CLARIFICATION / SOURCE-CONFIRMED / TEST GAP
+Evidence locations: `docs/OPC_PREDMET_VERSION_IMPORT_FACT_CHECK.md`; `lib/core/database/tables/predmeti_table.dart`; `lib/core/database/database.g.dart`; `lib/core/utils/json_export_import.dart`
+Current implementation state: Required integer type is enforced by deserialization; positive-range validation is not explicit.
+Windows/Android parity: Policy applies equally to Windows and Android.
+JSON/PDF/UI relevance: JSON import conflict and compatibility handling.
+Future Web/sync relevance: Critical for defensive conflict handling with older, damaged, or externally edited transfer files.
+Risk if changed: Unknown or invalid version data could be mistaken for authoritative business freshness.
+Open questions: None for business policy. Technical audit must confirm all supported legacy paths and the `>= 1` boundary.
+Recommended next action: Add focused boundary tests and a common positive-range guard only through a future authorized implementation task.
+
+## RULE-ID: OPC-RULE-PREDMET-CHANGELOG-001
+
+Name: PREDMET version/change-log overview requirement
+Status: OWNER DECISION RECORDED / TECHNICAL DESIGN COMPLETE / IMPLEMENTATION REQUIRED
+Domain: PREDMET review / version history
+Rule statement: PREDMET should have a document/versioning overview in `Pregled i potvrda`. The user-visible log shows significant lifecycle/import events and, where useful, changed business segments. It does not expose raw previous/new PREDMET values or every individual input action. Technical save/version checkpoints remain hidden and separate.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Requirement and visibility granularity are recorded. Code-first lifecycle/retention audit defines separate privacy-safe checkpoints and local audit events, minimum event taxonomy, retention, anonymization/deletion behavior and legacy migration constraints. Current UI still has no event list and runtime implementation is not authorized.
+Windows/Android parity: Future overview must preserve equivalent business meaning on both platforms.
+JSON/PDF/UI relevance: Intended as PREDMET UI review behavior; JSON/PDF implications require later design.
+Future Web/sync relevance: Important for explaining version history and conflict choices.
+Risk if changed: Users may lack business context for confirming or replacing a PREDMET version.
+Open questions: None for business policy. Implementation must prove migration, recovery, privacy, version equivalence, event behavior and parity.
+Recommended next action: Keep implementation blocked until a separate authorized schema/repository/UI/test task applies `docs/OPC_PREDMET_LIFECYCLE_LOG_RETENTION_AND_EVENT_TAXONOMY_AUDIT.md`.
+
+## RULE-ID: OPC-RULE-PREDMET-REVIEW-001
+
+Name: `Pregled i potvrda` is intended location for version/change-log overview
+Status: OWNER DECISION RECORDED / UI SOURCE AUDIT COMPLETE / IMPLEMENTATION REQUIRED
+Domain: PREDMET review UI
+Rule statement: The intended future location for the PREDMET version/change-log overview is `Pregled i potvrda` inside PREDMET, because that is where business state is reviewed and confirmed. The overview must not be hidden in a technical/debug-only screen.
+Evidence classification: OWNER DECISION
+Evidence locations: `docs/OPC_OWNER_DECISION_REPORT.md`; `docs/tasks/OPC_TASK_OWNER_DECISION_VERSION_CONFLICT_POLICY_AND_PREDMET_CHANGE_LOG_REQUIREMENT_REPORT.md`
+Current implementation state: Source audit confirms the existing segment already presents lifecycle status, version, saved state and actions and is suitable for a concise event overview. No event list is implemented.
+Windows/Android parity: Future UI must remain business-equivalent across Windows and Android.
+JSON/PDF/UI relevance: PREDMET review UI.
+Future Web/sync relevance: Future Web must preserve the same review meaning if implemented.
+Risk if changed: Version/change-log context could be separated from the confirmation workflow where it matters.
+Open questions: No owner business question. Responsive layout and information density are implementation/test concerns.
+Recommended next action: Implement only under a separate authorized task using the defined local audit-event store and Android narrow/wide/Windows parity acceptance.
+
+## RULE-ID: OPC-RULE-FIRMA-001
+
+Name: Firm-owned local database
+Status: DOCUMENTED POLICY / PARTIALLY IMPLEMENTED
+Domain: Firma / database ownership
+Rule statement: The firm/user owns and controls the local OPC database. No server or other database is automatically master.
+Evidence classification: DOCUMENTED POLICY / SOURCE-CONFIRMED
+Evidence locations: manifest; `lib/core/database/tables/firma_podaci_table.dart`; `lib/features/podesavanja/data/podesavanja_repository.dart`
+Current implementation state: Local Drift/SQLite database, singleton `FirmaPodaci(id = 1)`, local ADMINISTRATOR/SAVETNIK users and PREDMET `savetnikId`/creator metadata establish the current one-database/one-FIRMA ownership boundary.
+Windows/Android parity: Shared database model.
+JSON/PDF/UI relevance: Firm data appears in settings, PDFs, and full backup.
+Future Web/sync relevance: Critical.
+Risk if changed: Server-master drift and unsafe restore/sync assumptions.
+Open questions: Broader recovery/runtime parity remains separate. The bounded cross-database local-user mapping, four-state full-backup identity preflight and Case-2 selective fallback are implemented with focused and full-QA proof; destructive restore remains fail-closed when identity is incomplete.
+Recommended next action: Preserve the local one-database/one-FIRMA boundary; no new owner decision or identity subsystem.
+
+## RULE-ID: OPC-RULE-FIRMA-002
+
+Name: Firm-scoped PREDMET identity
+Status: OWNER DECISION / POLICY EXISTS / TECHNICAL AUDIT COMPLETE / BOUNDED IMPLEMENTATION COMPLETE — FULL QA PASS / CASE-2 CLOSED
+Domain: Identity / conflict
+Rule statement: `brojPredmeta` is unique only within the same firm. Future-safe identity/conflict scope is `PIB + Matični broj + brojPredmeta`; `brojPredmeta` alone is not global identity.
+Evidence classification: OWNER DECISION / POLICY EXISTS / SOURCE-CONFIRMED GAP / TECHNICAL AUDIT COMPLETE
+Evidence locations: owner decision report; locked rules summary; `docs/OPC_FIRM_SCOPED_PREDMET_IDENTITY_TECHNICAL_AUDIT.md`; `lib/core/utils/json_export_import.dart`; `lib/core/format/app_format.dart`; auth/user source
+Current implementation state: Existing local-user/FIRMA ownership remains authoritative. Single-PREDMET import/replacement rebinds to an active destination-local actor, preserves destination ownership/history, four-state full-backup identity preflight validates structure and PIB/MB before destructive confirmation/write, minute-level creation resolves collisions transactionally without renumbering legacy duplicates, and Case 2 provides an explicit selective fallback for only new/unambiguous PREDMET families. Same-identity and ambiguous rows remain local; no generic merge is performed.
+Windows/Android parity: Shared source; not implemented.
+JSON/PDF/UI relevance: JSON import/export and backup/restore.
+Future Web/sync relevance: Critical.
+Risk if changed: Cross-firm false match or unsafe overwrite.
+Open questions: No new single-PREDMET FIRMA block is authorized; broader Web/sync identity remains separate.
+Recommended next action: Preserve the explicit transfer/full-backup boundary and review the focused acceptance evidence.
+
+## RULE-ID: OPC-RULE-PLATILAC-001
+
+Name: Platilac current visible display term
+Status: PARTIALLY IMPLEMENTED / OWNER REVIEW REQUIRED
+Domain: Payer / terminology
+Rule statement: `Platilac` is the current visible UI/PDF/business display term, while `narucilac` remains internal/mixed legacy code/database/JSON/template terminology.
+Evidence classification: SOURCE-CONFIRMED / DOCUMENTED POLICY
+Evidence locations: terminology glossary; terminology lineage report; `lib/features/predmeti/presentation/segments/narucilac_segment.dart`; `lib/features/predmeti/pdf/*`
+Current implementation state: Visible UI/PDF mostly says PLATILAC; source/DB/JSON fields keep `naru*` and `narucilac*`.
+Windows/Android parity: Shared UI/source where used.
+JSON/PDF/UI relevance: High; UI, PDF, JSON compatibility.
+Future Web/sync relevance: Terminology compatibility must be preserved.
+Risk if changed: Migration/JSON/PDF breakage and business confusion.
+Open questions: Owner decision on cleanup path.
+Recommended next action: Separate terminology compatibility plan before any rename.
+
+## RULE-ID: OPC-RULE-PLATILAC-002
+
+Name: Platilac change-of-mind rationale
+Status: OWNER CLARIFICATION
+Domain: Import conflict / business truth
+Rule statement: `Platilac` or other parties may change their mind after a JSON export, so the app must not automatically decide which same-PREDMET version is correct when human business choice is required.
+Evidence classification: OWNER CLARIFICATION
+Evidence locations: current task instructions; same-PREDMET import reports
+Current implementation state: Current keep/replace/cancel flow aligns with this clarification.
+Windows/Android parity: Shared import flow.
+JSON/PDF/UI relevance: Conflict UI and future warning text.
+Future Web/sync relevance: Critical for replica conflict handling.
+Risk if changed: Loss of owner-approved human arbitration.
+Open questions: Future warning metadata design.
+Recommended next action: Preserve explicit choice.
+
+## RULE-ID: OPC-RULE-JSON-001
+
+Name: Single-PREDMET JSON transfer boundary
+Status: PARTIALLY IMPLEMENTED
+Domain: JSON transfer
+Rule statement: Single-PREDMET JSON transfers one PREDMET plus approved connected data and is distinct from full database backup/restore.
+Evidence classification: SOURCE-CONFIRMED / TEST-CONFIRMED / DOCUMENTED POLICY
+Evidence locations: `lib/core/utils/json_export_import.dart`; `lib/core/json_transfer/predmet_json_transfer_core.dart`; `test/json_transfer_regression_test.dart`
+Current implementation state: Current `OPC_PREDMET` exports `predmet`, `iriu`, `kontaktLica`, and approved unresolved stock consequence transfer block when applicable.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: High.
+Future Web/sync relevance: Critical; do not merge with full backup semantics.
+Risk if changed: Unsafe transfer of unrelated database truth.
+Open questions: Compatibility matrix and firm identity metadata.
+Recommended next action: Keep transfer boundary explicit.
+
+## RULE-ID: OPC-RULE-JSON-002
+
+Name: Full backup / restore boundary
+Status: BOUNDED IMPLEMENTATION COMPLETE / POLICY EXISTS / CASE-2 SELECTIVE FALLBACK ACCEPTED
+Domain: Backup / restore
+Rule statement: Full backup JSON is broader recovery behavior and is destructive on import; PIB/Matični broj mismatch must block import/restore by owner decision.
+Evidence classification: SOURCE-CONFIRMED / DOCUMENTED POLICY / POLICY EXISTS / IMPLEMENTATION NOT FOUND
+Evidence locations: backup/restore public summary; `lib/core/utils/json_export_import.dart`; JSON regression tests
+Current implementation state: Full backup contains broad database sections and destructive import confirmation only after supported structural parsing and FIRMA PIB/MB identity preflight. Matching identity proceeds, mismatch blocks, fresh local state can establish a complete identity, and missing/incomplete identity keeps destructive restore blocked when local business state exists. The explicit fallback then offers only new/unambiguous PREDMET families through the existing transfer seam; local FIRMA/users/global families remain unchanged.
+Windows/Android parity: Shared source; runtime not freshly confirmed.
+JSON/PDF/UI relevance: Full backup only, not single-PREDMET transfer.
+Future Web/sync relevance: Critical.
+Risk if changed: Destructive wrong-firm restore.
+Open questions: Guard source fields and history model.
+Recommended next action: Keep broader database migration/recovery and cross-platform rehearsal separate; preserve this bounded selective boundary and do not introduce a generic merge engine.
+
+## RULE-ID: OPC-RULE-STOCK-001
+
+Name: STANJE ROBE operational consequences
+Status: PARTIALLY IMPLEMENTED / TEST-CONFIRMED
+Domain: STANJE ROBE
+Rule statement: STANJE ROBE is operational consequence logic, not a parallel PREDMET truth. Covered categories affect stock when licensed and operationally enabled; unresolved consequences are recorded when stock is insufficient.
+Evidence classification: SOURCE-CONFIRMED / TEST-CONFIRMED / DOCUMENTED POLICY
+Evidence locations: `lib/features/stanje_robe/application/stanje_robe_operational_availability.dart`; `lib/features/stanje_robe/application/stanje_robe_lifecycle_service.dart`; `test/stanje_robe_operational_toggle_test.dart`
+Current implementation state: Entitlement plus settings control operational status; lifecycle service applies/restores/records effects for covered categories.
+Windows/Android parity: Shared source; UI runtime parity not freshly confirmed.
+JSON/PDF/UI relevance: Single-PREDMET JSON may carry approved unresolved consequence transfer, not warehouse quantities.
+Future Web/sync relevance: Critical consequence boundary.
+Risk if changed: Inventory could become inconsistent or falsely master.
+Open questions: Full backup/import stock handling.
+Recommended next action: Complete STANJE ROBE import/restore audit.
+
+## RULE-ID: OPC-RULE-IRiU-001
+
+Name: IRIU selected item and business policy
+Status: PARTIALLY IMPLEMENTED / TEST-CONFIRMED
+Domain: IRIU / articles / services
+Rule statement: PREDMET/IRiU selected snapshot rows remain business-visible while catalog owns catalog truth. Business policy can auto-manage required categories such as limeni ulozak and lemovanje based on ceremony/death/cemetery conditions.
+Evidence classification: SOURCE-CONFIRMED / TEST-CONFIRMED
+Evidence locations: `lib/features/predmeti/core_v2/business_policy/*`; `lib/features/predmeti/core_v2/services/*`; `test/business_policy_iriu_critical_scenarios_test.dart`
+Current implementation state: Core evaluator and lifecycle services exist; tests cover critical scenarios.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: IRIU appears in UI, PDFs, JSON transfer, stock consequences.
+Future Web/sync relevance: Must preserve selected snapshots and catalog identity separation.
+Risk if changed: Wrong operational document and inventory consequences.
+Open questions: Owner-reviewed full rule map.
+Recommended next action: Expand public IRIU rule documentation.
+
+## RULE-ID: OPC-RULE-FINANCE-001
+
+Name: Finance/refund/payment calculation
+Status: SOURCE-CONFIRMED / TEST GAP
+Domain: Finance / PIO / payment
+Rule statement: Finance UI/PDF use IRIU totals, PIO refund setting, `narucilacRefundira`/Platilac refund choice, advance, JKP costs, discount, and payment-method fields to calculate displayed payment state.
+Evidence classification: SOURCE-CONFIRMED / TEST GAP
+Evidence locations: `lib/features/predmeti/presentation/segments/finansije_segment.dart`; `lib/features/predmeti/pdf/lista_pdf_data_builder.dart`; `lib/features/predmeti/pdf/predmet_pdf_snapshot_export.dart`
+Current implementation state: Source-confirmed calculation paths; dedicated finance calculation tests were not found in this audit.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: UI, PDF, JSON fields.
+Future Web/sync relevance: Preserve as PREDMET-derived financial truth.
+Risk if changed: Incorrect charge/refund documents.
+Open questions: Full finance test coverage.
+Recommended next action: Add focused finance rule tests in a future implementation/testing task.
+
+## RULE-ID: OPC-RULE-USER-001
+
+Name: Local users, administrators, and advisers
+Status: PARTIALLY IMPLEMENTED / CODE-FIRST TECHNICAL AUDIT COMPLETE / IMPLEMENTATION GAP
+Domain: Users / roles
+Rule statement: Current app has local users with `ADMINISTRATOR` and `SAVETNIK` roles, PIN login, first-admin creation, active/inactive status, and safeguards against removing the last active administrator.
+Evidence classification: SOURCE-CONFIRMED / TEST-CONFIRMED
+Evidence locations: `lib/core/database/tables/korisnici_table.dart`; `lib/features/auth/data/auth_repository.dart`; `lib/features/auth/domain/session_service.dart`; auth and STANJE ROBE tests
+Current implementation state: Local user/role behavior exists. New PREDMET binds adviser/creator to the authenticated local user. Individual JSON incorrectly copies source-local user IDs without destination rebinding; permanent-deletion reference checks omit creator/last-modifier-only references.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: `savetnikId`, `createdByKorisnikId`, and `lastBusinessModifiedByKorisnikId` are PREDMET metadata and backup data.
+Future Web/sync relevance: Critical; local IDs are not enough for cross-device stable identity.
+Risk if changed: Loss of audit/history continuity.
+Open questions: None for current OPC v.1 business policy. Future Web/sync stable user identity remains separately deferred.
+Recommended next action: Separately authorized implementation/characterization for destination-local user rebinding and complete deletion-reference guards.
+
+## RULE-ID: OPC-RULE-PACKAGE-001
+
+Name: Native unrestricted functionality with retained Stage 1 compatibility
+Status: IMPLEMENTED STAGE 1 / OWNER DECISION; STAGE 2 DEFERRED
+Domain: Packages / licensing
+Rule statement: PAKETI are permanently abandoned as business/production policy. Retained package/license/add-on data must not restrict any existing native Windows/Android function. Roles, PREDMET lifecycle, business prerequisites and operational toggles remain active.
+Evidence classification: OWNER DECISION / SOURCE-CONFIRMED / TEST-CONFIRMED
+Evidence locations: owner decision report; `lib/core/entitlements/opc_entitlement_policy.dart`; `test/opc_local_license_parser_test.dart`; `test/package_downgrade_migration_test.dart`
+Current implementation state: Central owner policy returns native availability for every module/add-on while payload/parser/bootstrap data remains compatible and diagnostic. Stage 2 physical removal waits for owner runtime validation.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: Module/document/settings visibility.
+Future Web/sync relevance: Must not change PREDMET truth or ownership.
+Risk if changed: Historical package rules could be reactivated or Stage 2 cleanup could begin before runtime evidence.
+Open questions: None for native Stage 1; OPC Web/commercial access remains a future separate decision.
+Recommended next action: Owner runtime validation, then separately scoped Stage 2 cleanup.
+
+## RULE-ID: OPC-RULE-PDF-001
+
+Name: PDFs are derivatives of PREDMET
+Status: SOURCE-CONFIRMED / DOCUMENTED POLICY
+Domain: PDF / documents
+Rule statement: PDFs render PREDMET-derived data and must not become independent business truth.
+Evidence classification: DOCUMENTED POLICY / SOURCE-CONFIRMED
+Evidence locations: manifest; `lib/features/predmeti/pdf/*`
+Current implementation state: PDF builders read PREDMET, IRIU, firm, and display snapshots. Snapshot PDF includes legacy `NARUČILAC` labels under a `PLATILAC` section.
+Windows/Android parity: Shared source where available.
+JSON/PDF/UI relevance: PDF output.
+Future Web/sync relevance: Preserve derivative status.
+Risk if changed: Document output could diverge from PREDMET.
+Open questions: PDF terminology cleanup.
+Recommended next action: Separate PDF terminology/compatibility task.
+
+## RULE-ID: OPC-RULE-PARTE-001
+
+Name: Parte and citulje are PREDMET/IRiU derivatives
+Status: SOURCE-CONFIRMED / TEST GAP
+Domain: Parte / citulje
+Rule statement: Parte content derives from PREDMET fields such as symbol, script, display name, ceremony time, and mourners; citulje-related transfer expectations require PREDMET/IRiU source and must not use placeholder narrative as truth.
+Evidence classification: SOURCE-CONFIRMED / DOCUMENTED POLICY / TEST GAP
+Evidence locations: `lib/features/predmeti/presentation/segments/parte_segment.dart`; `lib/core/utils/json_export_import.dart`
+Current implementation state: Source-confirmed UI and JSON source expectations; dedicated tests not found in this audit.
+Windows/Android parity: Shared source.
+JSON/PDF/UI relevance: UI and JSON transfer metadata.
+Future Web/sync relevance: Preserve derivative relationship.
+Risk if changed: Public ceremony outputs could diverge from PREDMET.
+Open questions: Full parte/citulje rule test coverage.
+Recommended next action: Audit and test document-generation rules separately.
+
+## RULE-ID: OPC-RULE-PARITY-001
+
+Name: Windows/Android product parity
+Status: DOCUMENTED POLICY / RUNTIME GAP
+Domain: Platform parity
+Rule statement: Windows and Android are equal runtime forms of the same OPC product logic; differences may only come from platform/UI/file APIs, not business meaning.
+Evidence classification: DOCUMENTED POLICY / SOURCE-CONFIRMED / RUNTIME GAP
+Evidence locations: manifest; shared `lib/` source; tests
+Current implementation state: Most business logic is shared Dart source; some file picker/storage and layout decisions are platform-specific.
+Windows/Android parity: Policy required; runtime smoke not run in this task.
+JSON/PDF/UI relevance: All user-visible behavior.
+Future Web/sync relevance: OPC Web must become another runtime of same logic, not a replacement.
+Risk if changed: Platform split and business drift.
+Open questions: Runtime parity smoke coverage.
+Recommended next action: Add platform parity acceptance checks for implementation tasks.
+
+## RULE-ID: OPC-RULE-WEB-001
+
+Name: Future OPC Web must preserve local ownership and explicit transfer rules
+Status: DOCUMENTED POLICY / NOT IMPLEMENTED
+Domain: Future Web / sync
+Rule statement: OPC Web is a future complementary browser-access runtime. It must not imply server-master PREDMET ownership and must preserve firm ownership, explicit transfer/restore rules, and PREDMET master truth.
+Evidence classification: DOCUMENTED POLICY / NOT IMPLEMENTED
+Evidence locations: manifest; owner decision report; current development state; stop-list
+Current implementation state: No Web runner/backend/API/sync/storage adapter is authorized or implemented by these audits.
+Windows/Android parity: Future Web parity requirement.
+JSON/PDF/UI relevance: Future architecture only.
+Future Web/sync relevance: Primary rule.
+Risk if changed: Core OPC product identity drift.
+Open questions: Browser storage/local DB/sync architecture.
+Recommended next action: Technical architecture audit before implementation.
+
+## Open Inventory Summary
+
+Highest-risk policy-only or partially implemented areas:
+
+- firm-scoped identity and PIB/Maticni broj import/restore guards;
+- `FirmaPodaci` history;
+- `verzija` future conflict semantics;
+- stable user/role identity;
+- full backup/restore guard behavior;
+- runtime Windows/Android parity evidence;
+- finance/PDF/parte/citulje test coverage;
+- Web/sync architecture.

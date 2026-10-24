@@ -1,0 +1,97 @@
+# OPC Backup/Restore Policy Public Summary
+
+Status: public-safe summary of backup/restore and JSON transfer policy.
+
+This document summarizes policy only. It does not implement backup, restore, import, export, identity guards, migrations, Web sync, or storage adapters.
+
+## Public-Safe Policy
+
+| Area | Summary | Status |
+| --- | --- | --- |
+| Local backup discipline | Backup and restore points protect source, docs, and project continuity around meaningful milestones and risky structural changes. They are not required after every small green subtask. | PUBLIC SUMMARY |
+| Restore point role | A restore point marker documents a known state; it is not a replacement for a backup archive. | PUBLIC SUMMARY |
+| Backup contents | Milestone backups should include source and project documentation needed for restore while excluding volatile/generated/output/private material. | PUBLIC SUMMARY |
+| Exclusions | Build/cache folders, generated outputs not needed for restore, secrets, private/customer/runtime/export data, signing material, and local machine-only artifacts must not be public-promoted. | PUBLIC SUMMARY |
+| Docs-only tasks | Small docs-only tasks usually do not require a new local backup unless they touch core truth lanes or the task explicitly requires a backup milestone. | PUBLIC SUMMARY |
+| User-controlled local app transfer | Current local model includes user-controlled single `PREDMET` JSON transfer and full database/backup JSON transfer. | CURRENT BASELINE |
+| Single `PREDMET` JSON | Transfers one case/business state boundary and remains distinct from full database backup/import. | CURRENT BASELINE / TECHNICAL AUDIT REQUIRED |
+| Full database/backup JSON | Represents broader local backup/import recovery behavior. Current source/tests prove normalized firm identity preflight before destructive restore; Windows owner-facing acceptance is now PASS in the bounded disposable lane, with direct post-restore back/logout observation retained as an evidence-incomplete successor. | SOURCE/TEST PROVEN / WINDOWS OWNER RUNTIME PASS (BOUNDED) / DIRECT SESSION TRANSITION EVIDENCE INCOMPLETE |
+| Firm identity guard | Owner decision: PIB/Matični broj mismatch must block restore/import with no exception inside the import/restore guard; current source/tests prove the pre-destructive block. | SOURCE/TEST PROVEN / OWNER RUNTIME OPEN |
+| Web/sync future | Any Web/sync/offline-replica use of backup/restore or JSON transfer requires identity, repository, conflict, and data-ownership audits first. | TECHNICAL AUDIT REQUIRED |
+
+## Current Mismatch To Track
+
+| Decision / policy | Current implementation evidence | Required future action |
+| --- | --- | --- |
+| PIB/Matični broj mismatch must block restore/import. | Current source/tests prove normalized identity comparison and non-destructive mismatch rejection before restore mutation. | Record owner-facing runtime acceptance separately; do not infer final release readiness from source/tests alone. |
+| `FirmaPodaci` changes must preserve credible history. | `FirmaPodaci` exists as editable local firm data; history is not public-baseline implemented. | Technical identity/history audit before implementation. |
+| Single `PREDMET` JSON and full database/backup JSON must remain distinct. | Evidence supports separate `OPC_PREDMET` and `OPC_BACKUP` formats. | Keep distinction explicit in all future Web/sync/restore tasks. |
+| Full backup/import stock handling and broader consequence transfer must be explicit. | Local locked rules mark parts of STANJE ROBE/JSON/full backup behavior as future/audit-sensitive. | Extract current rules before changing import/restore. |
+
+## Public-Safe Known Risks
+
+- Identity guard is source/test proven; owner-facing runtime acceptance remains separate.
+- Editable `FirmaPodaci` cannot be treated as a stable identity mechanism by itself.
+- Same-`PREDMET` conflict rules and related-data reconciliation need extraction before Web/sync.
+- Old local docs contain stale SaaS and local process wording; public manifest/owner decisions supersede them.
+- Raw local backup paths, archive names, and task-specific records are local operational evidence, not public source of truth.
+
+## Provenance
+
+| Local document | Folder source | Classification | Public summary target | Raw copied? | Private data excluded? | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `OPC_v1_BACKUP_AND_RESTORE_POLICY.md` | `SOURCE/PROJECT_DOCS` and byte-identical control copy | SUPPORTING | This document | NO | YES | Summarized process and exclusions; local paths and command snippets not promoted as public truth. |
+| `OPC_v1_ZAKLJUCANA_PRAVILA.md` | `SOURCE/PROJECT_DOCS` and byte-identical control copy | MASTER / CURRENT MIXED WITH HISTORY | This document | NO | YES | Used for JSON/full-backup and STANJE ROBE boundary evidence. |
+| `OPC_v1_PROJECT_FLOW_AND_DELTA.md` | `SOURCE/PROJECT_DOCS` and byte-identical control copy | HISTORICAL / SUPPORTING | This document | NO | YES | Used for chronological evidence of JSON and backup boundaries. |
+| `OPC_RE_ENTRY_AUDIT_PROJECT_STATE_AND_NEXT_MACRO_STEPS_REPORT.md` | `SOURCE/PROJECT_DOCS` only | SUPPORTING | This document | NO | YES | Used for current-state summary of single-PREDMET and full-database JSON transfer. |
+
+## Schema-9 recovery contract — 2026-08-13
+
+FULL backup schema 9 includes live-owner-filtered PARTE preparations, scenario
+modules/definitions, snapshots/provenance, stock under the declared policy,
+and current PREDMET/IRiU/KATALOG/contact/settings data. Restore deduplicates
+CITULJE by `(category,name,price)` and remaps stable references deterministically.
+The clean-room restore reproduced the clean canonical business state; export
+and re-export differ only in the expected export timestamp. App-owned PARTE PNG
+bytes and generated external derivatives are not in JSON: schema 9 declares
+`parteMediaPolicy=bounded-exclusion-v1`, omits media keys from the portable row,
+and clears any legacy keys during restore so a fresh machine cannot retain a
+dangling media reference. This is a logical database backup, not a self-contained
+PARTE media archive.
+
+## R2 ČITULJE transfer boundary — current source state
+
+The R2 foundation adds optional `cituljePripreme` state to both supported
+representations. Single-PREDMET JSON carries the portable occurrence identity,
+article category, PARTE TEKST mode, publication date/text, note, preparation
+state, ČITULJA finalization state and PARTE snapshot fingerprint. Full Backup JSON carries the same fields
+plus the local PREDMET foreign-key context needed by the database restore.
+Missing R2 sections remain valid legacy input. PARTE technical preparation and
+media bytes remain governed by the existing exclusion policy; a transferred
+ČITULJE snapshot does not require a destination-local PARTE row.
+
+R5 PODSETNIK completion remains a minimal PREDMET-owned transfer fact. A
+completed concrete ČITULJA child may remain durable while its IRiU occurrence
+is temporarily non-current and is preserved by PREDMET JSON and full Backup
+JSON. Incomplete, invalid, orphaned and parent-only ČITULJA state is not
+transferred merely for history. The destination accepts this non-current
+exception only when the canonical child identity matches exactly one ČITULJA
+occurrence in the same PREDMET; the child is not projected until current
+membership returns, and a ČITULJA parent is always derived rather than
+transferred as independent truth.
+
+## Technical-Audit Required
+
+The subsequent PODSETNIK milestone uses the same PREDMET-owned transfer lane
+for manual `POSEBNE OBAVEZE` rows: portable stable rule identity, text and
+completion state are preserved through single-PREDMET JSON and full Backup
+JSON. URNA/PEPEO completion remains the scoped PREDMET-owned blocker state;
+platform notification identifiers are technical delivery state and are not
+business transfer truth.
+
+- repository/firma identity model;
+- PIB/Matični broj failure UX and owner-facing runtime acceptance;
+- `FirmaPodaci` history model;
+- single `PREDMET` JSON vs full backup/database JSON compatibility matrix;
+- same-`PREDMET` conflict and related-data reconciliation;
+- Web/sync/offline replica import/restore semantics.

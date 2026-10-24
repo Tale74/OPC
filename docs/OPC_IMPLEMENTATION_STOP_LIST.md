@@ -1,0 +1,32 @@
+# OPC Implementation Stop-List
+
+Status: active until replaced by an owner-approved architecture/task.
+
+The following work is blocked by default. It requires a separate explicit task, the relevant manifest gate, and owner-approved scope before implementation.
+
+| Stop item | Why blocked now | Required gate before work |
+| --- | --- | --- |
+| Web runner creation | OPC Web architecture is not selected. | Technical architecture audit; data ownership gate. |
+| Backend/API service | Server role must not become implicit `PREDMET` master. | Data ownership/repository identity gate. |
+| Sync implementation | Replica/conflict rules are not extracted. | Existing business logic extraction; data ownership gate. |
+| Browser storage adapter | OPFS/IndexedDB/SQLite WASM/local agent/hybrid choice is unresolved. | Technical architecture audit with current research. |
+| Database migrations | Current task is docs-only. | Technical task with migration review and tests. |
+| Import/restore guard implementation | General identity-model expansion remains blocked. The overnight branch implements only the documented non-destructive PIB/MB preflight for FULL JSON restore; firm-history and broader identity work remain blocked. | JSON safety and repository identity audit; this bounded exception is covered by `OPC_OVERNIGHT_POST_RECOVERY_STABILIZATION_REPORT.md`. |
+| Firm-scoped `brojPredmeta` identity guard | Owner clarified `brojPredmeta` is unique only within a firm; safe scope is `PIB + Matični broj + brojPredmeta`, but no guard/constraint is authorized here. | JSON safety, repository identity, data ownership, and migration review. |
+| Single-PREDMET JSON filename identity use | Filename is human-readable only and must not become canonical system identity. | Product terminology/source-of-truth audit before any import/export wording or behavior change. |
+| Older/newer single-PREDMET JSON overwrite guard changes | Freshness audit found displayed metadata and explicit keep/replace/cancel choice, but no automatic older/newer block in the inspected import path. Guard behavior now requires owner decision and implementation design before changes. | JSON safety, repository identity, data ownership, and platform parity gates. |
+| `verzija` import comparator or hard-block behavior | Owner decision records higher/lower/same/missing/malformed warning/classification policy, but no comparator UI, validation path, hard block, or behavior change is authorized here. Keep/replace/cancel user choice must remain unless a later owner decision authorizes a hard block. | Version semantics implementation design, JSON safety, repository identity, data ownership, and platform parity gates. |
+| PREDMET change-log database/model implementation | Owner requires a future PREDMET version/change-log overview, but the source of change-log truth, lifecycle data coverage, migration impact, and retention rules are not audited. | Version/change-log technical audit, migration review, data ownership gate, and tests. |
+| `Pregled i potvrda` version/change-log UI | Owner selected `Pregled i potvrda` as intended location, but current screen suitability, information density, and Windows/Android parity are not audited. | PREDMET review UI audit, platform parity gate, and owner-approved implementation task. |
+| Backup/restore behavior changes | Broad backup/restore redesign remains blocked. The schema-9 PARTE media bounded-exclusion contract and documented PIB/MB preflight are limited overnight exceptions with dedicated tests; no canonical restore was performed. | JSON safety, repository identity, and data ownership gate; see overnight report. |
+| `FirmaPodaci` history implementation | `FirmaPodaci` is editable/hybrid and history design is not implemented. | Technical identity audit and migration review. |
+| `narucilac`/`Platilac` compatibility cleanup | Current state is mixed across UI/PDF/source/database/JSON/template ids. | Product terminology gate plus source/database/PDF/JSON compatibility plan. |
+| Payment/subscription implementation | Business/legal/payment model is not baseline-approved. | Payment/access gate. |
+| Package restructuring | Package terms are canonical, but implementation changes are not authorized. | Payment/access gate and owner decision. |
+| Administrator/Savetnik role implementation | Stable IDs and firm/license model need audit. | Technical identity audit. |
+| Source-code package restructuring | Outside continuity-baseline scope. | Dedicated architecture/refactor task. |
+| Private/customer/export/runtime data inclusion | Public repo must remain sanitized. | Never allowed in public docs without explicit sanitization review. |
+
+## Allowed Next Work
+
+Allowed next work is documentation/audit only: owner review of local docs, public-safe local-doc summaries, terminology lineage fact-check, current technical identity/import/restore audit, and OPC Web local-data architecture research.
