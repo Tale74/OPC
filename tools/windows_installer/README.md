@@ -1,121 +1,42 @@
-# OPC Windows Installer Lane
+# Windows PerUser installer (NSIS)
 
-This lane prepares a standard Inno Setup installer for the Windows build of OPC.
+Aktuelni OPC Windows paket koristi NSIS PerUser, instalira u `%LOCALAPPDATA%\Programs\OPC`, pravi Start meni i Desktop prečicu sa zvaničnom OPC ikonom i uklanja samo svoj instalacioni direktorijum i prečice pri deinstalaciji. OPC baza je u korisničkom AppData prostoru izvan instalacionog direktorijuma i instalater je ne uklanja.
 
-Before step 1, the authoritative
-[`flutter analyze` -> complete `flutter test` -> build gate](../../docs/OPC_DEVELOPMENT.md#6-validation-workflow)
-must be conclusively green. A pre-gate build must not be used as installer
-input or runtime-validation evidence.
+## Serijski postupak
 
-## What uninstall removes
-
-- Installed program files
-- Start Menu shortcuts
-- Optional Desktop shortcut
-- Standard Windows uninstall entry
-
-## What uninstall does not remove
-
-- User data
-- Local database files
-- Exported PDF files
-
-## 1. Build the Windows release app
-
-Run this manually from the project root:
+Iz korena kanonskog BundleSource-a, posle prolaska `flutter analyze` i pune `flutter test` suite:
 
 ```powershell
-flutter build windows --release
+flutter build windows --release --no-pub --build-name=4.0.3 --build-number=4
 ```
 
-The default Flutter release output expected by the helper script is:
-
-```text
-build/windows/x64/runner/Release
-```
-
-## 2. Prepare a dedicated installer workspace
-
-Run the helper script and point it to any installer workspace you want:
+Pripremite odvojeni radni direktorijum, pa kopirajte ceo release izlaz u `build_input`:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\windows_installer\prepare_windows_installer.ps1 `
-  -InstallerRoot D:\OPC_Installer_Work
+$work = 'D:\OPC_Installer_Work'
+New-Item -ItemType Directory -Force "$work\build_input", "$work\output" | Out-Null
+Copy-Item -Path 'build\windows\x64\runner\Release\*' -Destination "$work\build_input" -Recurse -Force
+Copy-Item 'tools\windows_installer\OPC_WINDOWS_NSIS_403.nsi' "$work\OPC_WINDOWS_NSIS.nsi"
+Copy-Item 'windows\runner\resources\app_icon.ico' "$work\OPC.ico"
 ```
 
-This prepares:
-
-```text
-D:\OPC_Installer_Work\build_input
-D:\OPC_Installer_Work\output
-```
-
-It copies the Windows release build into `build_input`.
-
-If your Flutter release build is in a different location, pass it explicitly:
+NSIS skript koristi putanje `build_input`, `output` i `OPC.ico` relativne na radni direktorijum. Pre pokretanja proverite da `build_input` sadrži kompletan Windows release izlaz i da kopirani `OPC.ico` ima isti SHA-256 kao `windows\runner\resources\app_icon.ico`.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\windows_installer\prepare_windows_installer.ps1 `
-  -InstallerRoot D:\OPC_Installer_Work `
-  -ReleaseBuildPath D:\Somewhere\Release
+Push-Location $work
+try { & 'C:\Program Files (x86)\NSIS\makensis.exe' '/DOPC_VERSION=4.0.3' '.\OPC_WINDOWS_NSIS.nsi' }
+finally { Pop-Location }
 ```
 
-## 3. Compile the Inno Setup script manually
+Ako se NSIS nalazi na drugoj putanji, navedite stvarnu lokaciju `makensis.exe`; ne menjajte signing identitete ili lokalnu OPC bazu. Rezultat je `$work\output\OPC_Setup_4.0.3_PerUser.exe`.
 
-Open Inno Setup Compiler and compile:
+## Instalacija, update i deinstalacija
 
-```text
-tools/windows_installer/opc_installer.iss
-```
+- Instalacionu i update proveru raditi u namenskom Windows nalogu/profilu ili zasebnoj VM sa sintetičkom bazom. Ne testirati preko postojeće poslovne instalacije.
+- Pre update-a zabeležiti instalacionu putanju, package version i synthetic DB marker. Zatvoriti OPC uredno; NSIS ne prekida pokrenutu aplikaciju i ne menja datoteke dok mutex ne dozvoli rad.
+- Pokrenuti novi PerUser Setup nad istom izolovanom instalacijom. Potvrditi da aplikacija i postojeći sintetički PREDMET ostaju dostupni, Start meni i Desktop prečica rade i prikazuju OPC ikonu.
+- Pri uninstall-u proveriti da se uklanjaju app fajlovi/prečice, ali korisnička OPC baza i korisnički izvezeni dokumenti ostaju netaknuti.
 
-Or use `ISCC.exe` manually and pass the prepared workspace:
+## Kontinuitet
 
-```powershell
-"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
-  "/DMyBuildInputDir=D:\OPC_Installer_Work\build_input" `
-  "/DMyOutputDir=D:\OPC_Installer_Work\output" `
-  "/DMyAppVersion=4.0.0" `
-  "/DMyAppExeName=OPC.exe" `
-  ".\tools\windows_installer\opc_installer.iss"
-```
-
-## 4. Optional compile through the helper script
-
-If you want, the helper script can also call Inno Setup Compiler:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\windows_installer\prepare_windows_installer.ps1 `
-  -InstallerRoot D:\OPC_Installer_Work `
-  -CompileInstaller `
-  -IsccPath "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-```
-
-## 5. Where the final installer appears
-
-The generated installer is written to:
-
-```text
-<InstallerRoot>\output
-```
-
-Expected filename pattern:
-
-```text
-OPC_Setup_<version>.exe
-```
-
-## Notes
-
-- The installer uses product name `OPC`.
-- The current Windows executable name expected by this lane is `OPC.exe`.
-- The lane does not hardcode a single local development path.
-- Input and output locations are controlled by script parameters or Inno Setup defines.
-
-## Running-app protection
-
-The installer declares the accepted native singleton through `AppMutex` and
-sets `CloseApplications=no`. If OPC owns
-`Local\\OPC_ORGANIZATOR_POGREBNE_CEREMONIJE_SINGLE_INSTANCE`, Inno Setup must
-refuse to proceed with program-file replacement and must not terminate OPC.
-This program-file protection is separate from the canonical SQLite database;
-the installer never uses or replaces the database as a lock.
+`opc_installer.iss` i `prepare_windows_installer.ps1` su zadržani kao istorijski Inno Setup admin lane za prethodno izdanje. OWNER je prihvatio da raniji Inno paket može koegzistirati sa novijim NSIS PerUser paketom; ne tretirati to samo po sebi kao release blokadu. Novi isporučeni 4.0.3 PerUser paket i NSIS skript predstavljaju aktuelnu Windows distribucionu putanju.

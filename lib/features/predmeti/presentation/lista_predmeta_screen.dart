@@ -88,8 +88,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   String _pretraga = '';
   String _statusFilter = 'SVE';
   bool _kreiram = false;
-  OpcPredmetLicenseState? _licenseState;
-  bool _licenseLoadFailed = false;
   late final OpcPredmetCreationLicense _predmetCreationLicense =
       widget.predmetCreationLicense ??
       OpcPredmetCreationLicense(widget.predmetiRepo.db);
@@ -124,7 +122,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
     _predmetiStream =
         widget.predmetiStreamOverride ?? widget.predmetiRepo.watchSvi();
     WidgetsBinding.instance.addObserver(this);
-    unawaited(_refreshLicense());
     if (widget.runStartupSideEffects) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         unawaited(_runStartupSideEffects());
@@ -414,7 +411,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
         );
         return;
       }
-      if (mounted) setState(() => _licenseState = license);
       if (!license.canCreateNewPredmet) {
         _showSnackBarSafely(
           const SnackBar(
@@ -447,104 +443,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       );
     } finally {
       if (mounted) setState(() => _kreiram = false);
-    }
-  }
-
-  Future<void> _refreshLicense() async {
-    try {
-      final state = await _predmetCreationLicense.evaluate();
-      if (!mounted) return;
-      setState(() {
-        _licenseState = state;
-        _licenseLoadFailed = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _licenseLoadFailed = true);
-    }
-  }
-
-  Future<void> _showActivationDialog() async {
-    final state = _licenseState;
-    if (state == null) return;
-    final firma = await widget.podesavanjaRepo.getFirmaPodaci();
-    if (!mounted) return;
-    final controller = TextEditingController();
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Trajna aktivacija OPC-a'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Pošaljite OWNER-u PIB i matični broj FIRME. '
-                  'Licenca se izdaje van aplikacije i radi bez interneta.',
-                ),
-                const SizedBox(height: 8),
-                SelectableText(
-                  'PIB: ${firma.pib.trim()}  MB: ${firma.mb.trim()}',
-                ),
-                TextButton.icon(
-                  onPressed: () => Clipboard.setData(
-                    ClipboardData(
-                      text: '${firma.pib.trim()} ${firma.mb.trim()}',
-                    ),
-                  ),
-                  icon: const Icon(Icons.copy),
-                  label: const Text('KOPIRAJ PIB I MB'),
-                ),
-                TextField(
-                  controller: controller,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Potpisana trajna licenca',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('ODUSTANI'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                bool? accepted;
-                try {
-                  accepted = await _predmetCreationLicense
-                      .installPermanentActivation(controller.text);
-                } catch (_) {
-                  accepted = null;
-                }
-                if (!dialogContext.mounted) return;
-                Navigator.pop(dialogContext);
-                _showSnackBarSafely(
-                  SnackBar(
-                    content: Text(
-                      accepted == true
-                          ? 'OPC je trajno aktiviran za ovu FIRMU.'
-                          : accepted == false
-                          ? 'Licenca nije važeća za PIB i MB ove FIRME.'
-                          : 'Provera licence nije uspela. Pokušajte ponovo.',
-                    ),
-                  ),
-                  hideCurrent: true,
-                );
-                await _refreshLicense();
-              },
-              child: const Text('AKTIVIRAJ'),
-            ),
-          ],
-        ),
-      );
-    } finally {
-      controller.dispose();
     }
   }
 
@@ -953,41 +851,6 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       body: Column(
         children: [
           _buildFilteri(),
-          if (_licenseState != null || _licenseLoadFailed)
-            MaterialBanner(
-              content: Text(
-                _licenseLoadFailed
-                    ? 'Provera prava za novi PREDMET nije dostupna.'
-                    : switch (_licenseState!.status) {
-                        OpcPredmetLicenseStatus.trial =>
-                          'Probni period: novi PREDMETI dostupni do '
-                              '${_licenseState!.trialEndsUtc.day}.'
-                              '${_licenseState!.trialEndsUtc.month}.'
-                              '${_licenseState!.trialEndsUtc.year}.',
-                        OpcPredmetLicenseStatus.activated =>
-                          'Trajna aktivacija: otvaranje novih PREDMETA je dostupno.',
-                        OpcPredmetLicenseStatus.expired =>
-                          'Probni period je istekao. Postojeći PREDMETI ostaju dostupni.',
-                        OpcPredmetLicenseStatus.clockRollback =>
-                          'Datum uređaja je vraćen unazad. Postojeći PREDMETI ostaju dostupni.',
-                      },
-              ),
-              actions: [
-                TextButton(
-                  onPressed:
-                      _licenseState == null ||
-                          _licenseState!.status ==
-                              OpcPredmetLicenseStatus.activated
-                      ? null
-                      : _showActivationDialog,
-                  child: Text(
-                    _licenseState?.status == OpcPredmetLicenseStatus.activated
-                        ? 'AKTIVIRANO'
-                        : 'AKTIVACIJA',
-                  ),
-                ),
-              ],
-            ),
           Expanded(
             child: StreamBuilder<List<PredmetiData>>(
               stream: _predmetiStream,

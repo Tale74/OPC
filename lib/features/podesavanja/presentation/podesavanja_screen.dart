@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/database/database.dart';
 import '../../../core/database/database_lane_diagnostics.dart';
@@ -36,6 +38,18 @@ import 'katalog_tab.dart';
 
 const _opcShortDescription =
     'OPC pomaže u organizaciji i vođenju pogrebnih poslova. Na jednom mestu omogućava pregled predmeta, pripremu dokumentacije, praćenje obaveza i evidenciju robe i usluga.';
+const _opcDeveloperEmail = 'sasa.andonov@gmail.com';
+
+String buildOpcLicenseRequestBody({
+  required String firmName,
+  required String pib,
+  required String mb,
+}) =>
+    'Zahtev za trajni aktivacioni ključ OPC-a\n\n'
+    'NAZIV FIRME: ${firmName.trim()}\n'
+    'PIB: ${pib.trim()}\n'
+    'MB: ${mb.trim()}\n\n'
+    'Molim izdavanje trajnog aktivacionog ključa za navedenu FIRMU.';
 
 String _platformDisplayName(TargetPlatform platform) => switch (platform) {
   TargetPlatform.android => 'Android',
@@ -74,8 +88,68 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
     final firma = await widget.repo.getFirmaPodaci();
     final state = await service.evaluate();
     if (!mounted) return;
-    final complete = firma.pib.trim().isNotEmpty && firma.mb.trim().isNotEmpty;
+    final completeIdentity =
+        firma.pib.trim().isNotEmpty && firma.mb.trim().isNotEmpty;
+    final completeRequest =
+        completeIdentity && firma.naziv.trim().isNotEmpty;
     var activationText = '';
+
+    Future<String> requestBody() async {
+      if (!completeRequest) {
+        return '';
+      }
+      return buildOpcLicenseRequestBody(
+        firmName: firma.naziv,
+        pib: firma.pib,
+        mb: firma.mb,
+      );
+    }
+
+    Future<void> requestLicenseByEmail() async {
+      final body = await requestBody();
+      if (body.isEmpty) return;
+      final uri = Uri(
+        scheme: 'mailto',
+        path: _opcDeveloperEmail,
+        queryParameters: <String, String>{
+          'subject': 'OPC – zahtev za aktivacioni ključ',
+          'body': body,
+        },
+      );
+      try {
+        if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
+      } catch (_) {
+        // Keep the request available through copy/share when no mail handler
+        // is installed or the platform cannot open an external mail draft.
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'E-pošta nije dostupna. Zahtev možete kopirati ili podeliti.',
+          ),
+        ),
+      );
+    }
+
+    Future<void> copyLicenseRequest() async {
+      final body = await requestBody();
+      if (body.isEmpty) return;
+      await Clipboard.setData(ClipboardData(text: body));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Zahtev za ključ je kopiran.')),
+      );
+    }
+
+    Future<void> shareLicenseRequest() async {
+      final body = await requestBody();
+      if (body.isEmpty) return;
+      await SharePlus.instance.share(
+        ShareParams(text: body, subject: 'OPC – zahtev za aktivacioni ključ'),
+      );
+    }
+
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -91,24 +165,46 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
                 OpcPredmetLicenseStatus.expired =>
                   'Probni period je istekao. Samo novi PREDMET zahteva trajnu aktivaciju.',
                 OpcPredmetLicenseStatus.activated =>
-                  'Ova FIRMA je trajno aktivirana.',
+                  'Trajno je aktivirana FIRMA „${firma.naziv.trim().isEmpty ? 'naziv nije unet' : firma.naziv.trim()}“.',
                 OpcPredmetLicenseStatus.clockRollback =>
                   'Datum uređaja je vraćen unazad. Postojeći rad ostaje dostupan.',
               }),
               const SizedBox(height: 12),
               Text(
-                complete
+                completeIdentity
                     ? 'PIB: ${firma.pib.trim()}  MB: ${firma.mb.trim()}'
                     : 'Unesite PIB i matični broj u PODACI FIRME pre aktivacije.',
               ),
               if (state.status != OpcPredmetLicenseStatus.activated) ...[
                 const SizedBox(height: 12),
                 const Text(
-                  'Jedan ključ važi za istu FIRMU na svim podržanim platformama.',
+                  'Jedan ključ važi za istu FIRMU na svim podržanim platformama. '
+                  'Zahtev otvara nacrt poruke; OPC je neće poslati bez vaše radnje.',
                 ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: completeRequest ? requestLicenseByEmail : null,
+                  icon: const Icon(Icons.email_outlined),
+                  label: const Text('ZATRAŽI KLJUČ E-POŠTOM'),
+                ),
+                TextButton.icon(
+                  onPressed: completeRequest ? copyLicenseRequest : null,
+                  icon: const Icon(Icons.copy_outlined),
+                  label: const Text('KOPIRAJ ZAHTEV'),
+                ),
+                TextButton.icon(
+                  onPressed: completeRequest ? shareLicenseRequest : null,
+                  icon: const Icon(Icons.share_outlined),
+                  label: const Text('PODELI ZAHTEV'),
+                ),
+                if (firma.naziv.trim().isEmpty)
+                  const Text(
+                    'Za zahtev unesite naziv FIRME u PODACI FIRME. PIB i MB '
+                    'ostaju identitet za proveru licence.',
+                  ),
                 TextField(
                   onChanged: (value) => activationText = value,
-                  enabled: complete,
+                  enabled: completeIdentity,
                   maxLines: 5,
                   decoration: const InputDecoration(
                     labelText: 'Potpisana trajna licenca',
@@ -125,7 +221,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
           ),
           if (state.status != OpcPredmetLicenseStatus.activated)
             FilledButton(
-              onPressed: complete
+              onPressed: completeIdentity
                   ? () async {
                       final accepted = await service.installPermanentActivation(
                         activationText,
@@ -1852,7 +1948,7 @@ class _OAplikacijiTab extends StatelessWidget {
               const SizedBox(height: 8),
               const _InfoRed(
                 ikona: Icons.email_outlined,
-                tekst: 'sasa.andonov@gmail.com',
+                tekst: _opcDeveloperEmail,
               ),
               const SizedBox(height: 8),
               const _InfoRed(

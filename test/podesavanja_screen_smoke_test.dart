@@ -28,6 +28,7 @@ void main() {
     session.prijavi(admin);
     await settings.saveFirmaPodaci(
       const FirmaPodaciCompanion(
+        naziv: Value('Sintetička FIRMA'),
         pib: Value('111111111'),
         mb: Value('10000001'),
       ),
@@ -49,6 +50,17 @@ void main() {
     expect(find.text('LICENCA / AKTIVACIJA'), findsOneWidget);
     expect(find.textContaining('Probni period traje do'), findsOneWidget);
     expect(find.textContaining('PIB: 111111111  MB: 10000001'), findsOneWidget);
+    expect(find.text('ZATRAŽI KLJUČ E-POŠTOM'), findsOneWidget);
+    expect(find.text('KOPIRAJ ZAHTEV'), findsOneWidget);
+    expect(find.text('PODELI ZAHTEV'), findsOneWidget);
+    final request = buildOpcLicenseRequestBody(
+      firmName: 'Sintetička FIRMA',
+      pib: '111111111',
+      mb: '10000001',
+    );
+    expect(request, contains('NAZIV FIRME: Sintetička FIRMA'));
+    expect(request, contains('PIB: 111111111'));
+    expect(request, contains('MB: 10000001'));
     expect(find.text('Potpisana trajna licenca'), findsOneWidget);
     expect(
       tester

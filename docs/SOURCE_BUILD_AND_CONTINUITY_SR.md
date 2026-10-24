@@ -2,9 +2,9 @@
 
 ## Autoritet i identitet
 
-**Kanonska putanja:** `C:\Tale\OPC\v1.5\BundleSource`. Ovo je kompletan Flutter projekat sa `.git`, početno čist na `cc16f94a1a5f2877050a8939f3685ec36ec2e1f0` (477 tracked datoteka) iz izolovane grane `codex/opc-v15-result-driven-20261020`, remote `https://github.com/Tale74/OPC.git`. U 24.10. dokumentacionoj konsolidaciji dodati su samo dokumenti i README navigacija; aplikacioni fajlovi ostaju bajt-identični prihvaćenom commit-u. Tačan dokumentacioni commit naveden je u OWNER kontrolnom manifestu van Git stabla. Nema push-a.
+**Kanonska putanja:** `C:\Tale\OPC\v1.5\BundleSource`. Ovo je kompletan Flutter projekat sa `.git`, početno čist na `cc16f94a1a5f2877050a8939f3685ec36ec2e1f0` (477 tracked datoteka) iz izolovane grane `codex/opc-v15-result-driven-20261020`, remote `https://github.com/Tale74/OPC.git`. Po početnoj dokumentacionoj konsolidaciji u ovom checkout-u izvedene su ciljane 4.0.3+5 izmene aplikacije i build konfiguracije, opisane u `CANONICAL_SOURCE_ACCEPTANCE_20261024.md`. Stariji commit ostaje istorijska osnova, a aktuelni HEAD i radno stablo moraju se proveriti pre svakog novog build-a ili objave. GitHub push nije izvršen ovim dokumentom.
 
-Zaštićeni aktivni SOURCE (`C:\Projekti\OPC_v1.5\source`) je zaseban mixed worktree na `fe696408...` sa 59 pređašnjih stavki. Njegov jedinstveni/nerazrešeni rad nije automatski prenet. `C:\Tale\OPC\v1.5\BundleSource_History_20261024` je stariji manifestirani skup 469/4.0.2/4.0.3 snapshot-a i dokaza, **nije** trenutni build input.
+Zaštićeni aktivni SOURCE (`C:\Projekti\OPC_v1.5\source`) je zaseban mixed worktree na `fe696408...` sa 59 pređašnjih stavki. Njegov jedinstveni/nerazrešeni rad nije automatski prenet. Istorijski `BundleSource_History_20261024` je po posebnom OWNER odobrenju uklonjen nakon ciljane provere porekla; nije build input. Zapis o uklanjanju je u `CLEANUP_DISPOSITION_SR_20261024.md`.
 
 ## Sadržaj dovoljan za rad
 
@@ -16,9 +16,9 @@ Izvor ne zavisi od PHASE direktorijuma, lokalnog Flutter cache-a ili agent-state
 
 Prethodno potvrđeni Flutter 3.41.7 / Dart 3.11.5 i zaključani `pubspec.lock` su referenca. Na ovom skromnom računaru pokretati **samo jedan** Flutter/Gradle proces odjednom. Po promeni aplikacionog ili build koda: `flutter pub get`, zatim `flutter analyze --no-pub`, zatim `flutter test --no-pub --concurrency=1`; tek zatim ciljani build. Dokumentaciona konsolidacija nije razlog za ponavljanje pune suite. Sačuvati potpune exit kodove i izlaz.
 
-- **Windows:** Windows 10/11 sa Flutter desktop, Visual Studio C++ toolchain; `flutter build windows --release --no-pub --build-name=4.0.3 --build-number=4`. Ranije je kratka `O:` putanja do *roditelja* projekta rešila MSBuild dužinu putanje. NSIS per-user installer je zaseban korak, sa proverom iste verzije i očuvanja lokalnih podataka.
+- **Windows:** Windows 10/11 sa Flutter desktop, Visual Studio C++ toolchain; `flutter build windows --release --no-pub --build-name=4.0.3 --build-number=5`. Ranije je kratka `O:` putanja do *roditelja* projekta rešila MSBuild dužinu putanje. NSIS per-user installer je zaseban korak, sa proverom iste verzije i očuvanja lokalnih podataka.
 - **Android:** Flutter, JDK/Android SDK/Gradle. `flutter build apk --flavor production --release --no-pub`. Gradle odbija release bez `OPC_ANDROID_RELEASE_KEYSTORE`, `OPC_ANDROID_RELEASE_PASSWORD`, `OPC_ANDROID_RELEASE_ALIAS`; koristiti isključivo postojeći OWNER P12 i alias `opc-v15-release`. Ne koristiti debug ključ. Proveriti APK potpis i Flutter assets pre instalacije.
-- **Cloudflare Web/PWA:** `flutter build web --release --no-pub --build-name=4.0.3 --build-number=4`; deployment u postojeći `opc-srb` Pages projekat. Svaki browser profil/origin ima zasebnu lokalnu bazu. Sačuvati prihvaćeni javni origin; nova verzija mora proći realan same-origin update.
+- **Cloudflare Web/PWA:** `flutter build web --release --no-pub --build-name=4.0.3 --build-number=5`; deployment u postojeći `opc-srb` Pages projekat. Svaki browser profil/origin ima zasebnu lokalnu bazu. Sačuvati prihvaćeni javni origin; nova verzija mora proći realan same-origin update.
 - **iOS:** macOS/Xcode i Apple signing identitet. GitHub Actions workflow `.github/workflows/opc-platform-builds.yml` daje tehnički no-codesign compile. Bez signing-a, IPA i stvarnog Apple uređaja nema distribucionog ili update PASS.
 - **macOS:** macOS/Xcode. CI tehnički app/DMG bez potpisa; za korisnički paket trebaju codesign/notarization i stvaran install/update test.
 
@@ -29,3 +29,11 @@ U OWNER bundle-u pored izvora: `Windows/4.0.3/OPC_Setup_4.0.3_PerUser.exe` SHA-2
 ## Nastavak i objavljivanje
 
 Raditi iz ovog kanonskog checkout-a, sa lokalnom granom za promene. Pre bilo kog GitHub push-a, javnog release-a ili zamene zaštićenog SOURCE-a potreban je konkretan OWNER pregled i odluka. CI i runtime PASS starog commita ne pripisivati sledećem izmenjenom kodu. Licence, signing, kanonsku bazu i korisničke podatke čuvati van izvora.
+
+## Aktuelni kandidat 4.0.3+5 (2026-10-24)
+
+Po korekcijama licencnog korisničkog toka i uklanjanju trajnog LISTA PREDMETA bannera, verzija je `4.0.3+5`. `flutter analyze --no-pub` je prošao bez nalaza; serijska puna suite je završila sa 693 PASS / 9 environment-gated skip / 0 fail. Detalji, hash-ovi Windows/Android/Web artefakata i runtime granice su u [CANONICAL_SOURCE_ACCEPTANCE_20261024.md](CANONICAL_SOURCE_ACCEPTANCE_20261024.md).
+
+Aktuelni lokalni artefakti nalaze se u `C:\Tale\OPC\v1.5\Windows\4.0.3-corrected+5`, `Android\4.0.3-corrected+5` i `PWA\4.0.3-corrected+5`. Android APK je release potpisan postojećim OWNER sertifikatom, package `com.tale.opc_v4`, versionCode 5. OWNER je naknadno prihvatio praktične Windows i Android 4.0.3+5 rezultate u posmatranom opsegu. PWA Cloudflare publish/update ostaje otvoren dok javni bundle i isti profil ne budu provereni. Stariji Apple no-codesign izlazi nisu artefakti trenutnog korigovanog koda.
+
+Sadašnja NSIS komanda koristi `--build-number=5`; posle build-a kopirati ceo `build\\windows\\x64\\runner\\Release` u izolovani `build_input`, službeni ICO i `tools\\windows_installer\\OPC_WINDOWS_NSIS_403.nsi` u radni folder, zatim kompajlirati kopiju skripte sa `OPC_VERSION=4.0.3`. Ne instalirati test setup preko korisničkog Desktop-a ili postojećeg OPC profila; koristiti zaseban Windows test profil/VM za novu runtime proveru.
