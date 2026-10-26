@@ -1,5 +1,13 @@
 # OPC v1.5 — trenutno stanje razvoja
 
+**Aktuelni dodatak 26.10.2026:** provereni +10 commit-i su sinhronizovani na
+izolovanu GitHub granu `codex/opc-v15-canonical-bundlesource-20261024`;
+remote ref je potvrđen na `49bead17fe3a2c76d15678bbfe9c5de8fffbcf23`.
+Za obavezno vlasničko pravilo petoplatformske funkcionalne i dokumentne
+jednakosti i stvarni status različitih platformskih paketa pogledati
+[OPC_PLATFORM_PARITY_40310.md](OPC_PLATFORM_PARITY_40310.md). Stariji statusi
+u nastavku su istorijski trag, ne tvrde da je +10 već isporučen nativno.
+
 Kanonski Flutter izvor je `C:\Tale\OPC\v1.5\BundleSource`, nastao kontrolisanim premeštanjem čistog 4.0.3 checkout-a sa prihvaćenog commit-a `cc16f94a1a5f2877050a8939f3685ec36ec2e1f0`. Zaštićeni aktivni SOURCE `C:\Projekti\OPC_v1.5\source` ostaje na `fe696408afc7ceae8aa7ecc80c4cda68c34e9130` sa 59 ranijih status stavki; nije promovisan niti menjan.
 
 Windows 4.0.3, Android 4.0.3 i Cloudflare PWA imaju ranije izolovane install/update dokaze opisane u [acceptance matrici](FINAL_ACCEPTANCE_MATRIX.md). iOS i macOS su tehnički CI izlazi bez produkcionog potpisa i praktičnog update prihvata. Cloudflare `https://opc-srb.pages.dev/` je jedini odobren PWA origin; Netlify je povučen.
