@@ -49,6 +49,8 @@ class IriuRowTile extends StatefulWidget {
     this.catalogDisplayNames = const <String, String>{},
     required this.isNarrowAndroid,
     required this.preporucenoLabel,
+    this.registerPendingSave,
+    this.unregisterPendingSave,
   });
 
   final IriuData stavka;
@@ -58,6 +60,8 @@ class IriuRowTile extends StatefulWidget {
   final bool enabled;
   final bool isNarrowAndroid;
   final String preporucenoLabel;
+  final void Function(int, Future<void> Function())? registerPendingSave;
+  final void Function(int)? unregisterPendingSave;
 
   /// False when the condition for this row is no longer satisfied.
   /// The row stays visible but muted instead of being deleted.
@@ -71,6 +75,8 @@ class IriuRowTile extends StatefulWidget {
 
 class _IriuRowTileState extends State<IriuRowTile> {
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
+  bool _deleted = false;
   late final TextEditingController _nazivCtrl;
   late final TextEditingController _komCtrl;
   late final TextEditingController _iznosCtrl;
@@ -231,6 +237,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
   @override
   void initState() {
     super.initState();
+    widget.registerPendingSave?.call(widget.stavka.id, flushPendingSave);
     final s = widget.stavka;
     _nazivCtrl = TextEditingController(
       text: resolveIriuDisplayName(
@@ -287,7 +294,11 @@ class _IriuRowTileState extends State<IriuRowTile> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _queueSave();
+    }
+    widget.unregisterPendingSave?.call(widget.stavka.id);
     _nazivCtrl.dispose();
     _komCtrl.dispose();
     _iznosCtrl.dispose();
@@ -364,6 +375,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
       _setAutomaticAmount(cena);
     });
     _debounce?.cancel();
+    await _pendingSave;
     await widget.iriuRepo.azurirajKatalogSelection(
       row: widget.stavka,
       selection: IriuCatalogSelection(
@@ -401,6 +413,9 @@ class _IriuRowTileState extends State<IriuRowTile> {
       ),
     );
     if (ok == true) {
+      _deleted = true;
+      _debounce?.cancel();
+      await _pendingSave;
       await widget.iriuRepo.obrisiStavkuSaLifecycleMemorijom(
         predmetId: widget.stavka.predmetId,
         row: widget.stavka,
@@ -413,16 +428,33 @@ class _IriuRowTileState extends State<IriuRowTile> {
   }) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 800), () {
-      widget.iriuRepo.azurirajStavku(
-        widget.stavka.id,
-        IriuCompanion(
-          katalogStableArticleId: katalogStableArticleId,
-          nazivPrikaz: Value(_normalizedText(_nazivCtrl)),
-          kom: Value(_normalizedText(_komCtrl)),
-          iznos: Value(_parsedIznos()),
-        ),
-      );
+      _debounce = null;
+      _queueSave(katalogStableArticleId: katalogStableArticleId);
     });
+  }
+
+  void _queueSave({
+    Value<String?> katalogStableArticleId = const Value.absent(),
+  }) {
+    if (_deleted) return;
+    final companion = IriuCompanion(
+      katalogStableArticleId: katalogStableArticleId,
+      nazivPrikaz: Value(_normalizedText(_nazivCtrl)),
+      kom: Value(_normalizedText(_komCtrl)),
+      iznos: Value(_parsedIznos()),
+    );
+    _pendingSave = _pendingSave.then(
+      (_) => widget.iriuRepo.azurirajStavku(widget.stavka.id, companion),
+    );
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
   }
 
   @override

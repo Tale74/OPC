@@ -20,14 +20,15 @@ class ParteSegment extends StatefulWidget {
 
   final PredmetiData initialData;
   final bool enabled;
-  final void Function(PredmetiCompanion) onSave;
+  final FutureOr<void> Function(PredmetiCompanion) onSave;
 
   @override
-  State<ParteSegment> createState() => _ParteSegmentState();
+  State<ParteSegment> createState() => ParteSegmentState();
 }
 
-class _ParteSegmentState extends State<ParteSegment> {
+class ParteSegmentState extends State<ParteSegment> {
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
 
   String _simbol = 'PRAVOSLAVNI_KRST_SVETOSAVSKI';
   String _pismo = 'CIRILICA';
@@ -309,7 +310,23 @@ class _ParteSegmentState extends State<ParteSegment> {
 
   void _scheduleSave() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 800), _save);
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      _debounce = null;
+      _queueSave();
+    });
+  }
+
+  void _queueSave() {
+    _pendingSave = _pendingSave.then((_) => _save());
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
   }
 
   String _normalizedText(TextEditingController ctrl) =>
@@ -317,8 +334,8 @@ class _ParteSegmentState extends State<ParteSegment> {
 
   String _normalizedTextValue(String value) => normalizeText(value);
 
-  void _save() {
-    widget.onSave(
+  Future<void> _save() async {
+    await widget.onSave(
       PredmetiCompanion(
         partePotrebna: Value(_partePotrebna),
         simbol: Value(_simbol),
@@ -354,7 +371,7 @@ class _ParteSegmentState extends State<ParteSegment> {
                 enabled: widget.enabled,
                 onChanged: (value) => setState(() {
                   _partePotrebna = value;
-                  _save();
+                  _queueSave();
                 }),
               ),
               const SizedBox(height: 12),

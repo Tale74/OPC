@@ -29,20 +29,21 @@ class FinansijeSegment extends StatefulWidget {
   final int predmetId;
   final IriuRepository iriuRepo;
   final bool enabled;
-  final void Function(PredmetiCompanion) onSave;
+  final FutureOr<void> Function(PredmetiCompanion) onSave;
 
   /// Iznos refundacije PIO fond-a — čita se iz AppPodesavanja.
   final double refundacijaPioIznos;
 
   @override
-  State<FinansijeSegment> createState() => _FinansijeSegmentState();
+  State<FinansijeSegment> createState() => FinansijeSegmentState();
 }
 
-class _FinansijeSegmentState extends State<FinansijeSegment> {
+class FinansijeSegmentState extends State<FinansijeSegment> {
   static const _predmetIriuTruthService = PredmetIriuTruthService();
   static const _financialTruthService = FinancialTruthService();
 
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
   String? _lastPredmetTruthSignature;
   String? _lastIriuTruthSignature;
   PredmetIriuTruthSnapshot? _cachedTruthSnapshot;
@@ -119,11 +120,27 @@ class _FinansijeSegmentState extends State<FinansijeSegment> {
 
   void _scheduleSave() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 800), _save);
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      _debounce = null;
+      _queueSave();
+    });
   }
 
-  void _save() {
-    widget.onSave(
+  void _queueSave() {
+    _pendingSave = _pendingSave.then((_) => _save());
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
+  }
+
+  Future<void> _save() async {
+    await widget.onSave(
       PredmetiCompanion(
         narucilacRefundira: Value(_platilaciRefundira ? 'DA' : 'NE'),
         refundacijaPio: Value(_refundacijaPioSettingForPredmet()),

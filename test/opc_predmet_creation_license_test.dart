@@ -180,7 +180,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(MaterialBanner), findsNothing);
-    expect(find.textContaining('Probni period je istekao'), findsNothing);
+    expect(find.textContaining('Probni period je istekao'), findsOneWidget);
+    expect(find.text('AKTIVIRAJ'), findsOneWidget);
     await tester.tap(find.text('NOVI PREDMET'));
     await tester.pumpAndSettle();
     expect((await predmeti.getSvePredmete()).length, 1);

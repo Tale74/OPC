@@ -26,14 +26,16 @@ class NarucilacSegment extends StatefulWidget {
   final KontaktLicaRepository kontaktRepo;
   final FirmaPodaciData firmaPodaci;
   final bool enabled;
-  final void Function(PredmetiCompanion) onSave;
+  final FutureOr<void> Function(PredmetiCompanion) onSave;
 
   @override
-  State<NarucilacSegment> createState() => _NarucilacSegmentState();
+  State<NarucilacSegment> createState() => NarucilacSegmentState();
 }
 
-class _NarucilacSegmentState extends State<NarucilacSegment> {
+class NarucilacSegmentState extends State<NarucilacSegment> {
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
+  final Map<int, Future<void> Function()> _contactFlushes = {};
 
   // Block A - top level
   String _naruTip = 'FIZICKO_LICE';
@@ -534,14 +536,33 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
 
   void _scheduleSave() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 800), _save);
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      _debounce = null;
+      _queueSave();
+    });
     // Osvezava read-only JKP mirror kada se menjaju Block A polja
     if (_naruIstiZaJkp && mounted) setState(() {});
   }
 
-  void _save() {
+  void _queueSave() {
+    _pendingSave = _pendingSave.then((_) => _save());
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
+    for (final flush in _contactFlushes.values.toList()) {
+      await flush();
+    }
+  }
+
+  Future<void> _save() async {
     final jkpTipSave = _naruIstiZaJkp ? _naruTip : _jkpTip;
-    widget.onSave(
+    await widget.onSave(
       PredmetiCompanion(
         // Block A
         naruTip: Value(_naruTip),
@@ -798,6 +819,8 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
               blok: 'NARU_OPREMA',
               kontaktRepo: widget.kontaktRepo,
               enabled: e,
+              registerPendingSave: (id, flush) => _contactFlushes[id] = flush,
+              unregisterPendingSave: (id) => _contactFlushes.remove(id),
             ),
 
             const SizedBox(height: 4),
@@ -902,6 +925,8 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                 blok: 'NARU_JKP',
                 kontaktRepo: widget.kontaktRepo,
                 enabled: e,
+                registerPendingSave: (id, flush) => _contactFlushes[id] = flush,
+                unregisterPendingSave: (id) => _contactFlushes.remove(id),
               ),
             ] else ...[
               _tipSelector(
@@ -1090,6 +1115,8 @@ class _NarucilacSegmentState extends State<NarucilacSegment> {
                 blok: 'NARU_JKP',
                 kontaktRepo: widget.kontaktRepo,
                 enabled: e,
+                registerPendingSave: (id, flush) => _contactFlushes[id] = flush,
+                unregisterPendingSave: (id) => _contactFlushes.remove(id),
               ),
             ],
           ],
@@ -1437,12 +1464,16 @@ class _KontaktBlok extends StatelessWidget {
     required this.blok,
     required this.kontaktRepo,
     required this.enabled,
+    required this.registerPendingSave,
+    required this.unregisterPendingSave,
   });
 
   final int predmetId;
   final String blok;
   final KontaktLicaRepository kontaktRepo;
   final bool enabled;
+  final void Function(int, Future<void> Function()) registerPendingSave;
+  final void Function(int) unregisterPendingSave;
 
   @override
   Widget build(BuildContext context) {
@@ -1470,6 +1501,8 @@ class _KontaktBlok extends StatelessWidget {
                   kontakt: k,
                   kontaktRepo: kontaktRepo,
                   enabled: enabled,
+                  registerPendingSave: registerPendingSave,
+                  unregisterPendingSave: unregisterPendingSave,
                 ),
               ),
             ],
@@ -1509,11 +1542,15 @@ class _KontaktRow extends StatefulWidget {
     required this.kontakt,
     required this.kontaktRepo,
     required this.enabled,
+    required this.registerPendingSave,
+    required this.unregisterPendingSave,
   });
 
   final KontaktLicaData kontakt;
   final KontaktLicaRepository kontaktRepo;
   final bool enabled;
+  final void Function(int, Future<void> Function()) registerPendingSave;
+  final void Function(int) unregisterPendingSave;
 
   @override
   State<_KontaktRow> createState() => _KontaktRowState();
@@ -1521,6 +1558,8 @@ class _KontaktRow extends StatefulWidget {
 
 class _KontaktRowState extends State<_KontaktRow> {
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
+  bool _deleted = false;
   late final TextEditingController _imeCtrl;
   late final TextEditingController _prezimeCtrl;
   late final TextEditingController _telefonCtrl;
@@ -1529,6 +1568,7 @@ class _KontaktRowState extends State<_KontaktRow> {
   @override
   void initState() {
     super.initState();
+    widget.registerPendingSave(widget.kontakt.id, flushPendingSave);
     final k = widget.kontakt;
     final parts = k.imePrezime.trim().split(' ');
     _imeCtrl = TextEditingController(text: parts.isNotEmpty ? parts.first : '');
@@ -1541,7 +1581,11 @@ class _KontaktRowState extends State<_KontaktRow> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _queueSave();
+    }
+    widget.unregisterPendingSave(widget.kontakt.id);
     for (final c in [_imeCtrl, _prezimeCtrl, _telefonCtrl, _emailCtrl]) {
       c.dispose();
     }
@@ -1551,18 +1595,40 @@ class _KontaktRowState extends State<_KontaktRow> {
   void _scheduleSave() {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 800), () {
-      widget.kontaktRepo.azuriraj(
-        widget.kontakt.id,
-        KontaktLicaCompanion(
-          imePrezime: Value(
-            '${normalizeText(_imeCtrl.text)} ${normalizeText(_prezimeCtrl.text)}'
-                .trim(),
-          ),
-          telefon: Value(normalizeText(_telefonCtrl.text)),
-          email: Value(normalizeText(_emailCtrl.text)),
-        ),
-      );
+      _debounce = null;
+      _queueSave();
     });
+  }
+
+  void _queueSave() {
+    if (_deleted) return;
+    final companion = KontaktLicaCompanion(
+      imePrezime: Value(
+        '${normalizeText(_imeCtrl.text)} ${normalizeText(_prezimeCtrl.text)}'
+            .trim(),
+      ),
+      telefon: Value(normalizeText(_telefonCtrl.text)),
+      email: Value(normalizeText(_emailCtrl.text)),
+    );
+    _pendingSave = _pendingSave.then(
+      (_) => widget.kontaktRepo.azuriraj(widget.kontakt.id, companion),
+    );
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
+  }
+
+  Future<void> _delete() async {
+    _deleted = true;
+    _debounce?.cancel();
+    await _pendingSave;
+    await widget.kontaktRepo.obrisi(widget.kontakt.id);
   }
 
   @override
@@ -1624,7 +1690,7 @@ class _KontaktRowState extends State<_KontaktRow> {
       icon: const Icon(Icons.delete_outline, size: 18),
       color: Theme.of(context).colorScheme.error,
       tooltip: 'Obri\u0161i kontakt',
-      onPressed: e ? () => widget.kontaktRepo.obrisi(widget.kontakt.id) : null,
+      onPressed: e ? _delete : null,
     );
 
     return Padding(

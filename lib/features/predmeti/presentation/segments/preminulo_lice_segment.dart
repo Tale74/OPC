@@ -42,15 +42,16 @@ class PreminuloLiceSegment extends StatefulWidget {
 
   final PredmetiData initialData;
   final bool enabled;
-  final void Function(PredmetiCompanion) onSave;
+  final Future<void> Function(PredmetiCompanion) onSave;
   final PreminuloLiceSegmentMode mode;
 
   @override
-  State<PreminuloLiceSegment> createState() => _PreminuloLiceSegmentState();
+  State<PreminuloLiceSegment> createState() => PreminuloLiceSegmentState();
 }
 
-class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
+class PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
 
   // ── Preminulo lice ────────────────────────────────────────────────────────
   late final TextEditingController _imeCtrl;
@@ -208,10 +209,16 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
 
     // Blur validacija — prikazuje grešku samo nakon napuštanja polja
     _imeFocus.addListener(() {
-      if (!_imeFocus.hasFocus) setState(() => _imeTouched = true);
+      if (!_imeFocus.hasFocus) {
+        setState(() => _imeTouched = true);
+        unawaited(flushPendingSave());
+      }
     });
     _prezimeFocus.addListener(() {
-      if (!_prezimeFocus.hasFocus) setState(() => _prezimeTouched = true);
+      if (!_prezimeFocus.hasFocus) {
+        setState(() => _prezimeTouched = true);
+        unawaited(flushPendingSave());
+      }
     });
     _devojackoFocus.addListener(() {
       if (!_devojackoFocus.hasFocus) {
@@ -253,17 +260,33 @@ class _PreminuloLiceSegmentState extends State<PreminuloLiceSegment> {
 
   void _scheduleSave() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 800), _save);
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      _debounce = null;
+      _queueSave();
+    });
   }
 
-  void _save() {
+  void _queueSave() {
+    _pendingSave = _pendingSave.then((_) => _save());
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
+  }
+
+  Future<void> _save() async {
     // Izračunaj legacy boolean polja iz radniStatusSet
     final jePenzioner =
         _jePenzionerSrbije || _radniStatusSet.contains('INOSTRANI_PENZIONER');
     final jePenzionerSrbije = _jePenzionerSrbije;
     final jeVojniPenzioner = _jeVojniPenzioner;
 
-    widget.onSave(
+    await widget.onSave(
       PredmetiCompanion(
         ime: Value(_normalizedText(_imeCtrl)),
         prezime: Value(_normalizedText(_prezimeCtrl)),

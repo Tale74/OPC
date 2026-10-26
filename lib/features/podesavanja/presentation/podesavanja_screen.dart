@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, TargetPlatform;
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -51,6 +51,15 @@ String buildOpcLicenseRequestBody({
     'MB: ${mb.trim()}\n\n'
     'Molim izdavanje trajnog aktivacionog ključa za navedenu FIRMU.';
 
+Uri buildOpcLicenseRequestMailtoUri(String body) => Uri(
+  scheme: 'mailto',
+  path: _opcDeveloperEmail,
+  queryParameters: <String, String>{
+    'subject': 'OPC – zahtev za aktivacioni ključ',
+    'body': body,
+  },
+);
+
 String _platformDisplayName(TargetPlatform platform) => switch (platform) {
   TargetPlatform.android => 'Android',
   TargetPlatform.iOS => 'iOS',
@@ -60,6 +69,11 @@ String _platformDisplayName(TargetPlatform platform) => switch (platform) {
   TargetPlatform.fuchsia => 'Fuchsia',
 };
 
+String opcPlatformDisplayName({
+  required bool isWeb,
+  required TargetPlatform platform,
+}) => isWeb ? 'Web/PWA' : _platformDisplayName(platform);
+
 class PodesavanjaScreen extends StatefulWidget {
   const PodesavanjaScreen({
     super.key,
@@ -68,7 +82,9 @@ class PodesavanjaScreen extends StatefulWidget {
     required this.session,
     this.prikaziOnboarding = false,
     this.initialSection,
+    this.openLicenseOnEntry = false,
     this.entitlementPolicy = const OpcEntitlementPolicy.current(),
+    this.predmetCreationLicense,
   });
 
   final PodesavanjaRepository repo;
@@ -76,23 +92,51 @@ class PodesavanjaScreen extends StatefulWidget {
   final SessionService session;
   final bool prikaziOnboarding;
   final OpcSettingsSection? initialSection;
+  final bool openLicenseOnEntry;
   final OpcEntitlementPolicy entitlementPolicy;
+  final OpcPredmetCreationLicense? predmetCreationLicense;
 
   @override
   State<PodesavanjaScreen> createState() => _PodesavanjaScreenState();
 }
 
 class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
+  late final OpcPredmetCreationLicense _predmetCreationLicense =
+      widget.predmetCreationLicense ??
+      OpcPredmetCreationLicense(widget.repo.db);
+  OpcPredmetLicenseState? _licenseState;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshLicenseState();
+    if (widget.openLicenseOnEntry) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _otvoriLicencu();
+      });
+    }
+  }
+
+  Future<void> _refreshLicenseState() async {
+    try {
+      final state = await _predmetCreationLicense.evaluate();
+      if (mounted) setState(() => _licenseState = state);
+    } catch (_) {
+      if (mounted) setState(() => _licenseState = null);
+    }
+  }
+
   Future<void> _otvoriLicencu() async {
-    final service = OpcPredmetCreationLicense(widget.repo.db);
+    final service = _predmetCreationLicense;
     final firma = await widget.repo.getFirmaPodaci();
     final state = await service.evaluate();
     if (!mounted) return;
     final completeIdentity =
         firma.pib.trim().isNotEmpty && firma.mb.trim().isNotEmpty;
-    final completeRequest =
-        completeIdentity && firma.naziv.trim().isNotEmpty;
+    final completeRequest = completeIdentity && firma.naziv.trim().isNotEmpty;
     var activationText = '';
+    String? activationError;
+    var activating = false;
 
     Future<String> requestBody() async {
       if (!completeRequest) {
@@ -108,14 +152,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
     Future<void> requestLicenseByEmail() async {
       final body = await requestBody();
       if (body.isEmpty) return;
-      final uri = Uri(
-        scheme: 'mailto',
-        path: _opcDeveloperEmail,
-        queryParameters: <String, String>{
-          'subject': 'OPC – zahtev za aktivacioni ključ',
-          'body': body,
-        },
-      );
+      final uri = buildOpcLicenseRequestMailtoUri(body);
       try {
         if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
       } catch (_) {
@@ -152,99 +189,137 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
 
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('LICENCA / AKTIVACIJA'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(switch (state.status) {
-                OpcPredmetLicenseStatus.trial =>
-                  'Probni period traje do ${state.trialEndsUtc.day}.${state.trialEndsUtc.month}.${state.trialEndsUtc.year}.',
-                OpcPredmetLicenseStatus.expired =>
-                  'Probni period je istekao. Samo novi PREDMET zahteva trajnu aktivaciju.',
-                OpcPredmetLicenseStatus.activated =>
-                  'Trajno je aktivirana FIRMA „${firma.naziv.trim().isEmpty ? 'naziv nije unet' : firma.naziv.trim()}“.',
-                OpcPredmetLicenseStatus.clockRollback =>
-                  'Datum uređaja je vraćen unazad. Postojeći rad ostaje dostupan.',
-              }),
-              const SizedBox(height: 12),
-              Text(
-                completeIdentity
-                    ? 'PIB: ${firma.pib.trim()}  MB: ${firma.mb.trim()}'
-                    : 'Unesite PIB i matični broj u PODACI FIRME pre aktivacije.',
-              ),
-              if (state.status != OpcPredmetLicenseStatus.activated) ...[
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text('LICENCA / AKTIVACIJA'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(switch (state.status) {
+                  OpcPredmetLicenseStatus.trial =>
+                    'Probni period traje do ${state.trialEndsUtc.day}.${state.trialEndsUtc.month}.${state.trialEndsUtc.year}.',
+                  OpcPredmetLicenseStatus.expired =>
+                    'Probni period je istekao. Samo novi PREDMET zahteva trajnu aktivaciju.',
+                  OpcPredmetLicenseStatus.activated =>
+                    'Trajno je aktivirana FIRMA „${firma.naziv.trim().isEmpty ? 'naziv nije unet' : firma.naziv.trim()}“.',
+                  OpcPredmetLicenseStatus.clockRollback =>
+                    'Datum uređaja je vraćen unazad. Postojeći rad ostaje dostupan.',
+                }),
                 const SizedBox(height: 12),
-                const Text(
-                  'Jedan ključ važi za istu FIRMU na svim podržanim platformama. '
-                  'Zahtev otvara nacrt poruke; OPC je neće poslati bez vaše radnje.',
+                Text(
+                  completeIdentity
+                      ? 'PIB: ${firma.pib.trim()}  MB: ${firma.mb.trim()}'
+                      : 'Unesite PIB i matični broj u PODACI FIRME pre aktivacije.',
                 ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: completeRequest ? requestLicenseByEmail : null,
-                  icon: const Icon(Icons.email_outlined),
-                  label: const Text('ZATRAŽI KLJUČ E-POŠTOM'),
-                ),
-                TextButton.icon(
-                  onPressed: completeRequest ? copyLicenseRequest : null,
-                  icon: const Icon(Icons.copy_outlined),
-                  label: const Text('KOPIRAJ ZAHTEV'),
-                ),
-                TextButton.icon(
-                  onPressed: completeRequest ? shareLicenseRequest : null,
-                  icon: const Icon(Icons.share_outlined),
-                  label: const Text('PODELI ZAHTEV'),
-                ),
-                if (firma.naziv.trim().isEmpty)
+                if (state.status != OpcPredmetLicenseStatus.activated) ...[
+                  const SizedBox(height: 12),
                   const Text(
-                    'Za zahtev unesite naziv FIRME u PODACI FIRME. PIB i MB '
-                    'ostaju identitet za proveru licence.',
+                    'Jedan ključ važi za istu FIRMU na svim podržanim platformama. '
+                    'Zahtev otvara nacrt poruke; OPC je neće poslati bez vaše radnje.',
                   ),
-                TextField(
-                  onChanged: (value) => activationText = value,
-                  enabled: completeIdentity,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Potpisana trajna licenca',
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: completeRequest ? requestLicenseByEmail : null,
+                    icon: const Icon(Icons.email_outlined),
+                    label: const Text('ZATRAŽI KLJUČ E-POŠTOM'),
                   ),
-                ),
+                  TextButton.icon(
+                    onPressed: completeRequest ? copyLicenseRequest : null,
+                    icon: const Icon(Icons.copy_outlined),
+                    label: const Text('KOPIRAJ ZAHTEV'),
+                  ),
+                  TextButton.icon(
+                    onPressed: completeRequest ? shareLicenseRequest : null,
+                    icon: const Icon(Icons.share_outlined),
+                    label: const Text('PODELI ZAHTEV'),
+                  ),
+                  if (firma.naziv.trim().isEmpty)
+                    const Text(
+                      'Za zahtev unesite naziv FIRME u PODACI FIRME. PIB i MB '
+                      'ostaju identitet za proveru licence.',
+                    ),
+                  TextField(
+                    onChanged: (value) {
+                      activationText = value;
+                      if (activationError != null) {
+                        setDialogState(() => activationError = null);
+                      }
+                    },
+                    enabled: completeIdentity,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      labelText: 'Potpisana trajna licenca',
+                    ),
+                  ),
+                  if (activationError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      activationError!,
+                      key: const Key('license-activation-error'),
+                      style: TextStyle(
+                        color: Theme.of(dialogContext).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ],
               ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('ZATVORI'),
-          ),
-          if (state.status != OpcPredmetLicenseStatus.activated)
-            FilledButton(
-              onPressed: completeIdentity
-                  ? () async {
-                      final accepted = await service.installPermanentActivation(
-                        activationText,
-                      );
-                      if (!dialogContext.mounted) return;
-                      Navigator.pop(dialogContext);
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            accepted
-                                ? 'OPC je trajno aktiviran za ovu FIRMU.'
-                                : 'Licenca nije važeća za PIB i MB ove FIRME.',
-                          ),
-                        ),
-                      );
-                    }
-                  : null,
-              child: const Text('AKTIVIRAJ'),
             ),
-        ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('ZATVORI'),
+            ),
+            if (state.status != OpcPredmetLicenseStatus.activated)
+              FilledButton(
+                onPressed: completeIdentity && !activating
+                    ? () async {
+                        setDialogState(() => activating = true);
+                        bool accepted;
+                        try {
+                          accepted = await service.installPermanentActivation(
+                            activationText,
+                          );
+                        } catch (_) {
+                          if (!dialogContext.mounted) return;
+                          setDialogState(() {
+                            activating = false;
+                            activationError =
+                                'Provera licence nije uspela. Pokušajte ponovo.';
+                          });
+                          return;
+                        }
+                        if (!dialogContext.mounted) return;
+                        if (!accepted) {
+                          setDialogState(() {
+                            activating = false;
+                            activationError =
+                                'Licenca nije važeća za PIB i MB ove FIRME. '
+                                'Proverite ključ i podatke FIRME.';
+                          });
+                          return;
+                        }
+                        Navigator.pop(dialogContext);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'OPC je trajno aktiviran za ovu FIRMU.',
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    : null,
+                child: const Text('AKTIVIRAJ'),
+              ),
+          ],
+        ),
       ),
     );
+    await _refreshLicenseState();
   }
 
   bool _firmaIsDirty = false;
@@ -390,8 +465,17 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.workspace_premium_outlined),
-                tooltip: 'LICENCA',
+                icon: Icon(
+                  Icons.workspace_premium_outlined,
+                  color:
+                      _licenseState?.status == OpcPredmetLicenseStatus.activated
+                      ? Colors.green
+                      : Colors.red,
+                ),
+                tooltip:
+                    _licenseState?.status == OpcPredmetLicenseStatus.activated
+                    ? 'LICENCA – trajno aktivirana'
+                    : 'LICENCA – nije trajno aktivirana',
                 onPressed: _otvoriLicencu,
               ),
               if (widget.session.mozeBackup) ...[
@@ -456,6 +540,7 @@ class _PodesavanjaScreenState extends State<PodesavanjaScreen> {
         repo: widget.repo,
         prikaziOnboarding: widget.prikaziOnboarding,
         onDirtyChanged: (v) => setState(() => _firmaIsDirty = v),
+        onSaved: _refreshLicenseState,
       ),
       OpcSettingsSection.refundacijaPio => _RefundacijaTab(
         key: _refKey,
@@ -955,11 +1040,13 @@ class _FirmaTab extends StatefulWidget {
     required this.repo,
     this.prikaziOnboarding = false,
     this.onDirtyChanged,
+    this.onSaved,
   });
 
   final PodesavanjaRepository repo;
   final bool prikaziOnboarding;
   final ValueChanged<bool>? onDirtyChanged;
+  final VoidCallback? onSaved;
 
   @override
   State<_FirmaTab> createState() => _FirmaTabState();
@@ -1103,6 +1190,7 @@ class _FirmaTabState extends State<_FirmaTab> {
     if (!mounted) return;
     setState(() => _cuva = false);
     widget.onDirtyChanged?.call(false);
+    widget.onSaved?.call();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Podaci firme sačuvani.'),
@@ -1959,7 +2047,7 @@ class _OAplikacijiTab extends StatelessWidget {
               _InfoRed(
                 ikona: Icons.code_outlined,
                 tekst:
-                    'Platforma: ${_platformDisplayName(defaultTargetPlatform)}',
+                    'Platforma: ${opcPlatformDisplayName(isWeb: kIsWeb, platform: defaultTargetPlatform)}',
               ),
               const SizedBox(height: 24),
               const Divider(),

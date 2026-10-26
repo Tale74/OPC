@@ -32,11 +32,12 @@ class CeremonijuSegment extends StatefulWidget {
   final FutureOr<void> Function(PredmetiCompanion) onSave;
 
   @override
-  State<CeremonijuSegment> createState() => _CeremonijuSegmentState();
+  State<CeremonijuSegment> createState() => CeremonijuSegmentState();
 }
 
-class _CeremonijuSegmentState extends State<CeremonijuSegment> {
+class CeremonijuSegmentState extends State<CeremonijuSegment> {
   Timer? _debounce;
+  Future<void> _pendingSave = Future<void>.value();
 
   late final TextEditingController _grobljeCt;
   late final TextEditingController _grobljePolaganjaUrneCt;
@@ -290,9 +291,23 @@ class _CeremonijuSegmentState extends State<CeremonijuSegment> {
 
   void _scheduleSave() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 800), () {
-      unawaited(_save());
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      _debounce = null;
+      _queueSave();
     });
+  }
+
+  void _queueSave() {
+    _pendingSave = _pendingSave.then((_) => _save());
+  }
+
+  Future<void> flushPendingSave() async {
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+      _debounce = null;
+      _queueSave();
+    }
+    await _pendingSave;
   }
 
   Future<void> _save() async {

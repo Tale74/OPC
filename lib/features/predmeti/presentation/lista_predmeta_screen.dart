@@ -115,12 +115,14 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   SetupReadinessState _setupReadiness = const SetupReadinessState.ready();
   bool _setupReadinessLoaded = false;
   bool _setupGuidanceDismissed = false;
+  OpcPredmetLicenseState? _licenseState;
 
   @override
   void initState() {
     super.initState();
     _predmetiStream =
         widget.predmetiStreamOverride ?? widget.predmetiRepo.watchSvi();
+    unawaited(_refreshLicenseState());
     WidgetsBinding.instance.addObserver(this);
     if (widget.runStartupSideEffects) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -128,6 +130,33 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
       });
       unawaited(_ucitajSavetnike());
     }
+  }
+
+  Future<void> _refreshLicenseState() async {
+    try {
+      final state = await _predmetCreationLicense.evaluate();
+      if (mounted) setState(() => _licenseState = state);
+    } catch (_) {
+      if (mounted) setState(() => _licenseState = null);
+    }
+  }
+
+  Future<void> _openPodesavanja({bool openLicense = false}) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => PodesavanjaScreen(
+          repo: widget.podesavanjaRepo,
+          authRepo: widget.authRepo,
+          session: widget.session,
+          initialSection: openLicense ? OpcSettingsSection.oAplikaciji : null,
+          openLicenseOnEntry: openLicense,
+          entitlementPolicy: widget.entitlementPolicy,
+          predmetCreationLicense: _predmetCreationLicense,
+        ),
+      ),
+    );
+    if (mounted) await _refreshLicenseState();
   }
 
   @override
@@ -145,8 +174,11 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && widget.runStartupSideEffects) {
-      unawaited(_refreshCeremonyRemindersAndDialog());
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshLicenseState());
+      if (widget.runStartupSideEffects) {
+        unawaited(_refreshCeremonyRemindersAndDialog());
+      }
     }
   }
 
@@ -830,16 +862,7 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
             IconButton(
               icon: const Icon(Icons.settings_outlined),
               tooltip: 'Pode\u0161avanja',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => PodesavanjaScreen(
-                    repo: widget.podesavanjaRepo,
-                    authRepo: widget.authRepo,
-                    session: widget.session,
-                  ),
-                ),
-              ),
+              onPressed: () => _openPodesavanja(),
             ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -1014,6 +1037,43 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
   }) {
     return Column(
       children: [
+        if (_licenseState != null &&
+            _licenseState!.status != OpcPredmetLicenseStatus.activated)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                child: Row(
+                  children: [
+                    const Icon(Icons.workspace_premium_outlined, size: 20),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(switch (_licenseState!.status) {
+                        OpcPredmetLicenseStatus.trial =>
+                          'Probni period do ${_licenseState!.trialEndsUtc.day}.'
+                              '${_licenseState!.trialEndsUtc.month}.'
+                              '${_licenseState!.trialEndsUtc.year}. '
+                              'Aktivirajte OPC.',
+                        OpcPredmetLicenseStatus.expired =>
+                          'Probni period je istekao. Samo novi PREDMET '
+                              'traži aktivaciju.',
+                        OpcPredmetLicenseStatus.clockRollback =>
+                          'Datum uređaja je vraćen unazad. Proverite datum '
+                              'ili aktivirajte OPC.',
+                        OpcPredmetLicenseStatus.activated => '',
+                      }),
+                    ),
+                    TextButton(
+                      onPressed: () => _openPodesavanja(openLicense: true),
+                      child: const Text('AKTIVIRAJ'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         if (_shouldShowSetupGuidance)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),

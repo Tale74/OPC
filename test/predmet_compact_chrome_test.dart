@@ -130,6 +130,181 @@ void main() {
       'OTVOREN',
     );
   });
+
+  testWidgets('explicit save keeps identity typed immediately before tap', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+    final name = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.labelText == 'IME',
+    );
+    final surname = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField && widget.decoration?.labelText == 'PREZIME',
+    );
+    await tester.enterText(name, 'TEST');
+    await tester.enterText(surname, 'POSTOJANOST');
+    await tester.tap(find.text('SAČUVAJ'));
+    await tester.pumpAndSettle();
+
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.ime, 'TEST');
+    expect(saved.prezime, 'POSTOJANOST');
+  });
+
+  testWidgets('immediate back flushes identity before exit decision', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+    final name = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.labelText == 'IME',
+    );
+    await tester.enterText(name, 'TEST');
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Izlazak iz otvorenog predmeta'), findsOneWidget);
+    expect(find.text('Predmet nije validan'), findsNothing);
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.ime, 'TEST');
+  });
+
+  testWidgets('identity autosave completes after short typing pause', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+    final name = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.labelText == 'IME',
+    );
+    await tester.enterText(name, 'TEST');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.ime, 'TEST');
+  });
+
+  testWidgets('changing PREDMET segment saves pending identity without Save', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+    final name = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.labelText == 'IME',
+    );
+    await tester.enterText(name, 'TEST');
+    await tester.tap(find.text('Činjenice o smrti').first);
+    await tester.pumpAndSettle();
+
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.ime, 'TEST');
+  });
+
+  testWidgets('changing identity field commits without Save', (tester) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+    final name = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.labelText == 'IME',
+    );
+    final surname = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField && widget.decoration?.labelText == 'PREZIME',
+    );
+    await tester.enterText(name, 'TEST');
+    await tester.tap(surname);
+    await tester.pumpAndSettle();
+
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.ime, 'TEST');
+  });
+
+  testWidgets('changing payer segment flushes pending edit without Save', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Platilac').first);
+    await tester.pumpAndSettle();
+    final payerName = find.byWidgetPredicate(
+      (widget) => widget is TextField && widget.decoration?.labelText == 'IME',
+    );
+    await tester.enterText(payerName.first, 'TEST PLATILAC');
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.naruIme, 'TEST PLATILAC');
+  });
+
+  testWidgets('PARTE decision survives immediate segment change', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final fixture = await _fixture(tester, TargetPlatform.windows);
+    addTearDown(() => _dispose(tester, fixture));
+
+    await tester.tap(find.text('Parte').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('PARTE su potrebne'));
+    await tester.tap(find.text('Preminulo lice').first);
+    await tester.pumpAndSettle();
+
+    final saved = await PredmetiRepository(fixture.db).getPredmet(fixture.id);
+    expect(saved.partePotrebna, isTrue);
+  });
 }
 
 Future<_Fixture> _fixture(

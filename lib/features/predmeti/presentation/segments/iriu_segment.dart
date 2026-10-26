@@ -62,12 +62,20 @@ class IriuSegment extends StatefulWidget {
   final ValueChanged<List<IriuData>>? onRowsChanged;
 
   @override
-  State<IriuSegment> createState() => _IriuSegmentState();
+  State<IriuSegment> createState() => IriuSegmentState();
 }
 
-class _IriuSegmentState extends State<IriuSegment> {
+class IriuSegmentState extends State<IriuSegment> {
   static const _predmetIriuTruthService = PredmetIriuTruthService();
   Timer? _napomenaDebounce;
+  final Map<int, Future<void> Function()> _rowFlushes = {};
+
+  Future<void> flushPendingSave() async {
+    for (final flush in _rowFlushes.values.toList()) {
+      await flush();
+    }
+  }
+
   late final TextEditingController _napomenaCtrl;
   late final StanjeRobePoslediceRepository _stockConsequencesRepo;
   final Map<String, Stream<bool>> _imaArtikalaStreamsByInterniNaziv = {};
@@ -644,6 +652,10 @@ class _IriuSegmentState extends State<IriuSegment> {
                                       ),
                                     ...stavke.map(
                                       (s) => IriuRowTile(
+                                        registerPendingSave: (id, flush) =>
+                                            _rowFlushes[id] = flush,
+                                        unregisterPendingSave: (id) =>
+                                            _rowFlushes.remove(id),
                                         key:
                                             s.interniNaziv ==
                                                 widget.initialFocusInterniNaziv

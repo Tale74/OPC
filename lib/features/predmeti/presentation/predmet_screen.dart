@@ -165,6 +165,12 @@ class _PredmetScreenState extends State<PredmetScreen> {
   _PredmetLogicalSection? _selectedSection;
 
   final _scrollCtrl = ScrollController();
+  final _preminuloLiceKey = GlobalKey<PreminuloLiceSegmentState>();
+  final _narucilacKey = GlobalKey<NarucilacSegmentState>();
+  final _iriuKey = GlobalKey<IriuSegmentState>();
+  final _ceremonijuKey = GlobalKey<CeremonijuSegmentState>();
+  final _parteKey = GlobalKey<ParteSegmentState>();
+  final _finansijeKey = GlobalKey<FinansijeSegmentState>();
 
   @override
   void initState() {
@@ -305,7 +311,18 @@ class _PredmetScreenState extends State<PredmetScreen> {
     return _predmetSectionInfos.firstWhere((info) => info.section == section);
   }
 
-  void _selectSection(_PredmetLogicalSection section) {
+  Future<void> _flushPendingSegmentEdits() async {
+    await _preminuloLiceKey.currentState?.flushPendingSave();
+    await _narucilacKey.currentState?.flushPendingSave();
+    await _iriuKey.currentState?.flushPendingSave();
+    await _ceremonijuKey.currentState?.flushPendingSave();
+    await _parteKey.currentState?.flushPendingSave();
+    await _finansijeKey.currentState?.flushPendingSave();
+  }
+
+  Future<void> _selectSection(_PredmetLogicalSection section) async {
+    await _flushPendingSegmentEdits();
+    if (!mounted) return;
     setState(() => _selectedSection = section);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollCtrl.hasClients) {
@@ -314,13 +331,15 @@ class _PredmetScreenState extends State<PredmetScreen> {
     });
   }
 
-  void _returnToHub() {
+  Future<void> _returnToHub() async {
+    await _flushPendingSegmentEdits();
+    if (!mounted) return;
     setState(() => _selectedSection = null);
   }
 
-  bool _handleNarrowSectionBack(bool isNarrowAndroid) {
+  Future<bool> _handleNarrowSectionBack(bool isNarrowAndroid) async {
     if (!isNarrowAndroid || _selectedSection == null) return false;
-    _returnToHub();
+    await _returnToHub();
     return true;
   }
 
@@ -433,6 +452,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
 
   Future<void> _sacuvajPredmet() async {
     if (_cuvaPoslovnuVerziju) return;
+    await _flushPendingSegmentEdits();
+    if (!mounted) return;
     if (!_imaMinimumIdentiteta) {
       if (mounted) {
         _showSnackBarSafely(
@@ -567,6 +588,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
   }
 
   Future<bool> _zatvori() async {
+    await _flushPendingSegmentEdits();
+    if (!mounted) return false;
     if (!_imaMinimumIdentiteta) {
       if (mounted) {
         _showSnackBarSafely(
@@ -627,6 +650,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
   }
 
   Future<bool> _zavrsi() async {
+    await _flushPendingSegmentEdits();
+    if (!mounted) return false;
     final p = _predmet;
     if (p == null) return false;
     final completed = await finishPredmetFromOverflow(
@@ -692,6 +717,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
       }
       return;
     }
+    await _flushPendingSegmentEdits();
+    if (!mounted) return;
     if (!_imaMinimumIdentiteta && !_anonimizovan) {
       await _resiNevalidanIzlaz();
       return;
@@ -803,6 +830,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
   }
 
   Future<void> _anonimizuj() async {
+    await _flushPendingSegmentEdits();
+    if (!mounted) return;
     final p = _predmet;
     if (p == null) return;
     final anonymized = await anonymizePredmetFromOverflow(
@@ -1296,6 +1325,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
     switch (section) {
       case _PredmetLogicalSection.preminuloLice:
         return PreminuloLiceSegment(
+          key: _preminuloLiceKey,
           initialData: predmet,
           enabled: _otvoren,
           onSave: _onSave,
@@ -1303,6 +1333,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
       case _PredmetLogicalSection.cinjeniceOSmrti:
         return PreminuloLiceSegment(
+          key: _preminuloLiceKey,
           initialData: predmet,
           enabled: _otvoren,
           onSave: _onSave,
@@ -1310,6 +1341,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
       case _PredmetLogicalSection.statusi:
         return PreminuloLiceSegment(
+          key: _preminuloLiceKey,
           initialData: predmet,
           enabled: _otvoren,
           onSave: _onSave,
@@ -1317,6 +1349,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
       case _PredmetLogicalSection.platilac:
         return NarucilacSegment(
+          key: _narucilacKey,
           initialData: predmet,
           predmetId: widget.predmetId,
           kontaktRepo: _kontaktRepo,
@@ -1326,6 +1359,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
       case _PredmetLogicalSection.ceremonija:
         return CeremonijuSegment(
+          key: _ceremonijuKey,
           initialData: predmet,
           predmetId: widget.predmetId,
           iriuRepo: _iriuRepo,
@@ -1334,12 +1368,14 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
       case _PredmetLogicalSection.parte:
         return ParteSegment(
+          key: _parteKey,
           initialData: predmet,
           enabled: _otvoren,
           onSave: _onSave,
         );
       case _PredmetLogicalSection.robaIUsluge:
         return IriuSegment(
+          key: _iriuKey,
           predmetId: widget.predmetId,
           predmetData: predmet,
           iriuRepo: _iriuRepo,
@@ -1353,6 +1389,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
       case _PredmetLogicalSection.finansije:
         return FinansijeSegment(
+          key: _finansijeKey,
           initialData: predmet,
           predmetId: widget.predmetId,
           iriuRepo: _iriuRepo,
@@ -1551,7 +1588,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
           !(isNarrowAndroid && _selectedSection != null) && _mozeDirektanIzlaz,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (_handleNarrowSectionBack(isNarrowAndroid)) return;
+        if (await _handleNarrowSectionBack(isNarrowAndroid)) return;
         await _obradiPokusanIzlazaIzPredmeta();
       },
       child: Scaffold(

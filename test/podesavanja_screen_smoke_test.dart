@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/drift.dart' show Value;
 
@@ -45,7 +46,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('LICENCA'));
+    await tester.tap(find.byTooltip('LICENCA – nije trajno aktivirana'));
     await tester.pumpAndSettle();
     expect(find.text('LICENCA / AKTIVACIJA'), findsOneWidget);
     expect(find.textContaining('Probni period traje do'), findsOneWidget);
@@ -61,6 +62,26 @@ void main() {
     expect(request, contains('NAZIV FIRME: Sintetička FIRMA'));
     expect(request, contains('PIB: 111111111'));
     expect(request, contains('MB: 10000001'));
+    final mailto = buildOpcLicenseRequestMailtoUri(request);
+    expect(mailto.path, 'sasa.andonov@gmail.com');
+    expect(mailto.queryParameters['body'], request);
+    expect(mailto.queryParameters['subject'], contains('aktivacioni ključ'));
+    String? copied;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied =
+                (call.arguments as Map<Object?, Object?>)['text'] as String?;
+          }
+          return null;
+        });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+    await tester.tap(find.text('KOPIRAJ ZAHTEV'));
+    await tester.pumpAndSettle();
+    expect(copied, request);
     expect(find.text('Potpisana trajna licenca'), findsOneWidget);
     expect(
       tester
@@ -73,9 +94,11 @@ void main() {
     await tester.tap(find.text('AKTIVIRAJ'));
     await tester.pumpAndSettle();
     expect(
-      find.text('Licenca nije važeća za PIB i MB ove FIRME.'),
+      find.textContaining('Licenca nije važeća za PIB i MB ove FIRME.'),
       findsOneWidget,
     );
+    expect(find.text('LICENCA / AKTIVACIJA'), findsOneWidget);
+    expect(find.byKey(const Key('license-activation-error')), findsOneWidget);
   });
 
   testWidgets(
