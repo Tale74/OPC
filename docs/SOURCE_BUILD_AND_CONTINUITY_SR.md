@@ -1,6 +1,21 @@
 # OPC — izvor, gradnja i kontinuitet (OWNER)
 
-## Autoritet i identitet
+## Aktuelno stanje kanonskog izvora i distribucije (27.10.2026.)
+
+Lokalni BundleSource: grana codex/opc-v15-canonical-bundlesource-20261024, dokumentacioni HEAD 31b215e33912ae5419ab58e0b24cb29c2c7b2735, čisto radno stablo pre ovog odobrenog dokumentacionog usklađivanja. Build/source identitet OPC 4.0.3+11 je 3c233bfdca512fee8c7b5a608cb16d66a9c898f7; aplikacioni kod je uveden u d242605877e54379744ecc3eeea88759ce12f9a8, a razlika do 3c bila je samo dokumentacija. Novi dokumentacioni commit ne menja build identitet.
+
+GitHub: poslednji prethodno potvrđen remote ref izolovane grane bio je 31b215e33912ae5419ab58e0b24cb29c2c7b2735. Provera u ovom izvršavanju nije uspela: git ls-remote nije mogao da uspostavi vezu sa github.com:443 preko proxy-ja; GitHub web pregled je vratio Cache miss. Trenutni udaljeni ref zato nije potvrđen i push nije obavljen.
+
+Windows/Android +11: OWNER je prihvatio oba izdanja za ovaj ciklus. Windows release folder je potvrđen 39/39 hash-eva, a aplikacija je pokrenuta. Windows instalacija/ažuriranje i PDF/DOCX izvoz/otvaranje ostaju NOT VERIFIED/NOT TESTED. Android APK je release potpisan, ali prethodni Package Manager update nije uspeo; instalacija/ažuriranje, runtime i dokumentni izvoz/otvaranje nisu PASS. Runtime provere nisu ponavljane.
+
+PWA +10: postojeći opc-srb.pages.dev deployment ostaje poslednji prihvaćen javni kanal. Lokalni ZIP PWA/4.0.3+10/OPC_PWA_4.0.3_build10_CLOUDFLARE.zip je 56 fajlova, SHA-256 E7A52B82AA52986705423872E45D1F7FE19A20ADBFA03C3BC4BB93DF5C5F7570, version.json je 4.0.3 build 10. Nije rađena javna zamena.
+
+Apple +11: GitHub Actions run 40456238530 na kodnoj reviziji 3c imao je iOS no-codesign compile i macOS unsigned technical app PASS. Lokalni iOS/4.0.3_technical i MacOS/4.0.3_technical ZIP-ovi potiču iz starijeg commita cc16f94a..., nisu +11. Potpisana IPA, notarizovan macOS paket, instalacija i dokumentni runtime nisu potvrđeni. Lokalni Apple toolchain zahteva macOS/Xcode i odgovarajuće Apple signing preduslove; privatni materijal ostaje van BundleSource-a.
+
+Reproducibilna putanja: pubspec.yaml/pubspec.lock, lib/, assets/, svih pet native targeta, tool/ci/, .github/workflows/opc-platform-builds.yml i scripts/validate_opc_manifest_gate.py čine izvor i build mehanizam. Windows, Android i Web mogu se graditi iz lokalnog Flutter toolchain-a; Android release koristi spoljašnji OWNER sertifikat. PWA zahteva flutter build web pa serijsku JS kompilaciju web/drift_worker.dart u build/web/drift_worker.dart.js. iOS/macOS tehnički CI koristi macOS runner, dok instalaciona distribucija traži Apple signing/notarization i runtime. Run 40456238530 uključuje QA i Windows/iOS/macOS tehničke poslove; Android CI job je preskočen jer signer nije u CI. Detalji i granice su u OPC_PLATFORM_PARITY_40310.md i spoljnjem OWNER REVIEW sloju.
+
+Ispod ovog sažetka nalaze se hronološki zapisi ranijih faza. Oni su istorijski izvori, a ne trenutni release statusi.
+## Autoritet i identitet (istorijski početni zapis)
 
 **Kanonska putanja:** `C:\Tale\OPC\v1.5\BundleSource`. Ovo je kompletan Flutter projekat sa `.git`, početno čist na `cc16f94a1a5f2877050a8939f3685ec36ec2e1f0` (477 tracked datoteka) iz izolovane grane `codex/opc-v15-result-driven-20261020`, remote `https://github.com/Tale74/OPC.git`. Po početnoj dokumentacionoj konsolidaciji u ovom checkout-u izvedene su ciljane 4.0.3+5 izmene aplikacije i build konfiguracije, opisane u `CANONICAL_SOURCE_ACCEPTANCE_20261024.md`. Stariji commit ostaje istorijska osnova, a aktuelni HEAD i radno stablo moraju se proveriti pre svakog novog build-a ili objave. GitHub push nije izvršen ovim dokumentom.
 

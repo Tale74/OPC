@@ -1,6 +1,12 @@
 # OPC v1.5 — trenutno stanje razvoja
+## Kanonski status 4.0.3+11 — 27.10.2026.
 
-**Aktuelni dodatak 26.10.2026:** provereni +10 commit-i su sinhronizovani na
+Kanonski izvor je C:\Tale\OPC\v1.5\BundleSource, izolovana grana codex/opc-v15-canonical-bundlesource-20261024, poslednji lokalni dokumentacioni HEAD pre ovog usklađivanja 31b215e33912ae5419ab58e0b24cb29c2c7b2735; source/build identitet aplikacionog +11 koda je 3c233bfdca512fee8c7b5a608cb16d66a9c898f7. Windows i Android imaju OWNER RELEASE ACCEPTANCE PASS. Njihov runtime status ostaje razdvojen. +10 ostaje javni Cloudflare PWA; +11 nije objavljen. Apple CI +11 je tehnički no-codesign/unsigned, bez instalabilnog runtime prihvata.
+
+GitHub remote provera nije bila dostupna (HTTPS proxy veza odbijena; web pregled Cache miss); poslednji prethodno potvrđen remote SHA bio je 31b215e33912ae5419ab58e0b24cb29c2c7b2735. Aktuelni status i platformska matrica su u OPC_PLATFORM_PARITY_40310.md; istorijski nastavci ispod nisu aktuelan HEAD.
+
+
+**Istorijski dodatak 26.10.2026:** provereni +10 commit-i su sinhronizovani na
 izolovanu GitHub granu `codex/opc-v15-canonical-bundlesource-20261024`;
 remote ref je potvrđen na `49bead17fe3a2c76d15678bbfe9c5de8fffbcf23`.
 Za obavezno vlasničko pravilo petoplatformske funkcionalne i dokumentne
