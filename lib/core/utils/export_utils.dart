@@ -88,7 +88,11 @@ Future<KoriceFileEntry> sacuvajKoricePdfFajlDetalji(
   Uint8List bytes,
 ) async {
   if (kIsWeb) {
-    pdf_file_download.downloadPdfBytes(bytes, naziv);
+    pdf_file_download.downloadDocumentBytes(
+      bytes,
+      naziv,
+      mimeType: 'application/pdf',
+    );
     return KoriceFileEntry(
       name: naziv,
       modified: DateTime.now(),
@@ -122,6 +126,16 @@ Future<KoriceFileEntry> sacuvajKoriceDokumentFajlDetalji(
   Uint8List bytes, {
   required String mimeType,
 }) async {
+  if (kIsWeb) {
+    pdf_file_download.downloadDocumentBytes(bytes, naziv, mimeType: mimeType);
+    return KoriceFileEntry(
+      name: naziv,
+      modified: DateTime.now(),
+      locationLabel: 'Preuzimanje u browseru',
+      mimeType: mimeType,
+    );
+  }
+
   if (Platform.isAndroid) {
     return _sacuvajAndroidKoriceDokument(naziv, bytes, mimeType: mimeType);
   }
