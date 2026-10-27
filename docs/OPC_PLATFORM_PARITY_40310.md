@@ -1,4 +1,22 @@
-# OPC 4.0.3+11 — release kandidat i jednakost dokumenata, 27.10.2026.
+# OPC 4.0.3+11 — isporuka dokumenata, aktuelni pregled 27.10.2026.
+
+**Aktuelna OWNER metoda prihvatanja:** svih pet platformi ostaju jedna OPC aplikacija sa jednakim poslovnim pravilima i zajedničkim generatorima. Ovaj ciklus proverava da korisnik na svakoj dostupnoj platformi može da dobije upotrebljiv PDF/DOCX. Detaljno međusobno poređenje teksta i izgleda svih pet izlaza nije novi release uslov. Ranija matrica ispod ostaje istorijski dokaz tadašnjeg stanja, uključujući tadašnje zabrane push-a i nepotvrđene Apple buildove; ne koristiti je kao sadašnji status.
+
+**Jedinstvena revizija za tehničke kandidate:** `3c233bfdca512fee8c7b5a608cb16d66a9c898f7` na izolovanoj grani `codex/opc-v15-canonical-bundlesource-20261024`, potvrđena lokalno i udaljeno. Razlika od +11 kodnog commita `d242605` je isključivo prethodna dokumentacija. GitHub Actions run `40456238530` i manifest gate `40456238578` su PASS. Lokalni Android APK i Web bundle ponovo su izrađeni iz `3c233bf`; APK, `main.dart.js`, worker i `version.json` bajtno su jednaki ranijim +11 kandidatima, što povezuje prethodni Web runtime dokaz sa istim izvršnim kodom. Build PASS ne znači runtime PASS.
+
+| Platforma | Tehnički kandidat iz `3c233bf` | Stvarni dokumentni runtime | Odluka |
+|---|---|---|---|
+| Web/PWA | Lokalni release Web + worker PASS, isti JS/worker hash kao browser testirani +11 | IAB RAČUN PDF/DOCX (raniji REVIEW), dodatno SPECIFIKACIJA TROŠKOVA PDF i sadržajna ČITULJA PDF; Chrome RAČUN DOCX, OOXML validan. Samostalna PWA instalacija i offline +11 nisu provereni | PARTIAL |
+| Windows | GitHub CI release build PASS; raniji lokalni +11 kompletan release folder iz bajtno istog aplikacionog koda | +11 zasebna instalacija i otvaranje PDF/DOCX nisu provereni bez izolovanog Windows profila | NOT VERIFIED runtime |
+| Android | Lokalni production release APK PASS; potpis postojećim release certifikatom potvrđen | Izolovani AVD nije dovršio boot; nema instalacije, PDF/DOCX izvoza ni update dokaza | NOT VERIFIED runtime |
+| iOS | GitHub CI no-codesign compile PASS, artefakt 12713610315 | Nema potpisane instalacije ni uređajskog dokumentnog runtime-a | NOT VERIFIED runtime |
+| macOS | GitHub CI nepotpisani tehnički app PASS, artefakt 12712603732 | Nema instalacije, otvaranja PDF/DOCX ni notarizacije | NOT VERIFIED runtime |
+
+Generatori RAČUN PDF/DOCX koriste `RacunDocumentData`; ostali PDF/DOCX generatori su zajednički Dart kod. Web, Android i desktop adapteri u `export_utils.dart` razlikuju se u transportu bajtova. Source mapa i stvarni fajlovi su u spoljnjem `C:\Tale\OPC_REVIEW\FIVE_PLATFORM_40311_DELIVERY_20261027`. PARTE runtime nije potvrđen jer akcija nije bila omogućena u korišćenim sintetičkim PREDMETIMA; fixture generator dokaz je u prethodnom REVIEW-u. Za release odluku i dalje nedostaju stvarni Windows, Android i Apple korisnički izlazi. Javni Cloudflare ostaje +10; nema zamene distribucionih paketa.
+
+---
+
+# Istorijski +11 kandidat pre ovog izvršavanja
 
 Ovaj odeljak je aktuelni status. Donji +10 odeljak ostaje istorijska referenca za ranije prihvaćeni javni PWA. +11 je isključivo lokalni kandidat iz commita `d242605877e54379744ecc3eeea88759ce12f9a8`, na izolovanoj grani `codex/opc-v15-canonical-bundlesource-20261024`. Nema GitHub push-a, Cloudflare deployment-a ni zamene instaliranih paketa. Istih pet platformi mora imati jednaka poslovna pravila, dokumentne vrednosti, polja, redosled i vizuelnu strukturu; build uspeh to sam ne dokazuje.
 
