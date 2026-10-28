@@ -1,3 +1,4 @@
+> Najnovija reconciliacija OPC 4.0.3+12: [OPC_40312_FINAL_RELEASE_RECONCILIATION_20261028.md](OPC_40312_FINAL_RELEASE_RECONCILIATION_20261028.md). Starije matrice u ovom dokumentu su istorijske.
 # OPC 4.0.3 acceptance matrix — 2026-10-23
 
 This records observed results for the isolated 4.0.3 candidate at commit `cc16f94a1a5f2877050a8939f3685ec36ec2e1f0`. Compilation, packaging and installation are separate gates. No result here changes the protected active SOURCE or the accepted older PWA.

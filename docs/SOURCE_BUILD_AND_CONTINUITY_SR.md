@@ -1,3 +1,6 @@
+## Aktuelni release kontinuitet — 2026-10-28
+
+Za kanonski OPC 4.0.3+12 source/build/distribution identitet i poznate runtime granice pogledati [OPC_40312_FINAL_RELEASE_RECONCILIATION_20261028.md](OPC_40312_FINAL_RELEASE_RECONCILIATION_20261028.md). Istorijski zapisi niže ostaju neizmenjeni.
 # OPC — izvor, gradnja i kontinuitet (OWNER)
 
 ## Aktuelno stanje kanonskog izvora i distribucije (27.10.2026.)

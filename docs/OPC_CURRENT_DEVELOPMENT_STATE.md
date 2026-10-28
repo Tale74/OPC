@@ -1,3 +1,12 @@
+# OPC v1.5 — trenutno kanonsko stanje (ažurirano 2026-10-28)
+
+## Release 4.0.3+12
+
+Aplikacioni kod je na 1b22c848dc879f12b407f4a60f54a84c9eecf89c u izolovanoj grani codex/opc-v15-canonical-bundlesource-20261024; završna reconciliacija, platformski manifesti, GitHub, Drive i Cloudflare dokazi su u [OPC_40312_FINAL_RELEASE_RECONCILIATION_20261028.md](OPC_40312_FINAL_RELEASE_RECONCILIATION_20261028.md).
+
+Klasifikacija je PARTIAL: PWA +12 runtime PARTE prihvat dostavio je OWNER; Android +12 je release-potpisan, ali nije instaliran na emulator/uređaj; Windows +12 instalater/portable runtime nije ponavljan nad postojećom Windows instalacijom; iOS/macOS korisnički paketi nisu dostupni. Stari +11 statusi niže su istorijski i ne predstavljaju aktuelni +12.
+
+---
 # OPC v1.5 — trenutno stanje razvoja
 ## Kanonski status 4.0.3+11 — 27.10.2026.
 
