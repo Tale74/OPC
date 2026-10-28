@@ -214,8 +214,10 @@ class PartePreparationService {
     }
     try {
       await staged.purge();
+    } on ParteMediaStorageException {
+      // The preparation and its active references are already removed.
     } on FileSystemException {
-      // The preparation and its active references are already removed. The
+      // Native filesystem cleanup remains best-effort. The
       // isolated app-owned trash can be purged by a later housekeeping pass.
     }
   }

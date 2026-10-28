@@ -1,10 +1,14 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
+import 'parte_media_store_web_stub.dart'
+    if (dart.library.js_interop) 'parte_media_store_web.dart'
+    as web_media;
 
 enum ParteMediaKind { photo, customSymbol }
 
@@ -29,13 +33,30 @@ class ParteMediaException implements Exception {
   String toString() => message;
 }
 
+class ParteMediaStorageException implements Exception {
+  const ParteMediaStorageException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 class ParteMediaDeletionBatch {
-  ParteMediaDeletionBatch._(this._entries, this._trashDirectory);
+  ParteMediaDeletionBatch._(
+    this._entries,
+    this._trashDirectory, {
+    Future<void> Function()? restoreOperation,
+    Future<void> Function()? purgeOperation,
+  }) : _restoreOperation = restoreOperation,
+       _purgeOperation = purgeOperation;
 
   final List<({File original, File staged})> _entries;
   final Directory? _trashDirectory;
+  final Future<void> Function()? _restoreOperation;
+  final Future<void> Function()? _purgeOperation;
 
   Future<void> restore() async {
+    final operation = _restoreOperation;
+    if (operation != null) return operation();
     for (final entry in _entries.reversed) {
       if (!await entry.staged.exists()) continue;
       await entry.original.parent.create(recursive: true);
@@ -45,6 +66,8 @@ class ParteMediaDeletionBatch {
   }
 
   Future<void> purge() async {
+    final operation = _purgeOperation;
+    if (operation != null) return operation();
     final directory = _trashDirectory;
     if (directory != null && await directory.exists()) {
       await directory.delete(recursive: true);
@@ -62,7 +85,8 @@ class ParteMediaDeletionBatch {
 /// External originals are read by the picker and are never mutation targets.
 class ParteMediaStore {
   ParteMediaStore({Future<Directory> Function()? rootDirectory})
-    : _rootDirectory = rootDirectory ?? _defaultRoot;
+    : _rootDirectory = rootDirectory ?? _defaultRoot,
+      _useWebStore = rootDirectory == null && kIsWeb;
 
   static const int maxInputBytes = 25 * 1024 * 1024;
   static const int maxDecodedPixels = 60 * 1000 * 1000;
@@ -71,6 +95,7 @@ class ParteMediaStore {
   static const int lowResolutionLongEdge = 600;
 
   final Future<Directory> Function() _rootDirectory;
+  final bool _useWebStore;
 
   static Future<Directory> _defaultRoot() async {
     final support = await getApplicationSupportDirectory();
@@ -119,41 +144,58 @@ class ParteMediaStore {
       throw const ParteMediaException('Optimizovana kopija nije validna.');
     }
 
-    final root = await _rootDirectory();
-    await root.create(recursive: true);
     final caseToken = sha256
         .convert(predmetBroj.codeUnits)
         .toString()
         .substring(0, 20);
-    final caseDirectory = Directory(p.join(root.path, caseToken));
-    await caseDirectory.create(recursive: true);
     final contentToken = sha256
         .convert(normalizedBytes)
         .toString()
         .substring(0, 24);
-    final base =
-        '${kind.name}_${DateTime.now().microsecondsSinceEpoch}_$contentToken.png';
+    final baseBuilder = StringBuffer()
+      ..write(kind.name)
+      ..write('_')
+      ..write(DateTime.now().microsecondsSinceEpoch)
+      ..write('_')
+      ..write(contentToken)
+      ..write('.png');
+    final base = baseBuilder.toString();
     final relativeKey = p.posix.join(caseToken, base);
-    final destination = File(p.join(caseDirectory.path, base));
-    final temporary = File('${destination.path}.tmp');
-    try {
-      await temporary.writeAsBytes(normalizedBytes, flush: true);
-      final written = await temporary.readAsBytes();
-      if (_decodePng(written) == null) {
-        throw const ParteMediaException('Privremena kopija nije čitljiva.');
+    if (_useWebStore) {
+      _validateWebMediaKey(relativeKey);
+      try {
+        await web_media.writeMedia(relativeKey, normalizedBytes);
+      } on Object catch (error) {
+        throw ParteMediaStorageException(
+          'Upis app kopije u lokalno Web skladište nije uspeo: $error',
+        );
       }
-      await temporary.rename(destination.path);
-    } on FileSystemException catch (error) {
-      if (await temporary.exists()) {
-        try {
-          await temporary.delete();
-        } on FileSystemException {
-          // Best effort for an unreferenced OPC-owned temporary file.
+    } else {
+      final root = await _rootDirectory();
+      await root.create(recursive: true);
+      final caseDirectory = Directory(p.join(root.path, caseToken));
+      await caseDirectory.create(recursive: true);
+      final destination = File(p.join(caseDirectory.path, base));
+      final temporaryPath = StringBuffer(destination.path)..write('.tmp');
+      final temporary = File(temporaryPath.toString());
+      try {
+        await temporary.writeAsBytes(normalizedBytes, flush: true);
+        final written = await temporary.readAsBytes();
+        if (_decodePng(written) == null) {
+          throw const ParteMediaException('Privremena kopija nije čitljiva.');
         }
+        await temporary.rename(destination.path);
+      } on FileSystemException catch (error) {
+        if (await temporary.exists()) {
+          try {
+            await temporary.delete();
+          } on FileSystemException {
+            // Best effort for an unreferenced OPC-owned temporary file.
+          }
+        }
+        final failureReason = error.osError?.message ?? error.message;
+        throw ParteMediaException('Upis app kopije nije uspeo: $failureReason');
       }
-      throw ParteMediaException(
-        'Upis app kopije nije uspeo: ${error.osError?.message ?? error.message}',
-      );
     }
 
     final shortEdge = normalized.width < normalized.height
@@ -174,6 +216,22 @@ class ParteMediaStore {
   }
 
   Future<Uint8List> read(String mediaKey) async {
+    if (_useWebStore) {
+      _validateWebMediaKey(mediaKey);
+      try {
+        final bytes = await web_media.readMedia(mediaKey);
+        if (bytes == null) {
+          throw const ParteMediaException('App-owned PARTE medij nedostaje.');
+        }
+        return bytes;
+      } on ParteMediaException {
+        rethrow;
+      } on Object catch (error) {
+        throw ParteMediaStorageException(
+          'Čitanje app kopije iz lokalnog Web skladišta nije uspelo: $error',
+        );
+      }
+    }
     final file = await _resolveOwnedFile(mediaKey);
     if (!await file.exists()) {
       throw const ParteMediaException('App-owned PARTE medij nedostaje.');
@@ -183,6 +241,17 @@ class ParteMediaStore {
 
   Future<void> deleteOwned(String? mediaKey) async {
     if (mediaKey == null || mediaKey.trim().isEmpty) return;
+    if (_useWebStore) {
+      _validateWebMediaKey(mediaKey);
+      try {
+        await web_media.deleteMedia(mediaKey);
+      } on Object catch (error) {
+        throw ParteMediaStorageException(
+          'Brisanje app kopije iz lokalnog Web skladišta nije uspelo: $error',
+        );
+      }
+      return;
+    }
     final file = await _resolveOwnedFile(mediaKey);
     if (await file.exists()) await file.delete();
   }
@@ -199,6 +268,22 @@ class ParteMediaStore {
         .toSet();
     if (uniqueKeys.isEmpty) {
       return ParteMediaDeletionBatch._(const [], null);
+    }
+    if (_useWebStore) {
+      uniqueKeys.forEach(_validateWebMediaKey);
+      try {
+        final staged = await web_media.stageDeletion(uniqueKeys);
+        return ParteMediaDeletionBatch._(
+          const [],
+          null,
+          restoreOperation: () => web_media.restoreDeletion(staged),
+          purgeOperation: () => web_media.purgeDeletion(staged),
+        );
+      } on Object catch (error) {
+        throw ParteMediaStorageException(
+          'Priprema brisanja u lokalnom Web skladištu nije uspela: $error',
+        );
+      }
     }
     final root = await _rootDirectory();
     final trashDirectory = Directory(
@@ -235,8 +320,28 @@ class ParteMediaStore {
 
   Future<bool> exists(String? mediaKey) async {
     if (mediaKey == null || mediaKey.trim().isEmpty) return false;
+    if (_useWebStore) {
+      _validateWebMediaKey(mediaKey);
+      try {
+        return await web_media.existsMedia(mediaKey);
+      } on Object catch (error) {
+        throw ParteMediaStorageException(
+          'Provera lokalne Web kopije nije uspela: $error',
+        );
+      }
+    }
     final file = await _resolveOwnedFile(mediaKey);
     return file.exists();
+  }
+
+  void _validateWebMediaKey(String mediaKey) {
+    if (mediaKey.contains('..') ||
+        mediaKey.contains(r'\') ||
+        p.isAbsolute(mediaKey) ||
+        p.posix.normalize(mediaKey) != mediaKey ||
+        mediaKey.split('/').length != 2) {
+      throw const ParteMediaException('Nebezbedan PARTE media ključ.');
+    }
   }
 
   Future<File> _resolveOwnedFile(String mediaKey) async {

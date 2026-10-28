@@ -105,8 +105,10 @@ class PredmetHardDeleteCoordinator {
 
     try {
       await stagedMedia.purge();
+    } on ParteMediaStorageException {
+      // The authoritative transaction has committed.
     } on FileSystemException {
-      // The authoritative transaction has committed. Isolated app-owned trash
+      // Native filesystem cleanup remains best-effort. Isolated app-owned trash
       // remains recoverable by later housekeeping and must not revive PREDMET.
     }
   }

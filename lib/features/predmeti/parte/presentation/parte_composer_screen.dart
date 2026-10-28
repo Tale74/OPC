@@ -765,7 +765,8 @@ class _ParteComposerScreenState extends State<ParteComposerScreen> {
   }
 
   Future<Uint8List?> _pickImageBytes(ParteMediaKind kind) async {
-    if (Platform.isAndroid) {
+    // dart:io Platform is unsupported in Web; short-circuit before access.
+    if (!kIsWeb && Platform.isAndroid) {
       final picked = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         imageQuality: kind == ParteMediaKind.photo ? 95 : 100,
