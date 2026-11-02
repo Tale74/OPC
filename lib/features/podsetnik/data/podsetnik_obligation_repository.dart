@@ -5,6 +5,7 @@ import '../../../core/database/database.dart';
 import '../../../core/utils/stable_id_generator.dart';
 import '../domain/podsetnik_obligation.dart';
 import '../domain/podsetnik_obligation_transfer.dart';
+import '../../predmeti/data/iriu_repository.dart';
 
 class PodsetnikObligationRepository {
   const PodsetnikObligationRepository(this.db);
@@ -21,6 +22,9 @@ class PodsetnikObligationRepository {
     final iriu = await (db.select(
       db.iriu,
     )..where((row) => row.predmetId.equals(predmetId))).get();
+    final provenanceOrigins = await IriuRepository(
+      db,
+    ).getProvenanceOrigins(iriu.map((row) => row.id));
     final persisted = await (db.select(
       db.podsetnikObaveze,
     )..where((row) => row.predmetId.equals(predmetId))).get();
@@ -33,6 +37,7 @@ class PodsetnikObligationRepository {
     final currentRules = _deriver.deriveRules(
       predmet: predmet,
       iriu: iriu,
+      provenanceOrigins: provenanceOrigins,
       unresolvedStock: unresolvedStock,
       additionalRules: statusEligible ? manualRules : const [],
     );
@@ -65,6 +70,7 @@ class PodsetnikObligationRepository {
                 predmet,
                 iriu,
                 unresolvedStock,
+                provenanceOrigins,
               );
         final validFingerprint =
             expectedFingerprint != null &&
@@ -101,6 +107,7 @@ class PodsetnikObligationRepository {
         predmet,
         iriu,
         unresolvedStock,
+        provenanceOrigins,
       );
       if (row.sourceFingerprint == fingerprint) {
         completion[row.stableRuleId] = row.completed;
@@ -109,6 +116,7 @@ class PodsetnikObligationRepository {
     return _deriver.project(
       predmet: predmet,
       iriu: iriu,
+      provenanceOrigins: provenanceOrigins,
       completedByRule: completion,
       unresolvedStock: unresolvedStock,
       additionalRules: statusEligible ? manualRules : const [],
@@ -146,6 +154,7 @@ class PodsetnikObligationRepository {
       readsFrom: {
         db.predmeti,
         db.iriu,
+        db.iriuProvenance,
         db.stanjeRobePosledice,
         db.podsetnikObaveze,
       },
@@ -186,10 +195,10 @@ class PodsetnikObligationRepository {
                 PodsetnikObavezeCompanion.insert(
                   predmetId: predmetId,
                   stableRuleId: item.rule.stableRuleId,
-              phase: Value(item.rule.phase.name),
-              kind: Value(item.rule.kind.name),
+                  phase: Value(item.rule.phase.name),
+                  kind: Value(item.rule.kind.name),
                   parentRuleId: Value(item.rule.parentRuleId),
-              sourceFingerprint: Value(item.sourceFingerprint),
+                  sourceFingerprint: Value(item.sourceFingerprint),
                   completed: Value(nextCompleted),
                   completedAt: Value(nextCompletedAt),
                   updatedAt: Value(DateTime.now().toIso8601String()),
@@ -289,6 +298,9 @@ class PodsetnikObligationRepository {
     final iriu = await (db.select(
       db.iriu,
     )..where((row) => row.predmetId.equals(predmetId))).get();
+    final provenanceOrigins = await IriuRepository(
+      db,
+    ).getProvenanceOrigins(iriu.map((row) => row.id));
     final unresolvedStock = await _hasUnresolvedStock(predmetId);
     final rows =
         await (db.select(db.podsetnikObaveze)
@@ -303,6 +315,7 @@ class PodsetnikObligationRepository {
         .deriveRules(
           predmet: predmet,
           iriu: iriu,
+          provenanceOrigins: provenanceOrigins,
           unresolvedStock: unresolvedStock,
         )
         .followedBy(_manualRules(await _manualRows(predmetId)))
@@ -329,6 +342,7 @@ class PodsetnikObligationRepository {
                     predmet,
                     iriu,
                     unresolvedStock,
+                    provenanceOrigins,
                   );
         })
         .map(
@@ -356,6 +370,9 @@ class PodsetnikObligationRepository {
     final iriu = await (db.select(
       db.iriu,
     )..where((row) => row.predmetId.equals(predmetId))).get();
+    final provenanceOrigins = await IriuRepository(
+      db,
+    ).getProvenanceOrigins(iriu.map((row) => row.id));
     final persisted = await (db.select(
       db.podsetnikObaveze,
     )..where((row) => row.predmetId.equals(predmetId))).get();
@@ -364,6 +381,7 @@ class PodsetnikObligationRepository {
         .deriveRules(
           predmet: predmet,
           iriu: iriu,
+          provenanceOrigins: provenanceOrigins,
           unresolvedStock: unresolvedStock,
         )
         .map((rule) => rule.stableRuleId)
@@ -390,6 +408,7 @@ class PodsetnikObligationRepository {
               predmet,
               iriu,
               unresolvedStock,
+              provenanceOrigins,
             );
       if (expectedFingerprint == null ||
           row.sourceFingerprint != expectedFingerprint ||
@@ -411,6 +430,9 @@ class PodsetnikObligationRepository {
     final iriu = await (db.select(
       db.iriu,
     )..where((row) => row.predmetId.equals(predmetId))).get();
+    final provenanceOrigins = await IriuRepository(
+      db,
+    ).getProvenanceOrigins(iriu.map((row) => row.id));
     final unresolvedStock = await _hasUnresolvedStock(predmetId);
     await db.transaction(() async {
       for (final state in states) {
@@ -460,6 +482,7 @@ class PodsetnikObligationRepository {
           predmet,
           iriu,
           unresolvedStock,
+          provenanceOrigins,
         );
         final fingerprintMatches = state.sourceFingerprint == fingerprint;
         if (isCituljeChild && !fingerprintMatches) continue;

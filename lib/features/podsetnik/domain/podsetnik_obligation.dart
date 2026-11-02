@@ -102,6 +102,7 @@ class PodsetnikObligationDeriver {
   List<PodsetnikObligationRule> deriveRules({
     required PredmetiData predmet,
     required List<IriuData> iriu,
+    Map<int, String> provenanceOrigins = const <int, String>{},
     bool unresolvedStock = false,
     List<PodsetnikObligationRule> additionalRules = const [],
   }) {
@@ -137,7 +138,7 @@ class PodsetnikObligationDeriver {
     const pre = PodsetnikObligationPhase.preCeremony;
     const post = PodsetnikObligationPhase.postCeremony;
 
-    final zaNaplatu = _calculateZaNaplatu(predmet, iriu);
+    final zaNaplatu = _calculateZaNaplatu(predmet, iriu, provenanceOrigins);
     final platiJkpRacunRelevant =
         predmet.troskoviJkp > 0 && !predmet.jkpPlacaSamostalno;
     final naplatiObavezeRelevant = zaNaplatu > 0;
@@ -334,6 +335,7 @@ class PodsetnikObligationDeriver {
   List<PodsetnikObligation> project({
     required PredmetiData predmet,
     required List<IriuData> iriu,
+    Map<int, String> provenanceOrigins = const <int, String>{},
     Map<String, bool> completedByRule = const <String, bool>{},
     bool unresolvedStock = false,
     List<PodsetnikObligationRule> additionalRules = const [],
@@ -341,6 +343,7 @@ class PodsetnikObligationDeriver {
     final rules = deriveRules(
       predmet: predmet,
       iriu: iriu,
+      provenanceOrigins: provenanceOrigins,
       unresolvedStock: unresolvedStock,
       additionalRules: additionalRules,
     );
@@ -364,6 +367,7 @@ class PodsetnikObligationDeriver {
             predmet,
             iriu,
             unresolvedStock,
+            provenanceOrigins,
           ),
           relevant: true,
           completed: completed,
@@ -377,6 +381,7 @@ class PodsetnikObligationDeriver {
     PredmetiData predmet,
     List<IriuData> iriu, [
     bool unresolvedStock = false,
+    Map<int, String> provenanceOrigins = const <int, String>{},
   ]) {
     List<String> categoriesFor(Set<String> names) =>
         iriu
@@ -450,10 +455,12 @@ class PodsetnikObligationDeriver {
       'goods.stock' => [unresolvedStock.toString()],
       finansijeParentRuleId => [
         (predmet.troskoviJkp > 0 && !predmet.jkpPlacaSamostalno).toString(),
-        (_calculateZaNaplatu(predmet, iriu) > 0).toString(),
+        (_calculateZaNaplatu(predmet, iriu, provenanceOrigins) > 0).toString(),
       ],
       platiJkpRacunRuleId => [predmet.troskoviJkp, predmet.jkpPlacaSamostalno],
-      naplatiObavezeRuleId => [_calculateZaNaplatu(predmet, iriu)],
+      naplatiObavezeRuleId => [
+        _calculateZaNaplatu(predmet, iriu, provenanceOrigins),
+      ],
       cituljeParentRuleId => [
         iriu
             .where(
@@ -490,10 +497,15 @@ class PodsetnikObligationDeriver {
     ].join('|');
   }
 
-  double _calculateZaNaplatu(PredmetiData predmet, List<IriuData> iriu) {
+  double _calculateZaNaplatu(
+    PredmetiData predmet,
+    List<IriuData> iriu,
+    Map<int, String> provenanceOrigins,
+  ) {
     final truth = _predmetIriuTruthService.evaluate(
       predmet: predmet,
       storedRows: iriu,
+      provenanceOrigins: provenanceOrigins,
     );
     final robaIUsluge = _financialTruthService
         .buildRobaIUsluge(truth)

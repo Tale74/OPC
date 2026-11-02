@@ -102,7 +102,11 @@ final class RacunDocumentData {
     if (!firma.racunOmogucen) {
       throw StateError('RAČUN nije dostupan za ovu FIRMA konfiguraciju.');
     }
-    final iriu = await IriuRepository(db).getIriu(predmetId);
+    final iriuRepository = IriuRepository(db);
+    final iriu = await iriuRepository.getIriu(predmetId);
+    final provenanceOrigins = await iriuRepository.getProvenanceOrigins(
+      iriu.map((row) => row.id),
+    );
     final app = await (db.select(
       db.appPodesavanja,
     )..where((row) => row.id.equals(1))).getSingle();
@@ -115,6 +119,7 @@ final class RacunDocumentData {
     return RacunDocumentData.fromSource(
       predmet: predmet,
       iriu: iriu,
+      provenanceOrigins: provenanceOrigins,
       firma: firma,
       app: app,
       savetnik: savetnik,
@@ -124,6 +129,7 @@ final class RacunDocumentData {
   factory RacunDocumentData.fromSource({
     required PredmetiData predmet,
     required List<IriuData> iriu,
+    Map<int, String> provenanceOrigins = const <int, String>{},
     required FirmaPodaciData firma,
     required AppPodesavanjaData app,
     required KorisniciData? savetnik,
@@ -134,6 +140,7 @@ final class RacunDocumentData {
     final prepared = const ListaPdfDataBuilder().build(
       predmet: predmet,
       iriuStavke: iriu,
+      provenanceOrigins: provenanceOrigins,
       firma: firma,
       app: app,
       savetnik: savetnik,

@@ -51,6 +51,10 @@ class IriuOrderingService {
       final scenario = <IriuData>[];
       final manual = <IriuData>[];
       for (final row in currentRows) {
+        if (effectiveContext.provenanceOrigins[row.id] == 'RUCNA_STAVKA') {
+          manual.add(row);
+          continue;
+        }
         final inOsnovni = effectiveContext.osnovniCategories.contains(
           row.interniNaziv,
         );

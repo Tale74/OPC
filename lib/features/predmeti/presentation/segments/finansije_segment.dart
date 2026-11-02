@@ -194,9 +194,14 @@ class FinansijeSegmentState extends State<FinansijeSegment> {
         .join('||');
   }
 
-  double _resolveRobaIUsluge(PredmetiData predmet, List<IriuData> stavke) {
+  double _resolveRobaIUsluge(
+    PredmetiData predmet,
+    List<IriuData> stavke,
+    Map<int, String> origins,
+  ) {
     final predmetSignature = _predmetTruthSignature(predmet);
-    final iriuSignature = _iriuTruthSignature(stavke);
+    final iriuSignature =
+        '${_iriuTruthSignature(stavke)}|${stavke.map((s) => origins[s.id]).join('|')}';
     final canReuse =
         _cachedTruthSnapshot != null &&
         _cachedRobaIUsluge != null &&
@@ -210,6 +215,7 @@ class FinansijeSegmentState extends State<FinansijeSegment> {
     final truthSnapshot = _predmetIriuTruthService.evaluate(
       predmet: predmet,
       storedRows: stavke,
+      provenanceOrigins: origins,
     );
     final robaIUsluge = _financialTruthService
         .buildRobaIUsluge(truthSnapshot)
@@ -348,11 +354,17 @@ class FinansijeSegmentState extends State<FinansijeSegment> {
               const SizedBox(height: 8),
               _sectionTitle(context, 'PREGLED UKUPNOG OBRAČUNA'),
               const SizedBox(height: 8),
-              StreamBuilder<List<IriuData>>(
-                stream: widget.iriuRepo.watchIriu(widget.predmetId),
+              StreamBuilder<({List<IriuData> rows, Map<int, String> origins})>(
+                stream: widget.iriuRepo.watchIriuWithProvenance(
+                  widget.predmetId,
+                ),
                 builder: (context, snap) {
-                  final stavke = snap.data ?? [];
-                  final robaSum = _resolveRobaIUsluge(d, stavke);
+                  final stavke = snap.data?.rows ?? <IriuData>[];
+                  final robaSum = _resolveRobaIUsluge(
+                    d,
+                    stavke,
+                    snap.data?.origins ?? const <int, String>{},
+                  );
                   final jkpDodatak = _jkpPlacaSamostalno
                       ? 0.0
                       : _moneyValue(_troskoviJkpCtrl);

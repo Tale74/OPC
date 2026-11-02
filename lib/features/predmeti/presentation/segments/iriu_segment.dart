@@ -143,16 +143,19 @@ class IriuSegmentState extends State<IriuSegment> {
     ].join('|');
   }
 
-  String _iriuTruthSignature(List<IriuData> stavke) {
+  String _iriuTruthSignature(List<IriuData> stavke, Map<int, String> origins) {
     return stavke
-        .map((s) => '${s.id}|${s.interniNaziv}|${s.redosled}|${s.iznos}')
+        .map(
+          (s) =>
+              '${s.id}|${s.interniNaziv}|${s.redosled}|${s.iznos}|${origins[s.id]}',
+        )
         .join('||');
   }
 
   ({PredmetIriuTruthSnapshot snapshot, Map<int, IriuTruthRow> rowsById})
-  _resolveTruthState(List<IriuData> stavke) {
+  _resolveTruthState(List<IriuData> stavke, Map<int, String> origins) {
     final predmetSignature = _predmetTruthSignature(widget.predmetData);
-    final iriuSignature = _iriuTruthSignature(stavke);
+    final iriuSignature = _iriuTruthSignature(stavke, origins);
     final cachedSnapshot = _cachedTruthSnapshot;
 
     if (cachedSnapshot != null &&
@@ -164,6 +167,7 @@ class IriuSegmentState extends State<IriuSegment> {
     final snapshot = _predmetIriuTruthService.evaluate(
       predmet: widget.predmetData,
       storedRows: stavke,
+      provenanceOrigins: origins,
       preserveInputOrder: true,
     );
     final rowsById = <int, IriuTruthRow>{
@@ -588,10 +592,14 @@ class IriuSegmentState extends State<IriuSegment> {
                                       const <StanjeRobePoslediceData>[])
                                 consequence.iriuId: consequence,
                             };
-                        return StreamBuilder<List<IriuData>>(
-                          stream: widget.iriuRepo.watchIriu(widget.predmetId),
+                        return StreamBuilder<
+                          ({List<IriuData> rows, Map<int, String> origins})
+                        >(
+                          stream: widget.iriuRepo.watchIriuWithProvenance(
+                            widget.predmetId,
+                          ),
                           builder: (context, snap) {
-                            final stavke = snap.data ?? [];
+                            final stavke = snap.data?.rows ?? <IriuData>[];
                             if (snap.hasData) {
                               widget.onRowsChanged?.call(stavke);
                             }
@@ -604,7 +612,10 @@ class IriuSegmentState extends State<IriuSegment> {
                                       row.interniNaziv ==
                                       widget.initialFocusInterniNaziv,
                                 );
-                            final truthState = _resolveTruthState(stavke);
+                            final truthState = _resolveTruthState(
+                              stavke,
+                              snap.data?.origins ?? const <int, String>{},
+                            );
                             final truthRowsById = truthState.rowsById;
                             if (stavke.isEmpty) {
                               return Padding(

@@ -18,6 +18,7 @@ class PredmetIriuTruthService {
   PredmetIriuTruthSnapshot evaluate({
     required PredmetiData predmet,
     required List<IriuData> storedRows,
+    Map<int, String> provenanceOrigins = const <int, String>{},
     bool preserveInputOrder = false,
   }) {
     final context = _PredmetIriuTruthEvaluationContext(
@@ -37,6 +38,7 @@ class PredmetIriuTruthService {
           (row) => _evaluateRow(
             context: context,
             row: row,
+            userAdded: provenanceOrigins[row.id] == 'RUCNA_STAVKA',
             normalizedMestoSmrti: normalizedMestoSmrti,
             requiresBiohazardPrecautions: requiresBiohazardPrecautions,
             hasReceptionOfRemains: hasReceptionOfRemains,
@@ -60,6 +62,7 @@ class PredmetIriuTruthService {
   IriuTruthRow _evaluateRow({
     required _PredmetIriuTruthEvaluationContext context,
     required IriuData row,
+    required bool userAdded,
     required String normalizedMestoSmrti,
     required bool requiresBiohazardPrecautions,
     required bool hasReceptionOfRemains,
@@ -112,45 +115,56 @@ class PredmetIriuTruthService {
     );
     final predmet = context.predmet;
     final policy = IriuTruthRules.policyFor(row.interniNaziv);
-    final active = row.scenarioUpravlja
+    final active = userAdded
+        ? row.poslovniStatus != 'NE PRIKAZUJE SE'
+        : row.scenarioUpravlja
         ? row.poslovniStatus != 'NE PRIKAZUJE SE'
         : IriuTruthRules.isOperationallyActive(predmet: predmet, row: row);
     assert(
-      row.interniNaziv != IriuK.cargoTroskovi ||
+      userAdded ||
+          row.interniNaziv != IriuK.cargoTroskovi ||
           active == hasReceptionOfRemains,
       'cargoTroskovi operational activation must remain compatible with the '
       'snapshot reception-of-remains precondition during the no-output-change '
       'migration phase.',
     );
     assert(
-      row.interniNaziv != IriuK.medjunarodniPrevoz ||
+      userAdded ||
+          row.interniNaziv != IriuK.medjunarodniPrevoz ||
           active == isInternationalCase,
       'medjunarodniPrevoz operational activation must remain compatible with '
       'the snapshot international-case precondition during the '
       'no-output-change migration phase.',
     );
     assert(
-      row.interniNaziv != IriuK.medjunarodnaDocumentacija ||
+      userAdded ||
+          row.interniNaziv != IriuK.medjunarodnaDocumentacija ||
           active == isInternationalCase,
       'medjunarodnaDocumentacija operational activation must remain '
       'compatible with the snapshot international-case precondition during '
       'the no-output-change migration phase.',
     );
     assert(
-      row.interniNaziv != IriuK.balsamovanje || active == isInternationalCase,
+      userAdded ||
+          row.interniNaziv != IriuK.balsamovanje ||
+          active == isInternationalCase,
       'balsamovanje operational activation must remain compatible with the '
       'snapshot international-case precondition during the no-output-change '
       'migration phase.',
     );
     assert(
-      row.interniNaziv != IriuK.prevozSprovoda || active == isLocalCemetery,
+      userAdded ||
+          row.interniNaziv != IriuK.prevozSprovoda ||
+          active == isLocalCemetery,
       'prevozSprovoda operational activation must remain compatible with the '
       'snapshot local-cemetery precondition during the no-output-change '
       'migration phase.',
     );
-    final recommended = row.scenarioUpravlja
-        ? row.poslovniStatus == 'PREPORUČENO'
-        : IriuTruthRules.isRecommended(predmet: predmet, row: row);
+    final recommended =
+        !userAdded &&
+        (row.scenarioUpravlja
+            ? row.poslovniStatus == 'PREPORUČENO'
+            : IriuTruthRules.isRecommended(predmet: predmet, row: row));
     assert(
       row.interniNaziv != IriuK.limeniUlozak || !isKremacija || !recommended,
       'limeniUlozak recommendation must remain excluded for cremation cases '
@@ -158,12 +172,15 @@ class PredmetIriuTruthService {
       'no-output-change migration phase.',
     );
     assert(
-      row.interniNaziv != IriuK.lemovanje ||
+      userAdded ||
+          row.interniNaziv != IriuK.lemovanje ||
           recommended == _expectedLemovanjeRecommendationForIriuTruth(context),
       'lemovanje recommendation must remain compatible with locked Blok 2 '
       'rules during the no-output-change migration phase.',
     );
-    final biohazard = row.scenarioUpravlja
+    final biohazard = userAdded
+        ? row.poslovnoUpozorenje.trim().isNotEmpty
+        : row.scenarioUpravlja
         ? row.poslovnoUpozorenje.trim().isNotEmpty
         : IriuTruthRules.isBiohazard(predmet: predmet, row: row);
     assert(
@@ -171,13 +188,26 @@ class PredmetIriuTruthService {
       'BIOHAZARD row activation must remain compatible with the snapshot '
       'precondition during the no-output-change migration phase.',
     );
-    final financialCounts = row.scenarioUpravlja
+    final financialCounts = userAdded
+        ? active && row.iznos > 0
+        : row.scenarioUpravlja
         ? active && row.finansijskiUkljuceno && row.iznos > 0
         : IriuTruthRules.countsForFinancialTruth(predmet: predmet, row: row);
     final derivativeExclusions = IriuTruthRules.derivativeExclusions(
       predmet: predmet,
       row: row,
     );
+    if (userAdded) {
+      if (active) {
+        derivativeExclusions.remove(
+          IriuDerivativeExclusion.notOperationallyActive,
+        );
+      } else {
+        derivativeExclusions.add(
+          IriuDerivativeExclusion.notOperationallyActive,
+        );
+      }
+    }
 
     final reasons = <String>[
       'stored row from persistent IRIU table',
@@ -202,7 +232,9 @@ class PredmetIriuTruthService {
 
     return IriuTruthRow(
       storedRow: row,
-      truthOrder: row.scenarioUpravlja
+      truthOrder: userAdded
+          ? row.redosled
+          : row.scenarioUpravlja
           ? row.poslovnaCelina * 10000 + row.poslovniRedosled
           : IriuTruthRules.truthOrder(row),
       managedKind: policy.kind,
@@ -221,9 +253,11 @@ class PredmetIriuTruthService {
           : IriuFinancialState.excludedSuppressed,
       derivativeExclusions: derivativeExclusions,
       manualDeletionAllowed: policy.manualDeletionAllowed,
-      requiresUserResolution: row.scenarioUpravlja
-          ? row.cekaOdlukuKorisnika
-          : policy.requiresUserResolutionOnConditionChange && !active,
+      requiresUserResolution:
+          !userAdded &&
+          (row.scenarioUpravlja
+              ? row.cekaOdlukuKorisnika
+              : policy.requiresUserResolutionOnConditionChange && !active),
       reasons: List<String>.unmodifiable(reasons),
       provider: row.obezbedjuje,
       warning: row.poslovnoUpozorenje,

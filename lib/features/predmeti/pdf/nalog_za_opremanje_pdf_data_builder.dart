@@ -47,10 +47,12 @@ class NalogZaOpremanjePdfDataBuilder {
   NalogZaOpremanjePdfPreparedData build({
     required PredmetiData predmet,
     required List<IriuData> iriuStavke,
+    Map<int, String> provenanceOrigins = const <int, String>{},
   }) {
     final truthSnapshot = const PredmetIriuTruthService().evaluate(
       predmet: predmet,
       storedRows: iriuStavke,
+      provenanceOrigins: provenanceOrigins,
       preserveInputOrder: true,
     );
     final allRowsByInternalName = <String, IriuTruthRow>{

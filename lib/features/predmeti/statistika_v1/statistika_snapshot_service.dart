@@ -7,10 +7,9 @@ class StatistikaSnapshotService {
   const StatistikaSnapshotService({
     PredmetIriuTruthService predmetIriuTruthService =
         const PredmetIriuTruthService(),
-    FinancialTruthService financialTruthService =
-        const FinancialTruthService(),
-  })  : _predmetIriuTruthService = predmetIriuTruthService,
-        _financialTruthService = financialTruthService;
+    FinancialTruthService financialTruthService = const FinancialTruthService(),
+  }) : _predmetIriuTruthService = predmetIriuTruthService,
+       _financialTruthService = financialTruthService;
 
   final PredmetIriuTruthService _predmetIriuTruthService;
   final FinancialTruthService _financialTruthService;
@@ -18,13 +17,17 @@ class StatistikaSnapshotService {
   StatistikaPeriodSnapshot buildPeriodSnapshot({
     required List<PredmetiData> predmeti,
     required List<IriuData> iriu,
+    Map<int, String> provenanceOrigins = const <int, String>{},
     required List<KorisniciData> korisnici,
     required Map<String, String> kataloskeKategorije,
     required DateTime dateFrom,
     required DateTime dateTo,
   }) {
-    final normalizedDateFrom =
-        DateTime(dateFrom.year, dateFrom.month, dateFrom.day);
+    final normalizedDateFrom = DateTime(
+      dateFrom.year,
+      dateFrom.month,
+      dateFrom.day,
+    );
     final normalizedDateTo = DateTime(dateTo.year, dateTo.month, dateTo.day);
     final iriuByPredmetId = <int, List<IriuData>>{};
     for (final row in iriu) {
@@ -46,9 +49,11 @@ class StatistikaSnapshotService {
           final truthSnapshot = _predmetIriuTruthService.evaluate(
             predmet: predmet,
             storedRows: storedRows,
+            provenanceOrigins: provenanceOrigins,
           );
-          final financialTruth =
-              _financialTruthService.buildRobaIUsluge(truthSnapshot);
+          final financialTruth = _financialTruthService.buildRobaIUsluge(
+            truthSnapshot,
+          );
           return StatistikaPredmetSnapshot(
             predmet: predmet,
             truthSnapshot: truthSnapshot,

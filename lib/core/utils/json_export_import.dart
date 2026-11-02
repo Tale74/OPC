@@ -380,7 +380,7 @@ class _PredmetTransferPayload {
   final List<IriuData> iriu;
   final List<KontaktLicaData> kontaktLica;
   final List<_StanjeRobeConsequenceTransferItem> stanjeRobeConsequences;
-  final SinglePredmetScenarioCarrierBlock? scenarioCarrier;
+  final SinglePredmetProvenanceCarrier? scenarioCarrier;
   final IriuLifecycleDecisionTransferBlock? lifecycleDecisions;
   final PodsetnikObligationTransferBlock? podsetnikObaveze;
   final List<CituljePreparationTransfer> cituljePripreme;
@@ -552,7 +552,7 @@ Map<String, dynamic> _normalizeDocumentMap(Map<String, dynamic> value) {
   return documentTextCodec.normalizeMap(value);
 }
 
-Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
+Future<SinglePredmetProvenanceCarrier?> _scenarioCarrierForExport({
   required AppDatabase db,
   required int predmetId,
   required List<IriuData> iriu,
@@ -560,11 +560,6 @@ Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
   final snapshot = await (db.select(
     db.predmetScenarioSnapshots,
   )..where((row) => row.predmetId.equals(predmetId))).getSingleOrNull();
-  if (snapshot == null) return null;
-
-  final assignment = ScenarioAssignmentSnapshot.fromJsonMap(
-    (jsonDecode(snapshot.snapshotJson) as Map).cast<String, dynamic>(),
-  );
   final provenanceRows =
       await (db.select(db.iriuProvenance)..where(
             (row) => row.iriuId.isIn(iriu.map((item) => item.id).toList()),
@@ -578,6 +573,29 @@ Future<SinglePredmetScenarioCarrierBlock?> _scenarioCarrierForExport({
       : knownCount == 0
       ? ScenarioIriuProvenanceCoverage.unavailable
       : ScenarioIriuProvenanceCoverage.partial;
+  if (snapshot == null) {
+    if (knownCount == 0) return null;
+    return SinglePredmetIriuProvenanceCarrierBlock.create(
+      coverage: coverage,
+      rowCount: iriu.length,
+      provenance: [
+        for (var index = 0; index < iriu.length; index++)
+          if (provenanceById[iriu[index].id] case final item?)
+            SinglePredmetScenarioProvenanceReference(
+              iriuTransferIndex: index,
+              origin: ScenarioIriuOriginKindWire.fromWireName(item.origin),
+              moduleId: item.moduleId,
+              scenarioId: item.scenarioId,
+              scenarioVersion: item.scenarioVersion,
+              ruleId: item.ruleId,
+              operationId: item.operationId,
+            ),
+      ],
+    );
+  }
+  final assignment = ScenarioAssignmentSnapshot.fromJsonMap(
+    (jsonDecode(snapshot.snapshotJson) as Map).cast<String, dynamic>(),
+  );
   final envelope = ScenarioTransferEnvelope.create(
     assignment: assignment,
     provenanceCoverage: coverage,
@@ -651,7 +669,7 @@ Future<String> _serijalizujPredmet(
   List<StanjeRobePoslediceData> stanjeRobePosledice, {
   required Map<String, dynamic> firmaIdentitet,
   List<CituljePreparationTransfer> cituljePripreme = const [],
-  SinglePredmetScenarioCarrierBlock? scenarioCarrier,
+  SinglePredmetProvenanceCarrier? scenarioCarrier,
   IriuLifecycleDecisionTransferBlock? lifecycleDecisions,
   PodsetnikObligationTransferBlock? podsetnikObaveze,
 }) {
@@ -1535,7 +1553,7 @@ Future<void> _restoreImportedScenarioCarrier({
   required AppDatabase db,
   required int predmetId,
   required List<IriuData> importedIriu,
-  required SinglePredmetScenarioCarrierBlock? carrier,
+  required SinglePredmetProvenanceCarrier? carrier,
 }) async {
   if (carrier == null) return;
   final localIriu = await _listIriuForImportedPredmet(db, predmetId);
@@ -1544,28 +1562,41 @@ Future<void> _restoreImportedScenarioCarrier({
       'Uvoz je blokiran jer nije bezbedno mapirati SCENARIO carrier na IRIU redove.',
     );
   }
-  final envelope = carrier.resolveToEnvelope(
-    destinationIriuIds: localIriu.map((row) => row.id).toList(growable: false),
-  );
-  await db
-      .into(db.predmetScenarioSnapshots)
-      .insertOnConflictUpdate(
-        PredmetScenarioSnapshotsCompanion.insert(
-          predmetId: Value(predmetId),
-          moduleId: envelope.assignment.moduleId,
-          scenarioId: envelope.assignment.scenarioId,
-          scenarioVersion: envelope.assignment.scenarioVersion,
-          snapshotJson: jsonEncode(envelope.assignment.toJsonMap()),
-          snapshotHash: envelope.assignment.snapshotHash,
-          assignedAt: envelope.assignment.assignedAt,
-          assignedByKorisnikId: Value(envelope.assignment.assignedByKorisnikId),
-        ),
-      );
-  if (envelope.provenanceCoverage ==
+  final destinationIds = localIriu.map((row) => row.id).toList(growable: false);
+  final envelope = carrier is SinglePredmetScenarioCarrierBlock
+      ? carrier.resolveToEnvelope(destinationIriuIds: destinationIds)
+      : null;
+  if (envelope != null) {
+    await db
+        .into(db.predmetScenarioSnapshots)
+        .insertOnConflictUpdate(
+          PredmetScenarioSnapshotsCompanion.insert(
+            predmetId: Value(predmetId),
+            moduleId: envelope.assignment.moduleId,
+            scenarioId: envelope.assignment.scenarioId,
+            scenarioVersion: envelope.assignment.scenarioVersion,
+            snapshotJson: jsonEncode(envelope.assignment.toJsonMap()),
+            snapshotHash: envelope.assignment.snapshotHash,
+            assignedAt: envelope.assignment.assignedAt,
+            assignedByKorisnikId: Value(
+              envelope.assignment.assignedByKorisnikId,
+            ),
+          ),
+        );
+  }
+  if (carrier.provenanceCoverage ==
       ScenarioIriuProvenanceCoverage.unavailable) {
     return;
   }
-  for (final item in envelope.provenance) {
+  final provenance =
+      envelope?.provenance ??
+      carrier.provenance
+          .map(
+            (reference) =>
+                reference.resolve(destinationIds[reference.iriuTransferIndex]),
+          )
+          .toList(growable: false);
+  for (final item in provenance) {
     await db
         .into(db.iriuProvenance)
         .insertOnConflictUpdate(
@@ -3291,11 +3322,17 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     iriuList,
   );
   final rawScenarioCarrier = json[_kSinglePredmetScenarioCarrierBlock];
-  final scenarioCarrier = rawScenarioCarrier == null
+  final carrierMap = rawScenarioCarrier == null
       ? null
-      : SinglePredmetScenarioCarrierBlock.fromJsonMap(
-          (rawScenarioCarrier as Map).cast<String, dynamic>(),
-        );
+      : (rawScenarioCarrier as Map).cast<String, dynamic>();
+  final SinglePredmetProvenanceCarrier? scenarioCarrier = carrierMap == null
+      ? null
+      : carrierMap['kind'] == singlePredmetIriuProvenanceCarrierKind
+      ? SinglePredmetIriuProvenanceCarrierBlock.fromJsonMap(
+          carrierMap,
+          rowCount: iriuList.length,
+        )
+      : SinglePredmetScenarioCarrierBlock.fromJsonMap(carrierMap);
   final rawLifecycleDecisions = json[_kSinglePredmetLifecycleDecisionBlock];
   final lifecycleDecisions = rawLifecycleDecisions == null
       ? null

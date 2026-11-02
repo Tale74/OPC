@@ -63,6 +63,9 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
   Future<_StatistikaSourceData> _load() async {
     final predmeti = await widget.predmetiRepo.getSvePredmete();
     final iriu = await widget.iriuRepo.getSveIriu();
+    final provenanceOrigins = await widget.iriuRepo.getProvenanceOrigins(
+      iriu.map((row) => row.id),
+    );
     final korisnici = await widget.predmetiRepo.getSveKorisnike();
     final kategorije = await widget.predmetiRepo.db
         .select(widget.predmetiRepo.db.iriuKatalogConfig)
@@ -83,6 +86,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
     return _StatistikaSourceData(
       predmeti: predmeti,
       iriu: iriu,
+      provenanceOrigins: provenanceOrigins,
       korisnici: korisnici,
       kataloskeKategorije: kataloskeKategorije,
     );
@@ -261,6 +265,7 @@ class _StatistikaScreenState extends State<StatistikaScreen> {
           final periodSnapshot = _snapshotService.buildPeriodSnapshot(
             predmeti: source.predmeti,
             iriu: source.iriu,
+            provenanceOrigins: source.provenanceOrigins,
             korisnici: source.korisnici,
             kataloskeKategorije: source.kataloskeKategorije,
             dateFrom: range.dateFrom,
@@ -474,12 +479,14 @@ class _StatistikaSourceData {
   const _StatistikaSourceData({
     required this.predmeti,
     required this.iriu,
+    required this.provenanceOrigins,
     required this.korisnici,
     required this.kataloskeKategorije,
   });
 
   final List<PredmetiData> predmeti;
   final List<IriuData> iriu;
+  final Map<int, String> provenanceOrigins;
   final List<KorisniciData> korisnici;
   final Map<String, String> kataloskeKategorije;
 }

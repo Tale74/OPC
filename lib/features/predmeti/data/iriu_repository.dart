@@ -185,6 +185,34 @@ class IriuRepository {
           .watch()
           .asyncMap((rows) => _orderedProjection(predmetId, rows));
 
+  Future<Map<int, String>> getProvenanceOrigins(Iterable<int> iriuIds) async {
+    final ids = iriuIds.toList(growable: false);
+    if (ids.isEmpty) return const <int, String>{};
+    final rows = await (_db.select(
+      _db.iriuProvenance,
+    )..where((item) => item.iriuId.isIn(ids))).get();
+    return {for (final row in rows) row.iriuId: row.origin};
+  }
+
+  /// Watches both durable occurrences and their provenance. A provenance-only
+  /// change must invalidate the operational and financial projections too.
+  Stream<({List<IriuData> rows, Map<int, String> origins})>
+  watchIriuWithProvenance(int predmetId) => _db
+      .customSelect(
+        'SELECT iriu.id FROM iriu LEFT JOIN iriu_provenance '
+        'ON iriu_provenance.iriu_id = iriu.id WHERE iriu.predmet_id = ?',
+        variables: [Variable.withInt(predmetId)],
+        readsFrom: {_db.iriu, _db.iriuProvenance},
+      )
+      .watch()
+      .asyncMap((_) async {
+        final rows = await getIriu(predmetId);
+        return (
+          rows: rows,
+          origins: await getProvenanceOrigins(rows.map((row) => row.id)),
+        );
+      });
+
   /// Sinhronizuje samo stavke koje je kreirao SCENARIO modul.
   /// Ručne, legacy i stavke drugih modula se nikada ne uklanjaju.
   Future<ScenarioSyncResult> syncScenarioRows({
@@ -901,42 +929,36 @@ class IriuRepository {
       return row.id;
     }
     final targetPredmetId = predmetId!;
-    final classification = await _classifyLiveCategory(
-      predmetId: targetPredmetId,
-      interniNaziv: selection.interniNaziv,
-    );
-    await _clearManagedManualDeletionDecisionIfNeeded(
-      predmetId: targetPredmetId,
-      interniNaziv: selection.interniNaziv,
-    );
-    final id = await _insertStavka(
-      predmetId: targetPredmetId,
-      interniNaziv: selection.interniNaziv,
-      nazivPrikaz: selection.nazivPrikaz,
-      katalogStableArticleId: selection.katalogStableArticleId,
-      kom: selection.kom,
-      iznos: selection.iznos,
-      cena: selection.cena,
-      redosled: redosled,
-      poslovnaCelina: classification.section,
-      poslovniRedosled: classification.order,
-      scenarioUpravlja: classification.managed,
-    );
-    await _persistLiveProvenance(
-      id: id,
-      internalName: selection.interniNaziv,
-      classification: classification,
-    );
-    await _applyStockEffectForCatalogSelection(
-      predmetId: targetPredmetId,
-      iriuId: id,
-      interniNaziv: selection.interniNaziv,
-      katalogStableArticleId: selection.katalogStableArticleId,
-      selectedNazivSnapshot: selection.nazivPrikaz,
-      selectedIznosSnapshot: selection.iznos,
-    );
-    await _rebuildBusinessOrdering(targetPredmetId);
-    return id;
+    return _db.transaction(() async {
+      await _clearManagedManualDeletionDecisionIfNeeded(
+        predmetId: targetPredmetId,
+        interniNaziv: selection.interniNaziv,
+      );
+      final id = await _insertStavka(
+        predmetId: targetPredmetId,
+        interniNaziv: selection.interniNaziv,
+        nazivPrikaz: selection.nazivPrikaz,
+        katalogStableArticleId: selection.katalogStableArticleId,
+        kom: selection.kom,
+        iznos: selection.iznos,
+        cena: selection.cena,
+        redosled: redosled,
+        poslovnaCelina: 6,
+        poslovniRedosled: 0,
+        scenarioUpravlja: false,
+      );
+      await _persistUserAddedProvenance(id);
+      await _applyStockEffectForCatalogSelection(
+        predmetId: targetPredmetId,
+        iriuId: id,
+        interniNaziv: selection.interniNaziv,
+        katalogStableArticleId: selection.katalogStableArticleId,
+        selectedNazivSnapshot: selection.nazivPrikaz,
+        selectedIznosSnapshot: selection.iznos,
+      );
+      await _rebuildBusinessOrdering(targetPredmetId);
+      return id;
+    });
   }
 
   Future<String> _catalogDisplayName(String internalName) async {
@@ -1047,10 +1069,16 @@ class IriuRepository {
     final normalizedInterniNaziv = nextInterniNaziv.isEmpty
         ? row.interniNaziv
         : nextInterniNaziv;
-    final classification = await _classifyLiveCategory(
-      predmetId: row.predmetId,
-      interniNaziv: normalizedInterniNaziv,
-    );
+    final existingProvenance = await (_db.select(
+      _db.iriuProvenance,
+    )..where((item) => item.iriuId.equals(row.id))).getSingleOrNull();
+    final userAdded = existingProvenance?.origin == 'RUCNA_STAVKA';
+    final classification = userAdded
+        ? null
+        : await _classifyLiveCategory(
+            predmetId: row.predmetId,
+            interniNaziv: normalizedInterniNaziv,
+          );
 
     await _db.transaction(() async {
       if (nextStableArticleId != null &&
@@ -1097,16 +1125,18 @@ class IriuRepository {
           kom: Value(selection.kom),
           cena: Value(selection.cena),
           iznos: Value(selection.iznos),
-          poslovnaCelina: Value(classification.section),
-          poslovniRedosled: Value(classification.order),
-          scenarioUpravlja: Value(classification.managed),
+          poslovnaCelina: Value(userAdded ? 6 : classification!.section),
+          poslovniRedosled: Value(userAdded ? 0 : classification!.order),
+          scenarioUpravlja: Value(!userAdded && classification!.managed),
         ),
       );
-      await _persistLiveProvenance(
-        id: row.id,
-        internalName: normalizedInterniNaziv,
-        classification: classification,
-      );
+      if (!userAdded) {
+        await _persistLiveProvenance(
+          id: row.id,
+          internalName: normalizedInterniNaziv,
+          classification: classification!,
+        );
+      }
     });
   }
 
@@ -1183,6 +1213,20 @@ class IriuRepository {
                   ? (context.scenarioRuleIds[internalName] ?? internalName)
                   : null,
             ),
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+  }
+
+  /// The occurrence is a user's addition to this PREDMET, even when its
+  /// article retains a stable KATALOG identity and a conditional category.
+  Future<void> _persistUserAddedProvenance(int id) async {
+    await _db
+        .into(_db.iriuProvenance)
+        .insertOnConflictUpdate(
+          IriuProvenanceCompanion.insert(
+            iriuId: Value(id),
+            origin: 'RUCNA_STAVKA',
             createdAt: DateTime.now().toUtc().toIso8601String(),
           ),
         );

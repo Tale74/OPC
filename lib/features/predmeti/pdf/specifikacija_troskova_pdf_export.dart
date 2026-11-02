@@ -34,6 +34,9 @@ Future<void> izvoziSpecifikacijaTroskovaPdf({
       db.predmeti,
     )..where((t) => t.id.equals(predmetId))).getSingle();
     final iriuStavke = await IriuRepository(db).getIriu(predmetId);
+    final provenanceOrigins = await IriuRepository(
+      db,
+    ).getProvenanceOrigins(iriuStavke.map((row) => row.id));
     final firma = await (db.select(
       db.firmaPodaci,
     )..where((t) => t.id.equals(1))).getSingle();
@@ -49,6 +52,7 @@ Future<void> izvoziSpecifikacijaTroskovaPdf({
     final bytes = await _buildSpecifikacijaPdf(
       predmet: predmet,
       iriuStavke: iriuStavke,
+      provenanceOrigins: provenanceOrigins,
       firma: firma,
       app: app,
       savetnik: savetnik,
@@ -90,6 +94,7 @@ Future<void> izvoziSpecifikacijaTroskovaPdf({
 Future<Uint8List> _buildSpecifikacijaPdf({
   required PredmetiData predmet,
   required List<IriuData> iriuStavke,
+  required Map<int, String> provenanceOrigins,
   required FirmaPodaciData firma,
   required AppPodesavanjaData app,
   required KorisniciData? savetnik,
@@ -117,6 +122,7 @@ Future<Uint8List> _buildSpecifikacijaPdf({
   final preparedData = const ListaPdfDataBuilder().build(
     predmet: predmet,
     iriuStavke: iriuStavke,
+    provenanceOrigins: provenanceOrigins,
     firma: firma,
     app: app,
     savetnik: savetnik,

@@ -12,6 +12,14 @@ const int _legacySinglePredmetScenarioCarrierVersion = 1;
 const String singlePredmetScenarioCarrierKind = 'OPC_SINGLE_PREDMET_SCENARIO';
 const String singlePredmetScenarioCarrierHashAlgorithm = 'SHA-256';
 const String singlePredmetScenarioCarrierHashScope = 'PAYLOAD_CANONICAL_JSON';
+const String singlePredmetIriuProvenanceCarrierKind =
+    'OPC_SINGLE_PREDMET_IRIU_PROVENANCE';
+
+abstract interface class SinglePredmetProvenanceCarrier {
+  ScenarioIriuProvenanceCoverage get provenanceCoverage;
+  List<SinglePredmetScenarioProvenanceReference> get provenance;
+  Map<String, dynamic> toJsonMap();
+}
 
 /// A carrier-safe reference to one IRIU row. The source/destination database
 /// primary key is deliberately absent; the transfer index is scoped to the
@@ -117,7 +125,8 @@ class SinglePredmetScenarioProvenanceReference {
 ///
 /// It carries transfer indexes instead of local database IDs. Existing JSON
 /// export/import and root schema wiring are intentionally outside this class.
-class SinglePredmetScenarioCarrierBlock {
+class SinglePredmetScenarioCarrierBlock
+    implements SinglePredmetProvenanceCarrier {
   SinglePredmetScenarioCarrierBlock._({
     required this.assignment,
     required this.provenanceCoverage,
@@ -251,10 +260,13 @@ class SinglePredmetScenarioCarrierBlock {
   }
 
   final ScenarioAssignmentSnapshot assignment;
+  @override
   final ScenarioIriuProvenanceCoverage provenanceCoverage;
+  @override
   final List<SinglePredmetScenarioProvenanceReference> provenance;
   final String contentHash;
 
+  @override
   Map<String, dynamic> toJsonMap() => {
     'kind': singlePredmetScenarioCarrierKind,
     'carrierVersion': singlePredmetScenarioCarrierVersion,
@@ -338,6 +350,110 @@ class SinglePredmetScenarioCarrierBlock {
     );
   }
 }
+
+/// Carries existing occurrence provenance when the PREDMET has no SCENARIO
+/// assignment. The existing indexed carrier key is reused; no assignment is
+/// fabricated and unknown carrier kinds are rejected by the importer.
+class SinglePredmetIriuProvenanceCarrierBlock
+    implements SinglePredmetProvenanceCarrier {
+  SinglePredmetIriuProvenanceCarrierBlock._(
+    this.provenanceCoverage,
+    this.provenance,
+    this.contentHash,
+  );
+
+  factory SinglePredmetIriuProvenanceCarrierBlock.create({
+    required ScenarioIriuProvenanceCoverage coverage,
+    required List<SinglePredmetScenarioProvenanceReference> provenance,
+    required int rowCount,
+  }) {
+    final sorted = List<SinglePredmetScenarioProvenanceReference>.of(provenance)
+      ..sort((a, b) => a.iriuTransferIndex.compareTo(b.iriuTransferIndex));
+    final indexes = <int>{};
+    for (final reference in sorted) {
+      if (!indexes.add(reference.iriuTransferIndex)) {
+        throw const SinglePredmetScenarioCarrierValidationException(
+          'Duplicate provenance reference without a SCENARIO assignment.',
+        );
+      }
+    }
+    _validateCoverage(coverage, rowCount, sorted);
+    final payload = _provenanceOnlyPayload(coverage, sorted);
+    return SinglePredmetIriuProvenanceCarrierBlock._(
+      coverage,
+      List.unmodifiable(sorted),
+      _hashPayload(payload),
+    );
+  }
+
+  factory SinglePredmetIriuProvenanceCarrierBlock.fromJsonMap(
+    Map<String, dynamic> json, {
+    required int rowCount,
+  }) {
+    _assertAllowedKeys(json, const {
+      'kind',
+      'carrierVersion',
+      'hashAlgorithm',
+      'hashScope',
+      'payload',
+      'contentHash',
+    }, 'Single-PREDMET provenance carrier');
+    if (json['kind'] != singlePredmetIriuProvenanceCarrierKind ||
+        json['carrierVersion'] != singlePredmetScenarioCarrierVersion ||
+        json['hashAlgorithm'] != singlePredmetScenarioCarrierHashAlgorithm ||
+        json['hashScope'] != singlePredmetScenarioCarrierHashScope) {
+      throw const SinglePredmetScenarioCarrierValidationException(
+        'Unsupported Single-PREDMET provenance carrier.',
+      );
+    }
+    final payload = _requiredMap(json, 'payload');
+    _assertAllowedKeys(payload, const {
+      'provenanceCoverage',
+      'provenance',
+    }, 'Single-PREDMET provenance payload');
+    final coverage = ScenarioIriuProvenanceCoverageWire.fromWireName(
+      _requiredText(payload, 'provenanceCoverage'),
+    );
+    final references = _requiredMapList(payload, 'provenance')
+        .map(SinglePredmetScenarioProvenanceReference.fromJsonMap)
+        .toList(growable: false);
+    final block = SinglePredmetIriuProvenanceCarrierBlock.create(
+      coverage: coverage,
+      provenance: references,
+      rowCount: rowCount,
+    );
+    if (block.contentHash != _requiredText(json, 'contentHash')) {
+      throw const SinglePredmetScenarioCarrierValidationException(
+        'Single-PREDMET provenance carrier hash does not match its contents.',
+      );
+    }
+    return block;
+  }
+
+  @override
+  final ScenarioIriuProvenanceCoverage provenanceCoverage;
+  @override
+  final List<SinglePredmetScenarioProvenanceReference> provenance;
+  final String contentHash;
+
+  @override
+  Map<String, dynamic> toJsonMap() => {
+    'kind': singlePredmetIriuProvenanceCarrierKind,
+    'carrierVersion': singlePredmetScenarioCarrierVersion,
+    'hashAlgorithm': singlePredmetScenarioCarrierHashAlgorithm,
+    'hashScope': singlePredmetScenarioCarrierHashScope,
+    'payload': _provenanceOnlyPayload(provenanceCoverage, provenance),
+    'contentHash': contentHash,
+  };
+}
+
+Map<String, dynamic> _provenanceOnlyPayload(
+  ScenarioIriuProvenanceCoverage coverage,
+  List<SinglePredmetScenarioProvenanceReference> provenance,
+) => {
+  'provenanceCoverage': coverage.wireName,
+  'provenance': provenance.map((item) => item.toJsonMap()).toList(),
+};
 
 void _validateAssignmentOwnership(
   ScenarioAssignmentSnapshot assignment,

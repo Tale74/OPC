@@ -132,6 +132,7 @@ class ListaPdfDataBuilder {
   ListaPdfPreparedData build({
     required PredmetiData predmet,
     required List<IriuData> iriuStavke,
+    Map<int, String> provenanceOrigins = const <int, String>{},
     required FirmaPodaciData firma,
     required AppPodesavanjaData app,
     required KorisniciData? savetnik,
@@ -141,6 +142,7 @@ class ListaPdfDataBuilder {
     final truthSnapshot = const PredmetIriuTruthService().evaluate(
       predmet: predmet,
       storedRows: iriuStavke,
+      provenanceOrigins: provenanceOrigins,
       preserveInputOrder: true,
     );
     final finansijskaOsnova = const FinancialTruthService().buildRobaIUsluge(
@@ -195,6 +197,7 @@ class ListaPdfDataBuilder {
       podsetnikChecklist: _buildPodsetnikChecklist(
         predmet: predmet,
         iriu: iriuStavke,
+        provenanceOrigins: provenanceOrigins,
         visibleIriu: visibleIriu,
         finansijskiRedovi: finansijskiRedovi,
         additionalObligations: additionalObligations,
@@ -206,6 +209,7 @@ class ListaPdfDataBuilder {
 List<ListaPdfChecklistItem> _buildPodsetnikChecklist({
   required PredmetiData predmet,
   required List<IriuData> iriu,
+  required Map<int, String> provenanceOrigins,
   required List<IriuData> visibleIriu,
   required List<ListaPdfLabelValue> finansijskiRedovi,
   required List<PodsetnikObligationRule> additionalObligations,
@@ -213,6 +217,7 @@ List<ListaPdfChecklistItem> _buildPodsetnikChecklist({
   final rules = const PodsetnikObligationDeriver().deriveRules(
     predmet: predmet,
     iriu: iriu,
+    provenanceOrigins: provenanceOrigins,
     additionalRules: additionalObligations,
   );
   final labels = <String, String>{};
