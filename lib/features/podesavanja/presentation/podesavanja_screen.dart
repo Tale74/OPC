@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
+import '../../../core/firm_identifier.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -51,14 +52,18 @@ String buildOpcLicenseRequestBody({
     'MB: ${mb.trim()}\n\n'
     'Molim izdavanje trajnog aktivacionog ključa za navedenu FIRMU.';
 
-Uri buildOpcLicenseRequestMailtoUri(String body) => Uri(
-  scheme: 'mailto',
-  path: _opcDeveloperEmail,
-  queryParameters: <String, String>{
-    'subject': 'OPC – zahtev za aktivacioni ključ',
-    'body': body,
-  },
-);
+Uri buildOpcLicenseRequestMailtoUri(String body) {
+  // RFC 6068 uses percent encoding and CRLF for the mail body.
+  const subject = 'OPC – zahtev za aktivacioni ključ';
+  final mailBody = body.replaceAll(RegExp(r'\r\n|\r|\n'), '\r\n');
+  return Uri(
+    scheme: 'mailto',
+    path: _opcDeveloperEmail,
+    query:
+        'subject=${Uri.encodeComponent(subject)}'
+        '&body=${Uri.encodeComponent(mailBody)}',
+  );
+}
 
 String _platformDisplayName(TargetPlatform platform) => switch (platform) {
   TargetPlatform.android => 'Android',
@@ -1282,6 +1287,7 @@ class _FirmaTabState extends State<_FirmaTab> {
                             enabled: true,
                             child: TextFormField(
                               controller: _pibCtrl,
+                              validator: optionalFirmIdentifierError,
                               decoration: const InputDecoration(
                                 labelText: 'PIB',
                                 border: OutlineInputBorder(),
@@ -1294,6 +1300,7 @@ class _FirmaTabState extends State<_FirmaTab> {
                             enabled: true,
                             child: TextFormField(
                               controller: _mbCtrl,
+                              validator: optionalFirmIdentifierError,
                               decoration: const InputDecoration(
                                 labelText: 'MB',
                                 border: OutlineInputBorder(),
@@ -1312,6 +1319,7 @@ class _FirmaTabState extends State<_FirmaTab> {
                             enabled: true,
                             child: TextFormField(
                               controller: _pibCtrl,
+                              validator: optionalFirmIdentifierError,
                               decoration: const InputDecoration(
                                 labelText: 'PIB',
                                 border: OutlineInputBorder(),
@@ -1326,6 +1334,7 @@ class _FirmaTabState extends State<_FirmaTab> {
                             enabled: true,
                             child: TextFormField(
                               controller: _mbCtrl,
+                              validator: optionalFirmIdentifierError,
                               decoration: const InputDecoration(
                                 labelText: 'MB',
                                 border: OutlineInputBorder(),

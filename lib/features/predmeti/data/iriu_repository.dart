@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../../../core/constants/iriu_constants.dart';
 import '../../../core/utils/stable_id_generator.dart';
 import '../../../core/database/database.dart';
+import '../../../core/database/predmet_iriu_order.dart';
 import '../../../core/format/app_money_format.dart';
 import '../core_v2/rules/iriu_truth_rules.dart';
 import '../core_v2/services/blok2_iriu_lifecycle_service.dart';
@@ -224,6 +225,7 @@ class IriuRepository {
     bool allowLegacyBaselineEstablishment = false,
     Map<int, bool> conditionChangeDecisions = const <int, bool>{},
   }) async {
+    final localOrder = await readPredmetIriuOrder(_db, predmetId);
     final hasOwnerPolicyDefinitions = scenarios.any(
       (scenario) => scenario.id.startsWith('MAP_'),
     );
@@ -289,7 +291,7 @@ class IriuRepository {
         : ownerDefinition;
     final effectiveBasePackage = sameAssignedScenario
         ? decodedPreviousSnapshot!.osnovniPaket
-        : osnovniPaket;
+        : localOrder?.basic.toSet() ?? osnovniPaket;
     final evaluation =
         ownerResult != null && ownerDefinition != null && sameAssignedScenario
         ? const ScenarioRuleEngine().evaluate(
@@ -302,7 +304,7 @@ class IriuRepository {
         : const ScenarioRuleEngine().evaluate(
             scenarios: scenarios,
             predmet: predmet,
-            osnovniPaket: osnovniPaket,
+            osnovniPaket: effectiveBasePackage,
           );
     final candidateSnapshot = ownerResult?.isComplete == true
         ? _ownerScenarioSnapshot(
@@ -797,6 +799,7 @@ class IriuRepository {
   }
 
   Future<IriuOrderingContext> _orderingContext(int predmetId) async {
+    final savedOrder = await readPredmetIriuOrder(_db, predmetId);
     final provenance = await (_db.select(_db.iriuProvenance)).get();
     final origins = <int, String>{
       for (final item in provenance) item.iriuId: item.origin,
@@ -807,20 +810,22 @@ class IriuRepository {
             ))
             .getSingleOrNull();
     final scenarioRepository = ScenarioModuleRepository(_db);
-    final osnovniOrder = module == null
+    final osnovniOrder = savedOrder?.basic ?? (module == null
         ? ScenarioModuleRepository.defaultOsnovniPaketOrder
-        : scenarioRepository.readOsnovniPaketOrder(module);
+        : scenarioRepository.readOsnovniPaketOrder(module));
     final osnovniBusinessOrders = <String, int>{
       for (var index = 0; index < osnovniOrder.length; index++)
         osnovniOrder[index]: index,
     };
     final snapshotRow = await _readScenarioSnapshot(predmetId);
     if (snapshotRow == null || snapshotRow.snapshotJson.trim().isEmpty) {
-      final osnovni = module == null
+      final osnovni = savedOrder?.basic.toSet() ?? (module == null
           ? ScenarioModuleRepository.defaultOsnovniPaket
-          : scenarioRepository.readOsnovniPaket(module);
+          : scenarioRepository.readOsnovniPaket(module));
       return IriuOrderingContext(
         osnovniCategories: osnovni,
+        scenarioCategories: { for (final row in await _rawIriu(predmetId)) if (origins[row.id] == 'SCENARIO_PAKET') row.interniNaziv },
+        scenarioOccurrenceOrder: savedOrder?.scenario ?? const [],
         osnovniBusinessOrders: osnovniBusinessOrders,
         provenanceOrigins: origins,
         moduleId: ScenarioModuleRepository.moduleId,
@@ -835,6 +840,7 @@ class IriuRepository {
       );
       return IriuOrderingContext(
         osnovniCategories: snapshot.osnovniPaket,
+        scenarioOccurrenceOrder: savedOrder?.scenario ?? const [],
         osnovniBusinessOrders: osnovniBusinessOrders,
         scenarioCategories: activeConsequences
             .map((item) => item.katalogCategoryInternalName)
@@ -1587,23 +1593,59 @@ class IriuRepository {
     }
   }
 
-  Future<void> _rebuildBusinessOrdering(int predmetId) async {
+  Future<void> saveScenarioOrder(
+    int predmetId, {
+    required List<String> expected,
+    required List<String> ordered,
+  }) => _db.transaction(() async {
+    final rows = await getIriu(predmetId);
+    final origins = await getProvenanceOrigins(rows.map((row) => row.id));
+    final current = [
+      for (final row in rows)
+        if (origins[row.id] == 'SCENARIO_PAKET') row.portableOccurrenceId,
+    ];
+    if (current.any((id) => id == null || id.isEmpty) ||
+        expected.length != current.length ||
+        current.indexed.any((entry) => expected[entry.$1] != entry.$2) ||
+        ordered.length != current.length ||
+        ordered.toSet().length != ordered.length ||
+        !ordered.toSet().containsAll(expected)) {
+      throw StateError('SCENARIO stavke su promenjene. Otvorite editor ponovo.');
+    }
+    final saved = await readPredmetIriuOrder(_db, predmetId);
+    final context = await _orderingContext(predmetId);
+    final basics = context.osnovniCategories.toList();
+    basics.sort((a, b) => (context.osnovniBusinessOrders[a] ?? 1 << 30)
+        .compareTo(context.osnovniBusinessOrders[b] ?? 1 << 30));
+    await savePredmetIriuOrder(_db, predmetId, PredmetIriuOrder(
+      basic: saved?.basic ?? basics,
+      scenario: ordered,
+    ));
+    await _rebuildBusinessOrdering(predmetId);
+  });
+
+  Future<void> _rebuildBusinessOrdering(int predmetId) =>
+      _db.transaction(() async {
     final rows = await _rawIriu(predmetId);
+    final saved = await readPredmetIriuOrder(_db, predmetId);
+    if (saved != null && saved.scenario.isNotEmpty) {
+      final retained = await exportPredmetIriuOrder(_db, predmetId);
+      if (retained != null && retained.scenario.length != saved.scenario.length) {
+        await savePredmetIriuOrder(_db, predmetId, retained);
+      }
+    }
     if (rows.isEmpty) return;
     final orderedRows = _orderingService.orderedRows(
       rows,
       context: await _orderingContext(predmetId),
     );
-    await _db.transaction(() async {
-      for (var index = 0; index < orderedRows.length; index++) {
-        final row = orderedRows[index];
-        if (row.redosled == index) continue;
-        await (_db.update(_db.iriu)..where((i) => i.id.equals(row.id))).write(
-          IriuCompanion(redosled: Value(index)),
-        );
-      }
-    });
-  }
+    for (final (index, row) in orderedRows.indexed) {
+      if (row.redosled == index) continue;
+      await (_db.update(_db.iriu)..where((i) => i.id.equals(row.id))).write(
+        IriuCompanion(redosled: Value(index)),
+      );
+    }
+  });
 
   Future<void> _rememberManagedManualDeletionIfNeeded({
     required int predmetId,

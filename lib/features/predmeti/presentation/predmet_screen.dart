@@ -337,8 +337,8 @@ class _PredmetScreenState extends State<PredmetScreen> {
     setState(() => _selectedSection = null);
   }
 
-  Future<bool> _handleNarrowSectionBack(bool isNarrowAndroid) async {
-    if (!isNarrowAndroid || _selectedSection == null) return false;
+  Future<bool> _handleNarrowSectionBack(bool isNarrow) async {
+    if (!isNarrow || _selectedSection == null) return false;
     await _returnToHub();
     return true;
   }
@@ -357,10 +357,9 @@ class _PredmetScreenState extends State<PredmetScreen> {
     }
   }
 
-  bool _isNarrowAndroidDialog(BuildContext context) {
+  bool _isNarrowDialog(BuildContext context) {
     final media = MediaQuery.of(context);
-    return Theme.of(context).platform == TargetPlatform.android &&
-        media.size.width < 600;
+    return media.size.width < 600;
   }
 
   AlertDialog _buildHeightFitDialog({
@@ -369,12 +368,12 @@ class _PredmetScreenState extends State<PredmetScreen> {
     required Widget content,
     required List<Widget> actions,
   }) {
-    final isNarrowAndroid = _isNarrowAndroidDialog(context);
+    final isNarrow = _isNarrowDialog(context);
     return AlertDialog(
-      insetPadding: isNarrowAndroid
+      insetPadding: isNarrow
           ? const EdgeInsets.symmetric(horizontal: 16, vertical: 24)
           : null,
-      scrollable: isNarrowAndroid,
+      scrollable: isNarrow,
       actionsOverflowDirection: VerticalDirection.down,
       actionsOverflowAlignment: OverflowBarAlignment.end,
       title: title,
@@ -1010,7 +1009,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
   Widget _buildPredmetWorkspace({
     required PredmetiData predmet,
     required List<IriuData> iRiuRows,
-    required bool isNarrowAndroid,
+    required bool isNarrow,
     required bool showSpecifikacijaTroskovaPdf,
     required bool showPredracunPdf,
     required bool showListaPdf,
@@ -1047,7 +1046,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
             actions: const [SizedBox.shrink()],
           ),
         Expanded(
-          child: isNarrowAndroid
+          child: isNarrow
               ? _buildNarrowWorkspace(
                   predmet: predmet,
                   iRiuRows: iRiuRows,
@@ -1059,7 +1058,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
                   documentVisibility: documentVisibility,
                 ),
         ),
-        if (isNarrowAndroid) _buildNarrowPrimaryActionBar(),
+        if (isNarrow) _buildNarrowPrimaryActionBar(),
       ],
     );
   }
@@ -1535,9 +1534,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
       height: 1.0,
       fontWeight: FontWeight.w500,
     );
-    final isNarrowAndroid =
-        Theme.of(context).platform == TargetPlatform.android &&
-        MediaQuery.of(context).size.width < 600;
+    final isNarrow = MediaQuery.of(context).size.width < 600;
     final showSpecifikacijaTroskovaPdf = widget.entitlementPolicy
         .isDocumentActionVisible(OpcDocumentAction.specifikacijaTroskovaPdf);
     final showPredracunPdf = widget.entitlementPolicy.isDocumentActionVisible(
@@ -1576,24 +1573,23 @@ class _PredmetScreenState extends State<PredmetScreen> {
         );
     final primaryHeaderTextStyle = headerTextStyle.copyWith(
       fontWeight: FontWeight.w700,
-      fontSize: isNarrowAndroid ? 14 : headerTextStyle.fontSize,
+      fontSize: isNarrow ? 14 : headerTextStyle.fontSize,
     );
     final headerActionPadding = EdgeInsets.symmetric(
-      horizontal: isNarrowAndroid ? 12 : 16,
+      horizontal: isNarrow ? 12 : 16,
       vertical: 8,
     );
 
     return PopScope(
-      canPop:
-          !(isNarrowAndroid && _selectedSection != null) && _mozeDirektanIzlaz,
+      canPop: !(isNarrow && _selectedSection != null) && _mozeDirektanIzlaz,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (await _handleNarrowSectionBack(isNarrowAndroid)) return;
+        if (await _handleNarrowSectionBack(isNarrow)) return;
         await _obradiPokusanIzlazaIzPredmeta();
       },
       child: Scaffold(
         appBar: OpcPageChrome(
-          narrowAndroid: isNarrowAndroid,
+          narrowAndroid: isNarrow,
           helpChapterId: _selectedSection == null
               ? 'predmet'
               : predmetGuideChapterIdForSegment(
@@ -1603,7 +1599,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
                 ),
           identity: Text(
             appBarIdentity,
-            maxLines: isNarrowAndroid ? 2 : 1,
+            maxLines: isNarrow ? 2 : 1,
             overflow: TextOverflow.ellipsis,
             style: primaryHeaderTextStyle,
           ),
@@ -1698,7 +1694,7 @@ class _PredmetScreenState extends State<PredmetScreen> {
         body: _buildPredmetWorkspace(
           predmet: p,
           iRiuRows: _iriuRows,
-          isNarrowAndroid: isNarrowAndroid,
+          isNarrow: isNarrow,
           showSpecifikacijaTroskovaPdf: showSpecifikacijaTroskovaPdf,
           showPredracunPdf: showPredracunPdf,
           showListaPdf: showListaPdf,

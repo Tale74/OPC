@@ -10,6 +10,7 @@ class IriuOrderingContext {
     this.scenarioCategories = const <String>{},
     this.scenarioBusinessSections = const <String, int>{},
     this.scenarioBusinessOrders = const <String, int>{},
+    this.scenarioOccurrenceOrder = const <String>[],
     this.provenanceOrigins = const <int, String>{},
     this.moduleId,
     this.scenarioId,
@@ -22,6 +23,7 @@ class IriuOrderingContext {
   final Set<String> scenarioCategories;
   final Map<String, int> scenarioBusinessSections;
   final Map<String, int> scenarioBusinessOrders;
+  final List<String> scenarioOccurrenceOrder;
   final Map<int, String> provenanceOrigins;
   final String? moduleId;
   final String? scenarioId;
@@ -90,7 +92,20 @@ class IriuOrderingService {
       }
 
       osnovni.sort((a, b) => comparePackage(a, b, osnovni: true));
-      scenario.sort((a, b) => comparePackage(a, b, osnovni: false));
+      final localRanks = {
+        for (final (index, id) in effectiveContext.scenarioOccurrenceOrder.indexed)
+          id: index,
+      };
+      scenario.sort((a, b) {
+        final aRank = localRanks[a.portableOccurrenceId];
+        final bRank = localRanks[b.portableOccurrenceId];
+        if (aRank != null || bRank != null) {
+          if (aRank == null) return 1;
+          if (bRank == null) return -1;
+          return aRank.compareTo(bRank);
+        }
+        return comparePackage(a, b, osnovni: false);
+      });
       manual.sort((a, b) {
         final stored = a.redosled.compareTo(b.redosled);
         return stored != 0 ? stored : a.id.compareTo(b.id);

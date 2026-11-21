@@ -712,3 +712,22 @@ closure is indexed by `OPC_V15_FINAL_CLOSURE_REPORT.md` and its external review
 package. The historical active-source control remains at its accepted
 `20/28 LITERAL MATCH – 8/8 PROVENANCE RESOLVED` result; it was not rebaselined.
 No new QA/build was necessary for this documentation-only closure record.
+
+## ACCEPT-FAIL-001 — Production release and owner runtime handoff
+
+Release 4.0.3+15 was published on 2026-11-21 through the existing OPC
+distribution. Canonical inputs include the previously released order and
+migration implementation, textual PIB/MB, compatible license verification and
+mailto generation, and the Segment 7 SCENARIO control. The original business
+database, installation identity and license-signing contract are preserved.
+
+Flutter analyzer passed. Complete regression: 730 PASS / 0 FAIL / 11 SKIP.
+SRB/Int transfers passed both PREDMET and Full Backup directions. PWA migration
+and restore passed in Chromium and WebKit. Production APK certificate SHA-256:
+4D1371C7573E5F61F2D6E662BC18176BF6E20F2E7541875147D3DCD34EB3AD65.
+
+Cloudflare PWA deployment: 9a4b4f15-0f3c-4bf1-921f-0ef973f323eb, rollback: 0825946a-15dc-4e23-b304-385a034494c7.
+Shared portal deployment: 937c87eb-ff54-4fda-906e-c2c859cd1202, rollback:
+c3814e2c-8d06-4ad1-b0e4-407ab46da80d. Public delivery and anonymous hash verification
+completed. The release and private evidence are filed under ACCEPT-FAIL-001.
+Independent LOGOS review and OWNER physical runtime acceptance remain pending.

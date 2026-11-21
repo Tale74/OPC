@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/database/predmet_iriu_order.dart';
+import 'package:opc_v4/features/predmeti/data/iriu_repository.dart';
 import 'package:opc_v4/core/json_transfer/iriu_json_compat.dart';
 import 'package:opc_v4/core/json_transfer/predmet_json_transfer_core.dart';
 import 'package:opc_v4/core/utils/json_export_import.dart';
@@ -18,6 +21,198 @@ import 'test_bootstrap.dart';
 
 void main() {
   group('JSON transfer regression foundation', () {
+    test(
+      'Portable IRiU order survives same-FIRMA PREDMET and Backup imports',
+      () async {
+        final source = createTestDatabase();
+        final destination = createTestDatabase();
+        final restored = createTestDatabase();
+        addTearDown(source.close);
+        addTearDown(destination.close);
+        addTearDown(restored.close);
+        const pib = '00AB12345';
+        const mb = '0REG123456789012';
+        for (final db in [source, destination, restored]) {
+          await _setFirmaIdentity(db, pib: pib, mb: mb);
+        }
+        final predmet = await _insertPredmet(
+          source,
+          brojPredmeta: 'IR-ORDER/2026',
+        );
+        for (final (id, category) in [
+          ('order-one', 'PROBA1'),
+          ('order-two', 'PROBA2'),
+        ]) {
+          final row = await source
+              .into(source.iriu)
+              .insert(
+                IriuCompanion.insert(
+                  predmetId: predmet.id,
+                  interniNaziv: category,
+                  portableOccurrenceId: Value(id),
+                  iznos: const Value(125),
+                ),
+              );
+          await source
+              .into(source.iriuProvenance)
+              .insert(
+                IriuProvenanceCompanion.insert(
+                  iriuId: Value(row),
+                  origin: 'SCENARIO_PAKET',
+                  moduleId: const Value('scenario'),
+                  scenarioId: const Value('qa-scenario'),
+                  scenarioVersion: const Value(1),
+                  ruleId: Value(category),
+                  createdAt: '2026-11-20T10:00:00Z',
+                ),
+              );
+        }
+        const expected = ['order-two', 'order-one'];
+        await IriuRepository(source).saveScenarioOrder(
+          predmet.id,
+          expected: ['order-one', 'order-two'],
+          ordered: expected,
+        );
+        final single = await serializePredmetJsonForTest(
+          db: source,
+          predmetId: predmet.id,
+        );
+        final backup = await serializeBackupJsonForTest(db: source);
+        final exportPath = Platform.environment['OPC_IRIU_TEST_EXPORT'];
+        final importPath = Platform.environment['OPC_IRIU_TEST_IMPORT'];
+        if (exportPath != null && exportPath.isNotEmpty) {
+          await File(exportPath).writeAsString(single);
+          await File('$exportPath.backup').writeAsString(backup);
+        }
+        Future<Map<String, dynamic>> read(
+          String local,
+          String extension,
+        ) async {
+          final input = importPath == null || importPath.isEmpty
+              ? local
+              : await File('$importPath$extension').readAsString();
+          final decoded = (jsonDecode(input) as Map).cast<String, dynamic>();
+          expect(decoded['schemaVersion'], 10);
+          return decoded;
+        }
+
+        await importPredmetJsonMapForTest(
+          db: destination,
+          json: await read(single, ''),
+          localActorKorisnikId: await _ensureActiveActor(destination),
+        );
+        await _ensureTestFirmaIdentity(restored);
+        await importBackupJsonMapForTest(
+          db: restored,
+          json: await read(backup, '.backup'),
+        );
+        for (final db in [destination, restored]) {
+          final firma = await db.select(db.firmaPodaci).getSingle();
+          expect((firma.pib, firma.mb), (pib, mb));
+          final imported = await db.select(db.predmeti).getSingle();
+          final order = await readPredmetIriuOrder(db, imported.id);
+          expect(order?.scenario, expected);
+          final rows = await IriuRepository(db).getIriu(imported.id);
+          expect(rows.map((row) => row.portableOccurrenceId), expected);
+          expect(rows.map((row) => row.iznos), everyElement(125));
+        }
+      },
+    );
+
+    test(
+      'Snapshotless PREDMET JSON preserves portable IRiU provenance',
+      () async {
+        final source = createTestDatabase();
+        final destination = createTestDatabase();
+        addTearDown(source.close);
+        addTearDown(destination.close);
+
+        final predmet = await _insertPredmet(
+          source,
+          brojPredmeta: 'IRIU-PROVENANCE-ONLY/2026',
+        );
+        final rowId = await _insertIriu(
+          source,
+          predmetId: predmet.id,
+          stableId: 'iriu-provenance-only-article',
+          interniNaziv: 'CARGO_TROSKOVI',
+          nazivPrikaz: 'Sintetička stavka',
+          iznos: 725,
+        );
+        await source
+            .into(source.iriuProvenance)
+            .insert(
+              IriuProvenanceCompanion.insert(
+                iriuId: Value(rowId),
+                origin: 'RUCNA_STAVKA',
+                createdAt: '2026-11-20T10:00:00Z',
+              ),
+            );
+
+        final text = await serializePredmetJsonForTest(
+          db: source,
+          predmetId: predmet.id,
+        );
+        final exportPath = Platform.environment['OPC_IRIU_TEST_EXPORT'];
+        if (exportPath != null && exportPath.isNotEmpty) {
+          await File(exportPath).writeAsString(text);
+        }
+        final importPath = Platform.environment['OPC_IRIU_TEST_IMPORT'];
+        final incoming = importPath == null || importPath.isEmpty
+            ? text
+            : await File(importPath).readAsString();
+        final json = (jsonDecode(incoming) as Map).cast<String, dynamic>();
+        final carrier = PredmetJsonTransferCore.decode(
+          incoming,
+        ).scenarioCarrier;
+        expect(carrier?['kind'], 'OPC_SINGLE_PREDMET_IRIU_PROVENANCE');
+
+        await importPredmetJsonMapForTest(
+          db: destination,
+          json: json,
+          localActorKorisnikId: await _ensureActiveActor(destination),
+        );
+        final imported = await destination.select(destination.iriu).getSingle();
+        final origin = await destination
+            .select(destination.iriuProvenance)
+            .getSingle();
+        expect(imported.katalogStableArticleId, 'iriu-provenance-only-article');
+        expect(imported.iznos, 725);
+        expect(origin.iriuId, imported.id);
+        expect(origin.origin, 'RUCNA_STAVKA');
+        expect(
+          await destination.select(destination.predmetScenarioSnapshots).get(),
+          isEmpty,
+        );
+
+        final backup = await serializeBackupJsonForTest(db: source);
+        if (exportPath != null && exportPath.isNotEmpty) {
+          await File('$exportPath.backup').writeAsString(backup);
+        }
+        final incomingBackup = importPath == null || importPath.isEmpty
+            ? backup
+            : await File('$importPath.backup').readAsString();
+        final restored = createTestDatabase();
+        addTearDown(restored.close);
+        await _ensureTestFirmaIdentity(restored);
+        await importBackupJsonMapForTest(
+          db: restored,
+          json: (jsonDecode(incomingBackup) as Map).cast<String, dynamic>(),
+        );
+        final restoredRow = await restored.select(restored.iriu).getSingle();
+        final restoredOrigin = await restored
+            .select(restored.iriuProvenance)
+            .getSingle();
+        expect(
+          restoredRow.katalogStableArticleId,
+          'iriu-provenance-only-article',
+        );
+        expect(restoredRow.iznos, 725);
+        expect(restoredOrigin.iriuId, restoredRow.id);
+        expect(restoredOrigin.origin, 'RUCNA_STAVKA');
+      },
+    );
+
     test(
       'PREDMET JSON carries only the Backup FIRMA identity fields',
       () async {

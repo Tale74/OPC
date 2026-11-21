@@ -64,8 +64,18 @@ void main() {
     expect(request, contains('MB: 10000001'));
     final mailto = buildOpcLicenseRequestMailtoUri(request);
     expect(mailto.path, 'sasa.andonov@gmail.com');
-    expect(mailto.queryParameters['body'], request);
+    expect(mailto.queryParameters['body'], request.replaceAll('\n', '\r\n'));
     expect(mailto.queryParameters['subject'], contains('aktivacioni ključ'));
+    final exactMail = buildOpcLicenseRequestMailtoUri(
+      'NAZIV FIRME: Čelik+A & B\r\nPIB: 012345678\nMB: 01234567',
+    );
+    expect(exactMail.toString(), isNot(contains('+')));
+    expect(exactMail.toString(), contains('NAZIV%20FIRME%3A%20'));
+    expect(exactMail.toString(), contains('%C4%8Celik%2BA%20%26%20B%0D%0A'));
+    expect(
+      exactMail.queryParameters['body'],
+      'NAZIV FIRME: Čelik+A & B\r\nPIB: 012345678\r\nMB: 01234567',
+    );
     String? copied;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {

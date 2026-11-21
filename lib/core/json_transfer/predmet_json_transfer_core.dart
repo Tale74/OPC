@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 const int predmetTransferSchemaVersion = 9;
-const int maxSupportedPredmetTransferSchemaVersion = 9;
+const int predmetIriuOrderTransferSchemaVersion = 10;
+const int maxSupportedPredmetTransferSchemaVersion = 10;
 const int predmetTransferSchemaVersionWithConsequenceTransfer = 7;
 const String predmetTransferFormat = 'OPC_PREDMET';
 const String legacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
@@ -129,6 +130,7 @@ class PredmetJsonTransferDocument {
     this.consequenceTransfer,
     this.lifecycleDecisionTransfer,
     this.scenarioCarrier,
+    this.predmetIriuOrder,
     this.podsetnikObaveze,
     this.cituljePripreme = const [],
   });
@@ -197,6 +199,7 @@ class PredmetJsonTransferDocument {
       consequenceTransfer: consequenceTransfer,
       lifecycleDecisionTransfer: lifecycleDecisionTransfer,
       scenarioCarrier: scenarioCarrier,
+      predmetIriuOrder: _optionalStringMap(root, 'predmetIriuOrder'),
       podsetnikObaveze: podsetnikObaveze,
       cituljePripreme: cituljePripreme,
     );
@@ -217,6 +220,7 @@ class PredmetJsonTransferDocument {
   final StanjeRobeConsequenceTransferBlock? consequenceTransfer;
   final IriuLifecycleDecisionTransferBlock? lifecycleDecisionTransfer;
   final Map<String, dynamic>? scenarioCarrier;
+  final Map<String, dynamic>? predmetIriuOrder;
   final Map<String, dynamic>? podsetnikObaveze;
   final List<Map<String, dynamic>> cituljePripreme;
 
@@ -239,6 +243,8 @@ class PredmetJsonTransferDocument {
       'predmet': _copyJsonMap(predmet),
       'iriu': iriu.map(_copyJsonMap).toList(growable: false),
       'kontaktLica': kontaktLica.map(_copyJsonMap).toList(growable: false),
+      if (predmetIriuOrder?.isNotEmpty == true)
+        'predmetIriuOrder': _copyJsonMap(predmetIriuOrder!),
       if (firmaPodaci != null) 'firmaPodaci': _copyJsonMap(firmaPodaci!),
     };
 

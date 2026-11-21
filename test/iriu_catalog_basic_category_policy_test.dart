@@ -45,7 +45,7 @@ void main() {
       final db = createTestDatabase();
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 36);
+      expect(db.schemaVersion, 37);
       expect(
         (await db.select(db.iriuKatalogConfig).get())
             .map((row) => row.interniNaziv)

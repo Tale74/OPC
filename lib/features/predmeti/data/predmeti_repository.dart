@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/database/predmet_iriu_order.dart';
 import '../../../core/entitlements/opc_predmet_creation_license.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/utils/stable_id_generator.dart';
@@ -203,6 +204,14 @@ class PredmetiRepository {
   }
 
   /// Kreira novi predmet sa generisanim brojem i vraća njegov ID.
+  Future<int> kreirajPredmetSaOsnovnimPaketom({
+    required int savetnikId,
+  }) => _db.transaction(() async {
+    final id = await kreirajPredmet(savetnikId: savetnikId);
+    await inicijalizujIriu(id);
+    return id;
+  });
+
   Future<int> kreirajPredmet({required int savetnikId}) async {
     final license = await (creationLicense ?? OpcPredmetCreationLicense(_db))
         .evaluate();
@@ -310,6 +319,8 @@ class PredmetiRepository {
     final module = await scenarioRepository.ensureModuleAndDefaults();
     final osnovniPaket = scenarioRepository.readOsnovniPaket(module);
     await _db.transaction(() async {
+      await savePredmetIriuOrder(_db, predmetId,
+        PredmetIriuOrder(basic: osnovniPaket.toList(growable: false)));
       final materializedInternalNames = <String>{};
       var red = 0;
       for (final interniNaziv in osnovniPaket) {
@@ -355,6 +366,7 @@ class PredmetiRepository {
 
   Future<void> obrisiPredmet(int id) => _db.transaction(() async {
     await StanjeRobeLifecycleService(db: _db).reconcileFullPredmetDelete(id);
+    await deletePredmetIriuOrder(_db, id);
     await _db.customStatement(
       'DELETE FROM ceremony_reminder_settings WHERE predmet_id = ?',
       [id],

@@ -1,3 +1,4 @@
+import '../../presentation/segments/iriu_order_dialog.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -157,6 +158,42 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
     );
   }
 
+  Future<void> _urediRedosledPaketa(
+    BuildContext context,
+    ScenarioModule module,
+    List<IriuKatalogConfigData> katalog,
+  ) async {
+    final saved = _repository.readOsnovniPaketOrder(module);
+    final visible = {
+      for (final row in katalog)
+        if (row.vidljiv) row.interniNaziv: row.nazivPrikaz,
+    };
+    final order = await showIriuOrderDialog(
+      context,
+      title: 'Redosled OSNOVNOG PAKETA za nove PREDMETE',
+      rows: [
+        for (final id in saved)
+          if (visible[id] case final label?) (id: id, label: label),
+      ],
+    );
+    if (order == null || !context.mounted) return;
+    var index = 0;
+    final merged = {
+      for (final id in saved)
+        if (visible.containsKey(id)) order[index++] else id,
+    };
+    try {
+      await _repository.saveOsnovniPaket(merged, expectedOrder: saved);
+      if (context.mounted) _reloadScreen();
+    } on StateError catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
+    }
+  }
+
   Future<void> _izmeniPaket(
     BuildContext context,
     ScenarioModule module,
@@ -171,7 +208,9 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
       ),
     );
     if (result == null) return;
-    await _repository.saveOsnovniPaket(result);
+    await _repository.saveOsnovniPaket(result,
+      expectedOrder: _repository.readOsnovniPaketOrder(module),
+    );
     if (!context.mounted) return;
     _reloadScreen();
   }
@@ -392,6 +431,12 @@ class _ScenarioModuleScreenState extends State<ScenarioModuleScreen> {
                                   : () =>
                                         _izmeniPaket(context, module, katalog),
                             ),
+                            if (osnovni.length > 1)
+                              TextButton.icon(
+                                onPressed: () => _urediRedosledPaketa(context, module, katalog),
+                                icon: const Icon(Icons.swap_vert),
+                                label: const Text('Redosled OSNOVNOG PAKETA'),
+                              ),
                             const SizedBox(height: 12),
                             _ScenarioLauncherCard(
                               key: const ValueKey('scenario-card-scenariji'),
@@ -2110,6 +2155,14 @@ class _PackageDialogState extends State<_PackageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final visibleById = {
+      for (final item in widget.katalog)
+        if (item.vidljiv) item.interniNaziv: item,
+    };
+    final selectedInSavedOrder = [
+      for (final id in _selected)
+        ?visibleById[id],
+    ];
     return AlertDialog(
       title: Text(widget.title),
       content: SizedBox(
@@ -2127,13 +2180,9 @@ class _PackageDialogState extends State<_PackageDialog> {
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
-              ...widget.katalog
-                  .where(
-                    (item) =>
-                        item.vidljiv && _selected.contains(item.interniNaziv),
-                  )
-                  .map(
+              ...selectedInSavedOrder.map(
                     (item) => CheckboxListTile(
+                      key: ValueKey('scenario-package-selected-${item.interniNaziv}'),
                       contentPadding: EdgeInsets.zero,
                       value: true,
                       title: Text(

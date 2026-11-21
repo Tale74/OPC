@@ -456,10 +456,9 @@ class _ListaPredmetaScreenState extends State<ListaPredmetaScreen>
         );
         return;
       }
-      final id = await widget.predmetiRepo.kreirajPredmet(
+      final id = await widget.predmetiRepo.kreirajPredmetSaOsnovnimPaketom(
         savetnikId: widget.session.korisnik!.id,
       );
-      await widget.predmetiRepo.inicijalizujIriu(id);
       if (!mounted) return;
       await Navigator.push<void>(
         context,

@@ -22,6 +22,7 @@ import '../../data/iriu_repository.dart';
 import '../../domain/iriu_catalog_selection.dart';
 import 'iriu_cvece_ribbon_fields.dart';
 import 'iriu_row_tile.dart';
+import 'iriu_order_dialog.dart';
 
 const String iriuStatusPreporuceno = 'PREPORUČENO';
 const double _iriuNarrowLayoutBreakpoint = 640;
@@ -243,15 +244,14 @@ class IriuSegmentState extends State<IriuSegment> {
     final accepted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        final isNarrowAndroid =
-            Theme.of(dialogContext).platform == TargetPlatform.android &&
+        final isNarrow =
             MediaQuery.sizeOf(dialogContext).width <
-                _iriuNarrowLayoutBreakpoint;
+            _iriuNarrowLayoutBreakpoint;
         return AlertDialog(
-          insetPadding: isNarrowAndroid
+          insetPadding: isNarrow
               ? const EdgeInsets.symmetric(horizontal: 16, vertical: 24)
               : null,
-          scrollable: isNarrowAndroid,
+          scrollable: isNarrow,
           actionsOverflowDirection: VerticalDirection.down,
           title: const Text('Artikal nije na stanju'),
           content: Text(
@@ -451,11 +451,10 @@ class IriuSegmentState extends State<IriuSegment> {
       );
     }
 
-    final isNarrowAndroid =
-        Theme.of(context).platform == TargetPlatform.android &&
+    final isNarrow =
         MediaQuery.sizeOf(context).width < _iriuNarrowLayoutBreakpoint;
 
-    if (isNarrowAndroid) {
+    if (isNarrow) {
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -503,14 +502,58 @@ class IriuSegmentState extends State<IriuSegment> {
     );
   }
 
+  Future<void> _urediScenarioRed(List<IriuData> scenarioRows) async {
+    final draft = [
+      for (final row in scenarioRows)
+        (id: row.portableOccurrenceId!, label: row.nazivPrikaz),
+    ];
+    final expected = draft.map((row) => row.id).toList();
+    final order = await showIriuOrderDialog(
+      context,
+      title: 'Redosled SCENARIO stavki',
+      rows: draft,
+    );
+    if (order == null || !mounted) return;
+    try {
+      await widget.iriuRepo.saveScenarioOrder(
+        widget.predmetId,
+        expected: expected,
+        ordered: order,
+      );
+    } on StateError catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    }
+  }
+
+  Widget _scenarioOrderControl(List<IriuData> rows) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        OutlinedButton.icon(
+          key: const Key('iriu-scenario-order'),
+          onPressed: rows.length < 2 ? null : () => _urediScenarioRed(rows),
+          icon: const Icon(Icons.swap_vert),
+          label: const Text('Redosled SCENARIO stavki'),
+        ),
+        if (rows.length < 2)
+          const Text(
+            'Za preuređivanje su potrebne najmanje dve SCENARIO stavke u ovom PREDMETU.',
+          ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final e = widget.enabled;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isNarrowAndroid =
-            Theme.of(context).platform == TargetPlatform.android &&
-            constraints.maxWidth < _iriuNarrowLayoutBreakpoint;
+        final isNarrow = constraints.maxWidth < _iriuNarrowLayoutBreakpoint;
         return Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -518,7 +561,7 @@ class IriuSegmentState extends State<IriuSegment> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Zaglavlje tabele
-                if (!isNarrowAndroid)
+                if (!isNarrow)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
@@ -568,7 +611,7 @@ class IriuSegmentState extends State<IriuSegment> {
                       ],
                     ),
                   ),
-                if (!isNarrowAndroid) const Divider(height: 1),
+                if (!isNarrow) const Divider(height: 1),
                 // Lista stavki
                 StreamBuilder<StanjeRobeOperationalStatus>(
                   stream: _stanjeRobeStatusStream(),
@@ -612,9 +655,19 @@ class IriuSegmentState extends State<IriuSegment> {
                                       row.interniNaziv ==
                                       widget.initialFocusInterniNaziv,
                                 );
+                            final provenanceOrigins =
+                                snap.data?.origins ?? const <int, String>{};
+                            final scenarioRows = stavke
+                                .where(
+                                  (row) =>
+                                      provenanceOrigins[row.id] ==
+                                          'SCENARIO_PAKET' &&
+                                      row.portableOccurrenceId != null,
+                                )
+                                .toList();
                             final truthState = _resolveTruthState(
                               stavke,
-                              snap.data?.origins ?? const <int, String>{},
+                              provenanceOrigins,
                             );
                             final truthRowsById = truthState.rowsById;
                             if (stavke.isEmpty) {
@@ -622,16 +675,23 @@ class IriuSegmentState extends State<IriuSegment> {
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),
-                                child: Text(
-                                  focusTargetMissing
-                                      ? 'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama. Dodajte ih iz kataloga ako su potrebne.'
-                                      : 'DODAJTE KATEGORIJE - iz kataloga ili ručnim unosom',
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                    fontSize: 13,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (e && snap.hasData)
+                                      _scenarioOrderControl(scenarioRows),
+                                    Text(
+                                      focusTargetMissing
+                                          ? 'Posmrtne parte nisu trenutno evidentirane u Robi i uslugama. Dodajte ih iz kataloga ako su potrebne.'
+                                          : 'DODAJTE KATEGORIJE - iz kataloga ili ručnim unosom',
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
                             }
@@ -661,6 +721,7 @@ class IriuSegmentState extends State<IriuSegment> {
                                           'Dodajte ih iz postojećeg kataloga ako su potrebne.',
                                         ),
                                       ),
+                                    if (e) _scenarioOrderControl(scenarioRows),
                                     ...stavke.map(
                                       (s) => IriuRowTile(
                                         registerPendingSave: (id, flush) =>
@@ -687,7 +748,7 @@ class IriuSegmentState extends State<IriuSegment> {
                                             consequencesByIriuId[s.id],
                                         catalogDisplayNames:
                                             catalogDisplayNames,
-                                        isNarrowAndroid: isNarrowAndroid,
+                                        isNarrow: isNarrow,
                                         preporucenoLabel: iriuStatusPreporuceno,
                                       ),
                                     ),
@@ -719,7 +780,7 @@ class IriuSegmentState extends State<IriuSegment> {
                 if (e)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: isNarrowAndroid
+                    child: isNarrow
                         ? Row(
                             children: [
                               Expanded(

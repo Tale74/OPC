@@ -79,6 +79,28 @@ void main() {
     },
   );
 
+  test('textual PIB and MB are compared exactly after signing', () async {
+    for (final (pib, mb) in [
+      ('5', '13'),
+      ('001234567890123456', '000123456789'),
+      ('00AB-TEST123', '00REG98374612'),
+    ]) {
+      final token = await _issue(algorithm, pair, pib, mb);
+      expect(
+        (await parser.evaluate(token, firmaPib: pib, firmaMb: mb)).isValid,
+        isTrue,
+      );
+      expect(
+        (await parser.evaluate(
+          token,
+          firmaPib: pib,
+          firmaMb: '${mb}1',
+        )).failureReason,
+        OpcLocalLicenseFailureReason.wrongFirma,
+      );
+    }
+  });
+
   test(
     'first-day activation survives expiry, identity change revokes local use',
     () async {

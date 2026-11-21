@@ -8,64 +8,72 @@ import 'package:opc_v4/core/catalog/katalog_category_baseline.dart';
 import 'package:opc_v4/features/auth/data/auth_repository.dart';
 
 void main() {
-  test('fresh database has system categories and empty business articles', () async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
+  test(
+    'fresh database has system categories and empty business articles',
+    () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
 
-    expect(await _userVersion(db), 36);
-    final categories = await db.select(db.iriuKatalogConfig).get();
-    expect(
-      categories.map((row) => row.interniNaziv).toSet(),
-      KatalogCategoryBaseline.internalNames,
-    );
-    expect(await db.select(db.katalogArtikli).get(), isEmpty);
-    expect(
-      await _hasIndex(db, 'idx_katalog_artikli_stable_article_id'),
-      isTrue,
-    );
-    expect(await _count(db, 'firma_podaci'), 1);
-    expect(await _count(db, 'app_podesavanja'), 1);
-
-    final admin = await AuthRepository(
-      db,
-    ).kreirajPrvogAdmina(imePrezime: 'RR011 TEST ADMIN', pin: '2468');
-    expect(admin.imePrezime, 'RR011 TEST ADMIN');
-    expect(await db.hasKorisnika(), isTrue);
-  });
-
-  test('reopening a fresh database preserves the category baseline and articles stay empty', () async {
-    final directory = await Directory.systemTemp.createTemp(
-      'opc-empty-katalog-',
-    );
-    final file = File('${directory.path}${Platform.pathSeparator}empty.sqlite');
-    try {
-      final first = AppDatabase.forTesting(NativeDatabase(file));
+      expect(await _userVersion(db), 37);
+      final categories = await db.select(db.iriuKatalogConfig).get();
       expect(
-        (await first.select(first.iriuKatalogConfig).get())
-            .map((row) => row.interniNaziv)
-            .toSet(),
+        categories.map((row) => row.interniNaziv).toSet(),
         KatalogCategoryBaseline.internalNames,
       );
-      expect(await first.select(first.katalogArtikli).get(), isEmpty);
-      await first.close();
-
-      final second = AppDatabase.forTesting(NativeDatabase(file));
+      expect(await db.select(db.katalogArtikli).get(), isEmpty);
       expect(
-        (await second.select(second.iriuKatalogConfig).get())
-            .map((row) => row.interniNaziv)
-            .toSet(),
-        KatalogCategoryBaseline.internalNames,
-      );
-      expect(await second.select(second.katalogArtikli).get(), isEmpty);
-      expect(
-        await _hasIndex(second, 'idx_katalog_artikli_stable_article_id'),
+        await _hasIndex(db, 'idx_katalog_artikli_stable_article_id'),
         isTrue,
       );
-      await second.close();
-    } finally {
-      await _deleteEventually(directory);
-    }
-  });
+      expect(await _count(db, 'firma_podaci'), 1);
+      expect(await _count(db, 'app_podesavanja'), 1);
+
+      final admin = await AuthRepository(
+        db,
+      ).kreirajPrvogAdmina(imePrezime: 'RR011 TEST ADMIN', pin: '2468');
+      expect(admin.imePrezime, 'RR011 TEST ADMIN');
+      expect(await db.hasKorisnika(), isTrue);
+    },
+  );
+
+  test(
+    'reopening a fresh database preserves the category baseline and articles stay empty',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'opc-empty-katalog-',
+      );
+      final file = File(
+        '${directory.path}${Platform.pathSeparator}empty.sqlite',
+      );
+      try {
+        final first = AppDatabase.forTesting(NativeDatabase(file));
+        expect(
+          (await first.select(first.iriuKatalogConfig).get())
+              .map((row) => row.interniNaziv)
+              .toSet(),
+          KatalogCategoryBaseline.internalNames,
+        );
+        expect(await first.select(first.katalogArtikli).get(), isEmpty);
+        await first.close();
+
+        final second = AppDatabase.forTesting(NativeDatabase(file));
+        expect(
+          (await second.select(second.iriuKatalogConfig).get())
+              .map((row) => row.interniNaziv)
+              .toSet(),
+          KatalogCategoryBaseline.internalNames,
+        );
+        expect(await second.select(second.katalogArtikli).get(), isEmpty);
+        expect(
+          await _hasIndex(second, 'idx_katalog_artikli_stable_article_id'),
+          isTrue,
+        );
+        await second.close();
+      } finally {
+        await _deleteEventually(directory);
+      }
+    },
+  );
 
   test(
     'existing KATALOG rows and user edits survive reopen without reseeding',

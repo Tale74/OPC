@@ -20,6 +20,13 @@ void main() {
   ) async {
     final db = createTestDatabase();
     await seedScenarioCatalogForTest(db);
+    final moduleRepository = ScenarioModuleRepository(db);
+    final module = await moduleRepository.ensureModuleAndDefaults();
+    final savedOrder = moduleRepository.readOsnovniPaketOrder(module).reversed.toList();
+    expect(savedOrder, hasLength(greaterThan(1)));
+    await moduleRepository.saveOsnovniPaket(savedOrder.toSet());
+    final catalog = await db.select(db.iriuKatalogConfig).get();
+    final visible = catalog.where((item) => item.vidljiv).map((item) => item.interniNaziv).toSet();
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
@@ -97,6 +104,21 @@ void main() {
     );
     await tester.tap(find.widgetWithText(FilledButton, 'UREDI').first);
     await tester.pump(const Duration(seconds: 1));
+    final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
+    final content = dialog.content!;
+    final renderedOrder = find
+        .descendant(
+          of: find.byWidget(content),
+          matching: find.byType(CheckboxListTile),
+        )
+        .evaluate()
+        .map((row) => row.widget.key)
+        .whereType<ValueKey<String>>()
+        .map((key) => key.value);
+    expect(renderedOrder, [
+      for (final id in savedOrder)
+        if (visible.contains(id)) 'scenario-package-selected-$id',
+    ]);
     expect(find.text('Izmene važe samo za nove PREDMETE.'), findsOneWidget);
     expect(find.text('Spremanje preminulog lica'), findsOneWidget);
     expect(find.text('Spremanje pokojnika'), findsNothing);

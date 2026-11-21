@@ -12,31 +12,42 @@ import 'package:opc_v4/features/predmeti/presentation/predmet_screen.dart';
 import 'test_bootstrap.dart';
 
 void main() {
-  testWidgets(
-    'Android narrow keeps lifecycle actions in persistent action bar',
-    (tester) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  for (final platform in [
+    TargetPlatform.android,
+    TargetPlatform.iOS,
+    TargetPlatform.windows,
+  ]) {
+    testWidgets(
+      'Narrow layout - ${platform.name} keeps lifecycle actions in persistent action bar',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      final fixture = await _fixture(tester, TargetPlatform.android);
-      addTearDown(() => _dispose(tester, fixture));
+        final fixture = await _fixture(tester, platform);
+        addTearDown(() => _dispose(tester, fixture));
 
-      final appBar = tester.widget<AppBar>(find.byType(AppBar));
-      expect(appBar.toolbarHeight, 84);
-      expect(find.text('SAČUVAJ'), findsOneWidget);
-      expect(find.text('ZATVORI'), findsOneWidget);
-      expect(
-        find.ancestor(of: find.text('ZATVORI'), matching: find.byType(AppBar)),
-        findsNothing,
-      );
-      expect(
-        find.byKey(Key('predmet-overflow-trigger-detail-${fixture.id}')),
-        findsOneWidget,
-      );
-    },
-  );
+        expect(tester.takeException(), isNull);
+
+        final appBar = tester.widget<AppBar>(find.byType(AppBar));
+        expect(appBar.toolbarHeight, 84);
+        expect(find.text('SAČUVAJ'), findsOneWidget);
+        expect(find.text('ZATVORI'), findsOneWidget);
+        expect(
+          find.ancestor(
+            of: find.text('ZATVORI'),
+            matching: find.byType(AppBar),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.byKey(Key('predmet-overflow-trigger-detail-${fixture.id}')),
+          findsOneWidget,
+        );
+      },
+    );
+  }
 
   testWidgets('Windows wide keeps primary lifecycle actions in chrome', (
     tester,

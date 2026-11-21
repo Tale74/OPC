@@ -32,7 +32,8 @@ final class OpcDatabaseMigrationFixture {
       )
     ''');
     await database.customStatement(
-      "UPDATE firma_podaci SET naziv = 'SYNTHETIC MIGRATION FIRMA' WHERE id = 1",
+      "UPDATE firma_podaci SET naziv = 'SYNTHETIC MIGRATION FIRMA', "
+      "pib = '00QA-PIB5', mb = '000QA-MB123456789' WHERE id = 1",
     );
     await database.customStatement('''
       INSERT INTO korisnici (
@@ -175,6 +176,9 @@ final class OpcDatabaseMigrationFixture {
   }
 
   static void _downgradePhysicalSchema(dynamic db, int version) {
+    if (version < 37) {
+      db.execute('DROP TABLE IF EXISTS predmet_iriu_order');
+    }
     if (version < 36) {
       _dropColumn(db, 'firma_podaci', 'racun_omogucen');
     }

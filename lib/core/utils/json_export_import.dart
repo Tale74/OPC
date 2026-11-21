@@ -1,4 +1,6 @@
 import 'dart:convert';
+
+import '../firm_identifier.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -11,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 import '../database/database.dart';
+import '../database/predmet_iriu_order.dart';
 import '../json_transfer/iriu_json_compat.dart';
 import '../constants/iriu_constants.dart';
 import '../format/app_filename_format.dart';
@@ -42,7 +45,7 @@ const int _kPortableResponsibilitySchemaVersion = predmetTransferSchemaVersion;
 const int _kBackupSchemaVersion = 9;
 const int _kMaxSupportedPredmetSchemaVersion =
     maxSupportedPredmetTransferSchemaVersion;
-const int _kMaxSupportedBackupSchemaVersion = 9;
+const int _kMaxSupportedBackupSchemaVersion = 10;
 const String _kPredmetTransferFormat = 'OPC_PREDMET';
 const String _kLegacyBeleznicaTransferFormat = 'OPC_BELEZNICA';
 const String _kBackupTransferFormat = 'OPC_BACKUP';
@@ -371,6 +374,7 @@ class _PredmetTransferPayload {
     required this.kontaktLica,
     required this.stanjeRobeConsequences,
     required this.scenarioCarrier,
+    required this.iriuOrder,
     required this.lifecycleDecisions,
     required this.podsetnikObaveze,
     required this.cituljePripreme,
@@ -381,6 +385,7 @@ class _PredmetTransferPayload {
   final List<KontaktLicaData> kontaktLica;
   final List<_StanjeRobeConsequenceTransferItem> stanjeRobeConsequences;
   final SinglePredmetProvenanceCarrier? scenarioCarrier;
+  final PredmetIriuOrder? iriuOrder;
   final IriuLifecycleDecisionTransferBlock? lifecycleDecisions;
   final PodsetnikObligationTransferBlock? podsetnikObaveze;
   final List<CituljePreparationTransfer> cituljePripreme;
@@ -670,6 +675,7 @@ Future<String> _serijalizujPredmet(
   required Map<String, dynamic> firmaIdentitet,
   List<CituljePreparationTransfer> cituljePripreme = const [],
   SinglePredmetProvenanceCarrier? scenarioCarrier,
+  PredmetIriuOrder? iriuOrder,
   IriuLifecycleDecisionTransferBlock? lifecycleDecisions,
   PodsetnikObligationTransferBlock? podsetnikObaveze,
 }) {
@@ -691,7 +697,10 @@ Future<String> _serijalizujPredmet(
     // Current writers use the responsibility-aware root contract. The
     // consequence block keeps its own schema and remains compatible inside
     // the newer root contract.
-    'schemaVersion': _kPortableResponsibilitySchemaVersion,
+    'schemaVersion': iriuOrder == null
+        ? _kPortableResponsibilitySchemaVersion
+        : predmetIriuOrderTransferSchemaVersion,
+    if (iriuOrder != null) 'predmetIriuOrder': iriuOrder.toJson(),
     'entityType': 'PREDMET',
     'documentSourceIdentity': 'PREDMET',
     'encoding': 'utf-8',
@@ -863,6 +872,17 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
       .select(db.stanjeRobeAppliedEffects)
       .get();
   final stanjeRobePosledice = await db.select(db.stanjeRobePosledice).get();
+  final savedOrderIds = await db
+      .customSelect(
+        'SELECT predmet_id FROM predmet_iriu_order ORDER BY predmet_id',
+      )
+      .get();
+  final savedOrders = [
+    for (final row in savedOrderIds)
+      if (await exportPredmetIriuOrder(db, row.read<int>('predmet_id'))
+          case final order?)
+        {'predmetId': row.read<int>('predmet_id'), 'order': order.toJson()},
+  ];
   final scenarioSnapshots = await db.select(db.predmetScenarioSnapshots).get();
   final scenarioProvenance = await db.select(db.iriuProvenance).get();
   final scenarioModules = await db.select(db.scenarioModules).get();
@@ -907,7 +927,8 @@ Future<String> _serijalizujBackup(AppDatabase db) async {
 
   final map = <String, dynamic>{
     'format': _kBackupTransferFormat,
-    'schemaVersion': _kBackupSchemaVersion,
+    'schemaVersion': savedOrders.isEmpty ? _kBackupSchemaVersion : 10,
+    if (savedOrders.isNotEmpty) 'predmetIriuOrders': savedOrders,
     'exportDatum': DateTime.now().toIso8601String(),
     'entityType': 'FULL_DATABASE_BACKUP',
     'databaseIdentity': 'OPC',
@@ -1213,6 +1234,7 @@ Future<int> _uvoziPredmetPayloadUBazu({
     importedIriu: payload.iriu,
     carrier: payload.scenarioCarrier,
   );
+  await restorePredmetIriuOrder(db, newId, payload.iriuOrder);
   await _restoreImportedLifecycleDecisions(
     db: db,
     predmetId: newId,
@@ -1382,6 +1404,7 @@ Future<String?> _zameniPredmetUBazi({
         importedIriu: payload.iriu,
         carrier: payload.scenarioCarrier,
       );
+      await restorePredmetIriuOrder(db, lokalniPredmetId, payload.iriuOrder);
       await _restoreImportedLifecycleDecisions(
         db: db,
         predmetId: lokalniPredmetId,
@@ -1664,7 +1687,21 @@ Future<List<IriuData>> _listIriuForImportedPredmet(
       .get();
 }
 
-String _normalizedIdentityPart(Object? value) => value?.toString().trim() ?? '';
+String _normalizedIdentityPart(Object? value) {
+  if (value == null) return '';
+  if (value is String &&
+      value.trim().isEmpty &&
+      optionalFirmIdentifierError(value) == null) {
+    return '';
+  }
+  final normalized = normalizedFirmIdentifier(value);
+  if (normalized == null) {
+    throw const _ImportBlokiranException(
+      'PIB i MB moraju biti tekstualni identifikatori u jednom redu.',
+    );
+  }
+  return normalized;
+}
 
 const String _kBuiltInParteTemplateId = 'builtin_parte_standard_v1';
 
@@ -2099,6 +2136,12 @@ Future<_Case2FallbackAnalysis> _analizujCase2Fallback({
     );
   }
 
+  if (_optionalMapList(json, 'predmetIriuOrders').isNotEmpty) {
+    throw const _ImportBlokiranException(
+      'Backup sa sačuvanim IRiU redosledom zahteva punu identifikaciju FIRME.',
+    );
+  }
+
   final destination = await db.select(db.predmeti).get();
   final incomingRows = _requiredMapList(json, 'predmeti');
   final incomingNumberCounts = <String, int>{};
@@ -2257,6 +2300,7 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
     await db.delete(db.predmetScenarioSnapshots).go();
     await db.delete(db.iriuProvenance).go();
     await db.delete(db.iriu).go();
+    await db.customStatement('DELETE FROM predmet_iriu_order');
     await db.delete(db.predmeti).go();
     await db.delete(db.korisnici).go();
     await db.delete(db.firmaPodaci).go();
@@ -2584,6 +2628,18 @@ Future<_BackupImportResult> _uvoziBackupUBazu(
           );
     }
 
+    final orderOwners = <int>{};
+    for (final row in _optionalMapList(json, 'predmetIriuOrders')) {
+      final id = row['predmetId'];
+      if (id is! int || !orderOwners.add(id)) {
+        throw const FormatException('Neispravan vlasnik IRiU redosleda.');
+      }
+      await restorePredmetIriuOrder(
+        db,
+        id,
+        PredmetIriuOrder.fromJson(row['order']),
+      );
+    }
     for (final d
         in (json['iriuLifecycleDecisions'] as List? ?? const [])
             .cast<Map<String, dynamic>>()) {
@@ -3371,6 +3427,9 @@ _PredmetTransferPayload _procitajPredmetTransferPayload(
     kontaktLica: klList,
     stanjeRobeConsequences: stanjeRobeConsequences,
     scenarioCarrier: scenarioCarrier,
+    iriuOrder: json['predmetIriuOrder'] == null
+        ? null
+        : PredmetIriuOrder.fromJson(json['predmetIriuOrder']),
     lifecycleDecisions: lifecycleDecisions,
     podsetnikObaveze: podsetnikObaveze,
     cituljePripreme: cituljePripreme,
@@ -3892,6 +3951,7 @@ Future<String> serializePredmetJsonForTest({
       db: db,
       predmetId: predmetId,
     ),
+    iriuOrder: await exportPredmetIriuOrder(db, predmetId),
     scenarioCarrier: await _scenarioCarrierForExport(
       db: db,
       predmetId: predmetId,
@@ -4032,6 +4092,7 @@ Future<void> izvoziBeleznica({
         db: db,
         predmetId: predmetId,
       ),
+      iriuOrder: await exportPredmetIriuOrder(db, predmetId),
       scenarioCarrier: await _scenarioCarrierForExport(
         db: db,
         predmetId: predmetId,

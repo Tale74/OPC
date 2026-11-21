@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../firm_identifier.dart';
 import 'opc_canonical_json.dart';
 import 'opc_entitlement_policy.dart';
 import 'opc_license_signature_verifier.dart';
@@ -54,9 +55,9 @@ final class OpcLocalLicenseParser {
 
     final payload = parsed.payload!;
     if (envelope.schemaVersion == 2) {
-      final currentPib = firmaPib?.trim() ?? '';
-      final currentMb = firmaMb?.trim() ?? '';
-      if (currentPib.isEmpty || currentMb.isEmpty) {
+      final currentPib = normalizedFirmIdentifier(firmaPib);
+      final currentMb = normalizedFirmIdentifier(firmaMb);
+      if (currentPib == null || currentMb == null) {
         return const OpcLocalLicenseEvaluation.failClosed(
           reason: OpcLocalLicenseFailureReason.missingFirmaIdentity,
         );
@@ -194,8 +195,8 @@ final class OpcLocalLicenseParser {
         ignoredAddOnIds: parsedAddOns.ignoredIds,
       );
     }
-    final firmaPib = _requiredString(payload['firmaPib']);
-    final firmaMb = _requiredString(payload['firmaMb']);
+    final firmaPib = normalizedFirmIdentifier(payload['firmaPib']);
+    final firmaMb = normalizedFirmIdentifier(payload['firmaMb']);
     if (schemaVersion == 2 && (firmaPib == null || firmaMb == null)) {
       return const _ParsedPayload.fail(
         OpcLocalLicenseFailureReason.missingFirmaIdentity,

@@ -18,6 +18,8 @@ import 'tables/iriu_katalog_config_table.dart';
 import '../catalog/katalog_category_baseline.dart';
 import 'tables/iriu_provenance_table.dart';
 import 'tables/iriu_table.dart';
+import 'predmet_iriu_order.dart';
+import 'migration_backup_preflight.dart';
 import 'tables/katalog_artikli_table.dart';
 import 'tables/kontakt_lica_table.dart';
 import 'tables/korisnici_table.dart';
@@ -76,7 +78,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 36;
+  int get schemaVersion => 37;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -253,6 +255,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 36) {
         await _ensureColumn(m, firmaPodaci, firmaPodaci.racunOmogucen);
       }
+      if (from < 37) {
+        await createPredmetIriuOrderTable(this);
+      }
     },
     beforeOpen: (details) async {
       final versionBefore = details.versionBefore;
@@ -262,6 +267,7 @@ class AppDatabase extends _$AppDatabase {
           'version $schemaVersion',
         );
       }
+      await createPredmetIriuOrderTable(this);
       final migrator = createMigrator();
       await _recoverSupportedAdditiveSchema(migrator);
       await repairKnownCatalogIntegrity();
@@ -2910,6 +2916,7 @@ LazyDatabase _openConnection() {
         return migrationTestExecutor;
       }
     }
+    await ensureMigrationBackupBeforeOpen();
     return driftDatabase(
       name: kDatabaseName,
       web: DriftWebOptions(

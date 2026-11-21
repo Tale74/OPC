@@ -4,9 +4,12 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opc_v4/core/database/database.dart';
+import 'package:opc_v4/core/database/predmet_iriu_order.dart';
 import 'package:opc_v4/core/database/schema_recovery.dart';
 
 import 'support/opc_database_migration_fixture.dart';
+
+const _currentSchema = 37;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -40,10 +43,10 @@ void main() {
         final db = AppDatabase.forTesting(NativeDatabase(file));
         addTearDown(db.close);
 
-        expect(await _userVersion(db), 36);
+        expect(await _userVersion(db), _currentSchema);
         expect(
           await _tableNames(db),
-          containsAll(['predmeti', 'parte_pripreme']),
+          containsAll(['predmeti', 'parte_pripreme', 'predmet_iriu_order']),
         );
       },
     );
@@ -154,31 +157,36 @@ void main() {
       },
     );
 
-    test('State E: valid v26 opens repeatedly without schema drift', () async {
-      final fixture = await _fixture(currentTemplate, 'state_e');
-      addTearDown(fixture.dispose);
-      final first = fixture.openAtVersion(22);
-      await _expectMigratedAndPreserved(
-        first,
-        expectReminder: true,
-        expectParte: true,
-        expectStock: true,
-      );
-      final signature = await _schemaSignature(first);
-      await first.close();
+    test(
+      'State E: v22 upgrade opens repeatedly without schema drift',
+      () async {
+        final fixture = await _fixture(currentTemplate, 'state_e');
+        addTearDown(fixture.dispose);
+        final first = fixture.openAtVersion(22);
+        addTearDown(first.close);
+        await _expectMigratedAndPreserved(
+          first,
+          expectReminder: true,
+          expectParte: true,
+          expectStock: true,
+        );
+        final signature = await _schemaSignature(first);
+        await first.close();
 
-      final second = AppDatabase.forTesting(
-        NativeDatabase(fixture.databaseFile),
-      );
-      await _expectMigratedAndPreserved(
-        second,
-        expectReminder: true,
-        expectParte: true,
-        expectStock: true,
-      );
-      expect(await _schemaSignature(second), signature);
-      await second.close();
-    });
+        final second = AppDatabase.forTesting(
+          NativeDatabase(fixture.databaseFile),
+        );
+        addTearDown(second.close);
+        await _expectMigratedAndPreserved(
+          second,
+          expectReminder: true,
+          expectParte: true,
+          expectStock: true,
+        );
+        expect(await _schemaSignature(second), signature);
+        await second.close();
+      },
+    );
   });
 
   group('supported historical checkpoints', () {
@@ -187,6 +195,7 @@ void main() {
         final fixture = await _fixture(currentTemplate, 'history_$version');
         addTearDown(fixture.dispose);
         final first = fixture.openAtVersion(version);
+        addTearDown(first.close);
         await _expectMigratedAndPreserved(
           first,
           expectReminder: version >= 18,
@@ -199,13 +208,89 @@ void main() {
         final second = AppDatabase.forTesting(
           NativeDatabase(fixture.databaseFile),
         );
-        expect(await _userVersion(second), 36);
+        addTearDown(second.close);
+        expect(await _userVersion(second), _currentSchema);
         expect(await _schemaSignature(second), firstSignature);
         expect(await _count(second, 'predmeti'), 1);
         await second.close();
       });
     }
   });
+
+  test(
+    'prior schema creates the order table and preserves committed order',
+    () async {
+      final fixture = await _fixture(currentTemplate, 'before_iriu_order');
+      addTearDown(fixture.dispose);
+      final first = fixture.openAtVersion(
+        _currentSchema - 1,
+        mutateBeforeOpen: (raw) {
+          expect(
+            raw.select(
+              "SELECT name FROM sqlite_master WHERE type = 'table' "
+              "AND name = 'predmet_iriu_order'",
+            ),
+            isEmpty,
+          );
+        },
+      );
+      addTearDown(first.close);
+      await _expectMigratedAndPreserved(first);
+      final columns = await first
+          .customSelect('PRAGMA table_info(predmet_iriu_order)')
+          .get();
+      expect(columns.map((column) => column.read<String>('name')), [
+        'predmet_id',
+        'payload',
+      ]);
+      expect(columns.first.read<int>('pk'), 1);
+      expect(columns.last.read<String>('type'), 'TEXT');
+      expect(columns.last.read<int>('notnull'), 1);
+      final link = await first
+          .customSelect('PRAGMA foreign_key_list(predmet_iriu_order)')
+          .getSingle();
+      expect(link.read<String>('table'), 'predmeti');
+      expect(link.read<String>('from'), 'predmet_id');
+      expect(link.read<String>('to'), 'id');
+      expect(link.read<String>('on_delete'), 'CASCADE');
+
+      const original = PredmetIriuOrder(
+        basic: ['SANDUK'],
+        scenario: ['first', 'second'],
+      );
+      await savePredmetIriuOrder(first, 1, original);
+      final interruption = StateError('synthetic transaction interruption');
+      await expectLater(
+        first.transaction(() async {
+          await savePredmetIriuOrder(
+            first,
+            1,
+            const PredmetIriuOrder(basic: []),
+          );
+          throw interruption;
+        }),
+        throwsA(same(interruption)),
+      );
+      await first.close();
+
+      final reopened = AppDatabase.forTesting(
+        NativeDatabase(fixture.databaseFile),
+      );
+      addTearDown(reopened.close);
+      await _expectMigratedAndPreserved(reopened);
+      expect(
+        (await readPredmetIriuOrder(reopened, 1))?.toJson(),
+        original.toJson(),
+      );
+      expect(await _count(reopened, 'predmet_iriu_order'), 1);
+      expect(
+        await reopened
+            .customSelect('PRAGMA foreign_key_check(predmet_iriu_order)')
+            .get(),
+        isEmpty,
+      );
+    },
+  );
 
   test('schema 27 migration keeps historical responsibility unknown', () async {
     final fixture = await _fixture(
@@ -340,9 +425,11 @@ void main() {
     test('newer user_version is rejected without downgrade', () async {
       final fixture = await _fixture(currentTemplate, 'future_version');
       addTearDown(fixture.dispose);
-      // Schema 36 adds the FIRMA RAČUN toggle; use the next checkpoint to
-      // exercise the future-version guard.
-      final db = fixture.openAtVersion(37, physicalVersion: 36);
+      const futureSchema = _currentSchema + 1;
+      final db = fixture.openAtVersion(
+        futureSchema,
+        physicalVersion: _currentSchema,
+      );
       addTearDown(db.close);
 
       await expectLater(
@@ -351,7 +438,9 @@ void main() {
           isA<OpcSchemaMismatch>().having(
             (error) => error.message,
             'message',
-            contains('unsupported migration checkpoint 37 -> 36'),
+            contains(
+              'unsupported migration checkpoint $futureSchema -> $_currentSchema',
+            ),
           ),
         ),
       );
@@ -389,6 +478,7 @@ void main() {
       },
     );
 
+    addTearDown(interrupted.close);
     await expectLater(_open(interrupted), throwsA(isA<OpcSchemaMismatch>()));
     await interrupted.close();
 
@@ -400,8 +490,9 @@ void main() {
         },
       ),
     );
+    addTearDown(retried.close);
     await _expectMigratedAndPreserved(retried);
-    expect(await _userVersion(retried), 36);
+    expect(await _userVersion(retried), _currentSchema);
     await retried.close();
   });
 
@@ -437,7 +528,7 @@ void main() {
 
       await _open(db);
 
-      expect(await _userVersion(db), 36);
+      expect(await _userVersion(db), _currentSchema);
       expect(await _columnNames(db, 'ceremony_reminder_settings'), {
         'predmet_id',
         'enabled',
@@ -547,7 +638,7 @@ Future<void> _expectMigratedAndPreserved(
   bool expectParte = false,
   bool expectStock = false,
 }) async {
-  expect(await _userVersion(db), 36);
+  expect(await _userVersion(db), _currentSchema);
   expect(await _count(db, 'predmeti'), 1);
   expect(await _count(db, 'korisnici'), 1);
   expect(await _count(db, 'kontakt_lica'), 1);
@@ -563,6 +654,7 @@ Future<void> _expectMigratedAndPreserved(
       'scenario_definitions',
       'predmet_scenario_snapshots',
       'iriu_provenance',
+      'predmet_iriu_order',
     ]),
   );
   expect(await _count(db, 'scenario_modules'), 0);
@@ -604,13 +696,12 @@ Future<void> _expectMigratedAndPreserved(
         .read<String>('broj_predmeta'),
     'SYNTHETIC-001',
   );
-  expect(
-    (await db
-            .customSelect('SELECT naziv FROM firma_podaci WHERE id = 1')
-            .getSingle())
-        .read<String>('naziv'),
-    'SYNTHETIC MIGRATION FIRMA',
-  );
+  final firm = await db
+      .customSelect('SELECT naziv, pib, mb FROM firma_podaci WHERE id = 1')
+      .getSingle();
+  expect(firm.read<String>('naziv'), 'SYNTHETIC MIGRATION FIRMA');
+  expect(firm.read<String>('pib'), '00QA-PIB5');
+  expect(firm.read<String>('mb'), '000QA-MB123456789');
   expect(
     (await db
             .customSelect('SELECT pin_hash FROM korisnici WHERE id = 1')

@@ -47,7 +47,7 @@ class IriuRowTile extends StatefulWidget {
     required this.truthRow,
     required this.stockConsequence,
     this.catalogDisplayNames = const <String, String>{},
-    required this.isNarrowAndroid,
+    required this.isNarrow,
     required this.preporucenoLabel,
     this.registerPendingSave,
     this.unregisterPendingSave,
@@ -58,7 +58,7 @@ class IriuRowTile extends StatefulWidget {
   final PodesavanjaRepository podesavanjaRepo;
   final Stream<bool> imaArtikalaStream;
   final bool enabled;
-  final bool isNarrowAndroid;
+  final bool isNarrow;
   final String preporucenoLabel;
   final void Function(int, Future<void> Function())? registerPendingSave;
   final void Function(int)? unregisterPendingSave;
@@ -203,14 +203,12 @@ class _IriuRowTileState extends State<IriuRowTile> {
     final accepted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        final isNarrowAndroid =
-            Theme.of(dialogContext).platform == TargetPlatform.android &&
-            MediaQuery.sizeOf(dialogContext).width < 640;
+        final isNarrow = MediaQuery.sizeOf(dialogContext).width < 640;
         return AlertDialog(
-          insetPadding: isNarrowAndroid
+          insetPadding: isNarrow
               ? const EdgeInsets.symmetric(horizontal: 16, vertical: 24)
               : null,
-          scrollable: isNarrowAndroid,
+          scrollable: isNarrow,
           actionsOverflowDirection: VerticalDirection.down,
           title: const Text('Artikal nije na stanju'),
           content: Text(
@@ -307,7 +305,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
   }
 
   Future<void> _otvoriKatalogZaStavku() async {
-    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final useBottomSheet = widget.isNarrow;
 
     final kategorije = resolveIriuCatalogPickerCategoryKeys(
       widget.stavka.interniNaziv,
@@ -333,7 +331,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
       return;
     }
 
-    if (isAndroid) {
+    if (useBottomSheet) {
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -482,7 +480,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
     final katalogUnavailableBorder = cs.outlineVariant;
     final deleteFill = cs.errorContainer.withValues(alpha: 0.2);
     final deleteBorder = cs.error.withValues(alpha: 0.34);
-    final isNarrowAndroid = widget.isNarrowAndroid;
+    final isNarrow = widget.isNarrow;
 
     InputDecoration rowDecoration({
       required EdgeInsetsGeometry contentPadding,
@@ -816,7 +814,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
           backgroundColor: cs.tertiaryContainer.withValues(alpha: 0.9),
           borderColor: cs.tertiary.withValues(alpha: 0.35),
           foregroundColor: cs.onTertiaryContainer,
-          compact: isNarrowAndroid,
+          compact: isNarrow,
         ),
       if (prikaziBiohazard)
         statusChip(
@@ -824,7 +822,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
           backgroundColor: cs.errorContainer.withValues(alpha: 0.9),
           borderColor: cs.error.withValues(alpha: 0.35),
           foregroundColor: cs.onErrorContainer,
-          compact: isNarrowAndroid,
+          compact: isNarrow,
         ),
       if (provider == 'drugaSluzba')
         statusChip(
@@ -832,7 +830,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
           backgroundColor: cs.secondaryContainer,
           borderColor: cs.secondary,
           foregroundColor: cs.onSecondaryContainer,
-          compact: isNarrowAndroid,
+          compact: isNarrow,
         ),
       if (prikaziStanjeRobeUpozorenje)
         statusChip(
@@ -840,7 +838,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
           backgroundColor: cs.errorContainer.withValues(alpha: 0.95),
           borderColor: cs.error.withValues(alpha: 0.45),
           foregroundColor: cs.onErrorContainer,
-          compact: isNarrowAndroid,
+          compact: isNarrow,
         ),
     ];
 
@@ -866,7 +864,7 @@ class _IriuRowTileState extends State<IriuRowTile> {
       },
     );
 
-    final row = isNarrowAndroid
+    final row = isNarrow
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -921,14 +919,14 @@ class _IriuRowTileState extends State<IriuRowTile> {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
-      padding: EdgeInsets.all(isNarrowAndroid ? 10 : 6),
+      padding: EdgeInsets.all(isNarrow ? 10 : 6),
       decoration: BoxDecoration(
         color: prikaziStanjeRobeUpozorenje
             ? cs.errorContainer.withValues(alpha: 0.18)
             : aktivan
             ? cs.surface
             : cs.surfaceContainerHighest.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(isNarrowAndroid ? 10 : 6),
+        borderRadius: BorderRadius.circular(isNarrow ? 10 : 6),
         border: Border.all(
           color: prikaziStanjeRobeUpozorenje
               ? cs.error.withValues(alpha: 0.55)

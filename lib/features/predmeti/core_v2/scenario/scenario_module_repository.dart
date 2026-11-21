@@ -4,6 +4,8 @@ import 'package:drift/drift.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../../core/database/database.dart';
+import '../../../../core/database/predmet_iriu_order.dart';
+import '../../data/iriu_repository.dart';
 import '../../../../core/constants/iriu_constants.dart';
 import 'scenario_contract.dart';
 import 'owner_scenario_policy_kernel.dart';
@@ -631,7 +633,52 @@ class ScenarioModuleRepository {
     _db.scenarioModules,
   )..where((row) => row.id.equals(moduleId))).watchSingleOrNull();
 
-  Future<void> saveOsnovniPaket(Set<String> categoryIds) async {
+  Future<void> _freezeBasicPackages(List<String> priorOrder) async {
+    final cases = await _db.select(_db.predmeti).get();
+    final snapshots = {
+      for (final row in await _db.select(_db.predmetScenarioSnapshots).get())
+        row.predmetId: row.snapshotJson,
+    };
+    final existing = await _db.customSelect(
+      'SELECT predmet_id FROM predmet_iriu_order',
+    ).get();
+    final frozen = existing.map((row) => row.read<int>('predmet_id')).toSet();
+    for (final predmet in cases) {
+      if (frozen.contains(predmet.id)) continue;
+      final snapshot = snapshots[predmet.id];
+      var basic = priorOrder;
+      if (snapshot != null && snapshot.trim().isNotEmpty) {
+        try {
+          final decoded = ScenarioAssignmentSnapshot.fromJsonMap(
+            (jsonDecode(snapshot) as Map).cast<String, dynamic>(),
+          );
+          final membership = decoded.osnovniPaket;
+          basic = [
+            ...priorOrder.where(membership.contains),
+            ...membership.where((id) => !priorOrder.contains(id)),
+          ];
+        } on Object {
+          // A malformed snapshot was already displayed in stored row order.
+          // Keep that fallback and leave the original snapshot untouched.
+          basic = const [];
+        }
+      }
+      final iriu = IriuRepository(_db);
+      final before = await iriu.getIriu(predmet.id);
+      await savePredmetIriuOrder(_db, predmet.id, PredmetIriuOrder(basic: basic));
+      final after = await iriu.getIriu(predmet.id);
+      if (before.length != after.length ||
+          before.indexed.any((entry) => after[entry.$1].id != entry.$2.id)) {
+        throw StateError(
+          'Postojeći IRiU redosled PREDMETA nije pouzdano zamrznut.',
+        );
+      }
+    }
+  }
+
+  Future<void> saveOsnovniPaket(
+    Set<String> categoryIds, {List<String>? expectedOrder}
+  ) => _db.transaction(() async {
     await ensureModule();
     final normalized = categoryIds.map((value) => value.trim()).toSet()
       ..removeWhere((value) => value.isEmpty);
@@ -673,6 +720,16 @@ class ScenarioModuleRepository {
     for (final value in normalized) {
       if (seen.add(value)) ordered.add(value);
     }
+    final prior = readOsnovniPaketOrder(await ensureModule());
+    if (expectedOrder != null &&
+        (prior.length != expectedOrder.length ||
+         prior.indexed.any((entry) => expectedOrder[entry.$1] != entry.$2))) {
+      throw StateError('OSNOVNI PAKET je promenjen. Otvorite editor ponovo.');
+    }
+    if (prior.length != ordered.length ||
+        prior.indexed.any((entry) => ordered[entry.$1] != entry.$2)) {
+      await _freezeBasicPackages(prior);
+    }
     await (_db.update(
       _db.scenarioModules,
     )..where((row) => row.id.equals(moduleId))).write(
@@ -681,7 +738,7 @@ class ScenarioModuleRepository {
         updatedAt: Value(DateTime.now().toUtc().toIso8601String()),
       ),
     );
-  }
+  });
 
   List<String> readOsnovniPaketOrder(ScenarioModule module) {
     final decoded = jsonDecode(module.osnovniPaketJson);

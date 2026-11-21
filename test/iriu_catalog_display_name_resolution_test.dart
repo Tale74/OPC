@@ -260,7 +260,7 @@ void main() {
             truthRow: null,
             stockConsequence: null,
             catalogDisplayNames: const {'KORISNIK_1775943907013': 'Slika'},
-            isNarrowAndroid: false,
+            isNarrow: false,
             preporucenoLabel: 'PREPORUČENO',
           ),
         ),
