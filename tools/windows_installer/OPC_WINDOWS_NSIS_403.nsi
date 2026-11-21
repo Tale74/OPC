@@ -1,5 +1,7 @@
 Unicode true
 !include "MUI2.nsh"
+!include "x64.nsh"
+!define OPC_LEGACY_INNO_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\{4A1E4F3D-C0BE-4D25-8A57-0B6A37972F8B}_is1"
 !ifndef OPC_VERSION
 !define OPC_VERSION "4.0.3"
 !endif
@@ -28,6 +30,38 @@ UninstallIcon "OPC.ico"
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
+
+; Keep the historical Inno payload for rollback and require an intentional
+; transition when introducing the first per-user NSIS install.
+Function .onInit
+ReadRegStr $0 HKCU "${OPC_INSTALL_REG_KEY}" "Path"
+StrCmp $0 "" check_inno
+IfFileExists "$0\OPC.exe" done
+check_inno:
+ReadRegStr $0 HKCU "${OPC_LEGACY_INNO_KEY}" "UninstallString"
+StrCmp $0 "" 0 legacy_found
+ReadRegStr $0 HKLM "${OPC_LEGACY_INNO_KEY}" "UninstallString"
+StrCmp $0 "" 0 legacy_found
+${If} ${RunningX64}
+  SetRegView 64
+  ReadRegStr $0 HKCU "${OPC_LEGACY_INNO_KEY}" "UninstallString"
+  StrCmp $0 "" 0 legacy_found64
+  ReadRegStr $0 HKLM "${OPC_LEGACY_INNO_KEY}" "UninstallString"
+  StrCmp $0 "" 0 legacy_found64
+  SetRegView 32
+${EndIf}
+Goto done
+legacy_found64:
+SetRegView 32
+legacy_found:
+IfSilent stop_legacy
+MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 "A legacy OPC Inno installation was detected. Continue only from the same Windows user account, after closing OPC and verifying a separate copy of the OPC database, application support files and Full Backup JSON.$\r$\n$\r$\nSetup will leave the old program files in place. Use the new OPC shortcut after installation. Do not open the migrated database with the old OPC executable.$\r$\n$\r$\nHave you verified your backup and are you ready to switch?" IDYES done
+stop_legacy:
+SetErrorLevel 1603
+Abort
+done:
+FunctionEnd
+
 Section "Install" SEC01
 SetShellVarContext current
 SetOutPath "$INSTDIR"

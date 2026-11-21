@@ -1085,7 +1085,18 @@ void _zahtevajBackupTekstPolja(
   }
 }
 
+void _requireRepresentablePredmetCurrency(Map<String, dynamic> row) {
+  if (row.containsKey('businessCurrencyCode') &&
+      row['businessCurrencyCode'] != 'RSD') {
+    throw const _ImportBlokiranException(
+      'Uvoz je blokiran: OPC SRB ne može da sačuva nepoznatu valutu '
+      'ili valutu PREDMETA različitu od RSD. Upotrebite OPC Int.',
+    );
+  }
+}
+
 Map<String, dynamic> _normalizujBackupPredmetMap(Map<String, dynamic> row) {
+  _requireRepresentablePredmetCurrency(row);
   final normalized = _normalizujBackupPrazanTekst(
     row,
     'predmeti',
@@ -3312,6 +3323,7 @@ Map<String, dynamic> _normalizujPredmetJsonZaImport(
   Map<String, dynamic> predmetMap,
   Map<String, dynamic> rootJson,
 ) {
+  _requireRepresentablePredmetCurrency(predmetMap);
   final normalized = Map<String, dynamic>.from(predmetMap);
   final exportVerzija = rootJson['exportVerzija'];
   if (exportVerzija is int) {

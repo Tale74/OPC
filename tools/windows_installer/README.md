@@ -40,3 +40,36 @@ Ako se NSIS nalazi na drugoj putanji, navedite stvarnu lokaciju `makensis.exe`; 
 ## Kontinuitet
 
 `opc_installer.iss` i `prepare_windows_installer.ps1` su zadržani kao istorijski Inno Setup admin lane za prethodno izdanje. OWNER je prihvatio da raniji Inno paket može koegzistirati sa novijim NSIS PerUser paketom; ne tretirati to samo po sebi kao release blokadu. Novi isporučeni 4.0.3 PerUser paket i NSIS skript predstavljaju aktuelnu Windows distribucionu putanju.
+
+## COMPAT-002 kandidat — Inno → NSIS pod istim Windows korisnikom
+
+Za stari Inno AppId installer proverava HKCU i HKLM registraciju u dostupnim
+32/64-bit Windows prikazima pre kopiranja fajlova. Aktivan postojeći NSIS
+Path koristi isti NSIS lane bez prve tranzicije. U slučaju samo stare Inno
+registracije, interaktivni prelaz traži potvrdu proverene kopije, a tihi
+prelaz se prekida. Stari program i poslovni podaci ostaju dostupni za rollback.
+
+1. Prijaviti se kao isti Windows korisnik koji vodi postojeću OPC evidenciju.
+   Utvrditi aktivnu verziju, tip installera, Known Folder Documents i
+   RoamingAppData support direktorijum. Zabeležiti FIRMA, korisnika, DB
+   `user_version` i stanje pristupa/licence bez zapisivanja tajni u izveštaj.
+2. U starom OPC-u izvesti Full Backup JSON. Proveriti sadržaj i identitet
+   FIRME na izdvojenoj probi. Zatvoriti stari OPC i napraviti proverenu
+   konzistentnu kopiju SQLite baze i lokalnih support fajlova. Ako SQLite
+   koristi WAL, proveriti commitovane redove u konzistentnom snapshot-u.
+   Sačuvati SQL i support kopije privatno, uz evidenciju veličine i SHA-256.
+3. Sačuvati staru instalaciju. U odobrenom fizičkom runtime-u potvrditi
+   preuzimanje istog poslovnog prostora po završetku setup-a. Koristiti novu
+   NSIS prečicu. PREDMET, FIRMA, korisnik, licenca, istorijski iznos i valuta
+   moraju odgovarati pređašnjoj evidenciji. Proveriti i ponovno otvaranje.
+4. Za rollback prvo zatvoriti novu aplikaciju i vratiti provereni SQLite
+   snapshot pre pokušaja pokretanja starije verzije. Ne pokazivati starijem
+   programu migrirani DB sa višom šemom. Ne pokretati Inno uninstall radi
+   prelaska i ne brisati podatke.
+5. Portable proveravati kao poseban izvršni payload pod istim Windows
+   korisnikom. Lokacija raspakivanja odvojena je od Documents baze i
+   AppData support direktorijuma. Za novi Windows nalog ili drugi računar
+   koristi se planirani prenos, uz zasebnu validaciju licence i identiteta.
+
+Ovaj zapis opisuje kandidata. Instalacioni izvršni fajl za distribuciju i
+OWNER fizička provera zahtevaju naredni odobreni korak.

@@ -74,3 +74,21 @@ Lokalni dokaz ne obuhvata sve moguće kontaktne blokove, svaku IRiU poslovnu put
 ## Javni Cloudflare PWA 4.0.3+10 — 26.10.2026.
 
 Gornji status +5 predstavlja istorijsko stanje pre nove OWNER-odobrene objave. Prihvaćene lokalne +6/+7/+8/+9 korekcije i ugnežđeni autosave sada su na kanonskom commitu `48ded2a8516b8a1e934a74492bf07bddb5624f49`. Web-only build broj 10 objavljen je na postojećem `https://opc-srb.pages.dev/` kao Production deployment `24cd0b48-01f8-4901-97a8-efcc165fcb09`. Deset javnih asseta i stvarno učitani JS u Chrome-u i IAB-u hash-identični su paketu. Javna Chrome provera potvrdila je trajnost glavnog polja, kontaktnog i IRiU reda posle prelaza i reload-a, kao i offline otvaranje i novu offline izmenu sačuvanu posle reload-a. Odvojeni IAB profil potvrdio je nalog, novi PREDMET i polje Platioca posle reload-a. Standalone PWA instalacija nije stvarno izvedena jer native CUA nije mogao da prikaže Chrome instalacioni meni; ne klasifikovati je kao PASS. Detalji su u [PWA_40310_RELEASE.md](PWA_40310_RELEASE.md) i spoljnjem `C:\Tale\OPC_REVIEW\PWA_40310_DEPLOY_20261026`. GitHub push i promena drugih platformskih paketa nisu izvršeni.
+
+
+## OPC-INT-COMPAT-002 — Historical business continuity
+
+SOURCE promotion after OWNER authorization and isolated QA. Existing public
+release 4.0.3+15 remains the distribution authority. The next
+production release and physical platform acceptance are pending OWNER decision.
+
+SRB retains its historical RSD and SQLite contracts. Its PREDMET and Full
+Backup JSON consumers reject currency they cannot represent before modifying
+business data. The existing Windows installer now requests an intentional
+transition from a registered legacy Inno installation with protected data.
+
+QA for the promoted SRB source: analysis PASS, serial regression
+731 PASS / 11 SKIP / 0 FAIL. The three isolated Chrome Full Backup
+directions passed for SRB and Int. Native installation behavior, entitlement
+storage on devices and physical OWNER acceptance remain separate from these
+results. [COMPAT-002 correction evidence](https://drive.google.com/file/d/1d1thKWc9CRQBc_43VpsqEzlXg4rdyG4d/view)
