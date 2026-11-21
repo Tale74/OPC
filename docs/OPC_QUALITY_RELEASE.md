@@ -731,3 +731,25 @@ Shared portal deployment: 937c87eb-ff54-4fda-906e-c2c859cd1202, rollback:
 c3814e2c-8d06-4ad1-b0e4-407ab46da80d. Public delivery and anonymous hash verification
 completed. The release and private evidence are filed under ACCEPT-FAIL-001.
 Independent LOGOS review and OWNER physical runtime acceptance remain pending.
+
+
+## COMPAT-003 — Production release
+
+OPC SRB 4.0.3+16 je objavljen. Build SOURCE je `df881ae41497cdd907ddf5864d1f2165ef0efd25`, Git tree `a692e040cd11e78491a6edaa6e4e897838044e56`, SQLite schema 37.
+COMPAT-002 puna regresija ima 731 PASS, 11 SKIP i 0 FAIL. Release analiza je PASS. Dodatna serijska provera ima 48 PASS.
+Android zadržava `com.tale.opc_v4` i SHA-256 produkcionog sertifikata `4D1371C7573E5F61F2D6E662BC18176BF6E20F2E7541875147D3DCD34EB3AD65`. Windows NSIS readback potvrđuje 39 runner fajlova i uključen je prihvaćeni Inno prelaz.
+Cloudflare `opc-srb` deployment `ac80d8d5-1289-4e54-93d3-6f8383dfed0f`, prethodni rollback `9a4b4f15-0f3c-4bf1-921f-0ef973f323eb`. Portal `3d1089f2-32ea-466d-9879-99c3ffa8881b`, prethodni rollback `937c87eb-ff54-4fda-906e-c2c859cd1202`.
+Potvrđeni su stvarni bajtovi svih 5 Drive artefakata, tri binarne portalne rute i PWA ruta sa 55 javnih resursa.
+OWNER fizička nadogradnja i runtime čekaju proveru sa prethodno potvrđenom zaštitnom kopijom. iOS/macOS native ostaje otvorena projektna obaveza.
+
+| Artefakt | Bajtova | SHA-256 | Drive |
+|---|---:|---|---|
+| OPC_SRB-4.0.3+16-Android.apk | 80245064 | `EDADB516176D9F06C1277109D3C7DB5E519C131FC994604E1D192294A800BDAF` | [Drive](https://drive.google.com/file/d/1QRNcZlrJLxJNMfcEZq-c2zfINpzCx6pR/view?usp=drivesdk) |
+| OPC_SRB-4.0.3+16-PWA.zip | 16198931 | `54C2DEAFDF1D0E69AF5E22EF59D11CD9913165E9F0193E475728E345D0811E58` | [Drive](https://drive.google.com/file/d/18vIgTTccQmkl8dNMR-U9Q2zm6qs7-e2Q/view?usp=drivesdk) |
+| OPC_SRB-4.0.3+16-Windows-Installer.zip | 15655247 | `355DE72254F44CDA08491DBE4D5B1BF7C71B7856E3831DC94CB371214D2A5A6E` | [Drive](https://drive.google.com/file/d/1Q4euHu59-SKQVSxyyZ11WAioWr7eHDLR/view?usp=drivesdk) |
+| OPC_SRB-4.0.3+16-Windows-Portable.zip | 21619363 | `B169CC2E63C31E08246EB1ACBC6F672A7982505F423D8D4A670C24EF063EA38E` | [Drive](https://drive.google.com/file/d/1eOEYhpi_I_OQy-O0fP-pOqy293wQEhiN/view?usp=drivesdk) |
+| OPC_SRB-4.0.3+16-Windows-Setup.exe | 15668885 | `F9FA6B153F3320E8FD16938DEAAFD238D38494F296A71628AEBECE66D077214F` | [Drive](https://drive.google.com/file/d/1HCzL75y-9m0Zao8FZKhPUve8dmvcK8IA/view?usp=drivesdk) |
+
+Javne rute i postojeći PWA origin. [opc-srb-windows-installer](https://opc-repo.pages.dev/click/opc-srb-windows-installer) · [opc-srb-windows-portable](https://opc-repo.pages.dev/click/opc-srb-windows-portable) · [opc-srb-android](https://opc-repo.pages.dev/click/opc-srb-android) · [opc-srb-web](https://opc-repo.pages.dev/click/opc-srb-web)
+
+Verzionisani manifest i SHA-256 readback. [Drive manifest](https://drive.google.com/file/d/1bkq3STGgG8-wPp4N5XcMfHqJK3szpn_Z/view?usp=drivesdk)
