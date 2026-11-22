@@ -270,3 +270,8 @@ category rows, concrete KATALOG article selection and reconciliation. It does
 not alter auth, PREDMET, SCENARIO or IRiU behavior. Test/build results and exact
 content deltas are recorded in
 [`OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md`](OPC_FINAL_USER_GUIDE_CONTENT_INTEGRATION_20261012_TRACEABILITY.md).
+
+
+## OPC-MAP-001 — Code & Behavior Map
+
+[OPC Code & Behavior Map](https://github.com/Tale74/OPC-Int/tree/main/docs/code-map) je zajednički mašinski čitljiv ulaz za SOURCE, tokove, podatke, testove i tačke intervencije u SRB i Int. Poslovni autoriteti i dokazni Git snapshot-i navedeni su u indeksu mape.
